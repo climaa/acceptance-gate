@@ -1,9 +1,20 @@
 /**
  * @gate/ui — design tokens
  *
- * Una sola fuente de verdad para color, espacio, tipografía y elevación.
- * Todo lo demás del design system consume estas variables; ningún componente
- * hardcodea un valor. Cambiar la marca = cambiar este archivo.
+ * Single source of truth for color, space, typography and elevation.
+ * Everything else in the design system consumes these variables; no component
+ * hardcodes a value. Rebranding = editing this file.
+ *
+ * TOKEN AUDIT (2026-08-06 — design board 01 mirrors this file):
+ * - UNUSED, to be pruned by the Wave-1 tokens issue: the ENTIRE --c-accent-*
+ *   (blue) family — the light theme remapped to cream/terra/umber — and most
+ *   of --c-neutral-* (only styles.css raw usage remains, see violation below).
+ *   A token earns its place or leaves; re-add any the day a role consumes it.
+ * - VIOLATION to fix in Wave 1: styles.css consumes the state scales raw
+ *   (--c-success/warning/danger-*). Wave 1 adds semantic roles
+ *   --color-{success,warning,danger}-{surface,fg} and the postcss token test
+ *   then enforces both rules: every raw step is consumed by a role, and zero
+ *   --c- references exist outside this file.
  */
 
 :root {
@@ -31,6 +42,33 @@
   --c-accent-600: #2563eb;
   --c-accent-700: #1d4ed8;
 
+  /* ---- Light-theme raw families (editorial parchment + terracotta) ----
+   * Consumed exclusively by the light role block below.
+   * Palette study: warm cream ground, terracotta accent, warm ink. */
+  --c-cream-50: #f5efe0;
+  --c-cream-100: #ede6d6;
+  --c-cream-200: #e4dbc6;
+  --c-cream-300: #dcd2ba;
+  --c-cream-400: #d8cfbc;
+  --c-cream-500: #c2b69e;
+  --c-umber-950: #11120d;
+  --c-umber-600: #51483f;
+  --c-terra-300: #b06a4a;
+  --c-terra-500: #713520;
+  --c-terra-700: #5d2b1a;
+
+  /* ---- Dark-theme raw families (terminal lime on green-black) ----
+   * Consumed exclusively by the [data-theme='dark'] role remap below. */
+  --c-ink-950: #141614;
+  --c-ink-900: #1b1e1b;
+  --c-ink-800: #212525;
+  --c-ink-700: #2e332e;
+  --c-ink-600: #3d423d;
+  --c-ink-400: #a9c2a0;
+  --c-ink-50: #eef7ea;
+  --c-green-500: #80ee64;
+  --c-green-300: #bff9b4;
+
   /* ---- Semánticos de estado ---- */
   --c-success-100: #dcfce7;
   --c-success-500: #22c55e;
@@ -42,19 +80,20 @@
   --c-danger-500: #ef4444;
   --c-danger-700: #b91c1c;
 
-  /* ---- Roles semánticos (lo que usan los componentes) ---- */
-  --color-bg: var(--c-neutral-0);
-  --color-bg-subtle: var(--c-neutral-50);
-  --color-bg-muted: var(--c-neutral-100);
-  --color-border: var(--c-neutral-200);
-  --color-border-strong: var(--c-neutral-300);
-  --color-text: var(--c-neutral-900);
-  --color-text-muted: var(--c-neutral-500);
-  --color-text-inverted: var(--c-neutral-0);
-  --color-accent: var(--c-accent-600);
-  --color-accent-hover: var(--c-accent-700);
-  --color-accent-subtle: var(--c-accent-50);
-  --color-focus-ring: var(--c-accent-400);
+  /* ---- Semantic roles (what components consume) ----
+   * Light is editorial parchment: cream ground, terracotta accent, warm ink. */
+  --color-bg: var(--c-cream-100);
+  --color-bg-subtle: var(--c-cream-200);
+  --color-bg-muted: var(--c-cream-300);
+  --color-border: var(--c-cream-400);
+  --color-border-strong: var(--c-cream-500);
+  --color-text: var(--c-umber-950);
+  --color-text-muted: var(--c-umber-600);
+  --color-text-inverted: var(--c-cream-50);
+  --color-accent: var(--c-terra-500);
+  --color-accent-hover: var(--c-terra-700);
+  --color-accent-subtle: rgb(113 53 32 / 0.08);
+  --color-focus-ring: var(--c-terra-300);
 
   /* ---- Espaciado (escala de 4px) ---- */
   --space-1: 0.25rem;
@@ -116,19 +155,23 @@
   --width-container: 72rem;
 }
 
-/* ---- Tema oscuro: solo se remapean los roles semánticos ---- */
+/* ---- Dark theme: only the semantic roles remap ----
+ * Dark is deliberately its own personality: terminal lime on green-tinted
+ * black (palette study: modal.com). Light stays the blue editorial theme —
+ * the two must never be byte-identical, and the differ proves it. */
 [data-theme='dark'] {
-  --color-bg: var(--c-neutral-950);
-  --color-bg-subtle: var(--c-neutral-900);
-  --color-bg-muted: var(--c-neutral-800);
-  --color-border: var(--c-neutral-800);
-  --color-border-strong: var(--c-neutral-700);
-  --color-text: var(--c-neutral-50);
-  --color-text-muted: var(--c-neutral-400);
-  --color-text-inverted: var(--c-neutral-950);
-  --color-accent: var(--c-accent-500);
-  --color-accent-hover: var(--c-accent-400);
-  --color-accent-subtle: rgb(37 99 235 / 0.15);
+  --color-bg: var(--c-ink-950);
+  --color-bg-subtle: var(--c-ink-900);
+  --color-bg-muted: var(--c-ink-800);
+  --color-border: var(--c-ink-700);
+  --color-border-strong: var(--c-ink-600);
+  --color-text: var(--c-ink-50);
+  --color-text-muted: var(--c-ink-400);
+  --color-text-inverted: var(--c-ink-950);
+  --color-accent: var(--c-green-500);
+  --color-accent-hover: var(--c-green-300);
+  --color-accent-subtle: rgb(128 238 100 / 0.14);
+  --color-focus-ring: var(--c-green-500);
 }
 
 @media (prefers-reduced-motion: reduce) {
