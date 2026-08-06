@@ -187,15 +187,6 @@ If branches accumulate anyway:
 
 ---
 
-## Prior art / debugging trail
-
-| Ref  | What changed                                                                                           |
-| ---- | ------------------------------------------------------------------------------------------------------ |
-| #345 | Initial Sandcastle orchestrator                                                                        |
-| #420 | Docker sandbox wiring                                                                                  |
-| #448 | Serialised issue execution (fixed pnpm 10 parallel-install deadlock)                                   |
-| #468 | Forbade `run_in_background` in all three agent prompts; fixed stranded-branch signal-detection failure |
-
 ## Runbook — red `main`
 
 A red `main` halts wave dispatch — nothing is filed, `pnpm sandcastle` is not
