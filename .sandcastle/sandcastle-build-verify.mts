@@ -61,7 +61,7 @@ export function formatMs(ms: number): string {
 // bind-mounted repo root. The repo-root `.turbo/` can be root-owned from prior
 // container runs while the sandbox runs as a mapped uid, so turbo's default
 // `<repo>/.turbo/cache` location fails with "Permission denied (os error 13)"
-// and kills the build in seconds (issue #887). turbo 2.9 honors this env var;
+// and kills the build in seconds (build-gate hardening). turbo 2.9 honors this env var;
 // the host pre-push hook already uses the equivalent `--cache-dir /tmp/turbo-cache`.
 export const BUILD_VERIFY_COMMAND = "TURBO_CACHE_DIR=/tmp/turbo-cache pnpm build";
 

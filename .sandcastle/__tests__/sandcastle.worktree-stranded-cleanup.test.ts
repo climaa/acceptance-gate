@@ -8,7 +8,7 @@ function read(file: string) {
   return fs.readFileSync(path.join(SANDCASTLE, file), "utf8");
 }
 
-describe("sandcastle stranded-cleanup worktree-aware (issue #474)", () => {
+describe("sandcastle stranded-cleanup worktree-aware ", () => {
   // "git worktree list --porcelain" lives only in findWorktreeForBranch()
   // (sandcastle-git.mts); the closed-issue cleanup block lives in
   // collectStrandedIssues() (sandcastle-stranded-branches.mts) — two

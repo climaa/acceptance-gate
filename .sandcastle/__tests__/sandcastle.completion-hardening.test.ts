@@ -8,7 +8,7 @@ function read(file: string) {
   return fs.readFileSync(path.join(SANDCASTLE, file), "utf8");
 }
 
-describe("sandcastle completion hardening (issue #660)", () => {
+describe("sandcastle completion hardening ", () => {
   describe("implement-prompt.md — branch push before completion signal", () => {
     const content = read("agent-docs/implement-prompt.md");
 

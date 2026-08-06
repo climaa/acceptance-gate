@@ -12,13 +12,13 @@ function read(file: string) {
   return fs.readFileSync(path.join(SANDCASTLE, file), "utf8");
 }
 
-// Issue #1900: PR #1877 bumped pnpm 11.15.1 -> 11.17.0 in package.json and the
+// A production incident: a bump moved pnpm 11.15.1 -> 11.17.0 in package.json and the
 // Dockerfile, but the `sandcastle:<checkout-dirname>` image was never rebuilt,
 // so the whole 2026-07-25 batch ran the stale global pnpm 11.15.1 and every
 // container hard-failed its own pre-push version check. The guard verifies the
 // running image's toolchain matches the repo pin BEFORE any agent starts and
 // rebuilds (or refuses to start) on drift.
-describe("sandcastle image-freshness guard (issue #1900)", () => {
+describe("sandcastle image-freshness guard", () => {
   describe("readPinnedPnpmVersion — package.json is the single source of truth", () => {
     it("extracts the semver from a pnpm@X.Y.Z+sha512… packageManager pin", () => {
       const pkg = path.join(ROOT, "package.json");

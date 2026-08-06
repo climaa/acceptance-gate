@@ -12,7 +12,7 @@
 //                               reviewer run in the same sandbox on the same
 //                               branch. Issue pipelines run serially via a
 //                               sequential for…await loop — concurrent pnpm
-//                               installs deadlock on pnpm 10.x (#448);
+//                               installs deadlock on pnpm 10.x;
 //                               failures are caught per-issue so the rest
 //                               continue.
 //   Phase 3 (Merge):            A single agent (sandcastle-merge.mts) merges
@@ -57,7 +57,7 @@ import * as sandcastle from "@ai-hero/sandcastle";
 import { docker } from "@ai-hero/sandcastle/sandboxes/docker";
 
 // ---------------------------------------------------------------------------
-// Orchestrator startup (issue #1397 — partial port of finlooker's SandcastleRunner)
+// Orchestrator startup (a partial port of an earlier single-runner variant)
 // ---------------------------------------------------------------------------
 
 // Graceful shutdown. Declared here so every phase — planner, runIssue()'s
@@ -75,13 +75,13 @@ const { signal: abortSignal } = installGracefulShutdown();
 assertEnvOverridesValid();
 
 // Reap `status=exited` sandbox containers stranded by a previously-killed run,
-// once at startup (mirrors finlooker's preflight). Scoped to this repo's image
+// once at startup (mirrors the single-runner preflight). Scoped to this repo's image
 // and to exited-only so a concurrently-running `pnpm sandcastle` invocation's
 // live containers are never touched. Not run per-issue: the sandbox `finally`
 // blocks already close sandboxes, so per-attempt reaping would be redundant.
 reapExitedContainers();
 
-// Image-freshness guard (issue #1900). The docker() factory reuses whatever is
+// Image-freshness guard. The docker() factory reuses whatever is
 // already tagged `sandcastle:<checkout-dirname>`; editing `.sandcastle/Dockerfile`
 // (e.g. bumping the global pnpm) does NOT invalidate that tag. On 2026-07-25 a
 // stale image ran the whole batch against pnpm 11.15.1 while the repo pinned
@@ -98,7 +98,7 @@ ensureImageFreshness();
 // ---------------------------------------------------------------------------
 
 for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
-  // Graceful shutdown (issue #1397): a SIGINT/SIGTERM between iterations stops
+  // Graceful shutdown: a SIGINT/SIGTERM between iterations stops
   // the orchestrator from starting a fresh Plan→Execute→Merge cycle. Work
   // already in flight in the previous iteration ran its own cleanup before
   // control returned here.
@@ -122,10 +122,10 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
     // HEAD-mode sandbox: bind-mounts the host checkout at /home/agent/workspace,
     // so any in-container pnpm run touches the host's node_modules. Belt-and-braces
     // env guard suppresses pnpm 11's automatic pre-run deps verification (which
-    // would auto-`pnpm install` and ping-pong host↔container pnpm state — #1658,
-    // #1657). Must be the `pnpm_config_` prefix: `npm_config_verify_deps_before_run`
+    // would auto-`pnpm install` and ping-pong host↔container pnpm state — a known host↔container ping-pong,
+    // a prior production fix). Must be the `pnpm_config_` prefix: `npm_config_verify_deps_before_run`
     // does NOT suppress pnpm 11's verify; `pnpm_config_verify_deps_before_run=false`
-    // does. Covers agents operating before/without the #1657 pnpm-workspace.yaml setting.
+    // does. Covers agents operating before/without the pnpm-workspace.yaml setting.
     sandbox: docker({ env: { pnpm_config_verify_deps_before_run: "false" } }),
     name: "planner",
     idleTimeoutSeconds: 600,
@@ -188,7 +188,7 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
       console.log(`  ${s.branch} (#${s.id})`);
     }
     // A crashed prior run is exactly the case where the branch's build state is
-    // unknown — build-verify each rescued branch before merging (issue #887).
+    // unknown — build-verify each rescued branch before merging (build-gate hardening).
     const verified = await verifyStrandedBranches(stranded, abortSignal);
     if (verified.length === 0) {
       console.log("No rescued branches passed build-verify. Exiting.");
@@ -231,7 +231,7 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
   const settled: PromiseSettledResult<Awaited<ReturnType<typeof runIssue>>>[] =
     [];
   for (const issue of issues) {
-    // Graceful shutdown (issue #1397): stop picking up the next issue once an
+    // Graceful shutdown: stop picking up the next issue once an
     // abort is requested. The current issue (if any) already finished its
     // `finally { sandbox.close() }` before we got here; remaining issues are
     // simply not started, so their branches stay untouched rather than
@@ -278,7 +278,7 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
   // entries map back to issues[i].branch). They must be excluded from rescue:
   // a just-failed pipeline's branch is ahead of main with no PR, so without
   // this it would re-enter via collectStrandedIssues and merge in the same run
-  // it failed — making the build gate advisory-only (issue #887).
+  // it failed — making the build gate advisory-only (build-gate hardening).
   const failedBranches = settled
     .map((outcome, i) => ({ outcome, branch: issues[i]!.branch }))
     .filter((e) => e.outcome.status === "rejected")
@@ -302,7 +302,7 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
       console.log(`  ${s.branch} (#${s.id})`);
     }
     // Build-verify rescued branches before merging — a crashed prior run is
-    // exactly when the branch's build state is unknown (issue #887). Failing
+    // exactly when the branch's build state is unknown (build-gate hardening). Failing
     // branches are logged and skipped, staying stranded for human attention.
     const verified = await verifyStrandedBranches(stranded, abortSignal);
     completedIssues.push(...verified);

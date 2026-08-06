@@ -99,7 +99,7 @@ export function branchHasOpenPr(branch: string): boolean {
 
 // The primary repository checkout. `git worktree list --porcelain` always
 // reports it FIRST — that ordering is the documented contract and is what
-// makes this cheap to identify (issue #1911).
+// makes this cheap to identify (worktree-reaper hardening).
 export function primaryWorktreePath(): string | null {
   try {
     const out = execSync("git worktree list --porcelain", {

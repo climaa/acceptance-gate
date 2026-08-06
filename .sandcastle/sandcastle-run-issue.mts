@@ -17,7 +17,7 @@ import {
 import { type IssueRef, branchHasCommitsAhead } from "./sandcastle-git.mts";
 
 export async function runIssue(issue: IssueRef, abortSignal: AbortSignal) {
-  // Graceful-shutdown guard (issue #1397). createSandbox() takes no
+  // Graceful-shutdown guard. createSandbox() takes no
   // AbortSignal in @ai-hero/sandcastle@0.10.0, so we gate the call site: on
   // abort, don't start a new per-issue sandbox. An in-flight issue below
   // still runs its `finally { sandbox.close() }`; this only stops new work.
@@ -30,7 +30,7 @@ export async function runIssue(issue: IssueRef, abortSignal: AbortSignal) {
   // Drop stale .git/worktrees/<name>/ metadata from prior aborted iterations.
   // Without this, git commands in the worktree path fail with "not a git
   // repository" when the directory no longer exists — exit 128 that surfaces
-  // as a SandboxLifecycle FiberFailure (issue #729).
+  // as a SandboxLifecycle FiberFailure (stale bind-mount git view).
   execSync("git worktree prune", { stdio: "inherit" });
 
   const sandbox = await withRetry(() =>

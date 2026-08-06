@@ -46,12 +46,10 @@ describe(".sandcastle/README.md", () => {
     expect(content).toMatch(/CODING_STANDARDS\.md/);
   });
 
-  it("links to prior relevant PRs or issues", () => {
-    // Must link at least two of the four referenced issues/PRs (#345, #420, #448, #468)
-    const refs = ["#345", "#420", "#448", "#468"].filter((r) =>
-      content.includes(r),
-    );
-    expect(refs.length).toBeGreaterThanOrEqual(2);
+  it("carries no foreign issue/PR references (provenance rule)", () => {
+    // Public file: lessons are stated as first-person production experience,
+    // never as another repository's ticket numbers.
+    expect(content).not.toMatch(/#\d{3,}/);
   });
 
   it("is within reasonable length (80–200 lines)", () => {

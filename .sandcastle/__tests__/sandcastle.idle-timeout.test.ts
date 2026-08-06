@@ -8,7 +8,7 @@ function read(file: string) {
   return fs.readFileSync(path.join(SANDCASTLE, file), "utf8");
 }
 
-describe("sandcastle idle-timeout budgets (issue #565)", () => {
+describe("sandcastle idle-timeout budgets", () => {
   describe("explicit idleTimeoutSeconds on all four run calls", () => {
     // Split across the modules each call now lives in: the merger
     // (sandcastle-merge.mts), the implementer/reviewer (sandcastle-run-issue.mts),
@@ -18,7 +18,7 @@ describe("sandcastle idle-timeout budgets (issue #565)", () => {
     const mainContent = read("main.mts");
 
     // Slice to the end of the sandcastle.run({...}) call rather than a fixed
-    // width — comments added inside the call (e.g. #1672's sandbox env guard)
+    // width — comments added inside the call (e.g. the sandbox env guard)
     // must not push the asserted options out of the window.
     const mergerStart = mergeContent.indexOf("export async function runMerger");
     const mergerBlock = mergeContent.slice(

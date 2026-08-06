@@ -9,7 +9,7 @@ const content = fs.readFileSync(DOCKERFILE, "utf8");
 // Guards the sandbox init process. The agent runs vitest/jest fork pools whose
 // workers reparent to PID 1 when orphaned; without an init that reaps them they
 // pile up as hundreds of <defunct> processes and thrash the sandbox (the cause
-// of a real wedged run — see issue #744). tini as PID 1 reaps them.
+// of a real wedged run — a real wedged-run failure mode). tini as PID 1 reaps them.
 describe("sandcastle Dockerfile: init process reaps zombies", () => {
   it("installs tini", () => {
     expect(content).toMatch(/apt-get install[\s\S]*\btini\b/);

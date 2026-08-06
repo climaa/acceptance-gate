@@ -8,13 +8,13 @@ function read(file: string) {
   return fs.readFileSync(path.join(SANDCASTLE, file), "utf8");
 }
 
-// Issue #1901: the host already pushes every completed branch to origin before
+// the host already pushes every completed branch to origin before
 // the merger runs (main.mts [ci-trigger]). The merger's own Step-1 push is then
 // a no-op that still fires .husky/pre-push. On 2026-07-25 that redundant hook run
 // failed on a stale-image pnpm mismatch and produced zero PRs for ten branches
 // that were fully implemented and already on GitHub. The fix: skip the push when
 // the branch is already published, so gh pr create is never gated on a no-op push.
-describe("sandcastle merge-prompt skip no-op push (#1901)", () => {
+describe("sandcastle merge-prompt skip no-op push", () => {
   const content = read("agent-docs/merge-prompt.md");
 
   it("checks divergence via git rev-list --left-right --count before pushing", () => {

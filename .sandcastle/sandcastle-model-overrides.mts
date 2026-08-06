@@ -4,7 +4,7 @@
 // which is right as a default but all-or-nothing: there is no way to say "this
 // one issue is mechanical, run it on Sonnet" without editing a checked-in file.
 // Opus 5 draws from its own rate-limit bucket and this repo has already
-// exhausted a model's weekly quota on sandcastle runs (#1850, #1868), so the
+// exhausted a model's weekly quota on sandcastle runs (production quota exhaustion), so the
 // ability to spend the cheap model on cheap issues is worth a little plumbing.
 //
 // Resolution order, least to most specific:  PROFILES  <  env  <  issue label

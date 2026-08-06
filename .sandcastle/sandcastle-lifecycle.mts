@@ -1,7 +1,7 @@
-// Sandcastle lifecycle helpers — a *partial* port of finlooker's
-// SandcastleRunner (davidpr/finlooker PR #237, `.sandcastle/sandcastle-runner.mts`).
+// Sandcastle lifecycle helpers — a *partial* port of an earlier single-runner orchestrator's
+// an earlier single-runner variant of this orchestrator.
 //
-// finlooker's class hardens a single-agent HEAD-mode run (one sandbox
+// the single-runner variant hardens a single-agent HEAD-mode run (one sandbox
 // bind-mounts the host's current branch in place). That shape does not fit
 // this repo's `main.mts`, which is a 4-phase Plan → Implement+Review → Merge
 // loop driving many issues per iteration through per-issue git *worktrees*.
@@ -14,9 +14,9 @@
 //                                  containers scoped to this repo's image
 //   3. sandcastleImageName()     — mirror the docker() factory's image tag
 //   4. withRetry()               — generic retry wrapper for transient async
-//                                  failures (issue #729/#1397 hardening)
+//                                  failures (startup/shutdown hardening)
 //
-// See issue #1397 for the line-by-line port decision.
+// The port is deliberately partial — serial multi-issue dispatch needs less machinery.
 
 import { execFileSync } from "node:child_process";
 
@@ -30,7 +30,7 @@ import { execFileSync } from "node:child_process";
  *
  * where sanitize lowercases and replaces every char outside `[a-z0-9_.-]`
  * with `-`. We intentionally re-derive it here instead of hard-coding
- * `sandcastle:<repo-basename>` (finlooker's assumption) because the tag tracks
+ * `sandcastle:<repo-basename>` (the single-runner's assumption) because the tag tracks
  * the checkout directory name, not the GitHub repo name — a wrong tag would
  * make the reap filter match nothing (safe but useless) or the wrong
  * containers.
@@ -68,9 +68,9 @@ export function installGracefulShutdown(): AbortController {
 
 /**
  * Reap leftover sandbox containers left behind by a previously-killed run.
- * Meant to run ONCE at orchestrator startup (mirrors finlooker's `preflight()`),
+ * Meant to run ONCE at orchestrator startup (mirrors the single-runner's `preflight()`),
  * not per-issue/per-attempt — `main.mts` already `close()`s its sandboxes in
- * `finally` blocks, so finlooker's per-attempt `cleanupSpawned()` churn would
+ * `finally` blocks, so the single-runner's per-attempt `cleanupSpawned()` churn would
  * be redundant here.
  *
  * Scope is deliberately narrow: `status=exited` containers whose ancestor is
@@ -133,13 +133,13 @@ export function reapExitedContainers(
 }
 
 // Retry wrapper for transient async failures (e.g. SandboxLifecycle git race —
-// issue #729: a stale `.git` view through the bind mount right after a
+// Known failure mode: a stale `.git` view through the bind mount right after a
 // worktree op, surfacing as "ambiguous argument 'HEAD'"). Its ONLY callers are
 // the createSandbox() sites in sandcastle-run-issue.mts and
 // sandcastle-stranded-branches.mts, so its defaults are tuned for that class
 // of failure: 3 attempts with escalating linear backoff (3s, then 6s), bumped
-// from the old 2×2s up toward finlooker's isTransientSetupError() 3×(3s/6s/9s)
-// budget (issue #1397) — a slow worktree gitdir fsync sometimes needs more than
+// from the old 2×2s up toward the single-runner's isTransientSetupError() 3×(3s/6s/9s)
+// budget (graceful-shutdown hardening) — a slow worktree gitdir fsync sometimes needs more than
 // one 2s pause to settle.
 export async function withRetry<T>(
   fn: () => Promise<T>,

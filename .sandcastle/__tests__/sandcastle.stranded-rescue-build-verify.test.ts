@@ -14,7 +14,7 @@ const strandedBranchesContent = read("sandcastle-stranded-branches.mts");
 const agentProfilesContent = read("sandcastle-agent-profiles.mts");
 const mergeContent = read("sandcastle-merge.mts");
 
-describe("sandcastle stranded-rescue build-verify + turbo cache (issue #887)", () => {
+describe("sandcastle stranded-rescue build-verify + turbo cache (build-gate hardening)", () => {
   describe("Fix B — turbo cache permission failure inside the sandbox", () => {
     it("BUILD_VERIFY_COMMAND points turbo at a writable /tmp cache dir", () => {
       expect(buildVerifyContent).toMatch(/TURBO_CACHE_DIR=\/tmp\/turbo-cache/);
@@ -111,7 +111,7 @@ describe("sandcastle stranded-rescue build-verify + turbo cache (issue #887)", (
   });
 
   describe("Acceptance — untouched surfaces", () => {
-    it("per-role agent profiles (#878) are preserved for the remaining agent roles", () => {
+    it("per-role agent profiles are preserved for the remaining agent roles", () => {
       expect(agentProfilesContent).toMatch(/const PROFILES = \{/);
       expect(agentProfilesContent).toMatch(/planner:\s*\{\s*model:/);
       expect(agentProfilesContent).toMatch(/implementer:\s*\{\s*model:/);
