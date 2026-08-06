@@ -22,7 +22,7 @@ Never pass `--no-verify` to `git commit` or `git push`. If a hook fails, fix it 
 git checkout <branch>
 ```
 
-> **This checkout lands on the HOST.** Your workspace is a bind-mount of the developer's real checkout, not a private copy. Leaving it on a feature branch means every later command there silently operates on that branch, and the branch cannot be deleted ("used by worktree") — that is issue #1911. **When you are completely done with every branch, return the checkout to `main`:**
+> **This checkout lands on the HOST.** Your workspace is a bind-mount of the developer's real checkout, not a private copy. Leaving it on a feature branch means every later command there silently operates on that branch, and the branch cannot be deleted ("used by worktree") — a failure mode hit in production. **When you are completely done with every branch, return the checkout to `main`:**
 >
 > ```bash
 > git checkout main
@@ -30,7 +30,7 @@ git checkout <branch>
 >
 > The orchestrator also restores this in a `finally` as a backstop, but do it yourself so the log shows the run ended clean.
 
-**Then check whether there is actually anything to push.** The host already pushes every completed branch to `origin` before this merger runs (`main.mts` `[ci-trigger]`), so in the normal case the branch is _already published_ and a second push is a no-op — but a no-op push still fires `.husky/pre-push`. Do not gate `gh pr create` on a hook run for a push that has nothing to push (issue #1901). First refresh the tracking ref, then compare:
+**Then check whether there is actually anything to push.** The host already pushes every completed branch to `origin` before this merger runs (`main.mts` `[ci-trigger]`), so in the normal case the branch is _already published_ and a second push is a no-op — but a no-op push still fires `.husky/pre-push`. Do not gate `gh pr create` on a hook run for a push that has nothing to push (a no-op push still fires hooks). First refresh the tracking ref, then compare:
 
 ```bash
 git fetch origin <branch>

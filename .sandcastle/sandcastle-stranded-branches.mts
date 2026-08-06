@@ -61,7 +61,7 @@ export function collectStrandedIssues(alreadyQueued: Set<string>): IssueRef[] {
       // If the branch is also checked out as a worktree, git refuses to
       // delete it with `branch -D`. Remove the worktree first so the branch
       // deletion succeeds — but ONLY when that worktree is provably one of
-      // ours and clean (issue #1911: this previously ran
+      // ours and clean (this previously ran
       // `git worktree remove --force` against the developer's PRIMARY
       // checkout; git's refusal was the only thing that made it harmless).
       const worktreePath = findWorktreeForBranch(branch);
@@ -132,7 +132,7 @@ export function collectStrandedIssues(alreadyQueued: Set<string>): IssueRef[] {
 }
 
 // Build-verify a rescued/stranded branch in its own throwaway sandbox before
-// it reaches the merger (issue #887). The rescue path picks up branches whose
+// it reaches the merger (build-gate hardening). The rescue path picks up branches whose
 // prior pipeline crashed or was interrupted — exactly the case where the
 // branch's build state is unknown — so merging them blind made the build gate
 // advisory-only. Returns true when the branch is safe to merge (build passed,
@@ -148,7 +148,7 @@ export async function buildVerifyRescuedBranch(
     return true;
   }
 
-  // Graceful-shutdown guard (issue #1397). createSandbox() takes no AbortSignal
+  // Graceful-shutdown guard. createSandbox() takes no AbortSignal
   // in @ai-hero/sandcastle@0.10.0, so we gate the call site instead: on abort,
   // don't spin up a new build-verify sandbox — this is "new work".
   abortSignal.throwIfAborted();

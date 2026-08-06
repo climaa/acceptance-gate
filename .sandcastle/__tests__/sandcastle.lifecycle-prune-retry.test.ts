@@ -8,7 +8,7 @@ function read(file: string) {
   return fs.readFileSync(path.join(SANDCASTLE, file), "utf8");
 }
 
-describe("sandcastle lifecycle prune + retry (issue #729)", () => {
+describe("sandcastle lifecycle prune + retry", () => {
   // Fix A (the call site: worktree prune before createSandbox, wrapped in
   // withRetry) now lives in sandcastle-run-issue.mts. Fix B (withRetry's own
   // definition — attempt count, backoff delay, warning text) lives in

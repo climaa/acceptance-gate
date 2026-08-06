@@ -57,7 +57,7 @@ export const MAX_ITERATIONS = 10;
 // Hooks run inside the sandbox before the agent starts each iteration.
 // npm install ensures the sandbox always has fresh dependencies.
 //
-// Git credential helper (issue #1433): GH_TOKEN in the sandbox env is enough
+// Git credential helper: GH_TOKEN in the sandbox env is enough
 // for `gh` CLI commands, but plain `git push` won't authenticate from it
 // without a credential helper wired up. This bites the merger phase, whose
 // fallback push runs `git push` directly. `gh auth setup-git` configures the

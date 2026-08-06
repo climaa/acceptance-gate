@@ -8,13 +8,13 @@ function read(file: string) {
   return fs.readFileSync(path.join(SANDCASTLE, file), "utf8");
 }
 
-// Issue #1433: the merger phase's isolated sandbox can fail `git push` with
+// the merger phase's isolated sandbox can fail `git push` with
 // "no git credentials available in this environment" — GH_TOKEN alone lets the
 // `gh` CLI authenticate, but plain `git push` needs a credential helper wired
 // up. The fix adds a credential-helper setup step to the sandbox startup hook
 // (onSandboxReady) so it runs with GH_TOKEN present at runtime (unavailable at
 // docker build time, so it can't be a Dockerfile RUN).
-describe("sandcastle git credential helper (issue #1433)", () => {
+describe("sandcastle git credential helper", () => {
   const content = read("sandcastle-config.mts");
 
   // Isolate the onSandboxReady hook array so assertions can't accidentally

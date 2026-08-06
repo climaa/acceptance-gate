@@ -20,7 +20,7 @@ function currentBranch(): string | null {
   }
 }
 
-// Put the host checkout back on the branch the run started on (issue #1911).
+// Put the host checkout back on the branch the run started on (worktree-reaper hardening).
 //
 // The merger sandbox BIND-MOUNTS the host checkout, and merge-prompt.md tells
 // the agent to `git checkout <branch>` before pushing (pre-push validates the
@@ -54,7 +54,7 @@ function restoreHostBranch(startingBranch: string): void {
 //
 // idleTimeoutSeconds: 1800 — the auto-merge poll loop runs 30 s × 40 = 20 min
 // max; the SDK's default 600 s idle timer kills the run mid-poll if no output
-// is emitted between iterations (issue #565).
+// is emitted between iterations (a mid-run crash fix from production).
 export async function runMerger(
   branches: IssueRef[],
   abortSignal: AbortSignal,
@@ -68,10 +68,10 @@ export async function runMerger(
       // HEAD-mode sandbox: bind-mounts the host checkout at /home/agent/workspace,
       // so any in-container pnpm run touches the host's node_modules. Belt-and-braces
       // env guard suppresses pnpm 11's automatic pre-run deps verification (which
-      // would auto-`pnpm install` and ping-pong host↔container pnpm state — #1658,
-      // #1657). Must be the `pnpm_config_` prefix: `npm_config_verify_deps_before_run`
+      // would auto-`pnpm install` and ping-pong host↔container pnpm state — a known host↔container ping-pong,
+      // a prior production fix). Must be the `pnpm_config_` prefix: `npm_config_verify_deps_before_run`
       // does NOT suppress pnpm 11's verify; `pnpm_config_verify_deps_before_run=false`
-      // does. Covers agents operating before/without the #1657 pnpm-workspace.yaml setting.
+      // does. Covers agents operating before/without the pnpm-workspace.yaml setting.
       sandbox: docker({ env: { pnpm_config_verify_deps_before_run: "false" } }),
       name: "merger",
       maxIterations: 1,

@@ -1,4 +1,4 @@
-// Pure safety decisions for the stranded-branch worktree reaper (issue #1911).
+// Pure safety decisions for the stranded-branch worktree reaper (worktree-reaper hardening).
 //
 // Deliberately imports NOTHING from this directory. `sandcastle-config.mts`
 // has import-time side effects — it mutates `process.env.PATH` and logs on
@@ -40,7 +40,7 @@ export type ReapCandidate = {
  *
  * Three rules, in order of how much damage they prevent:
  *
- * 1. **Never the primary checkout.** In the #1911 incident the reaper ran
+ * 1. **Never the primary checkout.** In one production incident the reaper ran
  *    `git worktree remove --force` against the developer's main working copy.
  *    Git refused (primary worktrees cannot be removed that way) and that
  *    refusal is the ONLY reason it was harmless — `--force` against a checkout

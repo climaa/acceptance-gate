@@ -1,5 +1,5 @@
 // Per-role agent profile map. Replaces the old flat OPUS_MODEL/SONNET_MODEL
-// constants (issue #875): naming a constant after a model family lies once
+// constants: naming a constant after a model family lies once
 // the model on it changes, and a flat constant can't carry effort, so every
 // non-planner call site silently inherited the CLI default. Pinning both
 // model and effort per role makes cost and capability per phase explicit.
@@ -11,7 +11,7 @@
 //     bucket rather than the combined Opus 4.x pool, so moving here neither
 //     frees 4.x headroom nor inherits it. Fable 5 stays off the table
 //     deliberately: it bills against a separate weekly quota that sandcastle
-//     runs exhausted on their own (see #1850, #1868).
+//     runs exhausted on their own (seen as production quota exhaustion).
 //     Effort is "high" everywhere rather than the documented "xhigh" coding
 //     default: the implementer runs up to 100 iterations, and this repo has
 //     already traded xhigh away for quota headroom once. Raise the

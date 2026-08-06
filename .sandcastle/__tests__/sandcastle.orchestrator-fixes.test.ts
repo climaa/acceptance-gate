@@ -8,14 +8,14 @@ function read(file: string) {
   return fs.readFileSync(path.join(SANDCASTLE, file), "utf8");
 }
 
-describe("sandcastle orchestrator fixes (issue #345)", () => {
+describe("sandcastle orchestrator fixes", () => {
   describe("Bug 1 — main.mts always forks from origin/main", () => {
     const configContent = read("sandcastle-config.mts");
     const runIssueContent = read("sandcastle-run-issue.mts");
     const strandedBranchesContent = read("sandcastle-stranded-branches.mts");
 
     // main.mts was refactored to parameterize the base ref as `BASE_BRANCH`
-    // (PR #1340, "align git base-ref"), so the literal "main" became
+    // ("align git base-ref"), so the literal "main" became
     // `${BASE_BRANCH}`. Pin the constant's value here so the "always forks from
     // origin/main" contract stays guarded, then assert the fetch/baseBranch
     // use that variable.
@@ -118,12 +118,12 @@ describe("sandcastle orchestrator fixes (issue #345)", () => {
     });
   });
 
-  describe("Issue #448 — completionSignal wired to all three runs that emit <promise>COMPLETE</promise>", () => {
+  describe("completionSignal wired to all three runs that emit <promise>COMPLETE</promise>", () => {
     const mergeContent = read("sandcastle-merge.mts");
     const runIssueContent = read("sandcastle-run-issue.mts");
 
     // Slice to the end of the sandcastle.run({...}) call rather than a fixed
-    // width — comments added inside the call (e.g. #1672's sandbox env guard)
+    // width — comments added inside the call (e.g. the sandbox env guard)
     // must not push the asserted options out of the window.
     const mergerStart = mergeContent.indexOf("export async function runMerger");
     const mergerBlock = mergeContent.slice(

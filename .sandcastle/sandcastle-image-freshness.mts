@@ -1,4 +1,4 @@
-// Image-freshness guard (issue #1900).
+// Image-freshness guard.
 //
 // The docker() factory in main.mts reuses whatever is already tagged
 // `sandcastle:<checkout-dirname>` (see defaultImageName() in the package and
@@ -6,7 +6,7 @@
 // Dockerfile` — e.g. bumping the globally-installed pnpm — does NOT invalidate
 // that tag, so a stale image silently keeps running the old toolchain.
 //
-// That is exactly what bit the 2026-07-25 batch: PR #1877 bumped pnpm
+// That is exactly what bit one production batch: a bump moved pnpm
 // 11.15.1 -> 11.17.0 in both package.json#packageManager and the Dockerfile,
 // but the image was never rebuilt. Every container ran the stale global pnpm
 // 11.15.1 while `.husky/pre-push` invoked `corepack pnpm@11.17.0`, which

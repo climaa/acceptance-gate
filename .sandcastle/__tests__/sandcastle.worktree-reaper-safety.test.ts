@@ -20,7 +20,7 @@ const OURS = path.join(PRIMARY, SANDCASTLE_WORKTREE_SEGMENT, "issue-1234");
  * sandcastle-worktree-safety.mts precisely so they can be imported without
  * dragging in sandcastle-config.mts's import-time side effects.
  */
-describe("worktreeReapBlocker (issue #1911)", () => {
+describe("worktreeReapBlocker (worktree-reaper hardening)", () => {
   it("allows a clean worktree inside .sandcastle/worktrees/", () => {
     // Arrange / Act
     const blocker = worktreeReapBlocker({
@@ -33,7 +33,7 @@ describe("worktreeReapBlocker (issue #1911)", () => {
     expect(blocker).toBeNull();
   });
 
-  it("refuses the primary checkout — the #1911 incident", () => {
+  it("refuses the primary checkout — a production incident", () => {
     // Arrange / Act
     const blocker = worktreeReapBlocker({
       worktreePath: PRIMARY,
@@ -162,7 +162,7 @@ describe("worktreeReapBlocker (issue #1911)", () => {
   });
 });
 
-describe("reaper wiring (issue #1911)", () => {
+describe("reaper wiring (worktree-reaper hardening)", () => {
   const gitContent = read("sandcastle-git.mts");
   const strandedContent = read("sandcastle-stranded-branches.mts");
   const mergeContent = read("sandcastle-merge.mts");
@@ -218,6 +218,6 @@ describe("reaper wiring (issue #1911)", () => {
 
   it("tells the merge agent the checkout is a host bind-mount to hand back", () => {
     expect(mergePrompt).toMatch(/git checkout main/);
-    expect(mergePrompt).toMatch(/#1911/);
+    expect(mergePrompt).toMatch(/used by worktree/);
   });
 });
