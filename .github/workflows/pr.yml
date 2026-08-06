@@ -34,7 +34,7 @@ jobs:
   lint:
     runs-on: ubuntu-24.04-arm
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           # --affected and TURBO_SCM_BASE need the base SHA in history; the
           # default shallow clone silently degrades "affected" to "everything".
@@ -50,7 +50,7 @@ jobs:
   typecheck:
     runs-on: ubuntu-24.04-arm
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - run: corepack enable
@@ -64,7 +64,7 @@ jobs:
   build:
     runs-on: ubuntu-24.04-arm
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - run: corepack enable
@@ -78,7 +78,7 @@ jobs:
   test:
     runs-on: ubuntu-24.04-arm
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - run: corepack enable
@@ -94,7 +94,7 @@ jobs:
     # model-override grammar. Agents edit prompts; this is what catches them.
     runs-on: ubuntu-24.04-arm
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - run: corepack enable
