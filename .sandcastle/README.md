@@ -37,7 +37,7 @@ file is the source of truth; this table mirrors it.
 
 Implement + Review share one Docker sandbox per issue. All issue pipelines
 run serially (concurrent `pnpm install` was observed to deadlock on pnpm 10.x;
-see #448).
+learned from a pnpm parallel-install deadlock in production).
 
 ### Overriding the model per issue or per run
 
@@ -101,13 +101,13 @@ signal fires, the detector misses it and the idle timer kills the run
 instead — which means the branch may be stranded and the issue left open.
 
 **This is why all prompt files explicitly forbid `run_in_background: true`**
-(added in #468). Agents must poll with foreground loops
+(a completion-signal detection fix from production). Agents must poll with foreground loops
 (`while sleep 30; do …; done`) instead.
 
 ### Per-phase `idleTimeoutSeconds` budgets
 
 Each `sandcastle.run`/`sandbox.run` call in `main.mts` sets an explicit
-`idleTimeoutSeconds` to avoid mid-run crashes (issue #565):
+`idleTimeoutSeconds` to avoid mid-run crashes:
 
 | Phase       | `idleTimeoutSeconds` | Rationale                                                                   |
 | ----------- | -------------------- | --------------------------------------------------------------------------- |
@@ -124,7 +124,7 @@ can run silently for the full 20-minute window. Each iteration echoes its state
 
 ## No `run_in_background` rule
 
-Prompt files carry this block (added in #468 to fix stranded-branch failures):
+Prompt files carry this block (fixes stranded-branch signal-detection failures):
 
 > **Do not use `run_in_background: true` for any bash call.** Poll with
 > foreground loops so this process holds no open background handles when you
