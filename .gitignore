@@ -11,8 +11,9 @@ dist/
 # turbo
 .turbo/
 
-# env — never committed
+# env — never committed (but .env.example templates are documentation)
 .env*
+!.env.example
 
 # local-only tooling and reports
 claudedocs/
