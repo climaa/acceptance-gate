@@ -5,7 +5,13 @@
 # get a read-only GITHUB_TOKEN by default and `gh pr merge` 403s without it.
 name: dependabot-auto-merge
 
-on: pull_request
+# Note: merges made with GITHUB_TOKEN do not trigger pr.yml's push-to-main
+# run — the post-merge cache-seeding run is skipped for bot merges. Accepted:
+# it matches the "Dependabot builds cold" stance; strict up-to-date protection
+# keeps correctness intact.
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
 
 permissions:
   contents: write
@@ -13,7 +19,9 @@ permissions:
 
 jobs:
   auto-merge:
-    if: github.actor == 'dependabot[bot]'
+    # Both checks matter: actor gates the event, author gates the PR itself
+    # (a human push to a bot branch flips the actor and disables auto-merge).
+    if: github.actor == 'dependabot[bot]' && github.event.pull_request.user.login == 'dependabot[bot]'
     runs-on: ubuntu-24.04-arm
     steps:
       - id: metadata

@@ -8,10 +8,25 @@ on:
   push:
     branches: [main]
 
+# Least privilege: every job executes package scripts from the PR head
+# (agent-authored branches are the main traffic on a public repo).
+permissions:
+  contents: read
+
+# Superseded PR runs are pure waste under strict up-to-date protection —
+# cancel them. Push-to-main runs are never cancelled (they seed the caches).
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 env:
   # CI and the Sandcastle sandboxes share one remote cache. TURBO_TOKEN is an
   # Actions secret, TURBO_TEAM a repo variable (configured with the cache link).
   # Dependabot-triggered runs see neither and simply build cold — accepted.
+  # Known trade-off (documented in the plan): the token is write-capable and
+  # visible to PR-head code on same-repo branches; acceptable while every
+  # issue body is maintainer-authored. Revisit (signature key or read-only
+  # PR token) if dispatch ever loosens.
   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
   TURBO_TEAM: ${{ vars.TURBO_TEAM }}
 
