@@ -1,0 +1,2 @@
+# .pen sources are encrypted binaries — the PNG exports beside them stay diffable
+designs/*.pen binary -diff
