@@ -1,0 +1,107 @@
+# The gate, thin form. Wave 4 adds e2e and visual-diff jobs to `gate.needs` —
+# no branch-protection edit ever needed again: `gate` is the only required check.
+name: pr
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+env:
+  # CI and the Sandcastle sandboxes share one remote cache. TURBO_TOKEN is an
+  # Actions secret, TURBO_TEAM a repo variable (configured with the cache link).
+  # Dependabot-triggered runs see neither and simply build cold — accepted.
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  TURBO_TEAM: ${{ vars.TURBO_TEAM }}
+
+jobs:
+  lint:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # --affected and TURBO_SCM_BASE need the base SHA in history; the
+          # default shallow clone silently degrades "affected" to "everything".
+          fetch-depth: 0
+      - run: corepack enable
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm turbo run lint
+
+  typecheck:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: corepack enable
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm turbo run typecheck
+
+  build:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: corepack enable
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm turbo run build
+
+  test:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: corepack enable
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm turbo run test
+
+  sandcastle:
+    # The orchestrator's own hermetic suite: prompt contracts, merge flow,
+    # model-override grammar. Agents edit prompts; this is what catches them.
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: corepack enable
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test:sandcastle
+
+  gate:
+    # The aggregator — the ONLY required status check. `if: always()` so it
+    # reports even when a needed job fails; it fails unless every result is
+    # exactly 'success' (skipped/cancelled count as failure).
+    needs: [lint, typecheck, build, test, sandcastle]
+    if: always()
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - name: Fail unless every needed job succeeded
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') || contains(needs.*.result, 'skipped')
+        run: |
+          echo "needs results: ${{ toJSON(needs.*.result) }}"
+          exit 1
+      - name: All checks green
+        run: echo "gate green — every needed job succeeded"

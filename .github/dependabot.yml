@@ -1,0 +1,32 @@
+# Dependency maintenance is part of the thesis: bump PRs run through the same
+# gate as feature work. Minor+patch grouped weekly (a pnpm monorepo without
+# grouping is a PR-per-package noise machine); majors arrive individually.
+#
+# Three ignores, all deliberate — these are hand-authored issues, never bot PRs:
+# - playwright: a bump must move the container image, the policy-sync test and
+#   a mass-rebaseline together
+# - storybook: the differ's capture URL rides Storybook's internal globals
+#   serialization, and any Storybook bump can shift pixels (reds the gate)
+# - pnpm: pinned via packageManager + sha512
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      minor-and-patch:
+        applies-to: version-updates
+        update-types: [minor, patch]
+        patterns: ["*"]
+    ignore:
+      - dependency-name: playwright
+      - dependency-name: "@playwright/*"
+      - dependency-name: storybook
+      - dependency-name: "@storybook/*"
+      - dependency-name: pnpm
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

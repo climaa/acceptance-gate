@@ -1,0 +1,27 @@
+# A green patch/minor bump merges itself — auto-merge still waits on the
+# `gate` check, which is the point. Majors wait for a human.
+#
+# The explicit `permissions` block is load-bearing: Dependabot-triggered runs
+# get a read-only GITHUB_TOKEN by default and `gh pr merge` 403s without it.
+name: dependabot-auto-merge
+
+on: pull_request
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  auto-merge:
+    if: github.actor == 'dependabot[bot]'
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - id: metadata
+        uses: dependabot/fetch-metadata@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - if: steps.metadata.outputs.update-type != 'version-update:semver-major'
+        run: gh pr merge --auto --squash "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
