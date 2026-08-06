@@ -26,6 +26,8 @@ process.env.PATH = `/opt/homebrew/bin:/usr/local/bin:${process.env.PATH ?? ""}`;
 // override the repo's .turbo link, and a stale TURBO_TEAM exported for another
 // project must never send artifacts to a foreign team cache — disable the
 // remote cache entirely rather than cross-contaminate.
+// The opaque Vercel team ID (not the slug — IDs are immutable and carry no
+// external naming). TURBO_TEAM accepts either form.
 const EXPECTED_TURBO_TEAM = "REDACTED-TEAM";
 const rawTurboTeam = process.env.TURBO_TEAM ?? "";
 const foreignTeam = rawTurboTeam !== "" && rawTurboTeam !== EXPECTED_TURBO_TEAM;
