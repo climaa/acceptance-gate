@@ -1,0 +1,144 @@
+---
+title: 'Regresión visual con agentes: el diff de píxeles ya no basta'
+description: 'Por qué el snapshot testing tradicional se rompe cuando parte del código lo escribe un agente, y qué estrategia lo sustituye.'
+date: '2026-08-05'
+tags: ['testing', 'regresión visual', 'agentes']
+draft: false
+---
+
+Durante años, la regresión visual ha sido un problema resuelto a medias: capturas una
+imagen del componente, la guardas como referencia, y en cada commit comparas píxel a
+píxel. Si algo cambia, el test falla y alguien revisa.
+
+Ese modelo se apoya en una suposición que ya no se cumple: **que los cambios de código
+son pocos, deliberados y de autoría humana**. Cuando un agente refactoriza treinta
+componentes en una tarde, el diff de píxeles deja de ser una red de seguridad y se
+convierte en ruido.
+
+## El problema real no es la falsa alarma
+
+La queja habitual contra el snapshot visual es el flakiness: renderizado de fuentes,
+antialiasing, un cursor parpadeando. Eso se mitiga — umbrales de tolerancia, esperar a
+`document.fonts.ready`, deshabilitar animaciones:
+
+```ts
+// cypress/support/visual.ts
+export function stabilise() {
+  cy.document().then((doc) => {
+    const style = doc.createElement('style');
+    style.innerHTML = `
+      *, *::before, *::after {
+        animation: none !important;
+        transition: none !important;
+        caret-color: transparent !important;
+      }
+    `;
+    doc.head.appendChild(style);
+  });
+  cy.document().its('fonts.status').should('equal', 'loaded');
+}
+```
+
+Eso arregla el flakiness. No arregla el problema de fondo, que es otro: **un diff de
+píxeles te dice que algo cambió, pero no si el cambio importa.** Y cuando el volumen
+de cambios se multiplica, esa distinción es lo único que cuenta.
+
+Un agente que reemplaza una utilidad de espaciado por tokens del design system va a
+mover cosas dos píxeles en cuarenta capturas. Todas fallan. Todas son correctas. El
+coste de revisarlas una a una supera al de no tener los tests.
+
+## Tres capas, no una
+
+Lo que me ha funcionado es dejar de tratar "lo visual" como una sola cosa y separarlo
+en tres capas con tolerancias distintas.
+
+### 1. Contratos estructurales — tolerancia cero
+
+Antes de mirar píxeles, verifica invariantes que se pueden expresar como aserciones. No
+son capturas: son propiedades.
+
+```ts
+it('mantiene el contrato de accesibilidad del stepper', () => {
+  cy.mount(<ProgressTracker steps={steps} />);
+
+  // El paso actual debe ser exactamente uno y estar anunciado.
+  cy.findAllByRole('button', { current: 'step' }).should('have.length', 1);
+
+  // Todos los nodos tienen nombre accesible.
+  cy.findAllByRole('button').each(($el) => {
+    cy.wrap($el).should('have.attr', 'title').and('not.be.empty');
+  });
+});
+```
+
+Esta capa no la rompe un refactor de estilos, y sí la rompe un agente que elimina un
+`aria-current` "porque no se usaba". Es la que más regresiones reales atrapa por unidad
+de mantenimiento.
+
+### 2. Tokens computados — tolerancia cero, ámbito acotado
+
+En vez de comparar la imagen entera, asertas los valores computados que *sí* son
+decisiones de diseño:
+
+```ts
+it('el nodo actual usa el color de acento, no un azul cualquiera', () => {
+  cy.mount(<ProgressTracker steps={steps} />);
+
+  cy.findByRole('button', { current: 'step' })
+    .should('have.css', 'background-color')
+    .then((color) => {
+      cy.window()
+        .then((win) =>
+          win.getComputedStyle(win.document.documentElement)
+            .getPropertyValue('--color-accent')
+            .trim(),
+        )
+        .then((token) => expect(normaliseColor(color)).to.equal(normaliseColor(token)));
+    });
+});
+```
+
+Esto captura la clase de bug que un agente introduce con más frecuencia: hardcodear
+`#2563eb` en lugar de usar `var(--color-accent)`. El resultado es visualmente idéntico
+hoy y roto el día que cambies el tema.
+
+### 3. Snapshot de píxeles — solo en superficies estables
+
+La captura completa se reserva para un conjunto pequeño y explícito de vistas cuya
+apariencia es en sí misma el contrato: la página de precios, el email transaccional,
+el componente que un cliente aprobó por escrito. Diez o quince, no cuatrocientas.
+
+## El cambio de rol de la línea base
+
+Aquí está la parte incómoda. En el modelo clásico, la línea base es la verdad y el
+cambio es sospechoso. Con un agente en el pipeline, eso se invierte: el cambio suele
+ser intencionado y la línea base es lo que está desactualizado.
+
+La consecuencia práctica es que **aprobar una línea base tiene que costar lo mismo que
+revisar un diff de código**, o el equipo empezará a aprobar en bloque sin mirar — que
+es exactamente el fallo que los tests debían prevenir.
+
+Lo que ayuda:
+
+- Que el reporte agrupe capturas por *causa* y no por archivo. Cuarenta diffs de "2px
+  a la derecha" son una decisión, no cuarenta.
+- Que la aprobación viva en el PR y quede firmada por una persona.
+- Que el agente escriba en la descripción del PR qué cambio visual espera provocar.
+  Si lo que declara no coincide con lo que el reporte muestra, ahí está la regresión.
+
+Este último punto es el que más me ha sorprendido: la declaración de intención del
+agente, escrita *antes* de correr los tests, funciona como oráculo. No necesitas que
+un humano juzgue cada píxel; necesitas comparar dos afirmaciones.
+
+## Lo que no he resuelto
+
+{/* TODO Carles: sustituye esta sección por los límites concretos que te encontraste
+     en tu proyecto — es la parte que un lector técnico va a valorar más, porque
+     demuestra que lo has llevado a producción y no solo leído. */}
+
+Sigue habiendo un hueco: los cambios que son correctos individualmente e incoherentes
+en conjunto. Cada componente pasa sus tests y la pantalla completa se ve mal. Ninguna
+de las tres capas lo detecta, porque el problema no vive en ningún componente.
+
+Por ahora lo cubro con un puñado de capturas de página completa en los flujos críticos
+y con revisión humana. No es satisfactorio. Si has encontrado algo mejor, escríbeme.

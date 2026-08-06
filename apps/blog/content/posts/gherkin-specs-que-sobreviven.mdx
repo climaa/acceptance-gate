@@ -1,0 +1,165 @@
+---
+title: 'Cypress y Gherkin: specs que un agente puede mantener'
+description: 'Cómo escribir features en Gherkin que sirvan de contrato ejecutable en vez de convertirse en una capa de indirección que nadie lee.'
+date: '2026-08-04'
+tags: ['cypress', 'gherkin', 'testing']
+draft: false
+---
+
+Gherkin tiene mala prensa entre desarrolladores, y buena parte de la culpa es nuestra.
+La promesa original —que negocio escriba los escenarios— casi nunca se cumple, y lo
+que queda es una capa de traducción entre inglés estructurado y código que hay que
+mantener por partida doble.
+
+Mi postura, después de varios proyectos con Cypress y el preprocesador de Cucumber, es
+que Gherkin sigue valiendo la pena, pero **por una razón distinta a la que se suele
+dar**. No es para que negocio escriba tests. Es para que el test declare *qué* verifica
+de forma independiente de *cómo* lo verifica. Y esa separación se ha vuelto mucho más
+valiosa desde que hay agentes tocando el código.
+
+## El síntoma de una feature mal escrita
+
+Esta es la forma degenerada, la que da mala fama al formato:
+
+```gherkin
+Escenario: Login
+  Dado que visito "/login"
+  Cuando escribo "carles@ejemplo.com" en "#email"
+  Y escribo "hunter2" en "#password"
+  Y hago clic en "#submit"
+  Entonces la URL debería ser "/dashboard"
+```
+
+Esto no es una especificación. Es un script de Selenium con acento. Cada selector del
+DOM está incrustado en el lenguaje natural, así que cualquier refactor de markup rompe
+la feature, y leerla no te dice nada que no supieras.
+
+La versión que sí funciona describe intención:
+
+```gherkin
+Característica: Acceso al panel privado
+
+  Antecedentes:
+    Dado un usuario registrado con credenciales válidas
+
+  Escenario: Acceso correcto
+    Cuando inicia sesión
+    Entonces accede a su panel
+    Y su sesión persiste al recargar
+
+  Escenario: Credenciales incorrectas
+    Cuando inicia sesión con una contraseña incorrecta
+    Entonces se le informa del error sin revelar si el email existe
+    Y permanece en la pantalla de acceso
+```
+
+Fíjate en el segundo escenario: *"sin revelar si el email existe"* es un requisito de
+seguridad real, expresado de forma verificable, que no aparecería nunca en un script de
+clics. Eso es lo que Gherkin aporta.
+
+## Los step definitions son la capa que absorbe el cambio
+
+Con la intención en el `.feature`, el acoplamiento al DOM se concentra en un único
+sitio:
+
+```ts
+// cypress/e2e/steps/auth.steps.ts
+import { Given, When, Then } from '@badeball/cypress-cucumber-preprocessor';
+import { loginPage } from '../pages/login.page';
+
+Given('un usuario registrado con credenciales válidas', () => {
+  cy.task('db:seedUser', { email: 'carles@ejemplo.com', password: 'hunter2' }).as('user');
+});
+
+When('inicia sesión', function () {
+  loginPage.visit();
+  loginPage.submitCredentials(this.user.email, this.user.password);
+});
+
+Then('accede a su panel', () => {
+  cy.location('pathname').should('eq', '/dashboard');
+  cy.findByRole('heading', { name: /panel/i }).should('be.visible');
+});
+
+Then('su sesión persiste al recargar', () => {
+  cy.reload();
+  cy.findByRole('heading', { name: /panel/i }).should('be.visible');
+});
+```
+
+Y el page object concentra los selectores:
+
+```ts
+// cypress/e2e/pages/login.page.ts
+export const loginPage = {
+  visit: () => cy.visit('/login'),
+  submitCredentials(email: string, password: string) {
+    cy.findByLabelText(/correo/i).type(email);
+    cy.findByLabelText(/contraseña/i).type(password, { log: false });
+    cy.findByRole('button', { name: /entrar/i }).click();
+  },
+};
+```
+
+Tres capas, cada una con una razón única para cambiar: la feature cambia si cambia el
+requisito, los steps si cambia el flujo, el page object si cambia el markup. Es la
+separación de siempre, pero Gherkin la hace difícil de saltarse — que es justo su valor.
+
+## Por qué esto importa más con agentes
+
+Un agente al que le pides "arregla el test que falla" tiene un incentivo perverso: la
+forma más rápida de que un test pase es debilitarlo. Cambiar un `should('be.visible')`
+por un `should('exist')`. Subir un timeout. Añadir un `.first()` a un selector ambiguo.
+Todas esas ediciones son locales, plausibles y desactivan la verificación.
+
+Cuando la intención vive en un `.feature` que el agente **no** necesita tocar para
+arreglar un selector, tienes un ancla. La revisión del PR se simplifica a una pregunta:
+¿ha cambiado algún `.feature`? Si no, el contrato sigue en pie y el diff es mecánico.
+Si sí, hay que leerlo con atención, porque se ha modificado lo que el sistema promete.
+
+En la práctica lo hago explícito en las instrucciones del repositorio:
+
+```md
+Los archivos `cypress/e2e/features/**/*.feature` describen requisitos de producto.
+No los modifiques para hacer pasar un test. Si un escenario falla y crees que el
+escenario está mal, dilo en el PR y espera revisión humana.
+```
+
+Es una regla simple y funciona sorprendentemente bien, porque convierte un juicio
+difuso ("¿este cambio debilita el test?") en una comprobación binaria sobre qué
+archivos toca el diff.
+
+## Configuración mínima que uso
+
+```ts
+// cypress.config.ts
+import { defineConfig } from 'cypress';
+import createBundler from '@bahmutov/cypress-esbuild-preprocessor';
+import { addCucumberPreprocessorPlugin } from '@badeball/cypress-cucumber-preprocessor';
+import createEsbuildPlugin from '@badeball/cypress-cucumber-preprocessor/esbuild';
+
+export default defineConfig({
+  e2e: {
+    baseUrl: 'http://localhost:3000',
+    specPattern: 'cypress/e2e/features/**/*.feature',
+    supportFile: 'cypress/support/e2e.ts',
+    async setupNodeEvents(on, config) {
+      await addCucumberPreprocessorPlugin(on, config);
+      on('file:preprocessor', createBundler({
+        plugins: [createEsbuildPlugin(config)],
+      }));
+      return config;
+    },
+  },
+});
+```
+
+## Cuándo no usar Gherkin
+
+Para tests de componente, no lo uso. La ceremonia no se paga: un test de componente ya
+es legible y su contrato es la API del componente, no una historia de usuario. Gherkin
+gana en flujos que cruzan varias pantallas y donde el requisito es discutible.
+
+{/* TODO Carles: añade aquí una cifra real de tu proyecto — cuántos escenarios,
+     cuánto tarda la suite, qué porcentaje de regresiones reales atrapó. Un número
+     concreto vale más que toda la argumentación anterior. */}

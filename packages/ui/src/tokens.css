@@ -1,0 +1,141 @@
+/**
+ * @gate/ui — design tokens
+ *
+ * Una sola fuente de verdad para color, espacio, tipografía y elevación.
+ * Todo lo demás del design system consume estas variables; ningún componente
+ * hardcodea un valor. Cambiar la marca = cambiar este archivo.
+ */
+
+:root {
+  /* ---- Escala de color: neutrales ---- */
+  --c-neutral-0: #ffffff;
+  --c-neutral-50: #f8fafc;
+  --c-neutral-100: #f1f5f9;
+  --c-neutral-200: #e2e8f0;
+  --c-neutral-300: #cbd5e1;
+  --c-neutral-400: #94a3b8;
+  --c-neutral-500: #64748b;
+  --c-neutral-600: #475569;
+  --c-neutral-700: #334155;
+  --c-neutral-800: #1e293b;
+  --c-neutral-900: #0f172a;
+  --c-neutral-950: #020617;
+
+  /* ---- Acento (azul) ---- */
+  --c-accent-50: #eff6ff;
+  --c-accent-100: #dbeafe;
+  --c-accent-200: #bfdbfe;
+  --c-accent-300: #93c5fd;
+  --c-accent-400: #60a5fa;
+  --c-accent-500: #3b82f6;
+  --c-accent-600: #2563eb;
+  --c-accent-700: #1d4ed8;
+
+  /* ---- Semánticos de estado ---- */
+  --c-success-100: #dcfce7;
+  --c-success-500: #22c55e;
+  --c-success-700: #15803d;
+  --c-warning-100: #fef3c7;
+  --c-warning-500: #f59e0b;
+  --c-warning-700: #b45309;
+  --c-danger-100: #fee2e2;
+  --c-danger-500: #ef4444;
+  --c-danger-700: #b91c1c;
+
+  /* ---- Roles semánticos (lo que usan los componentes) ---- */
+  --color-bg: var(--c-neutral-0);
+  --color-bg-subtle: var(--c-neutral-50);
+  --color-bg-muted: var(--c-neutral-100);
+  --color-border: var(--c-neutral-200);
+  --color-border-strong: var(--c-neutral-300);
+  --color-text: var(--c-neutral-900);
+  --color-text-muted: var(--c-neutral-500);
+  --color-text-inverted: var(--c-neutral-0);
+  --color-accent: var(--c-accent-600);
+  --color-accent-hover: var(--c-accent-700);
+  --color-accent-subtle: var(--c-accent-50);
+  --color-focus-ring: var(--c-accent-400);
+
+  /* ---- Espaciado (escala de 4px) ---- */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  /* ---- Radios ---- */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-full: 9999px;
+
+  /* ---- Tipografía ---- */
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue',
+    Arial, sans-serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono',
+    monospace;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+  --text-4xl: 2.25rem;
+
+  --leading-tight: 1.25;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.7;
+
+  --weight-normal: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  /* ---- Elevación ---- */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.08), 0 2px 4px -2px rgb(0 0 0 / 0.04);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.04);
+
+  /* ---- Movimiento ---- */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+
+  /* ---- Layout ---- */
+  --width-prose: 68ch;
+  --width-container: 72rem;
+}
+
+/* ---- Tema oscuro: solo se remapean los roles semánticos ---- */
+[data-theme='dark'] {
+  --color-bg: var(--c-neutral-950);
+  --color-bg-subtle: var(--c-neutral-900);
+  --color-bg-muted: var(--c-neutral-800);
+  --color-border: var(--c-neutral-800);
+  --color-border-strong: var(--c-neutral-700);
+  --color-text: var(--c-neutral-50);
+  --color-text-muted: var(--c-neutral-400);
+  --color-text-inverted: var(--c-neutral-950);
+  --color-accent: var(--c-accent-500);
+  --color-accent-hover: var(--c-accent-400);
+  --color-accent-subtle: rgb(37 99 235 / 0.15);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

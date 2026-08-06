@@ -1,0 +1,33 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# builds
+.next/
+out/
+dist/
+*.tsbuildinfo
+
+# turbo
+.turbo/
+
+# env — never committed
+.env*
+
+# local-only tooling and reports
+claudedocs/
+CLAUDE.local.md
+packages/ui/.visual-diff/
+
+# Sandcastle runtime (the orchestrator itself IS committed)
+.sandcastle/.env
+.sandcastle/logs/
+.sandcastle/worktrees/
+
+# os / editor
+.DS_Store
+Thumbs.db
+*.log
+.vscode/*
+!.vscode/extensions.json
+.idea/
