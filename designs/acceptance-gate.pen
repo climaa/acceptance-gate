@@ -4607,10 +4607,39 @@
                               "fontWeight": "600"
                             },
                             {
-                              "id": "s45Yr",
-                              "type": "ref",
-                              "ref": "QywBG",
-                              "name": "tg"
+                              "type": "frame",
+                              "id": "aUnjt",
+                              "name": "navgroup",
+                              "gap": 14,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "Hn7mB",
+                                  "name": "NavBlog",
+                                  "fill": "$accent",
+                                  "content": "Blog",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "eGRQN",
+                                  "name": "NavAbout",
+                                  "fill": "$text-muted",
+                                  "content": "About",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "id": "s45Yr",
+                                  "type": "ref",
+                                  "ref": "QywBG",
+                                  "name": "tg"
+                                }
+                              ]
                             }
                           ]
                         },
@@ -4789,10 +4818,39 @@
                               "fontWeight": "600"
                             },
                             {
-                              "id": "oi7AH",
-                              "type": "ref",
-                              "ref": "QywBG",
-                              "name": "tg"
+                              "type": "frame",
+                              "id": "b035C",
+                              "name": "navgroup",
+                              "gap": 14,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "h8frq",
+                                  "name": "NavBlog",
+                                  "fill": "$accent",
+                                  "content": "Blog",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "h9IVu3",
+                                  "name": "NavAbout",
+                                  "fill": "$text-muted",
+                                  "content": "About",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "id": "oi7AH",
+                                  "type": "ref",
+                                  "ref": "QywBG",
+                                  "name": "tg"
+                                }
+                              ]
                             }
                           ]
                         },
@@ -5287,10 +5345,39 @@
                               "fontWeight": "600"
                             },
                             {
-                              "id": "l1YFLe",
-                              "type": "ref",
-                              "ref": "QywBG",
-                              "name": "tg"
+                              "type": "frame",
+                              "id": "FqZaU",
+                              "name": "navgroup",
+                              "gap": 14,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "ngGX2",
+                                  "name": "NavBlog",
+                                  "fill": "$accent",
+                                  "content": "Blog",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "If9yX",
+                                  "name": "NavAbout",
+                                  "fill": "$text-muted",
+                                  "content": "About",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "id": "l1YFLe",
+                                  "type": "ref",
+                                  "ref": "QywBG",
+                                  "name": "tg"
+                                }
+                              ]
                             }
                           ]
                         },
@@ -5455,10 +5542,39 @@
                               "fontWeight": "600"
                             },
                             {
-                              "id": "gTcBu",
-                              "type": "ref",
-                              "ref": "QywBG",
-                              "name": "tg"
+                              "type": "frame",
+                              "id": "eFiup",
+                              "name": "navgroup",
+                              "gap": 14,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "YkwjK",
+                                  "name": "NavBlog",
+                                  "fill": "$accent",
+                                  "content": "Blog",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "yB62k",
+                                  "name": "NavAbout",
+                                  "fill": "$text-muted",
+                                  "content": "About",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "id": "gTcBu",
+                                  "type": "ref",
+                                  "ref": "QywBG",
+                                  "name": "tg"
+                                }
+                              ]
                             }
                           ]
                         },
@@ -5923,10 +6039,39 @@
                               "fontWeight": "600"
                             },
                             {
-                              "id": "w0Ali2",
-                              "type": "ref",
-                              "ref": "QywBG",
-                              "name": "tg"
+                              "type": "frame",
+                              "id": "AYyOh",
+                              "name": "navgroup",
+                              "gap": 14,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "Vslcf",
+                                  "name": "NavBlog",
+                                  "fill": "$accent",
+                                  "content": "Blog",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "mkwUr",
+                                  "name": "NavAbout",
+                                  "fill": "$text-muted",
+                                  "content": "About",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "id": "w0Ali2",
+                                  "type": "ref",
+                                  "ref": "QywBG",
+                                  "name": "tg"
+                                }
+                              ]
                             }
                           ]
                         },
@@ -6077,10 +6222,39 @@
                               "fontWeight": "600"
                             },
                             {
-                              "id": "OFCMv",
-                              "type": "ref",
-                              "ref": "QywBG",
-                              "name": "tg"
+                              "type": "frame",
+                              "id": "wceHh",
+                              "name": "navgroup",
+                              "gap": 14,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "p540Gz",
+                                  "name": "NavBlog",
+                                  "fill": "$accent",
+                                  "content": "Blog",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "KAqgC",
+                                  "name": "NavAbout",
+                                  "fill": "$text-muted",
+                                  "content": "About",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "id": "OFCMv",
+                                  "type": "ref",
+                                  "ref": "QywBG",
+                                  "name": "tg"
+                                }
+                              ]
                             }
                           ]
                         },
