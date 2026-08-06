@@ -198,7 +198,5 @@ If branches accumulate anyway:
 
 ## Runbook — red `main`
 
-A red `main` halts wave dispatch: nothing is filed and `pnpm sandcastle` is not
-run until a fix or revert PR merges green. Every later issue would branch from
-the breakage and the sandbox build-verify would fail for reasons unrelated to
-the issue — fix the base first, always.
+A red `main` halts wave dispatch — nothing is filed, `pnpm sandcastle` is not
+run — until a fix or revert merges green. Fix the base first, always.

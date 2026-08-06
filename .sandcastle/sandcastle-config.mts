@@ -22,9 +22,20 @@ process.env.PATH = `/opt/homebrew/bin:/usr/local/bin:${process.env.PATH ?? ""}`;
 // TURBO_TOKEN/TURBO_TEAM EMPTY or ABSENT in `.sandcastle/.env` to avoid a
 // stale-token copy shadowing the host-shell values read below.
 // (`.sandcastle/.env` is gitignored — this can only be documented, not enforced.)
-export const turboToken = process.env.TURBO_TOKEN ?? "";
-export const turboTeam = process.env.TURBO_TEAM ?? "";
-if (turboToken && turboTeam) {
+// Guard: this repo's cache lives in the owner's personal scope. Env vars
+// override the repo's .turbo link, and a stale TURBO_TEAM exported for another
+// project must never send artifacts to a foreign team cache — disable the
+// remote cache entirely rather than cross-contaminate.
+const EXPECTED_TURBO_TEAM = "REDACTED-TEAM";
+const rawTurboTeam = process.env.TURBO_TEAM ?? "";
+const foreignTeam = rawTurboTeam !== "" && rawTurboTeam !== EXPECTED_TURBO_TEAM;
+export const turboToken = foreignTeam ? "" : (process.env.TURBO_TOKEN ?? "");
+export const turboTeam = foreignTeam ? "" : rawTurboTeam;
+if (foreignTeam) {
+  console.log(
+    `[turbo] remote cache disabled — TURBO_TEAM="${rawTurboTeam}" is not this repo's scope (${EXPECTED_TURBO_TEAM}); refusing to write to a foreign team cache`,
+  );
+} else if (turboToken && turboTeam) {
   console.log(
     `[turbo] remote cache enabled (TURBO_TOKEN=${turboToken.length} chars, TURBO_TEAM=${turboTeam.length} chars)`,
   );

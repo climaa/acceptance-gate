@@ -36,6 +36,12 @@ describe("sandcastle turbo-env passthrough", () => {
       );
     });
 
+    it("refuses a foreign TURBO_TEAM instead of cross-contaminating another team's cache", () => {
+      expect(content).toMatch(/EXPECTED_TURBO_TEAM/);
+      expect(content).toMatch(/foreign team cache/i);
+      expect(content).toMatch(/foreignTeam \? ""/);
+    });
+
     it("prints warning when TURBO vars are missing", () => {
       expect(content).toMatch(
         /remote cache disabled.*TURBO_TOKEN.*TURBO_TEAM not set/i,
