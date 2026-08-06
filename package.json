@@ -13,11 +13,16 @@
     "typecheck": "turbo run typecheck",
     "clean": "turbo run clean && rm -rf node_modules",
     "format": "prettier --write \"**/*.{ts,tsx,md,mdx,json,css}\"",
-    "test": "turbo run test"
+    "test": "turbo run test",
+    "sandcastle": "tsx .sandcastle/main.mts",
+    "test:sandcastle": "vitest run --config vitest.sandcastle.config.mts"
   },
   "devDependencies": {
     "prettier": "^3.4.2",
     "turbo": "^2.10.8",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "@ai-hero/sandcastle": "0.12.0",
+    "tsx": "^4.19.2",
+    "vitest": "^3.0.0"
   }
 }
