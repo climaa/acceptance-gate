@@ -246,24 +246,28 @@
               "alignItems": "center",
               "children": [
                 {
-                  "type": "text",
-                  "id": "vRIh6",
+                  "id": "Qlz36",
+                  "type": "ref",
+                  "ref": "MrZbQ",
                   "name": "NavBlog",
-                  "fill": "$accent",
-                  "content": "Blog",
-                  "fontFamily": "$font-body",
-                  "fontSize": 14,
-                  "fontWeight": "600"
+                  "descendants": {
+                    "LwKtr": {
+                      "content": "Blog"
+                    }
+                  }
                 },
                 {
-                  "type": "text",
-                  "id": "em6p2",
+                  "id": "ZA7Ik",
+                  "type": "ref",
+                  "ref": "MrZbQ",
                   "name": "NavAbout",
-                  "fill": "$text-muted",
-                  "content": "About",
-                  "fontFamily": "$font-body",
-                  "fontSize": 14,
-                  "fontWeight": "normal"
+                  "descendants": {
+                    "LwKtr": {
+                      "content": "About",
+                      "fill": "$text-muted",
+                      "fontWeight": "normal"
+                    }
+                  }
                 },
                 {
                   "id": "lJWYr",
@@ -310,24 +314,32 @@
               "gap": 18,
               "children": [
                 {
-                  "type": "text",
-                  "id": "TKiWm",
-                  "name": "RSS",
-                  "fill": "$text-muted",
-                  "content": "RSS",
-                  "fontFamily": "$font-body",
-                  "fontSize": 12,
-                  "fontWeight": "normal"
+                  "id": "vvfLi",
+                  "type": "ref",
+                  "ref": "MrZbQ",
+                  "name": "NavRSS",
+                  "descendants": {
+                    "LwKtr": {
+                      "content": "RSS",
+                      "fill": "$text-muted",
+                      "fontWeight": "normal",
+                      "fontSize": 12
+                    }
+                  }
                 },
                 {
-                  "type": "text",
-                  "id": "lEv6C",
-                  "name": "GitHub",
-                  "fill": "$text-muted",
-                  "content": "GitHub",
-                  "fontFamily": "$font-body",
-                  "fontSize": 12,
-                  "fontWeight": "normal"
+                  "id": "N1NWi",
+                  "type": "ref",
+                  "ref": "MrZbQ",
+                  "name": "NavGitHub",
+                  "descendants": {
+                    "LwKtr": {
+                      "content": "GitHub",
+                      "fill": "$text-muted",
+                      "fontWeight": "normal",
+                      "fontSize": 12
+                    }
+                  }
                 }
               ]
             }
@@ -374,6 +386,25 @@
               "fontFamily": "$font-mono",
               "fontSize": 13,
               "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "MrZbQ",
+          "name": "Link",
+          "reusable": true,
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "LwKtr",
+              "name": "Label",
+              "fill": "$accent",
+              "content": "Read more",
+              "fontFamily": "$font-body",
+              "fontSize": 14,
+              "fontWeight": "600"
             }
           ]
         }
@@ -549,7 +580,7 @@
                           "id": "voZv3",
                           "name": "T",
                           "fill": "$ink",
-                          "content": "18 components, all to-build",
+                          "content": "19 components, all to-build",
                           "fontFamily": "$font-body",
                           "fontSize": 13,
                           "fontWeight": "700"
@@ -563,7 +594,7 @@
                       "fill": "$ink-muted",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "Five exist in the seed (Button, Badge, Stack, Prose, Card); the rest land one issue per component through the pipeline.",
+                      "content": "Five exist in the seed (Button, Badge, Stack, Prose, Card); the rest — including the Link atom every nav and footer item instances — land one issue per component.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font-body",
                       "fontSize": 12,
@@ -694,7 +725,7 @@
                   "type": "frame",
                   "id": "PHm5t",
                   "name": "Tile Button",
-                  "width": 330,
+                  "width": 300,
                   "fill": "#ffffff",
                   "cornerRadius": 12,
                   "stroke": "$note-border",
@@ -749,7 +780,7 @@
                   "type": "frame",
                   "id": "usZDa",
                   "name": "Tile Badge",
-                  "width": 330,
+                  "width": 300,
                   "fill": "#ffffff",
                   "cornerRadius": 12,
                   "stroke": "$note-border",
@@ -804,7 +835,7 @@
                   "type": "frame",
                   "id": "j3pcI",
                   "name": "Tile Stack",
-                  "width": 330,
+                  "width": 300,
                   "fill": "#ffffff",
                   "cornerRadius": 12,
                   "stroke": "$note-border",
@@ -880,7 +911,7 @@
                   "type": "frame",
                   "id": "raI4g",
                   "name": "Tile Prose",
-                  "width": 330,
+                  "width": 300,
                   "fill": "#ffffff",
                   "cornerRadius": 12,
                   "stroke": "$note-border",
@@ -957,7 +988,7 @@
                   "type": "frame",
                   "id": "b4h6h",
                   "name": "Tile ThemeToggle",
-                  "width": 330,
+                  "width": 300,
                   "fill": "#ffffff",
                   "cornerRadius": 12,
                   "stroke": "$note-border",
@@ -1003,6 +1034,87 @@
                           "type": "ref",
                           "ref": "QywBG",
                           "name": "i"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "aZh7j",
+                  "name": "Tile Link",
+                  "width": 300,
+                  "fill": "#ffffff",
+                  "cornerRadius": 12,
+                  "stroke": "$note-border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 12,
+                  "padding": 18,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "E9lnEa",
+                      "name": "Cap",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "T71fjr",
+                          "name": "Name",
+                          "fill": "$ink",
+                          "content": "Link",
+                          "fontFamily": "$font-mono",
+                          "fontSize": 13,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "s6Vq1",
+                      "name": "Stage",
+                      "clip": true,
+                      "width": "fill_container",
+                      "fill": "#fafaf8",
+                      "cornerRadius": 8,
+                      "layout": "vertical",
+                      "gap": 8,
+                      "padding": 14,
+                      "children": [
+                        {
+                          "id": "StaIC",
+                          "type": "ref",
+                          "ref": "MrZbQ",
+                          "name": "default"
+                        },
+                        {
+                          "id": "kgOdD",
+                          "type": "ref",
+                          "ref": "MrZbQ",
+                          "name": "muted",
+                          "descendants": {
+                            "LwKtr": {
+                              "content": "Muted link",
+                              "fill": "$text-muted",
+                              "fontWeight": "normal"
+                            }
+                          }
+                        },
+                        {
+                          "type": "text",
+                          "id": "Q8g9G",
+                          "name": "note",
+                          "fill": "$ink-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "wraps next/link · Text inside · underline + focus ring on interaction",
+                          "lineHeight": 1.4,
+                          "fontFamily": "$font-body",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
                         }
                       ]
                     }
@@ -4614,24 +4726,30 @@
                               "alignItems": "center",
                               "children": [
                                 {
-                                  "type": "text",
-                                  "id": "Hn7mB",
+                                  "id": "LhAcN",
+                                  "type": "ref",
+                                  "ref": "MrZbQ",
                                   "name": "NavBlog",
-                                  "fill": "$accent",
-                                  "content": "Blog",
-                                  "fontFamily": "$font-body",
-                                  "fontSize": 13,
-                                  "fontWeight": "600"
+                                  "descendants": {
+                                    "LwKtr": {
+                                      "content": "Blog",
+                                      "fontSize": 13
+                                    }
+                                  }
                                 },
                                 {
-                                  "type": "text",
-                                  "id": "eGRQN",
+                                  "id": "dMrby",
+                                  "type": "ref",
+                                  "ref": "MrZbQ",
                                   "name": "NavAbout",
-                                  "fill": "$text-muted",
-                                  "content": "About",
-                                  "fontFamily": "$font-body",
-                                  "fontSize": 13,
-                                  "fontWeight": "normal"
+                                  "descendants": {
+                                    "LwKtr": {
+                                      "content": "About",
+                                      "fill": "$text-muted",
+                                      "fontWeight": "normal",
+                                      "fontSize": 13
+                                    }
+                                  }
                                 },
                                 {
                                   "id": "s45Yr",
@@ -4825,24 +4943,30 @@
                               "alignItems": "center",
                               "children": [
                                 {
-                                  "type": "text",
-                                  "id": "h8frq",
+                                  "id": "V0IXji",
+                                  "type": "ref",
+                                  "ref": "MrZbQ",
                                   "name": "NavBlog",
-                                  "fill": "$accent",
-                                  "content": "Blog",
-                                  "fontFamily": "$font-body",
-                                  "fontSize": 13,
-                                  "fontWeight": "600"
+                                  "descendants": {
+                                    "LwKtr": {
+                                      "content": "Blog",
+                                      "fontSize": 13
+                                    }
+                                  }
                                 },
                                 {
-                                  "type": "text",
-                                  "id": "h9IVu3",
+                                  "id": "i59ij",
+                                  "type": "ref",
+                                  "ref": "MrZbQ",
                                   "name": "NavAbout",
-                                  "fill": "$text-muted",
-                                  "content": "About",
-                                  "fontFamily": "$font-body",
-                                  "fontSize": 13,
-                                  "fontWeight": "normal"
+                                  "descendants": {
+                                    "LwKtr": {
+                                      "content": "About",
+                                      "fill": "$text-muted",
+                                      "fontWeight": "normal",
+                                      "fontSize": 13
+                                    }
+                                  }
                                 },
                                 {
                                   "id": "oi7AH",
@@ -5352,24 +5476,30 @@
                               "alignItems": "center",
                               "children": [
                                 {
-                                  "type": "text",
-                                  "id": "ngGX2",
+                                  "id": "Aovje",
+                                  "type": "ref",
+                                  "ref": "MrZbQ",
                                   "name": "NavBlog",
-                                  "fill": "$accent",
-                                  "content": "Blog",
-                                  "fontFamily": "$font-body",
-                                  "fontSize": 13,
-                                  "fontWeight": "600"
+                                  "descendants": {
+                                    "LwKtr": {
+                                      "content": "Blog",
+                                      "fontSize": 13
+                                    }
+                                  }
                                 },
                                 {
-                                  "type": "text",
-                                  "id": "If9yX",
+                                  "id": "JTsH0",
+                                  "type": "ref",
+                                  "ref": "MrZbQ",
                                   "name": "NavAbout",
-                                  "fill": "$text-muted",
-                                  "content": "About",
-                                  "fontFamily": "$font-body",
-                                  "fontSize": 13,
-                                  "fontWeight": "normal"
+                                  "descendants": {
+                                    "LwKtr": {
+                                      "content": "About",
+                                      "fill": "$text-muted",
+                                      "fontWeight": "normal",
+                                      "fontSize": 13
+                                    }
+                                  }
                                 },
                                 {
                                   "id": "l1YFLe",
@@ -5549,24 +5679,30 @@
                               "alignItems": "center",
                               "children": [
                                 {
-                                  "type": "text",
-                                  "id": "YkwjK",
+                                  "id": "JFVDJ",
+                                  "type": "ref",
+                                  "ref": "MrZbQ",
                                   "name": "NavBlog",
-                                  "fill": "$accent",
-                                  "content": "Blog",
-                                  "fontFamily": "$font-body",
-                                  "fontSize": 13,
-                                  "fontWeight": "600"
+                                  "descendants": {
+                                    "LwKtr": {
+                                      "content": "Blog",
+                                      "fontSize": 13
+                                    }
+                                  }
                                 },
                                 {
-                                  "type": "text",
-                                  "id": "yB62k",
+                                  "id": "awbUk",
+                                  "type": "ref",
+                                  "ref": "MrZbQ",
                                   "name": "NavAbout",
-                                  "fill": "$text-muted",
-                                  "content": "About",
-                                  "fontFamily": "$font-body",
-                                  "fontSize": 13,
-                                  "fontWeight": "normal"
+                                  "descendants": {
+                                    "LwKtr": {
+                                      "content": "About",
+                                      "fill": "$text-muted",
+                                      "fontWeight": "normal",
+                                      "fontSize": 13
+                                    }
+                                  }
                                 },
                                 {
                                   "id": "gTcBu",
@@ -6046,24 +6182,30 @@
                               "alignItems": "center",
                               "children": [
                                 {
-                                  "type": "text",
-                                  "id": "Vslcf",
+                                  "id": "fcjNx",
+                                  "type": "ref",
+                                  "ref": "MrZbQ",
                                   "name": "NavBlog",
-                                  "fill": "$accent",
-                                  "content": "Blog",
-                                  "fontFamily": "$font-body",
-                                  "fontSize": 13,
-                                  "fontWeight": "600"
+                                  "descendants": {
+                                    "LwKtr": {
+                                      "content": "Blog",
+                                      "fontSize": 13
+                                    }
+                                  }
                                 },
                                 {
-                                  "type": "text",
-                                  "id": "mkwUr",
+                                  "id": "X53htE",
+                                  "type": "ref",
+                                  "ref": "MrZbQ",
                                   "name": "NavAbout",
-                                  "fill": "$text-muted",
-                                  "content": "About",
-                                  "fontFamily": "$font-body",
-                                  "fontSize": 13,
-                                  "fontWeight": "normal"
+                                  "descendants": {
+                                    "LwKtr": {
+                                      "content": "About",
+                                      "fill": "$text-muted",
+                                      "fontWeight": "normal",
+                                      "fontSize": 13
+                                    }
+                                  }
                                 },
                                 {
                                   "id": "w0Ali2",
@@ -6229,24 +6371,30 @@
                               "alignItems": "center",
                               "children": [
                                 {
-                                  "type": "text",
-                                  "id": "p540Gz",
+                                  "id": "ailRn",
+                                  "type": "ref",
+                                  "ref": "MrZbQ",
                                   "name": "NavBlog",
-                                  "fill": "$accent",
-                                  "content": "Blog",
-                                  "fontFamily": "$font-body",
-                                  "fontSize": 13,
-                                  "fontWeight": "600"
+                                  "descendants": {
+                                    "LwKtr": {
+                                      "content": "Blog",
+                                      "fontSize": 13
+                                    }
+                                  }
                                 },
                                 {
-                                  "type": "text",
-                                  "id": "KAqgC",
+                                  "id": "Ug7DG",
+                                  "type": "ref",
+                                  "ref": "MrZbQ",
                                   "name": "NavAbout",
-                                  "fill": "$text-muted",
-                                  "content": "About",
-                                  "fontFamily": "$font-body",
-                                  "fontSize": 13,
-                                  "fontWeight": "normal"
+                                  "descendants": {
+                                    "LwKtr": {
+                                      "content": "About",
+                                      "fill": "$text-muted",
+                                      "fontWeight": "normal",
+                                      "fontSize": 13
+                                    }
+                                  }
                                 },
                                 {
                                   "id": "OFCMv",
