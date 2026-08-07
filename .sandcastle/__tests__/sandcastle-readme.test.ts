@@ -52,9 +52,18 @@ describe('.sandcastle/README.md', () => {
     expect(content).not.toMatch(/#\d{3,}/);
   });
 
-  it('is within reasonable length (80–200 lines)', () => {
+  it('documents the no-op path (label, and that the issue is not closed)', () => {
+    expect(content).toMatch(/sandcastle:no-op/);
+    expect(content).toMatch(/not closed/i);
+  });
+
+  // Ceiling raised from 200 when the no-op section landed. It is a guard
+  // against the file becoming a manual, not a budget — each new section has to
+  // earn its lines, and this one documents a mechanism an operator has to
+  // interact with by hand (removing the label).
+  it('is within reasonable length (80–230 lines)', () => {
     const lines = content.split('\n').length;
     expect(lines).toBeGreaterThanOrEqual(80);
-    expect(lines).toBeLessThanOrEqual(200);
+    expect(lines).toBeLessThanOrEqual(230);
   });
 });

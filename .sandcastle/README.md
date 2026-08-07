@@ -175,6 +175,35 @@ etc. Update it when a repeated review comment reveals a convention gap.
 
 ---
 
+## Issues that produce no changes
+
+An implementer that finds nothing to do is behaving correctly: it emits the
+completion signal and commits nothing. That used to leave the issue open and
+unmarked, so the next iteration's planner proposed it again — a fresh sandbox
+and a full agent cycle per iteration, up to `MAX_ITERATIONS`, on work that would
+never produce a commit.
+
+`main.mts` now classifies each pipeline result through
+`sandcastle-noop-issues.mts` as **completed** (commits to land), **no-op** (ran
+clean, produced nothing) or **failed** (threw — retried next iteration). A no-op
+issue gets a comment and the `sandcastle:no-op` label, and is dropped from every
+later plan in the run.
+
+It is **not closed**. "Nothing to do" can mean the work already landed, or that
+the agent misread the task; closing would hide the second case. A human reads
+the comment and decides:
+
+```bash
+gh issue close <ID>                                    # it really was already done
+gh issue edit <ID> --remove-label "sandcastle:no-op"   # clarify it, then re-run
+```
+
+The label is created on first use. It deliberately does **not** use the `sc:`
+prefix — that vocabulary is the model-override grammar, where an unknown role is
+a hard error that would abort the next run before any sandbox started.
+
+---
+
 ## Stranded branches
 
 If the merge phase crashes mid-run (network drop, sandbox OOM), a branch may

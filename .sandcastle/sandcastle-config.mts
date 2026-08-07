@@ -85,31 +85,8 @@ export const BASE_BRANCH = "main";
 // Raise this if your backlog is large; lower it for a quick smoke-test run.
 export const MAX_ITERATIONS = 10;
 
-// Hooks run inside the sandbox before the agent starts each iteration.
-// npm install ensures the sandbox always has fresh dependencies.
-//
-// Git credential helper: GH_TOKEN in the sandbox env is enough
-// for `gh` CLI commands, but plain `git push` won't authenticate from it
-// without a credential helper wired up. This bites the merger phase, whose
-// fallback push runs `git push` directly. `gh auth setup-git` configures the
-// helper (`credential.https://github.com.helper '!gh auth git-credential'`),
-// but it must run here at runtime — GH_TOKEN isn't available at docker build
-// time, so it can't live as a Dockerfile RUN. Gated on GH_TOKEN so it's a
-// no-op (not an error) in environments where the token isn't set.
-//
-// CI=true: the sandbox exec has no TTY, so a node_modules state that pnpm
-// wants to purge-and-reinstall (e.g. a differing store/HOME between host and
-// container) hits pnpm's interactive "confirm removal" prompt and aborts
-// non-interactively with ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY. CI=true
-// auto-confirms, matching how the host pre-push hook already runs installs.
-export const hooks = {
-  sandbox: {
-    onSandboxReady: [
-      {
-        command: 'if [ -n "$GH_TOKEN" ]; then gh auth setup-git; fi',
-        timeoutMs: 60_000,
-      },
-      { command: "CI=true pnpm install", timeoutMs: 600_000 },
-    ],
-  },
-};
+// Sandbox startup hooks live in sandcastle-sandbox-hooks.mts, split into
+// `headHooks` and `worktreeHooks` and imported at each sandbox call site so the
+// choice of mount is visible next to the sandbox it configures. A single
+// undifferentiated `hooks` const here is what previously ran
+// `CI=true pnpm install` against the head-mounted HOST checkout.
