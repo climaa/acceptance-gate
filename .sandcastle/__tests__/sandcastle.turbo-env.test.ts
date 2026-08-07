@@ -43,6 +43,22 @@ describe('sandcastle-config.mts — gh preflight', () => {
 });
 
 describe('sandcastle turbo-env passthrough', () => {
+  // A single call site creates a worktree sandbox: sandcastle-worktree-sandbox.mts,
+  // shared by the per-issue pipeline and the stranded-branch rescue path. The two
+  // blocks below assert once against that helper instead of once per call site.
+  // Sliced eagerly, and hard-failing when the call is not found: on a miss,
+  // indexOf() returns -1 and slice(-1) would silently satisfy every `not.toMatch`.
+  const createSandboxCall = (() => {
+    const content = read('sandcastle-worktree-sandbox.mts');
+    const idx = content.indexOf('sandcastle.createSandbox({');
+    if (idx === -1) {
+      throw new Error(
+        'sandcastle-worktree-sandbox.mts: no `sandcastle.createSandbox({` call to assert against',
+      );
+    }
+    return content.slice(idx, idx + 600);
+  })();
+
   /**
    * Credential resolution itself is covered behaviourally in
    * sandcastle.turbo-cache.test.ts, which imports the pure resolver and calls
@@ -51,7 +67,7 @@ describe('sandcastle turbo-env passthrough', () => {
    */
   describe('sandcastle-config.mts — wiring', () => {
     const content = read('sandcastle-config.mts');
-    const runIssueContent = read('sandcastle-run-issue.mts');
+    const worktreeSandboxContent = read('sandcastle-worktree-sandbox.mts');
 
     it('delegates the decision to the pure resolver instead of inlining it', () => {
       expect(stripComments(content)).toMatch(/resolveTurboCache\(/);
@@ -63,8 +79,8 @@ describe('sandcastle turbo-env passthrough', () => {
       expect(content).toMatch(/export const turboTeam/);
     });
 
-    it('sandcastle-run-issue.mts (the createSandbox call site) imports turboToken/turboTeam from sandcastle-config.mts', () => {
-      expect(runIssueContent).toMatch(
+    it('sandcastle-worktree-sandbox.mts (the createSandbox call site) imports turboToken/turboTeam from sandcastle-config.mts', () => {
+      expect(worktreeSandboxContent).toMatch(
         /import\s*\{[^}]*turboToken[^}]*\}\s*from\s*["']\.\/sandcastle-config\.mts["']/,
       );
     });
@@ -89,98 +105,46 @@ describe('sandcastle turbo-env passthrough', () => {
     });
   });
 
-  describe('createSandbox env passthrough — both call sites', () => {
-    // Two call sites create a sandbox: the per-issue pipeline
-    // (sandcastle-run-issue.mts) and the stranded-branch rescue path
-    // (sandcastle-stranded-branches.mts). Both must be checked — a prior
-    // version of this test used content.indexOf(), which only ever matched
-    // the first of two occurrences and silently never covered the second.
-    const runIssueContent = read('sandcastle-run-issue.mts');
-    const strandedBranchesContent = read('sandcastle-stranded-branches.mts');
-
-    function afterCreateSandbox(content: string) {
-      const idx = content.indexOf('sandcastle.createSandbox({');
-      return content.slice(idx, idx + 600);
-    }
-
-    const sites = [
-      ['sandcastle-run-issue.mts', afterCreateSandbox(runIssueContent)],
-      ['sandcastle-stranded-branches.mts', afterCreateSandbox(strandedBranchesContent)],
-    ] as const;
-
-    it.each(sites)(
-      '%s: createSandbox call includes an env option',
-      (_name, afterCreate) => {
-        expect(afterCreate).toMatch(/env\s*:/);
-      },
-    );
-
-    it.each(sites)('%s: createSandbox env includes TURBO_TOKEN', (_name, afterCreate) => {
-      expect(afterCreate).toMatch(/TURBO_TOKEN/);
+  describe('createSandbox env passthrough — the shared worktree-sandbox helper', () => {
+    it('createSandbox call includes an env option', () => {
+      expect(createSandboxCall).toMatch(/env\s*:/);
     });
 
-    it.each(sites)('%s: createSandbox env includes TURBO_TEAM', (_name, afterCreate) => {
-      expect(afterCreate).toMatch(/TURBO_TEAM/);
+    it('createSandbox env includes TURBO_TOKEN', () => {
+      expect(createSandboxCall).toMatch(/TURBO_TOKEN/);
     });
 
-    it.each(sites)(
-      '%s: createSandbox env does NOT include dead TURBO_CACHE_DIR (Turbo v2 ignores it)',
-      (_name, afterCreate) => {
-        expect(afterCreate).not.toMatch(/TURBO_CACHE_DIR/);
-      },
-    );
+    it('createSandbox env includes TURBO_TEAM', () => {
+      expect(createSandboxCall).toMatch(/TURBO_TEAM/);
+    });
+
+    it('createSandbox env does NOT include dead TURBO_CACHE_DIR (Turbo v2 ignores it)', () => {
+      expect(createSandboxCall).not.toMatch(/TURBO_CACHE_DIR/);
+    });
   });
 
-  describe('createSandbox docker uid mapping — both call sites', () => {
-    const runIssueContent = read('sandcastle-run-issue.mts');
-    const strandedBranchesContent = read('sandcastle-stranded-branches.mts');
+  describe('createSandbox docker uid mapping — the shared worktree-sandbox helper', () => {
+    it('docker() in createSandbox passes containerUid so container writes bind-mounts as host uid', () => {
+      expect(createSandboxCall).toMatch(/containerUid/);
+    });
 
-    function afterCreateSandbox(content: string) {
-      const idx = content.indexOf('sandcastle.createSandbox({');
-      return content.slice(idx, idx + 600);
-    }
+    it('docker() in createSandbox passes containerGid', () => {
+      expect(createSandboxCall).toMatch(/containerGid/);
+    });
 
-    const sites = [
-      ['sandcastle-run-issue.mts', afterCreateSandbox(runIssueContent)],
-      ['sandcastle-stranded-branches.mts', afterCreateSandbox(strandedBranchesContent)],
-    ] as const;
+    it('containerUid is derived from process.getuid', () => {
+      expect(createSandboxCall).toMatch(/process\.getuid/);
+    });
 
-    it.each(sites)(
-      '%s: docker() in createSandbox passes containerUid so container writes bind-mounts as host uid',
-      (_name, afterCreate) => {
-        expect(afterCreate).toMatch(/containerUid/);
-      },
-    );
+    it('containerGid is derived from process.getgid', () => {
+      expect(createSandboxCall).toMatch(/process\.getgid/);
+    });
 
-    it.each(sites)(
-      '%s: docker() in createSandbox passes containerGid',
-      (_name, afterCreate) => {
-        expect(afterCreate).toMatch(/containerGid/);
-      },
-    );
-
-    it.each(sites)(
-      '%s: containerUid is derived from process.getuid',
-      (_name, afterCreate) => {
-        expect(afterCreate).toMatch(/process\.getuid/);
-      },
-    );
-
-    it.each(sites)(
-      '%s: containerGid is derived from process.getgid',
-      (_name, afterCreate) => {
-        expect(afterCreate).toMatch(/process\.getgid/);
-      },
-    );
-
-    it.each(sites)(
-      '%s: containerUid falls back to 1000 when process.getuid is unavailable (e.g. Windows)',
-      (_name, afterCreate) => {
-        expect(afterCreate).toMatch(
-          /getuid[^)]*\?\s*\.\s*\(\s*\)\s*\?\?.*1000|getuid\?\.\(\)\s*\?\?\s*1000/,
-        );
-      },
-    );
+    it('containerUid falls back to 1000 when process.getuid is unavailable (e.g. Windows)', () => {
+      expect(createSandboxCall).toMatch(
+        /getuid[^)]*\?\s*\.\s*\(\s*\)\s*\?\?.*1000|getuid\?\.\(\)\s*\?\?\s*1000/,
+      );
+    });
   });
 
   describe('.env.example — documentation block only, no KEY= lines', () => {

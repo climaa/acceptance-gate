@@ -135,8 +135,17 @@ describe('call-site wiring — head-mode sites take headHooks, worktree sites ta
   ] as const;
 
   // sandcastle.createSandbox({ branch, baseBranch }) mounts a git worktree
-  // under .sandcastle/worktrees/, which has no node_modules of its own.
+  // under .sandcastle/worktrees/, which has no node_modules of its own. Both
+  // worktree-mode call sites share the single sandcastle-worktree-sandbox.mts
+  // helper, which is the only place worktreeHooks is now referenced.
   const worktreeSites = [
+    ['sandcastle-worktree-sandbox.mts', 'the shared worktree-sandbox helper'],
+  ] as const;
+
+  // The per-issue pipeline and the stranded-branch rescue path call the
+  // helper instead of createSandbox() directly, so they no longer reference
+  // worktreeHooks themselves.
+  const callSitesThatDelegate = [
     ['sandcastle-run-issue.mts', 'the per-issue pipeline'],
     ['sandcastle-stranded-branches.mts', 'the stranded-branch rescue'],
   ] as const;
@@ -153,7 +162,18 @@ describe('call-site wiring — head-mode sites take headHooks, worktree sites ta
     expect(stripComments(read(file))).toMatch(/hooks:\s*worktreeHooks|\bworktreeHooks,/);
   });
 
-  it.each([...headSites, ...worktreeSites])(
+  it.each(callSitesThatDelegate)('%s (%s) calls createWorktreeSandbox', (file) => {
+    expect(stripComments(read(file))).toMatch(/createWorktreeSandbox/);
+  });
+
+  it.each(callSitesThatDelegate)(
+    '%s (%s) never references worktreeHooks itself — the helper owns that choice',
+    (file) => {
+      expect(stripComments(read(file))).not.toMatch(/worktreeHooks/);
+    },
+  );
+
+  it.each([...headSites, ...worktreeSites, ...callSitesThatDelegate])(
     '%s no longer imports the old undifferentiated `hooks` export',
     (file) => {
       // The old name carried no mount information, which is exactly how the
