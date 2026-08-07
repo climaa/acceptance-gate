@@ -11,6 +11,9 @@ dist/
 # turbo
 .turbo/
 
+# vercel
+.vercel/
+
 # env — never committed (but .env.example templates are documentation)
 .env*
 !.env.example
