@@ -5,12 +5,8 @@
 import { execSync } from "node:child_process";
 import * as sandcastle from "@ai-hero/sandcastle";
 import { docker } from "@ai-hero/sandcastle/sandboxes/docker";
-import {
-  BASE_BRANCH,
-  hooks,
-  turboToken,
-  turboTeam,
-} from "./sandcastle-config.mts";
+import { BASE_BRANCH, turboToken, turboTeam } from "./sandcastle-config.mts";
+import { worktreeHooks } from "./sandcastle-sandbox-hooks.mts";
 import { withRetry } from "./sandcastle-lifecycle.mts";
 import { parseOverrideLabels } from "./sandcastle-model-overrides.mts";
 import { isDocsOnlyDiff, runBuildVerify } from "./sandcastle-build-verify.mts";
@@ -172,7 +168,9 @@ export async function buildVerifyRescuedBranch(
             ? { env: { TURBO_TOKEN: turboToken, TURBO_TEAM: turboTeam } }
             : {}),
         }),
-        hooks,
+        // worktreeHooks: same fresh-worktree mount as the per-issue pipeline,
+        // and this sandbox exists to run `pnpm build` — it needs the install.
+        hooks: worktreeHooks,
       }),
     );
   } catch (err) {

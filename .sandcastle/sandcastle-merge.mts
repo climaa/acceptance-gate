@@ -4,7 +4,8 @@
 import { execSync } from "node:child_process";
 import * as sandcastle from "@ai-hero/sandcastle";
 import { docker } from "@ai-hero/sandcastle/sandboxes/docker";
-import { BASE_BRANCH, hooks } from "./sandcastle-config.mts";
+import { BASE_BRANCH } from "./sandcastle-config.mts";
+import { headHooks } from "./sandcastle-sandbox-hooks.mts";
 import { agentFor } from "./sandcastle-agent-profiles.mts";
 import type { IssueRef } from "./sandcastle-git.mts";
 
@@ -64,7 +65,11 @@ export async function runMerger(
   const startingBranch = currentBranch() ?? BASE_BRANCH;
   try {
     await sandcastle.run({
-      hooks,
+      // headHooks, NOT worktreeHooks — no startup `pnpm install`, because of
+      // the bind mount described just below. merge-prompt.md already forbids
+      // the AGENT a bare install here; this is the orchestrator holding itself
+      // to the same rule. See sandcastle-sandbox-hooks.mts.
+      hooks: headHooks,
       // HEAD-mode sandbox: bind-mounts the host checkout at /home/agent/workspace,
       // so any in-container pnpm run touches the host's node_modules. Belt-and-braces
       // env guard suppresses pnpm 11's automatic pre-run deps verification (which

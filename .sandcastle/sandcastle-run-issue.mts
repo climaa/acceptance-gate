@@ -5,7 +5,8 @@
 import { execSync } from "node:child_process";
 import * as sandcastle from "@ai-hero/sandcastle";
 import { docker } from "@ai-hero/sandcastle/sandboxes/docker";
-import { BASE_BRANCH, hooks, turboToken, turboTeam } from "./sandcastle-config.mts";
+import { BASE_BRANCH, turboToken, turboTeam } from "./sandcastle-config.mts";
+import { worktreeHooks } from "./sandcastle-sandbox-hooks.mts";
 import { agentFor } from "./sandcastle-agent-profiles.mts";
 import { withRetry } from "./sandcastle-lifecycle.mts";
 import {
@@ -44,7 +45,10 @@ export async function runIssue(issue: IssueRef, abortSignal: AbortSignal) {
           ? { env: { TURBO_TOKEN: turboToken, TURBO_TEAM: turboTeam } }
           : {}),
       }),
-      hooks,
+      // worktreeHooks: this mount is a fresh worktree under
+      // .sandcastle/worktrees/ with no node_modules of its own, so the startup
+      // `pnpm install` both belongs here and stays inside the worktree.
+      hooks: worktreeHooks,
     }),
   );
 
