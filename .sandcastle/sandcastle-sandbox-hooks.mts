@@ -47,7 +47,7 @@ export type SandboxHooks = { sandbox: { onSandboxReady: SandboxHook[] } };
  *  - `"head"`     — the host checkout itself. Treat as read-only infrastructure.
  *  - `"worktree"` — a throwaway git worktree. Safe to install into.
  */
-export type Mount = "head" | "worktree";
+export type SandboxMount = "head" | "worktree";
 
 // GH_TOKEN in the sandbox env is enough for `gh` CLI commands, but plain
 // `git push` won't authenticate from it without a credential helper wired up.
@@ -79,19 +79,24 @@ export const PNPM_INSTALL_HOOK: SandboxHook = {
  * Throws on an unrecognised mount: defaulting would pick one of the two
  * variants silently, and the permissive one writes to the host checkout.
  */
-export function hooksFor(mount: Mount): SandboxHooks {
-  const onSandboxReady: SandboxHook[] = [{ ...GH_AUTH_SETUP_HOOK }];
-  if (mount === "worktree") {
-    onSandboxReady.push({ ...PNPM_INSTALL_HOOK });
-  } else if (mount !== "head") {
-    throw new Error(
-      `Unknown sandbox mount ${JSON.stringify(mount)} — expected "head" or ` +
-        `"worktree". Refusing to guess: the "worktree" variant runs ` +
-        `\`pnpm install\`, which against a head-mounted host checkout ` +
-        `rewrites the developer's node_modules.`,
-    );
+export function hooksFor(mount: SandboxMount): SandboxHooks {
+  switch (mount) {
+    case "head":
+      return { sandbox: { onSandboxReady: [{ ...GH_AUTH_SETUP_HOOK }] } };
+    case "worktree":
+      return {
+        sandbox: {
+          onSandboxReady: [{ ...GH_AUTH_SETUP_HOOK }, { ...PNPM_INSTALL_HOOK }],
+        },
+      };
+    default:
+      throw new Error(
+        `Unknown sandbox mount ${JSON.stringify(mount)} — expected "head" or ` +
+          `"worktree". Refusing to guess: the "worktree" variant runs ` +
+          `\`pnpm install\`, which against a head-mounted host checkout ` +
+          `rewrites the developer's node_modules.`,
+      );
   }
-  return { sandbox: { onSandboxReady } };
 }
 
 /** Planner and merger: the host checkout is mounted — never install. */

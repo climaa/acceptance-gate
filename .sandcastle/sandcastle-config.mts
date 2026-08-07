@@ -85,8 +85,8 @@ export const BASE_BRANCH = "main";
 // Raise this if your backlog is large; lower it for a quick smoke-test run.
 export const MAX_ITERATIONS = 10;
 
-// Sandbox startup hooks now live in sandcastle-sandbox-hooks.mts, split into
-// `headHooks` and `worktreeHooks`. Import them from there, at the sandbox call
-// site, so the choice of mount is visible next to the sandbox it configures —
-// a single undifferentiated `hooks` const is what previously ran
+// Sandbox startup hooks live in sandcastle-sandbox-hooks.mts, split into
+// `headHooks` and `worktreeHooks` and imported at each sandbox call site so the
+// choice of mount is visible next to the sandbox it configures. A single
+// undifferentiated `hooks` const here is what previously ran
 // `CI=true pnpm install` against the head-mounted HOST checkout.

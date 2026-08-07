@@ -3,6 +3,7 @@ import * as path from 'node:path';
 import {
   GH_AUTH_SETUP_HOOK,
   PNPM_INSTALL_HOOK,
+  type SandboxMount,
   headHooks,
   hooksFor,
   worktreeHooks,
@@ -25,29 +26,25 @@ function stripComments(source: string) {
  * dragging in sandcastle-config.mts's import-time side effects (same reasoning
  * as sandcastle-model-overrides.mts and sandcastle-turbo-cache.mts).
  *
- * What is being protected: a single shared `hooks` const ran
- * `CI=true pnpm install` on EVERY sandbox. Two of the four sandboxes are
- * head-mode (planner, merger) — the SDK bind-mounts the HOST checkout at
- * /home/agent/workspace for those, so that install rewrote the developer's
- * node_modules and stamped the CONTAINER's store path into
- * node_modules/.modules.yaml:
+ * What is being protected: one shared `hooks` const ran `CI=true pnpm install`
+ * on EVERY sandbox, including the two head-mode ones (planner, merger) whose
+ * mount is the HOST checkout — stamping the container's pnpm store path into
+ * the developer's node_modules, which leaves the host's next non-TTY pnpm
+ * command dead with ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY. The full
+ * failure chain is documented atop sandcastle-sandbox-hooks.mts.
  *
- *   "storeDir": "/home/agent/workspace/.pnpm-store/v11"
- *
- * The host's pnpm then reads a foreign store, decides node_modules needs a
- * purge-and-reinstall, and aborts non-interactively with
- * ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY — killing the NEXT `pnpm
- * sandcastle` at startup, plus any lint/build/test from a non-TTY shell.
- *
- * Both prompt files already tell the AGENT "never run a bare `pnpm install`"
- * in these sandboxes; the orchestrator was running one on its behalf before
- * the agent ever started.
+ * The credential helper's own contract lives in
+ * sandcastle.git-credential-helper.test.ts; what is asserted here is only that
+ * dropping the install did not drop it too.
  */
+
+const commandsFor = (mount: SandboxMount) =>
+  hooksFor(mount).sandbox.onSandboxReady.map((h) => h.command);
 
 describe('hooksFor — head-mode sandboxes never install into the host checkout', () => {
   it('omits the pnpm install hook in head mode', () => {
     // Arrange & Act
-    const commands = hooksFor('head').sandbox.onSandboxReady.map((h) => h.command);
+    const commands = commandsFor('head');
 
     // Assert
     expect(commands).not.toContain(PNPM_INSTALL_HOOK.command);
@@ -58,7 +55,7 @@ describe('hooksFor — head-mode sandboxes never install into the host checkout'
     // (`pnpm i`, `pnpm install --frozen-lockfile`, …). `--lockfile-only` is the
     // one documented exemption: it writes pnpm-lock.yaml, never node_modules.
     // Arrange & Act
-    const commands = hooksFor('head').sandbox.onSandboxReady.map((h) => h.command);
+    const commands = commandsFor('head');
 
     // Assert
     for (const command of commands) {
@@ -72,25 +69,24 @@ describe('hooksFor — head-mode sandboxes never install into the host checkout'
     // A worktree is a fresh checkout with no node_modules of its own, so the
     // install is what makes the sandbox usable. Only the mount differs.
     // Arrange & Act
-    const commands = hooksFor('worktree').sandbox.onSandboxReady.map((h) => h.command);
+    const commands = commandsFor('worktree');
 
     // Assert
     expect(commands).toContain(PNPM_INSTALL_HOOK.command);
   });
 
-  it('wires the git credential helper in BOTH modes', () => {
-    // The merger is head-mode and still pushes, so dropping the install must
-    // not drop this with it.
-    // Arrange & Act
-    const modes = (['head', 'worktree'] as const).map((m) =>
-      hooksFor(m).sandbox.onSandboxReady.map((h) => h.command),
-    );
+  it.each(['head', 'worktree'] as const)(
+    'wires the git credential helper in %s mode',
+    (mount) => {
+      // The merger is head-mode and still pushes, so dropping the install must
+      // not drop this with it.
+      // Arrange & Act
+      const commands = commandsFor(mount);
 
-    // Assert
-    for (const commands of modes) {
+      // Assert
       expect(commands).toContain(GH_AUTH_SETUP_HOOK.command);
-    }
-  });
+    },
+  );
 
   it('rejects an unrecognised mount rather than guessing', () => {
     // Arrange & Act & Assert — a typo must not silently pick the permissive
@@ -113,28 +109,13 @@ describe('hooksFor — head-mode sandboxes never install into the host checkout'
 });
 
 describe('the hooks themselves', () => {
-  it('gates the credential-helper setup on GH_TOKEN being present', () => {
-    // The token isn't guaranteed in every environment; the setup must be a
-    // no-op when GH_TOKEN is absent rather than erroring the whole run.
-    expect(GH_AUTH_SETUP_HOOK.command).toMatch(/GH_TOKEN/);
-  });
-
-  it('wires a git credential helper (plain `git push` cannot use GH_TOKEN alone)', () => {
-    expect(GH_AUTH_SETUP_HOOK.command).toMatch(
-      /gh auth setup-git|credential\.helper|git-credential/,
-    );
-  });
-
   it('carries CI=true on the install so a no-TTY exec cannot hit pnpm’s confirm prompt', () => {
     expect(PNPM_INSTALL_HOOK.command).toMatch(/^CI=true /);
   });
 
-  it('gives the install room for a cold store (10 min) and the auth hook far less', () => {
-    expect(PNPM_INSTALL_HOOK.timeoutMs).toBe(600_000);
-    expect(GH_AUTH_SETUP_HOOK.timeoutMs).toBeLessThan(PNPM_INSTALL_HOOK.timeoutMs);
-  });
-
-  it('exposes ready-made bindings for the two mounts', () => {
+  it('binds headHooks and worktreeHooks to the mount each is named for', () => {
+    // Swapping these two is the same bug in a new place: headHooks =
+    // hooksFor('worktree') would put the install straight back on the host.
     expect(headHooks).toEqual(hooksFor('head'));
     expect(worktreeHooks).toEqual(hooksFor('worktree'));
   });

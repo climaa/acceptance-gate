@@ -1,4 +1,8 @@
-import { GH_AUTH_SETUP_HOOK, hooksFor } from '../sandcastle-sandbox-hooks.mts';
+import {
+  GH_AUTH_SETUP_HOOK,
+  type SandboxMount,
+  hooksFor,
+} from '../sandcastle-sandbox-hooks.mts';
 
 // the merger phase's isolated sandbox can fail `git push` with
 // "no git credentials available in this environment" — GH_TOKEN alone lets the
@@ -12,7 +16,7 @@ import { GH_AUTH_SETUP_HOOK, hooksFor } from '../sandcastle-sandbox-hooks.mts';
 // therefore be loaded for real. Same assertions, now against the values the
 // orchestrator actually passes to the SDK.
 describe('sandcastle git credential helper', () => {
-  const commandsFor = (mount: 'head' | 'worktree') =>
+  const commandsFor = (mount: SandboxMount) =>
     hooksFor(mount).sandbox.onSandboxReady.map((h) => h.command);
 
   it('wires a git credential helper in onSandboxReady (gh auth setup-git or git config credential.helper)', () => {
