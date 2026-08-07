@@ -7,7 +7,10 @@ import { execSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import dotenv from "dotenv";
+import {
+  describeTurboCache,
+  resolveTurboCache,
+} from "./sandcastle-turbo-cache.mts";
 
 // Preflight: refuse to start without `gh` on PATH.
 //
@@ -42,23 +45,21 @@ function readIfPresent(file: string): string | null {
   }
 }
 
-// Turbo credentials come from the repo-root `.env` and NOWHERE else.
+// Turbo credentials come from the repo-root `.env` and NOWHERE else — never
+// `process.env`. The decision itself lives in sandcastle-turbo-cache.mts as a
+// pure function; this is only the wiring that hands it the two files. See that
+// module for why ambient env is excluded and why it fails closed.
 //
-// Deliberately NOT `process.env.TURBO_TOKEN`/`process.env.TURBO_TEAM`: a shell
-// profile that exports another project's team (the common case — one
-// `export TURBO_TEAM=...` in ~/.bashrc applies to every repo on the machine)
-// would otherwise silently send this repo's artifacts to a foreign cache.
-// Reading the file directly makes that structurally impossible, rather than
-// depending on precedence rules or a CLI flag someone forgets to pass.
+// Two operational caveats that belong here, next to the reads:
 //
-// `dotenv.parse` returns a plain object and never mutates process.env — unlike
-// `dotenv.config()` or node's `process.loadEnvFile()`, both of which write into
-// the environment and would reintroduce the ambient coupling this avoids.
-//
-// Asymmetry worth preserving: the `turbo` binary cannot read `.env` itself
-// ("Turborepo does not natively load .env files into a task's runtime"), so
-// package.json wraps the turbo scripts in `dotenv -e .env -o --`. This module
-// needs no such wrapper — do not "simplify" it back onto process.env.
+//  - The `turbo` binary cannot read `.env` itself ("Turborepo does not
+//    natively load .env files into a task's runtime"), so package.json wraps
+//    the turbo scripts in `dotenv -e .env -o --`. This module needs no such
+//    wrapper — do not "simplify" it back onto process.env.
+//  - `turbo` REWRITES `.turbo/config.json` from whatever TURBO_TEAM it sees, so
+//    a bare `turbo run ...` with a foreign team exported would re-point the
+//    reference this guard checks against. Invoke turbo through the pnpm
+//    scripts, not directly.
 //
 // .env injection caveat: the @ai-hero/sandcastle package's `resolveEnv` parses
 // `.sandcastle/.env` and injects every key PRESENT there into every sandbox.
@@ -66,50 +67,14 @@ function readIfPresent(file: string): string | null {
 // cannot shadow the values threaded via `docker({ env })` at the two
 // build-verify call sites. (`.sandcastle/.env` is gitignored — documentable,
 // not enforceable.)
-const rootEnv = readIfPresent(path.join(REPO_ROOT, ".env"));
-const fileEnv = rootEnv ? dotenv.parse(rootEnv) : {};
+const turboCache = resolveTurboCache(
+  readIfPresent(path.join(REPO_ROOT, ".env")),
+  readIfPresent(path.join(REPO_ROOT, ".turbo", "config.json")),
+);
+console.log(describeTurboCache(turboCache));
 
-// The expected team is this repo's own turbo link (`.turbo/config.json` —
-// gitignored, written by `turbo link`), never a literal in tracked source.
-// Hardcoding it published an account identifier in a public repo; deriving it
-// keeps provenance out of git entirely and survives an account change with no
-// code edit. Absent or unparseable => no expected team => cache disabled.
-//
-// Caveat: `turbo` REWRITES `.turbo/config.json` from whatever TURBO_TEAM it
-// sees, so a bare `turbo run ...` with a foreign team exported would re-point
-// this reference. That is why every turbo script in package.json is wrapped in
-// `dotenv -e .env -o --`: turbo then only ever sees the root `.env` values and
-// the link file stays in agreement with them. Invoke turbo through the pnpm
-// scripts, not directly.
-const turboLink = readIfPresent(path.join(REPO_ROOT, ".turbo", "config.json"));
-let expectedTurboTeam = "";
-try {
-  expectedTurboTeam = turboLink ? (JSON.parse(turboLink).teamId ?? "") : "";
-} catch {
-  expectedTurboTeam = "";
-}
-
-const rawTurboTeam = fileEnv.TURBO_TEAM ?? "";
-const foreignTeam =
-  rawTurboTeam !== "" &&
-  (expectedTurboTeam === "" || rawTurboTeam !== expectedTurboTeam);
-export const turboToken = foreignTeam ? "" : (fileEnv.TURBO_TOKEN ?? "");
-export const turboTeam = foreignTeam ? "" : rawTurboTeam;
-if (foreignTeam) {
-  console.log(
-    expectedTurboTeam === ""
-      ? `[turbo] remote cache disabled — no .turbo/config.json to verify TURBO_TEAM="${rawTurboTeam}" against (run \`turbo link\`); refusing to write to an unverified team cache`
-      : `[turbo] remote cache disabled — .env TURBO_TEAM="${rawTurboTeam}" is not this repo's scope; refusing to write to a foreign team cache`,
-  );
-} else if (turboToken && turboTeam) {
-  console.log(
-    `[turbo] remote cache enabled (TURBO_TOKEN=${turboToken.length} chars, TURBO_TEAM=${turboTeam.length} chars)`,
-  );
-} else {
-  console.log(
-    "[turbo] remote cache disabled — TURBO_TOKEN/TURBO_TEAM not set in the repo-root .env (run `turbo login && turbo link`, then copy .env.example to .env)",
-  );
-}
+export const turboToken = turboCache.enabled ? turboCache.token : "";
+export const turboTeam = turboCache.enabled ? turboCache.team : "";
 
 // Base branch the orchestrator merges into. Used to detect whether a
 // sandcastle/* branch has work ready to merge, regardless of which run

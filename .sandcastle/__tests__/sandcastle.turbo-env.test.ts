@@ -43,32 +43,19 @@ describe('sandcastle-config.mts — gh preflight', () => {
 });
 
 describe('sandcastle turbo-env passthrough', () => {
-  describe('sandcastle-config.mts — TURBO_TOKEN/TURBO_TEAM startup read', () => {
+  /**
+   * Credential resolution itself is covered behaviourally in
+   * sandcastle.turbo-cache.test.ts, which imports the pure resolver and calls
+   * it with real inputs. What remains here is only what a unit test cannot
+   * see: wiring between modules, and a provenance rule about tracked source.
+   */
+  describe('sandcastle-config.mts — wiring', () => {
     const content = read('sandcastle-config.mts');
     const runIssueContent = read('sandcastle-run-issue.mts');
 
-    // Inverted deliberately. A shell profile that exports another project's
-    // TURBO_TEAM applies to every repo on the machine, which is exactly how
-    // this repo ended up authenticating against an unrelated team's cache.
-    // Reading the repo-root .env directly makes that structurally impossible;
-    // these two assertions are what stop it regressing.
-    it('does NOT read TURBO_TOKEN from process.env', () => {
-      expect(stripComments(content)).not.toMatch(/process\.env\.TURBO_TOKEN/);
-    });
-
-    it('does NOT read TURBO_TEAM from process.env', () => {
-      expect(stripComments(content)).not.toMatch(/process\.env\.TURBO_TEAM/);
-    });
-
-    it('reads both from the repo-root .env via dotenv.parse', () => {
-      expect(content).toMatch(/dotenv\.parse/);
-      expect(content).toMatch(/fileEnv\.TURBO_TOKEN/);
-      expect(content).toMatch(/fileEnv\.TURBO_TEAM/);
-    });
-
-    it('uses dotenv.parse, not an API that mutates process.env', () => {
-      expect(stripComments(content)).not.toMatch(/dotenv\.config\(/);
-      expect(stripComments(content)).not.toMatch(/loadEnvFile/);
+    it('delegates the decision to the pure resolver instead of inlining it', () => {
+      expect(stripComments(content)).toMatch(/resolveTurboCache\(/);
+      expect(stripComments(content)).toMatch(/sandcastle-turbo-cache\.mts/);
     });
 
     it('exports turboToken/turboTeam for consumers to import', () => {
@@ -77,61 +64,28 @@ describe('sandcastle turbo-env passthrough', () => {
     });
 
     it('sandcastle-run-issue.mts (the createSandbox call site) imports turboToken/turboTeam from sandcastle-config.mts', () => {
-      // The read-before-runIssue ordering this replaced no longer has a
-      // faithful equivalent once TURBO_TOKEN and runIssue live in different
-      // files — asserting the import wiring at the actual consumer is the
-      // meaningful post-split check.
       expect(runIssueContent).toMatch(
         /import\s*\{[^}]*turboToken[^}]*\}\s*from\s*["']\.\/sandcastle-config\.mts["']/,
       );
     });
+  });
 
-    it("refuses a foreign TURBO_TEAM instead of cross-contaminating another team's cache", () => {
-      expect(content).toMatch(/foreign team cache/i);
-      expect(content).toMatch(/foreignTeam \? ""/);
+  // Provenance, not behaviour: a Vercel team ID committed to this public repo
+  // once required a full git-history rewrite to remove. Deriving the expected
+  // team from the gitignored `.turbo/config.json` is what keeps it out; this
+  // asserts no orchestrator source reintroduces a literal.
+  describe('no account identifier in tracked orchestrator source', () => {
+    const sources = fs
+      .readdirSync(SANDCASTLE)
+      .filter((f) => f.endsWith('.mts'))
+      .map((f) => [f, read(f)] as const);
+
+    it('finds .mts sources to scan', () => {
+      expect(sources.length).toBeGreaterThan(0);
     });
 
-    // The expected team must never be a literal in tracked source — hardcoding
-    // it previously published an account identifier in this public repo.
-    it('derives the expected team from .turbo/config.json, not a hardcoded literal', () => {
-      expect(content).toMatch(/\.turbo/);
-      expect(content).toMatch(/teamId/);
-      expect(content).not.toMatch(/EXPECTED_TURBO_TEAM\s*=\s*["'][^"']+["']/);
-    });
-
-    it('contains no Vercel team identifier literal at all', () => {
-      expect(content).not.toMatch(/team_[A-Za-z0-9]{10,}/);
-    });
-
-    it('disables the cache when .turbo/config.json is absent rather than trusting the value', () => {
-      expect(content).toMatch(/expectedTurboTeam === ""/);
-    });
-
-    it('prints warning when TURBO vars are missing', () => {
-      expect(content).toMatch(/remote cache disabled.*TURBO_TOKEN.*TURBO_TEAM not set/i);
-    });
-
-    it('prints presence and length when TURBO vars are set, not the values', () => {
-      expect(content).toMatch(/\.length/);
-      // Must mention "chars" or "char" to describe length, not raw value
-      expect(content).toMatch(/chars/i);
-    });
-
-    it('does not log literal token values (no template literal that embeds the env var directly in a string without .length)', () => {
-      // Look for any console.log/process.stdout that prints TURBO_TOKEN value directly
-      // Acceptable: `TURBO_TOKEN=${x.length} chars`
-      // NOT acceptable: `TURBO_TOKEN=${process.env.TURBO_TOKEN}`
-      const logLines = content
-        .split('\n')
-        .filter(
-          (line) =>
-            (line.includes('console.log') || line.includes('process.stdout.write')) &&
-            line.includes('TURBO_TOKEN'),
-        );
-      for (const line of logLines) {
-        // Must not embed the raw env var value — only .length is acceptable
-        expect(line).not.toMatch(/\$\{turboToken\}|\$\{process\.env\.TURBO_TOKEN\}/);
-      }
+    it.each(sources)('%s carries no Vercel team ID literal', (_name, source) => {
+      expect(source).not.toMatch(/team_[A-Za-z0-9]{10,}/);
     });
   });
 
