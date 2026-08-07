@@ -5,7 +5,7 @@ import { formatDate, getAllPosts } from '@/lib/posts';
 
 export const metadata: Metadata = {
   title: 'Blog',
-  description: 'Artículos sobre frontend, testing automatizado y agentes de código.',
+  description: 'Posts on frontend, automated testing and coding agents.',
 };
 
 export default function BlogIndexPage() {
