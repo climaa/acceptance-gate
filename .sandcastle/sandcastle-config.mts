@@ -1,7 +1,12 @@
 // Orchestrator configuration — constants shared across the plan/implement/
 // build-verify/review/merge phases, plus two import-time side effects (not
 // just inert constants): the `process.env.PATH` prepend below and the
-// TURBO_TOKEN/TURBO_TEAM startup log both run as soon as this module loads.
+// turbo remote-cache startup log both run as soon as this module loads.
+
+import { readFileSync } from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import dotenv from "dotenv";
 
 // `pnpm sandcastle` spawns scripts in /bin/sh with a minimal PATH that omits
 // Homebrew's bin dirs, so `gh` (used by the stranded-branch rescue path) goes
@@ -9,33 +14,74 @@
 // resolve regardless of launch context.
 process.env.PATH = `/opt/homebrew/bin:/usr/local/bin:${process.env.PATH ?? ""}`;
 
-// Host-shell only — not from .env (avoids stale-token footgun and accidental git commit).
+const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+
+function readIfPresent(file: string): string | null {
+  try {
+    return readFileSync(file, "utf8");
+  } catch {
+    return null;
+  }
+}
+
+// Turbo credentials come from the repo-root `.env` and NOWHERE else.
+//
+// Deliberately NOT `process.env.TURBO_TOKEN`/`process.env.TURBO_TEAM`: a shell
+// profile that exports another project's team (the common case — one
+// `export TURBO_TEAM=...` in ~/.bashrc applies to every repo on the machine)
+// would otherwise silently send this repo's artifacts to a foreign cache.
+// Reading the file directly makes that structurally impossible, rather than
+// depending on precedence rules or a CLI flag someone forgets to pass.
+//
+// `dotenv.parse` returns a plain object and never mutates process.env — unlike
+// `dotenv.config()` or node's `process.loadEnvFile()`, both of which write into
+// the environment and would reintroduce the ambient coupling this avoids.
+//
+// Asymmetry worth preserving: the `turbo` binary cannot read `.env` itself
+// ("Turborepo does not natively load .env files into a task's runtime"), so
+// package.json wraps the turbo scripts in `dotenv -e .env -o --`. This module
+// needs no such wrapper — do not "simplify" it back onto process.env.
 //
 // .env injection caveat: the @ai-hero/sandcastle package's `resolveEnv` parses
-// `.sandcastle/.env` and injects every key PRESENT there into every sandbox,
-// with per-key fallback to the host `process.env` value only when the .env
-// value is EMPTY. A key that is ABSENT from `.sandcastle/.env` gets no
-// injection at all — resolveEnv never sweeps the host env wholesale. This
-// distinction matters for GH_TOKEN/CLAUDE_CODE_OAUTH_TOKEN too. For turbo,
-// the credentials are now threaded via `docker({ env })` at the two build-verify
-// call sites (sandbox-provider env, which overrides resolveEnv), so keep
-// TURBO_TOKEN/TURBO_TEAM EMPTY or ABSENT in `.sandcastle/.env` to avoid a
-// stale-token copy shadowing the host-shell values read below.
-// (`.sandcastle/.env` is gitignored — this can only be documented, not enforced.)
-// Guard: this repo's cache lives in the owner's personal scope. Env vars
-// override the repo's .turbo link, and a stale TURBO_TEAM exported for another
-// project must never send artifacts to a foreign team cache — disable the
-// remote cache entirely rather than cross-contaminate.
-// The opaque Vercel team ID (not the slug — IDs are immutable and carry no
-// external naming). TURBO_TEAM accepts either form.
-const EXPECTED_TURBO_TEAM = "REDACTED-TEAM";
-const rawTurboTeam = process.env.TURBO_TEAM ?? "";
-const foreignTeam = rawTurboTeam !== "" && rawTurboTeam !== EXPECTED_TURBO_TEAM;
-export const turboToken = foreignTeam ? "" : (process.env.TURBO_TOKEN ?? "");
+// `.sandcastle/.env` and injects every key PRESENT there into every sandbox.
+// Keep TURBO_TOKEN/TURBO_TEAM ABSENT from `.sandcastle/.env` so a stale copy
+// cannot shadow the values threaded via `docker({ env })` at the two
+// build-verify call sites. (`.sandcastle/.env` is gitignored — documentable,
+// not enforceable.)
+const rootEnv = readIfPresent(path.join(REPO_ROOT, ".env"));
+const fileEnv = rootEnv ? dotenv.parse(rootEnv) : {};
+
+// The expected team is this repo's own turbo link (`.turbo/config.json` —
+// gitignored, written by `turbo link`), never a literal in tracked source.
+// Hardcoding it published an account identifier in a public repo; deriving it
+// keeps provenance out of git entirely and survives an account change with no
+// code edit. Absent or unparseable => no expected team => cache disabled.
+//
+// Caveat: `turbo` REWRITES `.turbo/config.json` from whatever TURBO_TEAM it
+// sees, so a bare `turbo run ...` with a foreign team exported would re-point
+// this reference. That is why every turbo script in package.json is wrapped in
+// `dotenv -e .env -o --`: turbo then only ever sees the root `.env` values and
+// the link file stays in agreement with them. Invoke turbo through the pnpm
+// scripts, not directly.
+const turboLink = readIfPresent(path.join(REPO_ROOT, ".turbo", "config.json"));
+let expectedTurboTeam = "";
+try {
+  expectedTurboTeam = turboLink ? (JSON.parse(turboLink).teamId ?? "") : "";
+} catch {
+  expectedTurboTeam = "";
+}
+
+const rawTurboTeam = fileEnv.TURBO_TEAM ?? "";
+const foreignTeam =
+  rawTurboTeam !== "" &&
+  (expectedTurboTeam === "" || rawTurboTeam !== expectedTurboTeam);
+export const turboToken = foreignTeam ? "" : (fileEnv.TURBO_TOKEN ?? "");
 export const turboTeam = foreignTeam ? "" : rawTurboTeam;
 if (foreignTeam) {
   console.log(
-    `[turbo] remote cache disabled — TURBO_TEAM="${rawTurboTeam}" is not this repo's scope (${EXPECTED_TURBO_TEAM}); refusing to write to a foreign team cache`,
+    expectedTurboTeam === ""
+      ? `[turbo] remote cache disabled — no .turbo/config.json to verify TURBO_TEAM="${rawTurboTeam}" against (run \`turbo link\`); refusing to write to an unverified team cache`
+      : `[turbo] remote cache disabled — .env TURBO_TEAM="${rawTurboTeam}" is not this repo's scope; refusing to write to a foreign team cache`,
   );
 } else if (turboToken && turboTeam) {
   console.log(
@@ -43,7 +89,7 @@ if (foreignTeam) {
   );
 } else {
   console.log(
-    "[turbo] remote cache disabled — TURBO_TOKEN/TURBO_TEAM not set in host env (run `turbo login && turbo link` to enable)",
+    "[turbo] remote cache disabled — TURBO_TOKEN/TURBO_TEAM not set in the repo-root .env (run `turbo login && turbo link`, then copy .env.example to .env)",
   );
 }
 

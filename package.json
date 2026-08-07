@@ -7,22 +7,24 @@
     "node": ">=22.14.0 <23.0.0"
   },
   "scripts": {
-    "dev": "turbo run dev",
-    "build": "turbo run build",
-    "lint": "turbo run lint",
-    "typecheck": "turbo run typecheck",
+    "dev": "dotenv -e .env -o -- turbo run dev",
+    "build": "dotenv -e .env -o -- turbo run build",
+    "lint": "dotenv -e .env -o -- turbo run lint",
+    "typecheck": "dotenv -e .env -o -- turbo run typecheck",
     "clean": "turbo run clean && rm -rf node_modules",
     "format": "prettier --write \"**/*.{ts,tsx,md,mdx,json,css}\"",
-    "test": "turbo run test",
+    "test": "dotenv -e .env -o -- turbo run test",
     "sandcastle": "tsx .sandcastle/main.mts",
     "test:sandcastle": "vitest run --config vitest.sandcastle.config.mts"
   },
   "devDependencies": {
+    "@ai-hero/sandcastle": "0.12.0",
+    "dotenv": "^17.4.2",
+    "dotenv-cli": "^11.0.0",
     "prettier": "^3.4.2",
+    "tsx": "^4.19.2",
     "turbo": "^2.10.8",
     "typescript": "^5.7.2",
-    "@ai-hero/sandcastle": "0.12.0",
-    "tsx": "^4.19.2",
     "vitest": "^3.0.0"
   }
 }

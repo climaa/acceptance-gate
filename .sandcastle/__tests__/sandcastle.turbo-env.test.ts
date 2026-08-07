@@ -8,17 +8,44 @@ function read(file: string) {
   return fs.readFileSync(path.join(SANDCASTLE, file), 'utf8');
 }
 
+/**
+ * Strip comments so "must not appear" assertions test the actual code.
+ * sandcastle-config.mts documents at length why it does NOT read
+ * `process.env.TURBO_TOKEN` and why `dotenv.config()` is the wrong API —
+ * naming both in prose. Without this, the explanation would fail the very
+ * assertions it explains.
+ */
+function stripComments(source: string) {
+  return source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
+}
+
 describe('sandcastle turbo-env passthrough', () => {
   describe('sandcastle-config.mts — TURBO_TOKEN/TURBO_TEAM startup read', () => {
     const content = read('sandcastle-config.mts');
     const runIssueContent = read('sandcastle-run-issue.mts');
 
-    it('reads TURBO_TOKEN from process.env', () => {
-      expect(content).toMatch(/process\.env\.TURBO_TOKEN/);
+    // Inverted deliberately. A shell profile that exports another project's
+    // TURBO_TEAM applies to every repo on the machine, which is exactly how
+    // this repo ended up authenticating against an unrelated team's cache.
+    // Reading the repo-root .env directly makes that structurally impossible;
+    // these two assertions are what stop it regressing.
+    it('does NOT read TURBO_TOKEN from process.env', () => {
+      expect(stripComments(content)).not.toMatch(/process\.env\.TURBO_TOKEN/);
     });
 
-    it('reads TURBO_TEAM from process.env', () => {
-      expect(content).toMatch(/process\.env\.TURBO_TEAM/);
+    it('does NOT read TURBO_TEAM from process.env', () => {
+      expect(stripComments(content)).not.toMatch(/process\.env\.TURBO_TEAM/);
+    });
+
+    it('reads both from the repo-root .env via dotenv.parse', () => {
+      expect(content).toMatch(/dotenv\.parse/);
+      expect(content).toMatch(/fileEnv\.TURBO_TOKEN/);
+      expect(content).toMatch(/fileEnv\.TURBO_TEAM/);
+    });
+
+    it('uses dotenv.parse, not an API that mutates process.env', () => {
+      expect(stripComments(content)).not.toMatch(/dotenv\.config\(/);
+      expect(stripComments(content)).not.toMatch(/loadEnvFile/);
     });
 
     it('exports turboToken/turboTeam for consumers to import', () => {
@@ -37,9 +64,24 @@ describe('sandcastle turbo-env passthrough', () => {
     });
 
     it("refuses a foreign TURBO_TEAM instead of cross-contaminating another team's cache", () => {
-      expect(content).toMatch(/EXPECTED_TURBO_TEAM/);
       expect(content).toMatch(/foreign team cache/i);
       expect(content).toMatch(/foreignTeam \? ""/);
+    });
+
+    // The expected team must never be a literal in tracked source — hardcoding
+    // it previously published an account identifier in this public repo.
+    it('derives the expected team from .turbo/config.json, not a hardcoded literal', () => {
+      expect(content).toMatch(/\.turbo/);
+      expect(content).toMatch(/teamId/);
+      expect(content).not.toMatch(/EXPECTED_TURBO_TEAM\s*=\s*["'][^"']+["']/);
+    });
+
+    it('contains no Vercel team identifier literal at all', () => {
+      expect(content).not.toMatch(/team_[A-Za-z0-9]{10,}/);
+    });
+
+    it('disables the cache when .turbo/config.json is absent rather than trusting the value', () => {
+      expect(content).toMatch(/expectedTurboTeam === ""/);
     });
 
     it('prints warning when TURBO vars are missing', () => {
@@ -185,6 +227,55 @@ describe('sandcastle turbo-env passthrough', () => {
 
     it('mentions turbo login or turbo link for setup', () => {
       expect(content).toMatch(/turbo login|turbo link/i);
+    });
+
+    it('points at the repo-root .env as the real location', () => {
+      expect(content).toMatch(/root/i);
+    });
+  });
+
+  describe('repo-root .env.example — the committed template', () => {
+    const content = fs.readFileSync(path.join(ROOT, '.env.example'), 'utf8');
+
+    it('declares TURBO_TOKEN as a KEY= line to fill in', () => {
+      expect(content).toMatch(/^TURBO_TOKEN=/m);
+    });
+
+    it('declares TURBO_TEAM as a KEY= line to fill in', () => {
+      expect(content).toMatch(/^TURBO_TEAM=/m);
+    });
+
+    it('ships no real values — placeholders only', () => {
+      expect(content).not.toMatch(/^TURBO_TOKEN=.+/m);
+      expect(content).not.toMatch(/^TURBO_TEAM=.+/m);
+    });
+
+    it('carries no Vercel team identifier literal', () => {
+      expect(content).not.toMatch(/team_[A-Za-z0-9]{10,}/);
+    });
+  });
+
+  describe('package.json — turbo scripts load .env with override', () => {
+    const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
+
+    // turbo is a binary we do not control and cannot read .env itself, so the
+    // scripts must inject it. Without -o, an exported TURBO_TEAM from a shell
+    // profile still wins and the leak returns silently.
+    const turboScripts = ['dev', 'build', 'lint', 'typecheck', 'test'] as const;
+
+    it.each(turboScripts)('%s wraps turbo in dotenv with -o', (name) => {
+      expect(pkg.scripts[name]).toMatch(/dotenv -e \.env -o -- turbo run/);
+    });
+
+    // This one reads .env itself via dotenv.parse — wrapping it would put the
+    // values back into process.env, which is what we are avoiding.
+    it('sandcastle is NOT wrapped — it reads .env directly', () => {
+      expect(pkg.scripts.sandcastle).not.toMatch(/dotenv/);
+    });
+
+    it('depends on dotenv and dotenv-cli', () => {
+      expect(pkg.devDependencies).toHaveProperty('dotenv');
+      expect(pkg.devDependencies).toHaveProperty('dotenv-cli');
     });
   });
 });

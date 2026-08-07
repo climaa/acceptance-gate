@@ -30,7 +30,7 @@ designs/               acceptance-gate.pen (Pencil source) + exports/*.png
 
 ## 📦 Core Modules
 
-- **`.sandcastle/sandcastle-config.mts`** — constants: `BASE_BRANCH=main`, turbo cache guard (foreign `TURBO_TEAM` → cache disabled), PATH fixes
+- **`.sandcastle/sandcastle-config.mts`** — constants: `BASE_BRANCH=main`, PATH fixes, turbo credentials read from the repo-root `.env` only (never `process.env`), with the expected team derived from `.turbo/config.json` → mismatch or missing link disables the cache
 - **`.sandcastle/sandcastle-model-overrides.mts`** — `sc:<role>:<model|effort:*>` label grammar; resolution `PROFILES < SC_* env < issue label`
 - **`.sandcastle/sandcastle-merge.mts`** — squash auto-merge flow; ~20-min poll window
 - **`packages/ui/src/tokens.css`** — the single visual source of truth; light = parchment/terracotta, dark = terminal lime; audit block lists pruning work

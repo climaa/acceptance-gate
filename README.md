@@ -50,10 +50,16 @@ as "both themes look the same":
 
 ```bash
 pnpm install
+cp .env.example .env  # turbo remote-cache credentials — see the comments inside
 pnpm dev              # blog on :3000
-pnpm turbo run lint build test typecheck
+pnpm lint && pnpm build && pnpm test && pnpm typecheck
 pnpm test:sandcastle  # the orchestrator's own hermetic suite
 ```
+
+Run turbo through the `pnpm` scripts rather than `pnpm turbo run ...` directly.
+The scripts wrap turbo in `dotenv -e .env -o --` so its credentials come from
+this repo's `.env` and never from your shell — a `TURBO_TEAM` exported in a
+shell profile would otherwise apply to every repo on the machine.
 
 Toolchain pinned: pnpm 11.17 (`packageManager` + sha512), Node 22 (`.nvmrc`),
 Turborepo ^2.10.

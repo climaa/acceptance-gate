@@ -147,6 +147,12 @@ Copy `.env.example` to `.env` and fill in:
 
 `.env` is gitignored — never commit it.
 
+`TURBO_TOKEN`/`TURBO_TEAM` live in the **repo-root** `.env` (see the root
+`.env.example`) — the split is forced: the package hardcodes this path. Keep
+`TURBO_*` out of this file, or the copy is injected into every sandbox and
+shadows the values threaded in via `docker({ env })`. Turbo credentials never
+come from the host shell, so an exported `TURBO_TEAM` cannot redirect this cache.
+
 ---
 
 ## Gitignored paths
