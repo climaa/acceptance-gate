@@ -36,9 +36,8 @@ Model and effort per role are pinned in `sandcastle-agent-profiles.mts` — that
 file is the source of truth; this table mirrors it.
 
 Implement + Review share one Docker sandbox per issue. All issue pipelines
-run serially (concurrent `pnpm install` was observed to deadlock on pnpm
-10.x; repo now pins 11.17.0, kept serial as a precaution; learned from a
-pnpm parallel-install deadlock in production).
+run serially: concurrent `pnpm install` deadlocked on pnpm 10.x in production,
+and while the repo now pins 11.17.0, serial execution stays as a precaution.
 
 ### Overriding the model per issue or per run
 

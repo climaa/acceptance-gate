@@ -12,11 +12,10 @@
 //                               reviewer run in the same sandbox on the same
 //                               branch. Issue pipelines run serially via a
 //                               sequential for…await loop — concurrent pnpm
-//                               installs were observed to deadlock (on
-//                               pnpm 10.x; repo now pins 11.17.0, kept
-//                               serial as a precaution);
-//                               failures are caught per-issue so the rest
-//                               continue.
+//                               installs were observed to deadlock on pnpm
+//                               10.x; the repo now pins 11.17.0 but stays
+//                               serial as a precaution. Failures are caught
+//                               per-issue so the rest continue.
 //   Phase 3 (Merge):            A single agent (sandcastle-merge.mts) merges
 //                               all completed branches into the current branch.
 //
@@ -177,9 +176,9 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
   //
   //   1. Is the issue still eligible? An issue already marked no-op is dropped
   //      here rather than run again. The planner is told to skip them too
-  //      (.sandcastle/agent-docs/plan-prompt.md), but a mechanism that stops a run from
-  //      burning MAX_ITERATIONS on one issue must not depend on an agent
-  //      obeying a prompt.
+  //      (.sandcastle/agent-docs/plan-prompt.md), but a mechanism that stops a
+  //      run from burning MAX_ITERATIONS on one issue must not depend on an
+  //      agent obeying a prompt.
   //   2. Its model/effort overrides (sandcastle-model-overrides.mts). A typo'd
   //      control label costs nothing here: a label that does not parse must
   //      never silently fall back to the expensive default.
@@ -244,7 +243,9 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
 
   console.log(
     `Planning complete. ${issues.length} issue(s) to run serially ` +
-      `(concurrent sandbox \`pnpm install\` was observed to deadlock on pnpm 10.x; repo now pins 11.17.0, kept serial as a precaution — see sandcastle-run-issue.mts for context):`,
+      "(concurrent sandbox `pnpm install` was observed to deadlock on pnpm 10.x; " +
+      "repo now pins 11.17.0, kept serial as a precaution — " +
+      "see sandcastle-run-issue.mts for context):",
   );
   for (const issue of issues) {
     // Name the effective model whenever it differs from the pinned default, so
@@ -267,9 +268,9 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
   // pipeline. Issues run serially: concurrent `pnpm install` in parallel
   // sandboxes was observed to deadlock on pnpm 10.x (multiple containers
   // stalled in epoll_wait with zero filesystem progress past the first
-  // second; repo now pins 11.17.0, kept serial as a precaution). One failing
-  // pipeline still doesn't stop the rest — failures are caught and recorded
-  // so later issues continue.
+  // second). The repo now pins 11.17.0, but execution stays serial as a
+  // precaution. One failing pipeline still doesn't stop the rest — failures
+  // are caught and recorded so later issues continue.
   // -------------------------------------------------------------------------
 
   const settled: PromiseSettledResult<Awaited<ReturnType<typeof runIssue>>>[] =
@@ -348,7 +349,8 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
 
   // Rescue: sandcastle/* branches that are ahead of base but weren't part
   // of this iteration's plan (the planner skips already-implemented ones
-  // on the assumption the merger will land them — see .sandcastle/agent-docs/plan-prompt.md).
+  // on the assumption the merger will land them — see
+  // .sandcastle/agent-docs/plan-prompt.md).
   // If a previous iteration's merge phase crashed or was interrupted,
   // such branches would otherwise be stranded forever.
   //
@@ -394,13 +396,12 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
   // Trigger CI from the host before opening PRs.
   //
   // The implementer/reviewer run in worktree-mode sandboxes: the agent's
-  // commits sync back to the host branch (syncOut), but that host branch is
-  // never itself pushed to GitHub. The merger runs afterward in a HEAD-mode
-  // sandbox that bind-mounts this same host checkout — it does not clone or
-  // push a separate copy, so if nobody pushes the branch to GitHub first, the
-  // PR the merger opens lands with no required checks and sits BLOCKED
-  // forever under the strict, no-bypass branch ruleset — auto-merge can never
-  // complete.
+  // commits sync back to the host branch (syncOut), but nothing on that path
+  // pushes the branch to GitHub. The merger then runs in a HEAD-mode sandbox
+  // that bind-mounts this same host checkout (sandcastle-sandbox-hooks.mts).
+  // If the branch has never reached GitHub by the time the merger opens its
+  // PR, that PR lands with no required checks and sits BLOCKED forever under
+  // the strict, no-bypass branch ruleset — auto-merge can never complete.
   //
   // Pushing each branch to GitHub from the HOST (real `origin`, classic PAT)
   // triggers Actions. Doing it here, before runMerger, means the PR is

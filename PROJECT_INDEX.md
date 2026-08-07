@@ -10,8 +10,8 @@ Generated: 2026-08-07 (regenerate with `/sc:index-repo` — a stale date here me
   sandcastle-*.mts     config · agent profiles · model overrides · lifecycle ·
                        merge · merge branch-line · run-issue · stranded-branches ·
                        worktree safety · worktree sandbox · build-verify · git ·
-                       image freshness · no-op issues (`sandcastle:no-op` label
-                       flow) · sandbox hooks · turbo cache
+                       image freshness · no-op issues · sandbox hooks ·
+                       turbo cache
   agent-docs/          the four phase prompts + CODING_STANDARDS.md
   __tests__/           24 hermetic vitest files (337 tests) guarding the contracts
 apps/
