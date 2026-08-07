@@ -2,13 +2,8 @@
 // createSandbox() so the implementer and reviewer share the same sandbox
 // instance on the same branch. The implementer runs first; if it produces
 // commits, build-verify then the reviewer run in the same sandbox.
-import { execSync } from "node:child_process";
-import * as sandcastle from "@ai-hero/sandcastle";
-import { docker } from "@ai-hero/sandcastle/sandboxes/docker";
-import { BASE_BRANCH, turboToken, turboTeam } from "./sandcastle-config.mts";
-import { worktreeHooks } from "./sandcastle-sandbox-hooks.mts";
+import { createWorktreeSandbox } from "./sandcastle-worktree-sandbox.mts";
 import { agentFor } from "./sandcastle-agent-profiles.mts";
-import { withRetry } from "./sandcastle-lifecycle.mts";
 import {
   type TurboStats,
   formatMs,
@@ -24,33 +19,7 @@ export async function runIssue(issue: IssueRef, abortSignal: AbortSignal) {
   // still runs its `finally { sandbox.close() }`; this only stops new work.
   abortSignal.throwIfAborted();
 
-  // Ensure origin/main is up to date so the worktree forks from the
-  // correct tip regardless of what branch the host is currently on.
-  execSync(`git fetch origin ${BASE_BRANCH}`, { stdio: "inherit" });
-
-  // Drop stale .git/worktrees/<name>/ metadata from prior aborted iterations.
-  // Without this, git commands in the worktree path fail with "not a git
-  // repository" when the directory no longer exists — exit 128 that surfaces
-  // as a SandboxLifecycle FiberFailure (stale bind-mount git view).
-  execSync("git worktree prune", { stdio: "inherit" });
-
-  const sandbox = await withRetry(() =>
-    sandcastle.createSandbox({
-      branch: issue.branch,
-      baseBranch: `origin/${BASE_BRANCH}`,
-      sandbox: docker({
-        containerUid: process.getuid?.() ?? 1000,
-        containerGid: process.getgid?.() ?? 1000,
-        ...(turboToken && turboTeam
-          ? { env: { TURBO_TOKEN: turboToken, TURBO_TEAM: turboTeam } }
-          : {}),
-      }),
-      // worktreeHooks: this mount is a fresh worktree under
-      // .sandcastle/worktrees/ with no node_modules of its own, so the startup
-      // `pnpm install` both belongs here and stays inside the worktree.
-      hooks: worktreeHooks,
-    }),
-  );
+  const sandbox = await createWorktreeSandbox(issue.branch);
 
   try {
     // Run the implementer. If it throws (e.g. AgentIdleTimeoutError) but the

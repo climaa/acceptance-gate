@@ -10,24 +10,28 @@ function read(file: string) {
 
 describe('sandcastle lifecycle prune + retry', () => {
   // Fix A (the call site: worktree prune before createSandbox, wrapped in
-  // withRetry) now lives in sandcastle-run-issue.mts. Fix B (withRetry's own
-  // definition — attempt count, backoff delay, warning text) lives in
+  // withRetry) now lives in the shared sandcastle-worktree-sandbox.mts helper,
+  // consumed by both sandcastle-run-issue.mts and
+  // sandcastle-stranded-branches.mts. Fix B (withRetry's own definition —
+  // attempt count, backoff delay, warning text) lives in
   // sandcastle-lifecycle.mts.
-  const runIssueContent = read('sandcastle-run-issue.mts');
+  const worktreeSandboxContent = read('sandcastle-worktree-sandbox.mts');
   const lifecycleContent = read('sandcastle-lifecycle.mts');
 
-  const runIssueStart = runIssueContent.indexOf('export async function runIssue');
-  // runIssue is the only exported function in this file — slice to the end.
-  const runIssueBody = runIssueContent.slice(runIssueStart);
+  const helperStart = worktreeSandboxContent.indexOf(
+    'export async function createWorktreeSandbox',
+  );
+  // createWorktreeSandbox is the only exported function in this file — slice to the end.
+  const helperBody = worktreeSandboxContent.slice(helperStart);
 
   describe('Fix A — git worktree prune before createSandbox', () => {
-    it('runIssue calls git worktree prune', () => {
-      expect(runIssueBody).toMatch(/git worktree prune/);
+    it('createWorktreeSandbox calls git worktree prune', () => {
+      expect(helperBody).toMatch(/git worktree prune/);
     });
 
     it('worktree prune occurs before createSandbox', () => {
-      const pruneIdx = runIssueBody.indexOf('git worktree prune');
-      const createIdx = runIssueBody.indexOf('sandcastle.createSandbox(');
+      const pruneIdx = helperBody.indexOf('git worktree prune');
+      const createIdx = helperBody.indexOf('sandcastle.createSandbox(');
       expect(pruneIdx).toBeGreaterThan(-1);
       expect(createIdx).toBeGreaterThan(-1);
       expect(pruneIdx).toBeLessThan(createIdx);
@@ -35,8 +39,8 @@ describe('sandcastle lifecycle prune + retry', () => {
 
     it('worktree prune uses execSync with stdio inherit or pipe (not fire-and-forget)', () => {
       // The prune call must be synchronous so it completes before createSandbox starts
-      const pruneIdx = runIssueContent.indexOf('git worktree prune');
-      const pruneContext = runIssueContent.slice(pruneIdx - 30, pruneIdx + 100);
+      const pruneIdx = worktreeSandboxContent.indexOf('git worktree prune');
+      const pruneContext = worktreeSandboxContent.slice(pruneIdx - 30, pruneIdx + 100);
       expect(pruneContext).toMatch(/execSync/);
     });
   });
@@ -46,10 +50,10 @@ describe('sandcastle lifecycle prune + retry', () => {
       // Accept any retry pattern: a named helper fn, a for/while loop with catch,
       // or an inline attempt counter
       const hasRetryHelper =
-        runIssueBody.includes('withRetry') ||
-        runIssueBody.includes('retryCreateSandbox') ||
-        /for\s*\(.*attempt.*<.*\d/.test(runIssueBody) ||
-        /let attempt/.test(runIssueBody);
+        helperBody.includes('withRetry') ||
+        helperBody.includes('retryCreateSandbox') ||
+        /for\s*\(.*attempt.*<.*\d/.test(helperBody) ||
+        /let attempt/.test(helperBody);
       expect(hasRetryHelper).toBe(true);
     });
 

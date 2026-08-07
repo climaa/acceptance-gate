@@ -3,11 +3,7 @@
 // prior merge phase crashed or was interrupted), build-verifies them, and
 // hands back only the ones safe to merge.
 import { execSync } from "node:child_process";
-import * as sandcastle from "@ai-hero/sandcastle";
-import { docker } from "@ai-hero/sandcastle/sandboxes/docker";
-import { BASE_BRANCH, turboToken, turboTeam } from "./sandcastle-config.mts";
-import { worktreeHooks } from "./sandcastle-sandbox-hooks.mts";
-import { withRetry } from "./sandcastle-lifecycle.mts";
+import { createWorktreeSandbox } from "./sandcastle-worktree-sandbox.mts";
 import { parseOverrideLabels } from "./sandcastle-model-overrides.mts";
 import { isDocsOnlyDiff, runBuildVerify } from "./sandcastle-build-verify.mts";
 import {
@@ -149,30 +145,9 @@ export async function buildVerifyRescuedBranch(
   // don't spin up a new build-verify sandbox — this is "new work".
   abortSignal.throwIfAborted();
 
-  // Mirror runIssue's pre-createSandbox hygiene so the worktree forks cleanly.
-  execSync(`git fetch origin ${BASE_BRANCH}`, { stdio: "inherit" });
-  execSync("git worktree prune", { stdio: "inherit" });
-
-  let sandbox: Awaited<ReturnType<typeof sandcastle.createSandbox>>;
+  let sandbox: Awaited<ReturnType<typeof createWorktreeSandbox>>;
   try {
-    sandbox = await withRetry(() =>
-      sandcastle.createSandbox({
-        // baseBranch is ignored when the branch already exists (it does for a
-        // rescued branch), so this checks out the existing commits, not a fork.
-        branch: ref.branch,
-        baseBranch: `origin/${BASE_BRANCH}`,
-        sandbox: docker({
-          containerUid: process.getuid?.() ?? 1000,
-          containerGid: process.getgid?.() ?? 1000,
-          ...(turboToken && turboTeam
-            ? { env: { TURBO_TOKEN: turboToken, TURBO_TEAM: turboTeam } }
-            : {}),
-        }),
-        // worktreeHooks: same fresh-worktree mount as the per-issue pipeline,
-        // and this sandbox exists to run `pnpm build` — it needs the install.
-        hooks: worktreeHooks,
-      }),
-    );
+    sandbox = await createWorktreeSandbox(ref.branch);
   } catch (err) {
     console.warn(
       `  ⚠ rescued branch ${ref.branch} (#${ref.id}): could not create sandbox ` +

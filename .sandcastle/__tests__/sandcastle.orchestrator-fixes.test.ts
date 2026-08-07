@@ -11,8 +11,7 @@ function read(file: string) {
 describe('sandcastle orchestrator fixes', () => {
   describe('Bug 1 — main.mts always forks from origin/main', () => {
     const configContent = read('sandcastle-config.mts');
-    const runIssueContent = read('sandcastle-run-issue.mts');
-    const strandedBranchesContent = read('sandcastle-stranded-branches.mts');
+    const worktreeSandboxContent = read('sandcastle-worktree-sandbox.mts');
 
     // main.mts was refactored to parameterize the base ref as `BASE_BRANCH`
     // ("align git base-ref"), so the literal "main" became
@@ -23,33 +22,32 @@ describe('sandcastle orchestrator fixes', () => {
       expect(configContent).toMatch(/const BASE_BRANCH\s*=\s*["']main["']/);
     });
 
-    it('fetches origin/${BASE_BRANCH} before creating a sandbox — both call sites', () => {
+    it('fetches origin/${BASE_BRANCH} before creating a sandbox — the shared worktree-sandbox helper', () => {
       // The per-issue pipeline (sandcastle-run-issue.mts) and the
-      // stranded-branch rescue path (sandcastle-stranded-branches.mts) each
-      // create their own sandbox — both must fetch first.
-      expect(runIssueContent).toMatch(/git fetch origin \$\{BASE_BRANCH\}/);
-      expect(strandedBranchesContent).toMatch(/git fetch origin \$\{BASE_BRANCH\}/);
+      // stranded-branch rescue path (sandcastle-stranded-branches.mts) both
+      // delegate to createWorktreeSandbox() in sandcastle-worktree-sandbox.mts,
+      // which must fetch first.
+      expect(worktreeSandboxContent).toMatch(/git fetch origin \$\{BASE_BRANCH\}/);
     });
 
-    it('passes baseBranch: `origin/${BASE_BRANCH}` to createSandbox — both call sites', () => {
-      expect(runIssueContent).toMatch(/baseBranch:\s*`origin\/\$\{BASE_BRANCH\}`/);
-      expect(strandedBranchesContent).toMatch(
-        /baseBranch:\s*`origin\/\$\{BASE_BRANCH\}`/,
+    it('passes baseBranch: `origin/${BASE_BRANCH}` to createSandbox — the shared worktree-sandbox helper', () => {
+      expect(worktreeSandboxContent).toMatch(/baseBranch:\s*`origin\/\$\{BASE_BRANCH\}`/);
+    });
+
+    it('fetch occurs inside createWorktreeSandbox before createSandbox', () => {
+      const helperStart = worktreeSandboxContent.indexOf(
+        'export async function createWorktreeSandbox',
       );
-    });
-
-    it('fetch occurs inside runIssue before createSandbox', () => {
-      const runIssueStart = runIssueContent.indexOf('export async function runIssue');
-      const fetchIdx = runIssueContent.indexOf(
+      const fetchIdx = worktreeSandboxContent.indexOf(
         'git fetch origin ${BASE_BRANCH}',
-        runIssueStart,
+        helperStart,
       );
-      const createSandboxIdx = runIssueContent.indexOf(
+      const createSandboxIdx = worktreeSandboxContent.indexOf(
         'sandcastle.createSandbox(',
-        runIssueStart,
+        helperStart,
       );
-      expect(runIssueStart).toBeGreaterThan(-1);
-      expect(fetchIdx).toBeGreaterThan(runIssueStart);
+      expect(helperStart).toBeGreaterThan(-1);
+      expect(fetchIdx).toBeGreaterThan(helperStart);
       expect(createSandboxIdx).toBeGreaterThan(fetchIdx);
     });
   });
