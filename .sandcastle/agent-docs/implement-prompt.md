@@ -12,7 +12,7 @@ Work on branch {{BRANCH}}. Make commits and run tests.
 
 Before doing anything else, check whether this branch already has commits ahead of `main`:
 
-!`git rev-list --count main..HEAD`
+!`git rev-list --count origin/main..HEAD`
 
 If the number is **0**, the branch has no work yet — proceed with the rest of this prompt.
 
@@ -106,7 +106,7 @@ pnpm --filter <workspace-path> typecheck
 pnpm --filter <workspace-path> test
 ```
 
-Only if your diff touches >2 workspaces OR root config files (root package.json, turbo.json, tsconfig.json, pnpm-workspace.yaml), fall back to root scripts:
+Only if your diff touches >2 workspaces OR root config files (root package.json, turbo.json, pnpm-workspace.yaml), fall back to root scripts:
 
 ```bash
 pnpm run typecheck

@@ -14,7 +14,7 @@ import { type IssueRef, branchHasCommitsAhead } from "./sandcastle-git.mts";
 
 export async function runIssue(issue: IssueRef, abortSignal: AbortSignal) {
   // Graceful-shutdown guard. createSandbox() takes no
-  // AbortSignal in @ai-hero/sandcastle@0.10.0, so we gate the call site: on
+  // AbortSignal in @ai-hero/sandcastle@0.12.0, so we gate the call site: on
   // abort, don't start a new per-issue sandbox. An in-flight issue below
   // still runs its `finally { sandbox.close() }`; this only stops new work.
   abortSignal.throwIfAborted();
