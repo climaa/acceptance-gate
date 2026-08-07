@@ -1,5 +1,7 @@
-// Pure git/gh CLI query helpers — branch/worktree/issue lookups used by the
+// git/gh CLI helpers — branch/worktree/issue lookups used by the
 // stranded-branch rescue path and the per-issue implement→review pipeline.
+// Read-only except for markIssueNoOp(), which comments and labels; the
+// decisions it acts on are pure and live in sandcastle-noop-issues.mts.
 import { execSync } from "node:child_process";
 import { BASE_BRANCH } from "./sandcastle-config.mts";
 import {
@@ -10,6 +12,11 @@ import type {
   PerIssueRole,
   ProfileOverride,
 } from "./sandcastle-model-overrides.mts";
+import {
+  NOOP_LABEL,
+  NOOP_LABEL_COLOR,
+  NOOP_LABEL_DESCRIPTION,
+} from "./sandcastle-noop-issues.mts";
 
 export type IssueRef = {
   id: string;
@@ -83,6 +90,59 @@ export function fetchIssue(
   } catch {
     return null;
   }
+}
+
+// Record that a pipeline ran on this issue and produced nothing: a comment
+// explaining what happened, then NOOP_LABEL so later iterations and later runs
+// skip it. Never closes the issue — see sandcastle-noop-issues.mts.
+//
+// Every step fails soft. The caller also holds a run-scoped exclusion set, so a
+// gh outage degrades to "not marked durably", not to "spins until
+// MAX_ITERATIONS"; and a failed label add must not lose the comment that
+// explains the situation to a human.
+export function markIssueNoOp(
+  id: string,
+  body: string,
+): { commented: boolean; labeled: boolean } {
+  let commented = false;
+  try {
+    // Body on stdin: it is a multi-line template with backticks and quotes,
+    // none of which survive interpolation into a shell command intact.
+    execSync(`gh issue comment ${id} --body-file -`, {
+      input: body,
+      stdio: "pipe",
+    });
+    commented = true;
+  } catch (err) {
+    console.warn(`  ⚠ could not comment on #${id}: ${(err as Error).message}`);
+  }
+
+  // `gh issue edit --add-label` refuses labels that do not exist, so create it
+  // on first use. A failure here is expected on every subsequent call (the
+  // label already exists) — the add below is what actually reports success.
+  try {
+    execSync(
+      `gh label create "${NOOP_LABEL}" --color ${NOOP_LABEL_COLOR} ` +
+        `--description "${NOOP_LABEL_DESCRIPTION}"`,
+      { stdio: "pipe" },
+    );
+  } catch {
+    // Already exists, or the token cannot create labels — the add tells us.
+  }
+
+  let labeled = false;
+  try {
+    execSync(`gh issue edit ${id} --add-label "${NOOP_LABEL}"`, {
+      stdio: "pipe",
+    });
+    labeled = true;
+  } catch (err) {
+    console.warn(
+      `  ⚠ could not label #${id} ${NOOP_LABEL}: ${(err as Error).message}`,
+    );
+  }
+
+  return { commented, labeled };
 }
 
 export function branchHasOpenPr(branch: string): boolean {

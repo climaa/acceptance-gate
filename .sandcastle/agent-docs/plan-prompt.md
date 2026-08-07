@@ -21,6 +21,14 @@ the orchestrator merges them on its own.
 
 </implemented-branches>
 
+## ALREADY-ATTEMPTED ISSUES
+
+An issue labelled `sandcastle:no-op` was already run and produced no changes —
+either the work was already done, or the task was not understood. It is waiting
+on a human, not on another attempt. **Exclude it from the plan.** A comment on
+the issue explains what happened; a human removes the label when it is worth
+running again.
+
 ## SANDBOX CONSTRAINT
 
 The planner is read-only: it only reads and reasons about issues. This sandbox
