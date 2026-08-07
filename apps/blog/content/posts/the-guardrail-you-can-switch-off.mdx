@@ -1,0 +1,200 @@
+---
+title: 'The guardrail you can switch off'
+description: 'A branch protection rule blocked two merges to main in one afternoon. Both times it caught the assistant, never the autonomous agent — and the same session removed the rule for two seconds and put it back.'
+date: '2026-08-07'
+tags: ['agents', 'ci', 'git']
+draft: false
+---
+
+I spent an afternoon wiring credentials into a repo where an autonomous agent opens its own
+pull requests. Twice I tried to push straight to `main`. Twice GitHub refused:
+
+```
+remote: - Required status check "gate" is expected.
+! [remote rejected] main -> main (protected branch hook declined)
+```
+
+The obvious question is which part of the system decided to stop me. The answer is that
+nothing decided anything. No model evaluated the push. GitHub's pre-receive hook compared a
+config value against a commit status and rejected on mismatch, the same way it would for a
+typo in a branch name. The decision had been made the previous afternoon, by me, and written
+down as a rule.
+
+That is worth stating plainly because the interesting parts only appear once you stop
+looking for a decision.
+
+## The agent never hit the wall
+
+Both rejections were mine. I was doing manual work — a refactor, then a batch of comment
+translations — and reached for the shortest path each time.
+
+The agent that runs unattended in the same repo has never been rejected, because it cannot
+be. Its merge phase does this:
+
+```bash
+gh pr create --title "$TITLE" --body "$BODY"
+gh pr merge "$PR_NUMBER" --squash --auto
+```
+
+There is no `git push origin main` anywhere in its instructions. It opens a pull request,
+enables auto-merge, and waits for the gate to go green. The protected path is the only path
+it knows, so protection is invisible to it.
+
+I found this genuinely uncomfortable. The supervised process — a capable model with a human
+watching every step — tried to bypass the gate twice in one afternoon. The unsupervised
+process took the correct route on its first attempt and every attempt after. Not because it
+is more careful, but because its options were narrowed in advance. It never had the shortcut
+available to reach for.
+
+Autonomy is not the risky variable. Available surface is.
+
+## What the rule actually is
+
+Four lines of configuration, verified through the API rather than trusted from a settings
+page:
+
+```json
+{
+  "required_status_checks": { "contexts": ["gate"], "strict": true },
+  "enforce_admins": true,
+  "allow_force_pushes": false,
+  "allow_deletions": false
+}
+```
+
+One detail carries more weight than the rest: `contexts` names a single check called `gate`,
+and `gate` is not a real job. It is an aggregator that fails unless every other job reports
+success:
+
+```yaml
+gate:
+  needs: [lint, typecheck, build, test, sandcastle]
+  if: always()
+  steps:
+    - if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+      run: exit 1
+```
+
+The indirection matters because it separates two things that usually get tangled. Adding a
+job to CI means editing `needs`. Changing what is *required to merge* means editing branch
+protection — a security setting, in a different system, with different consequences if you
+get it wrong. Point protection at an aggregator once and you never touch it again while
+tightening the pipeline underneath.
+
+`if: always()` is the part people leave out. Without it the gate is skipped when a
+dependency fails, and a skipped check is not a failed check — the merge sails through. The
+condition treats `skipped` and `cancelled` as failures for exactly that reason.
+
+## Then I switched it off
+
+Partway through the afternoon I found a work account identifier committed in the repo's
+history. Not a credential — an opaque team ID that could not authenticate anything — but it
+appeared in four commits, and rewriting them meant force-pushing `main`.
+
+`allow_force_pushes` was `false`. `enforce_admins` was `true`. So:
+
+```bash
+gh api -X DELETE repos/OWNER/REPO/branches/main/protection
+git push --force origin main
+gh api -X PUT   repos/OWNER/REPO/branches/main/protection --input protection.json
+```
+
+The rule that had rejected me twice took one API call to remove. It was unprotected for
+about two seconds, and I restored it byte-identically, having saved the config first. It was
+deliberate, it was the right call, and it took no more effort than the thing it was
+preventing.
+
+This is the honest shape of it. `enforce_admins: true` does not mean admins are constrained.
+It means admins are constrained *while the rule exists*, and admins are precisely the people
+who can delete the rule. It is a seatbelt, not a lock — it protects you from your own
+momentary carelessness, which is the failure mode that actually happens, and not at all from
+your own intent.
+
+Worth being clear about what that is and is not. A seatbelt is not a weaker lock. It is a
+different tool for a different failure, and the failure it addresses is the common one.
+
+## The control that could not be switched off
+
+The agent runs in a Docker sandbox with a GitHub token. The token is fine-grained and scoped
+to a single repository, with five permissions: contents, issues, pull requests, metadata,
+and nothing else.
+
+It has no `Administration` permission. It therefore cannot edit repository settings —
+including branch protection. Not "is instructed not to". Cannot. The API returns 403 and no
+amount of clever prompting changes that.
+
+This came up concretely. The smoke-test issue I first wrote asked the agent to "add a CI
+badge and set the repo description". The badge is a README edit; the description is a
+repository setting, which needs `Administration: write`. Rather than widen the token, I
+narrowed the task and set the description myself.
+
+That is the trade in its smallest form. Widening access to fit the work is one keystroke and
+permanent. Narrowing the work to fit the access is a sentence in an issue. The second is
+almost always available, and almost never the first thing anyone reaches for.
+
+The rule I could disable in one call. The permission I never granted, I could not have used
+without going back to GitHub, generating a new token, and pasting it in — three deliberate
+steps, each an opportunity to notice what I was doing. Friction in the right place is not
+overhead. It is the mechanism.
+
+## What the smoke test actually proved
+
+The first end-to-end run failed in a way I did not anticipate, and the failure was more
+useful than the success.
+
+I had picked "add a CI badge to the README" as a deliberately trivial task. The agent read
+the issue, checked the README, found the badge already present from a commit three days
+earlier, left a comment explaining so, and signalled completion without committing anything.
+
+Correct behaviour. It refused to invent work.
+
+But the orchestrator interpreted zero commits as "nothing merged", so the issue stayed open,
+and the next iteration planned it again. And again. Left alone it would have spun ten Docker
+sandboxes on a task that could never produce a commit.
+
+The bug is not the agent's judgment. It is that the loop has no state for *completed with
+nothing to do* — only "merged" and "not merged yet". A no-op is neither, and it falls into
+the retry path.
+
+I found this because I chose a task that was already done. I would not have found it by
+choosing a good task, and the loop would have hit it eventually, on some issue where the
+work turned out to be unnecessary — with less attention on it.
+
+The second run, against a real task, went plan → implement → review → PR → CI → auto-merge →
+issue closed, in about seven minutes, with the commit carrying a `Co-authored-by` trailer
+naming the model that wrote it.
+
+## Where this leaves the model question
+
+The repository history distinguishes three models by trailer: one did the Phase 0 setup, one
+did the afternoon's infrastructure work, one wrote the single autonomous commit — routed
+there by a label on the issue, `sc:implementer:sonnet-5`, which resolved through the planner
+into the sandbox and out into the commit message.
+
+That the trailer survives the whole chain is the useful part. Not because the model matters
+much for a one-line change, but because six months from now the only durable record of what
+wrote a given commit is what got written into it at the time.
+
+None of those three models decided anything about the merge. One of them — the one I was
+driving — tried to skip the gate twice and was stopped by a rule with no intelligence in it
+whatsoever.
+
+## The part I keep coming back to
+
+Every control that held today was defined before it was needed, by a person, in a quiet
+moment. The protection rule, the aggregator indirection, the token scope, the sandbox
+boundary. None was decided in the moment of pressure, and none required anything to be smart
+at the moment it fired.
+
+The one control I could remove, I removed — in seconds, correctly, for a good reason. The one
+I could not remove was the one I had never granted myself in the first place.
+
+That asymmetry is the whole design problem. You cannot make rules that bind the person who
+writes the rules. You can only decide, in advance and while calm, which capabilities never
+enter the system at all. Everything else is a seatbelt: worth wearing, effective against the
+failure that actually happens, and no obstacle whatsoever to someone who has decided to
+unbuckle it.
+
+If you are wiring an agent into a repository, the question is not "what should it be allowed
+to do". It is "what should nobody be able to do here, including me on a bad afternoon". Then
+you find you cannot answer that with rules, and you go looking for permissions instead.
