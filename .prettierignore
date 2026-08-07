@@ -3,3 +3,7 @@ node_modules
 dist
 .turbo
 pnpm-lock.yaml
+
+# Prettier 3.x rewrites MDX `{/* ... */}` comments as `{/_ ... _/}`, which is not a
+# valid JS expression and breaks the MDX compile at build time.
+apps/blog/content/**/*.mdx
