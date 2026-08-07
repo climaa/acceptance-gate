@@ -192,6 +192,10 @@ describe('reaper wiring (worktree-reaper hardening)', () => {
   it('treats an unreadable worktree as unreadable, not clean (fails closed)', () => {
     const start = gitContent.indexOf('function worktreeDirtiness');
     const fn = gitContent.slice(start, start + 500);
+
+    // Without this, a rename leaves start at -1 and the slice silently matches
+    // the wrong region instead of reporting the missing function.
+    expect(start).toBeGreaterThan(-1);
     expect(fn).toMatch(/git -C .* status --porcelain/);
     // The catch arm blocks the reap — a path we cannot inspect is not "clean".
     expect(fn).toMatch(/catch\s*\{\s*return "unreadable";/);

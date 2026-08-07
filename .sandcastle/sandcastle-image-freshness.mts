@@ -86,10 +86,7 @@ function imagePnpmVersion(imageName: string): string | null {
  * Dockerfile has zero `COPY` lines, so it needs no context at all; the stdin
  * form sends none.
  */
-function rebuildImage(
-  imageName: string,
-  dockerfilePath: string,
-): void {
+function rebuildImage(imageName: string, dockerfilePath: string): void {
   const dockerfile = readFileSync(resolve(dockerfilePath), "utf8");
   execFileSync("docker", ["build", "-t", imageName, "-"], {
     input: dockerfile,
