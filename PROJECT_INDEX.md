@@ -1,6 +1,6 @@
 # Project Index: acceptance-gate
 
-Generated: 2026-08-06 (regenerate with `/sc:index-repo` — a stale date here means the index needs a refresh)
+Generated: 2026-08-07 (regenerate with `/sc:index-repo` — a stale date here means the index needs a refresh)
 
 ## 📁 Project Structure
 
@@ -8,12 +8,14 @@ Generated: 2026-08-06 (regenerate with `/sc:index-repo` — a stale date here me
 .sandcastle/           the autonomous orchestrator (public, self-tested)
   main.mts             serial issue loop: plan → implement → review → merge
   sandcastle-*.mts     config · agent profiles · model overrides · lifecycle ·
-                       merge · run-issue · stranded-branches · worktree safety ·
-                       build-verify · git · image freshness
+                       merge · merge branch-line · run-issue · stranded-branches ·
+                       worktree safety · worktree sandbox · build-verify · git ·
+                       image freshness · no-op issues (`sandcastle:no-op` label
+                       flow) · sandbox hooks · turbo cache
   agent-docs/          the four phase prompts + CODING_STANDARDS.md
-  __tests__/           20 hermetic vitest files (229 tests) guarding the contracts
+  __tests__/           24 hermetic vitest files (337 tests) guarding the contracts
 apps/
-  blog/                Next.js App Router + MDX (Spanish seed; EN is Wave 1)
+  blog/                Next.js App Router + MDX (English)
 packages/
   ui/                  design system: tokens.css + 7 seed components
   tsconfig/            shared TS configs
@@ -30,7 +32,7 @@ designs/               acceptance-gate.pen (Pencil source) + exports/*.png
 
 ## 📦 Core Modules
 
-- **`.sandcastle/sandcastle-config.mts`** — constants: `BASE_BRANCH=main`, PATH fixes, turbo credentials read from the repo-root `.env` only (never `process.env`), with the expected team derived from `.turbo/config.json` → mismatch or missing link disables the cache
+- **`.sandcastle/sandcastle-config.mts`** — constants: `BASE_BRANCH=main`, `gh` preflight, turbo credentials read from the repo-root `.env` only (never `process.env`), with the expected team derived from `.turbo/config.json` → mismatch or missing link disables the cache
 - **`.sandcastle/sandcastle-model-overrides.mts`** — `sc:<role>:<model|effort:*>` label grammar; resolution `PROFILES < SC_* env < issue label`
 - **`.sandcastle/sandcastle-merge.mts`** — squash auto-merge flow; ~20-min poll window
 - **`packages/ui/src/tokens.css`** — the single visual source of truth; light = parchment/terracotta, dark = terminal lime; audit block lists pruning work
@@ -52,8 +54,8 @@ designs/               acceptance-gate.pen (Pencil source) + exports/*.png
 
 ## 🧪 Tests
 
-- Orchestrator hermetic suite: 20 files / 229 tests (prompt contracts, merge flow, override grammar, worktree safety, provenance guard)
-- Component/unit suites arrive with Wave 1 (70% floor); e2e Wave 3; visual-diff Wave 4
+- Orchestrator hermetic suite: 24 files / 337 tests (prompt contracts, merge flow, override grammar, worktree safety, provenance guard)
+- Blog unit suites: `apps/blog/__tests__` (61 tests, in CI); packages/ui component suites arrive with Wave 1 (70% floor); e2e Wave 3; visual-diff Wave 4
 
 ## 🔗 Key Dependencies
 
@@ -64,5 +66,5 @@ designs/               acceptance-gate.pen (Pencil source) + exports/*.png
 ## 📝 Quick Start
 
 1. `pnpm install`
-2. `pnpm turbo run lint build test typecheck` — all green from the root
+2. `pnpm lint && pnpm build && pnpm test && pnpm typecheck` — all green from the root
 3. `pnpm test:sandcastle` — the orchestrator's own contracts

@@ -7,8 +7,8 @@ request — including the ones that build the repo itself — walks through the
 same gate:
 
 ```
-lint → build → test (Playwright + Gherkin) → visual-diff
-                                              ↑ over threshold = PR blocked
+lint · typecheck · build · test · sandcastle  (parallel)  →  gate
+                             ↑ e2e (Wave 3) and visual-diff (Wave 4) join gate.needs later
 ```
 
 And the part that raises the bar: **this repo is built by its own published
@@ -29,7 +29,7 @@ merges carry their model co-author trailer in the squashed commit.
 | --------------------------------------------------------------- | --------------------------------------------------------- |
 | `.sandcastle/` — the orchestrator, with its hermetic test suite | ✅ committed, public                                      |
 | `designs/` — the design source of truth + PNG exports           | ✅ normative component inventory, two theme personalities |
-| `apps/blog` — Next.js App Router + MDX, consumes `@gate/ui`     | ✅ seed (English translation is a Wave-1 issue)           |
+| `apps/blog` — Next.js App Router + MDX, consumes `@gate/ui`     | ✅ seed, English                                          |
 | `packages/ui` — atomic design system, token-only styling        | 🔜 Wave 1: 19 components, layering enforced by ESLint     |
 | `apps/storybook` — the visual single source of truth            | 🔜 Wave 2                                                 |
 | `apps/e2e` — playwright-bdd acceptance suite                    | 🔜 Wave 3                                                 |

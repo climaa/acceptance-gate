@@ -141,7 +141,7 @@ export async function buildVerifyRescuedBranch(
   }
 
   // Graceful-shutdown guard. createSandbox() takes no AbortSignal
-  // in @ai-hero/sandcastle@0.10.0, so we gate the call site instead: on abort,
+  // in @ai-hero/sandcastle@0.12.0, so we gate the call site instead: on abort,
   // don't spin up a new build-verify sandbox — this is "new work".
   abortSignal.throwIfAborted();
 

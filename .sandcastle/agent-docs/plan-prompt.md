@@ -17,7 +17,7 @@ the orchestrator merges them on its own.
 
 <implemented-branches>
 
-!`git for-each-ref --format='%(refname:short)' refs/heads/sandcastle/ | while read b; do n=$(git rev-list --count "main..$b" 2>/dev/null || echo 0); if [ "$n" -gt 0 ]; then echo "$b ($n commit(s) ahead)"; fi; done; true`
+!`git for-each-ref --format='%(refname:short)' refs/heads/sandcastle/ | while read b; do n=$(git rev-list --count "origin/main..$b" 2>/dev/null || echo 0); if [ "$n" -gt 0 ]; then echo "$b ($n commit(s) ahead)"; fi; done; true`
 
 </implemented-branches>
 

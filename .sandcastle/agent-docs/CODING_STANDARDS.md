@@ -9,7 +9,8 @@ findings, never from ambition.
 - pnpm **11.17.0** (pinned via `packageManager` + sha512), Node **22** (`.nvmrc`)
 - Turborepo monorepo: `apps/{blog}`, `packages/{ui,tsconfig}` — Storybook, e2e and
   `packages/visual-diff` arrive by issue
-- TypeScript strict; ESLint warnings are errors
+- TypeScript strict; ESLint runs today only in `apps/blog` (via `next lint`,
+  no `--max-warnings=0`) — treat warnings as errors as other workspaces gain lint
 - Everything public is **English** — code, comments, docs, commit messages
 
 ## Workspace conventions
@@ -22,7 +23,8 @@ findings, never from ambition.
   property in `packages/ui/src/tokens.css`; dark mode remaps semantic roles only.
 - **Theme switching is `[data-theme="dark"]` on `<html>` — never
   `prefers-color-scheme`.** Storybook's decorator and the visual-diff capture URL
-  both set `data-theme`; a media-query theme leaves both blind to dark mode.
+  will both set `data-theme` once those tools arrive; a media-query theme would
+  leave both blind to dark mode.
 - **Fonts are self-hosted woff2 in `packages/ui/src/fonts/` only.** Never introduce
   `system-ui`/`-apple-system` as a leading family (`src/fonts/og/` TTF is the one
   documented exemption). No `packages/ui` component animates on mount.
