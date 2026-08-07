@@ -9,8 +9,9 @@ import {
 import { LABEL_PREFIX, parseOverrideLabels } from '../sandcastle-model-overrides.mts';
 
 /**
- * REAL unit tests — sandcastle-noop-issues.mts imports nothing from this
- * directory, for the same reason as sandcastle-model-overrides.mts and
+ * REAL unit tests (plus one source-text block for the orchestrator wiring,
+ * which no unit test can observe) — sandcastle-noop-issues.mts imports nothing
+ * from this directory, for the same reason as sandcastle-model-overrides.mts and
  * sandcastle-worktree-safety.mts: sandcastle-config.mts has import-time side
  * effects, so anything that transitively pulls it in cannot be loaded here.
  *
@@ -216,8 +217,10 @@ describe('orchestrator wiring (source-text — not observable from a unit test)'
   const planPrompt = read('agent-docs/plan-prompt.md');
 
   it('main.mts partitions pipeline outcomes through the pure module', () => {
+    // `[^}]*` keeps the match inside a single import statement — `[\s\S]*?`
+    // would happily span from an earlier import to this module's from-clause.
     expect(main).toMatch(
-      /import \{[\s\S]*?partitionOutcomes[\s\S]*?\} from "\.\/sandcastle-noop-issues\.mts"/,
+      /import \{[^}]*partitionOutcomes[^}]*\} from "\.\/sandcastle-noop-issues\.mts"/,
     );
     expect(main).toMatch(/partitionOutcomes\(/);
   });
@@ -225,7 +228,7 @@ describe('orchestrator wiring (source-text — not observable from a unit test)'
   it('main.mts keeps the no-op set across iterations, not per iteration', () => {
     // Declared inside the loop it would reset every iteration and the issue
     // would be re-planned exactly as before.
-    const setIdx = main.indexOf('const noOpIssues = new Set');
+    const setIdx = main.indexOf('const noOpIssueIds = new Set');
     const loopIdx = main.indexOf('for (let iteration');
     expect(setIdx).toBeGreaterThan(-1);
     expect(setIdx).toBeLessThan(loopIdx);
