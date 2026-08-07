@@ -131,7 +131,7 @@ export function collectStrandedIssues(alreadyQueued: Set<string>): IssueRef[] {
 // or the diff is docs-only and the build is skipped); false on any build
 // failure or sandbox error, in which case the caller skips the branch and it
 // stays stranded for human attention rather than merging unverified.
-export async function buildVerifyRescuedBranch(
+async function buildVerifyRescuedBranch(
   ref: IssueRef,
   abortSignal: AbortSignal,
 ): Promise<boolean> {

@@ -37,7 +37,7 @@ export type TurboStats = { successful: number; total: number; cached: number };
 
 // Parses turbo's summary block from agent stdout.
 // Turbo prints: "Tasks: N successful, N total\nCached: N cached, N total"
-export function parseTurboStats(output: string): TurboStats | null {
+function parseTurboStats(output: string): TurboStats | null {
   const tasksMatch = output.match(
     /Tasks:\s+(\d+)\s+successful,\s+(\d+)\s+total/,
   );
@@ -63,11 +63,11 @@ export function formatMs(ms: number): string {
 // `<repo>/.turbo/cache` location fails with "Permission denied (os error 13)"
 // and kills the build in seconds (build-gate hardening). turbo 2.9 honors this env var;
 // the host pre-push hook already uses the equivalent `--cache-dir /tmp/turbo-cache`.
-export const BUILD_VERIFY_COMMAND = "TURBO_CACHE_DIR=/tmp/turbo-cache pnpm build";
+const BUILD_VERIFY_COMMAND = "TURBO_CACHE_DIR=/tmp/turbo-cache pnpm build";
 
 // Sandbox.exec() has no built-in timeout (unlike sandbox.run()'s
 // idleTimeoutSeconds), so this mirrors the old build-verify agent's 600s guard.
-export const BUILD_VERIFY_TIMEOUT_MS = 600_000;
+const BUILD_VERIFY_TIMEOUT_MS = 600_000;
 
 // Runs the build-verify command directly in an already-warm sandbox via
 // sandbox.exec() (@ai-hero/sandcastle 0.12.0) instead of spinning up an agent
