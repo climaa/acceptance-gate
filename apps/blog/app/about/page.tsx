@@ -24,9 +24,8 @@ export default function AboutPage() {
         </p>
         <h2>Contact</h2>
         <p>
-          {/* TODO: replace with your real links */}
-          <a href="https://github.com/">GitHub</a> ·{' '}
-          <a href="https://www.linkedin.com/">LinkedIn</a>
+          <a href="https://github.com/climaa">GitHub</a> ·{' '}
+          <a href="https://www.linkedin.com/in/carlos-lima-frontend/">LinkedIn</a>
         </p>
       </Prose>
     </Stack>
