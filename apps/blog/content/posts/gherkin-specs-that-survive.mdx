@@ -1,135 +1,134 @@
 ---
-title: 'Cypress y Gherkin: specs que un agente puede mantener'
-description: 'Cómo escribir features en Gherkin que sirvan de contrato ejecutable en vez de convertirse en una capa de indirección que nadie lee.'
+title: 'Cypress and Gherkin: specs an agent can maintain'
+description: 'How to write Gherkin features that act as an executable contract instead of becoming a layer of indirection nobody reads.'
 date: '2026-08-04'
 tags: ['cypress', 'gherkin', 'testing']
 draft: false
 ---
 
-Gherkin tiene mala prensa entre desarrolladores, y buena parte de la culpa es nuestra.
-La promesa original —que negocio escriba los escenarios— casi nunca se cumple, y lo
-que queda es una capa de traducción entre inglés estructurado y código que hay que
-mantener por partida doble.
+Gherkin has a bad name among developers, and a good part of that is our own fault. The
+original promise — that the business writes the scenarios — almost never happens, and what
+is left is a translation layer between structured English and code that has to be
+maintained twice over.
 
-Mi postura, después de varios proyectos con Cypress y el preprocesador de Cucumber, es
-que Gherkin sigue valiendo la pena, pero **por una razón distinta a la que se suele
-dar**. No es para que negocio escriba tests. Es para que el test declare *qué* verifica
-de forma independiente de *cómo* lo verifica. Y esa separación se ha vuelto mucho más
-valiosa desde que hay agentes tocando el código.
+My position, after several projects with Cypress and the Cucumber preprocessor, is that
+Gherkin is still worth it, but **for a different reason than the one usually given**. It is
+not so the business can write tests. It is so the test declares _what_ it verifies
+independently of _how_ it verifies it. And that separation has become far more valuable now
+that there are agents touching the code.
 
-## El síntoma de una feature mal escrita
+## The symptom of a badly written feature
 
-Esta es la forma degenerada, la que da mala fama al formato:
-
-```gherkin
-Escenario: Login
-  Dado que visito "/login"
-  Cuando escribo "carles@ejemplo.com" en "#email"
-  Y escribo "hunter2" en "#password"
-  Y hago clic en "#submit"
-  Entonces la URL debería ser "/dashboard"
-```
-
-Esto no es una especificación. Es un script de Selenium con acento. Cada selector del
-DOM está incrustado en el lenguaje natural, así que cualquier refactor de markup rompe
-la feature, y leerla no te dice nada que no supieras.
-
-La versión que sí funciona describe intención:
+This is the degenerate form, the one that gives the format its bad reputation:
 
 ```gherkin
-Característica: Acceso al panel privado
-
-  Antecedentes:
-    Dado un usuario registrado con credenciales válidas
-
-  Escenario: Acceso correcto
-    Cuando inicia sesión
-    Entonces accede a su panel
-    Y su sesión persiste al recargar
-
-  Escenario: Credenciales incorrectas
-    Cuando inicia sesión con una contraseña incorrecta
-    Entonces se le informa del error sin revelar si el email existe
-    Y permanece en la pantalla de acceso
+Scenario: Login
+  Given I visit "/login"
+  When I type "carles@example.com" into "#email"
+  And I type "hunter2" into "#password"
+  And I click "#submit"
+  Then the URL should be "/dashboard"
 ```
 
-Fíjate en el segundo escenario: *"sin revelar si el email existe"* es un requisito de
-seguridad real, expresado de forma verificable, que no aparecería nunca en un script de
-clics. Eso es lo que Gherkin aporta.
+This is not a specification. It is a Selenium script with an accent. Every DOM selector is
+embedded in the natural language, so any markup refactor breaks the feature, and reading it
+tells you nothing you did not already know.
 
-## Los step definitions son la capa que absorbe el cambio
+The version that does work describes intent:
 
-Con la intención en el `.feature`, el acoplamiento al DOM se concentra en un único
-sitio:
+```gherkin
+Feature: Access to the private dashboard
+
+  Background:
+    Given a registered user with valid credentials
+
+  Scenario: Successful sign-in
+    When they sign in
+    Then they reach their dashboard
+    And their session survives a reload
+
+  Scenario: Wrong credentials
+    When they sign in with an incorrect password
+    Then they are told it failed, without revealing whether the email exists
+    And they stay on the sign-in screen
+```
+
+Look at the second scenario: _"without revealing whether the email exists"_ is a real
+security requirement, expressed in a verifiable way, that would never show up in a script of
+clicks. That is what Gherkin contributes.
+
+## The step definitions are the layer that absorbs change
+
+With the intent in the `.feature`, the coupling to the DOM is concentrated in a single
+place:
 
 ```ts
 // cypress/e2e/steps/auth.steps.ts
 import { Given, When, Then } from '@badeball/cypress-cucumber-preprocessor';
 import { loginPage } from '../pages/login.page';
 
-Given('un usuario registrado con credenciales válidas', () => {
-  cy.task('db:seedUser', { email: 'carles@ejemplo.com', password: 'hunter2' }).as('user');
+Given('a registered user with valid credentials', () => {
+  cy.task('db:seedUser', { email: 'carles@example.com', password: 'hunter2' }).as('user');
 });
 
-When('inicia sesión', function () {
+When('they sign in', function () {
   loginPage.visit();
   loginPage.submitCredentials(this.user.email, this.user.password);
 });
 
-Then('accede a su panel', () => {
+Then('they reach their dashboard', () => {
   cy.location('pathname').should('eq', '/dashboard');
-  cy.findByRole('heading', { name: /panel/i }).should('be.visible');
+  cy.findByRole('heading', { name: /dashboard/i }).should('be.visible');
 });
 
-Then('su sesión persiste al recargar', () => {
+Then('their session survives a reload', () => {
   cy.reload();
-  cy.findByRole('heading', { name: /panel/i }).should('be.visible');
+  cy.findByRole('heading', { name: /dashboard/i }).should('be.visible');
 });
 ```
 
-Y el page object concentra los selectores:
+And the page object concentrates the selectors:
 
 ```ts
 // cypress/e2e/pages/login.page.ts
 export const loginPage = {
   visit: () => cy.visit('/login'),
   submitCredentials(email: string, password: string) {
-    cy.findByLabelText(/correo/i).type(email);
-    cy.findByLabelText(/contraseña/i).type(password, { log: false });
-    cy.findByRole('button', { name: /entrar/i }).click();
+    cy.findByLabelText(/email/i).type(email);
+    cy.findByLabelText(/password/i).type(password, { log: false });
+    cy.findByRole('button', { name: /sign in/i }).click();
   },
 };
 ```
 
-Tres capas, cada una con una razón única para cambiar: la feature cambia si cambia el
-requisito, los steps si cambia el flujo, el page object si cambia el markup. Es la
-separación de siempre, pero Gherkin la hace difícil de saltarse — que es justo su valor.
+Three layers, each with a single reason to change: the feature changes if the requirement
+changes, the steps if the flow changes, the page object if the markup changes. It is the
+same old separation, but Gherkin makes it hard to skip — which is exactly its value.
 
-## Por qué esto importa más con agentes
+## Why this matters more with agents
 
-Un agente al que le pides "arregla el test que falla" tiene un incentivo perverso: la
-forma más rápida de que un test pase es debilitarlo. Cambiar un `should('be.visible')`
-por un `should('exist')`. Subir un timeout. Añadir un `.first()` a un selector ambiguo.
-Todas esas ediciones son locales, plausibles y desactivan la verificación.
+An agent you ask to "fix the failing test" has a perverse incentive: the fastest way to make
+a test pass is to weaken it. Swap a `should('be.visible')` for a `should('exist')`. Raise a
+timeout. Add a `.first()` to an ambiguous selector. All of those edits are local, plausible,
+and they switch the verification off.
 
-Cuando la intención vive en un `.feature` que el agente **no** necesita tocar para
-arreglar un selector, tienes un ancla. La revisión del PR se simplifica a una pregunta:
-¿ha cambiado algún `.feature`? Si no, el contrato sigue en pie y el diff es mecánico.
-Si sí, hay que leerlo con atención, porque se ha modificado lo que el sistema promete.
+When the intent lives in a `.feature` the agent does **not** need to touch in order to fix a
+selector, you have an anchor. Reviewing the PR collapses into one question: did any
+`.feature` change? If not, the contract still stands and the diff is mechanical. If it did,
+it has to be read carefully, because what the system promises has been modified.
 
-En la práctica lo hago explícito en las instrucciones del repositorio:
+In practice I make this explicit in the repository instructions:
 
 ```md
-Los archivos `cypress/e2e/features/**/*.feature` describen requisitos de producto.
-No los modifiques para hacer pasar un test. Si un escenario falla y crees que el
-escenario está mal, dilo en el PR y espera revisión humana.
+The files `cypress/e2e/features/**/*.feature` describe product requirements.
+Do not modify them to make a test pass. If a scenario fails and you believe the
+scenario is wrong, say so in the PR and wait for human review.
 ```
 
-Es una regla simple y funciona sorprendentemente bien, porque convierte un juicio
-difuso ("¿este cambio debilita el test?") en una comprobación binaria sobre qué
-archivos toca el diff.
+It is a simple rule and it works surprisingly well, because it turns a fuzzy judgment ("does
+this change weaken the test?") into a binary check on which files the diff touches.
 
-## Configuración mínima que uso
+## The minimal setup I use
 
 ```ts
 // cypress.config.ts
@@ -154,12 +153,8 @@ export default defineConfig({
 });
 ```
 
-## Cuándo no usar Gherkin
+## When not to use Gherkin
 
-Para tests de componente, no lo uso. La ceremonia no se paga: un test de componente ya
-es legible y su contrato es la API del componente, no una historia de usuario. Gherkin
-gana en flujos que cruzan varias pantallas y donde el requisito es discutible.
-
-{/* TODO Carles: añade aquí una cifra real de tu proyecto — cuántos escenarios,
-     cuánto tarda la suite, qué porcentaje de regresiones reales atrapó. Un número
-     concreto vale más que toda la argumentación anterior. */}
+For component tests, I do not use it. The ceremony does not pay for itself: a component test
+is already readable, and its contract is the component's API, not a user story. Gherkin wins
+in flows that cross several screens and where the requirement is debatable.

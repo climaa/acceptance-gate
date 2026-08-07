@@ -67,5 +67,21 @@ describe('content/posts', () => {
       expect(String(post.data.date)).toMatch(/^\d{4}-\d{2}-\d{2}$/);
       expect(Number.isNaN(Date.parse(String(post.data.date)))).toBe(false);
     });
+
+    // Checked against `raw` rather than `content` so the frontmatter `title`,
+    // `description` and `tags` — all user-facing — are covered too. None of these
+    // characters occurs in an English word, so a hit is untranslated prose.
+    it('is written in English', () => {
+      const spanish = post.raw.match(/[áéíóúüñÁÉÍÓÚÜÑ¿¡]/g);
+      expect(spanish ?? []).toEqual([]);
+    });
+
+    // `{/* … */}` is a JSX expression comment: it renders to nothing, so a TODO
+    // left in a published post is a silent gap on the live site rather than a
+    // visible note. Drafts are exempt — there an author note is doing its job —
+    // and `skipIf` keeps that exemption visible in the report.
+    it.skipIf(post.data.draft === true)('ships no unrendered TODO placeholder', () => {
+      expect(post.content).not.toMatch(/\{\/\*[\s\S]*?TODO[\s\S]*?\*\/\}/);
+    });
   });
 });
