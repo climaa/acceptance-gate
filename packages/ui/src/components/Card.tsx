@@ -1,7 +1,7 @@
 import type { HTMLAttributes, ReactNode } from 'react';
 
 export interface CardProps extends HTMLAttributes<HTMLDivElement> {
-  /** Añade padding interno estándar. */
+  /** Adds the standard inner padding. */
   padded?: boolean;
   /** Realza con sombra al hacer hover — para tarjetas clicables. */
   interactive?: boolean;

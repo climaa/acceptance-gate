@@ -7,7 +7,7 @@ export interface StatTileProps {
   tone?: 'neutral' | 'accent' | 'success' | 'warning' | 'danger';
 }
 
-/** Métrica única: número grande + etiqueta. Para filas de KPIs. */
+/** A single metric: large number + label. For KPI rows. */
 export function StatTile({ label, value, hint, tone = 'neutral' }: StatTileProps) {
   return (
     <div className={['ds-stat', `ds-stat--${tone}`].join(' ')}>
