@@ -4,14 +4,15 @@ import { pathToFileURL } from 'node:url';
 // Imported explicitly rather than relying on `globals: true` — same reason as
 // content.test.ts: tsconfig's `**/*.ts` include means tsc typechecks this file.
 import { describe, expect, it } from 'vitest';
+import { formatDate } from '../lib/posts';
 
 /**
- * The repo standardises on English. Internal comments and post slugs were done
- * in a225a77; this pins the user-facing half — every string App Router code
- * renders, plus the route segment that was itself Spanish.
+ * The repo standardises on English. This pins the user-facing half of that: every
+ * string App Router code renders, the document language, and the route segments
+ * themselves — `sobre-mi` was Spanish copy that had become a published URL.
  *
  * Post bodies under content/posts are deliberately out of scope and are not
- * scanned here; translating them is a separate issue.
+ * scanned here; translating them is tracked separately.
  */
 
 const APP_DIR = path.resolve(__dirname, '..', 'app');
@@ -37,14 +38,15 @@ describe('apps/blog/app UI copy', () => {
     (_name, file) => {
       const source = fs.readFileSync(file, 'utf8');
 
-      // The issue's own verification command, as a test.
+      // Cheap sweep: Spanish prose of any length almost always carries one of
+      // these, so it catches new copy nobody thought to deny by name.
       it('has no Spanish accents or inverted punctuation', () => {
         expect(source).not.toMatch(/[áéíóúñÁÉÍÓÚÑ¿¡]/);
       });
 
-      // Spanish that carries no accent survives the sweep above, so the
-      // literals actually present before this change are pinned by name.
-      it.each(['de lectura', 'Últimos', 'lang="es"', 'es_ES', 'sobre-mi'])(
+      // Unaccented Spanish slips past that sweep, so the literals this app
+      // once shipped are denied by name too.
+      it.each(['de lectura', 'lang="es"', 'es_ES', 'sobre-mi'])(
         'does not contain %s',
         (needle) => {
           expect(source).not.toContain(needle);
@@ -82,8 +84,12 @@ describe('apps/blog/app UI copy', () => {
 describe('lib/posts formatDate', () => {
   // Rendered on every card and article header, so the locale is UI copy too —
   // an es-ES default prints "7 de agosto de 2026" under English headings.
-  it('formats dates in English by default', async () => {
-    const { formatDate } = await import('../lib/posts');
+  it('formats dates in English by default', () => {
     expect(formatDate('2026-08-07')).toBe('August 7, 2026');
+  });
+
+  // The default moved, the parameter did not: callers can still pick a locale.
+  it('formats dates in the locale it is given', () => {
+    expect(formatDate('2026-08-07', 'es-ES')).toBe('7 de agosto de 2026');
   });
 });
