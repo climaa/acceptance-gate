@@ -190,7 +190,7 @@ describe('reaper wiring (worktree-reaper hardening)', () => {
   });
 
   it('treats an unreadable worktree as unreadable, not clean (fails closed)', () => {
-    const start = gitContent.indexOf('export function worktreeDirtiness');
+    const start = gitContent.indexOf('function worktreeDirtiness');
     const fn = gitContent.slice(start, start + 500);
     expect(fn).toMatch(/git -C .* status --porcelain/);
     // The catch arm blocks the reap — a path we cannot inspect is not "clean".

@@ -62,7 +62,7 @@ export function readPinnedPnpmVersion(
  * --version`. Returns the trimmed version string, or `null` when the image
  * is absent locally / has no pnpm on PATH (either way it needs a rebuild).
  */
-export function imagePnpmVersion(imageName: string): string | null {
+function imagePnpmVersion(imageName: string): string | null {
   try {
     const out = execFileSync(
       "docker",
@@ -86,7 +86,7 @@ export function imagePnpmVersion(imageName: string): string | null {
  * Dockerfile has zero `COPY` lines, so it needs no context at all; the stdin
  * form sends none.
  */
-export function rebuildImage(
+function rebuildImage(
   imageName: string,
   dockerfilePath: string,
 ): void {
