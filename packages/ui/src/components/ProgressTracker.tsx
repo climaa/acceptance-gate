@@ -11,14 +11,14 @@ import {
 export type StepStatus = 'complete' | 'current' | 'future';
 
 export interface ProgressStep {
-  /** Identificador estable — no uses el índice. */
+  /** Stable identifier — do not use the array index. */
   id: string;
   /** Texto accesible y (si `withLabels`) visible bajo el nodo. */
   label: string;
   /** Icono opcional. Si no se pasa, se dibuja un punto. */
   icon?: ReactNode;
   status: StepStatus;
-  /** Línea secundaria bajo la etiqueta: fecha, contacto, etc. */
+  /** Secondary line beneath the label: date, contact, etc. */
   meta?: string;
 }
 
@@ -27,11 +27,11 @@ export interface ProgressTrackerProps {
   size?: 'sm' | 'md' | 'lg';
   /** Muestra label + meta bajo cada nodo. */
   withLabels?: boolean;
-  /** Muestra las flechas de navegación a los lados. */
+  /** Shows the navigation arrows on either side. */
   withNavigation?: boolean;
-  /** Índice seleccionado (modo controlado). `null` = ninguno. */
+  /** Selected index (controlled mode). `null` = none. */
   selectedIndex?: number | null;
-  /** Selección inicial en modo no controlado. */
+  /** Initial selection in uncontrolled mode. */
   defaultSelectedIndex?: number | null;
   onSelectStep?: (index: number, step: ProgressStep) => void;
   /** Desactiva el click en los nodos (solo lectura). */
@@ -43,11 +43,11 @@ export interface ProgressTrackerProps {
 const clamp = (n: number, min: number, max: number) => Math.min(Math.max(n, min), max);
 
 /**
- * Stepper horizontal de progreso.
+ * Horizontal progress stepper.
  *
- * Soporta modo controlado (`selectedIndex` + `onSelectStep`) y no controlado
- * (`defaultSelectedIndex`). El conector entre nodos se rellena hasta el último
- * paso `complete`, de modo que el estado se lee de un vistazo sin leer etiquetas.
+ * Supports controlled (`selectedIndex` + `onSelectStep`) and uncontrolled
+ * (`defaultSelectedIndex`) modes. The connector between nodes fills up to the
+ * last `complete` step, so progress reads at a glance without reading labels.
  */
 export function ProgressTracker({
   steps,
@@ -98,7 +98,7 @@ export function ProgressTracker({
     [move],
   );
 
-  /** Índice del último paso completado — define hasta dónde se rellena la línea. */
+  /** Index of the last completed step — defines how far the line fills. */
   const lastCompleteIndex = useMemo(() => {
     let last = -1;
     steps.forEach((step, i) => {
@@ -136,7 +136,7 @@ export function ProgressTracker({
       <ol className="ds-tracker__list">
         {steps.map((step, index) => {
           const isSelected = activeIndex === index;
-          // La línea que llega a este nodo se rellena si el nodo anterior ya pasó.
+          // The line reaching this node fills if the previous node is already past.
           const connectorFilled = index > 0 && index <= lastCompleteIndex;
 
           return (

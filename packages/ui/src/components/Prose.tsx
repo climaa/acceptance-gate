@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-/** Envoltorio tipográfico para contenido largo (MDX del blog). */
+/** Typographic wrapper for long-form content (the blog’s MDX). */
 export function Prose({
   children,
   className,

@@ -10,7 +10,7 @@ export interface PostFrontmatter {
   /** ISO date — YYYY-MM-DD */
   date: string;
   tags: string[];
-  /** Marca `draft: true` para excluirlo del build de producción. */
+  /** Set `draft: true` to exclude the post from the production build. */
   draft?: boolean;
 }
 
@@ -25,14 +25,14 @@ export interface PostSummary extends PostFrontmatter {
   readingMinutes: number;
 }
 
-/** ~200 palabras por minuto, redondeado hacia arriba, mínimo 1. */
+/** ~200 words per minute, rounded, minimum 1. */
 function estimateReadingMinutes(markdown: string): number {
   const words = markdown.trim().split(/\s+/).length;
   return Math.max(1, Math.round(words / 200));
 }
 
 function isPublished(fm: PostFrontmatter): boolean {
-  // En desarrollo se ven los borradores; en producción no.
+  // Drafts are visible in development, hidden in production.
   return process.env.NODE_ENV === 'development' || fm.draft !== true;
 }
 

@@ -1,12 +1,12 @@
 /**
- * @gate/ui — hoja de estilos del design system.
- * Importar una sola vez, en el layout raíz de cada app.
+ * @gate/ui — design system stylesheet.
+ * Import once, in each app’s root layout.
  */
 
 @import './tokens.css';
 
 /* ============================================================
-   Reset mínimo
+   Minimal reset
    ============================================================ */
 
 *,
@@ -267,7 +267,7 @@ body {
   gap: var(--space-2);
   width: 100%;
 
-  /* Tamaños: una sola variable gobierna nodo, icono y grosor de línea. */
+  /* Sizing: one variable governs node, icon and line thickness. */
   --node-size: 2.5rem;
   --icon-size: 1.125rem;
   --line-thickness: 2px;
@@ -318,7 +318,7 @@ body {
   min-width: var(--space-4);
   background: var(--color-border);
   border-radius: var(--radius-full);
-  /* Alinea la línea con el centro vertical del nodo, no de la celda entera. */
+  /* Align the line to the node’s vertical centre, not the whole cell’s. */
   align-self: flex-start;
   margin-top: calc((var(--node-size) - var(--line-thickness)) / 2);
   transition: background-color var(--duration-base) var(--ease-out);
@@ -373,7 +373,7 @@ body {
   color: var(--color-text-muted);
 }
 
-/* Anillo de selección */
+/* Selection ring */
 .ds-tracker__node--selected {
   box-shadow:
     0 0 0 3px var(--color-bg),
@@ -445,7 +445,7 @@ body {
 }
 
 /* ============================================================
-   Prose — tipografía de artículos MDX
+   Prose — typography for MDX articles
    ============================================================ */
 
 .ds-prose {

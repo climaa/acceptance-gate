@@ -13,7 +13,7 @@ export interface StackProps {
   children: ReactNode;
 }
 
-/** Primitiva de layout: la única forma permitida de crear espacio entre elementos. */
+/** Layout primitive: the only sanctioned way to create space between elements. */
 export function Stack({
   direction = 'column',
   gap = 4,
