@@ -1,0 +1,478 @@
+---
+title: 'Sandcastle: the first layer of an autonomous agent that opens its own PRs'
+description: 'The architecture and the real state of Sandcastle, the orchestrator that plans, implements, reviews, and merges issues without human intervention — and why closing the first wave means hardening it before making it public.'
+date: '2026-08-07'
+tags: ['agents', 'orchestration', 'automation']
+draft: true
+---
+
+I have spent a few weeks building **Sandcastle**, a multi-agent system that lives inside one
+of my repos and whose only input is the GitHub issue backlog. It reads the open issues,
+decides which ones can be worked on in parallel, implements them in isolated Docker sandboxes,
+reviews the result and opens PRs against `main`. Without me touching a branch anywhere in
+the process.
+
+This first post is not about what Sandcastle *already* achieves — it has not yet completed a
+full cycle unsupervised — but about the base layer: the design decisions I have had to make
+before letting it run on its own, and why most of them have more to do with "failing loudly"
+than with "working".
+
+## The four-phase loop
+
+Every iteration passes through four agents, each with its own prompt and its own model
+budget:
+
+| Phase        | Agent          | What it does                                                                     |
+| ------------ | -------------- | -------------------------------------------------------------------------------- |
+| 1. Plan      | Opus 5 · high  | Reads the open issues, builds a dependency graph, decides what can be worked on now |
+| 2. Implement | Opus 5 · high  | Writes code and tests, commits on the issue branch                               |
+| 3. Review    | Opus 5 · high  | Reviews the branch for correctness and style; may push fixup commits             |
+| 4. Merge     | Sonnet 5 · low | Opens the PR, enables auto-merge, waits for CI, closes the issue                  |
+
+Implement and Review share one Docker sandbox per issue, and all issues are processed
+serially — not in parallel. That was not an up-front design decision: I learned it after a
+concurrent `pnpm install` deadlocked in production on pnpm 10.x. The lesson now lives as a
+comment in the code, not only in my head.
+
+The model and effort for each role can be overridden per issue (a GitHub label) or per run
+(an environment variable), with a fixed resolution order — `PROFILES < env var < label` —
+and any value outside the accepted vocabulary (`opus-5`/`sonnet-5`,
+`low|medium|high|xhigh|max`) fails the run **before** any sandbox is created. A typo cannot
+silently downgrade you into a more expensive model.
+
+## Designing so that silence is the worst possible failure
+
+The part that has taken me the most time is not orchestrating the four agents — it is
+closing off the places where a failure swallows itself, and the system keeps running on false
+data.
+
+The clearest case is startup. Every `gh` call fails silently if the binary is not on `PATH`:
+`fetchIssue` returns `null`, `branchHasOpenPr` returns `false`. Without an explicit
+preflight, an environment with a badly installed `gh` would not raise an error — it would
+simply ignore the model-override labels and report that no branch has an open PR, with the
+real cost hidden behind a result that looks reasonable:
+
+```ts
+// sandcastle-config.mts
+try {
+  execSync("command -v gh", { stdio: "ignore" });
+} catch {
+  throw new Error(
+    "`gh` was not found on PATH. [...] Refusing to start.",
+  );
+}
+```
+
+The same happens with Turborepo's remote cache credentials. A `TURBO_TEAM` exported in
+`.bashrc` for *another* project is the common case, not the rare one — and if the
+orchestrator read `process.env.TURBO_TEAM` directly, this repo would start writing into
+another team's cache without anyone noticing. The fix was to read the repo-root `.env` with
+`dotenv.parse` (which does not touch `process.env`) and compare the team against the
+`teamId` that `turbo link` had already written into `.turbo/config.json`. If they do not
+match, the remote cache is disabled, and the log says why — it is never written to blind.
+
+## The completion signal, and the bug that broke it in production
+
+Each agent ends its turn by emitting `<promise>COMPLETE</promise>` as its final line. The
+SDK watches stdout for that token to know it can move to the next phase. The first version
+of the prompts did not forbid launching background processes, and that caused orphaned
+branches: if any `run_in_background: true` was still alive when the agent emitted the signal,
+the detector never saw it, and the idle timer killed the run anyway — leaving a branch with
+work done but no PR opened.
+
+The rule that came out of that — "poll with foreground loops, never in the background" — now
+lives in every prompt *and* in a test that enforces it in CI. Each phase also has its own
+`idleTimeoutSeconds`, from 600s for the planner up to 1800s for the merger, whose auto-merge
+polling loop can take up to 20 minutes and needs to keep "making noise"
+(`echo "poll $i: state=$PR_STATE"`) so it does not trip the idle detector early.
+
+If the merge phase dies mid-run, the next run detects the orphaned branches automatically
+and hands them back to the merger — no manual intervention needed for the common case.
+
+## Scope discipline, enforced by a reviewer agent
+
+The review agent loads a `CODING_STANDARDS.md` that is not a generic style guide but a list
+of repo-specific conventions which only grows when a review comment repeats itself. Two rules
+connect directly to how I write tests in this same project:
+
+- `.feature` files describe product requirements, and the agent cannot touch them to make a
+  test pass — if a scenario fails and it believes the scenario is wrong, it says so in the PR
+  and waits for human review. (This is the same idea I developed in
+  [the post on Gherkin and Cypress](/blog/gherkin-specs-that-survive): the specification as
+  an anchor an agent should not be able to move on its own.)
+- Strict scope: if the issue says "fix X", the diff touches X. No drive-by cleanups, and no
+  half-implemented functions — if the agent starts something, it finishes it.
+
+## Where it stands today, unvarnished
+
+Here is the honest version: Sandcastle has not yet completed a plan→implement→review→merge
+cycle without intervention. The commit history of this first floor tells the real story —
+engine and base prompts, then a provenance sweep to remove references to other projects,
+scoping the Vercel project and the Turbo cache to this repo, a runbook for when `main` is
+red, and today a fix because the `.gitignore` pattern for `.env*` was also swallowing the
+`.env.example` that was supposed to be versioned.
+
+The first real run attempt, this very morning, did not even get as far as planning:
+
+```
+Failed to resolve prompt: Command `gh issue list ...` exited with code 4:
+To get started with GitHub CLI, please run: gh auth login
+```
+
+Without `gh auth login` or `GH_TOKEN` configured in the environment where it runs, the
+preflight I described above did exactly what it was supposed to do: fail loud and clear
+instead of returning an empty issue list and carrying on as if nothing were wrong. It is a
+silly failure, but it is the right failure for this phase — I would rather the first run die
+here than die silently three phases later.
+
+## Closing Wave 0: the turn towards a public repo
+
+Yesterday I closed Wave 0 on the repo's GitHub Project: seven phases, all in `Done` — the
+board, the workspace bootstrap, the Sandcastle orchestrator itself, the design reference, the
+GitHub setup, a minimal CI and the blog project on Vercel. It is the habit I am giving this
+project: inside a wave, pair-programming with the AI almost without restrictions; when
+closing it, human judgment — reviewing what has been left behind, not only whether it
+"passes".
+
+That closure is what brought me back to this article. Looking at Sandcastle through that
+lens, the first thing that jumps out is that it was born tightly coupled to other repos of
+mine — conventions, references, the odd value burned into the code that assumed a private
+environment. That was not a problem while Sandcastle lived only for me. It becomes one the
+moment I want the repo to be public: any hardcoded variable someone could take advantage of
+— a project identifier, a path, an assumption about who runs this — has to come out of the
+code and into `.env`. I already did it for the Turbo credentials (see above); the rest of
+`.sandcastle` needs the same treatment.
+
+And I put it in that order deliberately: **`.sandcastle` has to be ready before starting
+anything else.** It is the layer that will execute code without direct supervision —
+hardening it first is not perfectionism, it is the precondition for letting it run alone with
+any confidence.
+
+## What the health scanner says
+
+So as not to rely only on my own reading, I ran Fallow — a static analyzer I keep in VSCode —
+over the repo. The result for `.sandcastle`:
+
+- **13 exports with no consumer** (`PROFILES`, `parseTurboStats`, `BUILD_VERIFY_COMMAND`,
+  `LABEL_PREFIX`, among others) — surface nobody imports, and in a public repo it is noise an
+  outside contributor has to discard to understand what the real API is.
+- **3 duplicated blocks**, one of them in `sandcastle-run-issue.mts`.
+- **Health grade B (78)**, complexity 12, 3 refactor candidates.
+- **18 security candidates**: 7 path-traversal (CWE-22) and 11 command-injection (CWE-78).
+
+That last number needs reading carefully before anyone panics: Sandcastle builds paths and
+launches shell commands *by design* — that trips the CWE-22/CWE-78 heuristics even when the
+code is correct. What actually matters, and what I have not yet triaged, is which of those 18
+candidates receive input a third party could control in a public repo — an issue body, a
+branch name, a label. That is where a real vulnerability would be; the rest is the expected
+noise from a tool that orchestrates shells for a living.
+
+## Before automating: strict pair-programming
+
+The conclusion on closing this wave is that the "AI heavily permitted, review at the end" mode
+I used to build this first layer is not the one I want for what comes next. It is good for
+starting fast; it is bad for keeping the code tidy when the volume of changes rises — the same
+problem I described in
+[the post on visual regression with agents](/blog/visual-regression-with-agents). The 13
+orphaned exports and the 3 duplicates did not appear all at once: they accumulated iteration
+by iteration because nobody questioned them until the wave closed.
+
+So the next stretch of `.sandcastle` I do with strict pair-programming: every change reviewed
+as it happens, not at the end. This is not about slowing the AI down — it is about using it to
+*tidy* what the AI itself wrote under less supervision, before letting it run with nobody
+watching.
+
+## The first real case: a test that protects text, not behavior
+
+I did not have to wait long for the first example. The PR that hardens the `gh` preflight I
+described above — the one replacing the blind `PATH` prepend with the `execSync("command -v
+gh")` that fails loudly — brings four new tests with it in `sandcastle.turbo-env.test.ts`. All
+four have the same shape:
+
+```ts
+const content = read('sandcastle-config.mts');
+
+it('checks gh is resolvable at import time', () => {
+  expect(stripComments(content)).toMatch(/command -v gh/);
+});
+
+it('no longer mutates process.env.PATH', () => {
+  expect(stripComments(content)).not.toMatch(/process\.env\.PATH\s*=/);
+});
+```
+
+They read the source file as text and run regexes over it. They have the shape of a test —
+`describe`, `it`, `expect` — but there is no Arrange-Act-Assert in any real sense: nothing is
+started, no function is acted upon, it is checked that a string does or does not contain a
+certain pattern. It is lint disguised as a test, and it is exactly the defect I pointed out in
+[the post on Gherkin and agents](/blog/gherkin-specs-that-survive): an assertion that can be
+satisfied without the real property holding. `toMatch(/throw new Error/)` passes if that
+string appears anywhere in the file, whatever surrounds it;
+`not.toMatch(/\/opt\/homebrew\|\/usr\/local\/bin\//)` breaks the day someone reformats a
+comment that mentions it, without behavior having changed one bit. Fragile in both
+directions.
+
+I split the problem into three pieces rather than treating them as one:
+
+The two "never do X again" tests (do not mutate `process.env.PATH`, do not hardcode install
+paths) are not behavioral properties — they are constraints on what *shape* the code may
+take. That is lint's job, not a test's, and my first instinct was to reach for
+`eslint-plugin-boundaries` for the whole batch. It is not that direct: `boundaries` resolves
+import graphs between layers — which kind of module may import from which — and it is indeed
+the right tool for a different problem I also have (keeping `.sandcastle` from importing
+something coupled to the rest of the private repo). But "do not hardcode `/opt/homebrew`" is a
+prohibition on string literals, not on the import graph; for that the right tool is
+`no-restricted-syntax` (or a custom rule) running over the whole tree. The advantage over the
+test is the same in both cases: lint watches code that does not exist yet; the test only
+watches the file where someone already got it wrong once.
+
+The third test — "throws rather than continuing when gh is absent" — *is* real behavior, and
+there I do not want to delete the intent; I want to make it genuinely checkable. As the
+function stands today, the `execSync` runs at import level with nothing injectable, so there
+is no way to write Arrange-Act-Assert without mocking `child_process` and fighting ESM module
+caching in every test. The solution is not the regex; it is lifting the check out into
+something like `assertGhAvailable(execFn = execSync)` so a failing `execFn` can be passed in
+and the throw asserted. If I am not paying for that refactor yet, I prefer the honest
+alternative — not faking coverage of that branch, and letting the first real run validate it,
+like this morning's `gh auth login` failure — over a test that passes as long as the word
+`throw` exists somewhere in the file.
+
+And there is a fourth piece that *is* genuinely AAA and is not yet written: the logic for
+whether the Turbo team is ours or foreign (`fileEnv`, `expectedTurboTeam` →
+`{turboToken, turboTeam, foreignTeam}`) is pure today; it just lives tangled between the
+`readFileSync` and the `console.log`. Extracting it into a function with that signature gives
+you Arrange with env/team combinations, Act by calling it, Assert on the result — without
+touching the filesystem or mocking anything. That is the test that survives the surrounding
+wiring changing, and the one that should have existed from the start instead of the four
+regexes.
+
+## The extraction, live — when the scoreboard disagrees with the human reading
+
+While I was writing the previous section, Claude Code was already doing exactly that: it
+lifted the Turbo cache resolution out into `sandcastle-turbo-cache.mts`, with no `.sandcastle`
+import other than `dotenv`, and a discriminated return type instead of the three loose
+variables from before:
+
+```ts
+// sandcastle-turbo-cache.mts
+export type TurboCache =
+  | { readonly enabled: true; readonly token: string; readonly team: string }
+  | {
+      readonly enabled: false;
+      readonly reason: "no-credentials" | "no-link" | "foreign-team";
+      readonly team: string;
+    };
+
+export function resolveTurboCache(
+  envFileContents: string | null,
+  turboLinkContents: string | null,
+): TurboCache { /* Arrange-Act-Assert from plain strings, no disk access */ }
+```
+
+`sandcastle-config.mts` was reduced to reading the two files and handing them to that function
+— from 83 lines of tangled logic to 24 of pure wiring. It is precisely the fourth piece I had
+left pending in the previous section, solved before I had finished writing it.
+
+What I did not expect is what happened to Fallow's health score halfway through that change:
+it dropped from B (78) to C (69). Going category by category, none of the ones it already had
+moved — unused exports, duplicates, security candidates, all identical. The only new thing is
+a "Hotspot Candidates (14)" category that did not exist in the previous scan, and which
+probably combines recent churn with complexity: it is exactly the moment when the `.sandcastle`
+files I am touching are more edited than ever. Total issues went from 14 to 16, not from 14 to
+28 — so most of those 14 "hotspots" overlap with problems already counted elsewhere.
+
+And yet, reading the PR by hand, it looks cleaner than before, not less. One file that is pure
+decision and another that is pure plumbing is easier to review than one that mixed the two,
+even if no automatic metric captures that distinction yet. It is the same argument I opened
+this section with, but with real data on top: judging whether a change improves the code is
+still human, and the scoreboard is a signal, not a verdict.
+
+## Two credential routes, not one — and the free-minutes clock
+
+As soon as the PR started running on GitHub Actions, I ran into an angle I had not considered:
+CI minutes cost money, and I am on a free account. My immediate reaction was "Turbo needs to be
+ready as soon as possible" — but reading `pr.yml` calmly, the problem was not the one I
+thought. Turbo's remote cache is already wired into the workflow, in a different place from the
+one I had just extracted:
+
+```yaml
+# .github/workflows/pr.yml
+env:
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  TURBO_TEAM: ${{ vars.TURBO_TEAM }}
+```
+
+That is, there are **two** Turbo credential routes in this project, not one: the one that has
+just been made pure in `sandcastle-turbo-cache.mts` (reads the root `.env`, only affects the
+orchestrator's Docker sandboxes) and this one, which lives in the GitHub repo's
+secrets/variables and only affects the `pr.yml` jobs. Having one configured does not imply
+having the other. So before assuming "Turbo is missing", the first step is checking which of
+the two routes is actually empty in Settings → Secrets and variables.
+
+The workflow itself already has two cost decisions baked in, and they are worth pointing out
+because they are not obvious from reading the run list alone:
+
+- `concurrency.cancel-in-progress` kills a PR's run the moment a new push arrives — it does not
+  pay for code that is already obsolete.
+- Pushes to `main` are excluded from that cancellation on purpose. The comment in the YAML says
+  it without hedging: those runs "seed the cache" for everything else, so canceling them would
+  leave the following ones with no cache.
+
+And there is a trade-off already accepted, not an oversight: Dependabot PRs never see
+`TURBO_TOKEN`/`TURBO_TEAM`, because that code is not yet trusted enough to let it write to the
+cache. It matches exactly what the run list shows: the two longest and the two that fail are
+Dependabot's — `Bump next-mdx-remote to v6` (2h38m52s) and `Bump actions/checkout from 4 to 7`
+(13m12s). Running cold explains taking longer than `pr.yml`'s normal ~1-2 minutes; it does not
+explain 2h38m. That is a hung run, not just an uncached build, and I am noting it down to
+review the log before it repeats and eats the month's quota in one go.
+
+## The number that corrects the instinct
+
+Before touching anything else, I asked for the exact breakdown of run #10 — the same one I
+showed above with 132s summed across jobs. The result took the urgency out of me:
+
+| Job         | Total | The `turbo` step | Setup overhead |
+| ----------- | ----- | ---------------- | -------------- |
+| build       | 43s   | 21s              | ~18s           |
+| sandcastle  | 25s   | 3s *(vitest, not turbo)* | ~19s   |
+| lint        | 21s   | 2s               | ~16s           |
+| test        | 21s   | 1s               | ~16s           |
+| typecheck   | 19s   | 3s               | ~14s           |
+| gate        | 3s    | —                | —              |
+| **Sum**     | **132s** | **27s turbo-cacheable** | **~83s fixed** |
+
+Of the 132 seconds of job time, only 27 are the step a Turbo cache could turn into almost zero.
+The other 83 — 63% of the total — are `actions/checkout`, `corepack enable`,
+`actions/setup-node` and `pnpm install --frozen-lockfile`, repeated identically in each of the
+five jobs because each starts on a clean runner. Filling in `TURBO_TOKEN`/`TURBO_TEAM` would
+have attacked 20% of the problem, not 80%. The real bottleneck is the duplicated setup across
+jobs, not the absent remote cache — a different problem, solved by consolidating jobs or
+caching the install, not by filling in a secret.
+
+With that number in front of me, the easy decision was to keep pulling the cost thread inside
+this same PR. The one I took was the opposite: merge it as it stands — it already brings the
+pure extraction, the loud preflight and the real health score — and open the setup overhead
+problem as its own issue, for the next PR. It is the same scope discipline I documented earlier
+quoting `CODING_STANDARDS.md` for the agents — "if the issue says fix X, the diff touches X" —
+applied now to myself: finding a real adjacent problem is not a license to shove it into the PR
+I already have open.
+
+## Two failures that looked like one — and the real number
+
+Getting Turbo working in CI turned out to be two distinct problems, not one, and the second was
+disguised as the first one's success:
+
+1. The first token was scoped to the project (`acceptance-gate-blog`). Turbo authenticated
+   without trouble and then failed with **"Insufficient permissions to write"** on every task —
+   build green, zero cache. The minimum scope that *works* for writing to the remote cache is
+   team, not project; my instinct to scope as tightly as possible was right as a principle and
+   wrong as a concrete value.
+2. The second token did have the right scope, and it worked locally via `.env` — but the value
+   stored in the GitHub secret failed with **"Authentication failed"**, outright. A paste from a
+   web form that picked up an extra space or got truncated. The fix was to stop pasting by hand
+   twice and pipe the exact value from `.env` into `gh secret set`, so the two copies cannot
+   diverge — the token itself is never printed or echoed in any step.
+
+The pattern is worth keeping, not just the fix: the two failures produce *different* messages
+precisely because of how each system is built — "Insufficient permissions" says the token is
+valid but under-scoped, "Authentication failed" says the value is wrong. Reading which of the
+two appears tells you where to look without guessing. It is the same philosophy I opened this
+article with, talking about the `gh` preflight: let the system fail loudly and differently,
+never in silence.
+
+With both credentials aligned — secret and variable on GitHub, the same token in the local
+`.env` used by Sandcastle's sandboxes — this is what changed in CI:
+
+| Task       | Before | Now       | Improvement       |
+| ---------- | ------ | --------- | ----------------- |
+| build      | 21s    | 627ms     | -97.0% (~33.5×)   |
+| typecheck  | ~3s    | 575ms     | -80.8% (~5.2×)    |
+| lint       | 2s     | 366ms     | -81.7% (~5.5×)    |
+| **Sum**    | **26s** | **1.57s** | **-94.0% (~16.6×)** |
+
+Two loose ends, small but real: the old project-scoped token is still technically alive on
+Vercel until I revoke it by hand, and the new one expires on 8/7/27 — that day CI simply
+compiles cold again; it does not break, so I am noting it down to review before that date
+rather than discovering it then.
+
+## The same scope scare, twice — and a verification that refused to take things on trust
+
+Filling in `GH_TOKEN` in `.sandcastle/.env` repeated, almost to the letter, the Vercel token
+mistake: the first one I created started with `ghp_` — a **classic** token, which on GitHub
+carries the repo scope of the entire account, not just this project. `.sandcastle/.env.example`
+had already warned about it before I needed it:
+
+> Never a classic repo-scope token: the sandbox is the least-trusted context in the
+> system and must not hold a credential that reaches any other repository.
+
+The correct prefix is `github_pat_` — a fine-grained PAT, explicitly scoped to
+`climaa/acceptance-gate` and nothing else. I redid it with the right prefix. Twice in the same
+session, I first created the wider-reaching token and had to correct it afterward — not because
+the "scope to the minimum" criterion was unclear, but because token creation forms tend towards
+a broader state by default or by inertia from the previous attempt. The practical lesson is not
+"be more careful"; it is to verify the prefix/scope as an explicit step before saving any new
+credential, both times.
+
+And that "verify" did not stop at reading the prefix. Before calling the token good, the six
+permissions it was supposed to have were exercised live — it was not assumed that the scope
+declared on GitHub was the real one:
+
+| Permission           | Test                                                     |
+| -------------------- | -------------------------------------------------------- |
+| Metadata: read       | `GET /repos/…`                                           |
+| Issues: read         | `gh issue list` → found #9                               |
+| Issues: write        | created a test issue, confirmed it existed, deleted it   |
+| Pull requests: read  | listed #13 (merged), #12 (closed)                        |
+| Contents: read       | read `README.md`, 4462 bytes                             |
+| Contents: write      | created `refs/heads/_tokencheck`, deleted it             |
+
+Every row is a real API call, not a reading of GitHub's permissions page. It is the same
+discipline I had until now applied only to my own code — do not trust what a system says it
+does, check it — applied this time to a third-party credential.
+
+There is a good side effect to keeping the token tightly scoped: the smoke issue I was going to
+use for the first test asked for "add CI badge + repo description", and the "repo description"
+half needs `Administration` permission, which I deliberately did not give the token. The
+solution was not to widen the token so the issue would fit — it was to trim the issue so it
+would fit the access I had already decided to grant. It is the same minimum-scope principle
+applied in reverse to how it is usually applied: instead of granting more access so the task
+fits, you reduce the task so it fits the access you already chose to grant.
+
+{/* TODO Carles: the setup overhead (~83s fixed per job, see the previous section)
+     is still unresolved — that is the next issue, not this PR. Together with the
+     triage of the 18 security candidates and cleaning up the four regex tests,
+     that is the remaining final result before the first autonomous cycle. */}
+
+## The first complete cycle, without touching code
+
+`pnpm sandcastle` ran, and the first attempt was not the one that closed the loop. The original
+smoke issue did not need any code change — the README badge already existed — so the
+implementer produced zero commits and the orchestrator re-planned it again and again, exactly
+the design bug I described above. The decision, instead of forcing that issue or patching the
+loop bug first, was to close it and open a new one that did demand a real change: adding
+`.vercel/` to `.gitignore`, because `vercel link` leaves a committable `.vercel/project.json`
+with `orgId`/`projectId` — another provenance value that should not stay in plain text,
+consistent with everything else we have been pulling out of the repo this session.
+
+That second attempt did complete the whole cycle, without me touching a line of code:
+
+**Plan** → the planner saw the new issue. **Implement** → one commit,
+`chore: ignore .vercel directory`, on the branch `sandcastle/issue-15-add-vercel-to-gitignore`.
+**Review** → passed with no fixups. **Merge** →
+[PR #16](https://github.com/climaa/acceptance-gate/pull/16) opened, with the body still signed,
+unedited, "🏖️ Generated by Sandcastle" at the end. **Gate** → eight checks green, auto-merge
+(squash) enabled. Automatic closure of the issue on merge. The repo is already public, so this
+does not have to be taken on my word — it is a real link, to a real merged PR, with that
+signature still there exactly as the merge agent wrote it.
+
+It is a deliberately small task — three lines of `.gitignore` — and I do not claim it proves
+more than it proves. But it is the first time the complete system, end to end, did what the
+first paragraph of this article said it did not yet do: plan, write, review, open a PR and
+merge without me intervening in the code. The rest of the backlog — the setup overhead, the
+security triage, the four regex tests still untouched — is still waiting. But the base layer
+already holds up a real cycle, and that is what needed to be demonstrated before trusting it
+with anything bigger.
+
+The MVP came together in a single day. It is already at the point of being able to scale: more
+versions, more pipelines, and constant improvements on a base that has just demonstrated, with
+public evidence, that it can run a complete cycle on its own.
