@@ -162,16 +162,18 @@ describe('call-site wiring — head-mode sites take headHooks, worktree sites ta
     expect(stripComments(read(file))).toMatch(/hooks:\s*worktreeHooks|\bworktreeHooks,/);
   });
 
+  it.each(callSitesThatDelegate)('%s (%s) calls createWorktreeSandbox', (file) => {
+    expect(stripComments(read(file))).toMatch(/createWorktreeSandbox/);
+  });
+
   it.each(callSitesThatDelegate)(
-    '%s (%s) delegates to createWorktreeSandbox rather than referencing worktreeHooks directly',
+    '%s (%s) never references worktreeHooks itself — the helper owns that choice',
     (file) => {
-      const content = stripComments(read(file));
-      expect(content).not.toMatch(/worktreeHooks/);
-      expect(content).toMatch(/createWorktreeSandbox/);
+      expect(stripComments(read(file))).not.toMatch(/worktreeHooks/);
     },
   );
 
-  it.each([...headSites, ...worktreeSites])(
+  it.each([...headSites, ...worktreeSites, ...callSitesThatDelegate])(
     '%s no longer imports the old undifferentiated `hooks` export',
     (file) => {
       // The old name carried no mount information, which is exactly how the

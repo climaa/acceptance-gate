@@ -12,19 +12,12 @@ import { worktreeHooks } from "./sandcastle-sandbox-hooks.mts";
 import { withRetry } from "./sandcastle-lifecycle.mts";
 
 /**
- * Create a worktree-mode sandbox for `branch`, forked from
- * `origin/${BASE_BRANCH}`.
- *
  * baseBranch is ignored by createSandbox() when `branch` already exists (the
- * case for a rescued branch) — this checks out the existing commits rather
- * than forking a new one.
- *
- * worktreeHooks: this mount is a fresh worktree under
- * .sandcastle/worktrees/ with no node_modules of its own, so the startup
- * `pnpm install` both belongs here and stays inside the worktree.
+ * case for a rescued branch) — the sandbox then checks out those existing
+ * commits instead of forking a new branch.
  */
 export async function createWorktreeSandbox(branch: string) {
-  // Ensure origin/main is up to date so the worktree forks from the
+  // Ensure the base branch is up to date so the worktree forks from the
   // correct tip regardless of what branch the host is currently on.
   execSync(`git fetch origin ${BASE_BRANCH}`, { stdio: "inherit" });
 
@@ -45,6 +38,9 @@ export async function createWorktreeSandbox(branch: string) {
           ? { env: { TURBO_TOKEN: turboToken, TURBO_TEAM: turboTeam } }
           : {}),
       }),
+      // worktreeHooks: this mount is a fresh worktree under
+      // .sandcastle/worktrees/ with no node_modules of its own, so the startup
+      // `pnpm install` both belongs here and stays inside the worktree.
       hooks: worktreeHooks,
     }),
   );
