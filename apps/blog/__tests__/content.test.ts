@@ -67,5 +67,23 @@ describe('content/posts', () => {
       expect(String(post.data.date)).toMatch(/^\d{4}-\d{2}-\d{2}$/);
       expect(Number.isNaN(Date.parse(String(post.data.date)))).toBe(false);
     });
+
+    // The repo standardises on English (#21 for comments and slugs, #18 for the
+    // prose). Checked against `raw` rather than `content` so frontmatter `title`,
+    // `description` and `tags` — all user-facing — are covered too. These
+    // characters exist in no English word, so a hit is untranslated text.
+    it('is written in English', () => {
+      const spanish = post.raw.match(/[áéíóúüñÁÉÍÓÚÜÑ¿¡]/g);
+      expect(spanish ?? []).toEqual([]);
+    });
+
+    // `{/* … */}` is a JSX expression comment: it renders to nothing. A TODO left
+    // in a published post is therefore a silent gap on the live site, not a
+    // visible note — both live posts shipped one for days. Drafts are exempt;
+    // there an author note is doing its job.
+    it('ships no unrendered TODO placeholder', () => {
+      if (post.data.draft === true) return;
+      expect(post.content).not.toMatch(/\{\/\*[\s\S]*?TODO[\s\S]*?\*\/\}/);
+    });
   });
 });
