@@ -19,6 +19,29 @@ function stripComments(source: string) {
   return source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
 }
 
+describe('sandcastle-config.mts — gh preflight', () => {
+  const content = read('sandcastle-config.mts');
+
+  // Replaced a blind PATH prepend. Host-side `gh` call sites swallow their own
+  // failures (fetchIssue -> null, branchHasOpenPr -> false), so a missing
+  // binary silently drops the sc:* model overrides instead of erroring.
+  it('checks gh is resolvable at import time', () => {
+    expect(stripComments(content)).toMatch(/command -v gh/);
+  });
+
+  it('throws rather than continuing when gh is absent', () => {
+    expect(stripComments(content)).toMatch(/throw new Error/);
+  });
+
+  it('no longer mutates process.env.PATH', () => {
+    expect(stripComments(content)).not.toMatch(/process\.env\.PATH\s*=/);
+  });
+
+  it('hardcodes no install locations', () => {
+    expect(stripComments(content)).not.toMatch(/\/opt\/homebrew|\/usr\/local\/bin/);
+  });
+});
+
 describe('sandcastle turbo-env passthrough', () => {
   describe('sandcastle-config.mts — TURBO_TOKEN/TURBO_TEAM startup read', () => {
     const content = read('sandcastle-config.mts');

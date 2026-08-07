@@ -1,18 +1,36 @@
 // Orchestrator configuration — constants shared across the plan/implement/
 // build-verify/review/merge phases, plus two import-time side effects (not
-// just inert constants): the `process.env.PATH` prepend below and the
-// turbo remote-cache startup log both run as soon as this module loads.
+// just inert constants): the `gh` preflight below and the turbo remote-cache
+// startup log both run as soon as this module loads.
 
+import { execSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import dotenv from "dotenv";
 
-// `pnpm sandcastle` spawns scripts in /bin/sh with a minimal PATH that omits
-// Homebrew's bin dirs, so `gh` (used by the stranded-branch rescue path) goes
-// missing. Prepend the common macOS+Linux install locations so host tools
-// resolve regardless of launch context.
-process.env.PATH = `/opt/homebrew/bin:/usr/local/bin:${process.env.PATH ?? ""}`;
+// Preflight: refuse to start without `gh` on PATH.
+//
+// This replaced a blind `process.env.PATH` prepend of Homebrew's bin dirs. The
+// prepend was redundant in every launch path that actually exists (an
+// interactive shell already exports them) and it hid the real hazard, which is
+// that every host-side `gh` call swallows its own failure: `fetchIssue`
+// returns null and `branchHasOpenPr` returns false. A missing binary would
+// therefore not error — it would silently drop the `sc:*` model-override
+// labels, running every issue on the expensive default, and report that
+// branches have no open PR. Failing loudly here is worth more than guessing at
+// install locations.
+try {
+  execSync("command -v gh", { stdio: "ignore" });
+} catch {
+  throw new Error(
+    "`gh` was not found on PATH. The orchestrator reads issue state and the " +
+      "`sc:*` model-override labels through it, and those call sites fail " +
+      "silently (null / false) rather than erroring — so a run would quietly " +
+      "use the wrong models. Refusing to start. Install the GitHub CLI, or " +
+      "launch from a shell whose PATH includes it.",
+  );
+}
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
