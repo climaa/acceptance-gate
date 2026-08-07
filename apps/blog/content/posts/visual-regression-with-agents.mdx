@@ -1,29 +1,28 @@
 ---
-title: 'Regresión visual con agentes: el diff de píxeles ya no basta'
-description: 'Por qué el snapshot testing tradicional se rompe cuando parte del código lo escribe un agente, y qué estrategia lo sustituye.'
+title: 'Visual regression with agents: the pixel diff is no longer enough'
+description: 'Why traditional snapshot testing breaks down when part of the code is written by an agent, and what strategy replaces it.'
 date: '2026-08-05'
-tags: ['testing', 'regresión visual', 'agentes']
+tags: ['testing', 'visual regression', 'agents']
 draft: false
 ---
 
-Durante años, la regresión visual ha sido un problema resuelto a medias: capturas una
-imagen del componente, la guardas como referencia, y en cada commit comparas píxel a
-píxel. Si algo cambia, el test falla y alguien revisa.
+For years, visual regression has been a half-solved problem: you capture an image of the
+component, store it as a baseline, and compare pixel by pixel on every commit. If anything
+changes, the test fails and someone reviews it.
 
-Ese modelo se apoya en una suposición que ya no se cumple: **que los cambios de código
-son pocos, deliberados y de autoría humana**. Cuando un agente refactoriza treinta
-componentes en una tarde, el diff de píxeles deja de ser una red de seguridad y se
-convierte en ruido.
+That model rests on an assumption that no longer holds: **that code changes are few,
+deliberate, and human-authored**. When an agent refactors thirty components in an afternoon,
+the pixel diff stops being a safety net and becomes noise.
 
-## El problema real no es la falsa alarma
+## The real problem is not the false alarm
 
-La queja habitual contra el snapshot visual es el flakiness: renderizado de fuentes,
-antialiasing, un cursor parpadeando. Eso se mitiga — umbrales de tolerancia, esperar a
-`document.fonts.ready`, deshabilitar animaciones:
+The usual complaint against visual snapshots is flakiness: font rendering, antialiasing, a
+blinking caret. That can be mitigated — tolerance thresholds, waiting for
+`document.fonts.ready`, disabling animations:
 
 ```ts
 // cypress/support/visual.ts
-export function stabilise() {
+export function stabilize() {
   cy.document().then((doc) => {
     const style = doc.createElement('style');
     style.innerHTML = `
@@ -39,49 +38,49 @@ export function stabilise() {
 }
 ```
 
-Eso arregla el flakiness. No arregla el problema de fondo, que es otro: **un diff de
-píxeles te dice que algo cambió, pero no si el cambio importa.** Y cuando el volumen
-de cambios se multiplica, esa distinción es lo único que cuenta.
+That fixes the flakiness. It does not fix the underlying problem, which is a different one:
+**a pixel diff tells you that something changed, but not whether the change matters.** And
+once the volume of changes multiplies, that distinction is the only thing that counts.
 
-Un agente que reemplaza una utilidad de espaciado por tokens del design system va a
-mover cosas dos píxeles en cuarenta capturas. Todas fallan. Todas son correctas. El
-coste de revisarlas una a una supera al de no tener los tests.
+An agent that replaces a spacing utility with design system tokens is going to move things
+two pixels in forty snapshots. All of them fail. All of them are correct. The cost of
+reviewing them one by one exceeds the cost of not having the tests at all.
 
-## Tres capas, no una
+## Three layers, not one
 
-Lo que me ha funcionado es dejar de tratar "lo visual" como una sola cosa y separarlo
-en tres capas con tolerancias distintas.
+What has worked for me is to stop treating "the visual side" as one thing and split it into
+three layers with different tolerances.
 
-### 1. Contratos estructurales — tolerancia cero
+### 1. Structural contracts — zero tolerance
 
-Antes de mirar píxeles, verifica invariantes que se pueden expresar como aserciones. No
-son capturas: son propiedades.
+Before looking at pixels, verify the invariants that can be expressed as assertions. They
+are not snapshots: they are properties.
 
 ```ts
-it('mantiene el contrato de accesibilidad del stepper', () => {
+it('keeps the accessibility contract of the stepper', () => {
   cy.mount(<ProgressTracker steps={steps} />);
 
-  // El paso actual debe ser exactamente uno y estar anunciado.
+  // There must be exactly one current step, and it must be announced.
   cy.findAllByRole('button', { current: 'step' }).should('have.length', 1);
 
-  // Todos los nodos tienen nombre accesible.
+  // Every node has an accessible name.
   cy.findAllByRole('button').each(($el) => {
     cy.wrap($el).should('have.attr', 'title').and('not.be.empty');
   });
 });
 ```
 
-Esta capa no la rompe un refactor de estilos, y sí la rompe un agente que elimina un
-`aria-current` "porque no se usaba". Es la que más regresiones reales atrapa por unidad
-de mantenimiento.
+A styling refactor does not break this layer, and an agent that removes an `aria-current`
+"because it was unused" does. It is the layer that catches the most real regressions per
+unit of maintenance.
 
-### 2. Tokens computados — tolerancia cero, ámbito acotado
+### 2. Computed tokens — zero tolerance, narrow scope
 
-En vez de comparar la imagen entera, asertas los valores computados que *sí* son
-decisiones de diseño:
+Instead of comparing the whole image, you assert the computed values that _are_ design
+decisions:
 
 ```ts
-it('el nodo actual usa el color de acento, no un azul cualquiera', () => {
+it('the current node uses the accent color, not just any blue', () => {
   cy.mount(<ProgressTracker steps={steps} />);
 
   cy.findByRole('button', { current: 'step' })
@@ -93,52 +92,48 @@ it('el nodo actual usa el color de acento, no un azul cualquiera', () => {
             .getPropertyValue('--color-accent')
             .trim(),
         )
-        .then((token) => expect(normaliseColor(color)).to.equal(normaliseColor(token)));
+        .then((token) => expect(normalizeColor(color)).to.equal(normalizeColor(token)));
     });
 });
 ```
 
-Esto captura la clase de bug que un agente introduce con más frecuencia: hardcodear
-`#2563eb` en lugar de usar `var(--color-accent)`. El resultado es visualmente idéntico
-hoy y roto el día que cambies el tema.
+This catches the class of bug an agent introduces most often: hardcoding `#2563eb` instead
+of using `var(--color-accent)`. The result is visually identical today and broken the day
+you change the theme.
 
-### 3. Snapshot de píxeles — solo en superficies estables
+### 3. Pixel snapshots — only on stable surfaces
 
-La captura completa se reserva para un conjunto pequeño y explícito de vistas cuya
-apariencia es en sí misma el contrato: la página de precios, el email transaccional,
-el componente que un cliente aprobó por escrito. Diez o quince, no cuatrocientas.
+The full capture is reserved for a small, explicit set of views whose appearance is itself
+the contract: the pricing page, the transactional email, the component a client signed off
+on in writing. Ten or fifteen, not four hundred.
 
-## El cambio de rol de la línea base
+## The changing role of the baseline
 
-Aquí está la parte incómoda. En el modelo clásico, la línea base es la verdad y el
-cambio es sospechoso. Con un agente en el pipeline, eso se invierte: el cambio suele
-ser intencionado y la línea base es lo que está desactualizado.
+Here is the uncomfortable part. In the classic model, the baseline is the truth and the
+change is suspect. With an agent in the pipeline, that inverts: the change is usually
+intentional and the baseline is what is out of date.
 
-La consecuencia práctica es que **aprobar una línea base tiene que costar lo mismo que
-revisar un diff de código**, o el equipo empezará a aprobar en bloque sin mirar — que
-es exactamente el fallo que los tests debían prevenir.
+The practical consequence is that **approving a baseline has to cost the same as reviewing a
+code diff**, or the team will start approving in bulk without looking — which is exactly the
+failure the tests were meant to prevent.
 
-Lo que ayuda:
+What helps:
 
-- Que el reporte agrupe capturas por *causa* y no por archivo. Cuarenta diffs de "2px
-  a la derecha" son una decisión, no cuarenta.
-- Que la aprobación viva en el PR y quede firmada por una persona.
-- Que el agente escriba en la descripción del PR qué cambio visual espera provocar.
-  Si lo que declara no coincide con lo que el reporte muestra, ahí está la regresión.
+- Having the report group snapshots by _cause_ rather than by file. Forty diffs of "2px to
+  the right" are one decision, not forty.
+- Having the approval live in the PR, signed by a person.
+- Having the agent write in the PR description which visual change it expects to cause. If
+  what it declares does not match what the report shows, there is the regression.
 
-Este último punto es el que más me ha sorprendido: la declaración de intención del
-agente, escrita *antes* de correr los tests, funciona como oráculo. No necesitas que
-un humano juzgue cada píxel; necesitas comparar dos afirmaciones.
+That last point is the one that has surprised me most: the agent's statement of intent,
+written _before_ running the tests, works as an oracle. You do not need a human to judge
+every pixel; you need to compare two claims.
 
-## Lo que no he resuelto
+## What I have not solved
 
-{/* TODO Carles: sustituye esta sección por los límites concretos que te encontraste
-     en tu proyecto — es la parte que un lector técnico va a valorar más, porque
-     demuestra que lo has llevado a producción y no solo leído. */}
+There is still a gap: changes that are individually correct and incoherent as a whole. Every
+component passes its tests and the full screen looks wrong. None of the three layers catches
+it, because the problem does not live in any one component.
 
-Sigue habiendo un hueco: los cambios que son correctos individualmente e incoherentes
-en conjunto. Cada componente pasa sus tests y la pantalla completa se ve mal. Ninguna
-de las tres capas lo detecta, porque el problema no vive en ningún componente.
-
-Por ahora lo cubro con un puñado de capturas de página completa en los flujos críticos
-y con revisión humana. No es satisfactorio. Si has encontrado algo mejor, escríbeme.
+For now I cover it with a handful of full-page snapshots on the critical flows, plus human
+review. It is not satisfying. If you have found something better, write to me.
