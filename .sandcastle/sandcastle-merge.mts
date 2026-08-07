@@ -7,6 +7,7 @@ import { docker } from "@ai-hero/sandcastle/sandboxes/docker";
 import { BASE_BRANCH } from "./sandcastle-config.mts";
 import { headHooks } from "./sandcastle-sandbox-hooks.mts";
 import { agentFor } from "./sandcastle-agent-profiles.mts";
+import { formatBranchLine } from "./sandcastle-merge-branch-line.mts";
 import type { IssueRef } from "./sandcastle-git.mts";
 
 function currentBranch(): string | null {
@@ -86,11 +87,7 @@ export async function runMerger(
       agent: agentFor("merger"),
       promptFile: "./.sandcastle/agent-docs/merge-prompt.md",
       promptArgs: {
-        BRANCHES_WITH_ISSUES: branches
-          .map(
-            (i) => `- branch: ${i.branch}, issue: ${i.id}, title: ${i.title}`,
-          )
-          .join("\n"),
+        BRANCHES_WITH_ISSUES: branches.map(formatBranchLine).join("\n"),
       },
     });
   } finally {
