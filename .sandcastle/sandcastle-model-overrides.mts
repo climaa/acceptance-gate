@@ -48,12 +48,9 @@ export const EFFORTS: readonly Effort[] = [
   "max",
 ];
 
-export const PER_ISSUE_ROLES: readonly PerIssueRole[] = [
-  "implementer",
-  "reviewer",
-];
-export const RUN_LEVEL_ROLES: readonly Role[] = ["planner", "merger"];
-export const ALL_ROLES: readonly Role[] = [
+const PER_ISSUE_ROLES: readonly PerIssueRole[] = ["implementer", "reviewer"];
+const RUN_LEVEL_ROLES: readonly Role[] = ["planner", "merger"];
+const ALL_ROLES: readonly Role[] = [
   "planner",
   "implementer",
   "reviewer",

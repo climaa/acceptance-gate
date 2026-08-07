@@ -160,7 +160,7 @@ export function branchHasOpenPr(branch: string): boolean {
 // The primary repository checkout. `git worktree list --porcelain` always
 // reports it FIRST — that ordering is the documented contract and is what
 // makes this cheap to identify (worktree-reaper hardening).
-export function primaryWorktreePath(): string | null {
+function primaryWorktreePath(): string | null {
   try {
     const out = execSync("git worktree list --porcelain", {
       encoding: "utf8",
@@ -181,7 +181,7 @@ export function primaryWorktreePath(): string | null {
 // but says so accurately in the log rather than claiming uncommitted work.
 // git's own stderr is swallowed so a missing path does not print a bare
 // `fatal:` line above our explanation.
-export function worktreeDirtiness(worktreePath: string): Dirtiness {
+function worktreeDirtiness(worktreePath: string): Dirtiness {
   try {
     const out = execSync(`git -C "${worktreePath}" status --porcelain`, {
       encoding: "utf8",
