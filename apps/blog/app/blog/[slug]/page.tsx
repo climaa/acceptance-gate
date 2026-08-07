@@ -44,7 +44,7 @@ export default async function PostPage({ params }: PageProps) {
             <div className="post-meta">
               <span>{formatDate(post.date)}</span>
               <span>·</span>
-              <span>{post.readingMinutes} min de lectura</span>
+              <span>{post.readingMinutes} min read</span>
             </div>
             <Stack direction="row" gap={2} wrap>
               {post.tags.map((tag) => (

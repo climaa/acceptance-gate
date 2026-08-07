@@ -5,21 +5,21 @@ import './globals.css';
 export const metadata: Metadata = {
   metadataBase: new URL('https://carleslima.dev'),
   title: {
-    default: 'Carles Lima — Ingeniería frontend y calidad',
+    default: 'Carles Lima — Frontend engineering and quality',
     template: '%s · Carles Lima',
   },
   description:
-    'Notas sobre Next.js, testing con Cypress y Gherkin, regresión visual y agentes de código.',
+    'Notes on Next.js, testing with Cypress and Gherkin, visual regression and coding agents.',
   openGraph: {
     type: 'website',
-    locale: 'es_ES',
+    locale: 'en_US',
     siteName: 'Carles Lima',
   },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es">
+    <html lang="en">
       <body>
         <header className="site-header">
           <div className="ds-container site-header__inner">
@@ -28,7 +28,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </Link>
             <nav className="site-nav">
               <Link href="/blog">Blog</Link>
-              <Link href="/sobre-mi">Sobre mí</Link>
+              <Link href="/about">About</Link>
             </nav>
           </div>
         </header>

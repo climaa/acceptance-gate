@@ -1,0 +1,34 @@
+import type { Metadata } from 'next';
+import { Prose, Stack } from '@gate/ui';
+
+export const metadata: Metadata = {
+  title: 'About',
+  description: 'Carles Lima — web developer in Barcelona.',
+};
+
+export default function AboutPage() {
+  return (
+    <Stack gap={8}>
+      <h1 className="article-header__title">About</h1>
+      <Prose>
+        <p>
+          I am Carles Lima, a web developer in Barcelona. I work mostly with Next.js and
+          TypeScript, on the part a lot of people find boring: making sure what gets built
+          can be verified automatically and repeatably.
+        </p>
+        <h2>What I work on</h2>
+        <p>
+          End-to-end test suites with Cypress and Gherkin, visual regression for
+          components, and designing CI pipelines that fail for the right reasons. Lately,
+          on how all of that changes when part of the code is written by an agent.
+        </p>
+        <h2>Contact</h2>
+        <p>
+          {/* TODO: replace with your real links */}
+          <a href="https://github.com/">GitHub</a> ·{' '}
+          <a href="https://www.linkedin.com/">LinkedIn</a>
+        </p>
+      </Prose>
+    </Stack>
+  );
+}

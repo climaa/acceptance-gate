@@ -81,7 +81,7 @@ export function getAllTags(): string[] {
   return [...tags].sort();
 }
 
-export function formatDate(iso: string, locale = 'es-ES'): string {
+export function formatDate(iso: string, locale = 'en-US'): string {
   return new Date(`${iso}T00:00:00Z`).toLocaleDateString(locale, {
     day: 'numeric',
     month: 'long',
