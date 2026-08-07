@@ -25,15 +25,15 @@ merges carry their model co-author trailer in the squashed commit.
 
 ## What's here, what's coming
 
-| Piece | Status |
-|---|---|
-| `.sandcastle/` — the orchestrator, with its hermetic test suite | ✅ committed, public |
-| `designs/` — the design source of truth + PNG exports | ✅ normative component inventory, two theme personalities |
-| `apps/blog` — Next.js App Router + MDX, consumes `@gate/ui` | ✅ seed (English translation is a Wave-1 issue) |
-| `packages/ui` — atomic design system, token-only styling | 🔜 Wave 1: 19 components, layering enforced by ESLint |
-| `apps/storybook` — the visual single source of truth | 🔜 Wave 2 |
-| `apps/e2e` — playwright-bdd acceptance suite | 🔜 Wave 3 |
-| `packages/visual-diff` — the self-built CLI that gates PRs | 🔜 Wave 4 |
+| Piece                                                           | Status                                                    |
+| --------------------------------------------------------------- | --------------------------------------------------------- |
+| `.sandcastle/` — the orchestrator, with its hermetic test suite | ✅ committed, public                                      |
+| `designs/` — the design source of truth + PNG exports           | ✅ normative component inventory, two theme personalities |
+| `apps/blog` — Next.js App Router + MDX, consumes `@gate/ui`     | ✅ seed (English translation is a Wave-1 issue)           |
+| `packages/ui` — atomic design system, token-only styling        | 🔜 Wave 1: 19 components, layering enforced by ESLint     |
+| `apps/storybook` — the visual single source of truth            | 🔜 Wave 2                                                 |
+| `apps/e2e` — playwright-bdd acceptance suite                    | 🔜 Wave 3                                                 |
+| `packages/visual-diff` — the self-built CLI that gates PRs      | 🔜 Wave 4                                                 |
 
 ## The design system, in one rule
 
@@ -71,8 +71,8 @@ Turborepo ^2.10.
 
 Rules that keep it honest live in
 [`.sandcastle/agent-docs/CODING_STANDARDS.md`](.sandcastle/agent-docs/CODING_STANDARDS.md) —
-including the one that matters most: *`.feature` files describe product
-requirements and are never edited to make a test pass.*
+including the one that matters most: _`.feature` files describe product
+requirements and are never edited to make a test pass._
 
 ## License
 

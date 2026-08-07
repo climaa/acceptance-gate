@@ -1,26 +1,26 @@
-import * as fs from "node:fs";
-import * as path from "node:path";
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 
-const ROOT = path.resolve(__dirname, "../..");
-const SANDCASTLE = path.join(ROOT, ".sandcastle");
+const ROOT = path.resolve(__dirname, '../..');
+const SANDCASTLE = path.join(ROOT, '.sandcastle');
 
 function read(file: string) {
-  return fs.readFileSync(path.join(SANDCASTLE, file), "utf8");
+  return fs.readFileSync(path.join(SANDCASTLE, file), 'utf8');
 }
 
-describe("sandcastle completion hardening ", () => {
-  describe("implement-prompt.md — branch push before completion signal", () => {
-    const content = read("agent-docs/implement-prompt.md");
+describe('sandcastle completion hardening ', () => {
+  describe('implement-prompt.md — branch push before completion signal', () => {
+    const content = read('agent-docs/implement-prompt.md');
 
-    it("includes git push -u origin HEAD", () => {
+    it('includes git push -u origin HEAD', () => {
       expect(content).toMatch(/git push -u origin HEAD/);
     });
 
-    it("push instruction appears before the final completion-token line", () => {
-      const pushIdx = content.lastIndexOf("git push -u origin HEAD");
-      const theIssueIdx = content.indexOf("## THE ISSUE");
+    it('push instruction appears before the final completion-token line', () => {
+      const pushIdx = content.lastIndexOf('git push -u origin HEAD');
+      const theIssueIdx = content.indexOf('## THE ISSUE');
       const completeInIssueIdx = content.indexOf(
-        "<promise>COMPLETE</promise>",
+        '<promise>COMPLETE</promise>',
         theIssueIdx,
       );
       expect(pushIdx).toBeGreaterThan(-1);
@@ -29,48 +29,45 @@ describe("sandcastle completion hardening ", () => {
     });
   });
 
-  describe("all three prompt files — very-last-output requirement", () => {
+  describe('all three prompt files — very-last-output requirement', () => {
     const FILES = [
-      "agent-docs/implement-prompt.md",
-      "agent-docs/review-prompt.md",
-      "agent-docs/merge-prompt.md",
+      'agent-docs/implement-prompt.md',
+      'agent-docs/review-prompt.md',
+      'agent-docs/merge-prompt.md',
     ];
 
     it.each(FILES)(
-      "%s requires the completion token to be the very last output",
+      '%s requires the completion token to be the very last output',
       (file) => {
         const content = read(file);
         expect(content).toMatch(/very last/i);
       },
     );
 
-    it.each(FILES)(
-      "%s explicitly prohibits trailing prose after the token",
-      (file) => {
-        const content = read(file);
-        expect(content).toMatch(
-          /do not write.*after.*token|no.*prose.*after|no.*text.*after|no.*summary.*after/i,
-        );
-      },
-    );
+    it.each(FILES)('%s explicitly prohibits trailing prose after the token', (file) => {
+      const content = read(file);
+      expect(content).toMatch(
+        /do not write.*after.*token|no.*prose.*after|no.*text.*after|no.*summary.*after/i,
+      );
+    });
   });
 
-  describe("sandcastle-run-issue.mts — idle-timeout salvage for implementer", () => {
-    const content = read("sandcastle-run-issue.mts");
-    const runIssueStart = content.indexOf("export async function runIssue");
+  describe('sandcastle-run-issue.mts — idle-timeout salvage for implementer', () => {
+    const content = read('sandcastle-run-issue.mts');
+    const runIssueStart = content.indexOf('export async function runIssue');
     const runIssueBody = content.slice(runIssueStart, runIssueStart + 3000);
 
-    it("runIssue contains a .catch() on the implementer sandbox.run call", () => {
+    it('runIssue contains a .catch() on the implementer sandbox.run call', () => {
       expect(runIssueBody).toMatch(/\.catch\(/);
     });
 
-    it(".catch() block checks branchHasCommitsAhead before salvaging", () => {
-      const catchIdx = runIssueBody.indexOf(".catch(");
+    it('.catch() block checks branchHasCommitsAhead before salvaging', () => {
+      const catchIdx = runIssueBody.indexOf('.catch(');
       const catchBody = runIssueBody.slice(catchIdx, catchIdx + 500);
       expect(catchBody).toMatch(/branchHasCommitsAhead/);
     });
 
-    it("salvage path logs a warning about salvaging committed work", () => {
+    it('salvage path logs a warning about salvaging committed work', () => {
       expect(runIssueBody).toMatch(/salvag/i);
     });
   });

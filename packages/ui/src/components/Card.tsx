@@ -32,10 +32,30 @@ export function Card({
   );
 }
 
-export function CardHeader({ children, className }: { children: ReactNode; className?: string }) {
-  return <div className={['ds-card__header', className].filter(Boolean).join(' ')}>{children}</div>;
+export function CardHeader({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={['ds-card__header', className].filter(Boolean).join(' ')}>
+      {children}
+    </div>
+  );
 }
 
-export function CardTitle({ children, className }: { children: ReactNode; className?: string }) {
-  return <h3 className={['ds-card__title', className].filter(Boolean).join(' ')}>{children}</h3>;
+export function CardTitle({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <h3 className={['ds-card__title', className].filter(Boolean).join(' ')}>
+      {children}
+    </h3>
+  );
 }

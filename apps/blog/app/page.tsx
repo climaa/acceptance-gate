@@ -8,14 +8,12 @@ export default function HomePage() {
   return (
     <Stack gap={12}>
       <Stack gap={4} as="section">
-        <h1 className="hero__title">
-          Construyo frontend que se puede verificar.
-        </h1>
+        <h1 className="hero__title">Construyo frontend que se puede verificar.</h1>
         <p className="hero__lead">
-          Desarrollador web en Barcelona. Next.js, TypeScript y una obsesión concreta:
-          que la calidad sea una propiedad del pipeline, no una fase al final. Escribo
-          sobre Cypress con Gherkin, regresión visual y qué cambia cuando los agentes
-          escriben parte del código.
+          Desarrollador web en Barcelona. Next.js, TypeScript y una obsesión concreta: que
+          la calidad sea una propiedad del pipeline, no una fase al final. Escribo sobre
+          Cypress con Gherkin, regresión visual y qué cambia cuando los agentes escriben
+          parte del código.
         </p>
       </Stack>
 

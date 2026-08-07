@@ -12,9 +12,9 @@ export default function AboutPage() {
       <h1 className="article-header__title">Sobre mí</h1>
       <Prose>
         <p>
-          Soy Carles Lima, desarrollador web en Barcelona. Trabajo sobre todo con
-          Next.js y TypeScript, y me dedico a la parte que a mucha gente le aburre:
-          que lo que se construye se pueda verificar de forma automática y repetible.
+          Soy Carles Lima, desarrollador web en Barcelona. Trabajo sobre todo con Next.js
+          y TypeScript, y me dedico a la parte que a mucha gente le aburre: que lo que se
+          construye se pueda verificar de forma automática y repetible.
         </p>
         <h2>En qué trabajo</h2>
         <p>

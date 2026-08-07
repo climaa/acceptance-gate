@@ -62,9 +62,7 @@ export function ProgressTracker({
   ...rest
 }: ProgressTrackerProps) {
   const isControlled = selectedIndex !== undefined;
-  const [internalIndex, setInternalIndex] = useState<number | null>(
-    defaultSelectedIndex,
-  );
+  const [internalIndex, setInternalIndex] = useState<number | null>(defaultSelectedIndex);
   const activeIndex = isControlled ? selectedIndex : internalIndex;
 
   const select = useCallback(
