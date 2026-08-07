@@ -50,7 +50,14 @@ import {
   type IssueRef,
   branchHasCommitsAhead,
   fetchIssue,
+  markIssueNoOp,
 } from "./sandcastle-git.mts";
+import {
+  NOOP_LABEL,
+  hasNoOpLabel,
+  noOpIssueComment,
+  partitionOutcomes,
+} from "./sandcastle-noop-issues.mts";
 import { collectStrandedIssues, verifyStrandedBranches } from "./sandcastle-stranded-branches.mts";
 import { runMerger } from "./sandcastle-merge.mts";
 import { runIssue } from "./sandcastle-run-issue.mts";
@@ -97,6 +104,13 @@ ensureImageFreshness();
 // ---------------------------------------------------------------------------
 // Main loop
 // ---------------------------------------------------------------------------
+
+// Ids of issues this run has already found nothing to do on. Run-scoped on
+// purpose: declared inside the loop it would reset every iteration, which is
+// exactly the bug — the planner keeps proposing a no-op issue and each
+// iteration spends a sandbox on it. The durable half of the mark is NOOP_LABEL
+// on the issue itself; this set is what still works when `gh` is unavailable.
+const noOpIssueIds = new Set<string>();
 
 for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
   // Graceful shutdown: a SIGINT/SIGTERM between iterations stops
@@ -152,21 +166,40 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
   }
 
   // The plan JSON contains an array of issues, each with id, title, branch.
-  const { issues } = JSON.parse(planMatch[1]!) as { issues: IssueRef[] };
+  const { issues: planned } = JSON.parse(planMatch[1]!) as {
+    issues: IssueRef[];
+  };
 
-  // Resolve per-issue model/effort overrides from each issue's `sc:` labels
-  // (sandcastle-model-overrides.mts). Done here, before ANY sandbox is created,
-  // so a typo'd control label costs nothing: a label that does not parse must
-  // never silently fall back to the expensive default.
+  // One pass over the plan, deciding two things from each issue's labels —
+  // both BEFORE any sandbox is created:
+  //
+  //   1. Is the issue still eligible? An issue already marked no-op is dropped
+  //      here rather than run again. The planner is told to skip them too
+  //      (agent-docs/plan-prompt.md), but a mechanism that stops a run from
+  //      burning MAX_ITERATIONS on one issue must not depend on an agent
+  //      obeying a prompt.
+  //   2. Its model/effort overrides (sandcastle-model-overrides.mts). A typo'd
+  //      control label costs nothing here: a label that does not parse must
+  //      never silently fall back to the expensive default.
+  const issues: IssueRef[] = [];
   const overrideErrors: string[] = [];
-  for (const issue of issues) {
+  for (const issue of planned) {
     const labels = fetchIssue(issue.id)?.labels ?? [];
+    if (noOpIssueIds.has(issue.id) || hasNoOpLabel(labels)) {
+      noOpIssueIds.add(issue.id);
+      console.log(
+        `  ⏭ #${issue.id} skipped: an earlier run produced no changes (${NOOP_LABEL}). ` +
+          `Remove the label to queue it again.`,
+      );
+      continue;
+    }
     const { overrides, errors } = parseOverrideLabels(labels);
     if (errors.length > 0) {
       overrideErrors.push(...errors.map((e) => `  #${issue.id}  ${e}`));
       continue;
     }
     if (Object.keys(overrides).length > 0) issue.overrides = overrides;
+    issues.push(issue);
   }
   if (overrideErrors.length > 0) {
     throw new Error(
@@ -175,13 +208,18 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
   }
 
   if (issues.length === 0) {
-    // No unblocked work in the plan — but prior runs may have left branches
-    // with commits ahead of main and no PR (e.g. previous reviewer crashed
-    // mid-pipeline). Rescue them directly into the merge phase before exiting,
-    // otherwise the orchestrator declares done with stranded work.
+    // Nothing eligible — either the planner found no unblocked work, or every
+    // issue it proposed is already marked no-op. Prior runs may still have left
+    // branches with commits ahead of main and no PR (e.g. previous reviewer
+    // crashed mid-pipeline). Rescue them directly into the merge phase before
+    // exiting, otherwise the orchestrator declares done with stranded work.
     const stranded = collectStrandedIssues(new Set());
     if (stranded.length === 0) {
-      console.log("No unblocked issues to work on. Exiting.");
+      console.log(
+        planned.length > 0
+          ? "Every planned issue is already marked no-op. Exiting."
+          : "No unblocked issues to work on. Exiting.",
+      );
       break;
     }
     console.log(
@@ -264,34 +302,57 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
     }
   }
 
-  // Pass branches that have commits ahead of base to the merge phase.
-  // Checking branch-vs-base (not just this run's commits) means idempotent
-  // re-runs of completed work still get merged instead of looping forever.
-  const completedIssues: IssueRef[] = settled
-    .map((outcome, i) => ({ outcome, issue: issues[i]! }))
-    .filter(
-      (entry) =>
-        entry.outcome.status === "fulfilled" &&
-        (entry.outcome.value.commits.length > 0 ||
-          branchHasCommitsAhead(entry.issue.branch)),
-    )
-    .map((entry) => entry.issue);
+  // Split this iteration's results into work to land, issues that produced
+  // nothing, and pipelines that threw. The classification rules and the
+  // reasoning behind them live in sandcastle-noop-issues.mts.
+  const {
+    completed: completedIssues,
+    noop: noOpThisIteration,
+    failed,
+  } = partitionOutcomes(
+    settled.map((outcome, i) => {
+      const issue = issues[i]!;
+      return {
+        issue,
+        status: outcome.status,
+        commitCount:
+          outcome.status === "fulfilled" ? outcome.value.commits.length : 0,
+        // Branch-vs-base rather than just this run's commits, so an idempotent
+        // re-run of already-committed work still reaches the merge phase
+        // instead of looping forever.
+        branchAhead: branchHasCommitsAhead(issue.branch),
+      };
+    }),
+  );
+  const failedBranches = failed.map((issue) => issue.branch);
 
-  // Branches whose pipeline THREW this iteration (the rejected `settled`
-  // entries map back to issues[i].branch). They must be excluded from rescue:
-  // a just-failed pipeline's branch is ahead of main with no PR, so without
-  // this it would re-enter via collectStrandedIssues and merge in the same run
-  // it failed — making the build gate advisory-only (build-gate hardening).
-  const failedBranches = settled
-    .map((outcome, i) => ({ outcome, branch: issues[i]!.branch }))
-    .filter((e) => e.outcome.status === "rejected")
-    .map((e) => e.branch);
+  // Mark the no-ops. Without this the issue stays open and unremarkable, the
+  // next iteration's planner proposes it again, and the run spends a fresh
+  // sandbox on it every iteration up to MAX_ITERATIONS — the whole reason this
+  // path exists. Deliberately a comment plus a label, never a close: "nothing
+  // to do" can also mean the agent misread the task.
+  for (const issue of noOpThisIteration) {
+    noOpIssueIds.add(issue.id);
+    const { commented, labeled } = markIssueNoOp(
+      issue.id,
+      noOpIssueComment({ id: issue.id, branch: issue.branch, iteration }),
+    );
+    console.log(
+      `  ⊘ #${issue.id} produced no changes — left open, excluded from re-planning ` +
+        `(comment ${commented ? "posted" : "FAILED"}, ${NOOP_LABEL} ${labeled ? "added" : "FAILED"}).`,
+    );
+  }
 
   // Rescue: sandcastle/* branches that are ahead of base but weren't part
   // of this iteration's plan (the planner skips already-implemented ones
   // on the assumption the merger will land them — see agent-docs/plan-prompt.md).
   // If a previous iteration's merge phase crashed or was interrupted,
   // such branches would otherwise be stranded forever.
+  //
+  // `failedBranches` is listed here to EXCLUDE it from that rescue: a
+  // just-failed pipeline's branch is ahead of base with no PR, so it would
+  // otherwise re-enter here and merge in the same run it failed, making the
+  // build gate advisory-only (build-gate hardening).
   const queuedBranches = new Set([
     ...completedIssues.map((i) => i.branch),
     ...failedBranches,
