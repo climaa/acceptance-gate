@@ -1,23 +1,27 @@
 // Pure formatting for one `BRANCHES_WITH_ISSUES` line in the merge prompt.
-// Split out of sandcastle-merge.mts so the implementer/reviewer attribution
-// can be unit-tested directly: sandcastle-merge.mts also imports
-// sandcastle-config.mts (transitively, via sandcastle-sandbox-hooks.mts's
-// caller), which has import-time side effects (gh preflight, turbo-cache
-// log), so nothing that pulls it in can be loaded in a test. Same reasoning
-// as sandcastle-sandbox-hooks.mts and sandcastle-model-overrides.mts.
 //
-// Resolution is host-side and deterministic — consistent with the existing
-// principle that routing data is never delegated to an agent echoing strings
-// back (see the comment above `fetchIssue` in sandcastle-git.mts). The merger
-// agent only ever copies the already-resolved implementer/reviewer values
-// verbatim from this line into the PR footer.
-import { effectiveProfile } from "./sandcastle-agent-profiles.mts";
+// Its own module rather than inline in sandcastle-merge.mts, which imports
+// sandcastle-config.mts — that has import-time side effects (gh preflight,
+// turbo-cache log), so anything pulling it in cannot be loaded in a test. Same
+// reasoning as sandcastle-sandbox-hooks.mts and sandcastle-worktree-safety.mts.
+//
+// Resolving the profiles host-side keeps routing data out of an agent's hands,
+// per the existing principle spelled out above `fetchIssue` in
+// sandcastle-git.mts: the merger only ever copies the already-resolved
+// implementer/reviewer values verbatim from this line into the PR footer.
+import {
+  type AgentProfile,
+  effectiveProfile,
+} from "./sandcastle-agent-profiles.mts";
 import type {
-  Effort,
   PerIssueRole,
   ProfileOverride,
 } from "./sandcastle-model-overrides.mts";
 
+/**
+ * The part of `IssueRef` (sandcastle-git.mts) this formatter reads, restated
+ * rather than imported: that module reaches sandcastle-config.mts too.
+ */
 export type BranchLineIssue = {
   id: string;
   title: string;
@@ -25,8 +29,8 @@ export type BranchLineIssue = {
   overrides?: Partial<Record<PerIssueRole, ProfileOverride>>;
 };
 
-/** "claude-sonnet-5·low", or the bare model name when effort is unset — the model·effort half of describeOverride's format, without its role= prefix. */
-export function formatProfile(profile: { model: string; effort?: Effort }): string {
+/** "claude-sonnet-5·low", or the bare model when effort is unset — describeOverride's format without its `role=` prefix. */
+export function formatProfile(profile: AgentProfile): string {
   return profile.effort ? `${profile.model}·${profile.effort}` : profile.model;
 }
 
