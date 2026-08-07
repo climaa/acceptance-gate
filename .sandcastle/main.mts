@@ -33,7 +33,8 @@
 //   "scripts": { "sandcastle": "npx tsx .sandcastle/main.mts" }
 
 import { execSync } from "node:child_process";
-import { BASE_BRANCH, MAX_ITERATIONS, hooks } from "./sandcastle-config.mts";
+import { BASE_BRANCH, MAX_ITERATIONS } from "./sandcastle-config.mts";
+import { headHooks } from "./sandcastle-sandbox-hooks.mts";
 import {
   agentFor,
   assertEnvOverridesValid,
@@ -118,7 +119,9 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
   // It outputs a <plan> JSON block — we parse that to drive Phase 2.
   // -------------------------------------------------------------------------
   const plan = await sandcastle.run({
-    hooks,
+    // headHooks, NOT worktreeHooks — no startup `pnpm install`, because of the
+    // bind mount described just below. See sandcastle-sandbox-hooks.mts.
+    hooks: headHooks,
     // HEAD-mode sandbox: bind-mounts the host checkout at /home/agent/workspace,
     // so any in-container pnpm run touches the host's node_modules. Belt-and-braces
     // env guard suppresses pnpm 11's automatic pre-run deps verification (which
