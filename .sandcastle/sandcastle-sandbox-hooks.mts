@@ -1,9 +1,10 @@
 // Sandbox startup hooks, split by WHAT THE SANDBOX BIND-MOUNTS.
 //
-// Deliberately imports NOTHING from this directory. `sandcastle-config.mts`
-// has import-time side effects (the `gh` preflight throws, the turbo-cache
-// resolver logs), so a module that pulls it in cannot be unit-tested — same
-// reasoning as sandcastle-model-overrides.mts and sandcastle-worktree-safety.mts.
+// Deliberately imports NOTHING from this directory — a layering choice, not a
+// necessity. `sandcastle-config.mts` is import-safe now (its `gh` preflight and
+// turbo-cache log are explicit calls, not import-time side effects); it once
+// threw on import, which is why this pure L0 layer exists. Same reasoning as
+// sandcastle-model-overrides.mts and sandcastle-worktree-safety.mts.
 //
 // Why the split exists at all. There used to be one `hooks` const passed to
 // every sandbox, and it ran `CI=true pnpm install` on all of them. Two of the

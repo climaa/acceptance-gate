@@ -1,9 +1,11 @@
 // Pure formatting for one `BRANCHES_WITH_ISSUES` line in the merge prompt.
 //
 // Its own module rather than inline in sandcastle-merge.mts, which imports
-// sandcastle-config.mts — that has import-time side effects (gh preflight,
-// turbo-cache log), so anything pulling it in cannot be loaded in a test. Same
-// reasoning as sandcastle-sandbox-hooks.mts and sandcastle-worktree-safety.mts.
+// sandcastle-config.mts. That used to matter because config had import-time
+// side effects; it is import-safe now (gh preflight and turbo-cache log are
+// explicit calls), so this split is a layering choice that keeps the formatting
+// rule unit-testable. Same reasoning as sandcastle-sandbox-hooks.mts and
+// sandcastle-worktree-safety.mts.
 //
 // Resolving the profiles host-side keeps routing data out of an agent's hands,
 // per the existing principle spelled out above `fetchIssue` in
