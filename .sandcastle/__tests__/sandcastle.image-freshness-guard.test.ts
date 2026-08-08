@@ -9,7 +9,7 @@ import {
 // A production incident: a bump moved pnpm 11.15.1 -> 11.17.0 in package.json and the
 // Dockerfile, but the `sandcastle:<checkout-dirname>` image was never rebuilt,
 // so the whole 2026-07-25 batch ran the stale global pnpm 11.15.1 and every
-// container hard-failed its own pre-push version check. The guard verifies the
+// container hard-failed its own pnpm version check. The guard verifies the
 // running image's toolchain matches the repo pin BEFORE any agent starts and
 // rebuilds (or refuses to start) on drift.
 describe('sandcastle image-freshness guard', () => {
@@ -17,7 +17,7 @@ describe('sandcastle image-freshness guard', () => {
     it('extracts the semver from a pnpm@X.Y.Z+sha512… packageManager pin', () => {
       const pkg = path.join(ROOT, 'package.json');
       const pinned = readPinnedPnpmVersion(pkg);
-      // Must match what the Dockerfile installs and the pre-push hook enforces.
+      // Must match what the Dockerfile installs.
       expect(pinned).toMatch(/^\d+\.\d+\.\d+$/);
       const spec = JSON.parse(fs.readFileSync(pkg, 'utf8')).packageManager as string;
       expect(spec.startsWith(`pnpm@${pinned}`)).toBe(true);

@@ -115,7 +115,7 @@ reapExitedContainers();
 // already tagged `sandcastle:<checkout-dirname>`; editing `.sandcastle/Dockerfile`
 // (e.g. bumping the global pnpm) does NOT invalidate that tag. On 2026-07-25 a
 // stale image ran the whole batch against pnpm 11.15.1 while the repo pinned
-// 11.17.0, hard-failing every container's pre-push version check as phantom
+// 11.17.0, hard-failing every container's pnpm version check as phantom
 // per-workspace failures. Verify the running image's pnpm matches
 // package.json#packageManager and rebuild on drift (or a missing image) BEFORE
 // any agent starts; refuse to start (throw) if a rebuild can't reconcile it,

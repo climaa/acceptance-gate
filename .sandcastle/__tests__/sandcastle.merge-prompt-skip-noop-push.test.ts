@@ -1,11 +1,11 @@
 import { read } from './helpers';
 
-// the host already pushes every completed branch to origin before
-// the merger runs (main.mts [ci-trigger]). The merger's own Step-1 push is then
-// a no-op that still fires .husky/pre-push. On 2026-07-25 that redundant hook run
-// failed on a stale-image pnpm mismatch and produced zero PRs for ten branches
-// that were fully implemented and already on GitHub. The fix: skip the push when
-// the branch is already published, so gh pr create is never gated on a no-op push.
+// the host already pushes every completed branch to origin before the merger
+// runs (main.mts [ci-trigger]), so the merger's own Step-1 push is usually a
+// no-op. On 2026-07-25 the batch produced zero PRs for ten fully-implemented,
+// already-pushed branches (a stale-image pnpm mismatch surfaced as phantom
+// failures). The fix: skip the push when the branch is already published, so
+// gh pr create is never gated on a redundant push.
 describe('sandcastle merge-prompt skip no-op push', () => {
   const content = read('agent-docs/merge-prompt.md');
 
