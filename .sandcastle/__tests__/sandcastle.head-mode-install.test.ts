@@ -1,5 +1,4 @@
-import * as fs from 'node:fs';
-import * as path from 'node:path';
+import { read, stripComments } from './helpers';
 import {
   GH_AUTH_SETUP_HOOK,
   PNPM_INSTALL_HOOK,
@@ -8,17 +7,6 @@ import {
   hooksFor,
   worktreeHooks,
 } from '../sandcastle-sandbox-hooks.mts';
-
-const ROOT = path.resolve(__dirname, '../..');
-const SANDCASTLE = path.join(ROOT, '.sandcastle');
-
-function read(file: string) {
-  return fs.readFileSync(path.join(SANDCASTLE, file), 'utf8');
-}
-
-function stripComments(source: string) {
-  return source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
-}
 
 /**
  * REAL unit tests, not source-text assertions — sandcastle-sandbox-hooks.mts

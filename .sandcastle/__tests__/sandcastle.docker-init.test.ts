@@ -1,7 +1,7 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
+import { ROOT } from './helpers';
 
-const ROOT = path.resolve(__dirname, '../..');
 const DOCKERFILE = path.join(ROOT, '.sandcastle', 'Dockerfile');
 
 const content = fs.readFileSync(DOCKERFILE, 'utf8');

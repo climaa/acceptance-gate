@@ -1,7 +1,7 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
+import { ROOT } from './helpers';
 
-const ROOT = path.resolve(__dirname, '../..');
 const README = path.join(ROOT, '.sandcastle/README.md');
 
 describe('.sandcastle/README.md', () => {

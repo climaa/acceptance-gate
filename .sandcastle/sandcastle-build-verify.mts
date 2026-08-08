@@ -5,6 +5,10 @@ import { execSync } from "node:child_process";
 import * as fs from "node:fs";
 import * as sandcastle from "@ai-hero/sandcastle";
 import { BASE_BRANCH } from "./sandcastle-config.mts";
+import {
+  BUILD_VERIFY_COMMAND,
+  BUILD_VERIFY_TIMEOUT_MS,
+} from "./sandcastle-variables.mts";
 
 // Patterns that qualify a changed file as "docs-only" — if ALL changed files
 // match at least one pattern, the build step is skipped.
@@ -56,18 +60,6 @@ export function formatMs(ms: number): string {
   const s = totalSeconds % 60;
   return m > 0 ? `${m}m${String(s).padStart(2, "0")}s` : `${totalSeconds}s`;
 }
-
-// `TURBO_CACHE_DIR=/tmp/turbo-cache` keeps turbo's filesystem cache out of the
-// bind-mounted repo root. The repo-root `.turbo/` can be root-owned from prior
-// container runs while the sandbox runs as a mapped uid, so turbo's default
-// `<repo>/.turbo/cache` location fails with "Permission denied (os error 13)"
-// and kills the build in seconds (build-gate hardening). turbo 2.9 honors this env var;
-// the host pre-push hook already uses the equivalent `--cache-dir /tmp/turbo-cache`.
-const BUILD_VERIFY_COMMAND = "TURBO_CACHE_DIR=/tmp/turbo-cache pnpm build";
-
-// Sandbox.exec() has no built-in timeout (unlike sandbox.run()'s
-// idleTimeoutSeconds), so this mirrors the old build-verify agent's 600s guard.
-const BUILD_VERIFY_TIMEOUT_MS = 600_000;
 
 // Runs the build-verify command directly in an already-warm sandbox via
 // sandbox.exec() (@ai-hero/sandcastle 0.12.0) instead of spinning up an agent

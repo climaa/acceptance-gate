@@ -1,23 +1,6 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-
-const ROOT = path.resolve(__dirname, '../..');
-const SANDCASTLE = path.join(ROOT, '.sandcastle');
-
-function read(file: string) {
-  return fs.readFileSync(path.join(SANDCASTLE, file), 'utf8');
-}
-
-/**
- * Strip comments so "must not appear" assertions test the actual code.
- * sandcastle-config.mts documents at length why it does NOT read
- * `process.env.TURBO_TOKEN` and why `dotenv.config()` is the wrong API —
- * naming both in prose. Without this, the explanation would fail the very
- * assertions it explains.
- */
-function stripComments(source: string) {
-  return source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
-}
+import { ROOT, SANDCASTLE, read, stripComments } from './helpers';
 
 describe('sandcastle-config.mts — gh preflight', () => {
   const content = read('sandcastle-config.mts');
@@ -25,7 +8,7 @@ describe('sandcastle-config.mts — gh preflight', () => {
   // Replaced a blind PATH prepend. Host-side `gh` call sites swallow their own
   // failures (fetchIssue -> null, branchHasOpenPr -> false), so a missing
   // binary silently drops the sc:* model overrides instead of erroring.
-  it('checks gh is resolvable at import time', () => {
+  it('checks gh is resolvable', () => {
     expect(stripComments(content)).toMatch(/command -v gh/);
   });
 
@@ -39,6 +22,44 @@ describe('sandcastle-config.mts — gh preflight', () => {
 
   it('hardcodes no install locations', () => {
     expect(stripComments(content)).not.toMatch(/\/opt\/homebrew|\/usr\/local\/bin/);
+  });
+
+  // The preflight and the turbo-cache log used to run as a side effect of
+  // importing sandcastle-config.mts, which meant no unit test could load the
+  // test and is why two modules deliberately import nothing at all. They are
+  // explicit functions now — but an explicit call can be forgotten where an
+  // import could not, so that new failure mode is what these cover.
+  it('exposes the preflight as a callable rather than running it on import', () => {
+    const code = stripComments(content);
+    expect(code).toMatch(/export function assertGhAvailable\(\)/);
+    // The execSync probe must sit INSIDE the function, not at module scope.
+    const moduleScope = code.replace(/export function [\s\S]*?\n}\n/g, '');
+    expect(moduleScope).not.toMatch(/command -v gh/);
+  });
+
+  it('leaves no console output at module scope', () => {
+    const moduleScope = stripComments(content).replace(
+      /export function [\s\S]*?\n}\n/g,
+      '',
+    );
+    expect(moduleScope).not.toMatch(/console\./);
+  });
+
+  it('main.mts calls both, since importing no longer does it', () => {
+    const main = stripComments(read('main.mts'));
+    expect(main).toMatch(/assertGhAvailable\(\)/);
+    expect(main).toMatch(/logTurboCacheStatus\(\)/);
+  });
+
+  it('main.mts runs the gh preflight before any sandbox work starts', () => {
+    const main = stripComments(read('main.mts'));
+    const preflight = main.indexOf('assertGhAvailable()');
+    // Cheapest proxy for "before any container": the image-freshness guard is
+    // the first thing that shells out to docker.
+    const firstDockerWork = main.indexOf('ensureImageFreshness()');
+    expect(preflight).toBeGreaterThan(-1);
+    expect(firstDockerWork).toBeGreaterThan(-1);
+    expect(preflight).toBeLessThan(firstDockerWork);
   });
 });
 

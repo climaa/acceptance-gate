@@ -1,15 +1,9 @@
-import * as fs from 'node:fs';
-import * as path from 'node:path';
-
-const ROOT = path.resolve(__dirname, '../..');
-const SANDCASTLE = path.join(ROOT, '.sandcastle');
-
-function read(file: string) {
-  return fs.readFileSync(path.join(SANDCASTLE, file), 'utf8');
-}
+import { read } from './helpers';
 
 const mainContent = read('main.mts');
-const buildVerifyContent = read('sandcastle-build-verify.mts');
+// BUILD_VERIFY_COMMAND and BUILD_VERIFY_TIMEOUT_MS live in the tunables module,
+// not beside the code that consumes them.
+const variablesContent = read('sandcastle-variables.mts');
 const strandedBranchesContent = read('sandcastle-stranded-branches.mts');
 const agentProfilesContent = read('sandcastle-agent-profiles.mts');
 const mergeContent = read('sandcastle-merge.mts');
@@ -17,14 +11,12 @@ const mergeContent = read('sandcastle-merge.mts');
 describe('sandcastle stranded-rescue build-verify + turbo cache (build-gate hardening)', () => {
   describe('Fix B — turbo cache permission failure inside the sandbox', () => {
     it('BUILD_VERIFY_COMMAND points turbo at a writable /tmp cache dir', () => {
-      expect(buildVerifyContent).toMatch(/TURBO_CACHE_DIR=\/tmp\/turbo-cache/);
+      expect(variablesContent).toMatch(/TURBO_CACHE_DIR=\/tmp\/turbo-cache/);
     });
 
     it('the writable cache dir is set on the same command that runs pnpm build', () => {
       // Prefix form: `TURBO_CACHE_DIR=/tmp/turbo-cache pnpm build`
-      expect(buildVerifyContent).toMatch(
-        /TURBO_CACHE_DIR=\/tmp\/turbo-cache\s+pnpm build/,
-      );
+      expect(variablesContent).toMatch(/TURBO_CACHE_DIR=\/tmp\/turbo-cache\s+pnpm build/);
     });
   });
 
@@ -35,8 +27,13 @@ describe('sandcastle stranded-rescue build-verify + turbo cache (build-gate hard
       expect(mainContent).toMatch(/status\s*===\s*["']rejected["']/);
     });
 
-    it('adds failed branches to the queuedBranches exclusion set', () => {
-      const setIdx = mainContent.indexOf('const queuedBranches = new Set([');
+    // The set itself is built by queuedBranchesFor() in
+    // sandcastle-plan-eligibility.mts and unit-tested there against the actual
+    // exclusion semantics. What still has to be checked as source text is that
+    // main.mts passes BOTH lists to it — a caller that drops the second
+    // argument would compile and quietly make the build gate advisory.
+    it('passes both completed and failed branches to the exclusion set', () => {
+      const setIdx = mainContent.indexOf('const queuedBranches = queuedBranchesFor(');
       expect(setIdx).toBeGreaterThan(-1);
       const block = mainContent.slice(setIdx, setIdx + 200);
       expect(block).toMatch(/completedIssues/);
@@ -45,7 +42,7 @@ describe('sandcastle stranded-rescue build-verify + turbo cache (build-gate hard
 
     it('failedBranches is computed before queuedBranches is built', () => {
       const failedIdx = mainContent.indexOf('const failedBranches');
-      const queuedIdx = mainContent.indexOf('const queuedBranches = new Set([');
+      const queuedIdx = mainContent.indexOf('const queuedBranches = queuedBranchesFor(');
       expect(failedIdx).toBeGreaterThan(-1);
       expect(queuedIdx).toBeGreaterThan(failedIdx);
     });
@@ -124,7 +121,7 @@ describe('sandcastle stranded-rescue build-verify + turbo cache (build-gate hard
 
     it('idle timeouts are preserved (merger 1800); build-verify has its own exec timeout', () => {
       expect(mergeContent).toMatch(/idleTimeoutSeconds:\s*1800/);
-      expect(buildVerifyContent).toMatch(/BUILD_VERIFY_TIMEOUT_MS\s*=\s*600_000/);
+      expect(variablesContent).toMatch(/BUILD_VERIFY_TIMEOUT_MS\s*=\s*600_000/);
     });
   });
 });

@@ -1,16 +1,10 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
+import { ROOT, SANDCASTLE, read } from './helpers';
 import {
   readPinnedPnpmVersion,
   ensureImageFreshness,
 } from '../sandcastle-image-freshness.mts';
-
-const ROOT = path.resolve(__dirname, '../..');
-const SANDCASTLE = path.join(ROOT, '.sandcastle');
-
-function read(file: string) {
-  return fs.readFileSync(path.join(SANDCASTLE, file), 'utf8');
-}
 
 // A production incident: a bump moved pnpm 11.15.1 -> 11.17.0 in package.json and the
 // Dockerfile, but the `sandcastle:<checkout-dirname>` image was never rebuilt,

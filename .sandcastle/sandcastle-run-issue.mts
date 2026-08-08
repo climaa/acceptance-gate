@@ -11,6 +11,67 @@ import {
   runBuildVerify,
 } from "./sandcastle-build-verify.mts";
 import { type IssueRef, branchHasCommitsAhead } from "./sandcastle-git.mts";
+import {
+  formatIssueSummary,
+  mergeCommitLists,
+  shouldReview,
+} from "./sandcastle-issue-pipeline.mts";
+
+type BuildOutcome = { skipped: boolean; ms: number; statsStr: string };
+
+/**
+ * Catch build/TypeScript breaks before the PR is opened. Throws on failure so
+ * the caller's pipeline is recorded as failed — which is also what keeps the
+ * branch out of the stranded rescue this iteration (see queuedBranchesFor).
+ *
+ * Lifted out of runIssue() so the sandbox round-trips there stay legible; the
+ * `sandbox` type is inferred from createWorktreeSandbox because
+ * @ai-hero/sandcastle@0.12.0 exports no standalone Sandbox type.
+ */
+async function verifyBuild(
+  sandbox: Awaited<ReturnType<typeof createWorktreeSandbox>>,
+  issue: IssueRef,
+): Promise<BuildOutcome> {
+  if (isDocsOnlyDiff(issue.branch)) {
+    console.log(`[build-verify] #${issue.id}: skipped (docs-only diff)`);
+    return { skipped: true, ms: 0, statsStr: "" };
+  }
+
+  const buildStart = Date.now();
+  console.log(`[build-verify] #${issue.id}: running pnpm build …`);
+  let buildStdout = "";
+  let buildStats: TurboStats | null = null;
+  let buildFailed = false;
+
+  try {
+    const buildResult = await runBuildVerify(sandbox, issue.id);
+    buildStdout = buildResult.stdout;
+    buildStats = buildResult.stats;
+    buildFailed = !buildResult.passed;
+  } catch (err) {
+    buildStdout = `Build error: ${(err as Error).message}`;
+    buildFailed = true;
+  }
+
+  const ms = Date.now() - buildStart;
+  const statsStr = buildStats
+    ? ` (${buildStats.cached}/${buildStats.total} cached)`
+    : "";
+
+  if (buildFailed) {
+    const tail = buildStdout.split("\n").slice(-50).join("\n");
+    throw new Error(
+      `[build-verify] pnpm build FAILED for #${issue.id} in ${formatMs(ms)}${statsStr}\n` +
+        `--- last 50 lines ---\n${tail}\n` +
+        `Hint: full log at .sandcastle/logs/build-verify-${issue.id}.log`,
+    );
+  }
+
+  console.log(
+    `[build-verify] #${issue.id}: passed in ${formatMs(ms)}${statsStr}`,
+  );
+  return { skipped: false, ms, statsStr };
+}
 
 export async function runIssue(issue: IssueRef, abortSignal: AbortSignal) {
   // Graceful-shutdown guard. createSandbox() takes no
@@ -57,53 +118,13 @@ export async function runIssue(issue: IssueRef, abortSignal: AbortSignal) {
     // Without this, an idempotent implementer that sees the work is already
     // done returns 0 commits and the merge phase is skipped forever.
     if (
-      implement === null ||
-      implement.commits.length > 0 ||
-      branchHasCommitsAhead(issue.branch)
+      shouldReview({
+        salvaged: implement === null,
+        implementCommitCount: implement?.commits.length ?? 0,
+        branchAhead: branchHasCommitsAhead(issue.branch),
+      })
     ) {
-      // Catch build/TypeScript breaks before the PR is opened; skip docs-only diffs.
-      let buildMs = 0;
-      let buildStats: TurboStats | null = null;
-      let buildSkipped = false;
-      let statsStr = "";
-
-      if (isDocsOnlyDiff(issue.branch)) {
-        console.log(`[build-verify] #${issue.id}: skipped (docs-only diff)`);
-        buildSkipped = true;
-      } else {
-        const buildStart = Date.now();
-        console.log(`[build-verify] #${issue.id}: running pnpm build …`);
-        let buildStdout = "";
-        let buildFailed = false;
-
-        try {
-          const buildResult = await runBuildVerify(sandbox, issue.id);
-          buildStdout = buildResult.stdout;
-          buildStats = buildResult.stats;
-          buildFailed = !buildResult.passed;
-        } catch (err) {
-          buildStdout = `Build error: ${(err as Error).message}`;
-          buildFailed = true;
-        }
-
-        buildMs = Date.now() - buildStart;
-        statsStr = buildStats
-          ? ` (${buildStats.cached}/${buildStats.total} cached)`
-          : "";
-
-        if (buildFailed) {
-          const tail = buildStdout.split("\n").slice(-50).join("\n");
-          throw new Error(
-            `[build-verify] pnpm build FAILED for #${issue.id} in ${formatMs(buildMs)}${statsStr}\n` +
-              `--- last 50 lines ---\n${tail}\n` +
-              `Hint: full log at .sandcastle/logs/build-verify-${issue.id}.log`,
-          );
-        }
-
-        console.log(
-          `[build-verify] #${issue.id}: passed in ${formatMs(buildMs)}${statsStr}`,
-        );
-      }
+      const build = await verifyBuild(sandbox, issue);
 
       const reviewStart = Date.now();
       const review = await sandbox.run({
@@ -122,18 +143,22 @@ export async function runIssue(issue: IssueRef, abortSignal: AbortSignal) {
       });
       const reviewMs = Date.now() - reviewStart;
 
-      const buildPart = buildSkipped
-        ? "build skipped"
-        : `build ${formatMs(buildMs)}${statsStr}`;
       console.log(
-        `[summary] issue #${issue.id}: implement ${formatMs(implementMs)} | ${buildPart} | review ${formatMs(reviewMs)}`,
+        formatIssueSummary({
+          id: issue.id,
+          implement: formatMs(implementMs),
+          build: build.skipped
+            ? "build skipped"
+            : `build ${formatMs(build.ms)}${build.statsStr}`,
+          review: formatMs(reviewMs),
+        }),
       );
 
       // Merge commits from both runs so the merge phase sees all of them.
       // implement is null in the salvage path (idled without signal).
       return {
         ...review,
-        commits: [...(implement?.commits ?? []), ...review.commits],
+        commits: mergeCommitLists(implement?.commits, review.commits),
       };
     }
 

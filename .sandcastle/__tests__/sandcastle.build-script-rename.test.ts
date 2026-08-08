@@ -1,23 +1,21 @@
-import * as fs from 'node:fs';
-import * as path from 'node:path';
-
-const ROOT = path.resolve(__dirname, '../..');
-const SANDCASTLE = path.join(ROOT, '.sandcastle');
-
-function read(file: string) {
-  return fs.readFileSync(path.join(SANDCASTLE, file), 'utf8');
-}
+import { read } from './helpers';
 
 const mainContent = read('main.mts');
 const buildVerifyContent = read('sandcastle-build-verify.mts');
+const variablesContent = read('sandcastle-variables.mts');
 const runIssueContent = read('sandcastle-run-issue.mts');
 const strandedBranchesContent = read('sandcastle-stranded-branches.mts');
 
 // The build-verify command/log lines are spread across main.mts and the
 // modules that call runBuildVerify() — concatenate them so a "does it appear
-// anywhere" check covers every real call site, not just one.
+// anywhere" check covers every real call site, not just one. The tunables file
+// is included because BUILD_VERIFY_COMMAND itself lives there now.
 const allBuildRelatedContent =
-  mainContent + buildVerifyContent + runIssueContent + strandedBranchesContent;
+  mainContent +
+  buildVerifyContent +
+  variablesContent +
+  runIssueContent +
+  strandedBranchesContent;
 
 describe('sandcastle build script rename: build:all → build', () => {
   it('no build-verify code invokes pnpm build:all anywhere', () => {
@@ -25,7 +23,7 @@ describe('sandcastle build script rename: build:all → build', () => {
   });
 
   it('BUILD_VERIFY_COMMAND runs pnpm build', () => {
-    const commandMatch = buildVerifyContent.match(
+    const commandMatch = variablesContent.match(
       /const BUILD_VERIFY_COMMAND\s*=\s*"[^"]*"\s*;/,
     );
     expect(commandMatch).not.toBeNull();

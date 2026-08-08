@@ -5,6 +5,13 @@ name: pr
 on:
   pull_request:
     branches: [main]
+    # `ready_for_review` is load-bearing, not decorative. Every job below is
+    # skipped while the PR is a draft, and GitHub counts a skipped required
+    # check as PASSING. Without this event the draft's skipped-therefore-green
+    # `gate` would still be standing when the PR is marked ready, and it would
+    # be mergeable having never run a check. Never remove it while the draft
+    # guard on the jobs exists — the two are a matched pair.
+    types: [opened, synchronize, reopened, ready_for_review]
   push:
     branches: [main]
 
@@ -30,8 +37,20 @@ env:
   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
   TURBO_TEAM: ${{ vars.TURBO_TEAM }}
 
+# Draft PRs do not run the gate. GitHub has no draft filter at the `on:` level
+# — a draft fires opened/synchronize like any other PR — so the guard has to sit
+# on every job, and it has to sit on `gate` too: skip the five workers alone and
+# `gate` (if: always()) would see five skips and fail the draft red.
+#
+# The `event_name` half is not redundant. On push-to-main there is no
+# `github.event.pull_request`, and leaning on GitHub's null-to-false coercion to
+# carry that case is a silent footgun. Say it out loud instead.
+#
+# Repeated per job because GitHub Actions does not support YAML anchors. A new
+# job added in a later wave needs this line as well as an entry in `gate.needs`.
 jobs:
   lint:
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     runs-on: ubuntu-24.04-arm
     steps:
       - uses: actions/checkout@v4
@@ -48,6 +67,7 @@ jobs:
       - run: pnpm turbo run lint
 
   typecheck:
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     runs-on: ubuntu-24.04-arm
     steps:
       - uses: actions/checkout@v4
@@ -62,6 +82,7 @@ jobs:
       - run: pnpm turbo run typecheck
 
   build:
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     runs-on: ubuntu-24.04-arm
     steps:
       - uses: actions/checkout@v4
@@ -76,6 +97,7 @@ jobs:
       - run: pnpm turbo run build
 
   test:
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     runs-on: ubuntu-24.04-arm
     steps:
       - uses: actions/checkout@v4
@@ -92,6 +114,7 @@ jobs:
   sandcastle:
     # The orchestrator's own hermetic suite: prompt contracts, merge flow,
     # model-override grammar. Agents edit prompts; this is what catches them.
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     runs-on: ubuntu-24.04-arm
     steps:
       - uses: actions/checkout@v4
@@ -103,6 +126,11 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # `turbo run typecheck` only reaches workspaces, and .sandcastle/ is not
+      # one — so 2.5k LOC of orchestrator had no type gate at all until this
+      # step. Runs before the suite: a type error should not be reported as a
+      # test failure.
+      - run: pnpm typecheck:sandcastle
       - run: pnpm test:sandcastle
 
   gate:
@@ -110,7 +138,7 @@ jobs:
     # reports even when a needed job fails; it fails unless every result is
     # exactly 'success' (skipped/cancelled count as failure).
     needs: [lint, typecheck, build, test, sandcastle]
-    if: always()
+    if: always() && (github.event_name != 'pull_request' || github.event.pull_request.draft == false)
     runs-on: ubuntu-24.04-arm
     steps:
       - name: Fail unless every needed job succeeded

@@ -1,16 +1,9 @@
-import * as fs from 'node:fs';
 import * as path from 'node:path';
+import { read } from './helpers';
 import {
   SANDCASTLE_WORKTREE_SEGMENT,
   worktreeReapBlocker,
 } from '../sandcastle-worktree-safety.mts';
-
-const ROOT = path.resolve(__dirname, '../..');
-const SANDCASTLE = path.join(ROOT, '.sandcastle');
-
-function read(file: string) {
-  return fs.readFileSync(path.join(SANDCASTLE, file), 'utf8');
-}
 
 const PRIMARY = '/Users/dev/repo';
 const OURS = path.join(PRIMARY, SANDCASTLE_WORKTREE_SEGMENT, 'issue-1234');

@@ -1,5 +1,3 @@
-import * as fs from 'node:fs';
-import * as path from 'node:path';
 import {
   NOOP_LABEL,
   hasNoOpLabel,
@@ -7,6 +5,7 @@ import {
   partitionOutcomes,
 } from '../sandcastle-noop-issues.mts';
 import { LABEL_PREFIX, parseOverrideLabels } from '../sandcastle-model-overrides.mts';
+import { read } from './helpers';
 
 /**
  * REAL unit tests (plus one source-text block for the orchestrator wiring,
@@ -22,13 +21,6 @@ import { LABEL_PREFIX, parseOverrideLabels } from '../sandcastle-model-overrides
  * the whole fix — misfiling a crash as a no-op would silently retire an issue
  * that was never attempted.
  */
-
-const ROOT = path.resolve(__dirname, '../..');
-const SANDCASTLE = path.join(ROOT, '.sandcastle');
-
-function read(file: string) {
-  return fs.readFileSync(path.join(SANDCASTLE, file), 'utf8');
-}
 
 const issue = (id: string) => ({ id, title: `issue ${id}`, branch: `b-${id}` });
 
@@ -234,10 +226,15 @@ describe('orchestrator wiring (source-text — not observable from a unit test)'
     expect(setIdx).toBeLessThan(loopIdx);
   });
 
+  // The no-op check itself moved into classifyPlannedIssue()
+  // (sandcastle-plan-eligibility.mts) where it is unit-tested. The ordering is
+  // the part only source text can see, and it is the part that matters: run the
+  // filter after runIssue() and the sandbox has already been spent.
   it('main.mts drops marked issues from the plan before any sandbox is created', () => {
-    const filterIdx = main.indexOf('hasNoOpLabel(');
+    const filterIdx = main.indexOf('classifyPlannedIssue(');
     const runIssueIdx = main.indexOf('await runIssue(');
     expect(filterIdx).toBeGreaterThan(-1);
+    expect(runIssueIdx).toBeGreaterThan(-1);
     expect(filterIdx).toBeLessThan(runIssueIdx);
   });
 

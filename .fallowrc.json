@@ -1,4 +1,4 @@
 {
   "$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
-  "ignoreDependencies": ["eslint-config-next"]
+  "ignoreDependencies": ["eslint-config-next", "@ai-hero/sandcastle", "dotenv"]
 }

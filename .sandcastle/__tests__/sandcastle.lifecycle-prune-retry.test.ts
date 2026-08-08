@@ -1,12 +1,4 @@
-import * as fs from 'node:fs';
-import * as path from 'node:path';
-
-const ROOT = path.resolve(__dirname, '../..');
-const SANDCASTLE = path.join(ROOT, '.sandcastle');
-
-function read(file: string) {
-  return fs.readFileSync(path.join(SANDCASTLE, file), 'utf8');
-}
+import { read } from './helpers';
 
 describe('sandcastle lifecycle prune + retry', () => {
   // Fix A (the call site: worktree prune before createSandbox, wrapped in

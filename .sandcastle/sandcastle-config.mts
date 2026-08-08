@@ -1,7 +1,17 @@
 // Orchestrator configuration — constants shared across the plan/implement/
-// build-verify/review/merge phases, plus two import-time side effects (not
-// just inert constants): the `gh` preflight below and the turbo remote-cache
-// startup log both run as soon as this module loads.
+// build-verify/review/merge phases.
+//
+// Importing this module is side-effect-free apart from two best-effort file
+// reads that cannot throw or print. The `gh` preflight and the turbo
+// remote-cache log used to run at import; both are now explicit functions the
+// composition root calls (assertGhAvailable, logTurboCacheStatus).
+//
+// Why that mattered: a module that throws on import cannot be loaded by a unit
+// test, so every module importing this one was untestable, and two modules
+// (sandcastle-model-overrides.mts, sandcastle-worktree-safety.mts) are written
+// to import nothing at all specifically to stay clear of it. The trade-off is
+// that an explicit call can be forgotten where an import could not — which is
+// why sandcastle.turbo-env.test.ts asserts main.mts still makes both calls.
 
 import { execSync } from "node:child_process";
 import { readFileSync } from "node:fs";
@@ -23,16 +33,18 @@ import {
 // labels, running every issue on the expensive default, and report that
 // branches have no open PR. Failing loudly here is worth more than guessing at
 // install locations.
-try {
-  execSync("command -v gh", { stdio: "ignore" });
-} catch {
-  throw new Error(
-    "`gh` was not found on PATH. The orchestrator reads issue state and the " +
-      "`sc:*` model-override labels through it, and those call sites fail " +
-      "silently (null / false) rather than erroring — so a run would quietly " +
-      "use the wrong models. Refusing to start. Install the GitHub CLI, or " +
-      "launch from a shell whose PATH includes it.",
-  );
+export function assertGhAvailable(): void {
+  try {
+    execSync("command -v gh", { stdio: "ignore" });
+  } catch {
+    throw new Error(
+      "`gh` was not found on PATH. The orchestrator reads issue state and the " +
+        "`sc:*` model-override labels through it, and those call sites fail " +
+        "silently (null / false) rather than erroring — so a run would quietly " +
+        "use the wrong models. Refusing to start. Install the GitHub CLI, or " +
+        "launch from a shell whose PATH includes it.",
+    );
+  }
 }
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -71,7 +83,9 @@ const turboCache = resolveTurboCache(
   readIfPresent(path.join(REPO_ROOT, ".env")),
   readIfPresent(path.join(REPO_ROOT, ".turbo", "config.json")),
 );
-console.log(describeTurboCache(turboCache));
+export function logTurboCacheStatus(): void {
+  console.log(describeTurboCache(turboCache));
+}
 
 export const turboToken = turboCache.enabled ? turboCache.token : "";
 export const turboTeam = turboCache.enabled ? turboCache.team : "";

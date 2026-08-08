@@ -1,12 +1,4 @@
-import * as fs from 'node:fs';
-import * as path from 'node:path';
-
-const ROOT = path.resolve(__dirname, '../..');
-const SANDCASTLE = path.join(ROOT, '.sandcastle');
-
-function read(file: string) {
-  return fs.readFileSync(path.join(SANDCASTLE, file), 'utf8');
-}
+import { read } from './helpers';
 
 // the host already pushes every completed branch to origin before
 // the merger runs (main.mts [ci-trigger]). The merger's own Step-1 push is then

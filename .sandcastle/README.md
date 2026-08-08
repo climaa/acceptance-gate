@@ -140,10 +140,10 @@ enforces this in CI.
 
 Copy `.env.example` to `.env` and fill in:
 
-| Variable                  | Purpose                                                                                                                                                  |
-| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `CLAUDE_CODE_OAUTH_TOKEN` | Authenticates the Claude Code CLI inside Docker sandboxes. Use your Claude subscription token (OAuth) or an API key — see the comment in `.env.example`. |
-| `GH_TOKEN`                | GitHub PAT used by the `gh` CLI for reading issues, opening PRs, and merging. Needs `repo` scope.                                                        |
+| Variable                  | Purpose                                                                                                                                                                                     |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CLAUDE_CODE_OAUTH_TOKEN` | Authenticates the Claude Code CLI inside Docker sandboxes. Use your Claude subscription token (OAuth) or an API key — see the comment in `.env.example`.                                    |
+| `GH_TOKEN`                | GitHub PAT used by the `gh` CLI for reading issues, opening PRs, and merging. Use a **fine-grained PAT scoped to this repo only** — never a classic `repo`-scope token. See `.env.example`. |
 
 `.env` is gitignored — never commit it.
 

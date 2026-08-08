@@ -34,17 +34,19 @@
 //   "scripts": { "sandcastle": "npx tsx .sandcastle/main.mts" }
 
 import { execSync } from "node:child_process";
-import { BASE_BRANCH, MAX_ITERATIONS } from "./sandcastle-config.mts";
+import {
+  BASE_BRANCH,
+  MAX_ITERATIONS,
+  assertGhAvailable,
+  logTurboCacheStatus,
+} from "./sandcastle-config.mts";
 import { headHooks } from "./sandcastle-sandbox-hooks.mts";
 import {
   agentFor,
   assertEnvOverridesValid,
   effectiveProfile,
 } from "./sandcastle-agent-profiles.mts";
-import {
-  describeOverride,
-  parseOverrideLabels,
-} from "./sandcastle-model-overrides.mts";
+import { describeOverride } from "./sandcastle-model-overrides.mts";
 import { installGracefulShutdown, reapExitedContainers } from "./sandcastle-lifecycle.mts";
 import { ensureImageFreshness } from "./sandcastle-image-freshness.mts";
 import {
@@ -55,10 +57,13 @@ import {
 } from "./sandcastle-git.mts";
 import {
   NOOP_LABEL,
-  hasNoOpLabel,
   noOpIssueComment,
   partitionOutcomes,
 } from "./sandcastle-noop-issues.mts";
+import {
+  classifyPlannedIssue,
+  queuedBranchesFor,
+} from "./sandcastle-plan-eligibility.mts";
 import { collectStrandedIssues, verifyStrandedBranches } from "./sandcastle-stranded-branches.mts";
 import { runMerger } from "./sandcastle-merge.mts";
 import { runIssue } from "./sandcastle-run-issue.mts";
@@ -68,6 +73,14 @@ import { docker } from "@ai-hero/sandcastle/sandboxes/docker";
 // ---------------------------------------------------------------------------
 // Orchestrator startup (a partial port of an earlier single-runner variant)
 // ---------------------------------------------------------------------------
+
+// Preconditions first, in the order importing sandcastle-config.mts used to
+// guarantee implicitly. `gh` before anything else: every host-side gh call site
+// swallows its own failure (fetchIssue -> null, branchHasOpenPr -> false), so a
+// missing binary would silently drop the sc:* model overrides and run the whole
+// batch on the expensive default rather than erroring.
+assertGhAvailable();
+logTurboCacheStatus();
 
 // Graceful shutdown. Declared here so every phase — planner, runIssue()'s
 // implementer/build-verify/reviewer, and runMerger() — threads the same
@@ -186,7 +199,12 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
   const overrideErrors: string[] = [];
   for (const issue of planned) {
     const labels = fetchIssue(issue.id)?.labels ?? [];
-    if (noOpIssueIds.has(issue.id) || hasNoOpLabel(labels)) {
+    const verdict = classifyPlannedIssue({
+      id: issue.id,
+      labels,
+      seenNoOpIds: noOpIssueIds,
+    });
+    if (verdict.kind === "skip-noop") {
       noOpIssueIds.add(issue.id);
       console.log(
         `  ⏭ #${issue.id} skipped: an earlier run produced no changes (${NOOP_LABEL}). ` +
@@ -194,12 +212,13 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
       );
       continue;
     }
-    const { overrides, errors } = parseOverrideLabels(labels);
-    if (errors.length > 0) {
-      overrideErrors.push(...errors.map((e) => `  #${issue.id}  ${e}`));
+    if (verdict.kind === "reject") {
+      overrideErrors.push(...verdict.errors.map((e) => `  #${issue.id}  ${e}`));
       continue;
     }
-    if (Object.keys(overrides).length > 0) issue.overrides = overrides;
+    if (Object.keys(verdict.overrides).length > 0) {
+      issue.overrides = verdict.overrides;
+    }
     issues.push(issue);
   }
   if (overrideErrors.length > 0) {
@@ -358,10 +377,10 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
   // just-failed pipeline's branch is ahead of base with no PR, so it would
   // otherwise re-enter here and merge in the same run it failed, making the
   // build gate advisory-only (build-gate hardening).
-  const queuedBranches = new Set([
-    ...completedIssues.map((i) => i.branch),
-    ...failedBranches,
-  ]);
+  const queuedBranches = queuedBranchesFor(
+    completedIssues.map((i) => i.branch),
+    failedBranches,
+  );
   const stranded = collectStrandedIssues(queuedBranches);
   if (stranded.length > 0) {
     console.log(
