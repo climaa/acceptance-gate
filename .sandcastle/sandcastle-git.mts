@@ -8,6 +8,14 @@ import {
   type Dirtiness,
   worktreeReapBlocker,
 } from "./sandcastle-worktree-safety.mts";
+import {
+  parseBranchList,
+  parseDirtiness,
+  parseIssueJson,
+  parsePositiveCount,
+  parsePrimaryWorktree,
+  parseWorktreeForBranch,
+} from "./sandcastle-git-parse.mts";
 import type {
   PerIssueRole,
   ProfileOverride,
@@ -36,8 +44,8 @@ export function branchHasCommitsAhead(branch: string): boolean {
     const out = execSync(
       `git rev-list --count origin/${BASE_BRANCH}..${branch} 2>/dev/null`,
       { encoding: "utf8" },
-    ).trim();
-    return Number(out) > 0;
+    );
+    return parsePositiveCount(out);
   } catch {
     // Branch doesn't exist yet (first run) — nothing to merge.
     return false;
@@ -50,20 +58,15 @@ export function listSandcastleBranches(): string[] {
       `git for-each-ref --format='%(refname:short)' refs/heads/sandcastle/`,
       { encoding: "utf8" },
     );
-    return out
-      .split("\n")
-      .map((s) => s.trim())
-      .filter(Boolean);
+    return parseBranchList(out);
   } catch {
     return [];
   }
 }
 
-export function parseIssueIdFromBranch(branch: string): string | null {
-  // Format from agent-docs/plan-prompt.md → `sandcastle/issue-{id}-{slug}`
-  const m = branch.match(/^sandcastle\/issue-(\d+)-/);
-  return m ? m[1]! : null;
-}
+// Re-exported from sandcastle-git-parse.mts, where it is unit-tested. Kept on
+// this module's surface because four call sites already import it from here.
+export { parseIssueIdFromBranch } from "./sandcastle-git-parse.mts";
 
 // `labels` is what carries the per-issue model overrides (`sc:…`). It is
 // fetched here, deterministically, rather than being threaded through the
@@ -76,17 +79,8 @@ export function fetchIssue(
   try {
     const out = execSync(`gh issue view ${id} --json title,state,labels`, {
       encoding: "utf8",
-    }).trim();
-    const parsed = JSON.parse(out) as {
-      title?: string;
-      state?: string;
-      labels?: { name?: string }[];
-    };
-    if (!parsed.title || !parsed.state) return null;
-    const labels = (parsed.labels ?? [])
-      .map((l) => l?.name)
-      .filter((n): n is string => Boolean(n));
-    return { title: parsed.title, state: parsed.state, labels };
+    });
+    return parseIssueJson(out);
   } catch {
     return null;
   }
@@ -165,12 +159,7 @@ function primaryWorktreePath(): string | null {
     const out = execSync("git worktree list --porcelain", {
       encoding: "utf8",
     });
-    for (const line of out.split("\n")) {
-      if (line.startsWith("worktree ")) {
-        return line.slice("worktree ".length).trim() || null;
-      }
-    }
-    return null;
+    return parsePrimaryWorktree(out);
   } catch {
     return null;
   }
@@ -187,7 +176,7 @@ function worktreeDirtiness(worktreePath: string): Dirtiness {
       encoding: "utf8",
       stdio: ["ignore", "pipe", "ignore"],
     });
-    return out.trim().length > 0 ? "dirty" : "clean";
+    return parseDirtiness(out);
   } catch {
     return "unreadable";
   }
@@ -211,18 +200,7 @@ export function findWorktreeForBranch(branch: string): string | null {
     const out = execSync("git worktree list --porcelain", {
       encoding: "utf8",
     });
-    let currentPath: string | null = null;
-    for (const line of out.split("\n")) {
-      if (line.startsWith("worktree ")) {
-        currentPath = line.slice("worktree ".length).trim();
-      } else if (line.startsWith("branch refs/heads/")) {
-        const worktreeBranch = line.slice("branch refs/heads/".length).trim();
-        if (worktreeBranch === branch && currentPath !== null) {
-          return currentPath;
-        }
-      }
-    }
-    return null;
+    return parseWorktreeForBranch(out, branch);
   } catch {
     return null;
   }
