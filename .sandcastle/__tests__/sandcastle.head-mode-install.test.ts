@@ -4,6 +4,7 @@ import {
   PNPM_INSTALL_HOOK,
   type SandboxMount,
   headHooks,
+  headSandboxOptions,
   hooksFor,
   worktreeHooks,
 } from '../sandcastle-sandbox-hooks.mts';
@@ -107,6 +108,12 @@ describe('the hooks themselves', () => {
     expect(headHooks).toEqual(hooksFor('head'));
     expect(worktreeHooks).toEqual(hooksFor('worktree'));
   });
+
+  it('headSandboxOptions binds head hooks (never a worktree install)', () => {
+    // The shared HEAD-mode helper the planner and merger spread in: its hooks
+    // must be the head hooks, so neither call site can install into the host.
+    expect(headSandboxOptions().hooks).toEqual(hooksFor('head'));
+  });
 });
 
 /**
@@ -138,9 +145,12 @@ describe('call-site wiring — head-mode sites take headHooks, worktree sites ta
     ['sandcastle-stranded-branches.mts', 'the stranded-branch rescue'],
   ] as const;
 
-  it.each(headSites)('%s (%s) passes headHooks', (file) => {
-    expect(stripComments(read(file))).toMatch(/hooks:\s*headHooks|\bheadHooks,/);
-  });
+  it.each(headSites)(
+    '%s (%s) spreads headSandboxOptions (which binds head hooks)',
+    (file) => {
+      expect(stripComments(read(file))).toMatch(/\.\.\.headSandboxOptions\(\)/);
+    },
+  );
 
   it.each(headSites)('%s (%s) never references worktreeHooks', (file) => {
     expect(stripComments(read(file))).not.toMatch(/worktreeHooks/);

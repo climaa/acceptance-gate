@@ -3,9 +3,8 @@
 // comments on) issues.
 import { execSync } from 'node:child_process';
 import * as sandcastle from '@ai-hero/sandcastle';
-import { docker } from '@ai-hero/sandcastle/sandboxes/docker';
 import { BASE_BRANCH } from './sandcastle-config.mts';
-import { headHooks } from './sandcastle-sandbox-hooks.mts';
+import { headSandboxOptions } from './sandcastle-sandbox-hooks.mts';
 import { agentFor } from './sandcastle-agent-profiles.mts';
 import { formatBranchLine } from './sandcastle-merge-branch-line.mts';
 import type { IssueRef } from './sandcastle-git.mts';
@@ -66,19 +65,11 @@ export async function runMerger(
   const startingBranch = currentBranch() ?? BASE_BRANCH;
   try {
     await sandcastle.run({
-      // headHooks, NOT worktreeHooks — no startup `pnpm install`, because of
-      // the bind mount described just below. merge-prompt.md already forbids
-      // the AGENT a bare install here; this is the orchestrator holding itself
-      // to the same rule. See sandcastle-sandbox-hooks.mts.
-      hooks: headHooks,
-      // HEAD-mode sandbox: bind-mounts the host checkout at /home/agent/workspace,
-      // so any in-container pnpm run touches the host's node_modules. Belt-and-braces
-      // env guard suppresses pnpm 11's automatic pre-run deps verification (which
-      // would auto-`pnpm install` and ping-pong host↔container pnpm state — a known host↔container ping-pong,
-      // a prior production fix). Must be the `pnpm_config_` prefix: `npm_config_verify_deps_before_run`
-      // does NOT suppress pnpm 11's verify; `pnpm_config_verify_deps_before_run=false`
-      // does. Covers agents operating before/without the pnpm-workspace.yaml setting.
-      sandbox: docker({ env: { pnpm_config_verify_deps_before_run: 'false' } }),
+      // HEAD-mode: bind-mounts the host checkout, so no startup install (see
+      // headSandboxOptions in sandcastle-sandbox-hooks.mts). merge-prompt.md
+      // already forbids the AGENT a bare install here; this holds the
+      // orchestrator to the same rule.
+      ...headSandboxOptions(),
       name: 'merger',
       maxIterations: 1,
       completionSignal: '<promise>COMPLETE</promise>',
