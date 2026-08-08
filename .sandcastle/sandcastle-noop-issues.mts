@@ -24,17 +24,17 @@
  * unknown role under it is a hard error that aborts the run before any sandbox
  * starts. Marking an issue would then break the next invocation.
  */
-export const NOOP_LABEL = "sandcastle:no-op";
+export const NOOP_LABEL = 'sandcastle:no-op';
 
 /** Colour/description used when the label is created on first use. */
-export const NOOP_LABEL_COLOR = "ededed";
+export const NOOP_LABEL_COLOR = 'ededed';
 export const NOOP_LABEL_DESCRIPTION =
-  "Sandcastle ran this issue and produced no changes — needs a human decision";
+  'Sandcastle ran this issue and produced no changes — needs a human decision';
 
 export type PipelineOutcome<T> = {
   issue: T;
   /** Whether the per-issue pipeline resolved or threw. */
-  status: "fulfilled" | "rejected";
+  status: 'fulfilled' | 'rejected';
   /** Commits the implementer + reviewer reported for this run. */
   commitCount: number;
   /** Whether the branch is ahead of the base branch right now. */
@@ -72,7 +72,7 @@ export function partitionOutcomes<T>(
   const failed: T[] = [];
 
   for (const outcome of outcomes) {
-    if (outcome.status === "rejected") {
+    if (outcome.status === 'rejected') {
       failed.push(outcome.issue);
     } else if (outcome.commitCount > 0 || outcome.branchAhead) {
       completed.push(outcome.issue);
@@ -105,20 +105,20 @@ export function noOpIssueComment({
 }): string {
   return [
     `**Sandcastle: no changes produced** (iteration ${iteration})`,
-    "",
+    '',
     `The implementer signalled completion on \`${branch}\` with no commits, and ` +
       `the branch is not ahead of the base branch — there is nothing for the ` +
       `merge phase to land.`,
-    "",
+    '',
     `This issue is **left open** on purpose. A run that produces nothing can mean ` +
       `the work was already done, or that the agent misread the task; deciding ` +
       `between those is a human call.`,
-    "",
+    '',
     `It is labelled \`${NOOP_LABEL}\` and skipped for the rest of this run so the ` +
       `orchestrator does not re-plan it every iteration. To make it eligible again:`,
-    "",
-    "```bash",
+    '',
+    '```bash',
     `gh issue edit ${id} --remove-label "${NOOP_LABEL}"`,
-    "```",
-  ].join("\n");
+    '```',
+  ].join('\n');
 }

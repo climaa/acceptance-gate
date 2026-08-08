@@ -26,14 +26,14 @@
 //
 // `as const satisfies Record<…, AgentProfile>` keeps literal-type checking:
 // a typo like effort: "hgih" or agentFor("planr") fails at compile time.
-import * as sandcastle from "@ai-hero/sandcastle";
+import * as sandcastle from '@ai-hero/sandcastle';
 import {
   type Effort,
   type ProfileOverride,
   type Role,
   envOverride,
   mergeProfile,
-} from "./sandcastle-model-overrides.mts";
+} from './sandcastle-model-overrides.mts';
 
 export type { Effort };
 
@@ -43,10 +43,10 @@ export type AgentProfile = {
 };
 
 export const PROFILES = {
-  planner: { model: "claude-opus-5", effort: "high" },
-  implementer: { model: "claude-opus-5", effort: "high" },
-  reviewer: { model: "claude-opus-5", effort: "high" },
-  merger: { model: "claude-sonnet-5", effort: "low" },
+  planner: { model: 'claude-opus-5', effort: 'high' },
+  implementer: { model: 'claude-opus-5', effort: 'high' },
+  reviewer: { model: 'claude-opus-5', effort: 'high' },
+  merger: { model: 'claude-sonnet-5', effort: 'low' },
 } as const satisfies Record<string, AgentProfile>;
 
 /**
@@ -59,15 +59,12 @@ export const PROFILES = {
  * values are validated up front by `assertEnvOverridesValid()` so that failure
  * lands before any sandbox is created rather than mid-run.
  */
-export function effectiveProfile(
-  role: Role,
-  label: ProfileOverride = {},
-): AgentProfile {
+export function effectiveProfile(role: Role, label: ProfileOverride = {}): AgentProfile {
   const base = PROFILES[role as keyof typeof PROFILES];
   const { override } = envOverride(role, process.env);
   const { profile, errors } = mergeProfile(base, override, label);
   if (errors.length > 0) {
-    throw new Error(`Invalid model override for "${role}": ${errors.join("; ")}`);
+    throw new Error(`Invalid model override for "${role}": ${errors.join('; ')}`);
   }
   return profile;
 }
@@ -84,12 +81,11 @@ export function assertEnvOverridesValid(
   const errors = (Object.keys(PROFILES) as Role[]).flatMap((role) => {
     const { override, errors: envErrors } = envOverride(role, env);
     if (envErrors.length > 0) return envErrors;
-    return mergeProfile(PROFILES[role as keyof typeof PROFILES], override)
-      .errors;
+    return mergeProfile(PROFILES[role as keyof typeof PROFILES], override).errors;
   });
   if (errors.length > 0) {
     throw new Error(
-      `Invalid Sandcastle model override environment:\n  ${errors.join("\n  ")}`,
+      `Invalid Sandcastle model override environment:\n  ${errors.join('\n  ')}`,
     );
   }
 }

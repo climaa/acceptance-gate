@@ -18,7 +18,7 @@
 //
 // The port is deliberately partial — serial multi-issue dispatch needs less machinery.
 
-import { execFileSync } from "node:child_process";
+import { execFileSync } from 'node:child_process';
 
 /**
  * Derive the Docker image tag that `@ai-hero/sandcastle`'s `docker()` factory
@@ -36,9 +36,13 @@ import { execFileSync } from "node:child_process";
  * containers.
  */
 export function sandcastleImageName(repoDir: string = process.cwd()): string {
-  const dirName = repoDir.replace(/[\\/]+$/, "").split(/[\\/]/).pop() ?? "local";
-  const sanitized = dirName.toLowerCase().replace(/[^a-z0-9_.-]/g, "-");
-  return `sandcastle:${sanitized || "local"}`;
+  const dirName =
+    repoDir
+      .replace(/[\\/]+$/, '')
+      .split(/[\\/]/)
+      .pop() ?? 'local';
+  const sanitized = dirName.toLowerCase().replace(/[^a-z0-9_.-]/g, '-');
+  return `sandcastle:${sanitized || 'local'}`;
 }
 
 /**
@@ -61,8 +65,8 @@ export function installGracefulShutdown(): AbortController {
     );
     controller.abort(new Error(`Aborted by ${sig}`));
   };
-  process.once("SIGINT", () => onSignal("SIGINT"));
-  process.once("SIGTERM", () => onSignal("SIGTERM"));
+  process.once('SIGINT', () => onSignal('SIGINT'));
+  process.once('SIGTERM', () => onSignal('SIGTERM'));
   return controller;
 }
 
@@ -83,27 +87,25 @@ export function installGracefulShutdown(): AbortController {
  * Best-effort: a missing/broken docker CLI logs a warning and returns 0 rather
  * than aborting startup. Returns the number of containers removed.
  */
-export function reapExitedContainers(
-  imageName: string = sandcastleImageName(),
-): number {
+export function reapExitedContainers(imageName: string = sandcastleImageName()): number {
   let ids: string[];
   try {
     const out = execFileSync(
-      "docker",
+      'docker',
       [
-        "ps",
-        "-a", // include stopped containers; status filter alone won't
-        "--filter",
-        "status=exited",
-        "--filter",
+        'ps',
+        '-a', // include stopped containers; status filter alone won't
+        '--filter',
+        'status=exited',
+        '--filter',
         `ancestor=${imageName}`,
-        "--format",
-        "{{.ID}}",
+        '--format',
+        '{{.ID}}',
       ],
-      { encoding: "utf8" },
+      { encoding: 'utf8' },
     );
     ids = out
-      .split("\n")
+      .split('\n')
       .map((s) => s.trim())
       .filter(Boolean);
   } catch (err) {
@@ -118,7 +120,7 @@ export function reapExitedContainers(
   let removed = 0;
   for (const id of ids) {
     try {
-      execFileSync("docker", ["rm", id], { stdio: "pipe" });
+      execFileSync('docker', ['rm', id], { stdio: 'pipe' });
       removed++;
     } catch (err) {
       console.warn(

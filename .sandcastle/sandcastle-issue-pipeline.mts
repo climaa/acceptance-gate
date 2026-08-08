@@ -25,9 +25,7 @@ export function shouldReview(input: {
   implementCommitCount: number;
   branchAhead: boolean;
 }): boolean {
-  return (
-    input.salvaged || input.implementCommitCount > 0 || input.branchAhead
-  );
+  return input.salvaged || input.implementCommitCount > 0 || input.branchAhead;
 }
 
 /**

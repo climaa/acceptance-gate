@@ -9,7 +9,7 @@ describe('sandcastle stranded-cleanup worktree-aware ', () => {
   const strandedBranchesContent = read('sandcastle-stranded-branches.mts');
 
   // The CLOSED-issue cleanup block starts at `if (issue.state !== "OPEN")`
-  const closedBlockStart = strandedBranchesContent.indexOf('if (issue.state !== "OPEN")');
+  const closedBlockStart = strandedBranchesContent.indexOf("if (issue.state !== 'OPEN')");
   // Slice enough to cover the full cleanup block (~1500 chars)
   const cleanupSection = strandedBranchesContent.slice(
     closedBlockStart,

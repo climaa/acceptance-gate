@@ -2,20 +2,20 @@
 // createSandbox() so the implementer and reviewer share the same sandbox
 // instance on the same branch. The implementer runs first; if it produces
 // commits, build-verify then the reviewer run in the same sandbox.
-import { createWorktreeSandbox } from "./sandcastle-worktree-sandbox.mts";
-import { agentFor } from "./sandcastle-agent-profiles.mts";
+import { createWorktreeSandbox } from './sandcastle-worktree-sandbox.mts';
+import { agentFor } from './sandcastle-agent-profiles.mts';
 import {
   type TurboStats,
   formatMs,
   isDocsOnlyDiff,
   runBuildVerify,
-} from "./sandcastle-build-verify.mts";
-import { type IssueRef, branchHasCommitsAhead } from "./sandcastle-git.mts";
+} from './sandcastle-build-verify.mts';
+import { type IssueRef, branchHasCommitsAhead } from './sandcastle-git.mts';
 import {
   formatIssueSummary,
   mergeCommitLists,
   shouldReview,
-} from "./sandcastle-issue-pipeline.mts";
+} from './sandcastle-issue-pipeline.mts';
 
 type BuildOutcome = { skipped: boolean; ms: number; statsStr: string };
 
@@ -34,12 +34,12 @@ async function verifyBuild(
 ): Promise<BuildOutcome> {
   if (isDocsOnlyDiff(issue.branch)) {
     console.log(`[build-verify] #${issue.id}: skipped (docs-only diff)`);
-    return { skipped: true, ms: 0, statsStr: "" };
+    return { skipped: true, ms: 0, statsStr: '' };
   }
 
   const buildStart = Date.now();
   console.log(`[build-verify] #${issue.id}: running pnpm build …`);
-  let buildStdout = "";
+  let buildStdout = '';
   let buildStats: TurboStats | null = null;
   let buildFailed = false;
 
@@ -54,12 +54,10 @@ async function verifyBuild(
   }
 
   const ms = Date.now() - buildStart;
-  const statsStr = buildStats
-    ? ` (${buildStats.cached}/${buildStats.total} cached)`
-    : "";
+  const statsStr = buildStats ? ` (${buildStats.cached}/${buildStats.total} cached)` : '';
 
   if (buildFailed) {
-    const tail = buildStdout.split("\n").slice(-50).join("\n");
+    const tail = buildStdout.split('\n').slice(-50).join('\n');
     throw new Error(
       `[build-verify] pnpm build FAILED for #${issue.id} in ${formatMs(ms)}${statsStr}\n` +
         `--- last 50 lines ---\n${tail}\n` +
@@ -67,9 +65,7 @@ async function verifyBuild(
     );
   }
 
-  console.log(
-    `[build-verify] #${issue.id}: passed in ${formatMs(ms)}${statsStr}`,
-  );
+  console.log(`[build-verify] #${issue.id}: passed in ${formatMs(ms)}${statsStr}`);
   return { skipped: false, ms, statsStr };
 }
 
@@ -90,13 +86,13 @@ export async function runIssue(issue: IssueRef, abortSignal: AbortSignal) {
     const implementStart = Date.now();
     const implement = await sandbox
       .run({
-        name: "implementer",
+        name: 'implementer',
         maxIterations: 100,
-        completionSignal: "<promise>COMPLETE</promise>",
+        completionSignal: '<promise>COMPLETE</promise>',
         idleTimeoutSeconds: 1200,
         signal: abortSignal,
-        agent: agentFor("implementer", issue.overrides?.implementer),
-        promptFile: "./.sandcastle/agent-docs/implement-prompt.md",
+        agent: agentFor('implementer', issue.overrides?.implementer),
+        promptFile: './.sandcastle/agent-docs/implement-prompt.md',
         promptArgs: {
           TASK_ID: issue.id,
           ISSUE_TITLE: issue.title,
@@ -128,13 +124,13 @@ export async function runIssue(issue: IssueRef, abortSignal: AbortSignal) {
 
       const reviewStart = Date.now();
       const review = await sandbox.run({
-        name: "reviewer",
+        name: 'reviewer',
         maxIterations: 1,
-        completionSignal: "<promise>COMPLETE</promise>",
+        completionSignal: '<promise>COMPLETE</promise>',
         idleTimeoutSeconds: 1200,
         signal: abortSignal,
-        agent: agentFor("reviewer", issue.overrides?.reviewer),
-        promptFile: "./.sandcastle/agent-docs/review-prompt.md",
+        agent: agentFor('reviewer', issue.overrides?.reviewer),
+        promptFile: './.sandcastle/agent-docs/review-prompt.md',
         promptArgs: {
           BRANCH: issue.branch,
           TASK_ID: issue.id,
@@ -148,7 +144,7 @@ export async function runIssue(issue: IssueRef, abortSignal: AbortSignal) {
           id: issue.id,
           implement: formatMs(implementMs),
           build: build.skipped
-            ? "build skipped"
+            ? 'build skipped'
             : `build ${formatMs(build.ms)}${build.statsStr}`,
           review: formatMs(reviewMs),
         }),

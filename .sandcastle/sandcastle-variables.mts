@@ -17,8 +17,7 @@
 // `<repo>/.turbo/cache` location fails with "Permission denied (os error 13)"
 // and kills the build in seconds (build-gate hardening). turbo 2.9 honors this env var;
 // the host pre-push hook already uses the equivalent `--cache-dir /tmp/turbo-cache`.
-export const BUILD_VERIFY_COMMAND =
-  "TURBO_CACHE_DIR=/tmp/turbo-cache pnpm build";
+export const BUILD_VERIFY_COMMAND = 'TURBO_CACHE_DIR=/tmp/turbo-cache pnpm build';
 
 // Sandbox.exec() has no built-in timeout (unlike sandbox.run()'s
 // idleTimeoutSeconds), so this mirrors the old build-verify agent's 600s guard.

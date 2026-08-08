@@ -18,16 +18,16 @@ describe('sandcastle idle-timeout budgets', () => {
       mergeContent.indexOf('});', mergerStart) + 3,
     );
 
-    const implementerStart = runIssueContent.indexOf('name: "implementer"');
+    const implementerStart = runIssueContent.indexOf("name: 'implementer'");
     const implementerBlock = runIssueContent.slice(
       implementerStart,
       implementerStart + 400,
     );
 
-    const reviewerStart = runIssueContent.indexOf('name: "reviewer"');
+    const reviewerStart = runIssueContent.indexOf("name: 'reviewer'");
     const reviewerBlock = runIssueContent.slice(reviewerStart, reviewerStart + 400);
 
-    const plannerStart = mainContent.indexOf('name: "planner"');
+    const plannerStart = mainContent.indexOf("name: 'planner'");
     const plannerBlock = mainContent.slice(plannerStart, plannerStart + 600);
 
     it('merger run has idleTimeoutSeconds: 1800', () => {

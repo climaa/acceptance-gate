@@ -23,8 +23,8 @@ import {
   ISSUE_ID_RE,
   SANDCASTLE_BRANCH_RE,
   parseIssueIdFromBranch,
-} from "./sandcastle-git-parse.mts";
-import type { IssueRef } from "./sandcastle-git.mts";
+} from './sandcastle-git-parse.mts';
+import type { IssueRef } from './sandcastle-git.mts';
 
 /**
  * Parse and validate the raw string inside a <plan>…</plan> block into a
@@ -37,17 +37,15 @@ export function parsePlan(raw: string): IssueRef[] {
   try {
     parsed = JSON.parse(raw);
   } catch (err) {
-    throw new Error(
-      `<plan> JSON did not parse: ${(err as Error).message}\n\n${raw}`,
-    );
+    throw new Error(`<plan> JSON did not parse: ${(err as Error).message}\n\n${raw}`);
   }
 
-  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-    throw new Error("<plan> JSON must be an object with an `issues` array.");
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    throw new Error('<plan> JSON must be an object with an `issues` array.');
   }
   const issuesRaw = (parsed as { issues?: unknown }).issues;
   if (!Array.isArray(issuesRaw)) {
-    throw new Error("<plan> JSON `issues` must be an array.");
+    throw new Error('<plan> JSON `issues` must be an array.');
   }
 
   const errors: string[] = [];
@@ -58,21 +56,21 @@ export function parsePlan(raw: string): IssueRef[] {
   for (let i = 0; i < issuesRaw.length; i++) {
     const entry = issuesRaw[i];
     const at = `issues[${i}]`;
-    if (!entry || typeof entry !== "object" || Array.isArray(entry)) {
+    if (!entry || typeof entry !== 'object' || Array.isArray(entry)) {
       errors.push(`${at}: not an object`);
       continue;
     }
     const { id, title, branch } = entry as Record<string, unknown>;
 
-    if (typeof id !== "string" || !ISSUE_ID_RE.test(id)) {
+    if (typeof id !== 'string' || !ISSUE_ID_RE.test(id)) {
       errors.push(`${at}: invalid id ${JSON.stringify(id)} (expected digits)`);
       continue;
     }
-    if (typeof title !== "string" || title.length === 0) {
+    if (typeof title !== 'string' || title.length === 0) {
       errors.push(`${at} (#${id}): missing or empty title`);
       continue;
     }
-    if (typeof branch !== "string" || !SANDCASTLE_BRANCH_RE.test(branch)) {
+    if (typeof branch !== 'string' || !SANDCASTLE_BRANCH_RE.test(branch)) {
       errors.push(
         `${at} (#${id}): invalid branch ${JSON.stringify(branch)} ` +
           `(expected sandcastle/issue-${id}-<slug>, slug [a-z0-9-])`,
@@ -106,7 +104,7 @@ export function parsePlan(raw: string): IssueRef[] {
     throw new Error(
       `Invalid <plan> JSON — rejecting the whole plan:\n${errors
         .map((e) => `  ${e}`)
-        .join("\n")}`,
+        .join('\n')}`,
     );
   }
 

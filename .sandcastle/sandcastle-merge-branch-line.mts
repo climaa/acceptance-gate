@@ -9,14 +9,8 @@
 // per the existing principle spelled out above `fetchIssue` in
 // sandcastle-git.mts: the merger only ever copies the already-resolved
 // implementer/reviewer values verbatim from this line into the PR footer.
-import {
-  type AgentProfile,
-  effectiveProfile,
-} from "./sandcastle-agent-profiles.mts";
-import type {
-  PerIssueRole,
-  ProfileOverride,
-} from "./sandcastle-model-overrides.mts";
+import { type AgentProfile, effectiveProfile } from './sandcastle-agent-profiles.mts';
+import type { PerIssueRole, ProfileOverride } from './sandcastle-model-overrides.mts';
 
 /**
  * The part of `IssueRef` (sandcastle-git.mts) this formatter reads, restated
@@ -37,11 +31,9 @@ export function formatProfile(profile: AgentProfile): string {
 /** One `BRANCHES_WITH_ISSUES` line for the merge prompt, implementer/reviewer profiles resolved (PROFILES < env < issue label). */
 export function formatBranchLine(issue: BranchLineIssue): string {
   const implementer = formatProfile(
-    effectiveProfile("implementer", issue.overrides?.implementer),
+    effectiveProfile('implementer', issue.overrides?.implementer),
   );
-  const reviewer = formatProfile(
-    effectiveProfile("reviewer", issue.overrides?.reviewer),
-  );
+  const reviewer = formatProfile(effectiveProfile('reviewer', issue.overrides?.reviewer));
   return (
     `- branch: ${issue.branch}, issue: ${issue.id}, title: ${issue.title}, ` +
     `implementer: ${implementer}, reviewer: ${reviewer}`

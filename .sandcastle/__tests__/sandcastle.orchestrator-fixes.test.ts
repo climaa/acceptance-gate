@@ -47,8 +47,8 @@ describe('sandcastle orchestrator fixes', () => {
   describe('Bug 3 — main.mts passes issue context to reviewer', () => {
     const content = read('sandcastle-run-issue.mts');
     const reviewerBlock = content.slice(
-      content.indexOf('name: "reviewer"'),
-      content.indexOf('name: "reviewer"') + 500,
+      content.indexOf("name: 'reviewer'"),
+      content.indexOf("name: 'reviewer'") + 500,
     );
 
     it('does not pass SOURCE_BRANCH in reviewer promptArgs (auto-injected by SDK via baseBranch)', () => {
@@ -115,13 +115,13 @@ describe('sandcastle orchestrator fixes', () => {
       mergeContent.indexOf('});', mergerStart) + 3,
     );
 
-    const implementerStart = runIssueContent.indexOf('name: "implementer"');
+    const implementerStart = runIssueContent.indexOf("name: 'implementer'");
     const implementerBlock = runIssueContent.slice(
       implementerStart,
       implementerStart + 400,
     );
 
-    const reviewerStart = runIssueContent.indexOf('name: "reviewer"');
+    const reviewerStart = runIssueContent.indexOf("name: 'reviewer'");
     const reviewerBlock = runIssueContent.slice(reviewerStart, reviewerStart + 400);
 
     it('merger sandcastle.run includes completionSignal', () => {

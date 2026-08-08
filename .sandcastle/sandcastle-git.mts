@@ -2,12 +2,9 @@
 // stranded-branch rescue path and the per-issue implement→review pipeline.
 // Read-only except for markIssueNoOp(), which comments and labels; the
 // decisions it acts on are pure and live in sandcastle-noop-issues.mts.
-import { execSync } from "node:child_process";
-import { BASE_BRANCH } from "./sandcastle-config.mts";
-import {
-  type Dirtiness,
-  worktreeReapBlocker,
-} from "./sandcastle-worktree-safety.mts";
+import { execSync } from 'node:child_process';
+import { BASE_BRANCH } from './sandcastle-config.mts';
+import { type Dirtiness, worktreeReapBlocker } from './sandcastle-worktree-safety.mts';
 import {
   parseBranchList,
   parseDirtiness,
@@ -15,16 +12,13 @@ import {
   parsePositiveCount,
   parsePrimaryWorktree,
   parseWorktreeForBranch,
-} from "./sandcastle-git-parse.mts";
-import type {
-  PerIssueRole,
-  ProfileOverride,
-} from "./sandcastle-model-overrides.mts";
+} from './sandcastle-git-parse.mts';
+import type { PerIssueRole, ProfileOverride } from './sandcastle-model-overrides.mts';
 import {
   NOOP_LABEL,
   NOOP_LABEL_COLOR,
   NOOP_LABEL_DESCRIPTION,
-} from "./sandcastle-noop-issues.mts";
+} from './sandcastle-noop-issues.mts';
 
 export type IssueRef = {
   id: string;
@@ -43,7 +37,7 @@ export function branchHasCommitsAhead(branch: string): boolean {
   try {
     const out = execSync(
       `git rev-list --count origin/${BASE_BRANCH}..${branch} 2>/dev/null`,
-      { encoding: "utf8" },
+      { encoding: 'utf8' },
     );
     return parsePositiveCount(out);
   } catch {
@@ -56,7 +50,7 @@ export function listSandcastleBranches(): string[] {
   try {
     const out = execSync(
       `git for-each-ref --format='%(refname:short)' refs/heads/sandcastle/`,
-      { encoding: "utf8" },
+      { encoding: 'utf8' },
     );
     return parseBranchList(out);
   } catch {
@@ -66,7 +60,7 @@ export function listSandcastleBranches(): string[] {
 
 // Re-exported from sandcastle-git-parse.mts, where it is unit-tested. Kept on
 // this module's surface because four call sites already import it from here.
-export { parseIssueIdFromBranch } from "./sandcastle-git-parse.mts";
+export { parseIssueIdFromBranch } from './sandcastle-git-parse.mts';
 
 // `labels` is what carries the per-issue model overrides (`sc:…`). It is
 // fetched here, deterministically, rather than being threaded through the
@@ -78,7 +72,7 @@ export function fetchIssue(
 ): { title: string; state: string; labels: string[] } | null {
   try {
     const out = execSync(`gh issue view ${id} --json title,state,labels`, {
-      encoding: "utf8",
+      encoding: 'utf8',
     });
     return parseIssueJson(out);
   } catch {
@@ -104,7 +98,7 @@ export function markIssueNoOp(
     // none of which survive interpolation into a shell command intact.
     execSync(`gh issue comment ${id} --body-file -`, {
       input: body,
-      stdio: "pipe",
+      stdio: 'pipe',
     });
     commented = true;
   } catch (err) {
@@ -118,7 +112,7 @@ export function markIssueNoOp(
     execSync(
       `gh label create "${NOOP_LABEL}" --color ${NOOP_LABEL_COLOR} ` +
         `--description "${NOOP_LABEL_DESCRIPTION}"`,
-      { stdio: "pipe" },
+      { stdio: 'pipe' },
     );
   } catch {
     // Already exists, or the token cannot create labels — the add tells us.
@@ -127,13 +121,11 @@ export function markIssueNoOp(
   let labeled = false;
   try {
     execSync(`gh issue edit ${id} --add-label "${NOOP_LABEL}"`, {
-      stdio: "pipe",
+      stdio: 'pipe',
     });
     labeled = true;
   } catch (err) {
-    console.warn(
-      `  ⚠ could not label #${id} ${NOOP_LABEL}: ${(err as Error).message}`,
-    );
+    console.warn(`  ⚠ could not label #${id} ${NOOP_LABEL}: ${(err as Error).message}`);
   }
 
   return { commented, labeled };
@@ -143,7 +135,7 @@ export function branchHasOpenPr(branch: string): boolean {
   try {
     const out = execSync(
       `gh pr list --head ${branch} --state open --json number --jq 'length'`,
-      { encoding: "utf8" },
+      { encoding: 'utf8' },
     ).trim();
     return Number(out) > 0;
   } catch {
@@ -156,8 +148,8 @@ export function branchHasOpenPr(branch: string): boolean {
 // makes this cheap to identify (worktree-reaper hardening).
 function primaryWorktreePath(): string | null {
   try {
-    const out = execSync("git worktree list --porcelain", {
-      encoding: "utf8",
+    const out = execSync('git worktree list --porcelain', {
+      encoding: 'utf8',
     });
     return parsePrimaryWorktree(out);
   } catch {
@@ -173,12 +165,12 @@ function primaryWorktreePath(): string | null {
 function worktreeDirtiness(worktreePath: string): Dirtiness {
   try {
     const out = execSync(`git -C "${worktreePath}" status --porcelain`, {
-      encoding: "utf8",
-      stdio: ["ignore", "pipe", "ignore"],
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
     });
     return parseDirtiness(out);
   } catch {
-    return "unreadable";
+    return 'unreadable';
   }
 }
 
@@ -197,8 +189,8 @@ export function worktreeReapBlockerFor(worktreePath: string): string | null {
 // or null if the branch is not registered as a worktree.
 export function findWorktreeForBranch(branch: string): string | null {
   try {
-    const out = execSync("git worktree list --porcelain", {
-      encoding: "utf8",
+    const out = execSync('git worktree list --porcelain', {
+      encoding: 'utf8',
     });
     return parseWorktreeForBranch(out, branch);
   } catch {

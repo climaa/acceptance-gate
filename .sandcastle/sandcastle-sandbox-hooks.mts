@@ -47,7 +47,7 @@ export type SandboxHooks = { sandbox: { onSandboxReady: SandboxHook[] } };
  *  - `"head"`     — the host checkout itself. Treat as read-only infrastructure.
  *  - `"worktree"` — a throwaway git worktree. Safe to install into.
  */
-export type SandboxMount = "head" | "worktree";
+export type SandboxMount = 'head' | 'worktree';
 
 // GH_TOKEN in the sandbox env is enough for `gh` CLI commands, but plain
 // `git push` won't authenticate from it without a credential helper wired up.
@@ -68,7 +68,7 @@ export const GH_AUTH_SETUP_HOOK: SandboxHook = {
 // the right answer inside a disposable worktree and the wrong one for a
 // developer's checkout, which is why head-mode simply does not install.
 export const PNPM_INSTALL_HOOK: SandboxHook = {
-  command: "CI=true pnpm install",
+  command: 'CI=true pnpm install',
   timeoutMs: 600_000,
 };
 
@@ -81,9 +81,9 @@ export const PNPM_INSTALL_HOOK: SandboxHook = {
  */
 export function hooksFor(mount: SandboxMount): SandboxHooks {
   switch (mount) {
-    case "head":
+    case 'head':
       return { sandbox: { onSandboxReady: [{ ...GH_AUTH_SETUP_HOOK }] } };
-    case "worktree":
+    case 'worktree':
       return {
         sandbox: {
           onSandboxReady: [{ ...GH_AUTH_SETUP_HOOK }, { ...PNPM_INSTALL_HOOK }],
@@ -100,7 +100,7 @@ export function hooksFor(mount: SandboxMount): SandboxHooks {
 }
 
 /** Planner and merger: the host checkout is mounted — never install. */
-export const headHooks: SandboxHooks = hooksFor("head");
+export const headHooks: SandboxHooks = hooksFor('head');
 
 /** Implementer/reviewer and the rescue build-verify: fresh worktree, install. */
-export const worktreeHooks: SandboxHooks = hooksFor("worktree");
+export const worktreeHooks: SandboxHooks = hooksFor('worktree');

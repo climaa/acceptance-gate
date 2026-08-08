@@ -121,9 +121,9 @@ describe('sandcastle image-freshness guard', () => {
       // (no .dockerignore) and stalls forever; the Dockerfile has zero COPY
       // lines so it needs no context. The stdin form `docker build -t … -` is
       // exact. Guard that the build passes "-" as the context.
-      expect(mod).toMatch(/"build"[\s\S]*?"-"/);
+      expect(mod).toMatch(/["']build["'][\s\S]*?["']-["']/);
       // And must NOT pass "." as the build context (the stall trap).
-      expect(mod).not.toMatch(/"build"[\s\S]*?"\."\s*\]/);
+      expect(mod).not.toMatch(/["']build["'][\s\S]*?["']\.["']\s*\]/);
     });
   });
 });

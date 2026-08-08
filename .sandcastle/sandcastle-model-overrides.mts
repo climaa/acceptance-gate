@@ -20,9 +20,9 @@
 // side effects, so anything that transitively pulls it in cannot be unit
 // tested. Keeping this pure is what lets the resolution rules get REAL tests.
 
-export type Effort = "low" | "medium" | "high" | "xhigh" | "max";
-export type Role = "planner" | "implementer" | "reviewer" | "merger";
-export type PerIssueRole = "implementer" | "reviewer";
+export type Effort = 'low' | 'medium' | 'high' | 'xhigh' | 'max';
+export type Role = 'planner' | 'implementer' | 'reviewer' | 'merger';
+export type PerIssueRole = 'implementer' | 'reviewer';
 export type ProfileOverride = { model?: string; effort?: Effort };
 
 /**
@@ -36,29 +36,18 @@ export type ProfileOverride = { model?: string; effort?: Effort };
  * sandcastle runs exhausted on their own.
  */
 export const MODEL_ALIASES: Readonly<Record<string, string>> = {
-  "opus-5": "claude-opus-5",
-  "sonnet-5": "claude-sonnet-5",
+  'opus-5': 'claude-opus-5',
+  'sonnet-5': 'claude-sonnet-5',
 };
 
-export const EFFORTS: readonly Effort[] = [
-  "low",
-  "medium",
-  "high",
-  "xhigh",
-  "max",
-];
+export const EFFORTS: readonly Effort[] = ['low', 'medium', 'high', 'xhigh', 'max'];
 
-const PER_ISSUE_ROLES: readonly PerIssueRole[] = ["implementer", "reviewer"];
-const RUN_LEVEL_ROLES: readonly Role[] = ["planner", "merger"];
-const ALL_ROLES: readonly Role[] = [
-  "planner",
-  "implementer",
-  "reviewer",
-  "merger",
-];
+const PER_ISSUE_ROLES: readonly PerIssueRole[] = ['implementer', 'reviewer'];
+const RUN_LEVEL_ROLES: readonly Role[] = ['planner', 'merger'];
+const ALL_ROLES: readonly Role[] = ['planner', 'implementer', 'reviewer', 'merger'];
 
 /** Every control label starts with this. Nothing else in the repo's label set does. */
-export const LABEL_PREFIX = "sc:";
+export const LABEL_PREFIX = 'sc:';
 
 const canonicalModels = new Set(Object.values(MODEL_ALIASES));
 
@@ -69,7 +58,7 @@ function canonicalModel(value: string): string | null {
 }
 
 function knownAliasList(): string {
-  return [...Object.keys(MODEL_ALIASES)].sort().join(", ");
+  return [...Object.keys(MODEL_ALIASES)].sort().join(', ');
 }
 
 /**
@@ -79,8 +68,8 @@ function knownAliasList(): string {
  * Opus default but not on top of an env var that switched to Sonnet.
  */
 function effortModelConflict(model: string, effort?: Effort): string | null {
-  if (effort !== "max") return null;
-  return model.includes("opus")
+  if (effort !== 'max') return null;
+  return model.includes('opus')
     ? null
     : `effort "max" is Opus-only, but the effective model is "${model}"`;
 }
@@ -106,12 +95,12 @@ export function parseOverrideLabels(labels: readonly string[]): {
   for (const label of labels) {
     if (!label.startsWith(LABEL_PREFIX)) continue;
 
-    const parts = label.split(":");
-    const role = parts[1] ?? "";
+    const parts = label.split(':');
+    const role = parts[1] ?? '';
 
     if (!(ALL_ROLES as readonly string[]).includes(role)) {
       errors.push(
-        `${label}: unknown role "${role}" (expected one of ${PER_ISSUE_ROLES.join(", ")})`,
+        `${label}: unknown role "${role}" (expected one of ${PER_ISSUE_ROLES.join(', ')})`,
       );
       continue;
     }
@@ -127,7 +116,7 @@ export function parseOverrideLabels(labels: readonly string[]): {
     const key = role as PerIssueRole;
     const current = overrides[key] ?? {};
 
-    if (parts.length === 3 && parts[2] !== "effort") {
+    if (parts.length === 3 && parts[2] !== 'effort') {
       const model = canonicalModel(parts[2]!);
       if (!model) {
         errors.push(
@@ -145,11 +134,11 @@ export function parseOverrideLabels(labels: readonly string[]): {
       continue;
     }
 
-    if (parts.length === 4 && parts[2] === "effort") {
+    if (parts.length === 4 && parts[2] === 'effort') {
       const effort = parts[3] as Effort;
       if (!EFFORTS.includes(effort)) {
         errors.push(
-          `${label}: unknown effort "${parts[3]}" (expected one of ${EFFORTS.join(", ")})`,
+          `${label}: unknown effort "${parts[3]}" (expected one of ${EFFORTS.join(', ')})`,
         );
         continue;
       }
@@ -199,7 +188,7 @@ export function envOverride(
     if (EFFORTS.includes(rawEffort)) override.effort = rawEffort;
     else
       errors.push(
-        `SC_${upper}_EFFORT: unknown effort "${rawEffort}" (expected one of ${EFFORTS.join(", ")})`,
+        `SC_${upper}_EFFORT: unknown effort "${rawEffort}" (expected one of ${EFFORTS.join(', ')})`,
       );
   }
 
@@ -233,5 +222,5 @@ export function describeOverride(
   if (effective.model === base.model && effective.effort === base.effort) {
     return null;
   }
-  return `${role}=${effective.model}${effective.effort ? `·${effective.effort}` : ""}`;
+  return `${role}=${effective.model}${effective.effort ? `·${effective.effort}` : ''}`;
 }

@@ -191,9 +191,9 @@ describe('reaper wiring (worktree-reaper hardening)', () => {
     expect(start).toBeGreaterThan(-1);
     expect(fn).toMatch(/git -C .* status --porcelain/);
     // The catch arm blocks the reap — a path we cannot inspect is not "clean".
-    expect(fn).toMatch(/catch\s*\{\s*return "unreadable";/);
+    expect(fn).toMatch(/catch\s*\{\s*return ["']unreadable["'];/);
     // git's fatal: goes nowhere, so our explanation is the only log line.
-    expect(fn).toMatch(/stdio: \["ignore", "pipe", "ignore"\]/);
+    expect(fn).toMatch(/stdio:\s*\[["']ignore["'],\s*["']pipe["'],\s*["']ignore["']\]/);
   });
 
   it('restores the host branch in a finally around the merger run', () => {

@@ -2,10 +2,10 @@
 // BASE_BRANCH that weren't part of the current plan (typically because a
 // prior merge phase crashed or was interrupted), build-verifies them, and
 // hands back only the ones safe to merge.
-import { execSync } from "node:child_process";
-import { createWorktreeSandbox } from "./sandcastle-worktree-sandbox.mts";
-import { parseOverrideLabels } from "./sandcastle-model-overrides.mts";
-import { isDocsOnlyDiff, runBuildVerify } from "./sandcastle-build-verify.mts";
+import { execSync } from 'node:child_process';
+import { createWorktreeSandbox } from './sandcastle-worktree-sandbox.mts';
+import { parseOverrideLabels } from './sandcastle-model-overrides.mts';
+import { isDocsOnlyDiff, runBuildVerify } from './sandcastle-build-verify.mts';
 import {
   type IssueRef,
   branchHasCommitsAhead,
@@ -15,7 +15,7 @@ import {
   listSandcastleBranches,
   parseIssueIdFromBranch,
   worktreeReapBlockerFor,
-} from "./sandcastle-git.mts";
+} from './sandcastle-git.mts';
 
 // Find sandcastle/* branches that are ahead of BASE_BRANCH but not in
 // `alreadyQueued`. These are typically branches whose prior merge phase
@@ -33,19 +33,15 @@ export function collectStrandedIssues(alreadyQueued: Set<string>): IssueRef[] {
     if (!branchHasCommitsAhead(branch)) continue;
     const id = parseIssueIdFromBranch(branch);
     if (!id) {
-      console.warn(
-        `  ⚠ skipping stranded branch with unparseable name: ${branch}`,
-      );
+      console.warn(`  ⚠ skipping stranded branch with unparseable name: ${branch}`);
       continue;
     }
     const issue = fetchIssue(id);
     if (!issue) {
-      console.warn(
-        `  ⚠ skipping stranded branch ${branch}: gh issue view ${id} failed`,
-      );
+      console.warn(`  ⚠ skipping stranded branch ${branch}: gh issue view ${id} failed`);
       continue;
     }
-    if (issue.state !== "OPEN") {
+    if (issue.state !== 'OPEN') {
       // Issue closed → work already landed (via squash-merge, so local
       // commits look "ahead" but are orphans). Delete the local branch so
       // subsequent runs don't re-evaluate it every iteration.
@@ -72,7 +68,7 @@ export function collectStrandedIssues(alreadyQueued: Set<string>): IssueRef[] {
         }
         try {
           execSync(`git worktree remove --force "${worktreePath}"`, {
-            stdio: "pipe",
+            stdio: 'pipe',
           });
           console.log(
             `  🧹 removed stale worktree ${worktreePath} (issue #${id} is ${issue.state})`,
@@ -84,7 +80,7 @@ export function collectStrandedIssues(alreadyQueued: Set<string>): IssueRef[] {
         }
       }
       try {
-        execSync(`git branch -D ${branch}`, { stdio: "pipe" });
+        execSync(`git branch -D ${branch}`, { stdio: 'pipe' });
         console.log(
           `  🧹 deleted stale local branch ${branch} (issue #${id} is ${issue.state})`,
         );
@@ -96,9 +92,7 @@ export function collectStrandedIssues(alreadyQueued: Set<string>): IssueRef[] {
       continue;
     }
     if (branchHasOpenPr(branch)) {
-      console.warn(
-        `  ⚠ skipping stranded branch ${branch}: already has an open PR`,
-      );
+      console.warn(`  ⚠ skipping stranded branch ${branch}: already has an open PR`);
       continue;
     }
     // Honour the same `sc:` model overrides on the rescue path — a rescued
@@ -108,16 +102,14 @@ export function collectStrandedIssues(alreadyQueued: Set<string>): IssueRef[] {
     const { overrides, errors } = parseOverrideLabels(issue.labels);
     if (errors.length > 0) {
       console.warn(
-        `  ⚠ #${id}: ignoring model override label(s), using defaults — ${errors.join("; ")}`,
+        `  ⚠ #${id}: ignoring model override label(s), using defaults — ${errors.join('; ')}`,
       );
     }
     stranded.push({
       id,
       title: issue.title,
       branch,
-      ...(errors.length === 0 && Object.keys(overrides).length > 0
-        ? { overrides }
-        : {}),
+      ...(errors.length === 0 && Object.keys(overrides).length > 0 ? { overrides } : {}),
     });
   }
   return stranded;
@@ -160,7 +152,7 @@ async function buildVerifyRescuedBranch(
     console.log(`[build-verify] rescued #${ref.id}: running pnpm build …`);
     const buildResult = await runBuildVerify(sandbox, `rescued-${ref.id}`);
     if (!buildResult.passed) {
-      const tail = buildResult.stdout.split("\n").slice(-50).join("\n");
+      const tail = buildResult.stdout.split('\n').slice(-50).join('\n');
       console.warn(
         `  ⚠ rescued branch ${ref.branch} (#${ref.id}) FAILED build-verify — ` +
           `skipping (stays stranded for human attention).\n` +
@@ -194,9 +186,7 @@ export async function verifyStrandedBranches(
   }
   const skipped = stranded.length - verified.length;
   if (skipped > 0) {
-    console.log(
-      `  ${skipped} rescued branch(es) failed build-verify and stay stranded.`,
-    );
+    console.log(`  ${skipped} rescued branch(es) failed build-verify and stay stranded.`);
   }
   return verified;
 }

@@ -13,14 +13,11 @@
 // that an explicit call can be forgotten where an import could not — which is
 // why sandcastle.turbo-env.test.ts asserts main.mts still makes both calls.
 
-import { execSync } from "node:child_process";
-import { readFileSync } from "node:fs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-import {
-  describeTurboCache,
-  resolveTurboCache,
-} from "./sandcastle-turbo-cache.mts";
+import { execSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { describeTurboCache, resolveTurboCache } from './sandcastle-turbo-cache.mts';
 
 // Preflight: refuse to start without `gh` on PATH.
 //
@@ -35,23 +32,23 @@ import {
 // install locations.
 export function assertGhAvailable(): void {
   try {
-    execSync("command -v gh", { stdio: "ignore" });
+    execSync('command -v gh', { stdio: 'ignore' });
   } catch {
     throw new Error(
-      "`gh` was not found on PATH. The orchestrator reads issue state and the " +
-        "`sc:*` model-override labels through it, and those call sites fail " +
-        "silently (null / false) rather than erroring — so a run would quietly " +
-        "use the wrong models. Refusing to start. Install the GitHub CLI, or " +
-        "launch from a shell whose PATH includes it.",
+      '`gh` was not found on PATH. The orchestrator reads issue state and the ' +
+        '`sc:*` model-override labels through it, and those call sites fail ' +
+        'silently (null / false) rather than erroring — so a run would quietly ' +
+        'use the wrong models. Refusing to start. Install the GitHub CLI, or ' +
+        'launch from a shell whose PATH includes it.',
     );
   }
 }
 
-const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 function readIfPresent(file: string): string | null {
   try {
-    return readFileSync(file, "utf8");
+    return readFileSync(file, 'utf8');
   } catch {
     return null;
   }
@@ -80,20 +77,20 @@ function readIfPresent(file: string): string | null {
 // build-verify call sites. (`.sandcastle/.env` is gitignored — documentable,
 // not enforceable.)
 const turboCache = resolveTurboCache(
-  readIfPresent(path.join(REPO_ROOT, ".env")),
-  readIfPresent(path.join(REPO_ROOT, ".turbo", "config.json")),
+  readIfPresent(path.join(REPO_ROOT, '.env')),
+  readIfPresent(path.join(REPO_ROOT, '.turbo', 'config.json')),
 );
 export function logTurboCacheStatus(): void {
   console.log(describeTurboCache(turboCache));
 }
 
-export const turboToken = turboCache.enabled ? turboCache.token : "";
-export const turboTeam = turboCache.enabled ? turboCache.team : "";
+export const turboToken = turboCache.enabled ? turboCache.token : '';
+export const turboTeam = turboCache.enabled ? turboCache.team : '';
 
 // Base branch the orchestrator merges into. Used to detect whether a
 // sandcastle/* branch has work ready to merge, regardless of which run
 // produced the commits.
-export const BASE_BRANCH = "main";
+export const BASE_BRANCH = 'main';
 
 // Maximum number of plan→execute→merge cycles before stopping.
 // Raise this if your backlog is large; lower it for a quick smoke-test run.
