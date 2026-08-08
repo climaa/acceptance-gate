@@ -43,9 +43,31 @@ export function parseBranchList(stdout: string): string[] {
     .filter(Boolean);
 }
 
-/** Branch format is fixed by agent-docs/plan-prompt.md: `sandcastle/issue-{id}-{slug}`. */
+/**
+ * Issue id grammar: bare digits, length-capped. This is what the planner puts
+ * in the `id` field and what the branch embeds. Capped so a pathological input
+ * cannot produce an absurdly long id that some downstream `gh`/`git` call then
+ * spends.
+ */
+export const ISSUE_ID_RE = /^\d{1,10}$/;
+
+/**
+ * Branch grammar, fixed by agent-docs/plan-prompt.md:
+ * `sandcastle/issue-{id}-{slug}`, slug lowercase-hyphen only.
+ *
+ * ANCHORED at both ends and charset-constrained on purpose. The earlier form
+ * `/^sandcastle\/issue-(\d+)-/` was prefix-only, so `sandcastle/issue-1-$(...)`
+ * — a legal git branch name — passed it. That branch then flowed unescaped into
+ * host `execSync` at every git/gh call site. This regex is the single source of
+ * truth two callers rely on: parseIssueIdFromBranch (below, over real local
+ * refs) and parsePlan (sandcastle-plan-parse.mts, over untrusted planner JSON).
+ * Keep the slug charset free of every shell metacharacter — that property is the
+ * whole point.
+ */
+export const SANDCASTLE_BRANCH_RE = /^sandcastle\/issue-(\d{1,10})-[a-z0-9-]+$/;
+
 export function parseIssueIdFromBranch(branch: string): string | null {
-  const m = branch.match(/^sandcastle\/issue-(\d+)-/);
+  const m = branch.match(SANDCASTLE_BRANCH_RE);
   return m ? m[1]! : null;
 }
 

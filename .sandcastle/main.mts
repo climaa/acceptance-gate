@@ -55,6 +55,7 @@ import {
   fetchIssue,
   markIssueNoOp,
 } from "./sandcastle-git.mts";
+import { parsePlan } from "./sandcastle-plan-parse.mts";
 import {
   NOOP_LABEL,
   noOpIssueComment,
@@ -180,9 +181,11 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
   }
 
   // The plan JSON contains an array of issues, each with id, title, branch.
-  const { issues: planned } = JSON.parse(planMatch[1]!) as {
-    issues: IssueRef[];
-  };
+  // parsePlan (sandcastle-plan-parse.mts) is the validation gate: it rejects the
+  // whole plan unless every id/branch matches the documented grammar, so nothing
+  // agent-authored reaches the host shell unvalidated. It also strips any extra
+  // keys, so a planner-forged `overrides` cannot survive into agentFor().
+  const planned = parsePlan(planMatch[1]!);
 
   // One pass over the plan, deciding two things from each issue's labels —
   // both BEFORE any sandbox is created:
