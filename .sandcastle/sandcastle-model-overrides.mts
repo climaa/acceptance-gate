@@ -86,6 +86,61 @@ function effortModelConflict(model: string, effort?: Effort): string | null {
  * error string; callers aggregate and fail the run BEFORE spending tokens, so
  * a typo can never silently fall back to the expensive default.
  */
+
+// Parse ONE label's SYNTAX into the role and the single field it sets
+// ({ model } XOR { effort }), or an error, or null when the label is not a
+// control label. Stateless: whether it CONFLICTS with an earlier label is the
+// caller's decision, since that depends on what has already been set. A flat
+// sequence of guard-returns — the label grammar reads top to bottom.
+function parseLabel(
+  label: string,
+): { role: PerIssueRole; override: ProfileOverride } | { error: string } | null {
+  if (!label.startsWith(LABEL_PREFIX)) return null;
+
+  const parts = label.split(':');
+  const role = parts[1] ?? '';
+
+  if (!(ALL_ROLES as readonly string[]).includes(role)) {
+    return {
+      error: `${label}: unknown role "${role}" (expected one of ${PER_ISSUE_ROLES.join(', ')})`,
+    };
+  }
+  if ((RUN_LEVEL_ROLES as readonly string[]).includes(role)) {
+    return {
+      error:
+        `${label}: "${role}" cannot be set per issue — it runs once per invocation, ` +
+        `not once per issue. Use SC_${role.toUpperCase()}_MODEL / ` +
+        `SC_${role.toUpperCase()}_EFFORT on the \`pnpm sandcastle\` command instead.`,
+    };
+  }
+
+  const key = role as PerIssueRole;
+
+  if (parts.length === 3 && parts[2] !== 'effort') {
+    const model = canonicalModel(parts[2]!);
+    if (!model) {
+      return {
+        error: `${label}: unknown model "${parts[2]}" (known aliases: ${knownAliasList()})`,
+      };
+    }
+    return { role: key, override: { model } };
+  }
+
+  if (parts.length === 4 && parts[2] === 'effort') {
+    const effort = parts[3] as Effort;
+    if (!EFFORTS.includes(effort)) {
+      return {
+        error: `${label}: unknown effort "${parts[3]}" (expected one of ${EFFORTS.join(', ')})`,
+      };
+    }
+    return { role: key, override: { effort } };
+  }
+
+  return {
+    error: `${label}: malformed — expected sc:<role>:<model> or sc:<role>:effort:<effort>`,
+  };
+}
+
 export function parseOverrideLabels(labels: readonly string[]): {
   overrides: Partial<Record<PerIssueRole, ProfileOverride>>;
   errors: string[];
@@ -94,68 +149,25 @@ export function parseOverrideLabels(labels: readonly string[]): {
   const errors: string[] = [];
 
   for (const label of labels) {
-    if (!label.startsWith(LABEL_PREFIX)) continue;
+    const parsed = parseLabel(label);
+    if (parsed === null) continue;
+    if ('error' in parsed) {
+      errors.push(parsed.error);
+      continue;
+    }
 
-    const parts = label.split(':');
-    const role = parts[1] ?? '';
-
-    if (!(ALL_ROLES as readonly string[]).includes(role)) {
+    const { role, override } = parsed;
+    const current = overrides[role] ?? {};
+    // `override` sets exactly one field. Reject a second label that would change
+    // a field an earlier one already set to a different value.
+    const [field, value] = Object.entries(override)[0] as [keyof ProfileOverride, string];
+    if (current[field] !== undefined && current[field] !== value) {
       errors.push(
-        `${label}: unknown role "${role}" (expected one of ${PER_ISSUE_ROLES.join(', ')})`,
+        `${label}: conflicting ${field} for "${role}" — already set to "${current[field]}"`,
       );
       continue;
     }
-    if ((RUN_LEVEL_ROLES as readonly string[]).includes(role)) {
-      errors.push(
-        `${label}: "${role}" cannot be set per issue — it runs once per invocation, ` +
-          `not once per issue. Use SC_${role.toUpperCase()}_MODEL / ` +
-          `SC_${role.toUpperCase()}_EFFORT on the \`pnpm sandcastle\` command instead.`,
-      );
-      continue;
-    }
-
-    const key = role as PerIssueRole;
-    const current = overrides[key] ?? {};
-
-    if (parts.length === 3 && parts[2] !== 'effort') {
-      const model = canonicalModel(parts[2]!);
-      if (!model) {
-        errors.push(
-          `${label}: unknown model "${parts[2]}" (known aliases: ${knownAliasList()})`,
-        );
-        continue;
-      }
-      if (current.model && current.model !== model) {
-        errors.push(
-          `${label}: conflicting model for "${key}" — already set to "${current.model}"`,
-        );
-        continue;
-      }
-      overrides[key] = { ...current, model };
-      continue;
-    }
-
-    if (parts.length === 4 && parts[2] === 'effort') {
-      const effort = parts[3] as Effort;
-      if (!EFFORTS.includes(effort)) {
-        errors.push(
-          `${label}: unknown effort "${parts[3]}" (expected one of ${EFFORTS.join(', ')})`,
-        );
-        continue;
-      }
-      if (current.effort && current.effort !== effort) {
-        errors.push(
-          `${label}: conflicting effort for "${key}" — already set to "${current.effort}"`,
-        );
-        continue;
-      }
-      overrides[key] = { ...current, effort };
-      continue;
-    }
-
-    errors.push(
-      `${label}: malformed — expected sc:<role>:<model> or sc:<role>:effort:<effort>`,
-    );
+    overrides[role] = { ...current, ...override };
   }
 
   return { overrides, errors };
