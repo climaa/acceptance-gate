@@ -1,5 +1,3 @@
-import * as fs from 'node:fs';
-import * as path from 'node:path';
 import {
   NOOP_LABEL,
   hasNoOpLabel,
@@ -7,6 +5,7 @@ import {
   partitionOutcomes,
 } from '../sandcastle-noop-issues.mts';
 import { LABEL_PREFIX, parseOverrideLabels } from '../sandcastle-model-overrides.mts';
+import { read } from './helpers';
 
 /**
  * REAL unit tests (plus one source-text block for the orchestrator wiring,
@@ -22,13 +21,6 @@ import { LABEL_PREFIX, parseOverrideLabels } from '../sandcastle-model-overrides
  * the whole fix — misfiling a crash as a no-op would silently retire an issue
  * that was never attempted.
  */
-
-const ROOT = path.resolve(__dirname, '../..');
-const SANDCASTLE = path.join(ROOT, '.sandcastle');
-
-function read(file: string) {
-  return fs.readFileSync(path.join(SANDCASTLE, file), 'utf8');
-}
 
 const issue = (id: string) => ({ id, title: `issue ${id}`, branch: `b-${id}` });
 

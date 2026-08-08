@@ -1,12 +1,4 @@
-import * as fs from 'fs';
-import * as path from 'path';
-
-const ROOT = path.resolve(__dirname, '../..');
-const SANDCASTLE = path.join(ROOT, '.sandcastle');
-
-function read(file: string) {
-  return fs.readFileSync(path.join(SANDCASTLE, file), 'utf8');
-}
+import { read } from './helpers';
 
 describe('sandcastle orchestrator fixes', () => {
   describe('Bug 1 — main.mts always forks from origin/main', () => {

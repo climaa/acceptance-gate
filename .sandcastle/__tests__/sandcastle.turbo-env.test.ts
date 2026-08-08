@@ -1,23 +1,6 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-
-const ROOT = path.resolve(__dirname, '../..');
-const SANDCASTLE = path.join(ROOT, '.sandcastle');
-
-function read(file: string) {
-  return fs.readFileSync(path.join(SANDCASTLE, file), 'utf8');
-}
-
-/**
- * Strip comments so "must not appear" assertions test the actual code.
- * sandcastle-config.mts documents at length why it does NOT read
- * `process.env.TURBO_TOKEN` and why `dotenv.config()` is the wrong API —
- * naming both in prose. Without this, the explanation would fail the very
- * assertions it explains.
- */
-function stripComments(source: string) {
-  return source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
-}
+import { ROOT, SANDCASTLE, read, stripComments } from './helpers';
 
 describe('sandcastle-config.mts — gh preflight', () => {
   const content = read('sandcastle-config.mts');

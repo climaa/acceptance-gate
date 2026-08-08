@@ -1,12 +1,5 @@
 import * as fs from 'fs';
-import * as path from 'path';
-
-const ROOT = path.resolve(__dirname, '../..');
-const SANDCASTLE = path.join(ROOT, '.sandcastle');
-
-function read(file: string) {
-  return fs.readFileSync(path.join(SANDCASTLE, file), 'utf8');
-}
+import { SANDCASTLE, read } from './helpers';
 
 describe('sandcastle PR-based merge flow', () => {
   describe('merge-prompt.md', () => {
