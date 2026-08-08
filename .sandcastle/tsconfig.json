@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "../packages/tsconfig/base.json",
+  "compilerOptions": {
+    // `nodenext`, not the base's `Bundler`: nothing bundles this directory. It
+    // runs under `tsx` as real Node ESM, so resolution should be checked the
+    // way Node will actually perform it.
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+
+    // Sibling imports are written `./sandcastle-x.mts` — the specifier tsx and
+    // Node ESM need. TypeScript only tolerates a .mts specifier when it is not
+    // emitting, which is exactly this config's job.
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+
+    // The base turns these on for publishable packages. Nothing here is
+    // published and `noEmit` forbids them.
+    "declaration": false,
+    "declarationMap": false,
+
+    // The suite runs with vitest `globals: true` (vitest.sandcastle.config.mts),
+    // so describe/it/expect are ambient rather than imported.
+    "types": ["vitest/globals", "node"]
+  },
+  "include": ["*.mts", "__tests__/**/*.ts"]
+}

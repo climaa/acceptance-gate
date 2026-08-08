@@ -126,6 +126,11 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # `turbo run typecheck` only reaches workspaces, and .sandcastle/ is not
+      # one — so 2.5k LOC of orchestrator had no type gate at all until this
+      # step. Runs before the suite: a type error should not be reported as a
+      # test failure.
+      - run: pnpm typecheck:sandcastle
       - run: pnpm test:sandcastle
 
   gate:
