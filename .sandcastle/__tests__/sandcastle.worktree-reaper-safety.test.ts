@@ -171,10 +171,15 @@ describe('reaper wiring (worktree-reaper hardening)', () => {
 
   it('skips the branch delete too when the worktree is not reapable', () => {
     // A branch held by an unreapable worktree cannot be deleted anyway, and
-    // trying produces the confusing double-warning from the incident.
+    // trying produces the confusing double-warning from the incident. In
+    // reapClosedIssueBranch the blocker path returns early — before the
+    // `git branch -D` below it.
     const blockerIdx = strandedContent.indexOf('const blocker =');
     const section = strandedContent.slice(blockerIdx, blockerIdx + 700);
-    expect(section).toMatch(/continue;/);
+    const returnIdx = section.indexOf('return;');
+    const branchDeleteIdx = section.indexOf('git branch -D');
+    expect(returnIdx).toBeGreaterThan(-1);
+    expect(branchDeleteIdx).toBeGreaterThan(returnIdx);
   });
 
   it('resolves the primary worktree from git worktree list --porcelain', () => {
