@@ -4,5 +4,6 @@
     "deploymentEnabled": {
       "sandcastle/*": false
     }
-  }
+  },
+  "ignoreCommand": "npx --yes turbo@^2.10.8 query affected --packages @gate/blog --base=${VERCEL_GIT_PREVIOUS_SHA:-HEAD^1} --exit-code"
 }
