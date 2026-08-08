@@ -17,7 +17,8 @@
     "test": "dotenv -e .env -o -- turbo run test",
     "sandcastle": "tsx .sandcastle/main.mts",
     "typecheck:sandcastle": "tsc --noEmit -p .sandcastle/tsconfig.json",
-    "test:sandcastle": "vitest run --config vitest.sandcastle.config.mts"
+    "test:sandcastle": "vitest run --config vitest.sandcastle.config.mts",
+    "health:check": "node .sandcastle/scripts/complexity-gate.mjs"
   },
   "devDependencies": {
     "@ai-hero/sandcastle": "0.12.0",
