@@ -13,7 +13,7 @@
 //                               branch. Issue pipelines run serially via a
 //                               sequential for…await loop — concurrent pnpm
 //                               installs were observed to deadlock on pnpm
-//                               10.x; the repo now pins 11.17.0 but stays
+//                               10.x; the repo now pins 11.20.0 but stays
 //                               serial as a precaution. Failures are caught
 //                               per-issue so the rest continue.
 //   Phase 3 (Merge):            A single agent (sandcastle-merge.mts) merges
@@ -263,7 +263,7 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
   console.log(
     `Planning complete. ${issues.length} issue(s) to run serially ` +
       "(concurrent sandbox `pnpm install` was observed to deadlock on pnpm 10.x; " +
-      "repo now pins 11.17.0, kept serial as a precaution — " +
+      "repo now pins 11.20.0, kept serial as a precaution — " +
       "see sandcastle-run-issue.mts for context):",
   );
   for (const issue of issues) {
@@ -287,7 +287,7 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
   // pipeline. Issues run serially: concurrent `pnpm install` in parallel
   // sandboxes was observed to deadlock on pnpm 10.x (multiple containers
   // stalled in epoll_wait with zero filesystem progress past the first
-  // second). The repo now pins 11.17.0, but execution stays serial as a
+  // second). The repo now pins 11.20.0, but execution stays serial as a
   // precaution. One failing pipeline still doesn't stop the rest — failures
   // are caught and recorded so later issues continue.
   // -------------------------------------------------------------------------
