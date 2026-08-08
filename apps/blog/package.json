@@ -6,7 +6,7 @@
     "dev": "next dev --port 3000",
     "build": "next build",
     "start": "next start --port 3000",
-    "lint": "next lint",
+    "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "health": "node ../../scripts/complexity-gate.mjs",
@@ -15,20 +15,19 @@
   "dependencies": {
     "@gate/ui": "workspace:*",
     "gray-matter": "^4.0.3",
-    "next": "^15.5.23",
+    "next": "^16.3.0",
     "next-mdx-remote": "^6.0.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3.3.6",
     "@gate/tsconfig": "workspace:*",
     "@mdx-js/mdx": "^3.1.1",
     "@types/node": "^22.20.1",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
     "eslint": "^9.39.5",
-    "eslint-config-next": "^15.5.23",
+    "eslint-config-next": "^16.3.0",
     "typescript": "^5.9.3",
     "vitest": "^4.1.10"
   }
