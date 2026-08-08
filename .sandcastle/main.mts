@@ -391,6 +391,16 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
   );
   const failedBranches = failed.map((issue) => issue.branch);
 
+  // A pipeline that threw is a failed run: record a non-zero exit so a scripted
+  // or CI invocation can detect it, even though the surviving issues still
+  // build, push, and merge normally this iteration. `failed` is partitionOutcomes'
+  // already-classified bucket of thrown pipelines, so this reuses the tested
+  // rule rather than re-deriving "what counts as failed". A no-op (⊘) or a
+  // host-push warning (⚠) is degraded-but-ok and deliberately stays a warning.
+  if (failed.length > 0) {
+    process.exitCode = 1;
+  }
+
   // Mark the no-ops. Without this the issue stays open and unremarkable, the
   // next iteration's planner proposes it again, and the run spends a fresh
   // sandbox on it every iteration up to MAX_ITERATIONS — the whole reason this

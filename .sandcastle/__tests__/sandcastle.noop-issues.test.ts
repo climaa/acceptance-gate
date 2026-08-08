@@ -242,6 +242,14 @@ describe('orchestrator wiring (source-text — not observable from a unit test)'
     expect(main).toMatch(/markIssueNoOp\(/);
   });
 
+  it('main.mts records a non-zero exit when a pipeline failed, via the failed bucket', () => {
+    // `failed` is partitionOutcomes' bucket of thrown pipelines; a run with any
+    // failure must not report success (exit 0). Guards B3 at the source level
+    // until the loop is decomposed (EPIC C). No-ops/host-push warnings stay
+    // warnings, so the condition is `failed.length`, not any error at all.
+    expect(main).toMatch(/if \(failed\.length > 0\)\s*\{?\s*process\.exitCode = 1/);
+  });
+
   it('main.mts never closes an issue', () => {
     expect(main).not.toMatch(/gh issue close/);
   });
