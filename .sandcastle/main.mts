@@ -59,6 +59,7 @@ import {
   markIssueNoOp,
 } from './sandcastle-git.mts';
 import { parsePlan } from './sandcastle-plan-parse.mts';
+import { guardPhase } from './sandcastle-guard-phase.mts';
 import {
   NOOP_LABEL,
   noOpIssueComment,
@@ -153,30 +154,47 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
   //
   // It outputs a <plan> JSON block — we parse that to drive Phase 2.
   // -------------------------------------------------------------------------
-  const plan = await sandcastle.run({
-    // headHooks, NOT worktreeHooks — no startup `pnpm install`, because of the
-    // bind mount described just below. See sandcastle-sandbox-hooks.mts.
-    hooks: headHooks,
-    // HEAD-mode sandbox: bind-mounts the host checkout at /home/agent/workspace,
-    // so any in-container pnpm run touches the host's node_modules. Belt-and-braces
-    // env guard suppresses pnpm 11's automatic pre-run deps verification (which
-    // would auto-`pnpm install` and ping-pong host↔container pnpm state — a known host↔container ping-pong,
-    // a prior production fix). Must be the `pnpm_config_` prefix: `npm_config_verify_deps_before_run`
-    // does NOT suppress pnpm 11's verify; `pnpm_config_verify_deps_before_run=false`
-    // does. Covers agents operating before/without the pnpm-workspace.yaml setting.
-    sandbox: docker({ env: { pnpm_config_verify_deps_before_run: 'false' } }),
-    name: 'planner',
-    idleTimeoutSeconds: 600,
-    signal: abortSignal,
-    // One iteration is enough: the planner just needs to read and reason,
-    // not write code.
-    maxIterations: 1,
-    // Model + effort live in PROFILES.planner — judgment-heavy reasoning at
-    // effort "high" (xhigh would draw more thinking tokens from the shared
-    // Max quota for no measurable plan-quality gain).
-    agent: agentFor('planner'),
-    promptFile: './.sandcastle/agent-docs/plan-prompt.md',
-  });
+  const planResult = await guardPhase(
+    () =>
+      sandcastle.run({
+        // headHooks, NOT worktreeHooks — no startup `pnpm install`, because of the
+        // bind mount described just below. See sandcastle-sandbox-hooks.mts.
+        hooks: headHooks,
+        // HEAD-mode sandbox: bind-mounts the host checkout at /home/agent/workspace,
+        // so any in-container pnpm run touches the host's node_modules. Belt-and-braces
+        // env guard suppresses pnpm 11's automatic pre-run deps verification (which
+        // would auto-`pnpm install` and ping-pong host↔container pnpm state — a known host↔container ping-pong,
+        // a prior production fix). Must be the `pnpm_config_` prefix: `npm_config_verify_deps_before_run`
+        // does NOT suppress pnpm 11's verify; `pnpm_config_verify_deps_before_run=false`
+        // does. Covers agents operating before/without the pnpm-workspace.yaml setting.
+        sandbox: docker({ env: { pnpm_config_verify_deps_before_run: 'false' } }),
+        name: 'planner',
+        idleTimeoutSeconds: 600,
+        signal: abortSignal,
+        // One iteration is enough: the planner just needs to read and reason,
+        // not write code.
+        maxIterations: 1,
+        // Model + effort live in PROFILES.planner — judgment-heavy reasoning at
+        // effort "high" (xhigh would draw more thinking tokens from the shared
+        // Max quota for no measurable plan-quality gain).
+        agent: agentFor('planner'),
+        promptFile: './.sandcastle/agent-docs/plan-prompt.md',
+      }),
+    () => abortSignal.aborted,
+  );
+  if (!planResult.ok) {
+    // A graceful SIGINT during planning stops the run cleanly (exit 0); any
+    // other failure records a non-zero exit and moves to the next iteration
+    // rather than crashing the whole orchestrator.
+    if (planResult.aborted) {
+      console.log('\nShutdown requested during planning — stopping.');
+      break;
+    }
+    console.error(`  ✗ plan phase failed: ${(planResult.error as Error).message}`);
+    process.exitCode = 1;
+    continue;
+  }
+  const plan = planResult.value;
 
   // Extract the <plan>…</plan> block from the agent's stdout.
   const planMatch = plan.stdout.match(/<plan>([\s\S]*?)<\/plan>/);
@@ -257,12 +275,33 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
     }
     // A crashed prior run is exactly the case where the branch's build state is
     // unknown — build-verify each rescued branch before merging (build-gate hardening).
-    const verified = await verifyStrandedBranches(stranded, abortSignal);
+    const verifiedResult = await guardPhase(
+      () => verifyStrandedBranches(stranded, abortSignal),
+      () => abortSignal.aborted,
+    );
+    if (!verifiedResult.ok) {
+      if (verifiedResult.aborted) break;
+      console.error(
+        `  ✗ stranded-rescue phase failed: ${(verifiedResult.error as Error).message}`,
+      );
+      process.exitCode = 1;
+      continue;
+    }
+    const verified = verifiedResult.value;
     if (verified.length === 0) {
       console.log('No rescued branches passed build-verify. Exiting.');
       break;
     }
-    await runMerger(verified, abortSignal);
+    const mergeResult = await guardPhase(
+      () => runMerger(verified, abortSignal),
+      () => abortSignal.aborted,
+    );
+    if (!mergeResult.ok) {
+      if (mergeResult.aborted) break;
+      console.error(`  ✗ merge phase failed: ${(mergeResult.error as Error).message}`);
+      process.exitCode = 1;
+      continue;
+    }
     console.log('\nStranded branches merged.');
     continue;
   }
@@ -395,8 +434,22 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
     // Build-verify rescued branches before merging — a crashed prior run is
     // exactly when the branch's build state is unknown (build-gate hardening). Failing
     // branches are logged and skipped, staying stranded for human attention.
-    const verified = await verifyStrandedBranches(stranded, abortSignal);
-    completedIssues.push(...verified);
+    const rescueResult = await guardPhase(
+      () => verifyStrandedBranches(stranded, abortSignal),
+      () => abortSignal.aborted,
+    );
+    if (rescueResult.ok) {
+      completedIssues.push(...rescueResult.value);
+    } else if (rescueResult.aborted) {
+      break;
+    } else {
+      // Non-fatal: the rescue is additive. Record the failure but still merge
+      // the branches this iteration already completed.
+      console.error(
+        `  ✗ stranded-rescue phase failed: ${(rescueResult.error as Error).message}`,
+      );
+      process.exitCode = 1;
+    }
   }
 
   const completedBranches = completedIssues.map((i) => i.branch);
@@ -447,7 +500,24 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
   // Phase 3: Merge — see sandcastle-merge.mts. GitHub handles ordering via
   // PRs; no local merge into main.
   // -------------------------------------------------------------------------
-  await runMerger(completedIssues, abortSignal);
+  const mergeResult = await guardPhase(
+    () => runMerger(completedIssues, abortSignal),
+    () => abortSignal.aborted,
+  );
+  if (!mergeResult.ok) {
+    if (mergeResult.aborted) break;
+    // F7: the host push above already published every completed branch. A
+    // merger throw must NOT kill the process here — that would leave branches
+    // on origin with no PRs. Record a non-zero exit and continue; next
+    // iteration's stranded-branch rescue re-verifies and merges them.
+    console.error(`  ✗ merge phase failed: ${(mergeResult.error as Error).message}`);
+    console.error(
+      "    Completed branches were pushed to origin; next iteration's " +
+        'stranded-branch rescue will re-verify and merge them.',
+    );
+    process.exitCode = 1;
+    continue;
+  }
 
   console.log('\nBranches merged.');
 }
