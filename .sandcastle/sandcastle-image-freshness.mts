@@ -9,14 +9,15 @@
 // That is exactly what bit one production batch: a bump moved pnpm
 // 11.15.1 -> 11.17.0 in both package.json#packageManager and the Dockerfile,
 // but the image was never rebuilt. Every container ran the stale global pnpm
-// 11.15.1 while `.husky/pre-push` invoked `corepack pnpm@11.17.0`, which
-// hard-failed its own version check ("configured to use 11.17.0 … current is
-// v11.15.1"). It surfaced as phantom typecheck/lint/test failures across
-// unrelated workspaces and the whole 10-issue batch was abandoned as "a flake".
+// 11.15.1 while both package.json#packageManager and the Dockerfile pinned
+// 11.17.0, so every pnpm command tripped pnpm's own packageManager version
+// check ("configured to use 11.17.0 … current is v11.15.1"). It surfaced as
+// phantom typecheck/lint/test failures across unrelated workspaces and the
+// whole 10-issue batch was abandoned as "a flake".
 //
 // This module runs ONCE at orchestrator startup, before any agent:
-//   1. Read the pnpm pin from package.json#packageManager (same single source
-//      of truth the pre-push hook reads).
+//   1. Read the pnpm pin from package.json#packageManager (the single source
+//      of truth the Dockerfile installs pnpm from).
 //   2. Probe the running image's global pnpm via
 //      `docker run --rm --entrypoint pnpm <image> --version`.
 //   3. On match: proceed. On drift OR a missing image: rebuild, then re-probe.
@@ -32,12 +33,12 @@ import { sandcastleImageName } from './sandcastle-lifecycle.mts';
 
 /**
  * Read the pinned pnpm version (bare semver, e.g. `11.17.0`) from
- * package.json's `packageManager` field — the same single source of truth
- * `.husky/pre-push` reads via `corepack pnpm@<version>`. The field looks like
+ * package.json's `packageManager` field — the single source of truth the
+ * Dockerfile installs pnpm from. The field looks like
  * `pnpm@11.17.0+sha512.<hash>`; we take the `X.Y.Z` between `pnpm@` and the
  * optional `+<integrity>` suffix.
  *
- * Throws (loudly, like the pre-push hook does) when no pnpm pin is present, so
+ * Throws (loudly) when no pnpm pin is present, so
  * a malformed package.json fails startup instead of being papered over.
  */
 export function readPinnedPnpmVersion(packageJsonPath = 'package.json'): string {

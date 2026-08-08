@@ -25,8 +25,8 @@ function currentBranch(): string | null {
 // Put the host checkout back on the branch the run started on (worktree-reaper hardening).
 //
 // The merger sandbox BIND-MOUNTS the host checkout, and merge-prompt.md tells
-// the agent to `git checkout <branch>` before pushing (pre-push validates the
-// worktree, not the named ref). That checkout therefore lands on the host and
+// the agent to `git checkout <branch>` first (later steps read `HEAD` — the PR
+// diff and `gh pr create --head`). That checkout therefore lands on the host and
 // outlives the run: afterwards the developer's main checkout sits on a feature
 // branch, every later command silently operates on it, and the branch cannot
 // be deleted because it is "used by worktree".

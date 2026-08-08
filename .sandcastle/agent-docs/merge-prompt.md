@@ -16,7 +16,7 @@ For **each** branch+issue pair, execute the steps below in order. One failure do
 
 Never pass `--no-verify` to `git commit` or `git push`. If a hook fails, fix it or stop — do not bypass.
 
-**Check out the branch first.** `pre-push` validates the _worktree_, not the ref you name on the command line, so pushing a branch you have not checked out runs the hook against the wrong tree. Always:
+**Check out the branch first.** The PR-body steps below read `HEAD` — `git diff origin/main...HEAD` for the changed-files summary and `gh pr create --head <branch>` — so put the branch in your working tree before you start. Always:
 
 ```bash
 git checkout <branch>
@@ -30,7 +30,7 @@ git checkout <branch>
 >
 > The orchestrator also restores this in a `finally` as a backstop, but do it yourself so the log shows the run ended clean.
 
-**Then check whether there is actually anything to push.** The host already pushes every completed branch to `origin` before this merger runs (`main.mts` `[ci-trigger]`), so in the normal case the branch is _already published_ and a second push is a no-op — but a no-op push still fires `.husky/pre-push`. Do not gate `gh pr create` on a hook run for a push that has nothing to push (a no-op push still fires hooks). First refresh the tracking ref, then compare:
+**Then check whether there is actually anything to push.** The host already pushes every completed branch to `origin` before this merger runs (`main.mts` `[ci-trigger]`), so in the normal case the branch is _already published_ and a second push is a no-op. Do not gate `gh pr create` on a redundant push that has nothing to send — skip it. First refresh the tracking ref, then compare:
 
 ```bash
 git fetch origin <branch>
