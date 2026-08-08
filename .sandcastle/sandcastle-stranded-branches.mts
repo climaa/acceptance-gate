@@ -26,6 +26,45 @@ import {
 // We also skip branches whose issue is CLOSED (the work likely landed
 // via another path and the local branch is stale) or that already have
 // an open PR (the merger will pick it up on its own).
+// Clean up a branch whose issue is CLOSED: delete the stale local branch, and
+// the worktree holding it first if one exists — because git refuses `branch -D`
+// on a checked-out branch. The worktree is removed ONLY when the reaper's safety
+// rules pass (worktreeReapBlockerFor); a blocked worktree means the branch can't
+// be deleted anyway ("used by worktree"), so we return early and skip the
+// `git branch -D` to avoid a confusing double-warning. Extracted so
+// collectStrandedIssues stays a shallow filter loop.
+function reapClosedIssueBranch(branch: string, id: string, state: string): void {
+  const worktreePath = findWorktreeForBranch(branch);
+  if (worktreePath) {
+    const blocker = worktreeReapBlockerFor(worktreePath);
+    if (blocker) {
+      console.warn(
+        `  ⚠ refusing to remove worktree ${worktreePath}: ${blocker}. ` +
+          `Leaving branch ${branch} (issue #${id} is ${state}) in place.`,
+      );
+      return;
+    }
+    try {
+      execSync(`git worktree remove --force "${worktreePath}"`, { stdio: 'pipe' });
+      console.log(
+        `  🧹 removed stale worktree ${worktreePath} (issue #${id} is ${state})`,
+      );
+    } catch (err) {
+      console.warn(
+        `  ⚠ could not remove worktree ${worktreePath}: ${(err as Error).message}`,
+      );
+    }
+  }
+  try {
+    execSync(`git branch -D ${branch}`, { stdio: 'pipe' });
+    console.log(`  🧹 deleted stale local branch ${branch} (issue #${id} is ${state})`);
+  } catch (err) {
+    console.warn(
+      `  ⚠ could not delete stale branch ${branch} (issue #${id} ${state}): ${(err as Error).message}`,
+    );
+  }
+}
+
 export function collectStrandedIssues(alreadyQueued: Set<string>): IssueRef[] {
   const stranded: IssueRef[] = [];
   for (const branch of listSandcastleBranches()) {
@@ -42,53 +81,11 @@ export function collectStrandedIssues(alreadyQueued: Set<string>): IssueRef[] {
       continue;
     }
     if (issue.state !== 'OPEN') {
-      // Issue closed → work already landed (via squash-merge, so local
-      // commits look "ahead" but are orphans). Delete the local branch so
-      // subsequent runs don't re-evaluate it every iteration.
-      //
-      // If the branch is also checked out as a worktree, git refuses to
-      // delete it with `branch -D`. Remove the worktree first so the branch
-      // deletion succeeds — but ONLY when that worktree is provably one of
-      // ours and clean (this previously ran
-      // `git worktree remove --force` against the developer's PRIMARY
-      // checkout; git's refusal was the only thing that made it harmless).
-      const worktreePath = findWorktreeForBranch(branch);
-      if (worktreePath) {
-        const blocker = worktreeReapBlockerFor(worktreePath);
-        if (blocker) {
-          // Deliberately skip the `git branch -D` below too: a branch held by
-          // a worktree we are not allowed to remove cannot be deleted anyway
-          // ("used by worktree"), and attempting it produces exactly the
-          // confusing double-warning this issue was filed about.
-          console.warn(
-            `  ⚠ refusing to remove worktree ${worktreePath}: ${blocker}. ` +
-              `Leaving branch ${branch} (issue #${id} is ${issue.state}) in place.`,
-          );
-          continue;
-        }
-        try {
-          execSync(`git worktree remove --force "${worktreePath}"`, {
-            stdio: 'pipe',
-          });
-          console.log(
-            `  🧹 removed stale worktree ${worktreePath} (issue #${id} is ${issue.state})`,
-          );
-        } catch (err) {
-          console.warn(
-            `  ⚠ could not remove worktree ${worktreePath}: ${(err as Error).message}`,
-          );
-        }
-      }
-      try {
-        execSync(`git branch -D ${branch}`, { stdio: 'pipe' });
-        console.log(
-          `  🧹 deleted stale local branch ${branch} (issue #${id} is ${issue.state})`,
-        );
-      } catch (err) {
-        console.warn(
-          `  ⚠ could not delete stale branch ${branch} (issue #${id} ${issue.state}): ${(err as Error).message}`,
-        );
-      }
+      // Issue closed → the work already landed (squash-merge leaves orphan local
+      // commits that still look "ahead"). Delete the stale local branch — and
+      // the worktree holding it, if any and only when safe. See
+      // reapClosedIssueBranch.
+      reapClosedIssueBranch(branch, id, issue.state);
       continue;
     }
     if (branchHasOpenPr(branch)) {

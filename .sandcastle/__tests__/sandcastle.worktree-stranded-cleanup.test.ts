@@ -8,31 +8,30 @@ describe('sandcastle stranded-cleanup worktree-aware ', () => {
   const gitContent = read('sandcastle-git.mts');
   const strandedBranchesContent = read('sandcastle-stranded-branches.mts');
 
-  // The CLOSED-issue cleanup block starts at `if (issue.state !== "OPEN")`
-  const closedBlockStart = strandedBranchesContent.indexOf("if (issue.state !== 'OPEN')");
-  // Slice enough to cover the full cleanup block (~1500 chars)
-  const cleanupSection = strandedBranchesContent.slice(
-    closedBlockStart,
-    closedBlockStart + 1500,
-  );
+  // The closed-issue cleanup now lives in reapClosedIssueBranch(); the
+  // issue.state guard that routes to it stays in collectStrandedIssues().
+  const reapStart = strandedBranchesContent.indexOf('function reapClosedIssueBranch');
+  const reapBody = strandedBranchesContent.slice(reapStart, reapStart + 1500);
 
   it('queries git worktree list --porcelain to find registered worktrees', () => {
     expect(gitContent).toMatch(/git worktree list --porcelain/);
   });
 
   it('removes the worktree with git worktree remove --force in closed-issue cleanup', () => {
-    expect(cleanupSection).toMatch(/git worktree remove --force/);
+    expect(reapBody).toMatch(/git worktree remove --force/);
   });
 
-  it('git worktree remove appears before git branch -D in closed-issue block', () => {
-    const worktreeRemoveIdx = cleanupSection.indexOf('git worktree remove');
-    const branchDeleteIdx = cleanupSection.indexOf('git branch -D');
+  it('git worktree remove appears before git branch -D in the reap helper', () => {
+    const worktreeRemoveIdx = reapBody.indexOf('git worktree remove');
+    const branchDeleteIdx = reapBody.indexOf('git branch -D');
     expect(worktreeRemoveIdx).toBeGreaterThan(-1);
     expect(branchDeleteIdx).toBeGreaterThan(-1);
     expect(worktreeRemoveIdx).toBeLessThan(branchDeleteIdx);
   });
 
-  it('closed-issue block is guarded by issue.state check (open-issue branches untouched)', () => {
-    expect(cleanupSection).toMatch(/issue\.state\s*!==\s*["']OPEN["']/);
+  it('cleanup runs only for a closed issue (open-issue branches untouched)', () => {
+    // The reap is reached solely via the issue.state guard in the caller.
+    expect(strandedBranchesContent).toMatch(/issue\.state\s*!==\s*["']OPEN["']/);
+    expect(strandedBranchesContent).toMatch(/reapClosedIssueBranch\(/);
   });
 });
