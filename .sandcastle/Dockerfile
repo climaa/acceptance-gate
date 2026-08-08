@@ -21,13 +21,13 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
   && rm -rf /var/lib/apt/lists/*
 
 # Install pnpm at the same version the host pins in package.json#packageManager
-# (11.17.0). We install via npm rather than corepack: the original
+# (11.20.0). We install via npm rather than corepack: the original
 # `corepack enable && corepack prepare` setup was observed to deadlock on
 # `pnpm install` against bind-mounted node_modules on macOS Docker — process
 # stuck in do_epoll_wait with zero filesystem progress. Bypassing corepack
 # keeps the version aligned with the host while avoiding the corepack-shim
 # code path that appears to be the deadlock site.
-RUN npm install -g pnpm@11.17.0
+RUN npm install -g pnpm@11.20.0
 
 # Rename the base image's "node" user (UID 1000) to "agent" and keep its home dir.
 RUN usermod -d /home/agent -m -l agent node

@@ -37,7 +37,7 @@ file is the source of truth; this table mirrors it.
 
 Implement + Review share one Docker sandbox per issue. All issue pipelines
 run serially: concurrent `pnpm install` deadlocked on pnpm 10.x in production,
-and while the repo now pins 11.17.0, serial execution stays as a precaution.
+and while the repo now pins 11.20.0, serial execution stays as a precaution.
 
 ### Overriding the model per issue or per run
 

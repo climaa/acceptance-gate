@@ -6,7 +6,7 @@ findings, never from ambition.
 
 ## Stack & versions
 
-- pnpm **11.17.0** (pinned via `packageManager` + sha512), Node **22** (`.nvmrc`)
+- pnpm **11.20.0** (pinned via `packageManager` + sha512), Node **22** (`.nvmrc`)
 - Turborepo monorepo: `apps/{blog}`, `packages/{ui,tsconfig}` — Storybook, e2e and
   `packages/visual-diff` arrive by issue
 - TypeScript strict; ESLint runs today only in `apps/blog` (via `next lint`, no
