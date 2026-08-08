@@ -18,7 +18,7 @@
     "sandcastle": "tsx .sandcastle/main.mts",
     "typecheck:sandcastle": "tsc --noEmit -p .sandcastle/tsconfig.json",
     "test:sandcastle": "vitest run --config vitest.sandcastle.config.mts",
-    "health:check": "node .sandcastle/scripts/complexity-gate.mjs"
+    "health:check": "turbo run health && node scripts/complexity-gate.mjs --scope .sandcastle/"
   },
   "devDependencies": {
     "@ai-hero/sandcastle": "0.12.0",

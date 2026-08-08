@@ -160,19 +160,22 @@ jobs:
       - run: pnpm format:check
 
   health:
-    # Cognitive-complexity ceiling for .sandcastle/ via fallow health — COGNITIVE,
-    # not cyclomatic (cyclomatic over-counts flat guard sequences). The script
-    # scopes to .sandcastle/ and fails on any function over the ceiling; see
-    # .sandcastle/scripts/complexity-gate.mjs. Runs node + npx-fallow directly, so
-    # it needs no repo install.
+    # Cognitive-complexity ceiling — COGNITIVE, not cyclomatic (cyclomatic
+    # over-counts flat guard sequences); see scripts/complexity-gate.mjs.
+    # `pnpm health:check` = `turbo run health` (per-workspace, cached/parallel —
+    # unchanged apps hit the shared turbo remote cache) + a standalone
+    # .sandcastle/ check (orchestrator scripts, not a turbo workspace).
     if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     runs-on: ubuntu-24.04-arm
     steps:
       - uses: actions/checkout@v7
+      - run: corepack enable
       - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
-      - run: node .sandcastle/scripts/complexity-gate.mjs
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm health:check
 
   gate:
     # The aggregator — the ONLY required status check. `if: always()` so it
