@@ -24,7 +24,7 @@ describe('sandcastle build script rename: build:all → build', () => {
 
   it('BUILD_VERIFY_COMMAND runs pnpm build', () => {
     const commandMatch = variablesContent.match(
-      /const BUILD_VERIFY_COMMAND\s*=\s*"[^"]*"\s*;/,
+      /const BUILD_VERIFY_COMMAND\s*=\s*["'][^"']*["']\s*;/,
     );
     expect(commandMatch).not.toBeNull();
     expect(commandMatch![0]).toMatch(/pnpm build/);

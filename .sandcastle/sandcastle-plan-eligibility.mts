@@ -9,22 +9,22 @@
 //
 // Imports only from side-effect-free siblings, so loading this drags in no IO.
 
-import { hasNoOpLabel } from "./sandcastle-noop-issues.mts";
+import { hasNoOpLabel } from './sandcastle-noop-issues.mts';
 import {
   type PerIssueRole,
   type ProfileOverride,
   parseOverrideLabels,
-} from "./sandcastle-model-overrides.mts";
+} from './sandcastle-model-overrides.mts';
 
 export type PlannedOverrides = Partial<Record<PerIssueRole, ProfileOverride>>;
 
 export type EligibilityVerdict =
   /** Already produced nothing once. Do not spend another sandbox on it. */
-  | { kind: "skip-noop" }
+  | { kind: 'skip-noop' }
   /** A control label did not parse. Must abort, never fall back silently. */
-  | { kind: "reject"; errors: string[] }
+  | { kind: 'reject'; errors: string[] }
   /** Run it, with any per-issue model overrides its labels resolved to. */
-  | { kind: "accept"; overrides: PlannedOverrides };
+  | { kind: 'accept'; overrides: PlannedOverrides };
 
 /**
  * Decide what to do with one issue the planner proposed, from its labels alone.
@@ -47,11 +47,11 @@ export function classifyPlannedIssue(input: {
   seenNoOpIds: ReadonlySet<string>;
 }): EligibilityVerdict {
   if (input.seenNoOpIds.has(input.id) || hasNoOpLabel(input.labels)) {
-    return { kind: "skip-noop" };
+    return { kind: 'skip-noop' };
   }
   const { overrides, errors } = parseOverrideLabels(input.labels);
-  if (errors.length > 0) return { kind: "reject", errors };
-  return { kind: "accept", overrides };
+  if (errors.length > 0) return { kind: 'reject', errors };
+  return { kind: 'accept', overrides };
 }
 
 /**

@@ -33,43 +33,49 @@
 // Or add to package.json:
 //   "scripts": { "sandcastle": "npx tsx .sandcastle/main.mts" }
 
-import { execSync } from "node:child_process";
+import { execSync } from 'node:child_process';
 import {
   BASE_BRANCH,
   MAX_ITERATIONS,
   assertGhAvailable,
   logTurboCacheStatus,
-} from "./sandcastle-config.mts";
-import { headHooks } from "./sandcastle-sandbox-hooks.mts";
+} from './sandcastle-config.mts';
+import { headHooks } from './sandcastle-sandbox-hooks.mts';
 import {
   agentFor,
   assertEnvOverridesValid,
   effectiveProfile,
-} from "./sandcastle-agent-profiles.mts";
-import { describeOverride } from "./sandcastle-model-overrides.mts";
-import { installGracefulShutdown, reapExitedContainers } from "./sandcastle-lifecycle.mts";
-import { ensureImageFreshness } from "./sandcastle-image-freshness.mts";
+} from './sandcastle-agent-profiles.mts';
+import { describeOverride } from './sandcastle-model-overrides.mts';
+import {
+  installGracefulShutdown,
+  reapExitedContainers,
+} from './sandcastle-lifecycle.mts';
+import { ensureImageFreshness } from './sandcastle-image-freshness.mts';
 import {
   type IssueRef,
   branchHasCommitsAhead,
   fetchIssue,
   markIssueNoOp,
-} from "./sandcastle-git.mts";
-import { parsePlan } from "./sandcastle-plan-parse.mts";
+} from './sandcastle-git.mts';
+import { parsePlan } from './sandcastle-plan-parse.mts';
 import {
   NOOP_LABEL,
   noOpIssueComment,
   partitionOutcomes,
-} from "./sandcastle-noop-issues.mts";
+} from './sandcastle-noop-issues.mts';
 import {
   classifyPlannedIssue,
   queuedBranchesFor,
-} from "./sandcastle-plan-eligibility.mts";
-import { collectStrandedIssues, verifyStrandedBranches } from "./sandcastle-stranded-branches.mts";
-import { runMerger } from "./sandcastle-merge.mts";
-import { runIssue } from "./sandcastle-run-issue.mts";
-import * as sandcastle from "@ai-hero/sandcastle";
-import { docker } from "@ai-hero/sandcastle/sandboxes/docker";
+} from './sandcastle-plan-eligibility.mts';
+import {
+  collectStrandedIssues,
+  verifyStrandedBranches,
+} from './sandcastle-stranded-branches.mts';
+import { runMerger } from './sandcastle-merge.mts';
+import { runIssue } from './sandcastle-run-issue.mts';
+import * as sandcastle from '@ai-hero/sandcastle';
+import { docker } from '@ai-hero/sandcastle/sandboxes/docker';
 
 // ---------------------------------------------------------------------------
 // Orchestrator startup (a partial port of an earlier single-runner variant)
@@ -133,7 +139,7 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
   // already in flight in the previous iteration ran its own cleanup before
   // control returned here.
   if (abortSignal.aborted) {
-    console.log("\nShutdown requested — stopping before the next iteration.");
+    console.log('\nShutdown requested — stopping before the next iteration.');
     break;
   }
   console.log(`\n=== Iteration ${iteration}/${MAX_ITERATIONS} ===\n`);
@@ -158,8 +164,8 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
     // a prior production fix). Must be the `pnpm_config_` prefix: `npm_config_verify_deps_before_run`
     // does NOT suppress pnpm 11's verify; `pnpm_config_verify_deps_before_run=false`
     // does. Covers agents operating before/without the pnpm-workspace.yaml setting.
-    sandbox: docker({ env: { pnpm_config_verify_deps_before_run: "false" } }),
-    name: "planner",
+    sandbox: docker({ env: { pnpm_config_verify_deps_before_run: 'false' } }),
+    name: 'planner',
     idleTimeoutSeconds: 600,
     signal: abortSignal,
     // One iteration is enough: the planner just needs to read and reason,
@@ -168,16 +174,14 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
     // Model + effort live in PROFILES.planner — judgment-heavy reasoning at
     // effort "high" (xhigh would draw more thinking tokens from the shared
     // Max quota for no measurable plan-quality gain).
-    agent: agentFor("planner"),
-    promptFile: "./.sandcastle/agent-docs/plan-prompt.md",
+    agent: agentFor('planner'),
+    promptFile: './.sandcastle/agent-docs/plan-prompt.md',
   });
 
   // Extract the <plan>…</plan> block from the agent's stdout.
   const planMatch = plan.stdout.match(/<plan>([\s\S]*?)<\/plan>/);
   if (!planMatch) {
-    throw new Error(
-      "Planning agent did not produce a <plan> tag.\n\n" + plan.stdout,
-    );
+    throw new Error('Planning agent did not produce a <plan> tag.\n\n' + plan.stdout);
   }
 
   // The plan JSON contains an array of issues, each with id, title, branch.
@@ -207,7 +211,7 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
       labels,
       seenNoOpIds: noOpIssueIds,
     });
-    if (verdict.kind === "skip-noop") {
+    if (verdict.kind === 'skip-noop') {
       noOpIssueIds.add(issue.id);
       console.log(
         `  ⏭ #${issue.id} skipped: an earlier run produced no changes (${NOOP_LABEL}). ` +
@@ -215,7 +219,7 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
       );
       continue;
     }
-    if (verdict.kind === "reject") {
+    if (verdict.kind === 'reject') {
       overrideErrors.push(...verdict.errors.map((e) => `  #${issue.id}  ${e}`));
       continue;
     }
@@ -226,7 +230,7 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
   }
   if (overrideErrors.length > 0) {
     throw new Error(
-      `Invalid Sandcastle model-override label(s):\n${overrideErrors.join("\n")}`,
+      `Invalid Sandcastle model-override label(s):\n${overrideErrors.join('\n')}`,
     );
   }
 
@@ -240,8 +244,8 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
     if (stranded.length === 0) {
       console.log(
         planned.length > 0
-          ? "Every planned issue is already marked no-op. Exiting."
-          : "No unblocked issues to work on. Exiting.",
+          ? 'Every planned issue is already marked no-op. Exiting.'
+          : 'No unblocked issues to work on. Exiting.',
       );
       break;
     }
@@ -255,24 +259,24 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
     // unknown — build-verify each rescued branch before merging (build-gate hardening).
     const verified = await verifyStrandedBranches(stranded, abortSignal);
     if (verified.length === 0) {
-      console.log("No rescued branches passed build-verify. Exiting.");
+      console.log('No rescued branches passed build-verify. Exiting.');
       break;
     }
     await runMerger(verified, abortSignal);
-    console.log("\nStranded branches merged.");
+    console.log('\nStranded branches merged.');
     continue;
   }
 
   console.log(
     `Planning complete. ${issues.length} issue(s) to run serially ` +
-      "(concurrent sandbox `pnpm install` was observed to deadlock on pnpm 10.x; " +
-      "repo now pins 11.20.0, kept serial as a precaution — " +
-      "see sandcastle-run-issue.mts for context):",
+      '(concurrent sandbox `pnpm install` was observed to deadlock on pnpm 10.x; ' +
+      'repo now pins 11.20.0, kept serial as a precaution — ' +
+      'see sandcastle-run-issue.mts for context):',
   );
   for (const issue of issues) {
     // Name the effective model whenever it differs from the pinned default, so
     // the run log is the record of what each issue actually cost.
-    const overridden = (["implementer", "reviewer"] as const)
+    const overridden = (['implementer', 'reviewer'] as const)
       .map((role) =>
         describeOverride(
           role,
@@ -281,7 +285,7 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
         ),
       )
       .filter((d): d is string => d !== null);
-    const suffix = overridden.length > 0 ? `  [${overridden.join(" ")}]` : "";
+    const suffix = overridden.length > 0 ? `  [${overridden.join(' ')}]` : '';
     console.log(`  ${issue.id}: ${issue.title} → ${issue.branch}${suffix}`);
   }
 
@@ -295,8 +299,7 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
   // are caught and recorded so later issues continue.
   // -------------------------------------------------------------------------
 
-  const settled: PromiseSettledResult<Awaited<ReturnType<typeof runIssue>>>[] =
-    [];
+  const settled: PromiseSettledResult<Awaited<ReturnType<typeof runIssue>>>[] = [];
   for (const issue of issues) {
     // Graceful shutdown: stop picking up the next issue once an
     // abort is requested. The current issue (if any) already finished its
@@ -304,24 +307,22 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
     // simply not started, so their branches stay untouched rather than
     // half-implemented. runIssue() also self-guards via throwIfAborted().
     if (abortSignal.aborted) {
-      console.log(
-        "  Shutdown requested — skipping remaining issues this iteration.",
-      );
+      console.log('  Shutdown requested — skipping remaining issues this iteration.');
       break;
     }
     try {
       settled.push({
-        status: "fulfilled",
+        status: 'fulfilled',
         value: await runIssue(issue, abortSignal),
       });
     } catch (reason) {
-      settled.push({ status: "rejected", reason });
+      settled.push({ status: 'rejected', reason });
     }
   }
 
   // Log any agents that threw (network error, sandbox crash, etc.).
   for (const [i, outcome] of settled.entries()) {
-    if (outcome.status === "rejected") {
+    if (outcome.status === 'rejected') {
       console.error(
         `  ✗ ${issues[i]!.id} (${issues[i]!.branch}) failed: ${outcome.reason}`,
       );
@@ -341,8 +342,7 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
       return {
         issue,
         status: outcome.status,
-        commitCount:
-          outcome.status === "fulfilled" ? outcome.value.commits.length : 0,
+        commitCount: outcome.status === 'fulfilled' ? outcome.value.commits.length : 0,
         // Branch-vs-base rather than just this run's commits, so an idempotent
         // re-run of already-committed work still reaches the merge phase
         // instead of looping forever.
@@ -365,7 +365,7 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
     );
     console.log(
       `  ⊘ #${issue.id} produced no changes — left open, excluded from re-planning ` +
-        `(comment ${commented ? "posted" : "FAILED"}, ${NOOP_LABEL} ${labeled ? "added" : "FAILED"}).`,
+        `(comment ${commented ? 'posted' : 'FAILED'}, ${NOOP_LABEL} ${labeled ? 'added' : 'FAILED'}).`,
     );
   }
 
@@ -410,7 +410,7 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
 
   if (completedBranches.length === 0) {
     // All agents ran but none made commits — nothing to merge this cycle.
-    console.log("No commits produced. Nothing to merge.");
+    console.log('No commits produced. Nothing to merge.');
     continue;
   }
 
@@ -435,7 +435,7 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
   for (const { branch } of completedIssues) {
     try {
       console.log(`[ci-trigger] pushing ${branch} to origin from host`);
-      execSync(`git push origin ${branch}`, { stdio: "inherit" });
+      execSync(`git push origin ${branch}`, { stdio: 'inherit' });
     } catch (err) {
       console.warn(
         `  ⚠ host push of ${branch} failed (merger will retry its own push): ${(err as Error).message}`,
@@ -449,7 +449,7 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
   // -------------------------------------------------------------------------
   await runMerger(completedIssues, abortSignal);
 
-  console.log("\nBranches merged.");
+  console.log('\nBranches merged.');
 }
 
-console.log("\nAll done.");
+console.log('\nAll done.');

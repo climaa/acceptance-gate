@@ -25,10 +25,10 @@
 //      stale toolchain and report ten independent "push failed" comments (the
 //      worst outcome per the issue).
 
-import { execFileSync } from "node:child_process";
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
-import { sandcastleImageName } from "./sandcastle-lifecycle.mts";
+import { execFileSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { sandcastleImageName } from './sandcastle-lifecycle.mts';
 
 /**
  * Read the pinned pnpm version (bare semver, e.g. `11.17.0`) from
@@ -40,13 +40,11 @@ import { sandcastleImageName } from "./sandcastle-lifecycle.mts";
  * Throws (loudly, like the pre-push hook does) when no pnpm pin is present, so
  * a malformed package.json fails startup instead of being papered over.
  */
-export function readPinnedPnpmVersion(
-  packageJsonPath = "package.json",
-): string {
-  const pkg = JSON.parse(readFileSync(packageJsonPath, "utf8")) as {
+export function readPinnedPnpmVersion(packageJsonPath = 'package.json'): string {
+  const pkg = JSON.parse(readFileSync(packageJsonPath, 'utf8')) as {
     packageManager?: string;
   };
-  const spec = pkg.packageManager ?? "";
+  const spec = pkg.packageManager ?? '';
   const match = spec.match(/^pnpm@(\d+\.\d+\.\d+)/);
   if (!match) {
     throw new Error(
@@ -65,9 +63,9 @@ export function readPinnedPnpmVersion(
 function imagePnpmVersion(imageName: string): string | null {
   try {
     const out = execFileSync(
-      "docker",
-      ["run", "--rm", "--entrypoint", "pnpm", imageName, "--version"],
-      { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] },
+      'docker',
+      ['run', '--rm', '--entrypoint', 'pnpm', imageName, '--version'],
+      { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] },
     );
     return out.trim() || null;
   } catch {
@@ -87,10 +85,10 @@ function imagePnpmVersion(imageName: string): string | null {
  * form sends none.
  */
 function rebuildImage(imageName: string, dockerfilePath: string): void {
-  const dockerfile = readFileSync(resolve(dockerfilePath), "utf8");
-  execFileSync("docker", ["build", "-t", imageName, "-"], {
+  const dockerfile = readFileSync(resolve(dockerfilePath), 'utf8');
+  execFileSync('docker', ['build', '-t', imageName, '-'], {
     input: dockerfile,
-    stdio: ["pipe", "inherit", "inherit"],
+    stdio: ['pipe', 'inherit', 'inherit'],
   });
 }
 
@@ -102,7 +100,7 @@ export interface EnsureImageFreshnessOptions {
   probe?: (imageName: string) => string | null;
   /** Injectable rebuild (defaults to `rebuildImage`) — for testing. */
   rebuild?: (imageName: string, dockerfilePath: string) => void;
-  logger?: Pick<Console, "log" | "warn">;
+  logger?: Pick<Console, 'log' | 'warn'>;
 }
 
 /**
@@ -111,12 +109,10 @@ export interface EnsureImageFreshnessOptions {
  * Throws — refusing to start — if the image still disagrees after a rebuild
  * (e.g. the Dockerfile pins a pnpm that contradicts package.json).
  */
-export function ensureImageFreshness(
-  options: EnsureImageFreshnessOptions = {},
-): void {
+export function ensureImageFreshness(options: EnsureImageFreshnessOptions = {}): void {
   const {
-    packageJsonPath = "package.json",
-    dockerfilePath = ".sandcastle/Dockerfile",
+    packageJsonPath = 'package.json',
+    dockerfilePath = '.sandcastle/Dockerfile',
     imageName = sandcastleImageName(),
     probe = imagePnpmVersion,
     rebuild = rebuildImage,
@@ -145,14 +141,12 @@ export function ensureImageFreshness(
   const after = probe(imageName);
   if (after !== pinned) {
     throw new Error(
-      `Image ${imageName} still reports pnpm ${after ?? "<none>"} after a rebuild, ` +
+      `Image ${imageName} still reports pnpm ${after ?? '<none>'} after a rebuild, ` +
         `but package.json pins ${pinned}. Refusing to start: a batch run against a ` +
         `stale toolchain surfaces as ten independent "push failed" comments. ` +
         `Check that ${dockerfilePath} installs pnpm@${pinned}.`,
     );
   }
 
-  logger.log(
-    `  ✓ rebuilt ${imageName}; pnpm now ${after} matches package.json pin`,
-  );
+  logger.log(`  ✓ rebuilt ${imageName}; pnpm now ${after} matches package.json pin`);
 }

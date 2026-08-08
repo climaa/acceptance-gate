@@ -1,14 +1,14 @@
 // Build-verify — decides whether a branch's diff needs a real `pnpm build`
 // (isDocsOnlyDiff) and runs it directly in a warm sandbox via sandbox.exec()
 // (runBuildVerify), no agent involved.
-import { execSync } from "node:child_process";
-import * as fs from "node:fs";
-import * as sandcastle from "@ai-hero/sandcastle";
-import { BASE_BRANCH } from "./sandcastle-config.mts";
+import { execSync } from 'node:child_process';
+import * as fs from 'node:fs';
+import * as sandcastle from '@ai-hero/sandcastle';
+import { BASE_BRANCH } from './sandcastle-config.mts';
 import {
   BUILD_VERIFY_COMMAND,
   BUILD_VERIFY_TIMEOUT_MS,
-} from "./sandcastle-variables.mts";
+} from './sandcastle-variables.mts';
 
 // Patterns that qualify a changed file as "docs-only" — if ALL changed files
 // match at least one pattern, the build step is skipped.
@@ -23,14 +23,11 @@ const DOCS_ONLY_PATTERNS = [
 
 export function isDocsOnlyDiff(branch: string): boolean {
   try {
-    const out = execSync(
-      `git diff --name-only origin/${BASE_BRANCH}...${branch}`,
-      {
-        encoding: "utf8",
-      },
-    ).trim();
+    const out = execSync(`git diff --name-only origin/${BASE_BRANCH}...${branch}`, {
+      encoding: 'utf8',
+    }).trim();
     if (!out) return true;
-    const files = out.split("\n").filter(Boolean);
+    const files = out.split('\n').filter(Boolean);
     return files.every((f) => DOCS_ONLY_PATTERNS.some((p) => p.test(f)));
   } catch {
     return false; // conservative: run the build if check fails
@@ -42,9 +39,7 @@ export type TurboStats = { successful: number; total: number; cached: number };
 // Parses turbo's summary block from agent stdout.
 // Turbo prints: "Tasks: N successful, N total\nCached: N cached, N total"
 function parseTurboStats(output: string): TurboStats | null {
-  const tasksMatch = output.match(
-    /Tasks:\s+(\d+)\s+successful,\s+(\d+)\s+total/,
-  );
+  const tasksMatch = output.match(/Tasks:\s+(\d+)\s+successful,\s+(\d+)\s+total/);
   const cachedMatch = output.match(/Cached:\s+(\d+)\s+cached,\s+(\d+)\s+total/);
   if (!tasksMatch || !cachedMatch) return null;
   return {
@@ -58,7 +53,7 @@ export function formatMs(ms: number): string {
   const totalSeconds = Math.round(ms / 1000);
   const m = Math.floor(totalSeconds / 60);
   const s = totalSeconds % 60;
-  return m > 0 ? `${m}m${String(s).padStart(2, "0")}s` : `${totalSeconds}s`;
+  return m > 0 ? `${m}m${String(s).padStart(2, '0')}s` : `${totalSeconds}s`;
 }
 
 /**
@@ -76,7 +71,7 @@ export function formatMs(ms: number): string {
  * underlying `work` is left to settle on its own (this helper does not cancel
  * it — build-verify has no cancellation handle to offer).
  */
-const TIMED_OUT = Symbol("timed-out");
+const TIMED_OUT = Symbol('timed-out');
 
 export async function raceWithTimeout<T>(
   work: Promise<T>,
@@ -135,11 +130,11 @@ export async function runBuildVerify(
     BUILD_VERIFY_TIMEOUT_MS,
     `pnpm build exceeded ${BUILD_VERIFY_TIMEOUT_MS}ms`,
   );
-  const fullStdout = lines.join("\n");
-  fs.mkdirSync(".sandcastle/logs", { recursive: true });
+  const fullStdout = lines.join('\n');
+  fs.mkdirSync('.sandcastle/logs', { recursive: true });
   fs.writeFileSync(
     `.sandcastle/logs/build-verify-${logLabel}.log`,
-    fullStdout + (result.stderr ? `\n--- stderr ---\n${result.stderr}` : ""),
+    fullStdout + (result.stderr ? `\n--- stderr ---\n${result.stderr}` : ''),
   );
   return {
     passed: result.exitCode === 0,

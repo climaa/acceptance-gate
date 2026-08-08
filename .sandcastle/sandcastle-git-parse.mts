@@ -9,7 +9,7 @@
 // Imports nothing on purpose, so loading it drags in no side effects.
 
 /** Working-tree state of a checkout. Mirrors sandcastle-worktree-safety.mts. */
-export type WorktreeDirtiness = "clean" | "dirty" | "unreadable";
+export type WorktreeDirtiness = 'clean' | 'dirty' | 'unreadable';
 
 export type ParsedIssue = {
   title: string;
@@ -38,7 +38,7 @@ export function parsePositiveCount(stdout: string): boolean {
  */
 export function parseBranchList(stdout: string): string[] {
   return stdout
-    .split("\n")
+    .split('\n')
     .map((s) => s.trim())
     .filter(Boolean);
 }
@@ -90,7 +90,7 @@ export function parseIssueJson(stdout: string): ParsedIssue | null {
   } catch {
     return null;
   }
-  if (!parsed || typeof parsed !== "object") return null;
+  if (!parsed || typeof parsed !== 'object') return null;
   if (!parsed.title || !parsed.state) return null;
   const labels = (parsed.labels ?? [])
     .map((l) => l?.name)
@@ -106,9 +106,9 @@ export function parseIssueJson(stdout: string): ParsedIssue | null {
  * never remove.
  */
 export function parsePrimaryWorktree(stdout: string): string | null {
-  for (const line of stdout.split("\n")) {
-    if (line.startsWith("worktree ")) {
-      return line.slice("worktree ".length).trim() || null;
+  for (const line of stdout.split('\n')) {
+    if (line.startsWith('worktree ')) {
+      return line.slice('worktree '.length).trim() || null;
     }
   }
   return null;
@@ -120,16 +120,13 @@ export function parsePrimaryWorktree(stdout: string): string | null {
  * opens a record and a later `branch refs/heads/…` line belongs to whichever
  * one is open.
  */
-export function parseWorktreeForBranch(
-  stdout: string,
-  branch: string,
-): string | null {
+export function parseWorktreeForBranch(stdout: string, branch: string): string | null {
   let currentPath: string | null = null;
-  for (const line of stdout.split("\n")) {
-    if (line.startsWith("worktree ")) {
-      currentPath = line.slice("worktree ".length).trim();
-    } else if (line.startsWith("branch refs/heads/")) {
-      const worktreeBranch = line.slice("branch refs/heads/".length).trim();
+  for (const line of stdout.split('\n')) {
+    if (line.startsWith('worktree ')) {
+      currentPath = line.slice('worktree '.length).trim();
+    } else if (line.startsWith('branch refs/heads/')) {
+      const worktreeBranch = line.slice('branch refs/heads/'.length).trim();
       if (worktreeBranch === branch && currentPath !== null) {
         return currentPath;
       }
@@ -140,5 +137,5 @@ export function parseWorktreeForBranch(
 
 /** `git status --porcelain`: any output at all means uncommitted work. */
 export function parseDirtiness(stdout: string): WorktreeDirtiness {
-  return stdout.trim().length > 0 ? "dirty" : "clean";
+  return stdout.trim().length > 0 ? 'dirty' : 'clean';
 }

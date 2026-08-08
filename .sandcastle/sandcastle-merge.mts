@@ -1,20 +1,20 @@
 // Phase 3: Merge — a single agent opens a PR per completed branch, enables
 // squash auto-merge, waits for each PR to merge via CI, then closes (or
 // comments on) issues.
-import { execSync } from "node:child_process";
-import * as sandcastle from "@ai-hero/sandcastle";
-import { docker } from "@ai-hero/sandcastle/sandboxes/docker";
-import { BASE_BRANCH } from "./sandcastle-config.mts";
-import { headHooks } from "./sandcastle-sandbox-hooks.mts";
-import { agentFor } from "./sandcastle-agent-profiles.mts";
-import { formatBranchLine } from "./sandcastle-merge-branch-line.mts";
-import type { IssueRef } from "./sandcastle-git.mts";
+import { execSync } from 'node:child_process';
+import * as sandcastle from '@ai-hero/sandcastle';
+import { docker } from '@ai-hero/sandcastle/sandboxes/docker';
+import { BASE_BRANCH } from './sandcastle-config.mts';
+import { headHooks } from './sandcastle-sandbox-hooks.mts';
+import { agentFor } from './sandcastle-agent-profiles.mts';
+import { formatBranchLine } from './sandcastle-merge-branch-line.mts';
+import type { IssueRef } from './sandcastle-git.mts';
 
 function currentBranch(): string | null {
   try {
     return (
-      execSync("git rev-parse --abbrev-ref HEAD", {
-        encoding: "utf8",
+      execSync('git rev-parse --abbrev-ref HEAD', {
+        encoding: 'utf8',
       }).trim() || null
     );
   } catch {
@@ -39,7 +39,7 @@ function restoreHostBranch(startingBranch: string): void {
   const now = currentBranch();
   if (now === null || now === startingBranch) return;
   try {
-    execSync(`git checkout ${startingBranch}`, { stdio: "pipe" });
+    execSync(`git checkout ${startingBranch}`, { stdio: 'pipe' });
     console.log(
       `  🔙 restored host checkout to ${startingBranch} (merger left it on ${now})`,
     );
@@ -78,16 +78,16 @@ export async function runMerger(
       // a prior production fix). Must be the `pnpm_config_` prefix: `npm_config_verify_deps_before_run`
       // does NOT suppress pnpm 11's verify; `pnpm_config_verify_deps_before_run=false`
       // does. Covers agents operating before/without the pnpm-workspace.yaml setting.
-      sandbox: docker({ env: { pnpm_config_verify_deps_before_run: "false" } }),
-      name: "merger",
+      sandbox: docker({ env: { pnpm_config_verify_deps_before_run: 'false' } }),
+      name: 'merger',
       maxIterations: 1,
-      completionSignal: "<promise>COMPLETE</promise>",
+      completionSignal: '<promise>COMPLETE</promise>',
       idleTimeoutSeconds: 1800,
       signal: abortSignal,
-      agent: agentFor("merger"),
-      promptFile: "./.sandcastle/agent-docs/merge-prompt.md",
+      agent: agentFor('merger'),
+      promptFile: './.sandcastle/agent-docs/merge-prompt.md',
       promptArgs: {
-        BRANCHES_WITH_ISSUES: branches.map(formatBranchLine).join("\n"),
+        BRANCHES_WITH_ISSUES: branches.map(formatBranchLine).join('\n'),
       },
     });
   } finally {

@@ -212,7 +212,7 @@ describe('orchestrator wiring (source-text — not observable from a unit test)'
     // `[^}]*` keeps the match inside a single import statement — `[\s\S]*?`
     // would happily span from an earlier import to this module's from-clause.
     expect(main).toMatch(
-      /import \{[^}]*partitionOutcomes[^}]*\} from "\.\/sandcastle-noop-issues\.mts"/,
+      /import \{[^}]*partitionOutcomes[^}]*\} from ["']\.\/sandcastle-noop-issues\.mts["']/,
     );
     expect(main).toMatch(/partitionOutcomes\(/);
   });
