@@ -5,10 +5,22 @@
 # get a read-only GITHUB_TOKEN by default and `gh pr merge` 403s without it.
 name: dependabot-auto-merge
 
-# Note: merges made with GITHUB_TOKEN do not trigger pr.yml's push-to-main
-# run — the post-merge cache-seeding run is skipped for bot merges. Accepted:
-# it matches the "Dependabot builds cold" stance; strict up-to-date protection
-# keeps correctness intact.
+# The merge runs on a PAT, not GITHUB_TOKEN, because a GITHUB_TOKEN merge does
+# not trigger further workflows — pr.yml's push-to-main run (which seeds the
+# shared turbo cache) was being skipped for every bot merge. A PAT-authored
+# merge fires it.
+#
+# That PAT must live in Settings > Secrets and variables > DEPENDABOT, not
+# Actions. Dependabot-triggered runs read the Dependabot store; Actions secrets
+# resolve to empty strings here, which is the same mechanism pr.yml documents
+# when it notes Dependabot runs never see TURBO_TOKEN and build cold. Putting it
+# in the Actions store looks right in the UI and silently does nothing, so the
+# guard step below fails loudly rather than letting `gh` emit a confusing auth
+# error months from now. Same fine-grained, this-repo-only discipline as
+# .sandcastle/.env.example — never a classic repo-scope token.
+#
+# This does not weaken the gate: enforce_admins is on, so even an admin PAT
+# cannot bypass branch protection, and `--auto` still waits for `gate`.
 on:
   pull_request:
     types: [opened, synchronize, reopened]
@@ -25,11 +37,28 @@ jobs:
     runs-on: ubuntu-24.04-arm
     steps:
       - id: metadata
+        # Reads PR metadata only. Deliberately still the read-only GITHUB_TOKEN:
+        # this step gains nothing from the PAT, so it does not get one.
         uses: dependabot/fetch-metadata@v2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Require GH_TOKEN from the Dependabot secret store
+        # An Actions-store GH_TOKEN arrives here as "" and `gh` would fail with
+        # an auth error that says nothing about which store is wrong. Fail with
+        # the fix instead. Same `if:` as the merge so a major bump — which is
+        # meant to wait for a human — is not turned into a red run.
+        if: steps.metadata.outputs.update-type != 'version-update:semver-major'
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::error::GH_TOKEN is empty, so auto-merge cannot authenticate."
+            echo "::error::Add it under Settings > Secrets and variables > Dependabot."
+            echo "::error::A secret of the same name under Actions does NOT reach Dependabot-triggered runs."
+            exit 1
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
       - if: steps.metadata.outputs.update-type != 'version-update:semver-major'
         run: gh pr merge --auto --squash "$PR_URL"
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
