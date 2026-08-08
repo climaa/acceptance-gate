@@ -1,0 +1,25 @@
+# Ownership of the CI surface.
+#
+# `.github/` is the highest-value path in the repo: anything that can edit
+# `.github/workflows/` runs with TURBO_TOKEN in scope, which pr.yml documents
+# as write-capable and visible to PR-head code on same-repo branches. That is
+# the one path where an unreviewed change is materially worse than elsewhere,
+# so it is the one path with a declared owner.
+#
+# Effect today is advisory: `main` protection requires the `gate` check but
+# does NOT require pull request reviews, so this auto-requests review rather
+# than blocking a merge. It also never fires on your own PRs — GitHub does not
+# request review from the PR author — so in practice it triggers on Dependabot
+# PRs and on any future outside contributor.
+#
+# Before turning on "Require review from Code Owners" in branch protection,
+# note two things it would break as currently configured:
+#   - dependabot-auto-merge.yml would deadlock; a bot PR touching `.github/`
+#     (e.g. an actions version bump) would wait forever on a human review.
+#   - As sole maintainer you cannot approve your own PR, so any change you
+#     author under `.github/` would need a second account to land.
+#
+# Syntax note: @climaa is a user account, not an organization, so team-style
+# owners (@org/team) are not available on this repo.
+
+/.github/  @climaa
