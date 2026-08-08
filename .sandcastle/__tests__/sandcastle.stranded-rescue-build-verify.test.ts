@@ -1,7 +1,9 @@
 import { read } from './helpers';
 
 const mainContent = read('main.mts');
-const buildVerifyContent = read('sandcastle-build-verify.mts');
+// BUILD_VERIFY_COMMAND and BUILD_VERIFY_TIMEOUT_MS live in the tunables module,
+// not beside the code that consumes them.
+const variablesContent = read('sandcastle-variables.mts');
 const strandedBranchesContent = read('sandcastle-stranded-branches.mts');
 const agentProfilesContent = read('sandcastle-agent-profiles.mts');
 const mergeContent = read('sandcastle-merge.mts');
@@ -9,14 +11,12 @@ const mergeContent = read('sandcastle-merge.mts');
 describe('sandcastle stranded-rescue build-verify + turbo cache (build-gate hardening)', () => {
   describe('Fix B — turbo cache permission failure inside the sandbox', () => {
     it('BUILD_VERIFY_COMMAND points turbo at a writable /tmp cache dir', () => {
-      expect(buildVerifyContent).toMatch(/TURBO_CACHE_DIR=\/tmp\/turbo-cache/);
+      expect(variablesContent).toMatch(/TURBO_CACHE_DIR=\/tmp\/turbo-cache/);
     });
 
     it('the writable cache dir is set on the same command that runs pnpm build', () => {
       // Prefix form: `TURBO_CACHE_DIR=/tmp/turbo-cache pnpm build`
-      expect(buildVerifyContent).toMatch(
-        /TURBO_CACHE_DIR=\/tmp\/turbo-cache\s+pnpm build/,
-      );
+      expect(variablesContent).toMatch(/TURBO_CACHE_DIR=\/tmp\/turbo-cache\s+pnpm build/);
     });
   });
 
@@ -121,7 +121,7 @@ describe('sandcastle stranded-rescue build-verify + turbo cache (build-gate hard
 
     it('idle timeouts are preserved (merger 1800); build-verify has its own exec timeout', () => {
       expect(mergeContent).toMatch(/idleTimeoutSeconds:\s*1800/);
-      expect(buildVerifyContent).toMatch(/BUILD_VERIFY_TIMEOUT_MS\s*=\s*600_000/);
+      expect(variablesContent).toMatch(/BUILD_VERIFY_TIMEOUT_MS\s*=\s*600_000/);
     });
   });
 });
