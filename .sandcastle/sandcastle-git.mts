@@ -2,7 +2,7 @@
 // stranded-branch rescue path and the per-issue implement→review pipeline.
 // Read-only except for markIssueNoOp(), which comments and labels; the
 // decisions it acts on are pure and live in sandcastle-noop-issues.mts.
-import { execSync } from 'node:child_process';
+import { execSync, type ExecSyncOptions } from 'node:child_process';
 import { BASE_BRANCH } from './sandcastle-config.mts';
 import { type Dirtiness, worktreeReapBlocker } from './sandcastle-worktree-safety.mts';
 import {
@@ -18,31 +18,35 @@ import {
   classifyIssueViewFailure,
   classifyRevListFailure,
 } from './sandcastle-git-probe.mts';
-import type { PerIssueRole, ProfileOverride } from './sandcastle-model-overrides.mts';
 import {
   NOOP_LABEL,
   NOOP_LABEL_COLOR,
   NOOP_LABEL_DESCRIPTION,
 } from './sandcastle-noop-issues.mts';
 
-export type IssueRef = {
-  id: string;
-  title: string;
-  branch: string;
-  /**
-   * Per-issue agent overrides resolved from the issue's `sc:` labels
-   * (sandcastle-model-overrides.mts). Absent means "use PROFILES/env" — the
-   * overwhelmingly common case. Attached at both IssueRef construction sites:
-   * main.mts (planner output) and sandcastle-stranded-branches.mts (rescue).
-   */
-  overrides?: Partial<Record<PerIssueRole, ProfileOverride>>;
-};
+// Re-exported from its own type-only module so this module's five importers keep
+// `import { IssueRef } from './sandcastle-git.mts'` working unchanged.
+export type { IssueRef } from './sandcastle-issue-ref.mts';
 
 // stderr captured off a thrown execSync error (a string because callers pass
 // `encoding: 'utf8'`), falling back to the error message.
 function stderrOf(err: unknown): string {
   const e = err as { stderr?: unknown; message?: unknown };
   return String(e.stderr ?? e.message ?? '');
+}
+
+// Run a read-only git/gh command and return its stdout, or null on any non-zero
+// exit. For the lookups whose only failure handling is "a failure means nothing
+// is there — fall back to a benign default": it collapses the repeated
+// try/execSync/catch-return-default shape into one place. NOT for the probes
+// above (they must see WHY the command failed) or markIssueNoOp's writes (each
+// catch has its own warning).
+function execOrNull(command: string, options: ExecSyncOptions = {}): string | null {
+  try {
+    return execSync(command, { ...options, encoding: 'utf8' });
+  } catch {
+    return null;
+  }
 }
 
 // Does `branch` have commits ahead of origin/BASE_BRANCH? Distinguishes a
@@ -75,15 +79,10 @@ export function branchHasCommitsAhead(branch: string): boolean {
 }
 
 export function listSandcastleBranches(): string[] {
-  try {
-    const out = execSync(
-      `git for-each-ref --format='%(refname:short)' refs/heads/sandcastle/`,
-      { encoding: 'utf8' },
-    );
-    return parseBranchList(out);
-  } catch {
-    return [];
-  }
+  const out = execOrNull(
+    `git for-each-ref --format='%(refname:short)' refs/heads/sandcastle/`,
+  );
+  return out === null ? [] : parseBranchList(out);
 }
 
 // Re-exported from sandcastle-git-parse.mts, where it is unit-tested. Kept on
@@ -180,29 +179,18 @@ export function markIssueNoOp(
 }
 
 export function branchHasOpenPr(branch: string): boolean {
-  try {
-    const out = execSync(
-      `gh pr list --head ${branch} --state open --json number --jq 'length'`,
-      { encoding: 'utf8' },
-    ).trim();
-    return Number(out) > 0;
-  } catch {
-    return false;
-  }
+  const out = execOrNull(
+    `gh pr list --head ${branch} --state open --json number --jq 'length'`,
+  );
+  return out !== null && Number(out.trim()) > 0;
 }
 
 // The primary repository checkout. `git worktree list --porcelain` always
 // reports it FIRST — that ordering is the documented contract and is what
 // makes this cheap to identify (worktree-reaper hardening).
 function primaryWorktreePath(): string | null {
-  try {
-    const out = execSync('git worktree list --porcelain', {
-      encoding: 'utf8',
-    });
-    return parsePrimaryWorktree(out);
-  } catch {
-    return null;
-  }
+  const out = execOrNull('git worktree list --porcelain');
+  return out === null ? null : parsePrimaryWorktree(out);
 }
 
 // Working-tree state of `worktreePath`. Fails CLOSED: a missing or broken
@@ -211,15 +199,12 @@ function primaryWorktreePath(): string | null {
 // git's own stderr is swallowed so a missing path does not print a bare
 // `fatal:` line above our explanation.
 function worktreeDirtiness(worktreePath: string): Dirtiness {
-  try {
-    const out = execSync(`git -C "${worktreePath}" status --porcelain`, {
-      encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'ignore'],
-    });
-    return parseDirtiness(out);
-  } catch {
-    return 'unreadable';
-  }
+  // stderr ignored so a missing path does not print a bare `fatal:` above our
+  // explanation; a non-zero exit means we could not inspect it → "unreadable".
+  const out = execOrNull(`git -C "${worktreePath}" status --porcelain`, {
+    stdio: ['ignore', 'pipe', 'ignore'],
+  });
+  return out === null ? 'unreadable' : parseDirtiness(out);
 }
 
 // Reason to SKIP removing `worktreePath`, or null when it is safe to reap.
@@ -236,12 +221,6 @@ export function worktreeReapBlockerFor(worktreePath: string): string | null {
 // Returns the filesystem path of the worktree that has `branch` checked out,
 // or null if the branch is not registered as a worktree.
 export function findWorktreeForBranch(branch: string): string | null {
-  try {
-    const out = execSync('git worktree list --porcelain', {
-      encoding: 'utf8',
-    });
-    return parseWorktreeForBranch(out, branch);
-  } catch {
-    return null;
-  }
+  const out = execOrNull('git worktree list --porcelain');
+  return out === null ? null : parseWorktreeForBranch(out, branch);
 }

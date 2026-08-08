@@ -1,9 +1,6 @@
 import { PROFILES } from '../sandcastle-agent-profiles.mts';
-import {
-  type BranchLineIssue,
-  formatBranchLine,
-  formatProfile,
-} from '../sandcastle-merge-branch-line.mts';
+import { formatBranchLine, formatProfile } from '../sandcastle-merge-branch-line.mts';
+import type { IssueRef } from '../sandcastle-issue-ref.mts';
 
 /**
  * REAL unit tests — sandcastle-merge-branch-line.mts stays clear of
@@ -61,7 +58,7 @@ describe('formatBranchLine', () => {
 
   it('includes the branch, the issue id and the title', () => {
     // Arrange
-    const issue: BranchLineIssue = {
+    const issue: IssueRef = {
       id: '32',
       title: 'attribute the model',
       branch: 'b-32',
@@ -78,7 +75,7 @@ describe('formatBranchLine', () => {
 
   it('falls back to the PROFILES default when no override is present', () => {
     // Arrange
-    const issue: BranchLineIssue = {
+    const issue: IssueRef = {
       id: '1',
       title: 'no override',
       branch: 'b-1',
@@ -98,7 +95,7 @@ describe('formatBranchLine', () => {
 
   it('uses the resolved implementer override when the issue label sets one', () => {
     // Arrange
-    const issue: BranchLineIssue = {
+    const issue: IssueRef = {
       id: '2',
       title: 'with override',
       branch: 'b-2',
@@ -117,7 +114,7 @@ describe('formatBranchLine', () => {
 
   it('uses the resolved reviewer override independently of the implementer', () => {
     // Arrange
-    const issue: BranchLineIssue = {
+    const issue: IssueRef = {
       id: '3',
       title: 'reviewer override',
       branch: 'b-3',
@@ -138,7 +135,7 @@ describe('formatBranchLine', () => {
     // Arrange
     process.env.SC_REVIEWER_MODEL = 'sonnet-5';
     process.env.SC_REVIEWER_EFFORT = 'medium';
-    const issue: BranchLineIssue = {
+    const issue: IssueRef = {
       id: '4',
       title: 'env override',
       branch: 'b-4',

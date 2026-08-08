@@ -12,18 +12,7 @@
 // sandcastle-git.mts: the merger only ever copies the already-resolved
 // implementer/reviewer values verbatim from this line into the PR footer.
 import { type AgentProfile, effectiveProfile } from './sandcastle-agent-profiles.mts';
-import type { PerIssueRole, ProfileOverride } from './sandcastle-model-overrides.mts';
-
-/**
- * The part of `IssueRef` (sandcastle-git.mts) this formatter reads, restated
- * rather than imported: that module reaches sandcastle-config.mts too.
- */
-export type BranchLineIssue = {
-  id: string;
-  title: string;
-  branch: string;
-  overrides?: Partial<Record<PerIssueRole, ProfileOverride>>;
-};
+import type { IssueRef } from './sandcastle-issue-ref.mts';
 
 /** "claude-sonnet-5·low", or the bare model when effort is unset — describeOverride's format without its `role=` prefix. */
 export function formatProfile(profile: AgentProfile): string {
@@ -31,7 +20,7 @@ export function formatProfile(profile: AgentProfile): string {
 }
 
 /** One `BRANCHES_WITH_ISSUES` line for the merge prompt, implementer/reviewer profiles resolved (PROFILES < env < issue label). */
-export function formatBranchLine(issue: BranchLineIssue): string {
+export function formatBranchLine(issue: IssueRef): string {
   const implementer = formatProfile(
     effectiveProfile('implementer', issue.overrides?.implementer),
   );

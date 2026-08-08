@@ -190,9 +190,11 @@ describe('reaper wiring (worktree-reaper hardening)', () => {
     // the wrong region instead of reporting the missing function.
     expect(start).toBeGreaterThan(-1);
     expect(fn).toMatch(/git -C .* status --porcelain/);
-    // The catch arm blocks the reap — a path we cannot inspect is not "clean".
-    expect(fn).toMatch(/catch\s*\{\s*return ["']unreadable["'];/);
-    // git's fatal: goes nowhere, so our explanation is the only log line.
+    // A path we cannot inspect (execOrNull → null) is reported "unreadable",
+    // which blocks the reap — never "clean".
+    expect(fn).toMatch(/=== null\s*\?\s*["']unreadable["']/);
+    // git's fatal: goes nowhere (stderr ignored), so our explanation is the only
+    // log line.
     expect(fn).toMatch(/stdio:\s*\[["']ignore["'],\s*["']pipe["'],\s*["']ignore["']\]/);
   });
 
