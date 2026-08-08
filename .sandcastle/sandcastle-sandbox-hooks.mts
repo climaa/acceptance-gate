@@ -37,6 +37,8 @@
 // Worktree-mode sandboxes still install, and must: their mount is a fresh
 // `git worktree` under .sandcastle/worktrees/ with no node_modules at all.
 
+import { docker } from '@ai-hero/sandcastle/sandboxes/docker';
+
 /** One `onSandboxReady` entry, in the shape @ai-hero/sandcastle expects. */
 export type SandboxHook = { command: string; timeoutMs: number };
 
@@ -105,3 +107,31 @@ export const headHooks: SandboxHooks = hooksFor('head');
 
 /** Implementer/reviewer and the rescue build-verify: fresh worktree, install. */
 export const worktreeHooks: SandboxHooks = hooksFor('worktree');
+
+/**
+ * The `hooks` + `sandbox` a HEAD-mode agent run takes — the planner (main.mts)
+ * and the merger (sandcastle-merge.mts), the two sandboxes that bind-mount the
+ * host checkout at /home/agent/workspace. Mirrors createWorktreeSandbox for the
+ * worktree-mode pair, so the mount choice lives in one place.
+ *
+ * headHooks (NOT worktreeHooks) withholds the startup `pnpm install`: any
+ * in-container pnpm run touches the host's node_modules. As belt-and-braces the
+ * sandbox env suppresses pnpm 11's automatic pre-run deps verification, which
+ * would otherwise auto-`pnpm install` and ping-pong host↔container pnpm state (a
+ * prior production fix). It MUST be the `pnpm_config_` prefix —
+ * `npm_config_verify_deps_before_run` does NOT suppress pnpm 11's verify;
+ * `pnpm_config_verify_deps_before_run=false` does — and it covers agents
+ * operating before/without the pnpm-workspace.yaml setting.
+ *
+ * Returns a fresh object each call (docker() builds a new sandbox config), so
+ * two HEAD-mode runs never share one.
+ */
+export function headSandboxOptions(): {
+  hooks: SandboxHooks;
+  sandbox: ReturnType<typeof docker>;
+} {
+  return {
+    hooks: headHooks,
+    sandbox: docker({ env: { pnpm_config_verify_deps_before_run: 'false' } }),
+  };
+}

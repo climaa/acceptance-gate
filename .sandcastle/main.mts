@@ -40,7 +40,7 @@ import {
   assertGhAvailable,
   logTurboCacheStatus,
 } from './sandcastle-config.mts';
-import { headHooks } from './sandcastle-sandbox-hooks.mts';
+import { headSandboxOptions } from './sandcastle-sandbox-hooks.mts';
 import {
   agentFor,
   assertEnvOverridesValid,
@@ -76,7 +76,6 @@ import {
 import { runMerger } from './sandcastle-merge.mts';
 import { runIssue } from './sandcastle-run-issue.mts';
 import * as sandcastle from '@ai-hero/sandcastle';
-import { docker } from '@ai-hero/sandcastle/sandboxes/docker';
 
 // ---------------------------------------------------------------------------
 // Orchestrator startup (a partial port of an earlier single-runner variant)
@@ -157,17 +156,9 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
   const planResult = await guardPhase(
     () =>
       sandcastle.run({
-        // headHooks, NOT worktreeHooks — no startup `pnpm install`, because of the
-        // bind mount described just below. See sandcastle-sandbox-hooks.mts.
-        hooks: headHooks,
-        // HEAD-mode sandbox: bind-mounts the host checkout at /home/agent/workspace,
-        // so any in-container pnpm run touches the host's node_modules. Belt-and-braces
-        // env guard suppresses pnpm 11's automatic pre-run deps verification (which
-        // would auto-`pnpm install` and ping-pong host↔container pnpm state — a known host↔container ping-pong,
-        // a prior production fix). Must be the `pnpm_config_` prefix: `npm_config_verify_deps_before_run`
-        // does NOT suppress pnpm 11's verify; `pnpm_config_verify_deps_before_run=false`
-        // does. Covers agents operating before/without the pnpm-workspace.yaml setting.
-        sandbox: docker({ env: { pnpm_config_verify_deps_before_run: 'false' } }),
+        // HEAD-mode: bind-mounts the host checkout, so no startup install (see
+        // headSandboxOptions in sandcastle-sandbox-hooks.mts).
+        ...headSandboxOptions(),
         name: 'planner',
         idleTimeoutSeconds: 600,
         signal: abortSignal,
