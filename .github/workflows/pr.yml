@@ -141,11 +141,29 @@ jobs:
       - run: pnpm typecheck:sandcastle
       - run: pnpm test:sandcastle
 
+  format:
+    # Prettier is the formatter of record for the whole repo, including
+    # .sandcastle/*.mts (added to the glob so the orchestrator is held to the
+    # same printWidth as everything else). `--check` fails the job on any drift.
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: corepack enable
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm format:check
+
   gate:
     # The aggregator — the ONLY required status check. `if: always()` so it
     # reports even when a needed job fails; it fails unless every result is
     # exactly 'success' (skipped/cancelled count as failure).
-    needs: [lint, typecheck, build, test, sandcastle]
+    needs: [lint, typecheck, build, test, sandcastle, format]
     if: always() && (github.event_name != 'pull_request' || github.event.pull_request.draft == false)
     runs-on: ubuntu-24.04-arm
     steps:
