@@ -26,6 +26,53 @@ import {
 } from './sandcastle-git-parse.mts';
 import type { IssueRef } from './sandcastle-git.mts';
 
+// Validate ONE raw plan entry against the id/branch grammar and the
+// duplicate-id / duplicate-branch guards. Returns a fresh IssueRef built from
+// the validated fields only (dropping any extra planner keys), or an error
+// string naming the offender. On success it records the id/branch in the seen
+// sets, so the caller's loop stays a flat dispatch. A sequence of guard-returns
+// with no nesting — the per-entry rules read top to bottom.
+function validateEntry(
+  entry: unknown,
+  at: string,
+  seenIds: Set<string>,
+  seenBranches: Set<string>,
+): { issue: IssueRef } | { error: string } {
+  if (!entry || typeof entry !== 'object' || Array.isArray(entry)) {
+    return { error: `${at}: not an object` };
+  }
+  const { id, title, branch } = entry as Record<string, unknown>;
+
+  if (typeof id !== 'string' || !ISSUE_ID_RE.test(id)) {
+    return { error: `${at}: invalid id ${JSON.stringify(id)} (expected digits)` };
+  }
+  if (typeof title !== 'string' || title.length === 0) {
+    return { error: `${at} (#${id}): missing or empty title` };
+  }
+  if (typeof branch !== 'string' || !SANDCASTLE_BRANCH_RE.test(branch)) {
+    return {
+      error:
+        `${at} (#${id}): invalid branch ${JSON.stringify(branch)} ` +
+        `(expected sandcastle/issue-${id}-<slug>, slug [a-z0-9-])`,
+    };
+  }
+  // Grammar guarantees a digit id inside the branch; assert it is THIS id so a
+  // plan cannot pair id 42 with someone else's branch.
+  if (parseIssueIdFromBranch(branch) !== id) {
+    return {
+      error: `${at} (#${id}): branch ${JSON.stringify(branch)} does not embed id ${id}`,
+    };
+  }
+  if (seenIds.has(id)) return { error: `${at} (#${id}): duplicate id` };
+  if (seenBranches.has(branch)) {
+    return { error: `${at}: duplicate branch ${branch}` };
+  }
+
+  seenIds.add(id);
+  seenBranches.add(branch);
+  return { issue: { id, title, branch } };
+}
+
 /**
  * Parse and validate the raw string inside a <plan>…</plan> block into a
  * list of IssueRefs safe to interpolate into host commands. Throws — listing
@@ -54,50 +101,12 @@ export function parsePlan(raw: string): IssueRef[] {
   const seenBranches = new Set<string>();
 
   for (let i = 0; i < issuesRaw.length; i++) {
-    const entry = issuesRaw[i];
-    const at = `issues[${i}]`;
-    if (!entry || typeof entry !== 'object' || Array.isArray(entry)) {
-      errors.push(`${at}: not an object`);
-      continue;
+    const result = validateEntry(issuesRaw[i], `issues[${i}]`, seenIds, seenBranches);
+    if ('error' in result) {
+      errors.push(result.error);
+    } else {
+      issues.push(result.issue);
     }
-    const { id, title, branch } = entry as Record<string, unknown>;
-
-    if (typeof id !== 'string' || !ISSUE_ID_RE.test(id)) {
-      errors.push(`${at}: invalid id ${JSON.stringify(id)} (expected digits)`);
-      continue;
-    }
-    if (typeof title !== 'string' || title.length === 0) {
-      errors.push(`${at} (#${id}): missing or empty title`);
-      continue;
-    }
-    if (typeof branch !== 'string' || !SANDCASTLE_BRANCH_RE.test(branch)) {
-      errors.push(
-        `${at} (#${id}): invalid branch ${JSON.stringify(branch)} ` +
-          `(expected sandcastle/issue-${id}-<slug>, slug [a-z0-9-])`,
-      );
-      continue;
-    }
-    // Grammar guarantees a digit id inside the branch; assert it is THIS id so a
-    // plan cannot pair id 42 with someone else's branch.
-    if (parseIssueIdFromBranch(branch) !== id) {
-      errors.push(
-        `${at} (#${id}): branch ${JSON.stringify(branch)} does not embed id ${id}`,
-      );
-      continue;
-    }
-    if (seenIds.has(id)) {
-      errors.push(`${at} (#${id}): duplicate id`);
-      continue;
-    }
-    if (seenBranches.has(branch)) {
-      errors.push(`${at}: duplicate branch ${branch}`);
-      continue;
-    }
-
-    seenIds.add(id);
-    seenBranches.add(branch);
-    // Fresh object from validated fields ONLY — drops any extra planner keys.
-    issues.push({ id, title, branch });
   }
 
   if (errors.length > 0) {
