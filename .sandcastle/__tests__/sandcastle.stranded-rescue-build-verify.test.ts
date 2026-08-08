@@ -35,8 +35,13 @@ describe('sandcastle stranded-rescue build-verify + turbo cache (build-gate hard
       expect(mainContent).toMatch(/status\s*===\s*["']rejected["']/);
     });
 
-    it('adds failed branches to the queuedBranches exclusion set', () => {
-      const setIdx = mainContent.indexOf('const queuedBranches = new Set([');
+    // The set itself is built by queuedBranchesFor() in
+    // sandcastle-plan-eligibility.mts and unit-tested there against the actual
+    // exclusion semantics. What still has to be checked as source text is that
+    // main.mts passes BOTH lists to it — a caller that drops the second
+    // argument would compile and quietly make the build gate advisory.
+    it('passes both completed and failed branches to the exclusion set', () => {
+      const setIdx = mainContent.indexOf('const queuedBranches = queuedBranchesFor(');
       expect(setIdx).toBeGreaterThan(-1);
       const block = mainContent.slice(setIdx, setIdx + 200);
       expect(block).toMatch(/completedIssues/);
@@ -45,7 +50,7 @@ describe('sandcastle stranded-rescue build-verify + turbo cache (build-gate hard
 
     it('failedBranches is computed before queuedBranches is built', () => {
       const failedIdx = mainContent.indexOf('const failedBranches');
-      const queuedIdx = mainContent.indexOf('const queuedBranches = new Set([');
+      const queuedIdx = mainContent.indexOf('const queuedBranches = queuedBranchesFor(');
       expect(failedIdx).toBeGreaterThan(-1);
       expect(queuedIdx).toBeGreaterThan(failedIdx);
     });

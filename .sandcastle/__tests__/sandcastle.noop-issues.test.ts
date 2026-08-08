@@ -234,10 +234,15 @@ describe('orchestrator wiring (source-text — not observable from a unit test)'
     expect(setIdx).toBeLessThan(loopIdx);
   });
 
+  // The no-op check itself moved into classifyPlannedIssue()
+  // (sandcastle-plan-eligibility.mts) where it is unit-tested. The ordering is
+  // the part only source text can see, and it is the part that matters: run the
+  // filter after runIssue() and the sandbox has already been spent.
   it('main.mts drops marked issues from the plan before any sandbox is created', () => {
-    const filterIdx = main.indexOf('hasNoOpLabel(');
+    const filterIdx = main.indexOf('classifyPlannedIssue(');
     const runIssueIdx = main.indexOf('await runIssue(');
     expect(filterIdx).toBeGreaterThan(-1);
+    expect(runIssueIdx).toBeGreaterThan(-1);
     expect(filterIdx).toBeLessThan(runIssueIdx);
   });
 
