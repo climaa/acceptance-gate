@@ -42,7 +42,7 @@ designs/               acceptance-gate.pen (Pencil source) + exports/*.png
 
 - `turbo.json` — lint/build/test/typecheck (+`dependsOn: ["^build"]`); full task graph arrives by Wave 4
 - `pnpm-workspace.yaml` — apps/* + packages/*; `allowBuilds` for sharp, unrs-resolver
-- `package.json` — pnpm 11.20.0 pinned (sha512), Node `>=22.14.0 <23`, turbo ^2.10.8
+- `package.json` — pnpm 11.17.0 pinned (sha512), Node `>=22.14.0 <23`, turbo ^2.10.8. `@types/node` is deliberately held on the `^22` line: it describes the runtime `engines` pins and `.sandcastle/Dockerfile` (`node:22-bookworm`) runs, so a newer major would type built-ins that do not exist here. It moves when the runtime moves, not when `ncu` says so
 - `.gitattributes` — `designs/*.pen` binary
 
 ## 📚 Documentation
