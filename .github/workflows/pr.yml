@@ -48,18 +48,26 @@ env:
 #
 # Repeated per job because GitHub Actions does not support YAML anchors. A new
 # job added in a later wave needs this line as well as an entry in `gate.needs`.
+#
+# On the action pins below: `cache: pnpm` is set explicitly and must stay that
+# way. setup-node v5 started auto-enabling the cache whenever package.json has a
+# `packageManager` field (this repo pins pnpm there), then v6 narrowed that
+# auto-detection to npm only. Naming the package manager outright means neither
+# swing reaches us. The `corepack enable` step also has to stay ahead of
+# setup-node — `cache: pnpm` resolves the pnpm store path at key-computation
+# time, so pnpm must already be on PATH.
 jobs:
   lint:
     if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     runs-on: ubuntu-24.04-arm
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           # --affected and TURBO_SCM_BASE need the base SHA in history; the
           # default shallow clone silently degrades "affected" to "everything".
           fetch-depth: 0
       - run: corepack enable
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: pnpm
@@ -70,11 +78,11 @@ jobs:
     if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     runs-on: ubuntu-24.04-arm
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - run: corepack enable
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: pnpm
@@ -85,11 +93,11 @@ jobs:
     if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     runs-on: ubuntu-24.04-arm
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - run: corepack enable
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: pnpm
@@ -100,11 +108,11 @@ jobs:
     if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     runs-on: ubuntu-24.04-arm
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - run: corepack enable
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: pnpm
@@ -117,11 +125,11 @@ jobs:
     if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     runs-on: ubuntu-24.04-arm
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - run: corepack enable
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: pnpm
