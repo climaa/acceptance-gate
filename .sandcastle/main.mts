@@ -54,9 +54,9 @@ import {
 import { ensureImageFreshness } from './sandcastle-image-freshness.mts';
 import {
   type IssueRef,
-  branchHasCommitsAhead,
-  fetchIssue,
   markIssueNoOp,
+  probeBranchCommitsAhead,
+  probeIssue,
 } from './sandcastle-git.mts';
 import { parsePlan } from './sandcastle-plan-parse.mts';
 import { guardPhase } from './sandcastle-guard-phase.mts';
@@ -223,7 +223,19 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
   const issues: IssueRef[] = [];
   const overrideErrors: string[] = [];
   for (const issue of planned) {
-    const labels = fetchIssue(issue.id)?.labels ?? [];
+    // Resolve the issue's sc:* model-override labels. A transient gh failure
+    // here (auth/network/rate-limit) must NOT be read as "no labels" — that
+    // would silently run the issue on the expensive default. Fail loud, the
+    // same stance assertGhAvailable takes at startup. An absent issue (gone
+    // between plan and now) legitimately has no labels.
+    const issueProbe = probeIssue(issue.id);
+    if (issueProbe.kind === 'error') {
+      throw new Error(
+        `gh issue view ${issue.id} failed while resolving model-override labels ` +
+          `(refusing to run it on default models): ${issueProbe.stderr.trim()}`,
+      );
+    }
+    const labels = issueProbe.kind === 'ok' ? issueProbe.value.labels : [];
     const verdict = classifyPlannedIssue({
       id: issue.id,
       labels,
@@ -378,14 +390,27 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
   } = partitionOutcomes(
     settled.map((outcome, i) => {
       const issue = issues[i]!;
+      // Branch-vs-base rather than just this run's commits, so an idempotent
+      // re-run of already-committed work still reaches the merge phase instead
+      // of looping forever.
+      const ahead = probeBranchCommitsAhead(issue.branch);
+      if (ahead.kind === 'error') {
+        // A transient git error here is the worst F9 case: read as branchAhead
+        // = false it would file a real run as a no-op and durably label the
+        // issue. File it as failed instead — not merged, not marked, re-examined
+        // next iteration.
+        console.error(
+          `  ✗ ${issue.id} (${issue.branch}): could not verify commits ahead — ` +
+            `treating as failed: ${ahead.stderr.trim()}`,
+        );
+        return { issue, status: 'rejected' as const, commitCount: 0, branchAhead: false };
+      }
       return {
         issue,
         status: outcome.status,
         commitCount: outcome.status === 'fulfilled' ? outcome.value.commits.length : 0,
-        // Branch-vs-base rather than just this run's commits, so an idempotent
-        // re-run of already-committed work still reaches the merge phase
-        // instead of looping forever.
-        branchAhead: branchHasCommitsAhead(issue.branch),
+        // absent (no branch yet) → false, exactly as the old sentinel did.
+        branchAhead: ahead.kind === 'ok' ? ahead.value : false,
       };
     }),
   );
