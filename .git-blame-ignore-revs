@@ -1,0 +1,7 @@
+# Revisions ignored by `git blame` (bulk reformats, not real authorship).
+# Enable locally with:
+#   git config blame.ignoreRevsFile .git-blame-ignore-revs
+# GitHub applies it automatically.
+
+# style(sandcastle): apply prettier to the .mts modules (first pass)
+9613b0f5198439b11961140cc9ae13c2d2fd5c9b
