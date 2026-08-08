@@ -39,7 +39,7 @@ jobs:
       - id: metadata
         # Reads PR metadata only. Deliberately still the read-only GITHUB_TOKEN:
         # this step gains nothing from the PAT, so it does not get one.
-        uses: dependabot/fetch-metadata@v2
+        uses: dependabot/fetch-metadata@v3
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Require GH_TOKEN from the Dependabot secret store
