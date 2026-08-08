@@ -118,6 +118,17 @@ describe('parseIssueIdFromBranch', () => {
     // Arrange & Act & Assert
     expect(parseIssueIdFromBranch('sandcastle/issue-42')).toBeNull();
   });
+
+  it('rejects a slug carrying shell metacharacters (arms the stranded guard)', () => {
+    // Arrange & Act & Assert — the regex is anchored and charset-constrained, so
+    // a legal-but-hostile git branch like `sandcastle/issue-1-$(...)` no longer
+    // parses. On the stranded-rescue path this turns the "unparseable → skip"
+    // check into a real gate rather than a formality.
+    expect(parseIssueIdFromBranch('sandcastle/issue-1-$(touch pwned)')).toBeNull();
+    expect(parseIssueIdFromBranch('sandcastle/issue-1-a b')).toBeNull();
+    expect(parseIssueIdFromBranch('sandcastle/issue-1-a;rm')).toBeNull();
+    expect(parseIssueIdFromBranch('sandcastle/issue-1-UPPER')).toBeNull();
+  });
 });
 
 describe('parseIssueJson', () => {
