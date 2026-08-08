@@ -34,7 +34,12 @@
 //   "scripts": { "sandcastle": "npx tsx .sandcastle/main.mts" }
 
 import { execSync } from "node:child_process";
-import { BASE_BRANCH, MAX_ITERATIONS } from "./sandcastle-config.mts";
+import {
+  BASE_BRANCH,
+  MAX_ITERATIONS,
+  assertGhAvailable,
+  logTurboCacheStatus,
+} from "./sandcastle-config.mts";
 import { headHooks } from "./sandcastle-sandbox-hooks.mts";
 import {
   agentFor,
@@ -76,6 +81,14 @@ import { docker } from "@ai-hero/sandcastle/sandboxes/docker";
 // reject with the signal's reason but still hit their `finally { sandbox.close() }`
 // cleanup, so no container is orphaned. A second Ctrl-C force-quits (see
 // installGracefulShutdown).
+// Preconditions first, in the order importing sandcastle-config.mts used to
+// guarantee implicitly. `gh` before anything else: every host-side gh call site
+// swallows its own failure (fetchIssue -> null, branchHasOpenPr -> false), so a
+// missing binary would silently drop the sc:* model overrides and run the whole
+// batch on the expensive default rather than erroring.
+assertGhAvailable();
+logTurboCacheStatus();
+
 const { signal: abortSignal } = installGracefulShutdown();
 
 // Run-wide model overrides (SC_<ROLE>_MODEL / SC_<ROLE>_EFFORT) are validated
