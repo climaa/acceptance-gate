@@ -78,6 +78,47 @@ export function branchHasCommitsAhead(branch: string): boolean {
   return probe.kind === 'ok' ? probe.value : false;
 }
 
+// The branch the given checkout is on, or null (detached HEAD or not a repo).
+// `cwd` defaults to the process cwd; it exists so a test can point at a scratch
+// repo without chdir'ing the whole process.
+export function currentBranch(cwd: string = process.cwd()): string | null {
+  const out = execOrNull('git rev-parse --abbrev-ref HEAD', { cwd });
+  return out === null ? null : out.trim() || null;
+}
+
+// Put the host checkout back on the branch the run started on (worktree-reaper
+// hardening).
+//
+// The merger sandbox BIND-MOUNTS the host checkout, and merge-prompt.md tells
+// the agent to `git checkout <branch>` first (later steps read `HEAD` — the PR
+// diff and `gh pr create --head`). That checkout therefore lands on the host and
+// outlives the run: afterwards the developer's main checkout sits on a feature
+// branch, every later command silently operates on it, and the branch cannot be
+// deleted because it is "used by worktree".
+//
+// `git checkout` never discards work: it carries non-conflicting local changes
+// across, and refuses outright when the switch would overwrite them. So the
+// failure path here is a warning telling the developer where they are, never
+// data loss — which is also why this must NOT be a `checkout --force`.
+export function restoreHostBranch(
+  startingBranch: string,
+  cwd: string = process.cwd(),
+): void {
+  const now = currentBranch(cwd);
+  if (now === null || now === startingBranch) return;
+  try {
+    execSync(`git checkout ${startingBranch}`, { cwd, stdio: 'pipe' });
+    console.log(
+      `  🔙 restored host checkout to ${startingBranch} (merger left it on ${now})`,
+    );
+  } catch (err) {
+    console.warn(
+      `  ⚠ host checkout is on ${now}, could not restore ${startingBranch}: ` +
+        `${(err as Error).message}. Run \`git checkout ${startingBranch}\` before continuing.`,
+    );
+  }
+}
+
 export function listSandcastleBranches(): string[] {
   const out = execOrNull(
     `git for-each-ref --format='%(refname:short)' refs/heads/sandcastle/`,

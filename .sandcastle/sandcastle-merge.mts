@@ -1,54 +1,12 @@
 // Phase 3: Merge — a single agent opens a PR per completed branch, enables
 // squash auto-merge, waits for each PR to merge via CI, then closes (or
 // comments on) issues.
-import { execSync } from 'node:child_process';
 import * as sandcastle from '@ai-hero/sandcastle';
 import { BASE_BRANCH } from './sandcastle-config.mts';
 import { headSandboxOptions } from './sandcastle-sandbox-hooks.mts';
 import { agentFor } from './sandcastle-agent-profiles.mts';
 import { formatBranchLine } from './sandcastle-merge-branch-line.mts';
-import type { IssueRef } from './sandcastle-git.mts';
-
-function currentBranch(): string | null {
-  try {
-    return (
-      execSync('git rev-parse --abbrev-ref HEAD', {
-        encoding: 'utf8',
-      }).trim() || null
-    );
-  } catch {
-    return null;
-  }
-}
-
-// Put the host checkout back on the branch the run started on (worktree-reaper hardening).
-//
-// The merger sandbox BIND-MOUNTS the host checkout, and merge-prompt.md tells
-// the agent to `git checkout <branch>` first (later steps read `HEAD` — the PR
-// diff and `gh pr create --head`). That checkout therefore lands on the host and
-// outlives the run: afterwards the developer's main checkout sits on a feature
-// branch, every later command silently operates on it, and the branch cannot
-// be deleted because it is "used by worktree".
-//
-// `git checkout` never discards work: it carries non-conflicting local changes
-// across, and refuses outright when the switch would overwrite them. So the
-// failure path here is a warning telling the developer where they are, never
-// data loss — which is also why this must NOT be a `checkout --force`.
-function restoreHostBranch(startingBranch: string): void {
-  const now = currentBranch();
-  if (now === null || now === startingBranch) return;
-  try {
-    execSync(`git checkout ${startingBranch}`, { stdio: 'pipe' });
-    console.log(
-      `  🔙 restored host checkout to ${startingBranch} (merger left it on ${now})`,
-    );
-  } catch (err) {
-    console.warn(
-      `  ⚠ host checkout is on ${now}, could not restore ${startingBranch}: ` +
-        `${(err as Error).message}. Run \`git checkout ${startingBranch}\` before continuing.`,
-    );
-  }
-}
+import { type IssueRef, currentBranch, restoreHostBranch } from './sandcastle-git.mts';
 
 // Called both from the empty-plan rescue path and from the end-of-iteration
 // merge phase, so the prompt args are uniform.
