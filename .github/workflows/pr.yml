@@ -159,11 +159,26 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm format:check
 
+  health:
+    # Cognitive-complexity ceiling for .sandcastle/ via fallow health — COGNITIVE,
+    # not cyclomatic (cyclomatic over-counts flat guard sequences). The script
+    # scopes to .sandcastle/ and fails on any function over the ceiling; see
+    # .sandcastle/scripts/complexity-gate.mjs. Runs node + npx-fallow directly, so
+    # it needs no repo install.
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+      - run: node .sandcastle/scripts/complexity-gate.mjs
+
   gate:
     # The aggregator — the ONLY required status check. `if: always()` so it
     # reports even when a needed job fails; it fails unless every result is
     # exactly 'success' (skipped/cancelled count as failure).
-    needs: [lint, typecheck, build, test, sandcastle, format]
+    needs: [lint, typecheck, build, test, sandcastle, format, health]
     if: always() && (github.event_name != 'pull_request' || github.event.pull_request.draft == false)
     runs-on: ubuntu-24.04-arm
     steps:
