@@ -13,6 +13,7 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
+    "health": "node ../../scripts/complexity-gate.mjs",
     "clean": "rm -rf .turbo node_modules"
   },
   "devDependencies": {
