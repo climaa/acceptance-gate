@@ -1,5 +1,5 @@
-// Sandcastle lifecycle helpers — a *partial* port of an earlier single-runner orchestrator's
-// an earlier single-runner variant of this orchestrator.
+// Sandcastle lifecycle helpers — a *partial* port of an earlier single-runner
+// variant of this orchestrator.
 //
 // the single-runner variant hardens a single-agent HEAD-mode run (one sandbox
 // bind-mounts the host's current branch in place). That shape does not fit

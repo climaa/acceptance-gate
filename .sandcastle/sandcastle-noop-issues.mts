@@ -12,11 +12,11 @@
 // already landed, or that the agent misread the task, and closing would hide
 // the second case. A human reads the comment and decides.
 //
-// Deliberately imports NOTHING from this directory — same reason as
-// sandcastle-model-overrides.mts and sandcastle-worktree-safety.mts:
-// sandcastle-config.mts has import-time side effects, so anything that
-// transitively pulls it in cannot be unit tested. Keeping the classification
-// pure is what lets it get REAL tests.
+// Deliberately imports NOTHING from this directory — a layering choice, same as
+// sandcastle-model-overrides.mts and sandcastle-worktree-safety.mts.
+// sandcastle-config.mts is import-safe now (its `gh` preflight and turbo-cache
+// log are explicit calls, not import-time side effects); keeping the
+// classification pure is what lets it get REAL tests.
 
 /**
  * The marker label. It must NOT start with `sc:` — that prefix is the

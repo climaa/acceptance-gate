@@ -1,11 +1,11 @@
 // Pure safety decisions for the stranded-branch worktree reaper (worktree-reaper hardening).
 //
-// Deliberately imports NOTHING from this directory. `sandcastle-config.mts`
-// has import-time side effects — it mutates `process.env.PATH` and logs on
-// load — so every module that transitively pulls it in becomes untestable,
-// which is why the other __tests__ here regex-assert source text instead of
-// importing it. Keeping this decision pure and dependency-free is what lets
-// the reaper's safety rules get REAL unit tests.
+// Deliberately imports NOTHING from this directory — a layering choice, not a
+// necessity. `sandcastle-config.mts` is import-safe now: its `gh` preflight and
+// turbo-cache log are explicit calls the composition root makes, not import-time
+// side effects. It once threw on import (and mutated PATH), which is the reason
+// this pure L0 layer exists; staying dependency-free still keeps the reaper's
+// safety rules trivially unit-testable against plain values.
 import * as path from 'node:path';
 
 /**

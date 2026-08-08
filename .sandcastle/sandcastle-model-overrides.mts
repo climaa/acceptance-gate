@@ -15,10 +15,11 @@
 // on an issue has no coherent binding point and is rejected rather than
 // silently ignored.
 //
-// Deliberately imports NOTHING from this directory, for the reason spelled out
-// in sandcastle-worktree-safety.mts: `sandcastle-config.mts` has import-time
-// side effects, so anything that transitively pulls it in cannot be unit
-// tested. Keeping this pure is what lets the resolution rules get REAL tests.
+// Deliberately imports NOTHING from this directory, as a layering choice — see
+// sandcastle-worktree-safety.mts. `sandcastle-config.mts` is import-safe now
+// (its `gh` preflight and turbo-cache log are explicit calls, not import-time
+// side effects), so this is no longer a necessity; but keeping it pure is what
+// lets the resolution rules get REAL tests against plain strings.
 
 export type Effort = 'low' | 'medium' | 'high' | 'xhigh' | 'max';
 export type Role = 'planner' | 'implementer' | 'reviewer' | 'merger';

@@ -1,11 +1,11 @@
 // Turbo remote-cache credential resolution — pure, unit-tested.
 //
-// This module imports nothing from this directory (only `dotenv` for parsing)
-// precisely so it can be loaded without dragging in sandcastle-config.mts's
-// import-time side effects — the `gh` preflight, the file reads, the startup
-// log. Same reasoning as sandcastle-model-overrides.mts. Keep it that way: the
-// moment this file needs a local import, its tests have to go back to
-// asserting on source text instead of behaviour.
+// This module imports nothing from this directory (only `dotenv` for parsing).
+// sandcastle-config.mts is import-safe now — its `gh` preflight and startup log
+// are explicit calls, not import-time side effects — so this is a layering
+// choice rather than a hard requirement. Keep it that way: a pure,
+// dependency-free module is unit-tested against plain strings instead of
+// asserting on source text. Same reasoning as sandcastle-model-overrides.mts.
 //
 // File I/O lives in the caller. Everything here is a function of its
 // arguments, so every branch below is reachable from a test with plain
