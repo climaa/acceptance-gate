@@ -231,7 +231,9 @@ describe('orchestrator wiring (source-text — not observable from a unit test)'
   // the part only source text can see, and it is the part that matters: run the
   // filter after runIssue() and the sandbox has already been spent.
   it('main.mts drops marked issues from the plan before any sandbox is created', () => {
-    const filterIdx = main.indexOf('classifyPlannedIssue(');
+    // The eligibility screen (screenPlan, sandcastle-orchestrator.mts) must run
+    // before the execute loop, or a sandbox is spent on an ineligible issue.
+    const filterIdx = main.indexOf('screenPlan(');
     const runIssueIdx = main.indexOf('await runIssue(');
     expect(filterIdx).toBeGreaterThan(-1);
     expect(runIssueIdx).toBeGreaterThan(-1);

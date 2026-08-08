@@ -52,23 +52,15 @@ import {
   reapExitedContainers,
 } from './sandcastle-lifecycle.mts';
 import { ensureImageFreshness } from './sandcastle-image-freshness.mts';
-import {
-  type IssueRef,
-  markIssueNoOp,
-  probeBranchCommitsAhead,
-  probeIssue,
-} from './sandcastle-git.mts';
-import { parsePlan } from './sandcastle-plan-parse.mts';
+import { markIssueNoOp, probeBranchCommitsAhead, probeIssue } from './sandcastle-git.mts';
+import { parsePlanOutput, screenPlan } from './sandcastle-orchestrator.mts';
 import { guardPhase } from './sandcastle-guard-phase.mts';
 import {
   NOOP_LABEL,
   noOpIssueComment,
   partitionOutcomes,
 } from './sandcastle-noop-issues.mts';
-import {
-  classifyPlannedIssue,
-  queuedBranchesFor,
-} from './sandcastle-plan-eligibility.mts';
+import { queuedBranchesFor } from './sandcastle-plan-eligibility.mts';
 import {
   collectStrandedIssues,
   verifyStrandedBranches,
@@ -187,38 +179,16 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
   }
   const plan = planResult.value;
 
-  // Extract the <plan>…</plan> block from the agent's stdout.
-  const planMatch = plan.stdout.match(/<plan>([\s\S]*?)<\/plan>/);
-  if (!planMatch) {
-    throw new Error('Planning agent did not produce a <plan> tag.\n\n' + plan.stdout);
-  }
+  // Extract + validate the <plan>…</plan> block (parsePlanOutput wraps parsePlan,
+  // the injection gate). The plan JSON is an array of issues with id/title/branch.
+  const planned = parsePlanOutput(plan.stdout);
 
-  // The plan JSON contains an array of issues, each with id, title, branch.
-  // parsePlan (sandcastle-plan-parse.mts) is the validation gate: it rejects the
-  // whole plan unless every id/branch matches the documented grammar, so nothing
-  // agent-authored reaches the host shell unvalidated. It also strips any extra
-  // keys, so a planner-forged `overrides` cannot survive into agentFor().
-  const planned = parsePlan(planMatch[1]!);
-
-  // One pass over the plan, deciding two things from each issue's labels —
-  // both BEFORE any sandbox is created:
-  //
-  //   1. Is the issue still eligible? An issue already marked no-op is dropped
-  //      here rather than run again. The planner is told to skip them too
-  //      (.sandcastle/agent-docs/plan-prompt.md), but a mechanism that stops a
-  //      run from burning MAX_ITERATIONS on one issue must not depend on an
-  //      agent obeying a prompt.
-  //   2. Its model/effort overrides (sandcastle-model-overrides.mts). A typo'd
-  //      control label costs nothing here: a label that does not parse must
-  //      never silently fall back to the expensive default.
-  const issues: IssueRef[] = [];
-  const overrideErrors: string[] = [];
-  for (const issue of planned) {
-    // Resolve the issue's sc:* model-override labels. A transient gh failure
-    // here (auth/network/rate-limit) must NOT be read as "no labels" — that
-    // would silently run the issue on the expensive default. Fail loud, the
-    // same stance assertGhAvailable takes at startup. An absent issue (gone
-    // between plan and now) legitimately has no labels.
+  // Fetch each planned issue's labels — the sc:* model-override carriers — from
+  // `gh`. A transient failure here (auth/network/rate-limit) must NOT be read as
+  // "no labels": that would silently run the issue on the expensive default.
+  // Fail loud, the same stance assertGhAvailable takes at startup. An absent
+  // issue (gone between plan and now) legitimately has no labels.
+  const labelledPlan = planned.map((issue) => {
     const issueProbe = probeIssue(issue.id);
     if (issueProbe.kind === 'error') {
       throw new Error(
@@ -226,28 +196,25 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
           `(refusing to run it on default models): ${issueProbe.stderr.trim()}`,
       );
     }
-    const labels = issueProbe.kind === 'ok' ? issueProbe.value.labels : [];
-    const verdict = classifyPlannedIssue({
-      id: issue.id,
-      labels,
-      seenNoOpIds: noOpIssueIds,
-    });
-    if (verdict.kind === 'skip-noop') {
-      noOpIssueIds.add(issue.id);
-      console.log(
-        `  ⏭ #${issue.id} skipped: an earlier run produced no changes (${NOOP_LABEL}). ` +
-          `Remove the label to queue it again.`,
-      );
-      continue;
-    }
-    if (verdict.kind === 'reject') {
-      overrideErrors.push(...verdict.errors.map((e) => `  #${issue.id}  ${e}`));
-      continue;
-    }
-    if (Object.keys(verdict.overrides).length > 0) {
-      issue.overrides = verdict.overrides;
-    }
-    issues.push(issue);
+    return { issue, labels: issueProbe.kind === 'ok' ? issueProbe.value.labels : [] };
+  });
+
+  // Screen the plan BEFORE any sandbox is created: drop issues already marked
+  // no-op (a mechanism that stops a run burning MAX_ITERATIONS on one issue must
+  // not depend on the agent obeying its prompt) and collect invalid sc:* labels
+  // (a typo must never silently fall back to the expensive default). Pure —
+  // sandcastle-orchestrator.mts.
+  const {
+    eligible: issues,
+    newlyNoOp,
+    overrideErrors,
+  } = screenPlan(labelledPlan, noOpIssueIds);
+  for (const id of newlyNoOp) {
+    noOpIssueIds.add(id);
+    console.log(
+      `  ⏭ #${id} skipped: an earlier run produced no changes (${NOOP_LABEL}). ` +
+        `Remove the label to queue it again.`,
+    );
   }
   if (overrideErrors.length > 0) {
     throw new Error(
