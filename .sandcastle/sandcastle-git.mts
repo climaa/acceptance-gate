@@ -13,6 +13,11 @@ import {
   parsePrimaryWorktree,
   parseWorktreeForBranch,
 } from './sandcastle-git-parse.mts';
+import {
+  type GitProbe,
+  classifyIssueViewFailure,
+  classifyRevListFailure,
+} from './sandcastle-git-probe.mts';
 import type { PerIssueRole, ProfileOverride } from './sandcastle-model-overrides.mts';
 import {
   NOOP_LABEL,
@@ -33,17 +38,40 @@ export type IssueRef = {
   overrides?: Partial<Record<PerIssueRole, ProfileOverride>>;
 };
 
-export function branchHasCommitsAhead(branch: string): boolean {
+// stderr captured off a thrown execSync error (a string because callers pass
+// `encoding: 'utf8'`), falling back to the error message.
+function stderrOf(err: unknown): string {
+  const e = err as { stderr?: unknown; message?: unknown };
+  return String(e.stderr ?? e.message ?? '');
+}
+
+// Does `branch` have commits ahead of origin/BASE_BRANCH? Distinguishes a
+// genuinely-absent branch (first run — benign, `absent`) from a git that failed
+// to answer (`error`), instead of collapsing both to false. The caller decides
+// what an `error` means: main.mts's outcome-partition files it as failed rather
+// than let a transient blip mark a real run no-op (F9).
+export function probeBranchCommitsAhead(branch: string): GitProbe<boolean> {
   try {
-    const out = execSync(
-      `git rev-list --count origin/${BASE_BRANCH}..${branch} 2>/dev/null`,
-      { encoding: 'utf8' },
-    );
-    return parsePositiveCount(out);
-  } catch {
-    // Branch doesn't exist yet (first run) — nothing to merge.
-    return false;
+    const out = execSync(`git rev-list --count origin/${BASE_BRANCH}..${branch}`, {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    return { kind: 'ok', value: parsePositiveCount(out) };
+  } catch (err) {
+    const stderr = stderrOf(err);
+    return classifyRevListFailure(stderr) === 'absent'
+      ? { kind: 'absent' }
+      : { kind: 'error', stderr };
   }
+}
+
+// Boolean convenience for callers that cannot act on the error/absent
+// distinction (the stranded-rescue filter, runIssue's salvage check). Both
+// absent and error collapse to false, exactly as before — the strict handling
+// lives at the durable-state call site in main.mts, which uses the probe.
+export function branchHasCommitsAhead(branch: string): boolean {
+  const probe = probeBranchCommitsAhead(branch);
+  return probe.kind === 'ok' ? probe.value : false;
 }
 
 export function listSandcastleBranches(): string[] {
@@ -67,17 +95,37 @@ export { parseIssueIdFromBranch } from './sandcastle-git-parse.mts';
 // planner's <plan> JSON: a mechanism that decides cost and capability must not
 // depend on an agent faithfully echoing strings, and the stranded-rescue path
 // builds IssueRefs without the planner at all.
-export function fetchIssue(
-  id: string,
-): { title: string; state: string; labels: string[] } | null {
+export type FetchedIssue = { title: string; state: string; labels: string[] };
+
+// Probe an issue's state + labels. `absent` = gh resolved the query but the
+// issue is gone; `error` = gh itself failed (auth/network/rate-limit) OR
+// returned output we cannot parse. main.mts's eligibility pass throws on
+// `error` rather than run the issue on default models with its sc:* overrides
+// silently dropped (F9) — the same failure assertGhAvailable guards against.
+export function probeIssue(id: string): GitProbe<FetchedIssue> {
   try {
     const out = execSync(`gh issue view ${id} --json title,state,labels`, {
       encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
     });
-    return parseIssueJson(out);
-  } catch {
-    return null;
+    const parsed = parseIssueJson(out);
+    // gh succeeded but the JSON was unreadable — an error, not "no labels".
+    return parsed
+      ? { kind: 'ok', value: parsed }
+      : { kind: 'error', stderr: 'gh issue view returned unparseable output' };
+  } catch (err) {
+    const stderr = stderrOf(err);
+    return classifyIssueViewFailure(stderr) === 'absent'
+      ? { kind: 'absent' }
+      : { kind: 'error', stderr };
   }
+}
+
+// Boolean/null convenience for the stranded-rescue path, which already logs and
+// skips on a null result. Both absent and error collapse to null, as before.
+export function fetchIssue(id: string): FetchedIssue | null {
+  const probe = probeIssue(id);
+  return probe.kind === 'ok' ? probe.value : null;
 }
 
 // Record that a pipeline ran on this issue and produced nothing: a comment
