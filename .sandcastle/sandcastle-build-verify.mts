@@ -21,16 +21,22 @@ const DOCS_ONLY_PATTERNS = [
   /^\.gitignore$/,
 ];
 
+// Pure decision: is every changed file docs-only? An empty list is docs-only —
+// nothing changed, so there is nothing to build. Extracted from isDocsOnlyDiff
+// so the rule is unit-testable without shelling out to git.
+export function isDocsOnlyFileList(files: string[]): boolean {
+  return files.every((f) => DOCS_ONLY_PATTERNS.some((p) => p.test(f)));
+}
+
 export function isDocsOnlyDiff(branch: string): boolean {
   try {
     const out = execSync(`git diff --name-only origin/${BASE_BRANCH}...${branch}`, {
       encoding: 'utf8',
     }).trim();
-    if (!out) return true;
     const files = out.split('\n').filter(Boolean);
-    return files.every((f) => DOCS_ONLY_PATTERNS.some((p) => p.test(f)));
+    return isDocsOnlyFileList(files);
   } catch {
-    return false; // conservative: run the build if check fails
+    return false; // conservative: run the build if the diff check fails
   }
 }
 
@@ -38,7 +44,7 @@ export type TurboStats = { successful: number; total: number; cached: number };
 
 // Parses turbo's summary block from agent stdout.
 // Turbo prints: "Tasks: N successful, N total\nCached: N cached, N total"
-function parseTurboStats(output: string): TurboStats | null {
+export function parseTurboStats(output: string): TurboStats | null {
   const tasksMatch = output.match(/Tasks:\s+(\d+)\s+successful,\s+(\d+)\s+total/);
   const cachedMatch = output.match(/Cached:\s+(\d+)\s+cached,\s+(\d+)\s+total/);
   if (!tasksMatch || !cachedMatch) return null;
