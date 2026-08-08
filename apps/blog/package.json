@@ -14,20 +14,20 @@
   "dependencies": {
     "@gate/ui": "workspace:*",
     "gray-matter": "^4.0.3",
-    "next": "^15.1.3",
+    "next": "^15.5.23",
     "next-mdx-remote": "^6.0.0",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
   },
   "devDependencies": {
     "@gate/tsconfig": "workspace:*",
     "@mdx-js/mdx": "^3.1.1",
-    "@types/node": "^22.10.2",
-    "@types/react": "^19.0.2",
-    "@types/react-dom": "^19.0.2",
+    "@types/node": "^22.20.1",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
     "eslint": "^8.57.1",
-    "eslint-config-next": "^15.1.3",
-    "typescript": "^5.7.2",
+    "eslint-config-next": "^15.5.23",
+    "typescript": "^5.9.3",
     "vitest": "^4.1.10"
   }
 }
