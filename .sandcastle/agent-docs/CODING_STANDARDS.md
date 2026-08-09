@@ -51,6 +51,22 @@ findings, never from ambition.
   Coverage is a floor on business logic, never a target.
 - Don't disable, skip, or comment out failing tests to make a build pass. Diagnose
   root cause. A skip requires a `reason` comment and must surface in the report.
+- **Never unit-test how CSS looks.** Rendered appearance belongs to
+  `packages/visual-diff`; that is the entire reason it exists. A test that parses a
+  stylesheet to assert a colour, a size or a contrast ratio is a proxy for the
+  render and will drift from it.
+  - **Appearance** → visual-diff baselines.
+  - **Rendered accessibility** → axe, on real DOM (`addon-a11y` in Storybook, the
+    Playwright a11y scenario). Note visual-diff catches _change_, not
+    _correctness_: a control that fails WCAG AA is baselined green and stays green
+    forever, so contrast is axe's, never the differ's and never a token-pair
+    test's.
+  - **Structural CSS rules are the exception and stay unit-tested**, because
+    pixels cannot see them: no `--c-` reference outside `tokens.css`, every raw
+    token consumed by a semantic role, no literal colours in `styles.css`, every
+    role remapped under `[data-theme="dark"]`, and the woff2 / no-`system-ui`
+    font ban. These are architecture and determinism guards — a component reading
+    a raw token renders identically today and breaks theming later.
 
 ## `.feature` files
 

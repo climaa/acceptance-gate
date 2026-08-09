@@ -171,6 +171,10 @@ const expectContrast = (theme: ThemeName, fg: string, bg: string, minimum: numbe
   ).toBeGreaterThanOrEqual(minimum);
 };
 
+// Retire these three blocks when the Wave 3 Playwright a11y scenario lands —
+// axe measures computed colour on rendered DOM, which is the real claim. Kept
+// until then so the gap is covered by something. The structural blocks below
+// stay permanently.
 describe('contrast maths', () => {
   it('rates black on white at the maximum 21:1', () => {
     expect(contrastRatio(parseColour('#000'), parseColour('#fff'))).toBe(21);
@@ -246,6 +250,10 @@ const ENFORCED_TEXT_PAIRS = ALL_TEXT_PAIRS.filter(
   (pair) => !KNOWN_AA_GAP_KEYS.has(pair.join(' ')),
 );
 
+// Retire these three blocks when the Wave 3 Playwright a11y scenario lands —
+// axe measures computed colour on rendered DOM, which is the real claim. Kept
+// until then so the gap is covered by something. The structural blocks below
+// stay permanently.
 describe('text contrast (WCAG AA)', () => {
   it.each(ENFORCED_TEXT_PAIRS)(`%s: %s on %s meets ${AA_TEXT}:1`, (theme, fg, bg) =>
     expectContrast(theme, fg, bg, AA_TEXT),
@@ -257,6 +265,10 @@ describe('text contrast (WCAG AA)', () => {
   );
 });
 
+// Retire this block when the Wave 3 Playwright a11y scenario lands — axe
+// measures computed colour on rendered DOM, which is the real claim. Kept
+// until then so the gap is covered by something. The structural blocks below
+// stay permanently.
 describe('non-text contrast (WCAG 2.1 SC 1.4.11)', () => {
   // The focus ring only. SC 1.4.11 covers boundaries *required to identify a
   // component*; --color-border and --color-border-strong are decorative cream
