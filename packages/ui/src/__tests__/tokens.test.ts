@@ -13,7 +13,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import postcss, { type Declaration } from 'postcss';
+import postcss, { type Declaration, type Root } from 'postcss';
 import { describe, expect, it } from 'vitest';
 
 const SRC = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -23,9 +23,9 @@ const STYLES_CSS = join(SRC, 'styles.css');
 const parseFile = (path: string) =>
   postcss.parse(readFileSync(path, 'utf8'), { from: path });
 
-const declarationsIn = (path: string, selector: string): Declaration[] => {
+const declarationsIn = (css: Root, selector: string): Declaration[] => {
   const found: Declaration[] = [];
-  parseFile(path).walkRules(selector, (rule) => {
+  css.walkRules(selector, (rule) => {
     rule.walkDecls(/^--/, (decl) => {
       found.push(decl);
     });
@@ -33,27 +33,30 @@ const declarationsIn = (path: string, selector: string): Declaration[] => {
   return found;
 };
 
-const ROOT_DECLS = declarationsIn(TOKENS_CSS, ':root');
-const DARK_DECLS = declarationsIn(TOKENS_CSS, "[data-theme='dark']");
+const TOKENS = parseFile(TOKENS_CSS);
+const ROOT_DECLS = declarationsIn(TOKENS, ':root');
+const DARK_DECLS = declarationsIn(TOKENS, "[data-theme='dark']");
 
 const asMap = (decls: Declaration[]) =>
   new Map(decls.map((decl) => [decl.prop, decl.value]));
+
+const THEME_NAMES = ['light', 'dark'] as const;
+
+type ThemeName = (typeof THEME_NAMES)[number];
+
+const LIGHT_TOKENS = asMap(ROOT_DECLS);
 
 /**
  * Dark is not a separate scope: `[data-theme='dark']` overrides a subset of
  * `:root`, so a theme's token map is `:root` overlaid by that theme's block.
  * Overlaying the wrong way (or not at all) would make every dark assertion
- * silently re-test the light values — the failure mode that would make this
- * whole suite worthless, which is why one test asserts the two differ directly.
+ * silently re-test the light values, which is why one test asserts the two
+ * themes resolve `--color-bg` to different literals.
  */
-const THEMES = {
-  light: asMap(ROOT_DECLS),
-  dark: new Map([...asMap(ROOT_DECLS), ...asMap(DARK_DECLS)]),
+const THEMES: Record<ThemeName, Map<string, string>> = {
+  light: LIGHT_TOKENS,
+  dark: new Map([...LIGHT_TOKENS, ...asMap(DARK_DECLS)]),
 };
-
-type ThemeName = keyof typeof THEMES;
-
-const THEME_NAMES = Object.keys(THEMES) as ThemeName[];
 
 const VAR_REFERENCE = /^var\(\s*(--[\w-]+)\s*\)$/;
 
@@ -128,18 +131,21 @@ const linearize = (value: number) => {
 const luminance = ({ r, g, b }: Rgba) =>
   0.2126 * linearize(r) + 0.7152 * linearize(g) + 0.0722 * linearize(b);
 
-/** WCAG `(L1 + 0.05) / (L2 + 0.05)`. `ground` must already be opaque. */
-const contrastRatio = (colour: Rgba, ground: Rgba): number => {
-  const front = luminance(flatten(colour, ground));
-  const back = luminance(ground);
-  return (Math.max(front, back) + 0.05) / (Math.min(front, back) + 0.05);
+/** WCAG `(L1 + 0.05) / (L2 + 0.05)`. Both colours must already be opaque. */
+const contrastRatio = (front: Rgba, back: Rgba): number => {
+  const frontLuminance = luminance(front);
+  const backLuminance = luminance(back);
+  return (
+    (Math.max(frontLuminance, backLuminance) + 0.05) /
+    (Math.min(frontLuminance, backLuminance) + 0.05)
+  );
 };
 
 /**
  * Contrast of one role on another within a theme. Either side may be
  * translucent — `--color-accent-subtle` is `rgb(113 53 32 / 0.08)`, and a ratio
- * against a translucent colour is meaningless — so both are composited over the
- * theme's own page ground first.
+ * against a translucent colour is meaningless — so the background is composited
+ * over the theme's own page ground and the foreground over that background.
  */
 const roleContrast = (
   theme: ThemeName,
@@ -147,8 +153,9 @@ const roleContrast = (
   background: string,
 ): number => {
   const page = parseColour(resolveToken(theme, '--color-bg'));
-  const ground = flatten(parseColour(resolveToken(theme, background)), page);
-  return contrastRatio(parseColour(resolveToken(theme, foreground)), ground);
+  const back = flatten(parseColour(resolveToken(theme, background)), page);
+  const front = flatten(parseColour(resolveToken(theme, foreground)), back);
+  return contrastRatio(front, back);
 };
 
 const expectContrast = (theme: ThemeName, fg: string, bg: string, minimum: number) => {
@@ -229,13 +236,15 @@ const KNOWN_AA_GAPS: Pair[] = [
   ['light', '--color-on-danger-solid', '--color-danger-solid'],
 ];
 
-const isKnownGap = (pair: Pair) =>
-  KNOWN_AA_GAPS.some((gap) => gap.every((part, index) => part === pair[index]));
+const KNOWN_AA_GAP_KEYS = new Set(KNOWN_AA_GAPS.map((pair) => pair.join(' ')));
+
+const ENFORCED_TEXT_PAIRS = ALL_TEXT_PAIRS.filter(
+  (pair) => !KNOWN_AA_GAP_KEYS.has(pair.join(' ')),
+);
 
 describe('text contrast (WCAG AA)', () => {
-  it.each(ALL_TEXT_PAIRS.filter((pair) => !isKnownGap(pair)))(
-    `%s: %s on %s meets ${AA_TEXT}:1`,
-    (theme, fg, bg) => expectContrast(theme, fg, bg, AA_TEXT),
+  it.each(ENFORCED_TEXT_PAIRS)(`%s: %s on %s meets ${AA_TEXT}:1`, (theme, fg, bg) =>
+    expectContrast(theme, fg, bg, AA_TEXT),
   );
 
   it.fails.each(KNOWN_AA_GAPS)(
