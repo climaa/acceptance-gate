@@ -21,7 +21,7 @@ import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import postcss, { type Declaration, type Root, type Rule } from 'postcss';
+import postcss, { type Container, type Declaration, type Root } from 'postcss';
 import { describe, expect, it } from 'vitest';
 
 const SRC = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -457,15 +457,20 @@ type FontFaceRule = {
   descriptors: Map<string, string>;
 };
 
+/** Every declaration a block makes, by property — a face's descriptors, a rule's. */
+const declarationsOf = (block: Container) => {
+  const declarations = new Map<string, string>();
+  block.walkDecls((decl) => {
+    declarations.set(decl.prop, decl.value);
+  });
+  return declarations;
+};
+
 const fontFaces = (css: Root): FontFaceRule[] => {
   const faces: FontFaceRule[] = [];
 
   css.walkAtRules('font-face', (rule) => {
-    const descriptors = new Map<string, string>();
-    rule.walkDecls((decl) => {
-      descriptors.set(decl.prop, decl.value);
-    });
-
+    const descriptors = declarationsOf(rule);
     const family = unquote(descriptors.get('font-family') ?? '');
     const weight = descriptors.get('font-weight') ?? 'no weight';
     faces.push({ label: `${family} ${weight}`, family, descriptors });
@@ -499,20 +504,12 @@ const weightsDeclaredBy = (family: string) =>
 const tokenReferenced = (value: string) => VAR_REFERENCE.exec(value)?.[1];
 
 /**
- * What a rule with no `font-family` of its own renders in: `body` sets
+ * The token a rule with no `font-family` of its own renders in: `body` sets
  * --font-sans and everything inherits it. Modelling one level is enough — the
  * stylesheet is flat, and the only rules that override the family are the
  * headings and `.ds-prose code`.
  */
-const INHERITED_FAMILY = 'var(--font-sans)';
-
-const ruleDeclarations = (rule: Rule) => {
-  const declarations = new Map<string, string>();
-  rule.walkDecls((decl) => {
-    declarations.set(decl.prop, decl.value);
-  });
-  return declarations;
-};
+const INHERITED_FAMILY_TOKEN = '--font-sans';
 
 const fontFileEntries = () =>
   readdirSync(FONTS_DIR, { recursive: true, encoding: 'utf8' }).filter(
@@ -632,21 +629,29 @@ describe('styles.css fonts', () => {
     const offenders: string[] = [];
 
     parseFile(STYLES_CSS).walkRules((rule) => {
-      const declarations = ruleDeclarations(rule);
+      const declarations = declarationsOf(rule);
+
       const weight = declarations.get('font-weight');
       if (weight === undefined) return;
 
       const weightToken = tokenReferenced(weight);
-      const familyToken = tokenReferenced(
-        declarations.get('font-family') ?? INHERITED_FAMILY,
-      );
-
-      if (weightToken === undefined || familyToken === undefined) {
-        offenders.push(`${rule.selector}: states a family or weight outside the tokens`);
+      if (weightToken === undefined) {
+        offenders.push(`${rule.selector}: font-weight: ${weight} is not a token`);
         return;
       }
 
-      const family = familyStack(familyToken)[0] ?? '';
+      const declaredFamily = declarations.get('font-family');
+      const familyToken =
+        declaredFamily === undefined
+          ? INHERITED_FAMILY_TOKEN
+          : tokenReferenced(declaredFamily);
+
+      if (familyToken === undefined) {
+        offenders.push(`${rule.selector}: font-family: ${declaredFamily} is not a token`);
+        return;
+      }
+
+      const [family = ''] = familyStack(familyToken);
       const asked = resolveToken('light', weightToken);
 
       if (!weightsDeclaredBy(family).has(asked)) {
