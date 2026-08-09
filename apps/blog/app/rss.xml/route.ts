@@ -1,5 +1,5 @@
 import { getAllPosts } from '@/lib/posts';
-import { SITE_DESCRIPTION, SITE_TITLE, SITE_URL } from '@/lib/site';
+import { absoluteUrl, SITE_DESCRIPTION, SITE_TITLE } from '@/lib/site';
 
 // No request data is read, so the response is identical on every call —
 // prerender it at build time like the rest of the site instead of on demand.
@@ -12,10 +12,6 @@ function escapeXml(value: string): string {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&apos;');
-}
-
-function absoluteUrl(pathname: string): string {
-  return new URL(pathname, SITE_URL).toString();
 }
 
 // pubDate is derived from frontmatter `date`, never Date.now() — a feed whose

@@ -9,3 +9,7 @@ export const SITE_TITLE = 'Carles Lima';
 
 export const SITE_DESCRIPTION =
   'Notes on Next.js, testing with Cypress and Gherkin, visual regression and coding agents.';
+
+export function absoluteUrl(pathname: string): string {
+  return new URL(pathname, SITE_URL).toString();
+}

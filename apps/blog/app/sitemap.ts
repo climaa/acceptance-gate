@@ -1,10 +1,6 @@
 import type { MetadataRoute } from 'next';
 import { getAllPosts } from '@/lib/posts';
-import { SITE_URL } from '@/lib/site';
-
-function absoluteUrl(pathname: string): string {
-  return new URL(pathname, SITE_URL).toString();
-}
+import { absoluteUrl } from '@/lib/site';
 
 const STATIC_ROUTES = ['/', '/blog', '/about'];
 
