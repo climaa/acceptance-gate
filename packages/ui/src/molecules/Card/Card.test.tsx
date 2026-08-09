@@ -83,8 +83,9 @@ describe('CardTitle', () => {
 
     const title = screen.getByRole('heading', { level: 3, name: 'Deploys' });
 
-    // The tag is the contract, not a styling detail: the card title has to be a
-    // heading for the document outline, and `h3` is what styles.css targets.
+    // The heading level is asserted by the query itself — `getByRole` throws when
+    // the tag stops being an `h3`, and the card title has to stay a heading for
+    // the document outline. Styling rides on the class, asserted here.
     expect(title.className).toBe('ds-card__title');
   });
 

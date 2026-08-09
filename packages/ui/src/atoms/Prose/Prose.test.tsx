@@ -14,8 +14,8 @@ describe('Prose', () => {
 
     const prose = screen.getByText('Long-form copy.');
 
-    // The wrapper element is the contract: every `.ds-prose >` descendant rule in
-    // styles.css only applies to markup nested one level inside this div.
+    // A block-level wrapper is the contract: `.ds-prose` nests headings, lists and
+    // `pre` blocks, none of which an inline or `<p>` wrapper may legally contain.
     expect(prose.tagName).toBe('DIV');
   });
 

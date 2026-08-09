@@ -14,6 +14,7 @@ describe('Stack', () => {
 
     const stack = screen.getByText('content');
 
+    expect(stack.tagName).toBe('DIV');
     // Exact, not `toContain`: an omitted `className` must be filtered out
     // rather than joined in as a trailing empty or `undefined` class.
     expect(stack.className).toBe('ds-stack');
@@ -35,7 +36,7 @@ describe('Stack', () => {
     expect(stack.style.flexDirection).toBe('row');
   });
 
-  it('spends the step-4 space token by default', () => {
+  it('uses the step-4 space token by default', () => {
     render(<Stack>content</Stack>);
 
     const stack = screen.getByText('content');
@@ -58,8 +59,8 @@ describe('Stack', () => {
 
     const stack = screen.getByText('content');
 
-    // `nowrap` is written out rather than left unset, so a `flex-wrap` inherited
-    // from a parent rule cannot leak in.
+    // `nowrap` is written out rather than left unset, so a stylesheet rule on
+    // `.ds-stack` cannot flip the default out from under the component.
     expect(stack.style.flexWrap).toBe('nowrap');
   });
 
@@ -80,10 +81,8 @@ describe('Stack', () => {
 
     const stack = screen.getByText('content');
 
-    expect([stack.style.alignItems, stack.style.justifyContent]).toEqual([
-      'center',
-      'space-between',
-    ]);
+    expect(stack.style.alignItems).toBe('center');
+    expect(stack.style.justifyContent).toBe('space-between');
   });
 
   it('leaves align and justify unset when they are not given', () => {
@@ -91,7 +90,8 @@ describe('Stack', () => {
 
     const stack = screen.getByText('content');
 
-    expect([stack.style.alignItems, stack.style.justifyContent]).toEqual(['', '']);
+    expect(stack.style.alignItems).toBe('');
+    expect(stack.style.justifyContent).toBe('');
   });
 
   it('renders the element named by `as`', () => {

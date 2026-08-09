@@ -8,8 +8,9 @@ import { Badge, type BadgeTone } from './Badge';
 // below match the previous test's DOM.
 afterEach(cleanup);
 
-// Typed as the union rather than inferred: dropping a tone from BadgeTone without
-// dropping it here is a typecheck error, and adding one leaves this row missing.
+// Typed as the union rather than inferred, so removing a tone from BadgeTone
+// fails the typecheck here. Adding one is not caught — the new tone simply has
+// no row until someone writes it.
 const TONES: BadgeTone[] = ['neutral', 'accent', 'success', 'warning', 'danger'];
 
 describe('Badge', () => {
