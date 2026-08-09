@@ -21,7 +21,7 @@ import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import postcss, { type Declaration, type Root } from 'postcss';
+import postcss, { type Declaration, type Root, type Rule } from 'postcss';
 import { describe, expect, it } from 'vitest';
 
 const SRC = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -438,12 +438,12 @@ const GENERIC_FAMILIES = new Set([
   'fantasy',
 ]);
 
-const FONT_TOKENS = ['--font-sans', '--font-mono'] as const;
+const FONT_TOKENS = ['--font-display', '--font-sans', '--font-mono'] as const;
 
 const unquote = (value: string) => value.trim().replace(/^(['"])([\s\S]*)\1$/, '$2');
 
 /**
- * A font token's declared stack: `'Inter', sans-serif` → `['Inter', 'sans-serif']`.
+ * A font token's declared stack: `'Fraunces', serif` → `['Fraunces', 'serif']`.
  * Font stacks nest no commas, so splitting on one is enough. Read from the light
  * map because typography carries no colour and never remaps per theme.
  */
@@ -487,6 +487,33 @@ const sourceUrls = (face: FontFaceRule) =>
     (match) => match[2] ?? '',
   );
 
+/** The weights fonts.css declares a face for, for one family. */
+const weightsDeclaredBy = (family: string) =>
+  new Set(
+    FACES.filter((face) => face.family === family).map((face) =>
+      face.descriptors.get('font-weight'),
+    ),
+  );
+
+/** The token a declaration reads, or undefined when it states a value itself. */
+const tokenReferenced = (value: string) => VAR_REFERENCE.exec(value)?.[1];
+
+/**
+ * What a rule with no `font-family` of its own renders in: `body` sets
+ * --font-sans and everything inherits it. Modelling one level is enough — the
+ * stylesheet is flat, and the only rules that override the family are the
+ * headings and `.ds-prose code`.
+ */
+const INHERITED_FAMILY = 'var(--font-sans)';
+
+const ruleDeclarations = (rule: Rule) => {
+  const declarations = new Map<string, string>();
+  rule.walkDecls((decl) => {
+    declarations.set(decl.prop, decl.value);
+  });
+  return declarations;
+};
+
 const fontFileEntries = () =>
   readdirSync(FONTS_DIR, { recursive: true, encoding: 'utf8' }).filter(
     (entry) => !statSync(join(FONTS_DIR, entry)).isDirectory(),
@@ -521,6 +548,17 @@ describe('font tokens', () => {
     const leading = FONT_TOKENS.map((token) => familyStack(token)[0]);
 
     expect(new Set(leading).size).toBe(FONT_TOKENS.length);
+  });
+
+  it('leads some token with every family fonts.css self-hosts', () => {
+    // The mirror of "commits no woff2 fonts.css never references": a family can
+    // be declared, committed and served while no token names it, in which case
+    // the bytes ship on every visit and nothing ever paints with them.
+    const leading = new Set(FONT_TOKENS.map((token) => familyStack(token)[0]));
+
+    expect([...SELF_HOSTED_FAMILIES].filter((family) => !leading.has(family))).toEqual(
+      [],
+    );
   });
 });
 
@@ -565,6 +603,58 @@ describe('fonts.css', () => {
 
   it.each(FACE_ROWS)('%s is bounded by a unicode-range', (_label, face) => {
     expect(face.descriptors.get('unicode-range')).toMatch(/^U\+/i);
+  });
+});
+
+describe('styles.css fonts', () => {
+  it('names no family of its own — every family arrives through a token', () => {
+    // The same rule as "no literal colour", one property over: a family written
+    // out here is a family fonts.css never declared a face for, so it resolves
+    // to whatever the machine has and the capture stops being reproducible.
+    const literals: string[] = [];
+
+    parseFile(STYLES_CSS).walkDecls('font-family', (decl) => {
+      if (tokenReferenced(decl.value) === undefined) {
+        literals.push(`styles.css:${decl.source?.start?.line}: ${decl.value}`);
+      }
+    });
+
+    expect(literals).toEqual([]);
+  });
+
+  it('asks each family only for a weight it ships a face for', () => {
+    // The determinism rule one layer below the woff2 ban. Both text families are
+    // partial — Fraunces is committed at 600 alone, Atkinson Hyperlegible draws
+    // 400 and 700 and nothing between — so a rule pairing a family with a weight
+    // it has no face for is not a missing font, it is a synthesized one: the
+    // engine thickens the nearest face itself, its own way on each platform.
+    // Nothing downstream would notice until a capture diverged.
+    const offenders: string[] = [];
+
+    parseFile(STYLES_CSS).walkRules((rule) => {
+      const declarations = ruleDeclarations(rule);
+      const weight = declarations.get('font-weight');
+      if (weight === undefined) return;
+
+      const weightToken = tokenReferenced(weight);
+      const familyToken = tokenReferenced(
+        declarations.get('font-family') ?? INHERITED_FAMILY,
+      );
+
+      if (weightToken === undefined || familyToken === undefined) {
+        offenders.push(`${rule.selector}: states a family or weight outside the tokens`);
+        return;
+      }
+
+      const family = familyStack(familyToken)[0] ?? '';
+      const asked = resolveToken('light', weightToken);
+
+      if (!weightsDeclaredBy(family).has(asked)) {
+        offenders.push(`${rule.selector}: ${family} has no ${asked} face`);
+      }
+    });
+
+    expect(offenders).toEqual([]);
   });
 });
 

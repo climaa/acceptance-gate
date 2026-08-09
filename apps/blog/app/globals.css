@@ -14,7 +14,7 @@
 }
 
 .site-brand {
-  font-weight: var(--weight-semibold);
+  font-weight: var(--weight-bold);
   font-size: var(--text-base);
   color: var(--color-text);
   text-decoration: none;
@@ -48,10 +48,14 @@ main {
   min-height: 60vh;
 }
 
+/* The two page headings are the display face, like `.ds-prose h2`/`h3` in the
+   design system. --weight-semibold, not bold: 600 is the weight the board sets
+   for Fraunces and the only one committed for it — 700 would be synthesized. */
 .hero__title {
   margin: 0;
+  font-family: var(--font-display);
   font-size: var(--text-4xl);
-  font-weight: var(--weight-bold);
+  font-weight: var(--weight-semibold);
   line-height: 1.1;
   letter-spacing: -0.02em;
   max-width: 22ch;
@@ -66,7 +70,7 @@ main {
 
 .section-title {
   font-size: var(--text-sm);
-  font-weight: var(--weight-semibold);
+  font-weight: var(--weight-bold);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--color-text-muted);
@@ -82,7 +86,7 @@ main {
 .post-card__title {
   margin: 0;
   font-size: var(--text-lg);
-  font-weight: var(--weight-semibold);
+  font-weight: var(--weight-bold);
   line-height: var(--leading-tight);
 }
 
@@ -105,8 +109,9 @@ main {
 
 .article-header__title {
   margin: 0;
+  font-family: var(--font-display);
   font-size: var(--text-3xl);
-  font-weight: var(--weight-bold);
+  font-weight: var(--weight-semibold);
   line-height: var(--leading-tight);
   letter-spacing: -0.02em;
 }
