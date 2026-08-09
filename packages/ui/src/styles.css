@@ -438,3 +438,24 @@ body {
   font-family: var(--font-mono);
   font-size: inherit;
 }
+
+/* ============================================================
+   EmptyState
+   ============================================================ */
+
+.ds-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-8);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-subtle);
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.ds-empty__message {
+  margin: 0;
+  font-size: var(--text-sm);
+}
