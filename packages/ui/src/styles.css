@@ -364,3 +364,49 @@ body {
   font-weight: var(--weight-bold);
   color: var(--color-text-muted);
 }
+
+/* ============================================================
+   CodeBlock — the mono slab MDX articles set code in
+   ============================================================ */
+
+/* `min-width: 0` on the wrapper and on the `<pre>` alike is what keeps a long
+   line inside the slab. A flex or grid item's automatic minimum size is its
+   content, so without it the slab is sized by its longest line, widens its
+   column and scrolls the page sideways before the `overflow-x` below ever gets
+   a chance to apply. */
+.ds-code {
+  min-width: 0;
+}
+
+.ds-code__language {
+  display: block;
+  margin-bottom: var(--space-1);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.ds-code__pre {
+  /* The scroll container is the slab itself — the page never scrolls sideways. */
+  overflow-x: auto;
+  min-width: 0;
+  margin: 0;
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-code-bg);
+  color: var(--color-code-fg);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+}
+
+/* The UA stylesheet gives `code` its own generic monospace family and a smaller
+   size; both are restated through tokens so the slab renders one face at one
+   size. `background`/`padding` reset the inline-code chip that `.ds-prose code`
+   paints, which would otherwise tile behind every line of a block. */
+.ds-code__pre code {
+  padding: 0;
+  background: none;
+  font-family: var(--font-mono);
+  font-size: inherit;
+}
