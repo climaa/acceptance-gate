@@ -10,6 +10,12 @@
  *
  * Helpers live in this file on purpose. A `src/tokens-helpers.ts` would land in
  * the coverage denominator; this is test infrastructure, not shipped code.
+ *
+ * Three blocks here are provisional — `contrast maths`, `text contrast` and
+ * `non-text contrast`. Rendered accessibility is axe's claim to make, on real
+ * DOM and computed colour, so they retire when the Wave 3 Playwright a11y
+ * scenario lands; until then they are the only thing covering that gap. Every
+ * other block is structural — a rule pixels cannot see — and stays permanently.
  */
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
@@ -171,6 +177,7 @@ const expectContrast = (theme: ThemeName, fg: string, bg: string, minimum: numbe
   ).toBeGreaterThanOrEqual(minimum);
 };
 
+// Provisional: retires with the Wave 3 a11y scenario (see the file header).
 describe('contrast maths', () => {
   it('rates black on white at the maximum 21:1', () => {
     expect(contrastRatio(parseColour('#000'), parseColour('#fff'))).toBe(21);
@@ -246,6 +253,7 @@ const ENFORCED_TEXT_PAIRS = ALL_TEXT_PAIRS.filter(
   (pair) => !KNOWN_AA_GAP_KEYS.has(pair.join(' ')),
 );
 
+// Provisional: retires with the Wave 3 a11y scenario (see the file header).
 describe('text contrast (WCAG AA)', () => {
   it.each(ENFORCED_TEXT_PAIRS)(`%s: %s on %s meets ${AA_TEXT}:1`, (theme, fg, bg) =>
     expectContrast(theme, fg, bg, AA_TEXT),
@@ -257,6 +265,7 @@ describe('text contrast (WCAG AA)', () => {
   );
 });
 
+// Provisional: retires with the Wave 3 a11y scenario (see the file header).
 describe('non-text contrast (WCAG 2.1 SC 1.4.11)', () => {
   // The focus ring only. SC 1.4.11 covers boundaries *required to identify a
   // component*; --color-border and --color-border-strong are decorative cream
