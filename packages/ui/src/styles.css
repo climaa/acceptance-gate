@@ -369,10 +369,11 @@ body {
    CodeBlock — the mono slab MDX articles set code in
    ============================================================ */
 
-/* `min-width: 0` on both halves is what keeps a long line inside the slab. A
-   flex or grid item's automatic minimum size is its content, so without it the
-   slab is sized by its longest line, widens its column and scrolls the page
-   sideways before the `overflow-x` below ever gets a chance to apply. */
+/* `min-width: 0` on the wrapper and on the `<pre>` alike is what keeps a long
+   line inside the slab. A flex or grid item's automatic minimum size is its
+   content, so without it the slab is sized by its longest line, widens its
+   column and scrolls the page sideways before the `overflow-x` below ever gets
+   a chance to apply. */
 .ds-code {
   min-width: 0;
 }

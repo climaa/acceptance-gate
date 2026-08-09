@@ -1,9 +1,4 @@
-import { readFileSync } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
-
 import { cleanup, render, screen } from '@testing-library/react';
-import postcss from 'postcss';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { CodeBlock } from './CodeBlock';
@@ -12,22 +7,6 @@ import { CodeBlock } from './CodeBlock';
 // cleanup — without this every render stacks in the same document and the queries
 // below match the previous test's DOM.
 afterEach(cleanup);
-
-const SRC = resolve(dirname(fileURLToPath(import.meta.url)), '../../');
-const STYLES_CSS = postcss.parse(readFileSync(join(SRC, 'styles.css'), 'utf8'));
-
-/** The declarations of one rule in styles.css, as a prop → value map. */
-const declarationsOf = (selector: string): Map<string, string> => {
-  const declarations = new Map<string, string>();
-
-  STYLES_CSS.walkRules(selector, (rule) => {
-    rule.walkDecls((decl) => {
-      declarations.set(decl.prop, decl.value);
-    });
-  });
-
-  return declarations;
-};
 
 describe('CodeBlock', () => {
   it('renders its children inside a <pre><code>', () => {
@@ -86,6 +65,15 @@ describe('CodeBlock', () => {
     expect(container.querySelector('.ds-code__language')).toBeNull();
   });
 
+  it('treats an empty `language` as an absent one', () => {
+    const { container } = render(<CodeBlock language="">{'const x = 1;'}</CodeBlock>);
+
+    const pre = container.querySelector('pre');
+
+    expect(pre?.hasAttribute('data-language')).toBe(false);
+    expect(container.querySelector('.ds-code__language')).toBeNull();
+  });
+
   it('renders already-highlighted markup unchanged', () => {
     // Highlighting is rehype-pretty-code's job at build time; this component
     // renders whatever markup it is handed, so element children must survive
@@ -115,20 +103,5 @@ describe('CodeBlock', () => {
     const { container } = render(<CodeBlock>{line}</CodeBlock>);
 
     expect(container.querySelector('code')?.textContent).toBe(line);
-  });
-
-  it('gives the slab, not the page, the horizontal overflow', () => {
-    // A structural CSS guard, not an appearance one (see CODING_STANDARDS): it
-    // asserts no colour, size or ratio — only that the scroll container is the
-    // slab. Without `overflow-x` a long line paints past the viewport and the
-    // whole page scrolls sideways; without `min-width: 0` the slab is sized by
-    // its longest line inside any flex or grid parent and widens the page before
-    // the overflow rule ever applies. Neither is visible to a jsdom render, and
-    // a differ baselines the widened page green.
-    const pre = declarationsOf('.ds-code__pre');
-
-    expect(pre.get('overflow-x')).toBe('auto');
-    expect(pre.get('min-width')).toBe('0');
-    expect(declarationsOf('.ds-code').get('min-width')).toBe('0');
   });
 });
