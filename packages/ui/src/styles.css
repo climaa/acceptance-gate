@@ -57,6 +57,28 @@ body {
 }
 
 /* ============================================================
+   Utilities
+   ============================================================ */
+
+/*
+ * Clip-rect pattern: shrinks content to a 1px box and clips it, rather than
+ * `display: none` or `visibility: hidden`, either of which would also remove
+ * it from the accessibility tree. Shared so no consumer — SkipLink today —
+ * copies the declarations a second time.
+ */
+.ds-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ============================================================
    Layout
    ============================================================ */
 
@@ -512,4 +534,31 @@ body {
 .ds-empty__message {
   margin: 0;
   font-size: var(--text-sm);
+}
+
+/* ============================================================
+   SkipLink
+   ============================================================ */
+
+/*
+ * Overrides `.ds-visually-hidden` back to visible on focus. Two classes beat
+ * one on specificity, so this wins over the utility regardless of source
+ * order. `position: fixed` (not the utility's `absolute`) pins it to the
+ * viewport rather than wherever it sits in the document.
+ */
+.ds-skip-link:focus-visible {
+  position: fixed;
+  top: var(--space-2);
+  left: var(--space-2);
+  width: auto;
+  height: auto;
+  padding: var(--space-2) var(--space-4);
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  color: var(--color-text);
+  box-shadow: var(--shadow-lg);
 }
