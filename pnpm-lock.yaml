@@ -109,6 +109,12 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
+  packages/visual-diff:
+    devDependencies:
+      vitest:
+        specifier: ^4.1.10
+        version: 4.1.10(@types/node@22.20.1)(vite@7.3.6(@types/node@22.20.1)(tsx@4.23.7)(yaml@2.9.0))
+
 packages:
 
   '@ai-hero/sandcastle@0.12.0':
