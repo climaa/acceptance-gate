@@ -17,6 +17,27 @@ export interface SkeletonProps {
 const spaceToken = (step: SkeletonSpace | undefined) =>
   step === undefined ? undefined : `var(--space-${step})`;
 
+interface ShapeProps {
+  variant: SkeletonVariant;
+  width?: SkeletonSpace;
+  height?: SkeletonSpace;
+  className?: string;
+}
+
+/** One placeholder shape: the whole atom when it stands alone, one row of it
+ *  inside a group. */
+function Shape({ variant, width, height, className }: ShapeProps) {
+  return (
+    <span
+      className={['ds-skeleton', `ds-skeleton--${variant}`, className]
+        .filter(Boolean)
+        .join(' ')}
+      style={{ width: spaceToken(width), height: spaceToken(height) }}
+      aria-hidden="true"
+    />
+  );
+}
+
 /**
  * Loading placeholder. The shimmer is entirely CSS — see the `.ds-skeleton` block
  * in styles.css, which also documents the frame it freezes on when a capture
@@ -40,26 +61,19 @@ export function Skeleton({
   lines,
   className,
 }: SkeletonProps) {
-  // One shape, whether it stands alone or inside a group: `key` is set only in the
-  // group, and the caller's className lands on whichever element is the root.
-  const shape = (key: number | undefined, extra?: string) => (
-    <span
-      key={key}
-      className={['ds-skeleton', `ds-skeleton--${variant}`, extra]
-        .filter(Boolean)
-        .join(' ')}
-      style={{ width: spaceToken(width), height: spaceToken(height) }}
-      aria-hidden="true"
-    />
-  );
+  const shape = { variant, width, height };
 
-  if (lines === undefined) return shape(undefined, className);
+  // The caller's className lands on whichever element is the root: the shape when
+  // it stands alone, the group when there is one.
+  if (lines === undefined) return <Shape {...shape} className={className} />;
 
   if (lines <= 0) return null;
 
   return (
     <span className={['ds-skeleton-group', className].filter(Boolean).join(' ')}>
-      {Array.from({ length: lines }, (_, index) => shape(index))}
+      {Array.from({ length: lines }, (_, index) => (
+        <Shape key={index} {...shape} />
+      ))}
     </span>
   );
 }

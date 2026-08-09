@@ -100,4 +100,13 @@ describe('Skeleton', () => {
 
     expect(container.firstElementChild).toBeNull();
   });
+
+  it('renders nothing for a negative count either', () => {
+    const { container } = render(<Skeleton lines={-1} />);
+
+    // Pins the guard as `<= 0` rather than `=== 0`: a count computed from a
+    // subtraction can arrive negative, and `Array.from` would treat it as zero
+    // and leave a bare group behind.
+    expect(container.firstElementChild).toBeNull();
+  });
 });
