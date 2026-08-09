@@ -8,6 +8,7 @@
  * name an absence rather than a palette value, so there is nothing to tokenize.
  */
 
+@import './fonts.css';
 @import './tokens.css';
 
 /* ============================================================
