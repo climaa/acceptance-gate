@@ -148,6 +148,41 @@ body {
 }
 
 /* ============================================================
+   Link
+   ============================================================ */
+
+/* The underline and the focus ring are interaction states, not resting ones, so
+   the resting decoration is removed here and put back on hover and focus. The
+   ring itself is the :where(:focus-visible) rule above and is never re-declared.
+   Colour and weight are stated rather than inherited: `as` can render this on
+   any element, so neither may depend on what the component is rendered as. */
+.ds-link {
+  text-decoration: none;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+  cursor: pointer;
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.ds-link:hover,
+.ds-link:focus-visible {
+  text-decoration: underline;
+}
+
+/* The board draws the default label at 600 — a weight Atkinson Hyperlegible has
+   no face for, and a synthesized one rasterizes per engine (see tokens.css). 700
+   is the nearer of the two steps it ships; 400 would erase the emphasis. */
+.ds-link--default {
+  color: var(--color-accent);
+  font-weight: var(--weight-bold);
+}
+
+.ds-link--muted {
+  color: var(--color-text-muted);
+  font-weight: var(--weight-normal);
+}
+
+/* ============================================================
    Badge
    ============================================================ */
 
