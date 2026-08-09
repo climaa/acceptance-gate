@@ -19,7 +19,8 @@
     "clean": "rm -rf .turbo node_modules"
   },
   "devDependencies": {
-    "@fontsource/inter": "5.3.0",
+    "@fontsource/atkinson-hyperlegible": "5.3.0",
+    "@fontsource/fraunces": "5.3.0",
     "@fontsource/jetbrains-mono": "5.3.0",
     "@gate/tsconfig": "workspace:*",
     "@gate/visual-diff": "workspace:*",
