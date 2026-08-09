@@ -1,5 +1,5 @@
 import { cleanup, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { PostMeta } from './PostMeta';
 
@@ -7,6 +7,7 @@ import { PostMeta } from './PostMeta';
 // cleanup — without this every render stacks in the same document and the queries
 // below match the previous test's DOM.
 afterEach(cleanup);
+afterEach(() => vi.unstubAllEnvs());
 
 describe('PostMeta', () => {
   it('renders the formatted date and reading time', () => {
@@ -26,6 +27,17 @@ describe('PostMeta', () => {
     expect(time.getAttribute('dateTime')).toBe('2026-08-09');
   });
 
+  it('formats the date in UTC rather than in the runtime timezone', () => {
+    // Node re-reads `TZ` on assignment, so this really does move the process
+    // west of Greenwich: unpinned, midnight UTC on the 1st falls back into the
+    // previous month and this renders 'Dec 2025'.
+    vi.stubEnv('TZ', 'America/Los_Angeles');
+
+    render(<PostMeta date="2026-01-01" readingMinutes={7} />);
+
+    screen.getByText('Jan 2026');
+  });
+
   it('hides the decorative separator from the accessibility tree', () => {
     render(<PostMeta date="2026-08-09" readingMinutes={7} />);
 
@@ -40,11 +52,19 @@ describe('PostMeta', () => {
     screen.getByText('1 min');
   });
 
+  it('carries only the block class when no className is supplied', () => {
+    const { container } = render(<PostMeta date="2026-08-09" readingMinutes={7} />);
+
+    // Exact, not `toContain`: an omitted `className` must be filtered out rather
+    // than joined in as a trailing empty or `undefined` class.
+    expect(container.firstElementChild?.className).toBe('ds-post-meta');
+  });
+
   it('appends a caller-supplied className', () => {
-    render(<PostMeta date="2026-08-09" readingMinutes={7} className="u-mt-2" />);
+    const { container } = render(
+      <PostMeta date="2026-08-09" readingMinutes={7} className="u-mt-2" />,
+    );
 
-    const time = screen.getByText('Aug 2026');
-
-    expect(time.closest('.ds-post-meta')?.className).toBe('ds-post-meta u-mt-2');
+    expect(container.firstElementChild?.className).toBe('ds-post-meta u-mt-2');
   });
 });
