@@ -1,19 +1,24 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { SITE_DESCRIPTION, SITE_TITLE, SITE_URL } from '@/lib/site';
 import './globals.css';
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://carleslima.dev'),
+  metadataBase: SITE_URL,
   title: {
-    default: 'Carles Lima — Frontend engineering and quality',
-    template: '%s · Carles Lima',
+    default: `${SITE_TITLE} — Frontend engineering and quality`,
+    template: `%s · ${SITE_TITLE}`,
   },
-  description:
-    'Notes on Next.js, testing with Cypress and Gherkin, visual regression and coding agents.',
+  description: SITE_DESCRIPTION,
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    siteName: 'Carles Lima',
+    siteName: SITE_TITLE,
+  },
+  alternates: {
+    types: {
+      'application/rss+xml': '/rss.xml',
+    },
   },
 };
 
