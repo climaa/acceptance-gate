@@ -5,12 +5,14 @@
  * would be a second source of truth and would drift, which is the exact failure
  * this suite exists to catch. Every assertion below runs against the postcss AST
  * of the real stylesheet, so editing a token is the only way to change a result.
+ * The font rules at the foot of the file read fonts.css the same way, and check
+ * its `src:` URLs against the bytes actually committed under src/fonts/.
  *
  * Helpers live in this file on purpose. A `src/tokens-helpers.ts` would land in
  * the coverage denominator; this is test infrastructure, not shipped code.
  */
-import { readFileSync, readdirSync } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import postcss, { type Declaration, type Root } from 'postcss';
@@ -19,6 +21,8 @@ import { describe, expect, it } from 'vitest';
 const SRC = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const TOKENS_CSS = join(SRC, 'tokens.css');
 const STYLES_CSS = join(SRC, 'styles.css');
+const FONTS_CSS = join(SRC, 'fonts.css');
+const FONTS_DIR = join(SRC, 'fonts');
 
 const parseFile = (path: string) =>
   postcss.parse(readFileSync(path, 'utf8'), { from: path });
@@ -379,5 +383,204 @@ describe('styles.css', () => {
     });
 
     expect(literals).toEqual([]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Self-hosted fonts
+// ---------------------------------------------------------------------------
+
+/**
+ * `src/fonts/og/` is the one documented exemption from the woff2-only rule:
+ * next/og renders through satori, which reads neither page CSS nor woff2, so the
+ * OG route needs a TTF sibling. Named here so the allowance is a decision — a
+ * pattern-shaped exemption would quietly cover anything dropped alongside it.
+ */
+const FONT_DIR_EXEMPTIONS = ['og'];
+
+/**
+ * Families that resolve to whatever face the machine happens to have. One of
+ * these in a stack is the whole determinism problem: a local capture and a CI
+ * capture would then disagree forever, whatever the baseline says.
+ */
+const SYSTEM_FAMILIES = [
+  'system-ui',
+  '-apple-system',
+  'ui-sans-serif',
+  'ui-monospace',
+  'SFMono-Regular',
+  'SF Mono',
+  'Segoe UI',
+  'Roboto',
+  'Helvetica Neue',
+  'Menlo',
+  'Consolas',
+  'Liberation Mono',
+].map((family) => family.toLowerCase());
+
+/** Permitted only *after* a self-hosted family, as the last-resort keyword. */
+const GENERIC_FAMILIES = new Set([
+  'sans-serif',
+  'serif',
+  'monospace',
+  'cursive',
+  'fantasy',
+]);
+
+const FONT_TOKENS = ['--font-sans', '--font-mono'] as const;
+
+const unquote = (value: string) => value.trim().replace(/^(['"])([\s\S]*)\1$/, '$2');
+
+/**
+ * A font token's declared stack: `'Inter', sans-serif` → `['Inter', 'sans-serif']`.
+ * Font stacks nest no commas, so splitting on one is enough. Read from the light
+ * map because typography carries no colour and never remaps per theme.
+ */
+const familyStack = (token: string) =>
+  resolveToken('light', token).split(',').map(unquote);
+
+type FontFace = {
+  label: string;
+  family: string;
+  descriptors: Map<string, string>;
+};
+
+const fontFaces = (css: Root): FontFace[] => {
+  const faces: FontFace[] = [];
+
+  css.walkAtRules('font-face', (rule) => {
+    const descriptors = new Map<string, string>();
+    rule.walkDecls((decl) => {
+      descriptors.set(decl.prop, decl.value);
+    });
+
+    const family = unquote(descriptors.get('font-family') ?? '');
+    const weight = descriptors.get('font-weight') ?? 'no weight';
+    faces.push({ label: `${family} ${weight}`, family, descriptors });
+  });
+
+  return faces;
+};
+
+const FACES = fontFaces(parseFile(FONTS_CSS));
+const FACE_ROWS = FACES.map((face) => [face.label, face] as const);
+const SELF_HOSTED_FAMILIES = new Set(FACES.map((face) => face.family));
+
+const URL_FUNCTION = /url\(\s*(['"]?)([^'")]+)\1\s*\)/g;
+
+/** The paths a face's `src:` names, relative to fonts.css (which sits in src/). */
+const sourceUrls = (face: FontFace) =>
+  [...(face.descriptors.get('src') ?? '').matchAll(URL_FUNCTION)].map(
+    (match) => match[2] ?? '',
+  );
+
+const fontFileEntries = () =>
+  readdirSync(FONTS_DIR, { recursive: true, encoding: 'utf8' }).filter(
+    (entry) => !statSync(join(FONTS_DIR, entry)).isDirectory(),
+  );
+
+describe('font tokens', () => {
+  it.each(FONT_TOKENS)('%s leads with a family fonts.css self-hosts', (token) => {
+    const [leading] = familyStack(token);
+
+    expect([...SELF_HOSTED_FAMILIES]).toContain(leading);
+  });
+
+  it.each(FONT_TOKENS)('%s names no system-resolved family', (token) => {
+    const systemFamilies = familyStack(token).filter((family) =>
+      SYSTEM_FAMILIES.includes(family.toLowerCase()),
+    );
+
+    expect(systemFamilies).toEqual([]);
+  });
+
+  it.each(FONT_TOKENS)('%s falls back only to a generic keyword', (token) => {
+    // The generic last resort stays: it is not a system-stack alias, and Wave 4's
+    // `fonts.check()` assertion is the real guard against one being painted.
+    const fallbacks = familyStack(token).slice(1);
+
+    expect(fallbacks.filter((family) => !GENERIC_FAMILIES.has(family))).toEqual([]);
+  });
+
+  it('gives each font token a family of its own', () => {
+    // Catches the copy-paste, not a full swap: which of two self-hosted families
+    // is the monospaced one is a question only the font metrics can answer.
+    const leading = FONT_TOKENS.map((token) => familyStack(token)[0]);
+
+    expect(new Set(leading).size).toBe(FONT_TOKENS.length);
+  });
+});
+
+describe('fonts.css', () => {
+  it('is imported by styles.css', () => {
+    const imported: string[] = [];
+
+    parseFile(STYLES_CSS).walkAtRules('import', (rule) => {
+      imported.push(unquote(rule.params));
+    });
+
+    expect(imported).toContain('./fonts.css');
+  });
+
+  it('declares a face for every weight a --weight-* token asks for', () => {
+    const declaredWeights = new Set(
+      FACES.map((face) => face.descriptors.get('font-weight')),
+    );
+
+    const tokenWeights = ROOT_DECLS.filter((decl) =>
+      decl.prop.startsWith('--weight-'),
+    ).map((decl) => decl.value);
+
+    expect(tokenWeights.filter((weight) => !declaredWeights.has(weight))).toEqual([]);
+  });
+
+  it('resolves every src: URL to a file on disk', () => {
+    // A half-copied set does not error — it renders as a fallback, silently, and
+    // only a byte-wise screenshot diff two waves later would notice.
+    const missing = FACES.flatMap((face) =>
+      sourceUrls(face)
+        .filter((url) => !existsSync(resolve(SRC, url)))
+        .map((url) => `${face.label}: ${url}`),
+    );
+
+    expect(missing).toEqual([]);
+  });
+
+  it.each(FACE_ROWS)('%s blocks rather than swaps', (_label, face) => {
+    expect(face.descriptors.get('font-display')).toBe('block');
+  });
+
+  it.each(FACE_ROWS)('%s is bounded by a unicode-range', (_label, face) => {
+    expect(face.descriptors.get('unicode-range')).toMatch(/^U\+/i);
+  });
+});
+
+describe('src/fonts/', () => {
+  it('holds only woff2 binaries and licence texts', () => {
+    const unexpected = fontFileEntries()
+      .filter((entry) => !FONT_DIR_EXEMPTIONS.includes(dirname(entry)))
+      .filter((entry) => !/\.(woff2|txt)$/.test(entry));
+
+    expect(unexpected).toEqual([]);
+  });
+
+  it('carries the OFL text every self-hosted family needs', () => {
+    const licences = fontFileEntries().filter((entry) => entry.endsWith('.txt'));
+
+    expect(licences).toHaveLength(SELF_HOSTED_FAMILIES.size);
+  });
+
+  it('commits no woff2 that fonts.css never references', () => {
+    const referenced = new Set(
+      FACES.flatMap(sourceUrls)
+        .filter((url) => url.endsWith('.woff2'))
+        .map((url) => basename(url)),
+    );
+
+    const orphans = fontFileEntries()
+      .filter((entry) => entry.endsWith('.woff2'))
+      .filter((entry) => !referenced.has(basename(entry)));
+
+    expect(orphans).toEqual([]);
   });
 });

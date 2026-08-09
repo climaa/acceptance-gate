@@ -121,12 +121,13 @@
   --radius-xl: 1rem;
   --radius-full: 9999px;
 
-  /* ---- Typography ---- */
-  --font-sans:
-    ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
-    sans-serif;
-  --font-mono:
-    ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+  /* ---- Typography ----
+   * Both families are self-hosted woff2; fonts.css declares the faces and says
+   * why. The trailing generic is a last-resort keyword, not a system-stack alias
+   * — nothing here may name a family the visitor's machine resolves, or a local
+   * capture and a CI capture stop being comparable. */
+  --font-sans: 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
 
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
@@ -141,6 +142,9 @@
   --leading-normal: 1.5;
   --leading-relaxed: 1.7;
 
+  /* Every step here has a face of its own in fonts.css. A weight with no face is
+   * drawn as a synthesized bold, which each engine slants and thickens its own
+   * way — so an unbacked step reintroduces exactly the drift self-hosting removes. */
   --weight-normal: 400;
   --weight-medium: 500;
   --weight-semibold: 600;
