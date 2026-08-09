@@ -52,10 +52,13 @@ as "both themes look the same":
 pnpm install
 cp .env.example .env  # turbo remote-cache credentials — see the comments inside
 pnpm dev              # blog on :3000
-pnpm lint && pnpm build && pnpm test && pnpm typecheck
-pnpm format:check && pnpm health:check   # also gate jobs — CI runs all seven
+pnpm lint && pnpm typecheck && pnpm build && pnpm test
+pnpm format:check && pnpm health:check
 pnpm test:sandcastle  # the orchestrator's own hermetic suite
 ```
+
+Those last three lines are the seven parallel gate jobs from the diagram above,
+in the same order.
 
 Run turbo through the `pnpm` scripts rather than `pnpm turbo run ...` directly.
 The scripts wrap turbo in `dotenv -e .env -o --` so its credentials come from
