@@ -122,11 +122,14 @@
   --radius-full: 9999px;
 
   /* ---- Typography ----
-   * Both families are self-hosted woff2; fonts.css declares the faces and says
-   * why. The trailing generic is a last-resort keyword, not a system-stack alias
-   * — nothing here may name a family the visitor's machine resolves, or a local
-   * capture and a CI capture stop being comparable. */
-  --font-sans: 'Inter', sans-serif;
+   * All three families are self-hosted woff2; fonts.css declares the faces and
+   * says why. The trailing generic is a last-resort keyword, not a system-stack
+   * alias — nothing here may name a family the visitor's machine resolves, or a
+   * local capture and a CI capture stop being comparable.
+   * --font-display is the heading face and nothing else: headings carry it
+   * explicitly, everything else inherits --font-sans from `body`. */
+  --font-display: 'Fraunces', serif;
+  --font-sans: 'Atkinson Hyperlegible', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
   --text-xs: 0.75rem;
@@ -144,9 +147,12 @@
 
   /* Every step here has a face of its own in fonts.css. A weight with no face is
    * drawn as a synthesized bold, which each engine slants and thickens its own
-   * way — so an unbacked step reintroduces exactly the drift self-hosting removes. */
+   * way — so an unbacked step reintroduces exactly the drift self-hosting removes.
+   * The scale is therefore the union of two partial families, and the steps do
+   * not interchange: --weight-semibold is Fraunces's only weight and belongs
+   * with --font-display, while normal and bold are the two Atkinson
+   * Hyperlegible draws. There is no 500 step because neither family has one. */
   --weight-normal: 400;
-  --weight-medium: 500;
   --weight-semibold: 600;
   --weight-bold: 700;
 
