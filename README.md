@@ -7,7 +7,7 @@ request — including the ones that build the repo itself — walks through the
 same gate:
 
 ```
-lint · typecheck · build · test · sandcastle  (parallel)  →  gate
+lint · typecheck · build · test · format · health · sandcastle  (parallel)  →  gate
                              ↑ e2e (Wave 3) and visual-diff (Wave 4) join gate.needs later
 ```
 
@@ -19,21 +19,21 @@ the CI this repo builds for itself. The PR history is the evidence: pipeline
 merges carry their model co-author trailer in the squashed commit.
 
 > **Work in progress, in public — deliberately.** The
-> [open issues](https://github.com/climaa/acceptance-gate/issues) and the
-> [project board](https://github.com/users/climaa/projects/1) are the live,
-> story-pointed roadmap. Watching this repo means watching the pipeline work.
+> [project board](https://github.com/users/climaa/projects/1) is the live,
+> story-pointed roadmap; [open issues](https://github.com/climaa/acceptance-gate/issues)
+> track in-flight work. Watching this repo means watching the pipeline work.
 
 ## What's here, what's coming
 
-| Piece                                                           | Status                                                    |
-| --------------------------------------------------------------- | --------------------------------------------------------- |
-| `.sandcastle/` — the orchestrator, with its hermetic test suite | ✅ committed, public                                      |
-| `designs/` — the design source of truth + PNG exports           | ✅ normative component inventory, two theme personalities |
-| `apps/blog` — Next.js App Router + MDX, consumes `@gate/ui`     | ✅ seed, English                                          |
-| `packages/ui` — atomic design system, token-only styling        | 🔜 Wave 1: 19 components, layering enforced by ESLint     |
-| `apps/storybook` — the visual single source of truth            | 🔜 Wave 2                                                 |
-| `apps/e2e` — playwright-bdd acceptance suite                    | 🔜 Wave 3                                                 |
-| `packages/visual-diff` — the self-built CLI that gates PRs      | 🔜 Wave 4                                                 |
+| Piece                                                           | Status                                                                                                                   |
+| --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `.sandcastle/` — the orchestrator, with its hermetic test suite | ✅ committed, public                                                                                                     |
+| `designs/` — the design source of truth + PNG exports           | ✅ normative component inventory, two theme personalities                                                                |
+| `apps/blog` — Next.js App Router + MDX, consumes `@gate/ui`     | ✅ seed, English                                                                                                         |
+| `packages/ui` — atomic design system, token-only styling        | ✅ 7 seed components, consumed by the blog · 🔜 Wave 1 completes the 19-component inventory, layering enforced by ESLint |
+| `apps/storybook` — the visual single source of truth            | 🔜 Wave 2                                                                                                                |
+| `apps/e2e` — playwright-bdd acceptance suite                    | 🔜 Wave 3                                                                                                                |
+| `packages/visual-diff` — the self-built CLI that gates PRs      | 🔜 Wave 4                                                                                                                |
 
 ## The design system, in one rule
 
@@ -53,6 +53,7 @@ pnpm install
 cp .env.example .env  # turbo remote-cache credentials — see the comments inside
 pnpm dev              # blog on :3000
 pnpm lint && pnpm build && pnpm test && pnpm typecheck
+pnpm format:check && pnpm health:check   # also gate jobs — CI runs all seven
 pnpm test:sandcastle  # the orchestrator's own hermetic suite
 ```
 
@@ -61,7 +62,7 @@ The scripts wrap turbo in `dotenv -e .env -o --` so its credentials come from
 this repo's `.env` and never from your shell — a `TURBO_TEAM` exported in a
 shell profile would otherwise apply to every repo on the machine.
 
-Toolchain pinned: pnpm 11.17 (`packageManager` + sha512), Node 22 (`.nvmrc`),
+Toolchain pinned: pnpm 11.20.0 (`packageManager` + sha512), Node 22 (`.nvmrc`),
 Turborepo ^2.10.
 
 ## How the autonomous loop works
