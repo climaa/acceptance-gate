@@ -3,6 +3,9 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import { EmptyState } from './EmptyState';
 
+// `globals` is off in vitest.config.ts, so Testing Library registers no automatic
+// cleanup — without this every render stacks in the same document and the queries
+// below match the previous test's DOM.
 afterEach(cleanup);
 
 describe('EmptyState', () => {
@@ -31,9 +34,17 @@ describe('EmptyState', () => {
     expect(container.querySelector('.ds-empty__action')).toBeNull();
   });
 
+  it('carries only the block class when no className is supplied', () => {
+    const { container } = render(<EmptyState message="No posts" />);
+
+    // Exact, not `toContain`: an omitted `className` must be filtered out rather
+    // than joined in as a trailing empty or `undefined` class.
+    expect(container.firstElementChild?.className).toBe('ds-empty');
+  });
+
   it('appends a caller-supplied className', () => {
     const { container } = render(<EmptyState message="No posts" className="u-mt-4" />);
 
-    expect(container.querySelector('.ds-empty')?.className).toBe('ds-empty u-mt-4');
+    expect(container.firstElementChild?.className).toBe('ds-empty u-mt-4');
   });
 });

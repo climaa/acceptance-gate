@@ -7,6 +7,11 @@ export interface EmptyStateProps {
   className?: string;
 }
 
+/**
+ * Empty result: the message is what the reader always gets, the icon and action
+ * are slots the caller fills — this atom composes them and owns no content of
+ * its own.
+ */
 export function EmptyState({ icon, message, action, className }: EmptyStateProps) {
   return (
     <div className={['ds-empty', className].filter(Boolean).join(' ')}>
