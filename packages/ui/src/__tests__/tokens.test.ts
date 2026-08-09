@@ -403,20 +403,22 @@ const FONT_DIR_EXEMPTIONS = ['og'];
  * these in a stack is the whole determinism problem: a local capture and a CI
  * capture would then disagree forever, whatever the baseline says.
  */
-const SYSTEM_FAMILIES = [
-  'system-ui',
-  '-apple-system',
-  'ui-sans-serif',
-  'ui-monospace',
-  'SFMono-Regular',
-  'SF Mono',
-  'Segoe UI',
-  'Roboto',
-  'Helvetica Neue',
-  'Menlo',
-  'Consolas',
-  'Liberation Mono',
-].map((family) => family.toLowerCase());
+const SYSTEM_FAMILIES = new Set(
+  [
+    'system-ui',
+    '-apple-system',
+    'ui-sans-serif',
+    'ui-monospace',
+    'SFMono-Regular',
+    'SF Mono',
+    'Segoe UI',
+    'Roboto',
+    'Helvetica Neue',
+    'Menlo',
+    'Consolas',
+    'Liberation Mono',
+  ].map((family) => family.toLowerCase()),
+);
 
 /** Permitted only *after* a self-hosted family, as the last-resort keyword. */
 const GENERIC_FAMILIES = new Set([
@@ -439,14 +441,15 @@ const unquote = (value: string) => value.trim().replace(/^(['"])([\s\S]*)\1$/, '
 const familyStack = (token: string) =>
   resolveToken('light', token).split(',').map(unquote);
 
-type FontFace = {
+/** One parsed `@font-face` rule — not the DOM `FontFace` of the same name. */
+type FontFaceRule = {
   label: string;
   family: string;
   descriptors: Map<string, string>;
 };
 
-const fontFaces = (css: Root): FontFace[] => {
-  const faces: FontFace[] = [];
+const fontFaces = (css: Root): FontFaceRule[] => {
+  const faces: FontFaceRule[] = [];
 
   css.walkAtRules('font-face', (rule) => {
     const descriptors = new Map<string, string>();
@@ -463,13 +466,14 @@ const fontFaces = (css: Root): FontFace[] => {
 };
 
 const FACES = fontFaces(parseFile(FONTS_CSS));
+/** `it.each` rows: the label leads so `%s` names the face under test. */
 const FACE_ROWS = FACES.map((face) => [face.label, face] as const);
 const SELF_HOSTED_FAMILIES = new Set(FACES.map((face) => face.family));
 
 const URL_FUNCTION = /url\(\s*(['"]?)([^'")]+)\1\s*\)/g;
 
 /** The paths a face's `src:` names, relative to fonts.css (which sits in src/). */
-const sourceUrls = (face: FontFace) =>
+const sourceUrls = (face: FontFaceRule) =>
   [...(face.descriptors.get('src') ?? '').matchAll(URL_FUNCTION)].map(
     (match) => match[2] ?? '',
   );
@@ -488,7 +492,7 @@ describe('font tokens', () => {
 
   it.each(FONT_TOKENS)('%s names no system-resolved family', (token) => {
     const systemFamilies = familyStack(token).filter((family) =>
-      SYSTEM_FAMILIES.includes(family.toLowerCase()),
+      SYSTEM_FAMILIES.has(family.toLowerCase()),
     );
 
     expect(systemFamilies).toEqual([]);
@@ -564,7 +568,7 @@ describe('src/fonts/', () => {
     expect(unexpected).toEqual([]);
   });
 
-  it('carries the OFL text every self-hosted family needs', () => {
+  it('carries one licence text per self-hosted family', () => {
     const licences = fontFileEntries().filter((entry) => entry.endsWith('.txt'));
 
     expect(licences).toHaveLength(SELF_HOSTED_FAMILIES.size);
