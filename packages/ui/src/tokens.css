@@ -5,43 +5,16 @@
  * Everything else in the design system consumes these variables; no component
  * hardcodes a value. Rebranding = editing this file.
  *
- * TOKEN AUDIT (2026-08-06 — design board 01 mirrors this file):
- * - UNUSED, to be pruned by the Wave-1 tokens issue: the ENTIRE --c-accent-*
- *   (blue) family — the light theme remapped to cream/terra/umber — and most
- *   of --c-neutral-* (only styles.css raw usage remains, see violation below).
- *   A token earns its place or leaves; re-add any the day a role consumes it.
- * - VIOLATION to fix in Wave 1: styles.css consumes the state scales raw
- *   (--c-success/warning/danger-*). Wave 1 adds semantic roles
- *   --color-{success,warning,danger}-{surface,fg} and the postcss token test
- *   then enforces both rules: every raw step is consumed by a role, and zero
- *   --c- references exist outside this file.
+ * TOKEN CONTRACT (design board 01 mirrors this file). Four rules hold:
+ * 1. Zero --c- references outside this file. Components consume roles only.
+ * 2. Every raw --c-* step declared here is referenced by at least one role.
+ *    A token earns its place or leaves; re-add one the day a role wants it.
+ * 3. No literal colour value in styles.css.
+ * 4. Every --color-* role in :root is also remapped in [data-theme='dark'],
+ *    or is commented as deliberately theme-invariant.
  */
 
 :root {
-  /* ---- Escala de color: neutrales ---- */
-  --c-neutral-0: #ffffff;
-  --c-neutral-50: #f8fafc;
-  --c-neutral-100: #f1f5f9;
-  --c-neutral-200: #e2e8f0;
-  --c-neutral-300: #cbd5e1;
-  --c-neutral-400: #94a3b8;
-  --c-neutral-500: #64748b;
-  --c-neutral-600: #475569;
-  --c-neutral-700: #334155;
-  --c-neutral-800: #1e293b;
-  --c-neutral-900: #0f172a;
-  --c-neutral-950: #020617;
-
-  /* ---- Acento (azul) ---- */
-  --c-accent-50: #eff6ff;
-  --c-accent-100: #dbeafe;
-  --c-accent-200: #bfdbfe;
-  --c-accent-300: #93c5fd;
-  --c-accent-400: #60a5fa;
-  --c-accent-500: #3b82f6;
-  --c-accent-600: #2563eb;
-  --c-accent-700: #1d4ed8;
-
   /* ---- Light-theme raw families (editorial parchment + terracotta) ----
    * Consumed exclusively by the light role block below.
    * Palette study: warm cream ground, terracotta accent, warm ink. */
@@ -57,6 +30,17 @@
   --c-terra-500: #713520;
   --c-terra-700: #5d2b1a;
 
+  /* ---- Light-theme state raws (success / warning / danger) ----
+   * Consumed exclusively by the light state roles below. Only danger has a
+   * filled variant, which is why it alone carries a -500 step. */
+  --c-success-100: #dcfce7;
+  --c-success-700: #15803d;
+  --c-warning-100: #fef3c7;
+  --c-warning-700: #b45309;
+  --c-danger-100: #fee2e2;
+  --c-danger-500: #ef4444;
+  --c-danger-700: #b91c1c;
+
   /* ---- Dark-theme raw families (terminal lime on green-black) ----
    * Consumed exclusively by the [data-theme='dark'] role remap below. */
   --c-ink-950: #141614;
@@ -66,19 +50,21 @@
   --c-ink-600: #3d423d;
   --c-ink-400: #a9c2a0;
   --c-ink-50: #eef7ea;
+  --c-green-900: #16301a;
   --c-green-500: #80ee64;
   --c-green-300: #bff9b4;
 
-  /* ---- State semantics ---- */
-  --c-success-100: #dcfce7;
-  --c-success-500: #22c55e;
-  --c-success-700: #15803d;
-  --c-warning-100: #fef3c7;
-  --c-warning-500: #f59e0b;
-  --c-warning-700: #b45309;
-  --c-danger-100: #fee2e2;
-  --c-danger-500: #ef4444;
-  --c-danger-700: #b91c1c;
+  /* ---- Dark-theme state raws (warning / danger) ----
+   * Success rides the green family above; ink and green cannot express
+   * "warning" or "danger" at all, so those two carry their own muted amber
+   * and red steps. Every value below is picked against the dark ground —
+   * contrast ratios are in the [data-theme='dark'] role block. */
+  --c-amber-300: #f2cf7c;
+  --c-amber-900: #3b2c10;
+  --c-red-300: #ffa8a0;
+  --c-red-500: #c93035;
+  --c-red-600: #b4272c;
+  --c-red-900: #3d1a18;
 
   /* ---- Semantic roles (what components consume) ----
    * Light is editorial parchment: cream ground, terracotta accent, warm ink. */
@@ -94,6 +80,27 @@
   --color-accent-hover: var(--c-terra-700);
   --color-accent-subtle: rgb(113 53 32 / 0.08);
   --color-focus-ring: var(--c-terra-300);
+
+  /* ---- State roles ----
+   * surface/fg is the tinted-chip shape (Badge). A filled control is not a
+   * surface/fg pair, so danger — the only tone with one — also gets the solid
+   * trio, its own foreground included: --color-text-inverted is the wrong role
+   * there, since dark flips that one to near-black to sit on the lime accent. */
+  --color-success-surface: var(--c-success-100);
+  --color-success-fg: var(--c-success-700);
+  --color-warning-surface: var(--c-warning-100);
+  --color-warning-fg: var(--c-warning-700);
+  --color-danger-surface: var(--c-danger-100);
+  --color-danger-fg: var(--c-danger-700);
+  --color-danger-solid: var(--c-danger-500);
+  --color-danger-solid-hover: var(--c-danger-700);
+  --color-on-danger-solid: var(--c-cream-50);
+
+  /* ---- Code roles (the .ds-prose block) ----
+   * Warm ink slab under cream text — the inverse of the page, so a code block
+   * reads as a plate on the parchment rather than a second background. */
+  --color-code-bg: var(--c-umber-950);
+  --color-code-fg: var(--c-cream-50);
 
   /* ---- Espaciado (escala de 4px) ---- */
   --space-1: 0.25rem;
@@ -154,10 +161,16 @@
   --width-container: 72rem;
 }
 
-/* ---- Dark theme: only the semantic roles remap ----
+/* ---- Dark theme: only the --color-* roles remap ----
  * Dark is deliberately its own personality: terminal lime on green-tinted
- * black (palette study: modal.com). Light stays the blue editorial theme —
- * the two must never be byte-identical, and the differ proves it. */
+ * black (palette study: modal.com). Light stays the editorial parchment theme
+ * — the two must never be byte-identical, and the differ proves it.
+ *
+ * Everything else in :root — space, radius, typography, elevation, motion,
+ * layout — is deliberately theme-invariant: those roles carry no colour, so
+ * remapping them would just be a second source of truth for one value. The
+ * rgb literals inside --shadow-* are the arguable exception; they stay shared
+ * until a dark elevation study says otherwise. */
 [data-theme='dark'] {
   --color-bg: var(--c-ink-950);
   --color-bg-subtle: var(--c-ink-900);
@@ -171,6 +184,30 @@
   --color-accent-hover: var(--c-green-300);
   --color-accent-subtle: rgb(128 238 100 / 0.14);
   --color-focus-ring: var(--c-green-500);
+
+  /* State roles, dark. The light values are near-white tints on a near-white
+   * ground; on green-black they invert — deep tinted surface, bright fg.
+   * Contrast of fg on its own surface: success 11.9:1, warning 9.0:1,
+   * danger 8.4:1 (badge text is --text-xs, so these are well past 4.5:1). */
+  --color-success-surface: var(--c-green-900);
+  --color-success-fg: var(--c-green-300);
+  --color-warning-surface: var(--c-amber-900);
+  --color-warning-fg: var(--c-amber-300);
+  --color-danger-surface: var(--c-red-900);
+  --color-danger-fg: var(--c-red-300);
+
+  /* The filled danger button darkens instead of brightening: the light theme's
+   * #ef4444 would glare against the ground, and only a deeper red leaves room
+   * for --c-ink-50 to sit on it (5.8:1 solid, 4.8:1 hover). Hover goes lighter,
+   * matching how --color-accent-hover moves in this theme. */
+  --color-danger-solid: var(--c-red-600);
+  --color-danger-solid-hover: var(--c-red-500);
+  --color-on-danger-solid: var(--c-ink-50);
+
+  /* Code is a raised plate here, not an inverted one: one step above the page
+   * ground, since the page is already darker than any code slab would be. */
+  --color-code-bg: var(--c-ink-900);
+  --color-code-fg: var(--c-ink-50);
 }
 
 @media (prefers-reduced-motion: reduce) {
