@@ -5,8 +5,7 @@
  * Everything else in the design system consumes these variables; no component
  * hardcodes a value. Rebranding = editing this file.
  *
- * TOKEN CONTRACT (the 2026-08-06 audit is resolved; design board 01 mirrors
- * this file). Four rules hold, and the postcss token test asserts them:
+ * TOKEN CONTRACT (design board 01 mirrors this file). Four rules hold:
  * 1. Zero --c- references outside this file. Components consume roles only.
  * 2. Every raw --c-* step declared here is referenced by at least one role.
  *    A token earns its place or leaves; re-add one the day a role wants it.
@@ -32,9 +31,8 @@
   --c-terra-700: #5d2b1a;
 
   /* ---- Light-theme state raws (success / warning / danger) ----
-   * Consumed exclusively by the light state roles below. The -500 steps of
-   * success and warning went with the audit: only danger has a filled
-   * variant, so nothing referenced them. */
+   * Consumed exclusively by the light state roles below. Only danger has a
+   * filled variant, which is why it alone carries a -500 step. */
   --c-success-100: #dcfce7;
   --c-success-700: #15803d;
   --c-warning-100: #fef3c7;
@@ -52,15 +50,15 @@
   --c-ink-600: #3d423d;
   --c-ink-400: #a9c2a0;
   --c-ink-50: #eef7ea;
+  --c-green-900: #16301a;
   --c-green-500: #80ee64;
   --c-green-300: #bff9b4;
 
-  /* ---- Dark-theme state raws ----
-   * Success rides the existing green family; ink and green cannot express
+  /* ---- Dark-theme state raws (warning / danger) ----
+   * Success rides the green family above; ink and green cannot express
    * "warning" or "danger" at all, so those two carry their own muted amber
    * and red steps. Every value below is picked against the dark ground —
    * contrast ratios are in the [data-theme='dark'] role block. */
-  --c-green-900: #16301a;
   --c-amber-300: #f2cf7c;
   --c-amber-900: #3b2c10;
   --c-red-300: #ffa8a0;
@@ -86,8 +84,8 @@
   /* ---- State roles ----
    * surface/fg is the tinted-chip shape (Badge). A filled control is not a
    * surface/fg pair, so danger — the only tone with one — also gets the solid
-   * trio. --color-on-danger-solid replaces the literal #fff the button used
-   * to hardcode. */
+   * trio, its own foreground included: --color-text-inverted is the wrong role
+   * there, since dark flips that one to near-black to sit on the lime accent. */
   --color-success-surface: var(--c-success-100);
   --color-success-fg: var(--c-success-700);
   --color-warning-surface: var(--c-warning-100);

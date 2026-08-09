@@ -2,11 +2,10 @@
  * @gate/ui — design system stylesheet.
  * Import once, in each app’s root layout.
  *
- * Every colour here resolves through a --color-* role from tokens.css: never a
- * literal value, and never a raw palette step (those stay inside tokens.css).
- * The only colour keywords allowed are `transparent`, `none` and `inherit`,
- * which name an absence rather than a palette value and so have nothing to
- * tokenize.
+ * Every colour here resolves through a --color-* role from tokens.css — never a
+ * literal value, and never a raw palette step (those never leave tokens.css).
+ * The only colour keywords used are `transparent`, `none` and `inherit`: they
+ * name an absence rather than a palette value, so there is nothing to tokenize.
  */
 
 @import './tokens.css';
