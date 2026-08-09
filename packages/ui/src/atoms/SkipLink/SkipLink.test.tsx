@@ -30,7 +30,7 @@ describe('SkipLink', () => {
 
     const link = screen.getByRole('link', { name: 'Skip navigation' });
 
-    expect(link).toBeDefined();
+    expect(link.textContent).toBe('Skip navigation');
   });
 
   // Edge case: hidden-until-focused is a styling concern, not a DOM one — the
@@ -45,7 +45,17 @@ describe('SkipLink', () => {
     expect(document.body.contains(link)).toBe(true);
   });
 
-  it('carries the visually-hidden utility and its own class, className appended', () => {
+  it('carries the visually-hidden utility and its own class', () => {
+    render(<SkipLink />);
+
+    const link = screen.getByRole('link', { name: 'Skip to content' });
+
+    // Exact, not `toContain`: an omitted `className` must be filtered out
+    // rather than joined in as a trailing empty or `undefined` class.
+    expect(link.className).toBe('ds-visually-hidden ds-skip-link');
+  });
+
+  it('appends a caller-supplied className to the base classes', () => {
     render(<SkipLink className="u-mt-2" />);
 
     const link = screen.getByRole('link', { name: 'Skip to content' });
