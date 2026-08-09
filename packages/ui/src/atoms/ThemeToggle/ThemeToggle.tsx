@@ -4,9 +4,9 @@ import { useEffect, useState } from 'react';
 
 /**
  * The one place the persisted-theme key is spelled. The blog's pre-hydration
- * script reads the same constant — a second, hand-typed copy that drifts by a
- * character produces a first-paint flash, and a flash is invisible to every
- * test in this repo.
+ * script imports this rather than repeating the string — a hand-typed copy that
+ * drifts by a character produces a first-paint flash, and a flash is invisible
+ * to every test in this repo.
  */
 export const THEME_STORAGE_KEY = 'gate-theme';
 
@@ -20,8 +20,6 @@ export interface ThemeToggleProps {
   label?: string;
 }
 
-const DARK: Theme = 'dark';
-
 /**
  * Light is the default `:root`, so light is the *absence* of the attribute —
  * writing `data-theme="light"` would select a `[data-theme='light']` block that
@@ -31,7 +29,7 @@ const DARK: Theme = 'dark';
 const applyTheme = (theme: Theme) => {
   const root = document.documentElement;
 
-  if (theme === DARK) {
+  if (theme === 'dark') {
     root.dataset.theme = theme;
   } else {
     delete root.dataset.theme;
@@ -47,17 +45,17 @@ export function ThemeToggle({ className, label = 'Dark theme' }: ThemeToggleProp
   // script rather than adopt its answer. Also keeps the server's markup — which
   // knows no theme — from being what hydration settles on.
   useEffect(() => {
-    setIsDark(document.documentElement.dataset.theme === DARK);
+    setIsDark(document.documentElement.dataset.theme === 'dark');
   }, []);
 
   const handleClick = () => {
-    // One value drives both writes: the attribute and the stored choice cannot
-    // disagree about which theme the reader just picked.
-    const next: Theme = isDark ? 'light' : DARK;
+    // One value drives all three writes: the attribute, the stored choice and
+    // the pressed state cannot disagree about which theme the reader picked.
+    const next: Theme = isDark ? 'light' : 'dark';
 
     applyTheme(next);
     localStorage.setItem(THEME_STORAGE_KEY, next);
-    setIsDark(next === DARK);
+    setIsDark(next === 'dark');
   };
 
   return (
