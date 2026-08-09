@@ -21,6 +21,7 @@ dist/
 # local-only tooling and reports
 claudedocs/
 CLAUDE.local.md
+coverage/
 packages/ui/.visual-diff/
 
 # Sandcastle runtime (the orchestrator itself IS committed)
