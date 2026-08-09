@@ -60,7 +60,9 @@ findings, never from ambition.
     Playwright a11y scenario). Note visual-diff catches _change_, not
     _correctness_: a control that fails WCAG AA is baselined green and stays green
     forever, so contrast is axe's, never the differ's and never a token-pair
-    test's.
+    test's. The contrast blocks in `packages/ui/src/__tests__/tokens.test.ts` are
+    the interim exception until that scenario lands — marked provisional there,
+    and deleted with it.
   - **Structural CSS rules are the exception and stay unit-tested**, because
     pixels cannot see them: no `--c-` reference outside `tokens.css`, every raw
     token consumed by a semantic role, no literal colours in `styles.css`, every
