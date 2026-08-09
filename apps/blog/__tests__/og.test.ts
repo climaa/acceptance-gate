@@ -35,10 +35,27 @@ function magicOf(bytes: Buffer): number[] {
   return [...bytes.subarray(0, 4)];
 }
 
+const loadSiteCard = () => import('../app/opengraph-image');
+const loadPostCard = () => import('../app/blog/[slug]/opengraph-image');
+
 const ROUTES = [
-  ['app/opengraph-image', () => import('../app/opengraph-image')],
-  ['app/blog/[slug]/opengraph-image', () => import('../app/blog/[slug]/opengraph-image')],
+  ['app/opengraph-image', loadSiteCard],
+  ['app/blog/[slug]/opengraph-image', loadPostCard],
 ] as const;
+
+async function bytesOf(response: Response): Promise<Buffer> {
+  return Buffer.from(await response.arrayBuffer());
+}
+
+async function renderSiteCard(): Promise<Buffer> {
+  const { default: Image } = await loadSiteCard();
+  return bytesOf(await Image());
+}
+
+async function renderPostCard(slug: string): Promise<Buffer> {
+  const { default: Image } = await loadPostCard();
+  return bytesOf(await Image({ params: Promise.resolve({ slug }) }));
+}
 
 describe.each(ROUTES)('%s', (_name, load) => {
   it('declares the 1200x630 canvas crawlers crop against', async () => {
@@ -113,21 +130,17 @@ describe('the OG display face', () => {
  */
 describe('the rendered card', () => {
   it('is PNG bytes for the site card', async () => {
-    const { default: Image } = await import('../app/opengraph-image');
+    const png = await renderSiteCard();
 
-    const response = await Image();
-
-    expect(magicOf(Buffer.from(await response.arrayBuffer()))).toEqual(PNG_MAGIC);
+    expect(magicOf(png)).toEqual(PNG_MAGIC);
   });
 
   // The fallback path end to end: /blog/<unknown>/opengraph-image is reachable,
   // and a throw there is a failed build, not a missing image.
   it('is PNG bytes for a slug with no published post', async () => {
-    const { default: Image } = await import('../app/blog/[slug]/opengraph-image');
+    const png = await renderPostCard('no-such-post');
 
-    const response = await Image({ params: Promise.resolve({ slug: 'no-such-post' }) });
-
-    expect(magicOf(Buffer.from(await response.arrayBuffer()))).toEqual(PNG_MAGIC);
+    expect(magicOf(png)).toEqual(PNG_MAGIC);
   });
 });
 
