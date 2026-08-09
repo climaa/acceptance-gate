@@ -20,7 +20,7 @@ If the number is **greater than 0**, perform two relevance checks before declari
 
 **Check A — Correct base branch**: Run both commands and compare their output:
 
-```
+```bash
 git merge-base HEAD origin/main
 git rev-parse origin/main
 ```
@@ -35,7 +35,7 @@ Then output `<promise>COMPLETE</promise>` and exit.
 
 **Check B — Commit relevance**: Run:
 
-```
+```bash
 git log main..HEAD --oneline
 ```
 
