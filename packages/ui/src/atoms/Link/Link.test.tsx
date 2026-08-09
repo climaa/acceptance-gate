@@ -9,19 +9,10 @@ import { Link } from './Link';
 // below match the previous test's DOM.
 afterEach(cleanup);
 
-// Stands in for `next/link`, which packages/ui may not depend on: the package is
-// framework-agnostic and consumed through `transpilePackages`. This is the shape
-// the blog composes — a component of its own that renders an anchor.
-function RouterLink({
-  href,
-  children,
-  ...rest
-}: AnchorHTMLAttributes<HTMLAnchorElement>) {
-  return (
-    <a data-routed="true" href={href} {...rest}>
-      {children}
-    </a>
-  );
+// Stands in for `next/link`, which packages/ui may not depend on (see Link.tsx).
+// This is the shape the blog composes — a component of its own rendering an anchor.
+function RouterLink(props: AnchorHTMLAttributes<HTMLAnchorElement>) {
+  return <a data-routed="true" {...props} />;
 }
 
 describe('Link', () => {

@@ -38,6 +38,9 @@ export function Link<E extends ElementType = 'a'>({
   children,
   ...rest
 }: LinkProps<E>) {
+  // Widened rather than defaulted in the destructuring (`as: Tag = 'a'`, as Stack
+  // does): `Tag` would then be typed `E`, which `'a'` is not assignable to, and
+  // JSX cannot check a spread against a still-generic element type.
   const Tag: ElementType = as ?? 'a';
 
   return (
