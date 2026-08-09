@@ -5,6 +5,10 @@ import { defineConfig } from 'vitest/config';
 // drafts included. `next build` cannot cover drafts — see __tests__/content.test.ts.
 // Run: pnpm --filter @gate/blog test  (or `turbo run test` from the root)
 export default defineConfig({
+  // tsconfig says `jsx: preserve` because Next owns the JSX transform; esbuild
+  // reads that as "classic", and lib/og.tsx then throws `React is not defined`
+  // the moment a test renders a card. Name the runtime Next actually uses.
+  esbuild: { jsx: 'automatic' },
   resolve: {
     // Mirrors tsconfig's "@/*": ["./*"] — app/** route handlers import lib/**
     // via this alias, and vitest doesn't read tsconfig paths on its own.

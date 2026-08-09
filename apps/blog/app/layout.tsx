@@ -1,12 +1,12 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { SITE_DESCRIPTION, SITE_TITLE, SITE_URL } from '@/lib/site';
+import { SITE_DESCRIPTION, SITE_TAGLINE, SITE_TITLE, SITE_URL } from '@/lib/site';
 import './globals.css';
 
 export const metadata: Metadata = {
   metadataBase: SITE_URL,
   title: {
-    default: `${SITE_TITLE} — Frontend engineering and quality`,
+    default: `${SITE_TITLE} — ${SITE_TAGLINE}`,
     template: `%s · ${SITE_TITLE}`,
   },
   description: SITE_DESCRIPTION,
