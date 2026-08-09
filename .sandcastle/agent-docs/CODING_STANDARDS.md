@@ -9,10 +9,16 @@ findings, never from ambition.
 - pnpm **11.20.0** (pinned via `packageManager` + sha512), Node **22** (`.nvmrc`)
 - Turborepo monorepo: `apps/{blog}`, `packages/{ui,tsconfig}` — Storybook, e2e and
   `packages/visual-diff` arrive by issue
-- TypeScript strict; ESLint runs today only in `apps/blog` (via `next lint`, no
-  `--max-warnings=0`) — treat warnings as errors, and keep doing so as the other
-  workspaces gain lint
+- TypeScript strict; ESLint runs today only in `apps/blog` (via `eslint .` on
+  ESLint 9 flat config, no `--max-warnings=0`) — treat warnings as errors, and
+  keep doing so as the other workspaces gain lint
 - Everything public is **English** — code, comments, docs, commit messages
+- **`pnpm format:check`** — Prettier over `**/*.{ts,mts,tsx,md,mdx,json,css}`.
+  Docs and Markdown count. `pnpm format` fixes.
+- **`pnpm health:check`** — cognitive-complexity ceiling of **20** per function
+  (`scripts/complexity-gate.mjs`, fallow under the hood). Cognitive, not
+  cyclomatic, on purpose: a flat sequence of guard-returns is fine, nesting is
+  what scores. A diff that trips it fails CI — extract a helper (see #63-#65).
 
 ## Workspace conventions
 
