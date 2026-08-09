@@ -4,9 +4,9 @@ interface TagOwnProps<E extends ElementType> {
   /**
    * The element or component to render. Defaults to `'a'`.
    *
-   * Same polymorphic shape as `Link`: this package must not depend on `next`,
-   * so an app composes its own router link — `<Tag as={NextLink} href="/tags/foo">`
-   * — without this package knowing Next exists.
+   * This package must not depend on `next`, so an app passes its own router
+   * link — `<Tag as={NextLink} href="/tags/foo">` — and that component's own
+   * props are type-checked in the anchor's place.
    */
   as?: E;
   className?: string;

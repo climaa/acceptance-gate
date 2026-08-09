@@ -16,11 +16,12 @@ function RouterLink(props: AnchorHTMLAttributes<HTMLAnchorElement>) {
 }
 
 describe('Tag', () => {
-  it('renders an anchor carrying the tag label', () => {
+  it('renders an anchor carrying only the ds-tag class by default', () => {
     render(<Tag href="/tags/react">react</Tag>);
 
     const tag = screen.getByRole('link', { name: 'react' });
 
+    expect(tag.tagName).toBe('A');
     // Exact, not `toContain`: an omitted `className` must be filtered out
     // rather than joined in as a trailing empty or `undefined` class.
     expect(tag.className).toBe('ds-tag');
