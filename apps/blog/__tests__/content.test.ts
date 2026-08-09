@@ -6,6 +6,7 @@ import matter from 'gray-matter';
 // inside tsconfig's `**/*.ts` include, so tsc typechecks it and the globals
 // would otherwise be untyped (TS2582).
 import { describe, expect, it } from 'vitest';
+import { parseFrontmatter, PostFrontmatterSchema } from '../lib/posts';
 
 /**
  * Compiles every post in content/posts, INCLUDING drafts.
@@ -61,6 +62,13 @@ describe('content/posts', () => {
       }
     });
 
+    // `lib/posts.ts` throws on any post the Zod schema rejects, so a real post
+    // failing this assertion is the same failure the production build hits.
+    it('passes PostFrontmatterSchema validation', () => {
+      const result = PostFrontmatterSchema.safeParse(post.data);
+      expect(result.success, result.error?.message).toBe(true);
+    });
+
     // The slug comes from the filename, and lib/posts.ts sorts by this string,
     // so a malformed date silently reorders the index rather than erroring.
     it('has an ISO date', () => {
@@ -83,5 +91,45 @@ describe('content/posts', () => {
     it.skipIf(post.data.draft === true)('ships no unrendered TODO placeholder', () => {
       expect(post.content).not.toMatch(/\{\/\*[\s\S]*?TODO[\s\S]*?\*\/\}/);
     });
+  });
+});
+
+describe('parseFrontmatter', () => {
+  const valid = {
+    title: 'A valid post',
+    description: 'A valid description',
+    date: '2026-01-15',
+    tags: ['testing'],
+  };
+
+  it('parses a valid frontmatter object', () => {
+    expect(parseFrontmatter(valid, 'valid.mdx')).toEqual({ ...valid, draft: undefined });
+  });
+
+  it('throws naming the file when date is missing', () => {
+    const { date: _date, ...withoutDate } = valid;
+    expect(() => parseFrontmatter(withoutDate, 'no-date.mdx')).toThrow(/no-date\.mdx/);
+  });
+
+  it('throws when date is not YYYY-MM-DD', () => {
+    expect(() =>
+      parseFrontmatter({ ...valid, date: '01/15/2026' }, 'bad-date.mdx'),
+    ).toThrow(/bad-date\.mdx/);
+  });
+
+  it('throws when tags is a bare string instead of an array', () => {
+    expect(() =>
+      parseFrontmatter({ ...valid, tags: 'testing' }, 'string-tags.mdx'),
+    ).toThrow(/string-tags\.mdx/);
+  });
+
+  it('defaults draft to undefined when absent', () => {
+    const fm = parseFrontmatter(valid, 'no-draft.mdx');
+    expect(fm.draft).toBeUndefined();
+  });
+
+  it('carries draft through when present', () => {
+    const fm = parseFrontmatter({ ...valid, draft: true }, 'draft.mdx');
+    expect(fm.draft).toBe(true);
   });
 });

@@ -1,17 +1,31 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import matter from 'gray-matter';
+import { z } from 'zod';
 
 const POSTS_DIR = path.join(process.cwd(), 'content', 'posts');
 
-export interface PostFrontmatter {
-  title: string;
-  description: string;
-  /** ISO date — YYYY-MM-DD */
-  date: string;
-  tags: string[];
+export const PostFrontmatterSchema = z.object({
+  title: z.string(),
+  description: z.string(),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'must be an ISO date (YYYY-MM-DD)'),
+  tags: z.array(z.string().min(1)).default([]),
   /** Set `draft: true` to exclude the post from the production build. */
-  draft?: boolean;
+  draft: z.boolean().optional(),
+});
+
+export type PostFrontmatter = z.infer<typeof PostFrontmatterSchema>;
+
+/** Throws with the offending filename and Zod's issue path on a parse failure. */
+export function parseFrontmatter(data: unknown, fileName: string): PostFrontmatter {
+  const result = PostFrontmatterSchema.safeParse(data);
+  if (!result.success) {
+    const issues = result.error.issues
+      .map((issue) => `${issue.path.join('.') || '(root)'}: ${issue.message}`)
+      .join('; ');
+    throw new Error(`Invalid frontmatter in ${fileName}: ${issues}`);
+  }
+  return result.data;
 }
 
 export interface Post extends PostFrontmatter {
@@ -40,14 +54,14 @@ function readPostFile(fileName: string): Post {
   const slug = fileName.replace(/\.mdx?$/, '');
   const raw = fs.readFileSync(path.join(POSTS_DIR, fileName), 'utf8');
   const { data, content } = matter(raw);
-  const fm = data as PostFrontmatter;
+  const fm = parseFrontmatter(data, fileName);
 
   return {
     slug,
     title: fm.title,
     description: fm.description,
     date: fm.date,
-    tags: fm.tags ?? [],
+    tags: fm.tags,
     draft: fm.draft,
     content,
     readingMinutes: estimateReadingMinutes(content),
