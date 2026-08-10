@@ -62,9 +62,7 @@ const anchorContent: Build = (heading) => [
     type: 'element',
     tagName: 'span',
     properties: { className: ['ds-visually-hidden'] },
-    children: [
-      { type: 'text', value: `Link to ${heading.children.map(textOf).join('')}` },
-    ],
+    children: [{ type: 'text', value: `Link to ${textOf(heading)}` }],
   },
 ];
 
@@ -101,12 +99,12 @@ type PreProps = ComponentPropsWithoutRef<'pre'> & { 'data-language'?: string };
  * breaks survive the unwrap: the highlighter leaves a `\n` text node between
  * every `<span data-line>`, and `<pre>` preserves it.
  */
-function Pre({ children, ...props }: PreProps) {
+function Pre({ children, 'data-language': language }: PreProps) {
   const tokens = isValidElement<{ children?: ReactNode }>(children)
     ? children.props.children
     : children;
 
-  return <CodeBlock language={props['data-language']}>{tokens}</CodeBlock>;
+  return <CodeBlock language={language}>{tokens}</CodeBlock>;
 }
 
 /**

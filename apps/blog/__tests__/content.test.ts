@@ -101,32 +101,6 @@ describe('content/posts', () => {
   });
 });
 
-// Named here rather than imported from lib/mdx.tsx: an expectation that reads
-// the list it guards cannot catch a package leaving it.
-const PINNED_PIPELINE_PACKAGES = [
-  'rehype-pretty-code',
-  'rehype-slug',
-  'rehype-autolink-headings',
-  'shiki',
-] as const;
-
-const EXACT_VERSION = /^\d+\.\d+\.\d+$/;
-
-// One fence and one heading, reused by the cases that only differ in what they
-// assert about the same render.
-const TS_FENCE = '```ts\nconst answer = 42;\n```\n';
-const HEADING = '## Why the gate exists\n';
-
-async function renderMdx(source: string): Promise<string> {
-  const compiled = await compile(source, {
-    outputFormat: 'function-body',
-    rehypePlugins,
-  });
-  const { default: Content } = await run(compiled, runtime);
-
-  return renderToStaticMarkup(createElement(Content, { components: mdxComponents }));
-}
-
 /**
  * The rehype pipeline the post page hands to `MDXRemote`.
  *
@@ -140,6 +114,21 @@ async function renderMdx(source: string): Promise<string> {
  * CODING_STANDARDS — nothing here asserts a colour, a size or a ratio.
  */
 describe('rehype pipeline', () => {
+  // One fence and one heading, reused by the cases that only differ in what
+  // they assert about the same render.
+  const TS_FENCE = '```ts\nconst answer = 42;\n```\n';
+  const HEADING = '## Why the gate exists\n';
+
+  async function renderMdx(source: string): Promise<string> {
+    const compiled = await compile(source, {
+      outputFormat: 'function-body',
+      rehypePlugins,
+    });
+    const { default: Content } = await run(compiled, runtime);
+
+    return renderToStaticMarkup(createElement(Content, { components: mdxComponents }));
+  }
+
   it('highlights a fenced code block at build time', async () => {
     const html = await renderMdx(TS_FENCE);
 
@@ -223,6 +212,17 @@ describe('rehype pipeline', () => {
     expect(html).not.toContain('prefers-color-scheme');
     expect(html).not.toContain('--shiki');
   });
+
+  // Named here rather than imported from lib/mdx.tsx: an expectation that reads
+  // the list it guards cannot catch a package leaving it.
+  const PINNED_PIPELINE_PACKAGES = [
+    'rehype-pretty-code',
+    'rehype-slug',
+    'rehype-autolink-headings',
+    'shiki',
+  ] as const;
+
+  const EXACT_VERSION = /^\d+\.\d+\.\d+$/;
 
   // Shiki's token markup is the differ's baseline in Wave 4. A caret range lets
   // a fresh install rewrite every code block on a machine nobody touched, which
