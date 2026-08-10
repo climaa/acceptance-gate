@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 export default function AboutPage() {
   return (
     <Stack gap={8}>
-      <h1 className="article-header__title">About</h1>
+      <h1 className="page-title">About</h1>
       <Prose>
         <p>
           I am Carles Lima, a web developer in Barcelona. I work mostly with Next.js and

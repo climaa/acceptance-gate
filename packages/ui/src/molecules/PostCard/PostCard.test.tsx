@@ -85,6 +85,31 @@ describe('PostCard', () => {
     expect(links.map((link) => link.dataset.routed)).toEqual(['true', 'true', 'true']);
   });
 
+  // Threaded through to TagList so an app's own route shape reaches every chip:
+  // the default builder percent-encodes the display text, which for a multi-word
+  // tag is a different URL from the one a slug-based route prerenders.
+  it('builds every tag href with the builder it is given', () => {
+    render(
+      <PostCard
+        {...post}
+        tags={['visual regression']}
+        tagHref={(tag) => `/tags/${tag.replace(/\s+/g, '-')}`}
+      />,
+    );
+
+    const tag = screen.getByRole('link', { name: 'visual regression' });
+
+    expect(tag.getAttribute('href')).toBe('/tags/visual-regression');
+  });
+
+  it('falls back to TagList’s own builder when given none', () => {
+    render(<PostCard {...post} tags={['visual regression']} />);
+
+    const tag = screen.getByRole('link', { name: 'visual regression' });
+
+    expect(tag.getAttribute('href')).toBe('/tags/visual%20regression');
+  });
+
   // A post with no tags renders no list at all, not an empty one: TagList's own
   // contract, reached through this card.
   it('renders no tag list for a post with no tags', () => {

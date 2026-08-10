@@ -1,9 +1,10 @@
 import type { Metadata } from 'next';
+import NextLink from 'next/link';
 import { notFound } from 'next/navigation';
 import { MDXRemote } from 'next-mdx-remote/rsc';
-import { Badge, Prose, Stack } from '@gate/ui';
+import { PostTemplate } from '@gate/ui';
 import { mdxComponents, mdxRemoteOptions } from '@/lib/mdx';
-import { formatDate, getAllPosts, getPostBySlug } from '@/lib/posts';
+import { getAllPosts, getPostBySlug, tagPath } from '@/lib/posts';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -37,34 +38,22 @@ export default async function PostPage({ params }: PageProps) {
   if (!post) notFound();
 
   return (
-    <article>
-      <Stack gap={8}>
-        <header className="article-header">
-          <Stack gap={3}>
-            <h1 className="article-header__title">{post.title}</h1>
-            <div className="post-meta">
-              <span>{formatDate(post.date)}</span>
-              <span>·</span>
-              <span>{post.readingMinutes} min read</span>
-            </div>
-            <Stack direction="row" gap={2} wrap>
-              {post.tags.map((tag) => (
-                <Badge key={tag} tone="accent">
-                  {tag}
-                </Badge>
-              ))}
-            </Stack>
-          </Stack>
-        </header>
-
-        <Prose>
-          <MDXRemote
-            source={post.content}
-            options={mdxRemoteOptions}
-            components={mdxComponents}
-          />
-        </Prose>
-      </Stack>
-    </article>
+    // The body is rendered here and handed over as children: MDXRemote and the
+    // rehype pipeline are the app's, which is what keeps the template renderable
+    // outside Next.
+    <PostTemplate
+      title={post.title}
+      date={post.date}
+      readingMinutes={post.readingMinutes}
+      tags={post.tags}
+      tagHref={tagPath}
+      as={NextLink}
+    >
+      <MDXRemote
+        source={post.content}
+        options={mdxRemoteOptions}
+        components={mdxComponents}
+      />
+    </PostTemplate>
   );
 }

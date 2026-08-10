@@ -90,6 +90,37 @@ describe('PostTemplate', () => {
     expect(screen.queryByRole('list')).toBeNull();
   });
 
+  // Threaded through to TagList so an app's own route shape reaches every chip:
+  // the default builder percent-encodes the display text, which for a multi-word
+  // tag is a different URL from the one a slug-based route prerenders.
+  it('builds every tag href with the builder it is given', () => {
+    render(
+      <PostTemplate
+        {...POST}
+        tags={['visual regression']}
+        tagHref={(tag) => `/tags/${tag.replace(/\s+/g, '-')}`}
+      >
+        {BODY}
+      </PostTemplate>,
+    );
+
+    const tag = screen.getByRole('link', { name: 'visual regression' });
+
+    expect(tag.getAttribute('href')).toBe('/tags/visual-regression');
+  });
+
+  it('falls back to TagList’s own builder when given none', () => {
+    render(
+      <PostTemplate {...POST} tags={['visual regression']}>
+        {BODY}
+      </PostTemplate>,
+    );
+
+    const tag = screen.getByRole('link', { name: 'visual regression' });
+
+    expect(tag.getAttribute('href')).toBe('/tags/visual%20regression');
+  });
+
   it('forwards `as` to every tag link', () => {
     render(
       <PostTemplate {...POST} as={RouterLink}>

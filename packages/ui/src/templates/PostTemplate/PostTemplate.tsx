@@ -10,6 +10,13 @@ export interface PostTemplateProps {
   readingMinutes: number;
   tags: string[];
   /**
+   * Builds each chip's href, forwarded to `TagList` as its `hrefFor`. An app
+   * whose tag route is keyed on a slug needs this: the default builder encodes
+   * the display text, and `/tags/visual%20regression` is a second URL for the
+   * page `/tags/visual-regression` prerenders.
+   */
+  tagHref?: (tag: string) => string;
+  /**
    * Forwarded to `TagList`, and through it to every `Tag`, so an app names its
    * router link once — `as={NextLink}` — and this package still depends on no
    * framework.
@@ -36,6 +43,7 @@ export function PostTemplate({
   date,
   readingMinutes,
   tags,
+  tagHref,
   as,
   children,
   className,
@@ -49,7 +57,7 @@ export function PostTemplate({
       <Stack as="header" gap={3}>
         <h1 className="ds-post-template__title">{title}</h1>
         <PostMeta date={date} readingMinutes={readingMinutes} />
-        <TagList tags={tags} as={as} />
+        <TagList tags={tags} hrefFor={tagHref} as={as} />
       </Stack>
 
       <Prose>{children}</Prose>

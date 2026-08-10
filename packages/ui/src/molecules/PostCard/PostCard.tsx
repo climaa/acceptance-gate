@@ -16,6 +16,13 @@ export interface PostCardProps {
   readingMinutes: number;
   tags: string[];
   /**
+   * Builds each chip's href, forwarded to `TagList` as its `hrefFor`. An app
+   * whose tag route is keyed on a slug needs this: the default builder encodes
+   * the display text, and `/tags/visual%20regression` is a second URL for the
+   * page `/tags/visual-regression` prerenders.
+   */
+  tagHref?: (tag: string) => string;
+  /**
    * The blog index lists these under its `<h1>` and takes the default; the home
    * page lists them under an existing `<h2>` and needs `'h3'`. Hardcoding either
    * skips a level on one of the two pages, which is a heading-order violation
@@ -52,6 +59,7 @@ export function PostCard({
   date,
   readingMinutes,
   tags,
+  tagHref,
   headingLevel: Heading = 'h2',
   as,
   className,
@@ -69,7 +77,7 @@ export function PostCard({
 
         <PostMeta date={date} readingMinutes={readingMinutes} />
 
-        <TagList tags={tags} as={as} className="ds-post-card__tags" />
+        <TagList tags={tags} hrefFor={tagHref} as={as} className="ds-post-card__tags" />
       </Stack>
     </Card>
   );

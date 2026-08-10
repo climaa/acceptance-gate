@@ -10,6 +10,16 @@ export const SITE_TITLE = 'Carles Lima';
 /** The half of the home page's `<title>` that is not the name, reused by the site OG card. */
 export const SITE_TAGLINE = 'Frontend engineering and quality';
 
+/** The rights holder the footer prints after the year. */
+export const SITE_COPYRIGHT = 'Carles Lima · Barcelona';
+
+/**
+ * Pinned rather than read off the clock. `new Date().getFullYear()` makes the
+ * rendered footer depend on when the build runs, which is drift a visual-diff
+ * baseline cannot tell apart from a real regression.
+ */
+export const SITE_COPYRIGHT_YEAR = 2026;
+
 export const SITE_DESCRIPTION =
   'Notes on Next.js, testing with Cypress and Gherkin, visual regression and coding agents.';
 

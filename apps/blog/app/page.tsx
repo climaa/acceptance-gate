@@ -1,6 +1,6 @@
-import Link from 'next/link';
-import { Badge, Card, Stack } from '@gate/ui';
-import { formatDate, getAllPosts } from '@/lib/posts';
+import NextLink from 'next/link';
+import { EmptyState, PostCard, Stack } from '@gate/ui';
+import { getAllPosts, tagPath } from '@/lib/posts';
 
 export default function HomePage() {
   const posts = getAllPosts().slice(0, 4);
@@ -21,30 +21,24 @@ export default function HomePage() {
         <h2 className="section-title">Latest posts</h2>
 
         {posts.length === 0 ? (
-          <p className="post-card__desc">No posts published yet.</p>
+          <EmptyState message="No posts published yet." />
         ) : (
           <Stack gap={3}>
             {posts.map((post) => (
-              <Card key={post.slug} interactive>
-                <Link href={`/blog/${post.slug}`} className="post-card__link">
-                  <Stack gap={2}>
-                    <h3 className="post-card__title">{post.title}</h3>
-                    <p className="post-card__desc">{post.description}</p>
-                    <div className="post-meta">
-                      <span>{formatDate(post.date)}</span>
-                      <span>·</span>
-                      <span>{post.readingMinutes} min</span>
-                    </div>
-                    <Stack direction="row" gap={2} wrap>
-                      {post.tags.map((tag) => (
-                        <Badge key={tag} tone="accent">
-                          {tag}
-                        </Badge>
-                      ))}
-                    </Stack>
-                  </Stack>
-                </Link>
-              </Card>
+              // h3, not the default h2: these sit under the section heading
+              // above, and skipping a level is a heading-order violation.
+              <PostCard
+                key={post.slug}
+                headingLevel="h3"
+                title={post.title}
+                description={post.description}
+                href={`/blog/${post.slug}`}
+                date={post.date}
+                readingMinutes={post.readingMinutes}
+                tags={post.tags}
+                tagHref={tagPath}
+                as={NextLink}
+              />
             ))}
           </Stack>
         )}
