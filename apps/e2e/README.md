@@ -47,8 +47,9 @@ Browsers are not installed by `pnpm install`; a first local run needs
 
 ## Tags select projects
 
-Two projects run every scenario, `desktop` (Desktop Chrome) and `mobile` (Pixel 5,
-Android Chrome — so both share the one Chromium install):
+The suite defines two projects, `desktop` (Desktop Chrome) and `mobile` (Pixel 5,
+Android Chrome — so both share the one Chromium install). A scenario's tags pick which
+of them run it:
 
 | Tag on the scenario | Runs in        |
 | ------------------- | -------------- |
@@ -61,7 +62,7 @@ should say so out loud.
 
 ## Version pins
 
-`@playwright/test` is pinned **exactly**, no caret. The visual-diff capture container is
-pinned to this same version, and a Playwright bump moves the image tag, the baselines and
-this pin together — a hand-authored change, never a bot PR. Dependabot ignores
-`@playwright/*` for that reason.
+`@playwright/test` is pinned **exactly**, no caret. Wave 4 transcribes that version into
+the visual-diff capture container tag, which carries a placeholder until then — so a
+Playwright bump moves the image tag, the baselines and this pin together, a hand-authored
+change and never a bot PR. Dependabot ignores `@playwright/*` for that reason.

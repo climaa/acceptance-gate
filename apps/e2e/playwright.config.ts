@@ -9,7 +9,10 @@ const testDir = defineBddConfig({
 });
 
 // Dedicated port so the run never collides with a dev server already on 3000.
-const baseURL = process.env.E2E_BASE_URL ?? 'http://localhost:3100';
+// The server is started on it and the tests are pointed at it, so it is one constant:
+// the two drifting apart boots a server nothing visits.
+const PORT = 3100;
+const baseURL = process.env.E2E_BASE_URL ?? `http://localhost:${PORT}`;
 
 export default defineConfig({
   testDir,
@@ -35,7 +38,7 @@ export default defineConfig({
   // routes), not a dev server's. `turbo run e2e` builds it first via the task
   // dependency in the root turbo.json.
   webServer: {
-    command: 'pnpm --filter @gate/blog exec next start --port 3100',
+    command: `pnpm --filter @gate/blog exec next start --port ${PORT}`,
     url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
