@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { MDXRemote } from 'next-mdx-remote/rsc';
 import { Badge, Prose, Stack } from '@gate/ui';
+import { mdxComponents, mdxRemoteOptions } from '@/lib/mdx';
 import { formatDate, getAllPosts, getPostBySlug } from '@/lib/posts';
 
 interface PageProps {
@@ -57,7 +58,11 @@ export default async function PostPage({ params }: PageProps) {
         </header>
 
         <Prose>
-          <MDXRemote source={post.content} />
+          <MDXRemote
+            source={post.content}
+            options={mdxRemoteOptions}
+            components={mdxComponents}
+          />
         </Prose>
       </Stack>
     </article>
