@@ -17,7 +17,12 @@ import {
  * the parser silently matching nothing there while the fixture still passes).
  */
 
+// The header comment is load-bearing, not decoration: the real sheet names both
+// selectors in prose above the rules, and a parser searching the raw text lands
+// on that mention instead of on the rule.
 const FIXTURE = `
+/* Every --color-* role in :root is also remapped in [data-theme='dark']. */
+
 :root {
   /* raw family */
   --c-cream-100: #ede6d6;
@@ -44,6 +49,12 @@ describe('extractDeclarations', () => {
     const dark = extractDeclarations(FIXTURE, "[data-theme='dark']");
 
     expect([...dark.keys()]).toEqual(['--color-bg']);
+  });
+
+  it('finds the rule, not an earlier mention of the selector in a comment', () => {
+    const dark = extractDeclarations(FIXTURE, "[data-theme='dark']");
+
+    expect(dark.get('--color-bg')).toBe('#000000');
   });
 
   it('throws when the selector has no rule in the sheet', () => {
@@ -113,10 +124,20 @@ describe('against the real tokens.css', () => {
     expect(colorRoles(REAL)).toHaveLength(declaredCount);
   });
 
-  it('resolves a light and dark literal for every role', () => {
-    for (const role of colorRoles(REAL)) {
-      expect(role.light, role.name).not.toBe('');
-      expect(role.dark, role.name).not.toBe('');
+  it('takes a remapped role’s dark literal from the dark block, not from :root', () => {
+    // Same hand-cut slice as above, for the same reason. A role appears in the
+    // dark block precisely because the two themes differ there, so reading one
+    // back as its light value means the dark block was never opened.
+    const [, darkText = ''] = REAL.split("[data-theme='dark'] {");
+    const remapped = new Set(
+      [...darkText.matchAll(/^\s*(--color-[\w-]+):/gm)].map(([, name]) => name),
+    );
+
+    const roles = colorRoles(REAL).filter((role) => remapped.has(role.name));
+
+    expect(roles).not.toHaveLength(0);
+    for (const role of roles) {
+      expect(role.dark, role.name).not.toBe(role.light);
     }
   });
 

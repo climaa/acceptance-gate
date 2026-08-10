@@ -18,8 +18,6 @@ rule described on the [Layering Rule](?path=/docs/docs-layering-rule--docs) page
 the same `TIERS`); the capture CLI, the comparison and the CI gate that read this matrix
 arrive in Wave 4. What follows describes the matrix itself, as it exists in the repo today.
 
-export const rows = MODES;
-
 ## The matrix
 
 <table>
@@ -31,7 +29,7 @@ export const rows = MODES;
     </tr>
   </thead>
   <tbody>
-    {rows.map((mode) => (
+    {MODES.map((mode) => (
       <tr key={`${mode.tier}-${mode.viewport}-${mode.theme}`}>
         <td>
           <code>{mode.tier}</code>
@@ -48,7 +46,7 @@ export const rows = MODES;
   </tbody>
 </table>
 
-{rows.length} cells in total.
+{MODES.length} cells in total.
 
 ## Why atoms and molecules are desktop-only
 

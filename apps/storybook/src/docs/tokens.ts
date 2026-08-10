@@ -8,25 +8,36 @@ const stripComments = (css: string) => css.replace(/\/\*[\s\S]*?\*\//g, '');
 
 const DECLARATION = /(--[\w-]+)\s*:\s*([^;]+);/g;
 
-/** Every custom property declared directly inside `selector`'s rule block. */
+/** Index of the `}` closing the block opened at `openBrace`. */
+function matchingBrace(sheet: string, openBrace: number): number {
+  let depth = 0;
+  for (let index = openBrace; index < sheet.length; index += 1) {
+    if (sheet[index] === '{') depth += 1;
+    if (sheet[index] === '}') {
+      depth -= 1;
+      if (depth === 0) return index;
+    }
+  }
+  return sheet.length;
+}
+
+/**
+ * Every custom property declared directly inside `selector`'s rule block.
+ *
+ * Comments come off the whole sheet first, not just the block: tokens.css's
+ * header names both `:root` and `[data-theme='dark']` in prose above the rules,
+ * and a search over the raw text finds that mention instead of the selector —
+ * every dark role then reads out of `:root` and the two themes render alike.
+ */
 export function extractDeclarations(css: string, selector: string): Map<string, string> {
-  const selectorIndex = css.indexOf(selector);
+  const sheet = stripComments(css);
+  const selectorIndex = sheet.indexOf(selector);
   if (selectorIndex === -1) {
     throw new Error(`no ${selector} rule in this sheet`);
   }
 
-  const openBrace = css.indexOf('{', selectorIndex);
-  let depth = 0;
-  let closeBrace = openBrace;
-  for (; closeBrace < css.length; closeBrace += 1) {
-    if (css[closeBrace] === '{') depth += 1;
-    else if (css[closeBrace] === '}') {
-      depth -= 1;
-      if (depth === 0) break;
-    }
-  }
-
-  const block = stripComments(css.slice(openBrace + 1, closeBrace));
+  const openBrace = sheet.indexOf('{', selectorIndex);
+  const block = sheet.slice(openBrace + 1, matchingBrace(sheet, openBrace));
   const declarations = new Map<string, string>();
   for (const match of block.matchAll(DECLARATION)) {
     const [, prop, value] = match;

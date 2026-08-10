@@ -6,12 +6,10 @@ import { TIERS } from '@gate/visual-diff/policy';
 
 # The layering rule
 
-`packages/ui/src` is organized into four tiers, innermost first:
-
-export const tiers = TIERS;
+`packages/ui/src` is organized into {TIERS.length} tiers, innermost first:
 
 <ol>
-  {tiers.map((tier) => (
+  {TIERS.map((tier) => (
     <li key={tier}>
       <code>{tier}</code>
     </li>
