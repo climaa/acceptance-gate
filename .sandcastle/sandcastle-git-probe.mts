@@ -36,3 +36,24 @@ export function classifyRevListFailure(stderr: string): 'absent' | 'error' {
 export function classifyIssueViewFailure(stderr: string): 'absent' | 'error' {
   return /could not resolve to an? issue/i.test(stderr) ? 'absent' : 'error';
 }
+
+/**
+ * Whether a git/gh failure is worth retrying. The SSL handshake failure this
+ * repo actually saw during worktree setup —
+ * `LibreSSL SSL_connect: SSL_ERROR_SYSCALL in connection to github.com:443` —
+ * succeeded on retry within seconds every time, and the same is true of the
+ * network-blip family it belongs to (DNS, connection reset/timeout, the
+ * remote hanging up mid-handshake).
+ *
+ * Deliberately a blocklist, not an allowlist: authentication failures, a
+ * missing remote (404), and a rejected push are permanent — retrying them
+ * only burns the backoff budget on something that will never succeed on its
+ * own. Anything else defaults to retryable, including failure text this
+ * function has never seen, because an allowlist of exact transient strings
+ * would silently stop retrying the next new transient failure shape.
+ */
+export function isRetryableGitError(message: string): boolean {
+  return !/authentication failed|permission denied|403\b|not found|404|could not resolve to a|\[rejected\]|failed to push some refs|non-fast-forward|remote rejected/i.test(
+    message,
+  );
+}

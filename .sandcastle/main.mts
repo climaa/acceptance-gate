@@ -67,6 +67,7 @@ import {
 } from './sandcastle-stranded-branches.mts';
 import { runMerger } from './sandcastle-merge.mts';
 import { runIssue } from './sandcastle-run-issue.mts';
+import { formatUnresolvedSummary } from './sandcastle-issue-pipeline.mts';
 import * as sandcastle from '@ai-hero/sandcastle';
 
 // ---------------------------------------------------------------------------
@@ -329,6 +330,10 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
     }
   }
 
+  // Issues past the loop's abort-break above never got a `settled` entry at
+  // all — the one way a planned issue can otherwise vanish with no log line.
+  const notAttempted = issues.slice(settled.length);
+
   // Log any agents that threw (network error, sandbox crash, etc.).
   for (const [i, outcome] of settled.entries()) {
     if (outcome.status === 'rejected') {
@@ -373,6 +378,26 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
     }),
   );
   const failedBranches = failed.map((issue) => issue.branch);
+
+  // The end-of-iteration safety net: name every planned issue that did not
+  // produce a merged result, whether its pipeline threw after retries were
+  // exhausted or it was never attempted (abort mid-iteration). Cheap enough
+  // to catch a failure mode the retry logic above doesn't.
+  const unresolvedSummary = formatUnresolvedSummary([
+    ...failed.map((issue) => ({
+      id: issue.id,
+      branch: issue.branch,
+      reason: 'pipeline failed',
+    })),
+    ...notAttempted.map((issue) => ({
+      id: issue.id,
+      branch: issue.branch,
+      reason: 'not attempted (shutdown requested)',
+    })),
+  ]);
+  if (unresolvedSummary) {
+    console.warn(unresolvedSummary);
+  }
 
   // A pipeline that threw is a failed run: record a non-zero exit so a scripted
   // or CI invocation can detect it, even though the surviving issues still
