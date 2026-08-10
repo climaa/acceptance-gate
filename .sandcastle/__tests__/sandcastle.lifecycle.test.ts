@@ -82,6 +82,55 @@ describe('withRetry', () => {
     expect(calls).toBe(3);
   });
 
+  it('with an isRetryable predicate: retries a transient failure and succeeds', async () => {
+    // Arrange — fails once with a message the predicate accepts, then succeeds.
+    let calls = 0;
+    const fn = async () => {
+      calls++;
+      if (calls < 2) throw new Error('SSL_ERROR_SYSCALL in connection to github.com:443');
+      return 'recovered';
+    };
+    const isRetryable = (err: unknown) => /SSL_ERROR/.test((err as Error).message);
+
+    // Act
+    const result = await withRetry(fn, 3, 0, isRetryable);
+
+    // Assert
+    expect(result).toBe('recovered');
+    expect(calls).toBe(2);
+  });
+
+  it('with an isRetryable predicate: a persistent transient failure exhausts attempts and throws', async () => {
+    // Arrange — every attempt fails with a message the predicate accepts.
+    let calls = 0;
+    const fn = async () => {
+      calls++;
+      throw new Error('SSL_ERROR_SYSCALL in connection to github.com:443');
+    };
+    const isRetryable = (err: unknown) => /SSL_ERROR/.test((err as Error).message);
+
+    // Act & Assert
+    await expect(withRetry(fn, 3, 0, isRetryable)).rejects.toThrow('SSL_ERROR_SYSCALL');
+    expect(calls).toBe(3);
+  });
+
+  it('with an isRetryable predicate: a non-transient failure is not retried at all', async () => {
+    // Arrange — the predicate rejects this message outright (e.g. an auth failure).
+    let calls = 0;
+    const fn = async () => {
+      calls++;
+      throw new Error('fatal: Authentication failed');
+    };
+    const isRetryable = (err: unknown) => /SSL_ERROR/.test((err as Error).message);
+
+    // Act & Assert — only ONE attempt: retrying an auth failure wastes the
+    // backoff budget on something that will never succeed.
+    await expect(withRetry(fn, 3, 0, isRetryable)).rejects.toThrow(
+      'Authentication failed',
+    );
+    expect(calls).toBe(1);
+  });
+
   it('escalates the backoff linearly (delayMs, 2*delayMs, …)', async () => {
     // Arrange
     vi.useFakeTimers();
