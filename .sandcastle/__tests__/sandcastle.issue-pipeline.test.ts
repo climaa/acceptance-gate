@@ -1,5 +1,6 @@
 import {
   formatIssueSummary,
+  formatUnresolvedSummary,
   mergeCommitLists,
   shouldReview,
 } from '../sandcastle-issue-pipeline.mts';
@@ -127,5 +128,62 @@ describe('formatIssueSummary', () => {
 
     // Assert
     expect(line).toBe('[summary] issue #7: implement 30s | build skipped | review 5s');
+  });
+});
+
+describe('formatUnresolvedSummary', () => {
+  it('returns null when every planned issue resolved', () => {
+    // Arrange & Act & Assert
+    expect(formatUnresolvedSummary([])).toBeNull();
+  });
+
+  it('names a pipeline that failed after retries were exhausted, by id and branch', () => {
+    // Arrange
+    const unresolved = [
+      { id: '97', branch: 'sandcastle/issue-97-x', reason: 'pipeline failed' },
+    ];
+
+    // Act
+    const summary = formatUnresolvedSummary(unresolved);
+
+    // Assert — a planned issue must never be absent from the log with no
+    // trace at all.
+    expect(summary).toContain('1 planned issue(s)');
+    expect(summary).toContain('#97 (sandcastle/issue-97-x) — pipeline failed');
+  });
+
+  it('names an issue that was never attempted (e.g. shutdown mid-iteration)', () => {
+    // Arrange
+    const unresolved = [
+      {
+        id: '12',
+        branch: 'sandcastle/issue-12-x',
+        reason: 'not attempted (shutdown requested)',
+      },
+    ];
+
+    // Act
+    const summary = formatUnresolvedSummary(unresolved);
+
+    // Assert
+    expect(summary).toContain(
+      '#12 (sandcastle/issue-12-x) — not attempted (shutdown requested)',
+    );
+  });
+
+  it('lists every unresolved issue, not just the first', () => {
+    // Arrange
+    const unresolved = [
+      { id: '1', branch: 'sandcastle/issue-1-x', reason: 'pipeline failed' },
+      { id: '2', branch: 'sandcastle/issue-2-x', reason: 'pipeline failed' },
+    ];
+
+    // Act
+    const summary = formatUnresolvedSummary(unresolved);
+
+    // Assert
+    expect(summary).toContain('2 planned issue(s)');
+    expect(summary).toContain('#1 (sandcastle/issue-1-x)');
+    expect(summary).toContain('#2 (sandcastle/issue-2-x)');
   });
 });
