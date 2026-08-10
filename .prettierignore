@@ -4,6 +4,10 @@ dist
 .turbo
 pnpm-lock.yaml
 
+# `storybook build` output: a bundled site whose .json and .css this glob would
+# otherwise reach. Prettier does not read .gitignore, so it is named twice.
+storybook-static/
+
 # Prettier 3.x rewrites MDX `{/* ... */}` comments as `{/_ ... _/}`, which is not a
 # valid JS expression and breaks the MDX compile at build time.
 apps/blog/content/**/*.mdx
