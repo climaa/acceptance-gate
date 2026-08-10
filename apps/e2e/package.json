@@ -1,0 +1,22 @@
+{
+  "name": "@gate/e2e",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:e2e": "bddgen && playwright test",
+    "e2e": "pnpm run test:e2e",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "health": "node ../../scripts/complexity-gate.mjs",
+    "clean": "rm -rf .features-gen playwright-report test-results .turbo node_modules"
+  },
+  "devDependencies": {
+    "@gate/tsconfig": "workspace:*",
+    "@playwright/test": "1.62.1",
+    "@typescript-eslint/parser": "^8.66.0",
+    "eslint": "^9.39.5",
+    "playwright-bdd": "^9.2.0",
+    "typescript": "^5.9.3"
+  }
+}
