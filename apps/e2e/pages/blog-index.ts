@@ -8,7 +8,8 @@ export class BlogIndexPage {
   /** One `<h2>` per listed post — the index renders no list/listitem role, so a
    *  post's own heading is what stands in for "an article" here. */
   readonly articleTitles: Locator;
-  /** One `<time>` per `PostMeta`, across every listed post. */
+  /** One `<time>` per `PostMeta`, across every listed post. Selected by tag rather
+   *  than by role — `<time>` maps to no ARIA role, so there is none to ask for. */
   readonly articleDates: Locator;
   /** `PostMeta`'s reading-time text ("4 min") as a pattern, never an exact
    *  string — the post catalogue changes, the shape of the text does not. */
@@ -31,8 +32,7 @@ export class BlogIndexPage {
     await this.articleTitles.first().getByRole('link').click();
   }
 
-  /** Listed article titles matching `title`, empty when none does. */
-  titled(title: string): Locator {
+  articlesTitled(title: string): Locator {
     return this.articleTitles.filter({ hasText: title });
   }
 }

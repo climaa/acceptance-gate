@@ -40,9 +40,18 @@ Then('I see the article body', async ({ post }) => {
 });
 
 Then("the article title is the page's main heading", async ({ post, scenarioState }) => {
-  await expect(post.mainHeading).toHaveText(scenarioState.articleTitle ?? '');
+  const { articleTitle } = scenarioState;
+  // No fallback: with nothing recorded there is no title to compare against, and
+  // defaulting to '' would report a page defect for a mis-ordered scenario.
+  if (articleTitle === undefined) {
+    throw new Error(
+      'No article title recorded — "I open the first article" must run first.',
+    );
+  }
+
+  await expect(post.mainHeading).toHaveText(articleTitle);
 });
 
 Then('no listed article is marked as a draft', async ({ blogIndex }) => {
-  await expect(blogIndex.titled(DRAFT_FIXTURE_TITLE)).toHaveCount(0);
+  await expect(blogIndex.articlesTitled(DRAFT_FIXTURE_TITLE)).toHaveCount(0);
 });
