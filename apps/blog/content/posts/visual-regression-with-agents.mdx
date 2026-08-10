@@ -107,6 +107,18 @@ The full capture is reserved for a small, explicit set of views whose appearance
 the contract: the pricing page, the transactional email, the component a client signed off
 on in writing. Ten or fifteen, not four hundred.
 
+That cap is about contract surfaces. It is not a budget for total route coverage, and the
+distinction matters more than the numbers do. A separate, wider sweep — route-level captures
+of the whole app surfaces that component-level stories cannot reach — is a different job with
+different economics: it exists to make change *visible* to a person, not to gate a merge on a
+threshold. That set can run to eighty routes without contradicting the fifteen above, because
+nothing in it is asserting that the pixels are correct. The mistake is collapsing the two:
+pointing a zero-tolerance gate at the wide sweep, or letting the contract set drift because it
+is buried in the sweep's noise. I have written about
+[what the wide sweep caught that nothing else did](/blog/the-migration-that-passed-ci) — a
+print view receiving dark-scheme inks across 280 nodes — and it is exactly the kind of surface
+that is worth capturing and not worth gating.
+
 ## The changing role of the baseline
 
 Here is the uncomfortable part. In the classic model, the baseline is the truth and the
