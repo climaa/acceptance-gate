@@ -96,6 +96,14 @@
   --color-danger-solid-hover: var(--c-danger-700);
   --color-on-danger-solid: var(--c-cream-50);
 
+  /* ---- Skeleton roles ----
+   * The placeholder's resting surface, and the band that sweeps across it. Their
+   * own roles rather than bg-muted/bg-subtle: the sheen has to read as lighter
+   * than the base in both themes, and those two roles invert between them —
+   * dark's subtle ground sits below its muted one, not above it. */
+  --color-skeleton-base: var(--c-cream-300);
+  --color-skeleton-sheen: var(--c-cream-100);
+
   /* ---- Code roles (the .ds-prose block) ----
    * Warm ink slab under cream text — the inverse of the page, so a code block
    * reads as a plate on the parchment rather than a second background. */
@@ -165,6 +173,10 @@
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --duration-fast: 120ms;
   --duration-base: 200ms;
+  /* One sweep of the Skeleton shimmer, the system's only looping animation. Its
+   * own role rather than a third step on the transition scale: a loop's period is
+   * a different quantity from the time a control takes to answer a pointer. */
+  --duration-shimmer: 1600ms;
 
   /* ---- Layout ---- */
   --width-prose: 68ch;
@@ -213,6 +225,11 @@
   --color-danger-solid: var(--c-red-600);
   --color-danger-solid-hover: var(--c-red-500);
   --color-on-danger-solid: var(--c-ink-50);
+
+  /* Same pairing as light, one step apart on the ink family: the sheen stays the
+   * lighter of the two, which is the whole legibility of a sweep. */
+  --color-skeleton-base: var(--c-ink-800);
+  --color-skeleton-sheen: var(--c-ink-700);
 
   /* Code is a raised plate here, not an inverted one: one step above the page
    * ground, since the page is already darker than any code slab would be. */

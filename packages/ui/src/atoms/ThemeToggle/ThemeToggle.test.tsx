@@ -1,7 +1,8 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { THEME_STORAGE_KEY, ThemeToggle } from './ThemeToggle';
+import { THEME_STORAGE_KEY } from './theme';
+import { ThemeToggle } from './ThemeToggle';
 
 // `globals` is off in vitest.config.ts, so Testing Library never sees a global
 // `afterEach` to hook its automatic cleanup onto — without this every render

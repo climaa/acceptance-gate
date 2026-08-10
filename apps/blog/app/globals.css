@@ -115,3 +115,21 @@ main {
   line-height: var(--leading-tight);
   letter-spacing: -0.02em;
 }
+
+/* Appended to every MDX heading by rehype-autolink-headings (lib/mdx.tsx). The
+   "#" is decoration — the anchor's name comes from the visually hidden label
+   beside it — so it stays quiet until the heading is hovered or the link takes
+   focus. It never goes to `display: none`: that would drop a keyboard user's
+   only way of reaching it. */
+.heading-anchor {
+  margin-left: var(--space-2);
+  color: var(--color-text-muted);
+  text-decoration: none;
+  opacity: 0;
+}
+
+h2:hover > .heading-anchor,
+h3:hover > .heading-anchor,
+.heading-anchor:focus-visible {
+  opacity: 1;
+}
