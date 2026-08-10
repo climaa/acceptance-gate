@@ -58,3 +58,24 @@ export function formatIssueSummary(input: {
     `${input.build} | review ${input.review}`
   );
 }
+
+/**
+ * The end-of-iteration safety net: a run that planned N issues must say what
+ * happened to every one of them. Retry (sandcastle-lifecycle.mts's
+ * `withRetry` + `isRetryableGitError`) makes the common transient-git-failure
+ * case survivable; this is what still surfaces it — by id — if a planned
+ * issue never lands, whether that pipeline threw after retries were
+ * exhausted or the issue was never attempted at all (e.g. a shutdown
+ * mid-iteration). Returns null when every planned issue resolved, so the
+ * caller only logs when there is something to report.
+ */
+export function formatUnresolvedSummary(
+  unresolved: readonly { id: string; branch: string; reason: string }[],
+): string | null {
+  if (unresolved.length === 0) return null;
+  const lines = unresolved.map((u) => `  #${u.id} (${u.branch}) — ${u.reason}`);
+  return (
+    `\n⚠ ${unresolved.length} planned issue(s) did not produce a merged result ` +
+    `this iteration:\n${lines.join('\n')}`
+  );
+}
