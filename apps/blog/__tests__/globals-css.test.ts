@@ -55,6 +55,9 @@ const css = fs
   // `@import '@gate/ui/styles.css';` would otherwise read as a `.css` selector.
   .replace(/@[^;{]*;/g, '');
 
+/** The sources that can render a class. The stylesheet declares rules, not markup. */
+const renderers = sources.filter((source) => !source.isStylesheet);
+
 /** Every class name the stylesheet declares a rule for. */
 const declaredClasses = [
   ...new Set(
@@ -81,9 +84,7 @@ describe('app/globals.css', () => {
   it.each(declaredClasses)('%s is rendered by something', (selector) => {
     const className = selector.slice(1);
 
-    const consumers = sources.filter(
-      (source) => !source.isStylesheet && mentions(source.text, className),
-    );
+    const consumers = renderers.filter((source) => mentions(source.text, className));
 
     expect(consumers).not.toHaveLength(0);
   });

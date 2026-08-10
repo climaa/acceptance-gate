@@ -109,6 +109,18 @@ describe('PostTemplate', () => {
     expect(tag.getAttribute('href')).toBe('/tags/visual-regression');
   });
 
+  it('falls back to TagList’s own builder when given none', () => {
+    render(
+      <PostTemplate {...POST} tags={['visual regression']}>
+        {BODY}
+      </PostTemplate>,
+    );
+
+    const tag = screen.getByRole('link', { name: 'visual regression' });
+
+    expect(tag.getAttribute('href')).toBe('/tags/visual%20regression');
+  });
+
   it('forwards `as` to every tag link', () => {
     render(
       <PostTemplate {...POST} as={RouterLink}>

@@ -1,5 +1,5 @@
 import NextLink from 'next/link';
-import { createElement } from 'react';
+import { createElement, isValidElement, type ReactNode } from 'react';
 // Imported explicitly rather than relying on `globals: true` — same reason as
 // content.test.ts: tsconfig's `**/*.ts` include means tsc typechecks this file.
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -22,6 +22,9 @@ import { getAllPosts, tagPath } from '../lib/posts';
 
 const PUBLISHED = getAllPosts();
 
+/** The slice the home page lists — it shows the newest four, `/blog` shows all. */
+const ON_HOME = PUBLISHED.slice(0, 4);
+
 /**
  * The article the post-page cases render. Optional only because
  * `noUncheckedIndexedAccess` says so — the fixture guard below fails first if
@@ -43,6 +46,8 @@ const hasNestedAnchor = (html: string) =>
 const hrefsIn = (html: string) =>
   [...html.matchAll(/href="([^"]*)"/g)].map(([, href]) => href);
 
+const renderPage = (Page: () => ReactNode) => renderToStaticMarkup(createElement(Page));
+
 const postPage = async (slug: string): Promise<PostTemplateProps> =>
   (await PostPage({ params: Promise.resolve({ slug }) })).props;
 
@@ -61,23 +66,23 @@ describe('the home page', () => {
   // The cards sit under an existing <h2>, so they are h3 — the level the blog
   // index does not use. Wave 3 asserts heading order; this is where it is set.
   it('nests the post cards one level below the section heading', () => {
-    const html = renderToStaticMarkup(createElement(HomePage));
+    const html = renderPage(HomePage);
 
-    expect(headingLevels(html)).toEqual([1, 2, ...PUBLISHED.slice(0, 4).map(() => 3)]);
+    expect(headingLevels(html)).toEqual([1, 2, ...ON_HOME.map(() => 3)]);
   });
 
   it('links each card at the post it lists', () => {
-    const html = renderToStaticMarkup(createElement(HomePage));
+    const html = renderPage(HomePage);
 
     expect(hrefsIn(html)).toEqual(
-      expect.arrayContaining(PUBLISHED.slice(0, 4).map((post) => `/blog/${post.slug}`)),
+      expect.arrayContaining(ON_HOME.map((post) => `/blog/${post.slug}`)),
     );
   });
 
   // The bug PostCard exists to remove: wrapping the card body in one <a> puts
   // the tag links inside it, and a nested anchor is unreachable.
   it('nests no anchor inside another', () => {
-    const html = renderToStaticMarkup(createElement(HomePage));
+    const html = renderPage(HomePage);
 
     expect(hasNestedAnchor(html)).toBe(false);
   });
@@ -85,7 +90,7 @@ describe('the home page', () => {
   // The chips must land on the pages /tags/[tag] prerenders. TagList's own
   // default would encode the display text, which is a second URL for one page.
   it('points every tag chip at the prerendered tag route', () => {
-    const html = renderToStaticMarkup(createElement(HomePage));
+    const html = renderPage(HomePage);
 
     expect(hrefsIn(html)).toContain(tagPath(MULTI_WORD_TAG));
     expect(hrefsIn(html)).not.toContain(`/tags/${encodeURIComponent(MULTI_WORD_TAG)}`);
@@ -102,7 +107,7 @@ describe('the blog index', () => {
   });
 
   it('renders the page title as the only h1, with each card an h2 below it', () => {
-    const html = renderToStaticMarkup(createElement(BlogIndexPage));
+    const html = renderPage(BlogIndexPage);
 
     expect(headingLevels(html)).toEqual([1, ...PUBLISHED.map(() => 2)]);
   });
@@ -114,14 +119,14 @@ describe('the blog index', () => {
   });
 
   it('points every tag chip at the prerendered tag route', () => {
-    const html = renderToStaticMarkup(createElement(BlogIndexPage));
+    const html = renderPage(BlogIndexPage);
 
     expect(hrefsIn(html)).toContain(tagPath(MULTI_WORD_TAG));
     expect(hrefsIn(html)).not.toContain(`/tags/${encodeURIComponent(MULTI_WORD_TAG)}`);
   });
 
   it('nests no anchor inside another', () => {
-    const html = renderToStaticMarkup(createElement(BlogIndexPage));
+    const html = renderPage(BlogIndexPage);
 
     expect(hasNestedAnchor(html)).toBe(false);
   });
@@ -162,7 +167,7 @@ describe('the post page', () => {
   it('renders the body itself rather than handing over a source string', async () => {
     const props = await postPage(ARTICLE_SLUG);
 
-    expect(typeof props.children).toBe('object');
+    expect(isValidElement(props.children)).toBe(true);
   });
 
   it('404s on a slug no post carries', async () => {
