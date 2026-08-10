@@ -59,7 +59,9 @@ const initialTheme = initialGlobals[COLOR_SCHEME_GLOBAL] as string;
  *  these and removed again on the way back. */
 const otherTheme = THEMES.find((theme) => theme !== initialTheme) as string;
 
-/** Runs every decorator over one story, the way Storybook does per render. */
+/** Runs every decorator over one story, once per render. They are called side by
+ *  side rather than nested: each writes to a different part of the DOM, so the
+ *  order Storybook composes them in cannot change what lands. */
 const renderWith = (globals: Record<string, string>) => {
   for (const decorate of decorators) decorate(() => STORY, { globals });
 };
@@ -137,6 +139,15 @@ describe('the viewport globals', () => {
     const styles = viewportOptions[name]?.styles;
 
     expect(styles).toEqual({ width: `${size.width}px`, height: `${size.height}px` });
+  });
+
+  // Deliberately unpinned: the differ sizes its own browser, and a starting
+  // viewport would letterbox every story for a reader who only wanted to browse.
+  // Delete this case with the decision, never around it.
+  it('starts on no viewport at all', () => {
+    const start = initialGlobals.viewport;
+
+    expect(start).toBeUndefined();
   });
 });
 

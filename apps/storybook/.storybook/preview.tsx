@@ -73,13 +73,13 @@ const preview: Preview = {
   globalTypes: {
     [COLOR_SCHEME_GLOBAL]: {
       description: 'Theme the story renders in',
-      // `dynamicTitle` so the toolbar reads back the theme on screen: the one thing
-      // a reader has to be able to check by eye is which half of the matrix they are
-      // looking at.
       toolbar: {
         title: 'Theme',
         icon: 'contrast',
         items: [...THEMES],
+        // Reads the theme on screen back into the toolbar: the one thing a reader
+        // has to be able to check by eye is which half of the matrix they are
+        // looking at.
         dynamicTitle: true,
       },
     },
