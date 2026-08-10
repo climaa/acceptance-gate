@@ -24,6 +24,10 @@
     "test": {
       "dependsOn": ["^build"]
     },
+    "e2e": {
+      "dependsOn": ["@gate/blog#build"],
+      "cache": false
+    },
     "health": {
       "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/scripts/complexity-gate.mjs"],
       "outputs": []

@@ -1,0 +1,9 @@
+{
+  "extends": "@gate/tsconfig/base.json",
+  "compilerOptions": {
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "noEmit": true
+  },
+  "include": ["*.ts", "pages", "steps"],
+  "exclude": ["node_modules", ".features-gen", "playwright-report", "test-results"]
+}
