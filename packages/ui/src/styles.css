@@ -717,3 +717,69 @@ body {
   line-height: var(--leading-tight);
   letter-spacing: -0.02em;
 }
+
+/* ============================================================
+   SiteFooter
+   ============================================================ */
+
+.ds-site-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding-block: var(--space-8);
+  border-top: 1px solid var(--color-border);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+/* ============================================================
+   PostCard
+   ============================================================ */
+
+/* The positioned ancestor the stretched title link resolves its `inset: 0`
+   against. Without it the overlay would size itself to the viewport. */
+.ds-post-card {
+  position: relative;
+}
+
+/* The heading owns the level, not the size: `headingLevel` swaps h2 for h3 and
+   both must draw the same card, so neither UA size nor UA margin may survive. */
+.ds-post-card__title {
+  margin: 0;
+  font-size: var(--text-lg);
+}
+
+/* Declared after `.ds-link--default` so this wins on source order — both are one
+   class. The title is the card's own voice, so it takes the display face and the
+   body colour rather than the link's accent. */
+.ds-post-card__link {
+  font-family: var(--font-display);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text);
+}
+
+/* What makes the whole card clickable without wrapping it in an anchor. The
+   overlay is part of the anchor, so hovering anywhere on the card is a hover on
+   the title too, and the tags below stay outside it — real sibling links rather
+   than the unreachable nested ones a wrapping <a> produces. */
+.ds-post-card__link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.ds-post-card__description {
+  margin: 0;
+  color: var(--color-text-muted);
+  line-height: var(--leading-normal);
+}
+
+/* Lifted over the overlay: without a stacking position of its own, every tag
+   link sits under the title's pseudo-element and the card swallows the click. */
+.ds-post-card__tags {
+  position: relative;
+  z-index: 1;
+}
