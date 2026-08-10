@@ -1,12 +1,31 @@
 // Imported explicitly rather than relying on `globals: true` — same reason as
 // content.test.ts: tsconfig's `**/*.ts` include means tsc typechecks this file.
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+import matter from 'gray-matter';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { getAllPosts, getAllTags } from '../lib/posts';
 import { SITE_URL } from '../lib/site';
 
 // content/posts ships posts with `draft: true` alongside published ones —
 // isPublished() must filter them out before they reach either feed.
-const DRAFT_SLUGS = ['the-migration-that-passed-ci', 'gherkin-specs-that-survive'];
+//
+// Read from disk rather than hardcoded: a literal list has to be edited every
+// time a post is published, so the first symptom of forgetting is this suite
+// failing on a content change that is entirely correct. Reading the frontmatter
+// directly is still independent of the code under test — `getAllPosts()` is the
+// function that hides drafts, so an expectation built from it could never catch
+// it failing to. Same reasoning as content.test.ts reading the directory itself.
+const POSTS_DIR = path.resolve(__dirname, '..', 'content', 'posts');
+
+const DRAFT_SLUGS = fs
+  .readdirSync(POSTS_DIR)
+  .filter((file) => /\.mdx?$/.test(file))
+  .filter(
+    (file) =>
+      matter(fs.readFileSync(path.join(POSTS_DIR, file), 'utf8')).data.draft === true,
+  )
+  .map((file) => file.replace(/\.mdx?$/, ''));
 
 // Duplicated from app/sitemap.ts on purpose: an expectation that imports the
 // value under test cannot catch that value being wrong.
@@ -64,6 +83,9 @@ describe('app/rss.xml', () => {
 
     const xml = await renderFeed();
 
+    // With no drafts on disk the loop below asserts nothing and passes forever —
+    // the failure mode this suite exists to prevent.
+    expect(DRAFT_SLUGS.length).toBeGreaterThan(0);
     DRAFT_SLUGS.forEach((slug) => {
       expect(publishedSlugs).not.toContain(slug);
       expect(xml).not.toContain(`/blog/${slug}`);
