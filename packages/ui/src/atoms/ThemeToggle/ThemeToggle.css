@@ -1,0 +1,49 @@
+/* A pill track with a knob that rests at the end the active theme names, which
+   is the whole affordance: the control carries no visible text, only its
+   aria-label. Position is driven off `[aria-pressed]` rather than a modifier
+   class so the painted state and the state the accessibility tree reports
+   cannot drift apart. Track and knob geometry is stated in rem for the same
+   reason .ds-btn states its min-heights: a control's size is its own, not a
+   spacing step the theme retunes. */
+.ds-theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 3.25rem;
+  height: 1.75rem;
+  padding: 0.1875rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  background: var(--color-bg-muted);
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+
+.ds-theme-toggle[aria-pressed='true'] {
+  justify-content: flex-end;
+  background: var(--color-accent-subtle);
+}
+
+.ds-theme-toggle__knob {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.375rem;
+  height: 1.375rem;
+  border-radius: var(--radius-full);
+  background: var(--color-bg);
+  box-shadow: var(--shadow-sm);
+  color: var(--color-text-muted);
+}
+
+.ds-theme-toggle[aria-pressed='true'] .ds-theme-toggle__knob {
+  color: var(--color-accent);
+}
+
+/* The glyph is a filled crescent, not a stroked one — a stroke would need a
+   width of its own, and `currentColor` lets the knob rule above own the tint. */
+.ds-theme-toggle__icon {
+  width: 0.8125rem;
+  height: 0.8125rem;
+  fill: currentColor;
+}
