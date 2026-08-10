@@ -15,13 +15,13 @@
  */
 export const SITE_URL = new URL('https://acceptance-gate-blog.vercel.app');
 
-export const SITE_TITLE = 'Carles Lima';
+export const SITE_TITLE = 'Carlos Lima';
 
 /** The half of the home page's `<title>` that is not the name, reused by the site OG card. */
 export const SITE_TAGLINE = 'Frontend engineering and quality';
 
 /** The rights holder the footer prints after the year. */
-export const SITE_COPYRIGHT = 'Carles Lima · Barcelona';
+export const SITE_COPYRIGHT = 'Carlos Lima · Barcelona';
 
 /**
  * Pinned rather than read off the clock. `new Date().getFullYear()` makes the

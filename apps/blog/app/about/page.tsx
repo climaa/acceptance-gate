@@ -3,7 +3,7 @@ import { Prose, Stack } from '@gate/ui';
 
 export const metadata: Metadata = {
   title: 'About',
-  description: 'Carles Lima — web developer in Barcelona.',
+  description: 'Carlos Lima — web developer in Barcelona.',
 };
 
 export default function AboutPage() {
@@ -12,7 +12,7 @@ export default function AboutPage() {
       <h1 className="page-title">About</h1>
       <Prose>
         <p>
-          I am Carles Lima, a web developer in Barcelona. I work mostly with Next.js and
+          I am Carlos Lima, a web developer in Barcelona. I work mostly with Next.js and
           TypeScript, on the part a lot of people find boring: making sure what gets built
           can be verified automatically and repeatably.
         </p>
