@@ -18,11 +18,10 @@ think" and the answer to the second is not "more unit tests".
 
 ## The setup
 
-The codebase is a healthcare logistics platform I work on as a contractor: a pnpm
-monorepo with two user-facing apps (a desktop web app and a PWA), a shared UI package
-with around 160 components organized as atoms, molecules and organisms, and a Storybook
-with roughly 270 stories that acts as the single source of truth for the design system.
-Mantine is the base library under all of it.
+The codebase is a production pnpm monorepo I work on: several user-facing apps, a shared
+UI package of a few hundred components organized as atoms, molecules and organisms, and a
+Storybook that acts as the single source of truth for the design system. Mantine is the
+base library under all of it.
 
 The visual safety net, before the migration started, had three layers: Storybook,
 Chromatic running on CI against those stories, and a small in-house Playwright CLI that
@@ -49,7 +48,7 @@ swaps tractable: the third-party API surface you have to migrate is one file, no
 
 ## The bump itself: one atomic PR, human hands
 
-Here is the part that surprises people. This repo runs an autonomous agent pipeline —
+Here is the part that surprises people. That project runs an autonomous agent pipeline —
 agents plan issues from the backlog, implement them in isolated sandboxes, and open PRs
 that auto-merge on green. Most of the migration's follow-up work went through that
 pipeline. The bump itself did not. It was a single atomic PR, written and reviewed by
@@ -69,23 +68,22 @@ the narrow, dangerous change; the agents do the wide, shallow cleanup that follo
 The bump compiled almost cleanly — a handful of mechanical API changes and one pinned
 component version. Then the app went visibly, sometimes spectacularly, wrong.
 
-Mantine v8 changed how theme colors resolve across light and dark color schemes. Every
-place our v7 code had pinned a color that only ever worked in one scheme — a hardcoded
-ink on a surface that now flips, a CSS variable that no longer had a dark-scheme
-counterpart — kept compiling and broke *visually*. I have started calling this bug class
-**scheme-invariant color**: values that are constant in code but only correct in one of
-the two schemes the code runs in.
+Every place our code had pinned a color that only ever worked in one scheme — a hardcoded
+ink on a surface that now flips, a CSS variable with no dark-scheme counterpart — kept
+compiling and broke *visually*. I have started calling this bug class **scheme-invariant
+color**: values that are constant in code but only correct in one of the two schemes the
+code runs in.
 
-{/* TODO Carles: confirm the one-line explanation of WHAT exactly changed in v8's
-    color-scheme resolution. The paragraph above is deliberately generic until then —
-    it is the one claim in this post that is not backed by a measured number. */}
+What the major version changed underneath matters less than it looks. These values were
+already wrong; they had just never been asked the other question. A design-system bump is
+simply the event that asks it, all at once, across every surface you own.
 
 Measured examples from the weeks after the bump, straight from the fix log:
 
 | Symptom                                                                    | Contrast ratio |
 | -------------------------------------------------------------------------- | -------------- |
 | Filled primary buttons invisible against the page background               | **1.06:1**     |
-| Brand text token on dark scheme (sign-in page of the PWA)                  | **1.65:1**     |
+| Brand text token on dark scheme (a sign-in page)                           | **1.65:1**     |
 | Code swatches in the docs pinning a light background under dark text       | 1.20–1.52:1    |
 | A print sheet forced to white receiving dark-scheme inks — **280 nodes**   | 1.18–1.49:1    |
 | Highlighted table row: scheme-invariant fill under scheme-aware text       | 1.84–2.03:1    |
@@ -111,10 +109,10 @@ The e2e suite did not detect the visual problem; the e2e suite *became* a proble
 your test runner and your component library disagree about what a click is, no assertion
 in the suite is telling you what a user sees.
 
-**Caught it:** the visual layer, in order of leverage. Storybook, because ~270 stories
-mean the component states exist somewhere renderable at all. Chromatic on CI, flagging
-diffs on every story on every PR. The Playwright CLI for the ~80 route-level surfaces
-outside the snapshot budget — which is what caught the print sheet. And one cheap
+**Caught it:** the visual layer, in order of leverage. Storybook, because having a story
+per component state means those states exist somewhere renderable at all. Chromatic on
+CI, flagging diffs on every story on every PR. The Playwright CLI for the route-level
+surfaces outside the snapshot budget — which is what caught the print sheet. And one cheap
 configuration change that paid for itself immediately: promoting the accessibility
 checks in our Storybook interaction tests from `todo` to `error`, which turned "someone
 should look at this someday" into a red build with a measured ratio in it.
