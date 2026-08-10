@@ -1,7 +1,7 @@
 // Imported explicitly rather than relying on `globals: true` — same reason as
 // content.test.ts: tsconfig's `**/*.ts` include means tsc typechecks this file.
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { getAllPosts } from '../lib/posts';
+import { getAllPosts, getAllTags } from '../lib/posts';
 import { SITE_URL } from '../lib/site';
 
 // content/posts ships posts with `draft: true` alongside published ones —
@@ -15,6 +15,10 @@ const STATIC_ROUTES = ['/', '/blog', '/about'];
 // Built with `new URL` rather than lib/site's absoluteUrl() for the same reason.
 function postUrl(slug: string): string {
   return new URL(`/blog/${slug}`, SITE_URL).toString();
+}
+
+function tagUrl(slug: string): string {
+  return new URL(`/tags/${slug}`, SITE_URL).toString();
 }
 
 // The imports are dynamic because a test may mock `../lib/posts` first, and the
@@ -35,7 +39,7 @@ async function renderSitemap() {
 }
 
 function mockEmptyPostList(): void {
-  vi.doMock('../lib/posts', () => ({ getAllPosts: () => [] }));
+  vi.doMock('../lib/posts', () => ({ getAllPosts: () => [], getAllTags: () => [] }));
 }
 
 afterEach(() => {
@@ -107,18 +111,36 @@ describe('app/rss.xml', () => {
 });
 
 describe('app/sitemap', () => {
-  it('includes one entry per post plus the static routes', async () => {
+  it('includes one entry per post and per tag, plus the static routes', async () => {
     const posts = getAllPosts();
+    const tags = getAllTags();
 
     const entries = await renderSitemap();
 
     const urls = entries.map((entry) => entry.url);
-    expect(urls).toHaveLength(posts.length + STATIC_ROUTES.length);
+    expect(urls).toHaveLength(posts.length + tags.length + STATIC_ROUTES.length);
     STATIC_ROUTES.forEach((pathname) => {
       expect(urls).toContain(new URL(pathname, SITE_URL).toString());
     });
     posts.forEach((post) => {
       expect(urls).toContain(postUrl(post.slug));
+    });
+    tags.forEach((tag) => {
+      expect(urls).toContain(tagUrl(tag.slug));
+    });
+  });
+
+  // Every tag URL the sitemap advertises is prerendered by the tag route, which
+  // is only true while both read the same deduplicated set.
+  it('advertises the slug form of a tag, never the display text', async () => {
+    const entries = await renderSitemap();
+
+    const tagUrls = entries
+      .map((entry) => entry.url)
+      .filter((url) => url.includes('/tags/'));
+    expect(tagUrls.length).toBeGreaterThan(0);
+    tagUrls.forEach((url) => {
+      expect(url).toMatch(/\/tags\/[a-z0-9-]+$/);
     });
   });
 
