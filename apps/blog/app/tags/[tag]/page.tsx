@@ -8,10 +8,14 @@ interface PageProps {
   params: Promise<{ tag: string }>;
 }
 
+// The page's heading and its `<title>` are the same sentence, and a crawler that
+// reads one against the other should not find two.
+const tagTitle = (label: string) => `Posts tagged ${label}`;
+
 const postCount = (total: number) => `${total} ${total === 1 ? 'post' : 'posts'}`;
 
 export function generateStaticParams() {
-  return getAllTags().map((tag) => ({ tag: tag.slug }));
+  return getAllTags().map(({ slug }) => ({ tag: slug }));
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -20,7 +24,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!label) return {};
 
   return {
-    title: `Posts tagged ${label}`,
+    title: tagTitle(label),
     description: `Every post tagged ${label}.`,
     // `/tags/CI` and `/tags/visual%20regression` reach this page too, since the
     // match is on the slug. One page, so one URL for a crawler to index.
@@ -39,7 +43,7 @@ export default async function TagPage({ params }: PageProps) {
 
   return (
     <BlogIndexTemplate
-      title={`Posts tagged ${label}`}
+      title={tagTitle(label)}
       intro={postCount(posts.length)}
       posts={posts.map((post) => ({
         title: post.title,

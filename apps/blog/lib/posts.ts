@@ -111,7 +111,8 @@ export function getAllTags(): TagSummary[] {
   getAllPosts().forEach((post) =>
     post.tags.forEach((tag) => {
       const slug = tagSlug(tag);
-      // First writing wins, so the label is stable whatever order the posts sort in.
+      // One slug can have several writings — `CI` and `ci`. First seen wins, and
+      // `getAllPosts()` sorts newest first, so the newest post names the tag.
       if (!tags.has(slug)) tags.set(slug, { slug, label: tag });
     }),
   );
@@ -121,7 +122,9 @@ export function getAllTags(): TagSummary[] {
 /** Published posts carrying `tag`, given either its slug or its display text. */
 export function getPostsByTag(tag: string): PostSummary[] {
   const slug = tagSlug(tag);
-  return getAllPosts().filter((post) => post.tags.some((t) => tagSlug(t) === slug));
+  return getAllPosts().filter((post) =>
+    post.tags.some((postTag) => tagSlug(postTag) === slug),
+  );
 }
 
 /** The display text behind a slug, or null when no published post carries it. */

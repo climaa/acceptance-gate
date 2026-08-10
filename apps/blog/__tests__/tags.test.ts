@@ -1,6 +1,7 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import matter from 'gray-matter';
+import type { BlogIndexTemplateProps } from '@gate/ui';
 // Imported explicitly rather than relying on `globals: true` — same reason as
 // content.test.ts: tsconfig's `**/*.ts` include means tsc typechecks this file.
 import { describe, expect, it } from 'vitest';
@@ -42,10 +43,10 @@ const draftOnlySlugs = slugsOf(rawPosts.filter((post) => post.draft)).filter(
 );
 
 /**
- * Named rather than read off the lists above, the way feeds.test.ts names its
- * draft slugs: the concrete cases below read as cases, and `noUncheckedIndexedAccess`
- * makes `publishedSlugs[0]` a `string | undefined` at every call site.
- * `finds the tags it was written against` fails first if content moves.
+ * Named rather than indexed off the lists above, the way feeds.test.ts names its
+ * draft slugs: the cases below read as cases, and `noUncheckedIndexedAccess` makes
+ * `publishedSlugs[0]` a `string | undefined` at every call site. The guard test
+ * below fails first if content stops carrying them.
  */
 const PUBLISHED_TAG = { slug: 'agents', label: 'agents' };
 const MULTI_WORD_TAG = { slug: 'visual-regression', label: 'visual regression' };
@@ -53,7 +54,13 @@ const DRAFT_ONLY_TAG = 'cypress';
 
 const paramsFor = (tag: string) => ({ params: Promise.resolve({ tag }) });
 
-const renderTagPage = (tag: string) => TagPage(paramsFor(tag));
+/**
+ * The props the page hands `BlogIndexTemplate` — a page renders nothing else.
+ * Named as the template's own type so the assertions below read the heading, the
+ * intro and the post list under the names the template gives them.
+ */
+const renderTagPage = async (tag: string): Promise<BlogIndexTemplateProps> =>
+  (await TagPage(paramsFor(tag))).props;
 
 describe('content/posts', () => {
   // A suite whose fixtures no longer exist would pass while protecting nothing —
@@ -152,24 +159,24 @@ describe('generateStaticParams', () => {
 
 describe('app/tags/[tag]', () => {
   it('lists the posts carrying the tag', async () => {
-    const page = await renderTagPage(PUBLISHED_TAG.slug);
+    const props = await renderTagPage(PUBLISHED_TAG.slug);
 
-    expect(page.props.posts.map((post: { href: string }) => post.href)).toEqual(
+    expect(props.posts.map((post) => post.href)).toEqual(
       getPostsByTag(PUBLISHED_TAG.slug).map((post) => `/blog/${post.slug}`),
     );
   });
 
   it('titles the page after the tag as the frontmatter writes it', async () => {
-    const page = await renderTagPage(MULTI_WORD_TAG.slug);
+    const props = await renderTagPage(MULTI_WORD_TAG.slug);
 
-    expect(page.props.title).toContain(MULTI_WORD_TAG.label);
+    expect(props.title).toContain(MULTI_WORD_TAG.label);
   });
 
   // The board puts a count beside the tag in the hero slot.
   it('counts the posts it lists', async () => {
-    const page = await renderTagPage(PUBLISHED_TAG.slug);
+    const props = await renderTagPage(PUBLISHED_TAG.slug);
 
-    expect(page.props.intro).toMatch(
+    expect(props.intro).toMatch(
       new RegExp(`^${getPostsByTag(PUBLISHED_TAG.slug).length} posts?$`),
     );
   });
@@ -188,11 +195,9 @@ describe('app/tags/[tag]', () => {
   // `encodeURIComponent` — and Next decodes the segment before the page sees it,
   // so the display text arrives here as often as the slug the route prerenders.
   it('resolves the display form of a tag, not only the slug it prerenders', async () => {
-    const page = await renderTagPage(MULTI_WORD_TAG.label);
+    const props = await renderTagPage(MULTI_WORD_TAG.label);
 
-    expect(page.props.posts).toEqual(
-      (await renderTagPage(MULTI_WORD_TAG.slug)).props.posts,
-    );
+    expect(props.posts).toEqual((await renderTagPage(MULTI_WORD_TAG.slug)).posts);
   });
 });
 
