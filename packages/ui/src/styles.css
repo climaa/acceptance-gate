@@ -700,3 +700,20 @@ body {
   margin: 0;
   padding: 0;
 }
+
+/* ============================================================
+   PostTemplate
+   ============================================================ */
+
+/* The layout itself is .ds-stack's — the template composes Stack rather than
+   declaring flex here — and the body's measure is .ds-prose's --width-prose,
+   so the only rule this block owns is the title's face. It needs one: the h1
+   sits outside .ds-prose and would otherwise inherit --font-sans from `body`
+   like every other block, the same reason .ds-prose h2 states its family. */
+.ds-post-template__title {
+  font-family: var(--font-display);
+  font-size: var(--text-3xl);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
+  letter-spacing: -0.02em;
+}
