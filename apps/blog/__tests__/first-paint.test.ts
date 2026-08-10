@@ -20,13 +20,11 @@ import { THEME_SCRIPT } from '../lib/theme';
  */
 
 /**
- * The faces the first screen paints in, named here rather than imported: an
- * expectation that reads the layout's own list cannot catch that list being
- * wrong. The header brand is bold and its nav is regular, so the body face is
- * needed in both weights; every page's first heading is the display face.
- * JetBrains Mono is deliberately absent — code slabs live far below the fold,
- * and preloading a face the first screen never shows is bandwidth taken from
- * one it does.
+ * The faces the first screen paints in — the header's nav and brand, and every
+ * page's first heading — spelled out rather than imported: an expectation that
+ * reads the layout's own list cannot catch that list being wrong. The layout
+ * says why these three and not JetBrains Mono; this is the list that fails if a
+ * fourth preload appears.
  */
 const ABOVE_THE_FOLD_FACES = [
   'atkinson-hyperlegible-latin-400-normal.woff2',
@@ -108,10 +106,16 @@ describe('the pre-hydration theme script', () => {
     expect(markup).toContain(THEME_SCRIPT);
   });
 
+  // Read off the script text, not off a run: the sandbox's storage answers
+  // whatever key it is handed, so no execution below can catch the one key that
+  // matters being the wrong one.
   it('reads the key ThemeToggle persists under', () => {
+    expect(THEME_SCRIPT).toContain(THEME_STORAGE_KEY);
+  });
+
+  it('sets the attribute for a reader who chose dark', () => {
     const dataset = runThemeScript(storageHolding('dark'));
 
-    expect(THEME_SCRIPT).toContain(THEME_STORAGE_KEY);
     expect(dataset.theme).toBe('dark');
   });
 

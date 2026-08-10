@@ -1,5 +1,8 @@
 import { THEME_STORAGE_KEY } from '@gate/ui';
 
+/** The key as a JS literal: this script is text until the browser parses it. */
+const KEY = JSON.stringify(THEME_STORAGE_KEY);
+
 /**
  * The theme, resolved before the first paint.
  *
@@ -21,9 +24,6 @@ import { THEME_STORAGE_KEY } from '@gate/ui';
  * site data blocked. An uncaught throw in `<head>` stops the parser, so the one
  * branch this script has is a `catch` that does nothing.
  */
-/** The key as a JS literal: this script is text until the browser parses it. */
-const KEY = JSON.stringify(THEME_STORAGE_KEY);
-
 export const THEME_SCRIPT =
   `try{if(localStorage.getItem(${KEY})==='dark')` +
   `document.documentElement.dataset.theme='dark'}catch(e){}`;
