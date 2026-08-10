@@ -643,3 +643,16 @@ body {
   color: var(--color-text);
   box-shadow: var(--shadow-lg);
 }
+
+/* ============================================================
+   TagList
+   ============================================================ */
+
+/* Reuses .ds-stack for the wrapping row layout — this block only strips the
+   <ul>'s default marker and indent, which is a reset (unrelated to visual
+   value) rather than something that belongs in tokens.css. */
+.ds-tag-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
