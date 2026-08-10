@@ -82,7 +82,7 @@ describe('vite', () => {
 });
 
 describe('the design system stylesheet', () => {
-  const preview = fs.readFileSync(path.join(CONFIG_DIR, 'preview.ts'), 'utf8');
+  const preview = fs.readFileSync(path.join(CONFIG_DIR, 'preview.tsx'), 'utf8');
 
   it('is imported once, so every story renders against the real tokens', () => {
     const imports = preview.match(/@gate\/ui\/styles\.css/g) ?? [];
