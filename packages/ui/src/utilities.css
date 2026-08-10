@@ -1,0 +1,29 @@
+/*
+ * Clip-rect pattern: shrinks content to a 1px box and clips it, rather than
+ * `display: none` or `visibility: hidden`, either of which would also remove
+ * it from the accessibility tree. Shared so no consumer — SkipLink today —
+ * copies the declarations a second time.
+ */
+.ds-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.ds-stack {
+  display: flex;
+  min-width: 0;
+}
+
+.ds-container {
+  width: 100%;
+  max-width: var(--width-container);
+  margin-inline: auto;
+  padding-inline: var(--space-6);
+}

@@ -65,10 +65,11 @@ findings, never from ambition.
     and deleted with it.
   - **Structural CSS rules are the exception and stay unit-tested**, because
     pixels cannot see them: no `--c-` reference outside `tokens.css`, every raw
-    token consumed by a semantic role, no literal colours in `styles.css`, every
-    role remapped under `[data-theme="dark"]`, and the woff2 / no-`system-ui`
-    font ban. These are architecture and determinism guards — a component reading
-    a raw token renders identically today and breaks theming later.
+    token consumed by a semantic role, no literal colours in any rule sheet,
+    every role remapped under `[data-theme="dark"]`, the woff2 / no-`system-ui`
+    font ban, and `styles.css` staying a manifest of per-component sheets. These
+    are architecture and determinism guards — a component reading a raw token
+    renders identically today and breaks theming later.
 
 ## `.feature` files
 

@@ -9,7 +9,7 @@
  * 1. Zero --c- references outside this file. Components consume roles only.
  * 2. Every raw --c-* step declared here is referenced by at least one role.
  *    A token earns its place or leaves; re-add one the day a role wants it.
- * 3. No literal colour value in styles.css.
+ * 3. No literal colour value in any rule sheet.
  * 4. Every --color-* role in :root is also remapped in [data-theme='dark'],
  *    or is commented as deliberately theme-invariant.
  */

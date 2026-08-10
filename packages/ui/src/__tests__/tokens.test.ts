@@ -283,13 +283,29 @@ describe('non-text contrast (WCAG 2.1 SC 1.4.11)', () => {
 // Structural rules (the four in the tokens.css header)
 // ---------------------------------------------------------------------------
 
-// Everything that consumes tokens: the stylesheet and every component. This
+const srcEntries = () => readdirSync(SRC, { recursive: true, encoding: 'utf8' });
+
+/**
+ * The two sheets the rules below are stated in terms of: tokens.css declares the
+ * literals a rule may not restate, and fonts.css names the families it hosts a
+ * face for. Neither is bound by the rule it is the definition of.
+ */
+const DEFINING_SHEETS = ['tokens.css', 'fonts.css'];
+
+/**
+ * Every sheet that may declare a rule — the manifest and one per component,
+ * read from disk rather than from the manifest's imports, so an unimported
+ * sheet is scanned too.
+ */
+const RULE_SHEETS = srcEntries()
+  .filter((entry) => entry.endsWith('.css') && !DEFINING_SHEETS.includes(entry))
+  .sort();
+
+// Everything that consumes tokens: every rule sheet and every component. This
 // file is a `.ts` and so is never scanned — it names raw steps as data, which is
 // the enforcement rather than a violation of it.
 const consumerFiles = () =>
-  readdirSync(SRC, { recursive: true, encoding: 'utf8' })
-    .filter((entry) => entry.endsWith('.tsx') || entry === 'styles.css')
-    .sort();
+  [...srcEntries().filter((entry) => entry.endsWith('.tsx')), ...RULE_SHEETS].sort();
 
 /**
  * A role opts out of the dark remap with a trailing comment on its own line
@@ -380,19 +396,22 @@ const colourLiteralIn = (value: string): string | undefined => {
     .find((word) => NAMED_COLOURS.has(word));
 };
 
-describe('styles.css', () => {
-  it('states no literal colour value — every colour arrives through a role', () => {
-    const literals: string[] = [];
+describe('rule sheets', () => {
+  it.each(RULE_SHEETS)(
+    '%s states no literal colour value — every colour arrives through a role',
+    (sheet) => {
+      const literals: string[] = [];
 
-    parseFile(STYLES_CSS).walkDecls((decl) => {
-      const literal = colourLiteralIn(decl.value);
-      if (literal !== undefined) {
-        literals.push(`styles.css:${decl.source?.start?.line}: ${decl.prop}: ${literal}`);
-      }
-    });
+      parseFile(join(SRC, sheet)).walkDecls((decl) => {
+        const literal = colourLiteralIn(decl.value);
+        if (literal !== undefined) {
+          literals.push(`${sheet}:${decl.source?.start?.line}: ${decl.prop}: ${literal}`);
+        }
+      });
 
-    expect(literals).toEqual([]);
-  });
+      expect(literals).toEqual([]);
+    },
+  );
 });
 
 // ---------------------------------------------------------------------------
@@ -505,9 +524,9 @@ const tokenReferenced = (value: string) => VAR_REFERENCE.exec(value)?.[1];
 
 /**
  * The token a rule with no `font-family` of its own renders in: `body` sets
- * --font-sans and everything inherits it. Modelling one level is enough — the
- * stylesheet is flat, and the only rules that override the family are the
- * headings and `.ds-prose code`.
+ * --font-sans and everything inherits it. Modelling one level is enough — every
+ * sheet is flat, and the only rules that override the family are the headings
+ * and `.ds-prose code`.
  */
 const INHERITED_FAMILY_TOKEN = '--font-sans';
 
@@ -603,64 +622,72 @@ describe('fonts.css', () => {
   });
 });
 
-describe('styles.css fonts', () => {
-  it('names no family of its own — every family arrives through a token', () => {
-    // The same rule as "no literal colour", one property over: a family written
-    // out here is a family fonts.css never declared a face for, so it resolves
-    // to whatever the machine has and the capture stops being reproducible.
-    const literals: string[] = [];
+describe('rule sheet fonts', () => {
+  it.each(RULE_SHEETS)(
+    '%s names no family of its own — every family arrives through a token',
+    (sheet) => {
+      // The same rule as "no literal colour", one property over: a family written
+      // out here is a family fonts.css never declared a face for, so it resolves
+      // to whatever the machine has and the capture stops being reproducible.
+      const literals: string[] = [];
 
-    parseFile(STYLES_CSS).walkDecls('font-family', (decl) => {
-      if (tokenReferenced(decl.value) === undefined) {
-        literals.push(`styles.css:${decl.source?.start?.line}: ${decl.value}`);
-      }
-    });
+      parseFile(join(SRC, sheet)).walkDecls('font-family', (decl) => {
+        if (tokenReferenced(decl.value) === undefined) {
+          literals.push(`${sheet}:${decl.source?.start?.line}: ${decl.value}`);
+        }
+      });
 
-    expect(literals).toEqual([]);
-  });
+      expect(literals).toEqual([]);
+    },
+  );
 
-  it('asks each family only for a weight it ships a face for', () => {
-    // The determinism rule one layer below the woff2 ban. Both text families are
-    // partial — Fraunces is committed at 600 alone, Atkinson Hyperlegible draws
-    // 400 and 700 and nothing between — so a rule pairing a family with a weight
-    // it has no face for is not a missing font, it is a synthesized one: the
-    // engine thickens the nearest face itself, its own way on each platform.
-    // Nothing downstream would notice until a capture diverged.
-    const offenders: string[] = [];
+  it.each(RULE_SHEETS)(
+    '%s asks each family only for a weight it ships a face for',
+    (sheet) => {
+      // The determinism rule one layer below the woff2 ban. Both text families are
+      // partial — Fraunces is committed at 600 alone, Atkinson Hyperlegible draws
+      // 400 and 700 and nothing between — so a rule pairing a family with a weight
+      // it has no face for is not a missing font, it is a synthesized one: the
+      // engine thickens the nearest face itself, its own way on each platform.
+      // Nothing downstream would notice until a capture diverged.
+      const offenders: string[] = [];
 
-    parseFile(STYLES_CSS).walkRules((rule) => {
-      const declarations = declarationsOf(rule);
+      parseFile(join(SRC, sheet)).walkRules((rule) => {
+        const declarations = declarationsOf(rule);
 
-      const weight = declarations.get('font-weight');
-      if (weight === undefined) return;
+        const weight = declarations.get('font-weight');
+        if (weight === undefined) return;
 
-      const weightToken = tokenReferenced(weight);
-      if (weightToken === undefined) {
-        offenders.push(`${rule.selector}: font-weight: ${weight} is not a token`);
-        return;
-      }
+        const weightToken = tokenReferenced(weight);
+        if (weightToken === undefined) {
+          offenders.push(`${rule.selector}: font-weight: ${weight} is not a token`);
+          return;
+        }
 
-      const declaredFamily = declarations.get('font-family');
-      const familyToken =
-        declaredFamily === undefined
-          ? INHERITED_FAMILY_TOKEN
-          : tokenReferenced(declaredFamily);
+        const declaredFamily = declarations.get('font-family');
+        const familyToken =
+          declaredFamily === undefined
+            ? INHERITED_FAMILY_TOKEN
+            : tokenReferenced(declaredFamily);
 
-      if (familyToken === undefined) {
-        offenders.push(`${rule.selector}: font-family: ${declaredFamily} is not a token`);
-        return;
-      }
+        if (familyToken === undefined) {
+          offenders.push(
+            `${rule.selector}: font-family: ${declaredFamily} is not a token`,
+          );
+          return;
+        }
 
-      const [family = ''] = familyStack(familyToken);
-      const asked = resolveToken('light', weightToken);
+        const [family = ''] = familyStack(familyToken);
+        const asked = resolveToken('light', weightToken);
 
-      if (!weightsDeclaredBy(family).has(asked)) {
-        offenders.push(`${rule.selector}: ${family} has no ${asked} face`);
-      }
-    });
+        if (!weightsDeclaredBy(family).has(asked)) {
+          offenders.push(`${rule.selector}: ${family} has no ${asked} face`);
+        }
+      });
 
-    expect(offenders).toEqual([]);
-  });
+      expect(offenders).toEqual([]);
+    },
+  );
 });
 
 describe('src/fonts/', () => {
