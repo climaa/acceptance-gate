@@ -26,22 +26,22 @@ const allowFrom = (fromType, toTypes) => ({
 // atoms ← molecules ← organisms ← templates: a component may depend on its own
 // tier and on the tiers before it in TIERS, reached either directly or through
 // those tiers' barrels. A later tier is an error via `default: 'disallow'` below,
-// and that direction is the whole point — it is what "a molecule can never import
-// an organism" means on the board.
+// which is the direction the layering exists to forbid — a molecule can never
+// import an organism.
 //
 // The same tier is allowed on purpose: composition within a tier is how the board
-// draws it (PostCard is a molecule holding Card, PostMeta and TagList), so a rule
-// forbidding it would make components the inventory names unbuildable. What stays
-// a violation is reaching a sibling through the tier's own barrel — the barrel is
-// allowed to re-export its tier, but that allowance is granted to the barrel
-// element, never to a component importing from it.
+// draws it (a card molecule holding smaller molecules), so a rule forbidding it
+// would make components the inventory names unbuildable. What stays a violation is
+// reaching a sibling through the tier's own barrel — the barrel is allowed to
+// re-export its tier, but that allowance is granted to the barrel element, never
+// to a component importing from it.
 const policies = TIERS.flatMap((tier, index) => {
   const innerTypes = TIERS.slice(0, index).flatMap((inner) => [inner, barrelOf(inner)]);
+  // The barrel and its components reach exactly the same set; only the direction
+  // they may be reached *from* differs, which is what keeps sibling-via-barrel out.
+  const reachableTypes = [tier, ...innerTypes];
 
-  return [
-    allowFrom(barrelOf(tier), [tier, ...innerTypes]),
-    allowFrom(tier, [tier, ...innerTypes]),
-  ];
+  return [allowFrom(barrelOf(tier), reachableTypes), allowFrom(tier, reachableTypes)];
 });
 
 const config = [
