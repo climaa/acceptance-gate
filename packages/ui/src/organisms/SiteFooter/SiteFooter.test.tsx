@@ -42,15 +42,20 @@ describe('SiteFooter', () => {
     expect(screen.getByRole('contentinfo').tagName).toBe('FOOTER');
   });
 
-  it('renders whatever year the prop says, reading no clock', () => {
+  it('renders whatever year the prop says', () => {
     render(<SiteFooter year={1999} copyright="Carles Lima" links={links} />);
 
     screen.getByText('© 1999 Carles Lima');
+  });
 
-    // Guards against a `new Date()` call sneaking back in: if the component ever
-    // reads the clock, this spy catches it even though no assertion above would.
+  // Guards against a `new Date()` call sneaking back in: a component that computed
+  // the current year itself would still satisfy every year assertion above, so only
+  // a spy tells a pinned year apart from a coincidence.
+  it('reads no clock while rendering', () => {
     const dateSpy = vi.spyOn(globalThis, 'Date');
+
     render(<SiteFooter year={2001} copyright="Carles Lima" links={links} />);
+
     expect(dateSpy).not.toHaveBeenCalled();
     dateSpy.mockRestore();
   });
@@ -65,9 +70,17 @@ describe('SiteFooter', () => {
 
   it('carries only the block class when no className is supplied', () => {
     const { container } = render(
-      <SiteFooter year={2026} copyright="Carles Lima" links={[]} />,
+      <SiteFooter year={2026} copyright="Carles Lima" links={links} />,
     );
 
     expect(container.firstElementChild?.className).toBe('ds-site-footer');
+  });
+
+  // Edge case: an empty links array still leaves the copyright line standing.
+  it('renders no links for an empty links array', () => {
+    render(<SiteFooter year={2026} copyright="Carles Lima" links={[]} />);
+
+    expect(screen.queryAllByRole('link')).toHaveLength(0);
+    screen.getByText('© 2026 Carles Lima');
   });
 });
