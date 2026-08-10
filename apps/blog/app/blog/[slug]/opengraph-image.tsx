@@ -13,7 +13,10 @@ export const size = OG_SIZE;
 export const contentType = OG_CONTENT_TYPE;
 
 // Mirrors page.tsx: the card prerenders alongside the post it belongs to,
-// rather than on the first crawler request after a deploy.
+// rather than on the first crawler request after a deploy. Next invokes this by
+// convention, so nothing imports it; fallow's nextjs plugin allowlists the
+// convention for page.tsx but not for metadata files, hence the suppression.
+// fallow-ignore-next-line unused-export
 export function generateStaticParams() {
   return getAllPosts().map((post) => ({ slug: post.slug }));
 }
