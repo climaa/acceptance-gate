@@ -38,9 +38,6 @@ export interface SiteHeaderProps {
  * `SkipLink` comes first inside the landmark because the header is the first
  * thing on the page — that ordering is what makes it the first tab stop, which
  * is the whole reason the atom exists.
- *
- * No sticky positioning, no scroll listener, no mount animation: none are on the
- * board, and each would be a source of non-determinism for the visual differ.
  */
 export function SiteHeader({
   brand,
@@ -65,9 +62,7 @@ export function SiteHeader({
           {nav.length > 0 && (
             <nav className="ds-site-header__nav">
               {/* Muted, the quieter of the two tones: the nav sits beside the
-                  brand and should not compete with it for the reader's eye. No
-                  per-item tone, and no current-page state — neither is on the
-                  board or in this component's contract. */}
+                  brand and should not compete with it for the reader's eye. */}
               {nav.map((item) => (
                 <Link key={item.href} as={as} href={item.href} tone="muted">
                   {item.label}

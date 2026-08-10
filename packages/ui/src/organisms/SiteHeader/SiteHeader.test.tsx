@@ -29,6 +29,14 @@ describe('SiteHeader', () => {
     expect(brand.getAttribute('href')).toBe('/');
   });
 
+  it('points the brand at a caller-supplied brandHref', () => {
+    render(<SiteHeader brand="Carles Lima" brandHref="/home" nav={NAV} />);
+
+    const brand = screen.getByRole('link', { name: 'Carles Lima' });
+
+    expect(brand.getAttribute('href')).toBe('/home');
+  });
+
   it('renders one nav link per entry, in order', () => {
     render(<SiteHeader brand="Carles Lima" nav={NAV} />);
 
@@ -45,7 +53,8 @@ describe('SiteHeader', () => {
   it('nests the nav landmark inside the banner, neither carrying a role attribute', () => {
     render(<SiteHeader brand="Carles Lima" nav={NAV} />);
 
-    const [banner, nav] = [screen.getByRole('banner'), screen.getByRole('navigation')];
+    const banner = screen.getByRole('banner');
+    const nav = screen.getByRole('navigation');
 
     expect(banner.contains(nav)).toBe(true);
     expect(banner.hasAttribute('role')).toBe(false);
