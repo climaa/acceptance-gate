@@ -6,6 +6,7 @@ import { BASE_BRANCH } from './sandcastle-config.mts';
 import { headSandboxOptions } from './sandcastle-sandbox-hooks.mts';
 import { agentFor } from './sandcastle-agent-profiles.mts';
 import { formatBranchLine } from './sandcastle-merge-branch-line.mts';
+import { refreshQueuedPrs } from './sandcastle-pr-queue-gh.mts';
 import { type IssueRef, currentBranch, restoreHostBranch } from './sandcastle-git.mts';
 
 // Called both from the empty-plan rescue path and from the end-of-iteration
@@ -39,6 +40,17 @@ export async function runMerger(
         BRANCHES_WITH_ISSUES: branches.map(formatBranchLine).join('\n'),
       },
     });
+
+    // Whatever the merger did not get to land is now BEHIND: `main` requires
+    // branches to be up to date, and each merge staled every sibling PR.
+    // GitHub's auto-merge waits for checks but never updates a stale branch, so
+    // without this the queue deadlocks at one merge per iteration. Runs here,
+    // after the agent, because it needs the PRs to exist — and host-side,
+    // because a bounded retry loop is not something to leave to a prompt.
+    await refreshQueuedPrs(
+      branches.map((issue) => issue.branch),
+      abortSignal,
+    );
   } finally {
     restoreHostBranch(startingBranch);
   }

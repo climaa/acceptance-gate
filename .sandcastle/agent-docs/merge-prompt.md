@@ -136,7 +136,14 @@ This queues the merge to execute automatically once all required CI checks pass.
 
 ---
 
-## Step 4 — Wait for the PR to merge
+## Step 4 — Wait for the PR to merge, updating it when it falls behind
+
+`main` requires branches to be **up to date** before merging
+(`required_status_checks.strict: true`). Auto-merge waits for checks but never
+updates a stale branch, so every PR that was open when a sibling merged is now
+`BEHIND` and will sit there forever. Poll both the state and the merge state,
+and update the branch whenever it goes `BEHIND` — the checks re-run and
+auto-merge lands the PR on its own.
 
 Poll every 30 seconds, hard cap of 40 polls (≈ 20 minutes):
 
@@ -145,10 +152,29 @@ PR_STATE="OPEN"
 for i in $(seq 1 40); do
   PR_STATE=$(gh pr view <PR_NUMBER> --json state --jq '.state')
   if [ "$PR_STATE" = "MERGED" ] || [ "$PR_STATE" = "CLOSED" ]; then break; fi
-  echo "poll $i: state=$PR_STATE"
+  MERGE_STATE=$(gh pr view <PR_NUMBER> --json mergeStateStatus --jq '.mergeStateStatus')
+  echo "poll $i: state=$PR_STATE merge_state=$MERGE_STATE"
+  case "$MERGE_STATE" in
+    BEHIND) gh pr update-branch <PR_NUMBER> || echo "update-branch failed; retrying next poll" ;;
+    DIRTY) echo "PR <PR_NUMBER> has a real conflict — leaving it for a human"; break ;;
+  esac
   sleep 30
 done
 ```
+
+- `BEHIND` → `gh pr update-branch`, then keep polling. Do **not** re-run
+  `gh pr merge --auto` unless the arming was actually lost; updating the branch
+  does not clear it.
+- `DIRTY` → a genuine conflict. **Do not resolve it, do not rebase, do not merge
+  `main` locally.** Break out of the poll loop and take the not-merged path in
+  Step 5 — a human owns this one.
+- Anything else (`BLOCKED`, `UNSTABLE`, `CLEAN`, `UNKNOWN`) → checks are still
+  running or GitHub has not computed mergeability yet. Keep polling; there is
+  nothing to fix.
+
+The orchestrator runs the same reconciliation host-side after you finish
+(`sandcastle-pr-queue.mts`), so a PR you leave open and up to date still lands.
+That is a backstop, not a reason to skip this step: only you close the issue.
 
 ---
 
