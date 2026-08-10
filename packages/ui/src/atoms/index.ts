@@ -9,6 +9,7 @@ export {
   type SkeletonSpace,
   type SkeletonVariant,
 } from './Skeleton/Skeleton';
+export { SkipLink, type SkipLinkProps } from './SkipLink/SkipLink';
 export { Stack, type StackProps } from './Stack/Stack';
 export { Tag, type TagProps } from './Tag/Tag';
 export {
