@@ -1,6 +1,7 @@
 import {
   classifyIssueViewFailure,
   classifyRevListFailure,
+  isRetryableGitError,
 } from '../sandcastle-git-probe.mts';
 import { read } from './helpers';
 
@@ -76,6 +77,59 @@ describe('classifyIssueViewFailure', () => {
   });
 });
 
+describe('isRetryableGitError', () => {
+  it('treats the SSL handshake failure this repo has seen as retryable', () => {
+    // Arrange & Act & Assert — the exact message observed:
+    // "fatal: unable to access '…': LibreSSL SSL_connect: SSL_ERROR_SYSCALL
+    // in connection to github.com:443", which succeeded on retry every time.
+    expect(
+      isRetryableGitError(
+        "fatal: unable to access 'https://github.com/climaa/acceptance-gate.git/': " +
+          'LibreSSL SSL_connect: SSL_ERROR_SYSCALL in connection to github.com:443',
+      ),
+    ).toBe(true);
+  });
+
+  it('treats DNS and connection-reset failures as retryable', () => {
+    // Arrange & Act & Assert — the same network-blip family.
+    expect(isRetryableGitError('Could not resolve host: github.com')).toBe(true);
+    expect(isRetryableGitError('Connection reset by peer')).toBe(true);
+  });
+
+  it('does not retry an authentication failure', () => {
+    // Arrange & Act & Assert
+    expect(
+      isRetryableGitError(
+        "fatal: Authentication failed for 'https://github.com/climaa/acceptance-gate.git/'",
+      ),
+    ).toBe(false);
+  });
+
+  it('does not retry a 404 (missing remote/repo)', () => {
+    // Arrange & Act & Assert
+    expect(
+      isRetryableGitError("fatal: repository 'https://github.com/x/y.git/' not found"),
+    ).toBe(false);
+  });
+
+  it('does not retry a rejected push', () => {
+    // Arrange & Act & Assert
+    expect(
+      isRetryableGitError(
+        '! [rejected]        main -> main (non-fast-forward)\n' +
+          "error: failed to push some refs to 'https://github.com/x/y.git'",
+      ),
+    ).toBe(false);
+  });
+
+  it('defaults an unrecognised message to retryable (fails open, toward availability)', () => {
+    // Arrange & Act & Assert — unlike the absent/error classifiers above,
+    // which fail closed toward loudness, an unclassified setup failure should
+    // still get its bounded retry budget rather than fail fast on a guess.
+    expect(isRetryableGitError('something we have never seen')).toBe(true);
+  });
+});
+
 describe('main.mts wiring (source-text — the loop is not unit-testable yet)', () => {
   const main = read('main.mts');
 
@@ -84,6 +138,13 @@ describe('main.mts wiring (source-text — the loop is not unit-testable yet)', 
     // run the issue on default models with its sc:* overrides dropped (F9).
     expect(main).toMatch(/probeIssue\(issue\.id\)/);
     expect(main).toMatch(/issueProbe\.kind === 'error'[\s\S]*?throw new Error/);
+  });
+
+  it('prints the end-of-iteration unresolved-issue summary', () => {
+    // The safety net: a planned issue that failed or was never attempted must
+    // be named, not just folded into the generic per-outcome logging above.
+    expect(main).toMatch(/formatUnresolvedSummary/);
+    expect(main).toMatch(/notAttempted/);
   });
 
   it('files an unverifiable branch as failed, never branchAhead=false', () => {

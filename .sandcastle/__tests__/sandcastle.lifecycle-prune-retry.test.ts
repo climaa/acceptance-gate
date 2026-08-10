@@ -75,4 +75,22 @@ describe('sandcastle lifecycle prune + retry', () => {
       expect(hasWarn).toBe(true);
     });
   });
+
+  describe('Fix C — worktree setup retries transient git failures only', () => {
+    it('the git fetch step is retried, not fire-and-forget', () => {
+      const fetchIdx = helperBody.indexOf('git fetch origin ${BASE_BRANCH}');
+      expect(fetchIdx).toBeGreaterThan(-1);
+      const beforeFetch = helperBody.slice(0, fetchIdx);
+      expect(beforeFetch).toMatch(/withRetry/);
+    });
+
+    it('both retried steps are gated by isRetryableGitError', () => {
+      expect(worktreeSandboxContent).toMatch(
+        /import\s*\{\s*isRetryableGitError\s*\}\s*from\s*'\.\/sandcastle-git-probe\.mts'/,
+      );
+      const occurrences = helperBody.match(/isRetryableGitError/g) ?? [];
+      // Once for the fetch retry, once for the createSandbox retry.
+      expect(occurrences.length).toBeGreaterThanOrEqual(2);
+    });
+  });
 });

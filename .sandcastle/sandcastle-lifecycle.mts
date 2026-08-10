@@ -136,17 +136,26 @@ export function reapExitedContainers(imageName: string = sandcastleImageName()):
 
 // Retry wrapper for transient async failures (e.g. SandboxLifecycle git race —
 // Known failure mode: a stale `.git` view through the bind mount right after a
-// worktree op, surfacing as "ambiguous argument 'HEAD'"). Its ONLY callers are
-// the createSandbox() sites in sandcastle-run-issue.mts and
-// sandcastle-stranded-branches.mts, so its defaults are tuned for that class
-// of failure: 3 attempts with escalating linear backoff (3s, then 6s), bumped
-// from the old 2×2s up toward the single-runner's isTransientSetupError() 3×(3s/6s/9s)
-// budget (graceful-shutdown hardening) — a slow worktree gitdir fsync sometimes needs more than
-// one 2s pause to settle.
+// worktree op, surfacing as "ambiguous argument 'HEAD'"; also the SSL/network
+// blips isRetryableGitError classifies). Its ONLY callers are the
+// createWorktreeSandbox() git steps in sandcastle-worktree-sandbox.mts, so its
+// defaults are tuned for that class of failure: 3 attempts with escalating
+// linear backoff (3s, then 6s), bumped from the old 2×2s up toward the
+// single-runner's isTransientSetupError() 3×(3s/6s/9s) budget
+// (graceful-shutdown hardening) — a slow worktree gitdir fsync sometimes needs
+// more than one 2s pause to settle.
+//
+// `isRetryable` gates retry per-attempt, defaulting to "always" so callers
+// with no classifier of their own (or opaque errors an existing classifier
+// doesn't recognise) keep today's behaviour. A caller that DOES know its
+// error shape (e.g. isRetryableGitError) can pass one to stop burning the
+// backoff budget on a failure — auth, 404, a rejected push — that will never
+// succeed on retry.
 export async function withRetry<T>(
   fn: () => Promise<T>,
   maxAttempts = 3,
   delayMs = 3000,
+  isRetryable: (err: unknown) => boolean = () => true,
 ): Promise<T> {
   let lastError: unknown;
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -154,6 +163,9 @@ export async function withRetry<T>(
       return await fn();
     } catch (err) {
       lastError = err;
+      if (!isRetryable(err)) {
+        throw err;
+      }
       if (attempt < maxAttempts) {
         const wait = delayMs * attempt; // 3s, 6s, … escalating
         console.warn(
