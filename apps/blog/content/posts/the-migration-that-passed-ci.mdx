@@ -36,8 +36,8 @@ That net is the protagonist of this story. Everything else failed quietly.
 
 We did not bump blind. The first move was a spike branch to see what actually broke —
 and the thing that blocked the upgrade was not Mantine at all. It was
-`mantine-react-table`, pinned at a 2.0 beta that did not support Mantine 8.x and showed
-no sign of moving.
+[`mantine-react-table`](https://www.npmjs.com/package/mantine-react-table), pinned at a
+2.0 beta that did not support Mantine 8.x and showed no sign of moving.
 
 The way out was to stop depending on it: we replaced the internals of our own `DataTable`
 wrapper with
@@ -146,7 +146,7 @@ components and stories touched, visual diffs flagged versus regressions confirme
 hours against the manual estimate, and the number nobody publishes — what percentage of
 agent fixes needed human correction before merge.
 
-I'll publish the numbers when v9 lands.
+I'll publish the numbers when we make the jump.
 
 If this post has a single takeaway, it is the question to ask of your own pipeline: *if
 every color in the app shifted one scheme sideways tomorrow, which test would fail?* If
