@@ -1,0 +1,100 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+import {
+  ALL_VIEWPORTS_TAG,
+  MODES,
+  SKIP_TAG,
+  TIER_VIEWPORTS,
+  VIEWPORTS,
+} from '@gate/visual-diff/policy';
+
+<Meta title="Docs/Diff Policy" />
+
+# The diff policy
+
+`@gate/visual-diff/policy` names the capture matrix — every (tier, viewport, theme) cell a
+story can be captured under. Today its only consumers are this page and the eslint boundaries
+rule described on the [Layering Rule](?path=/docs/docs-layering-rule--docs) page (both read
+the same `TIERS`); the capture CLI, the comparison and the CI gate that read this matrix
+arrive in Wave 4. What follows describes the matrix itself, as it exists in the repo today.
+
+## The matrix
+
+<table>
+  <thead>
+    <tr>
+      <th>Tier</th>
+      <th>Viewport</th>
+      <th>Theme</th>
+    </tr>
+  </thead>
+  <tbody>
+    {MODES.map((mode) => (
+      <tr key={`${mode.tier}-${mode.viewport}-${mode.theme}`}>
+        <td>
+          <code>{mode.tier}</code>
+        </td>
+        <td>
+          <code>{mode.viewport}</code> ({VIEWPORTS[mode.viewport].width}×
+          {VIEWPORTS[mode.viewport].height})
+        </td>
+        <td>
+          <code>{mode.theme}</code>
+        </td>
+      </tr>
+    ))}
+  </tbody>
+</table>
+
+{MODES.length} cells in total.
+
+## Why atoms and molecules are desktop-only
+
+<ul>
+  {Object.entries(TIER_VIEWPORTS).map(([tier, viewports]) => (
+    <li key={tier}>
+      <code>{tier}</code>: {viewports.join(', ')}
+    </li>
+  ))}
+</ul>
+
+An atom or a molecule does not change shape between viewports — nothing in either tier is
+built to reflow with the page. Capturing them at mobile as well would double their baseline
+count while catching nothing a desktop capture would not already show. Organisms and
+templates compose the tiers below them into layouts that do respond to viewport width, so
+both get the full `desktop` + `mobile` pair.
+
+## Story-level tags
+
+Two tags a story's own `tags: [...]` array can carry, named here from the module that defines
+them rather than retyped as string literals:
+
+export const storyTags = [
+  {
+    tag: SKIP_TAG,
+    description:
+      "marks a story that cannot be captured deterministically, excluding it from its tier's usual cells.",
+  },
+  {
+    tag: ALL_VIEWPORTS_TAG,
+    description: (
+      <>
+        the per-story override of <code>TIER_VIEWPORTS</code>: captures a story at every
+        viewport in <code>VIEWPORTS</code>, whatever its tier's default is. For the one
+        component that does reflow with width without the rest of its tier needing the
+        same promotion.
+      </>
+    ),
+  },
+];
+
+<ul>
+  {storyTags.map(({ tag, description }) => (
+    <li key={tag}>
+      <strong>
+        <code>{tag}</code>
+      </strong>{' '}
+      — {description}
+    </li>
+  ))}
+</ul>
