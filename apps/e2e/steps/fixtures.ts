@@ -1,6 +1,7 @@
 import { test as base } from 'playwright-bdd';
 
 import { BlogIndexPage } from '../pages/blog-index';
+import { Chrome } from '../pages/chrome';
 import { PostPage } from '../pages/post';
 
 /** What one scenario's steps hand each other — e.g. the title read off the index
@@ -20,6 +21,7 @@ interface ScenarioState {
 export const test = base.extend<{
   blogIndex: BlogIndexPage;
   post: PostPage;
+  chrome: Chrome;
   scenarioState: ScenarioState;
 }>({
   blogIndex: async ({ page }, use) => {
@@ -27,6 +29,9 @@ export const test = base.extend<{
   },
   post: async ({ page }, use) => {
     await use(new PostPage(page));
+  },
+  chrome: async ({ page }, use) => {
+    await use(new Chrome(page));
   },
   scenarioState: async ({}, use) => {
     await use({});

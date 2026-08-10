@@ -14,12 +14,17 @@ export class BlogIndexPage {
   /** `PostMeta`'s reading-time text ("4 min") as a pattern, never an exact
    *  string — the post catalogue changes, the shape of the text does not. */
   readonly articleReadingTimes: Locator;
+  /** `TagList` is the only `<ul>`/`<li>` markup anywhere in the design
+   *  system, so the first `listitem` on the page is unambiguously the first
+   *  tag chip of the first listed post — no tag slug hardcoded here. */
+  readonly firstTagLink: Locator;
 
   constructor(private readonly page: Page) {
     this.mainHeading = page.getByRole('heading', { level: 1 });
     this.articleTitles = page.getByRole('heading', { level: 2 });
     this.articleDates = page.locator('time');
     this.articleReadingTimes = page.getByText(/^\d+ min$/);
+    this.firstTagLink = page.getByRole('listitem').first().getByRole('link');
   }
 
   async open() {
@@ -30,6 +35,12 @@ export class BlogIndexPage {
    *  full article, per the requirement that a step never knows a slug. */
   async openFirstArticle() {
     await this.articleTitles.first().getByRole('link').click();
+  }
+
+  /** `/tags/[tag]` is reached only by clicking a rendered chip — a step must
+   *  never hardcode a slug that rots when the content changes. */
+  async openFirstTag() {
+    await this.firstTagLink.click();
   }
 
   articlesTitled(title: string): Locator {
