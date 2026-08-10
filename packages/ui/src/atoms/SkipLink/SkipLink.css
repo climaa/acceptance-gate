@@ -1,0 +1,22 @@
+/*
+ * Overrides `.ds-visually-hidden` back to visible on focus. Two classes beat
+ * one on specificity, so this wins over the utility regardless of source
+ * order. `position: fixed` (not the utility's `absolute`) pins it to the
+ * viewport rather than wherever it sits in the document.
+ */
+.ds-skip-link:focus-visible {
+  position: fixed;
+  top: var(--space-2);
+  left: var(--space-2);
+  width: auto;
+  height: auto;
+  padding: var(--space-2) var(--space-4);
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  color: var(--color-text);
+  box-shadow: var(--shadow-lg);
+}
