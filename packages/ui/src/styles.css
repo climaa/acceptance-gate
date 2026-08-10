@@ -783,3 +783,28 @@ body {
   position: relative;
   z-index: 1;
 }
+
+/* ============================================================
+   BlogIndexTemplate
+   ============================================================ */
+
+/* The block itself declares nothing: Stack owns every gap in this template, and
+   the column's width belongs to the page's own container rather than to a
+   template two pages share. `.ds-blog-index` is here as the name its elements
+   are built from. */
+
+/* The page's <h1>. Neither the UA's margin nor its size may survive — the space
+   below the heading is the Stack's, and the type scale is a token. */
+.ds-blog-index__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-3xl);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
+}
+
+.ds-blog-index__intro {
+  margin: 0;
+  max-width: var(--width-prose);
+  color: var(--color-text-muted);
+}
