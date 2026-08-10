@@ -93,7 +93,7 @@ export const RENDERED_PHASES = Object.freeze(['finished', 'completed', 'played']
  *  @param {unknown} phase
  *  @returns {boolean} */
 export function isRenderedPhase(phase) {
-  return RENDERED_PHASES.includes(/** @type {string} */ (phase));
+  return RENDERED_PHASES.some((rendered) => rendered === phase);
 }
 
 /** The predicate evaluated in-page — `page.waitForFunction`'s argument — deciding that
@@ -104,7 +104,7 @@ export function isRenderedPhase(phase) {
  *  started yet, which is pending, not done. */
 export const RENDER_PHASE_EXPRESSION = `(() => {
   const renders = globalThis.__STORYBOOK_PREVIEW__?.storyRenders ?? [];
-  const done = ${JSON.stringify([...RENDERED_PHASES])};
+  const done = ${JSON.stringify(RENDERED_PHASES)};
   return renders.length > 0 && renders.every((render) => done.includes(render.phase));
 })()`;
 

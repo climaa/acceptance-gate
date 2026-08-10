@@ -37,6 +37,9 @@ const previewRendering = (phase) => ({
   storyRenders: [{ id: 'atoms-button--primary', phase }],
 });
 
+/** Enough draws that a stuck generator shows up as a repeated value. */
+const DRAW_EIGHT = 'Array.from({ length: 8 }, () => Math.random())';
+
 describe('buildInitScript', () => {
   it('pins `new Date()` to the one instant every capture reports', () => {
     const realm = pinnedRealm();
@@ -90,11 +93,9 @@ describe('buildInitScript', () => {
   });
 
   it('draws the same `Math.random` sequence in two fresh evaluations', () => {
-    const draw = 'Array.from({ length: 8 }, () => Math.random())';
+    const realms = [pinnedRealm(), pinnedRealm()];
 
-    const sequences = [pinnedRealm(), pinnedRealm()].map((realm) =>
-      evaluate(realm, draw),
-    );
+    const sequences = realms.map((realm) => evaluate(realm, DRAW_EIGHT));
 
     expect(sequences[0]).toEqual(sequences[1]);
   });
@@ -102,7 +103,7 @@ describe('buildInitScript', () => {
   it('draws a varying sequence inside [0, 1), not one repeated number', () => {
     const realm = pinnedRealm();
 
-    const sequence = evaluate(realm, 'Array.from({ length: 8 }, () => Math.random())');
+    const sequence = evaluate(realm, DRAW_EIGHT);
 
     expect(new Set(sequence).size).toBe(sequence.length);
     for (const value of sequence) {
@@ -130,6 +131,14 @@ describe('FREEZE_CSS', () => {
   });
 });
 
+describe('RENDERED_PHASES', () => {
+  it('holds exactly the three names Storybook reports a finished story under', () => {
+    const accepted = new Set(RENDERED_PHASES);
+
+    expect(accepted).toEqual(new Set(['finished', 'completed', 'played']));
+  });
+});
+
 describe('isRenderedPhase', () => {
   it('accepts every phase name a finished story reports', () => {
     const phases = ['finished', 'completed', 'played'];
@@ -137,7 +146,6 @@ describe('isRenderedPhase', () => {
     const accepted = phases.map((phase) => isRenderedPhase(phase));
 
     expect(accepted).toEqual([true, true, true]);
-    expect([...RENDERED_PHASES].sort()).toEqual([...phases].sort());
   });
 
   it('rejects a story that is still pending or has errored', () => {
@@ -199,25 +207,36 @@ describe('RENDER_PHASE_EXPRESSION', () => {
 
 describe('shotsEqual', () => {
   it('is true for two buffers holding the same bytes', () => {
-    const [a, b] = [Buffer.from([1, 2, 3, 4]), Buffer.from([1, 2, 3, 4])];
+    const first = Buffer.from([1, 2, 3, 4]);
+    const second = Buffer.from([1, 2, 3, 4]);
 
-    const equal = shotsEqual(a, b);
+    const equal = shotsEqual(first, second);
+
+    expect(equal).toBe(true);
+  });
+
+  it('is true for one buffer compared with itself', () => {
+    const shot = Buffer.from([1, 2, 3, 4]);
+
+    const equal = shotsEqual(shot, shot);
 
     expect(equal).toBe(true);
   });
 
   it('is false for a one-byte difference', () => {
-    const [a, b] = [Buffer.from([1, 2, 3, 4]), Buffer.from([1, 2, 3, 5])];
+    const first = Buffer.from([1, 2, 3, 4]);
+    const second = Buffer.from([1, 2, 3, 5]);
 
-    const equal = shotsEqual(a, b);
+    const equal = shotsEqual(first, second);
 
     expect(equal).toBe(false);
   });
 
   it('is false for buffers of different lengths', () => {
-    const [a, b] = [Buffer.from([1, 2, 3]), Buffer.from([1, 2, 3, 4])];
+    const first = Buffer.from([1, 2, 3]);
+    const second = Buffer.from([1, 2, 3, 4]);
 
-    const equal = shotsEqual(a, b);
+    const equal = shotsEqual(first, second);
 
     expect(equal).toBe(false);
   });
