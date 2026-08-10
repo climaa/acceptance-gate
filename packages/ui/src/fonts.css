@@ -39,6 +39,31 @@
  * woff2, so the OG route needs a TTF it can load itself — and the OG card's
  * title is a heading, so the display face is the one it needs. It is referenced
  * by no @font-face below, and the token suite excludes that directory by name.
+ *
+ * THE FOUR BLOCKS REPEAT, AND THAT IS NOT FIXABLE HERE. They differ only in
+ * font-family, font-weight and src; the bulk of what they share is the
+ * unicode-range, written out four times. Plain CSS offers nothing to hoist it
+ * with: @import pulls in whole sheets rather than parameterizing a rule, there
+ * are no mixins, and `var()` is not resolved inside @font-face descriptors — so
+ * even `unicode-range: var(--latin-subset)` would silently fail.
+ *
+ * next/font/local WOULD collapse them: one localFont() call per family takes a
+ * src array of {path, weight, style} and generates the rules, with a
+ * `declarations` option for the range. It is rejected because of who reads this
+ * file. These four blocks are the only @font-face in the repo, and both apps
+ * reach them through @gate/ui/styles.css — apps/blog via app/globals.css,
+ * apps/storybook via .storybook/preview.ts. next/font emits its rules inside the
+ * Next app, and Storybook is Vite-based and could not consume them: its captures
+ * would render in fallback faces while the blog rendered in these, which is
+ * exactly the cross-machine divergence the whole self-hosting argument above
+ * exists to prevent. It would also invert the layering, moving font declaration
+ * out of the design system into one of its consumers.
+ *
+ * What guards a mis-copied block is not the absence of repetition but
+ * __tests__/tokens.test.ts, which parameterizes over the faces it parses out of
+ * this file: a fifth block is covered the moment it is added, and a src: URL
+ * pointing at a file that does not exist fails the suite. Deduplicating the CSS
+ * would not have caught that; the test does.
  */
 
 @font-face {
