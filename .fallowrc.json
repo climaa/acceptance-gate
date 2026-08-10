@@ -1,4 +1,20 @@
 {
   "$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
-  "ignoreDependencies": ["@ai-hero/sandcastle", "dotenv"]
+  // The three @fontsource entries are declared but never imported, on purpose:
+  // they are the exact-pinned provenance record for the woff2 files committed
+  // under packages/ui/src/fonts/, which is what actually ships. See the
+  // PROVENANCE section of packages/ui/src/fonts.css. Without them here, fallow
+  // reports them as unused devDependencies and `fallow fix --yes` deletes the
+  // only machine-readable statement of which release those bytes came from.
+  //
+  // List each package. A "@fontsource/*" glob parses without error and silently
+  // matches nothing — measured against fallow 2.99.0, so a fourth family must be
+  // added by name.
+  "ignoreDependencies": [
+    "@ai-hero/sandcastle",
+    "dotenv",
+    "@fontsource/atkinson-hyperlegible",
+    "@fontsource/fraunces",
+    "@fontsource/jetbrains-mono"
+  ]
 }
