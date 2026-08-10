@@ -1,62 +1,20 @@
 @import '@gate/ui/styles.css';
 
-.site-header {
-  border-bottom: 1px solid var(--color-border);
-  background: var(--color-bg);
-}
-
-.site-header__inner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-6);
-  padding-block: var(--space-4);
-}
-
-.site-brand {
-  font-weight: var(--weight-bold);
-  font-size: var(--text-base);
-  color: var(--color-text);
-  text-decoration: none;
-}
-
-.site-nav {
-  display: flex;
-  gap: var(--space-5);
-  font-size: var(--text-sm);
-}
-
-.site-nav a {
-  color: var(--color-text-muted);
-  text-decoration: none;
-}
-
-.site-nav a:hover {
-  color: var(--color-text);
-}
-
-.site-footer {
-  margin-top: var(--space-16);
-  padding-block: var(--space-8);
-  border-top: 1px solid var(--color-border);
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
-}
-
 main {
   padding-block: var(--space-12);
   min-height: 60vh;
 }
 
-/* The two page headings are the display face, like `.ds-prose h2`/`h3` in the
-   design system. --weight-semibold, not bold: 600 is the weight the board sets
-   for Fraunces and the only one committed for it — 700 would be synthesized. */
+/* The home page's hero, which has no board tile and no component to take a face
+   from. Display face, like `.ds-prose h2`/`h3` in the design system, and
+   --weight-semibold rather than bold: 600 is the weight the board sets for
+   Fraunces and the only one committed for it, so 700 would be synthesized. */
 .hero__title {
   margin: 0;
   font-family: var(--font-display);
   font-size: var(--text-4xl);
   font-weight: var(--weight-semibold);
-  line-height: 1.1;
+  line-height: var(--leading-tight);
   letter-spacing: -0.02em;
   max-width: 22ch;
 }
@@ -77,37 +35,10 @@ main {
   margin: 0;
 }
 
-.post-card__link {
-  text-decoration: none;
-  color: inherit;
-  display: block;
-}
-
-.post-card__title {
-  margin: 0;
-  font-size: var(--text-lg);
-  font-weight: var(--weight-bold);
-  line-height: var(--leading-tight);
-}
-
-.post-card__desc {
-  margin: 0;
-  color: var(--color-text-muted);
-  font-size: var(--text-sm);
-}
-
-.post-meta {
-  display: flex;
-  gap: var(--space-3);
-  font-size: var(--text-xs);
-  color: var(--color-text-muted);
-}
-
-.article-header {
-  max-width: var(--width-prose);
-}
-
-.article-header__title {
+/* /about's <h1>. Every other page takes its title from the template that draws
+   it — `.ds-blog-index__title` or `.ds-post-template__title` — and a page that
+   is neither an index nor an article has no template to take one from. */
+.page-title {
   margin: 0;
   font-family: var(--font-display);
   font-size: var(--text-3xl);

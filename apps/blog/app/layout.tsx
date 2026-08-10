@@ -1,7 +1,15 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
+import NextLink from 'next/link';
 import { preload } from 'react-dom';
-import { SITE_DESCRIPTION, SITE_TAGLINE, SITE_TITLE, SITE_URL } from '@/lib/site';
+import { SiteFooter, SiteHeader } from '@gate/ui';
+import {
+  SITE_COPYRIGHT,
+  SITE_COPYRIGHT_YEAR,
+  SITE_DESCRIPTION,
+  SITE_TAGLINE,
+  SITE_TITLE,
+  SITE_URL,
+} from '@/lib/site';
 import { THEME_SCRIPT } from '@/lib/theme';
 // Imported for the URL, not the bytes: the bundler emits the same hashed asset
 // the design system's `@font-face` already points at, so the preload and the
@@ -31,6 +39,16 @@ const FONT_PRELOAD = {
   type: 'font/woff2',
   crossOrigin: 'anonymous',
 } as const;
+
+const NAV = [
+  { label: 'Blog', href: '/blog' },
+  { label: 'About', href: '/about' },
+];
+
+const FOOTER_LINKS = [
+  { label: 'RSS', href: '/rss.xml' },
+  { label: 'GitHub', href: 'https://github.com/climaa' },
+];
 
 export const metadata: Metadata = {
   metadataBase: SITE_URL,
@@ -69,25 +87,26 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
       </head>
       <body>
-        <header className="site-header">
-          <div className="ds-container site-header__inner">
-            <Link href="/" className="site-brand">
-              Carles Lima
-            </Link>
-            <nav className="site-nav">
-              <Link href="/blog">Blog</Link>
-              <Link href="/about">About</Link>
-            </nav>
-          </div>
-        </header>
+        {/* `as={NextLink}` once, forwarded to the brand and to every nav item:
+            the design system depends on no framework, so this is where the app
+            names its router link. */}
+        <SiteHeader brand={SITE_TITLE} nav={NAV} as={NextLink} />
 
-        <main className="ds-container">{children}</main>
+        {/* The id is SkipLink's default target, and the landmark the header's
+            first tab stop jumps to. */}
+        <main id="main" className="ds-container">
+          {children}
+        </main>
 
-        <footer className="site-footer">
-          <div className="ds-container">
-            © {new Date().getFullYear()} Carles Lima · Barcelona
-          </div>
-        </footer>
+        {/* The organism is the row, not the bar: it caps nothing, so the
+            container that lines its content up with the header's is the app's
+            to supply. */}
+        <SiteFooter
+          className="ds-container"
+          copyright={SITE_COPYRIGHT}
+          year={SITE_COPYRIGHT_YEAR}
+          links={FOOTER_LINKS}
+        />
       </body>
     </html>
   );

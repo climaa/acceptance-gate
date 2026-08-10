@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import NextLink from 'next/link';
 import { notFound } from 'next/navigation';
 import { BlogIndexTemplate } from '@gate/ui';
-import { getAllTags, getPostsByTag, getTagLabel, tagSlug } from '@/lib/posts';
+import { getAllTags, getPostsByTag, getTagLabel, tagPath } from '@/lib/posts';
 
 interface PageProps {
   params: Promise<{ tag: string }>;
@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     description: `Every post tagged ${label}.`,
     // `/tags/CI` and `/tags/visual%20regression` reach this page too, since the
     // match is on the slug. One page, so one URL for a crawler to index.
-    alternates: { canonical: `/tags/${tagSlug(label)}` },
+    alternates: { canonical: tagPath(label) },
   };
 }
 
@@ -52,6 +52,7 @@ export default async function TagPage({ params }: PageProps) {
         date: post.date,
         readingMinutes: post.readingMinutes,
         tags: post.tags,
+        tagHref: tagPath,
         as: NextLink,
       }))}
       // Unreachable while the tag set comes from the posts themselves, and kept
