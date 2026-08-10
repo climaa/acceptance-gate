@@ -119,6 +119,26 @@ configuration change that paid for itself immediately: promoting the accessibili
 checks in our Storybook interaction tests from `todo` to `error`, which turned "someone
 should look at this someday" into a red build with a measured ratio in it.
 
+That Playwright CLI is worth dwelling on, because it is the layer I built myself and the
+only one that found the print sheet. It is not clever. It walks a list of routes, captures
+each one, and puts the before and after side by side. Everything that makes it useful
+happens after that: I look at the pairs, and I am the one who decides which differences are
+regressions. The tool has no opinion. It cannot have one — 280 changed nodes on a surface
+nobody tests is not a signal the tool can grade, it is a surface that needs a person who
+knows what the print sheet is *for* to look at it and say "that ink is wrong on white".
+
+That is a slower loop than a green check mark, and it is the reason it worked. An automated
+threshold would have had to choose between flagging every anti-aliasing shift or flagging
+nothing, and either setting would have hidden the print sheet. A human reviewing pairs is
+expensive per diff and unbeatable at the one question the machine cannot answer.
+
+I am rebuilding that approach in the open, as
+[`packages/visual-diff`](https://github.com/climaa/acceptance-gate/tree/main/packages/visual-diff)
+in this repo — currently the policy module that pins the capture matrix, with the capture
+and compare layers to follow. The point of doing it again in public is to find out how much
+of my own judgement I can actually encode, and where the honest answer stays "a person has
+to look at this".
+
 One honest caveat, because this is where visual regression tooling gets oversold:
 a visual diff does not tell you what is *wrong*. It tells you what *changed*. Whether a
 given diff is a regression or an intended improvement is a human call, every time. What
