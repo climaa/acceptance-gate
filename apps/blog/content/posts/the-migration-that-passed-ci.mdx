@@ -40,10 +40,12 @@ and the thing that blocked the upgrade was not Mantine at all. It was
 no sign of moving.
 
 The way out was to stop depending on it: we replaced the internals of our own `DataTable`
-wrapper with **@tanstack/react-table**, keeping the wrapper's public API intact so call
-sites did not change. We had made the same move earlier with the date-picker inputs —
-funneling every usage through one wrapper component — and that pattern is what made both
-swaps tractable: the third-party API surface you have to migrate is one file, not ninety.
+wrapper with
+**[@tanstack/react-table](https://www.npmjs.com/package/@tanstack/react-table)**, keeping
+the wrapper's public API intact so call sites did not change. We had made the same move
+earlier with the date-picker inputs — funneling every usage through one wrapper component
+— and that pattern is what made both swaps tractable: the third-party API surface you have
+to migrate is one file, not ninety.
 
 > The dependency that blocks your upgrade is almost never the one you are upgrading. A
 > one-day spike is the cheapest insurance there is against a two-week dead branch.
