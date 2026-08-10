@@ -48,11 +48,9 @@ swaps tractable: the third-party API surface you have to migrate is one file, no
 
 ## The bump itself: one atomic PR, human hands
 
-Here is the part that surprises people. That project runs an autonomous agent pipeline —
-agents plan issues from the backlog, implement them in isolated sandboxes, and open PRs
-that auto-merge on green. Most of the migration's follow-up work went through that
-pipeline. The bump itself did not. It was a single atomic PR, written and reviewed by
-humans, deliberately.
+Here is the part that surprises people. Most of the migration's follow-up work went to
+agents — narrow issues, isolated branches, PRs that auto-merge on green. The bump itself
+did not. It was a single atomic PR, written and reviewed by humans, deliberately.
 
 The reason is acceptance criteria. A major version bump is an enormous change surface
 with a fuzzy definition of done: an agent cannot tell whether a visual change is an
@@ -134,8 +132,7 @@ Each fix is narrow — one component, one token, one surface. The acceptance cri
 objective and machine-checkable: does the pair now clear WCAG AA? And the result is
 visually verifiable by the same Chromatic diff that flagged it. The agent does not need
 to understand the product; it needs to understand a token. That is the "wide, shallow
-cleanup" half of the division of labor above, and the migration would have been weeks
-slower without it.
+cleanup" half of the division of labor above.
 
 ## What changes for v9
 
