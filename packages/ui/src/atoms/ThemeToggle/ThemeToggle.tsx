@@ -2,16 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
-/**
- * The one place the persisted-theme key is spelled. The blog's pre-hydration
- * script imports this rather than repeating the string — a hand-typed copy that
- * drifts by a character produces a first-paint flash, and a flash is invisible
- * to every test in this repo.
- */
-export const THEME_STORAGE_KEY = 'gate-theme';
-
-/** What `localStorage` holds. `<html>` carries `dark` or nothing at all. */
-export type Theme = 'light' | 'dark';
+import { THEME_STORAGE_KEY, type Theme } from './theme';
 
 export interface ThemeToggleProps {
   className?: string;
