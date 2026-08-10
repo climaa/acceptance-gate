@@ -57,4 +57,22 @@ describe('TagList', () => {
 
     expect(link.dataset.routed).toBe('true');
   });
+
+  it('carries only the Stack and block classes when no className is supplied', () => {
+    render(<TagList tags={['react']} />);
+
+    const list = screen.getByRole('list');
+
+    // Exact, not `toContain`: an omitted `className` must be filtered out rather
+    // than joined in as a trailing empty or `undefined` class.
+    expect(list.className).toBe('ds-stack ds-tag-list');
+  });
+
+  it('appends a caller-supplied className', () => {
+    render(<TagList tags={['react']} className="u-mt-2" />);
+
+    const list = screen.getByRole('list');
+
+    expect(list.className).toBe('ds-stack ds-tag-list u-mt-2');
+  });
 });
