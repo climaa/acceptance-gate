@@ -34,13 +34,11 @@ const ABOVE_THE_FOLD_FACES = [
   'fraunces-latin-600-normal.woff2',
 ];
 
-// No JSX: vitest collects `__tests__/**/*.test.ts`, and a page's worth of
-// children would say nothing about a head this layout renders the same way for
-// every route.
-const renderLayout = () => renderToStaticMarkup(createElement(RootLayout, null, null));
-
+// Rendered without JSX, since vitest collects `__tests__/**/*.test.ts`, and
+// without children: this head is the same on every route.
 const head = () => {
-  const markup = renderLayout();
+  const markup = renderToStaticMarkup(createElement(RootLayout, null, null));
+
   return markup.slice(0, markup.indexOf('</head>'));
 };
 
