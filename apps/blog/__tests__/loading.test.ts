@@ -10,35 +10,51 @@ import TagLoading from '../app/tags/[tag]/loading';
  * and are Server Components, so `renderToStaticMarkup` is enough — no jsdom,
  * matching the `environment: 'node'` every other suite here runs under.
  *
- * Shallow by design, per the issue: appearance is the differ's in Wave 4. This
- * only pins the count of placeholder shapes, which is what would silently drop
- * to zero if a loading module regressed to an empty shell.
+ * Shallow on purpose: what a placeholder LOOKS like is the differ's
+ * (CODING_STANDARDS: appearance never gets a unit test). This pins the count of
+ * placeholder shapes, which is what would silently drop to zero if a loading
+ * module regressed to an empty shell.
  */
 const render = (Component: () => ReactElement) =>
   renderToStaticMarkup(createElement(Component));
 
-const skeletonCount = (html: string) =>
-  (html.match(/class="[^"]*"/g) ?? []).filter((attr) =>
-    attr.slice('class="'.length, -1).split(/\s+/).includes('ds-skeleton'),
+/**
+ * Elements carrying `className` among their classes. Whole classes, not a
+ * substring: `ds-skeleton-group` wraps the stacked lines and would otherwise
+ * count as a shape of its own.
+ */
+const countByClass = (html: string, className: string) =>
+  (html.match(/class="[^"]*"/g) ?? []).filter((attribute) =>
+    attribute.split(/["\s]+/).includes(className),
   ).length;
 
-const cardCount = (html: string) => (html.match(/class="ds-card[^"]*"/g) ?? []).length;
+const skeletonCount = (html: string) => countByClass(html, 'ds-skeleton');
+
+const cardCount = (html: string) => countByClass(html, 'ds-card');
 
 describe('/blog/[slug]/loading', () => {
   it('renders a title, a meta line, a tag row and several body lines', () => {
-    expect(skeletonCount(render(PostLoading))).toBe(11);
+    const html = render(PostLoading);
+
+    // Title, meta line, three tags, six body lines.
+    expect(skeletonCount(html)).toBe(11);
   });
 });
 
 describe('/blog/loading and /tags/[tag]/loading', () => {
   it('renders the same BlogIndexTemplate-shaped skeleton on both routes', () => {
-    expect(skeletonCount(render(BlogLoading))).toBe(skeletonCount(render(TagLoading)));
+    const blogHtml = render(BlogLoading);
+    const tagHtml = render(TagLoading);
+
+    expect(blogHtml).toBe(tagHtml);
   });
 
   it('renders a heading block plus three card-shaped skeletons', () => {
     const html = render(BlogLoading);
 
     expect(cardCount(html)).toBe(3);
+    // The heading, plus six shapes per card: title, two description lines,
+    // meta line and two tags.
     expect(skeletonCount(html)).toBe(19);
   });
 });
