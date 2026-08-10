@@ -68,6 +68,10 @@ const viewportOptions = Object.fromEntries(
 );
 
 const preview: Preview = {
+  // Every story gets a generated docs page — project-wide, so adding a
+  // component never means also remembering to tag its story. Nothing in
+  // packages/ui carries this tag itself.
+  tags: ['autodocs'],
   // A global rather than a parameter: only a global can be set from the capture URL,
   // which is what keeps the differ thin.
   globalTypes: {
