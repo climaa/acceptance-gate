@@ -3,7 +3,7 @@ title: 'The migration that passed CI and broke the app'
 description: 'A design-system major bump compiled cleanly, passed every unit test, and shipped a primary button at 1.06:1 contrast. On the bug class your type checker cannot see, and the test layer that caught it.'
 date: '2026-08-09'
 tags: ['mantine', 'design systems', 'visual regression', 'migration']
-draft: true
+draft: false
 ---
 
 A filled primary button at **1.06:1** against the page background. That is not low
@@ -11,18 +11,19 @@ contrast — that is an invisible button. TypeScript was happy. The unit tests w
 CI was green.
 
 That number is real, measured on a production codebase a few days after we bumped
-Mantine from 7.17.8 to 8.3.15. This post is not "how we migrated Mantine". It is about
-something more transferable: **what kind of breakage survives a green pipeline, and what
-kind of test catches it** — because the answer to the first question is "more than you
-think" and the answer to the second is not "more unit tests".
+Mantine from [7.17.8](https://v7.mantine.dev/) to [8.3.15](https://v8.mantine.dev/). This
+post is not "how we migrated Mantine". It is about something more transferable: **what
+kind of breakage survives a green pipeline, and what kind of test catches it** — because
+the answer to the first question is "more than you think" and the answer to the second is
+not "more unit tests".
 
 ## The setup
 
-The codebase is a healthcare logistics platform I work on as a contractor: a pnpm
-monorepo with two user-facing apps (a desktop web app and a PWA), a shared UI package
-with around 160 components organized as atoms, molecules and organisms, and a Storybook
-with roughly 270 stories that acts as the single source of truth for the design system.
-Mantine is the base library under all of it.
+The codebase is a production pnpm monorepo I work on: several user-facing apps, a shared
+UI package of a few hundred components organized as
+[atoms, molecules and organisms](https://github.com/climaa/acceptance-gate), and a
+Storybook that acts as the single source of truth for the design system. Mantine is the
+base library under all of it.
 
 The visual safety net, before the migration started, had three layers: Storybook,
 Chromatic running on CI against those stories, and a small in-house Playwright CLI that
@@ -35,25 +36,25 @@ That net is the protagonist of this story. Everything else failed quietly.
 
 We did not bump blind. The first move was a spike branch to see what actually broke —
 and the thing that blocked the upgrade was not Mantine at all. It was
-`mantine-react-table`, pinned at a 2.0 beta that did not support Mantine 8.x and showed
-no sign of moving.
+[`mantine-react-table`](https://www.npmjs.com/package/mantine-react-table), pinned at a
+2.0 beta that did not support Mantine 8.x and showed no sign of moving.
 
 The way out was to stop depending on it: we replaced the internals of our own `DataTable`
-wrapper with **@tanstack/react-table**, keeping the wrapper's public API intact so call
-sites did not change. We had made the same move earlier with the date-picker inputs —
-funneling every usage through one wrapper component — and that pattern is what made both
-swaps tractable: the third-party API surface you have to migrate is one file, not ninety.
+wrapper with
+**[@tanstack/react-table](https://www.npmjs.com/package/@tanstack/react-table)**, keeping
+the wrapper's public API intact so call sites did not change. We had made the same move
+earlier with the date-picker inputs — funneling every usage through one wrapper component
+— and that pattern is what made both swaps tractable: the third-party API surface you have
+to migrate is one file, not ninety.
 
 > The dependency that blocks your upgrade is almost never the one you are upgrading. A
 > one-day spike is the cheapest insurance there is against a two-week dead branch.
 
 ## The bump itself: one atomic PR, human hands
 
-Here is the part that surprises people. This repo runs an autonomous agent pipeline —
-agents plan issues from the backlog, implement them in isolated sandboxes, and open PRs
-that auto-merge on green. Most of the migration's follow-up work went through that
-pipeline. The bump itself did not. It was a single atomic PR, written and reviewed by
-humans, deliberately.
+Here is the part that surprises people. Most of the migration's follow-up work went to
+agents — narrow issues, isolated branches, PRs that auto-merge on green. The bump itself
+did not. It was a single atomic PR, written and reviewed by humans, deliberately.
 
 The reason is acceptance criteria. A major version bump is an enormous change surface
 with a fuzzy definition of done: an agent cannot tell whether a visual change is an
@@ -69,23 +70,22 @@ the narrow, dangerous change; the agents do the wide, shallow cleanup that follo
 The bump compiled almost cleanly — a handful of mechanical API changes and one pinned
 component version. Then the app went visibly, sometimes spectacularly, wrong.
 
-Mantine v8 changed how theme colors resolve across light and dark color schemes. Every
-place our v7 code had pinned a color that only ever worked in one scheme — a hardcoded
-ink on a surface that now flips, a CSS variable that no longer had a dark-scheme
-counterpart — kept compiling and broke *visually*. I have started calling this bug class
-**scheme-invariant color**: values that are constant in code but only correct in one of
-the two schemes the code runs in.
+Every place our code had pinned a color that only ever worked in one scheme — a hardcoded
+ink on a surface that now flips, a CSS variable with no dark-scheme counterpart — kept
+compiling and broke *visually*. I have started calling this bug class **scheme-invariant
+color**: values that are constant in code but only correct in one of the two schemes the
+code runs in.
 
-{/* TODO Carles: confirm the one-line explanation of WHAT exactly changed in v8's
-    color-scheme resolution. The paragraph above is deliberately generic until then —
-    it is the one claim in this post that is not backed by a measured number. */}
+What the major version changed underneath matters less than it looks. These values were
+already wrong; they had just never been asked the other question. A design-system bump is
+simply the event that asks it, all at once, across every surface you own.
 
 Measured examples from the weeks after the bump, straight from the fix log:
 
 | Symptom                                                                    | Contrast ratio |
 | -------------------------------------------------------------------------- | -------------- |
 | Filled primary buttons invisible against the page background               | **1.06:1**     |
-| Brand text token on dark scheme (sign-in page of the PWA)                  | **1.65:1**     |
+| Brand text token on dark scheme (a sign-in page)                           | **1.65:1**     |
 | Code swatches in the docs pinning a light background under dark text       | 1.20–1.52:1    |
 | A print sheet forced to white receiving dark-scheme inks — **280 nodes**   | 1.18–1.49:1    |
 | Highlighted table row: scheme-invariant fill under scheme-aware text       | 1.84–2.03:1    |
@@ -111,13 +111,33 @@ The e2e suite did not detect the visual problem; the e2e suite *became* a proble
 your test runner and your component library disagree about what a click is, no assertion
 in the suite is telling you what a user sees.
 
-**Caught it:** the visual layer, in order of leverage. Storybook, because ~270 stories
-mean the component states exist somewhere renderable at all. Chromatic on CI, flagging
-diffs on every story on every PR. The Playwright CLI for the ~80 route-level surfaces
-outside the snapshot budget — which is what caught the print sheet. And one cheap
+**Caught it:** the visual layer, in order of leverage. Storybook, because having a story
+per component state means those states exist somewhere renderable at all. Chromatic on
+CI, flagging diffs on every story on every PR. The Playwright CLI for the route-level
+surfaces outside the snapshot budget — which is what caught the print sheet. And one cheap
 configuration change that paid for itself immediately: promoting the accessibility
 checks in our Storybook interaction tests from `todo` to `error`, which turned "someone
 should look at this someday" into a red build with a measured ratio in it.
+
+That Playwright CLI is worth dwelling on, because it is the layer I built myself and the
+only one that found the print sheet. It is not clever. It walks a list of routes, captures
+each one, and puts the before and after side by side. Everything that makes it useful
+happens after that: I look at the pairs, and I am the one who decides which differences are
+regressions. The tool has no opinion. It cannot have one — 280 changed nodes on a surface
+nobody tests is not a signal the tool can grade, it is a surface that needs a person who
+knows what the print sheet is *for* to look at it and say "that ink is wrong on white".
+
+That is a slower loop than a green check mark, and it is the reason it worked. An automated
+threshold would have had to choose between flagging every anti-aliasing shift or flagging
+nothing, and either setting would have hidden the print sheet. A human reviewing pairs is
+expensive per diff and unbeatable at the one question the machine cannot answer.
+
+I am rebuilding that approach in the open, as
+[`packages/visual-diff`](https://github.com/climaa/acceptance-gate/tree/main/packages/visual-diff)
+in this repo — currently the policy module that pins the capture matrix, with the capture
+and compare layers to follow. The point of doing it again in public is to find out how much
+of my own judgement I can actually encode, and where the honest answer stays "a person has
+to look at this".
 
 One honest caveat, because this is where visual regression tooling gets oversold:
 a visual diff does not tell you what is *wrong*. It tells you what *changed*. Whether a
@@ -136,8 +156,7 @@ Each fix is narrow — one component, one token, one surface. The acceptance cri
 objective and machine-checkable: does the pair now clear WCAG AA? And the result is
 visually verifiable by the same Chromatic diff that flagged it. The agent does not need
 to understand the product; it needs to understand a token. That is the "wide, shallow
-cleanup" half of the division of labor above, and the migration would have been weeks
-slower without it.
+cleanup" half of the division of labor above.
 
 ## What changes for v9
 
@@ -147,7 +166,7 @@ components and stories touched, visual diffs flagged versus regressions confirme
 hours against the manual estimate, and the number nobody publishes — what percentage of
 agent fixes needed human correction before merge.
 
-I'll publish the numbers when v9 lands.
+I'll publish the numbers when we make the jump.
 
 If this post has a single takeaway, it is the question to ask of your own pipeline: *if
 every color in the app shifted one scheme sideways tomorrow, which test would fail?* If
