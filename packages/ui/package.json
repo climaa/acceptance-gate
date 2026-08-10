@@ -9,7 +9,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./styles.css": "./src/styles.css",
-    "./tokens.css": "./src/tokens.css"
+    "./tokens.css": "./src/tokens.css",
+    "./fonts/*": "./src/fonts/*"
   },
   "scripts": {
     "lint": "eslint .",
