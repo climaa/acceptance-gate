@@ -537,6 +537,87 @@ body {
 }
 
 /* ============================================================
+   Skeleton
+   ============================================================ */
+
+/* The system's one sanctioned animation, and so the one shape the differ has to
+   be able to capture. Two properties make that possible.
+
+   The sweep animates `background-position` over a gradient three times the
+   element's width whose sheen band occupies the middle third only. At both ends
+   of the keyframe that band therefore sits entirely outside the element, and the
+   resting appearance — a flat --color-skeleton-base — is also the first frame.
+   A capture that pauses or cancels animations lands on that frame every run
+   rather than on a half-drawn gradient, and the loop restarts seamlessly for the
+   same reason.
+
+   The timing function is `linear`, not var(--ease-out): an eased loop spends its
+   frames at the extremes, which reads as a pulse rather than a sweep.
+
+   This does not animate on mount in the sense the standards ban — the element is
+   a stand-in for content that has not arrived, not a component making an
+   entrance. */
+.ds-skeleton {
+  display: block;
+  border-radius: var(--radius-md);
+  background-color: var(--color-skeleton-base);
+  background-image: linear-gradient(
+    90deg,
+    transparent 33.33%,
+    var(--color-skeleton-sheen) 50%,
+    transparent 66.66%
+  );
+  background-repeat: no-repeat;
+  background-size: 300% 100%;
+  /* The resting position, and the keyframe's `from`: sheen off the left edge. */
+  background-position: 100% 0;
+  animation: ds-skeleton-shimmer var(--duration-shimmer) linear infinite;
+}
+
+@keyframes ds-skeleton-shimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: 0% 0;
+  }
+}
+
+/* A line is a stand-in for a row of text and takes the text-sized radius; a block
+   stands in for a card or an image and keeps the base one. Both fill their
+   column, and both heights are overridable through the `height` prop. */
+.ds-skeleton--line {
+  width: 100%;
+  height: var(--space-3);
+  border-radius: var(--radius-sm);
+}
+
+.ds-skeleton--block {
+  width: 100%;
+  height: var(--space-16);
+}
+
+/* The two declarations Stack would have contributed to the `lines` case. The atom
+   cannot import it — see the note in Skeleton.tsx. */
+.ds-skeleton-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+/* The global reduced-motion block in tokens.css clamps animation-duration to
+   0.01ms. That neutralises a one-shot transition but not a loop: at that period
+   an infinite animation restarts tens of thousands of times a second and paints
+   an arbitrary frame on each one, so the shimmer would stutter rather than stop.
+   It switches itself off explicitly instead, landing on the same flat resting
+   frame a frozen capture gets. */
+@media (prefers-reduced-motion: reduce) {
+  .ds-skeleton {
+    animation: none;
+  }
+}
+
+/* ============================================================
    SkipLink
    ============================================================ */
 
