@@ -10,10 +10,10 @@ export default function HomePage() {
       <Stack gap={4} as="section">
         <h1 className="hero__title">I build frontends you can verify.</h1>
         <p className="hero__lead">
-          Web developer in Barcelona. Next.js, TypeScript and one specific obsession: that
-          quality is a property of the pipeline, not a phase at the end. I write about
-          Cypress with Gherkin, visual regression, and what changes when agents write part
-          of the code.
+          Senior frontend engineer in Barcelona. Next.js, TypeScript and one specific
+          obsession: that quality is a property of the pipeline, not a phase at the end. I
+          write about Cypress with Gherkin, visual regression, and what changes when
+          agents write part of the code.
         </p>
       </Stack>
 

@@ -22,23 +22,23 @@ const NAV = [
 
 describe('SiteHeader', () => {
   it('renders the brand as a link home', () => {
-    render(<SiteHeader brand="Carles Lima" nav={NAV} />);
+    render(<SiteHeader brand="Carlos Lima" nav={NAV} />);
 
-    const brand = screen.getByRole('link', { name: 'Carles Lima' });
+    const brand = screen.getByRole('link', { name: 'Carlos Lima' });
 
     expect(brand.getAttribute('href')).toBe('/');
   });
 
   it('points the brand at a caller-supplied brandHref', () => {
-    render(<SiteHeader brand="Carles Lima" brandHref="/home" nav={NAV} />);
+    render(<SiteHeader brand="Carlos Lima" brandHref="/home" nav={NAV} />);
 
-    const brand = screen.getByRole('link', { name: 'Carles Lima' });
+    const brand = screen.getByRole('link', { name: 'Carlos Lima' });
 
     expect(brand.getAttribute('href')).toBe('/home');
   });
 
   it('renders one nav link per entry, in order', () => {
-    render(<SiteHeader brand="Carles Lima" nav={NAV} />);
+    render(<SiteHeader brand="Carlos Lima" nav={NAV} />);
 
     const links = within(screen.getByRole('navigation')).getAllByRole('link');
 
@@ -51,7 +51,7 @@ describe('SiteHeader', () => {
   // The landmarks are the elements' own: a `role` spelled out here would only
   // repeat what `<header>` and `<nav>` already report.
   it('nests the nav landmark inside the banner, neither carrying a role attribute', () => {
-    render(<SiteHeader brand="Carles Lima" nav={NAV} />);
+    render(<SiteHeader brand="Carlos Lima" nav={NAV} />);
 
     const banner = screen.getByRole('banner');
     const nav = screen.getByRole('navigation');
@@ -62,7 +62,7 @@ describe('SiteHeader', () => {
   });
 
   it('renders the theme toggle', () => {
-    render(<SiteHeader brand="Carles Lima" nav={NAV} />);
+    render(<SiteHeader brand="Carlos Lima" nav={NAV} />);
 
     const toggle = screen.getByRole('button', { name: 'Dark theme' });
 
@@ -72,7 +72,7 @@ describe('SiteHeader', () => {
   // The entire point of the component: a keyboard user's first tab must reach the
   // skip link, so it has to precede the brand, the nav and the toggle in the DOM.
   it('renders the skip link as the first focusable element', () => {
-    const { container } = render(<SiteHeader brand="Carles Lima" nav={NAV} />);
+    const { container } = render(<SiteHeader brand="Carlos Lima" nav={NAV} />);
 
     const focusable = container.querySelectorAll('a[href], button');
 
@@ -80,7 +80,7 @@ describe('SiteHeader', () => {
   });
 
   it('points the skip link at a caller-supplied target id', () => {
-    render(<SiteHeader brand="Carles Lima" nav={NAV} skipTargetId="content" />);
+    render(<SiteHeader brand="Carlos Lima" nav={NAV} skipTargetId="content" />);
 
     const skip = screen.getByRole('link', { name: 'Skip to content' });
 
@@ -90,7 +90,7 @@ describe('SiteHeader', () => {
   // Edge case: an empty nav must not leave an empty landmark behind — a `<nav>`
   // with nothing in it is announced by assistive tech and navigable to.
   it('renders no nav landmark when nav is empty', () => {
-    render(<SiteHeader brand="Carles Lima" nav={[]} />);
+    render(<SiteHeader brand="Carlos Lima" nav={[]} />);
 
     const nav = screen.queryByRole('navigation');
 
@@ -99,7 +99,7 @@ describe('SiteHeader', () => {
   });
 
   it('renders every brand and nav link as the component given by `as`', () => {
-    render(<SiteHeader as={RouterLink} brand="Carles Lima" nav={NAV} />);
+    render(<SiteHeader as={RouterLink} brand="Carlos Lima" nav={NAV} />);
 
     const routed = screen
       .getAllByRole('link')
@@ -121,7 +121,7 @@ describe('SiteHeader', () => {
   });
 
   it('carries only the ds-site-header class by default', () => {
-    const { container } = render(<SiteHeader brand="Carles Lima" nav={NAV} />);
+    const { container } = render(<SiteHeader brand="Carlos Lima" nav={NAV} />);
 
     const header = container.firstElementChild;
 
@@ -132,7 +132,7 @@ describe('SiteHeader', () => {
 
   it('appends a caller-supplied className to the base class', () => {
     const { container } = render(
-      <SiteHeader brand="Carles Lima" className="u-mb-4" nav={NAV} />,
+      <SiteHeader brand="Carlos Lima" className="u-mb-4" nav={NAV} />,
     );
 
     const header = container.firstElementChild;

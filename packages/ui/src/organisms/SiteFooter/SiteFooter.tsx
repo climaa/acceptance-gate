@@ -7,7 +7,7 @@ export interface SiteFooterLink {
 }
 
 export interface SiteFooterProps {
-  /** The rights holder and any trailing copy, e.g. "Carles Lima — built by its own agent pipeline". */
+  /** The rights holder and any trailing copy, e.g. "Carlos Lima — built by its own agent pipeline". */
   copyright: string;
   /**
    * The year printed ahead of `copyright`. A prop, not `new Date().getFullYear()`:

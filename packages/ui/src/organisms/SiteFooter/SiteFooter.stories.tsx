@@ -15,7 +15,7 @@ type Story = StoryObj<typeof meta>;
 // determinism note. A live year would make this baseline churn on 1 January.
 export const Default: Story = {
   args: {
-    copyright: 'Carles Lima',
+    copyright: 'Carlos Lima',
     year: 2026,
     links: [
       { label: 'RSS', href: '/rss.xml' },
