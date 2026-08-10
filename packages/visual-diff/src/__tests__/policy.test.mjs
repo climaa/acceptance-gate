@@ -1,5 +1,21 @@
 import { describe, expect, it } from 'vitest';
-import { MODES, THEMES, TIERS, VIEWPORTS } from '../policy.mjs';
+import {
+  ALL_VIEWPORTS_TAG,
+  COLOR_SCHEME_GLOBAL,
+  DETERMINISM,
+  EXIT,
+  FULLPAGE_TAG,
+  MODES,
+  SKIP_TAG,
+  THEMES,
+  TIERS,
+  VIEWPORTS,
+  parseVariantKey,
+  tierOf,
+  variantKey,
+} from '../policy.mjs';
+
+const STORY_ID = 'atoms-button--primary';
 
 const viewportsFor = (tier) =>
   new Set(MODES.filter((mode) => mode.tier === tier).map((mode) => mode.viewport));
@@ -44,5 +60,126 @@ describe('MODES', () => {
     for (const mode of MODES) {
       expect(themesFor(mode.tier, mode.viewport)).toEqual(THEMES);
     }
+  });
+
+  it('uses only tiers that exist in TIERS', () => {
+    for (const mode of MODES) {
+      expect(TIERS).toContain(mode.tier);
+    }
+  });
+
+  it('gives no two modes the same variant key', () => {
+    const keys = MODES.map((mode) => variantKey({ ...mode, id: STORY_ID }));
+
+    expect(new Set(keys).size).toBe(MODES.length);
+  });
+});
+
+describe('tierOf', () => {
+  it('derives the tier from a story path in each tier folder', () => {
+    const paths = TIERS.map(
+      (tier) => `packages/ui/src/${tier}/Widget/Widget.stories.tsx`,
+    );
+
+    const tiers = paths.map((path) => tierOf(path));
+
+    expect(tiers).toEqual(TIERS);
+  });
+
+  it("resolves an importPath relative to Storybook's config dir", () => {
+    const path = '../../packages/ui/src/molecules/PostCard/PostCard.stories.tsx';
+
+    const tier = tierOf(path);
+
+    expect(tier).toBe('molecules');
+  });
+
+  it('returns null for a file that sits in no tier folder', () => {
+    const tiers = ['src/index.ts', 'packages/ui/src/index.ts'].map((path) =>
+      tierOf(path),
+    );
+
+    expect(tiers).toEqual([null, null]);
+  });
+
+  it('returns null for a tier-named folder outside packages/ui', () => {
+    const path = 'apps/blog/src/atoms/Widget/Widget.stories.tsx';
+
+    const tier = tierOf(path);
+
+    expect(tier).toBeNull();
+  });
+});
+
+describe('variantKey / parseVariantKey', () => {
+  it('round-trips every cell of the capture matrix', () => {
+    const variants = MODES.map((mode) => ({ ...mode, id: STORY_ID }));
+
+    const roundTripped = variants.map((variant) => parseVariantKey(variantKey(variant)));
+
+    expect(roundTripped).toEqual(variants);
+  });
+
+  it('round-trips a story id carrying the component/story separator', () => {
+    const variant = {
+      tier: 'templates',
+      viewport: 'mobile',
+      theme: 'dark',
+      id: 'templates-post-template--with-long-title',
+    };
+
+    const roundTripped = parseVariantKey(variantKey(variant));
+
+    expect(roundTripped).toEqual(variant);
+  });
+
+  it('returns null for a key with no story id', () => {
+    const parsed = parseVariantKey('atoms__desktop__light');
+
+    expect(parsed).toBeNull();
+  });
+
+  it('returns null for a key naming a value outside the matrix', () => {
+    const parsed = parseVariantKey(`atoms__desktop__sepia__${STORY_ID}`);
+
+    expect(parsed).toBeNull();
+  });
+});
+
+describe('COLOR_SCHEME_GLOBAL', () => {
+  it('is a non-empty string — the one name the toolbar and the capture URL share', () => {
+    expect(typeof COLOR_SCHEME_GLOBAL).toBe('string');
+    expect(COLOR_SCHEME_GLOBAL.length).toBeGreaterThan(0);
+  });
+});
+
+describe('story tags', () => {
+  it('namespaces three distinct opt-ins', () => {
+    const tags = [SKIP_TAG, FULLPAGE_TAG, ALL_VIEWPORTS_TAG];
+
+    expect(new Set(tags).size).toBe(tags.length);
+    for (const tag of tags) {
+      expect(tag.startsWith('visual-diff:')).toBe(true);
+    }
+  });
+});
+
+describe('DETERMINISM', () => {
+  it('gives the stable-shot wait a range to back off across', () => {
+    const { min, max } = DETERMINISM.stableShotIntervalMs;
+
+    expect(min).toBeLessThan(max);
+  });
+});
+
+describe('EXIT', () => {
+  it('reserves 2 for the sanity gate', () => {
+    expect(EXIT.sanity).toBe(2);
+  });
+
+  it('gives every outcome its own code', () => {
+    const codes = Object.values(EXIT);
+
+    expect(new Set(codes).size).toBe(codes.length);
   });
 });
