@@ -89,10 +89,45 @@ export function getPostBySlug(slug: string): Post | null {
   return isPublished(post) ? post : null;
 }
 
-export function getAllTags(): string[] {
-  const tags = new Set<string>();
-  getAllPosts().forEach((post) => post.tags.forEach((tag) => tags.add(tag)));
-  return [...tags].sort();
+export interface TagSummary {
+  /** What `/tags/[tag]` carries. */
+  slug: string;
+  /** The tag as a post's frontmatter writes it, for the page's heading. */
+  label: string;
+}
+
+/**
+ * The URL form of a tag. Frontmatter carries display text — `visual regression`,
+ * `CI` — and the route carries this; matching goes through it on both sides, so
+ * `/tags/CI` and `/tags/ci` are one page rather than two.
+ */
+export function tagSlug(tag: string): string {
+  return tag.trim().toLowerCase().replace(/\s+/g, '-');
+}
+
+/** Every tag a published post carries, deduplicated by slug. */
+export function getAllTags(): TagSummary[] {
+  const tags = new Map<string, TagSummary>();
+  getAllPosts().forEach((post) =>
+    post.tags.forEach((tag) => {
+      const slug = tagSlug(tag);
+      // First writing wins, so the label is stable whatever order the posts sort in.
+      if (!tags.has(slug)) tags.set(slug, { slug, label: tag });
+    }),
+  );
+  return [...tags.values()].sort((a, b) => a.slug.localeCompare(b.slug));
+}
+
+/** Published posts carrying `tag`, given either its slug or its display text. */
+export function getPostsByTag(tag: string): PostSummary[] {
+  const slug = tagSlug(tag);
+  return getAllPosts().filter((post) => post.tags.some((t) => tagSlug(t) === slug));
+}
+
+/** The display text behind a slug, or null when no published post carries it. */
+export function getTagLabel(tag: string): string | null {
+  const slug = tagSlug(tag);
+  return getAllTags().find((candidate) => candidate.slug === slug)?.label ?? null;
 }
 
 export function formatDate(iso: string, locale = 'en-US'): string {
