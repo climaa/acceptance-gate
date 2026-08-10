@@ -5,8 +5,8 @@ import type { Locator, Page } from '@playwright/test';
  *  not red the suite. */
 export class BlogIndexPage {
   readonly mainHeading: Locator;
-  /** One `<h2>` per listed post — the index renders no list/listitem role, so a
-   *  post's own heading is what stands in for "an article" here. */
+  /** One `<h2>` per listed post — the post list carries no list/listitem role, so
+   *  a post's own heading is what stands in for "an article" here. */
   readonly articleTitles: Locator;
   /** One `<time>` per `PostMeta`, across every listed post. Selected by tag rather
    *  than by role — `<time>` maps to no ARIA role, so there is none to ask for. */
@@ -14,17 +14,12 @@ export class BlogIndexPage {
   /** `PostMeta`'s reading-time text ("4 min") as a pattern, never an exact
    *  string — the post catalogue changes, the shape of the text does not. */
   readonly articleReadingTimes: Locator;
-  /** `TagList` is the only `<ul>`/`<li>` markup anywhere in the design
-   *  system, so the first `listitem` on the page is unambiguously the first
-   *  tag chip of the first listed post — no tag slug hardcoded here. */
-  readonly firstTagLink: Locator;
 
   constructor(private readonly page: Page) {
     this.mainHeading = page.getByRole('heading', { level: 1 });
     this.articleTitles = page.getByRole('heading', { level: 2 });
     this.articleDates = page.locator('time');
     this.articleReadingTimes = page.getByText(/^\d+ min$/);
-    this.firstTagLink = page.getByRole('listitem').first().getByRole('link');
   }
 
   async open() {
@@ -38,9 +33,11 @@ export class BlogIndexPage {
   }
 
   /** `/tags/[tag]` is reached only by clicking a rendered chip — a step must
-   *  never hardcode a slug that rots when the content changes. */
+   *  never hardcode a slug that rots when the content changes. `TagList`'s chips
+   *  are the only `listitem`s the index renders, so the first one is
+   *  unambiguously the first tag of the first listed post. */
   async openFirstTag() {
-    await this.firstTagLink.click();
+    await this.page.getByRole('listitem').first().getByRole('link').click();
   }
 
   articlesTitled(title: string): Locator {
