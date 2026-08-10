@@ -5,8 +5,8 @@ import type { Locator, Page } from '@playwright/test';
  *  not red the suite. */
 export class BlogIndexPage {
   readonly mainHeading: Locator;
-  /** One `<h2>` per listed post — the index renders no list/listitem role, so a
-   *  post's own heading is what stands in for "an article" here. */
+  /** One `<h2>` per listed post — the post list carries no list/listitem role, so
+   *  a post's own heading is what stands in for "an article" here. */
   readonly articleTitles: Locator;
   /** One `<time>` per `PostMeta`, across every listed post. Selected by tag rather
    *  than by role — `<time>` maps to no ARIA role, so there is none to ask for. */
@@ -30,6 +30,14 @@ export class BlogIndexPage {
    *  full article, per the requirement that a step never knows a slug. */
   async openFirstArticle() {
     await this.articleTitles.first().getByRole('link').click();
+  }
+
+  /** `/tags/[tag]` is reached only by clicking a rendered chip — a step must
+   *  never hardcode a slug that rots when the content changes. `TagList`'s chips
+   *  are the only `listitem`s the index renders, so the first one is
+   *  unambiguously the first tag of the first listed post. */
+  async openFirstTag() {
+    await this.page.getByRole('listitem').first().getByRole('link').click();
   }
 
   articlesTitled(title: string): Locator {
