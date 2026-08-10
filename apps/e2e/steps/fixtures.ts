@@ -1,6 +1,14 @@
 import { test as base } from 'playwright-bdd';
 
 import { BlogIndexPage } from '../pages/blog-index';
+import { PostPage } from '../pages/post';
+
+/** What one scenario's steps hand each other — e.g. the title read off the index
+ *  before the click that navigates away from it. A plain object, not a return
+ *  value: playwright-bdd steps take fixtures, not each other's results. */
+interface ScenarioState {
+  articleTitle?: string;
+}
 
 /** Page objects reach the steps as fixtures, never as `new` inside a step: two steps
  *  in one scenario then share the instance instead of building it twice, and a step
@@ -9,8 +17,18 @@ import { BlogIndexPage } from '../pages/blog-index';
  *
  *  It lives under `steps/` because that is where `bddgen` looks for the extended `test`
  *  instance — the `steps` glob in playwright.config.ts is the only place it scans. */
-export const test = base.extend<{ blogIndex: BlogIndexPage }>({
+export const test = base.extend<{
+  blogIndex: BlogIndexPage;
+  post: PostPage;
+  scenarioState: ScenarioState;
+}>({
   blogIndex: async ({ page }, use) => {
     await use(new BlogIndexPage(page));
+  },
+  post: async ({ page }, use) => {
+    await use(new PostPage(page));
+  },
+  scenarioState: async ({}, use) => {
+    await use({});
   },
 });

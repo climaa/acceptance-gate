@@ -1,0 +1,12 @@
+---
+title: 'Draft fixture — must never be published'
+description: 'Fixture post for the e2e drafts-are-not-published scenario. Never flip this to draft: false.'
+date: '2026-01-01'
+tags: ['fixture']
+draft: true
+---
+
+This post exists only so the "Drafts are not published" e2e scenario has something
+to assert against. It is filtered out of every production build by `isPublished()`
+in `lib/posts.ts`; if it ever appears on the built index, that is the bug the
+scenario is written to catch.
