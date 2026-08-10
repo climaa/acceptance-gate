@@ -60,11 +60,11 @@ describe('PostTemplate', () => {
   it('renders the children inside the prose wrapper', () => {
     const { container } = render(<PostTemplate {...POST}>{BODY}</PostTemplate>);
 
-    const prose = container.querySelector('.ds-prose');
+    const prose = container.querySelector('.ds-prose') as HTMLElement;
 
     expect(prose).not.toBeNull();
-    expect(within(prose as HTMLElement).getByRole('heading', { level: 2 })).toBeDefined();
-    expect(prose?.textContent).toContain('An autonomous pipeline owns your pixels.');
+    expect(within(prose).getByRole('heading', { level: 2 })).toBeDefined();
+    expect(prose.textContent).toContain('An autonomous pipeline owns your pixels.');
   });
 
   it('keeps the title, meta and tags together in the article header', () => {
