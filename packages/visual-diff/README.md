@@ -159,12 +159,21 @@ and the only directory here that is.
 
 ## CI status
 
-Not yet wired. The code is fully built and unit-tested (`pnpm --filter @gate/visual-diff
-test` runs in CI today, as part of the generic `test` job) but `.github/workflows/pr.yml`
-does not yet run a capture/compare job, post `summary.md` as a PR comment, or upload
-`report.html`. This is Wave 4 on the roadmap in the root `README.md` — `gate.needs` picks
-up `visual-diff` (alongside `e2e`, Wave 3) without ever touching branch-protection
-settings again, since `gate` is the only required check.
+Wired, and deliberately not a required check. A `visual-diff` job in
+`.github/workflows/pr.yml` runs `pnpm visual-diff` on every non-draft PR — same pinned
+`mcr.microsoft.com/playwright:v1.62.1-noble` container, on the matching `arm64` runner —
+posts `summary.md` as a sticky PR comment (created once, updated in place on later
+pushes), and uploads `report.html` plus the diff PNGs as a workflow artifact. The job
+fails its own status on a real diff (a visible ❌ in the PR checks list), but it is never
+added to `gate.needs`, so it never blocks a merge on its own.
+
+That's intentional, not a gap to close later. Per
+[`visual-regression-with-agents.mdx`](../../apps/blog/content/posts/visual-regression-with-agents.mdx):
+a numeric pixel threshold stops being a safety net once change volume is high, and
+approving a baseline has to cost the same as reviewing a code diff — a person, reading
+the PR, not a required check nobody looks at before merging. `pnpm --filter
+@gate/visual-diff test` (the unit suite) still runs in CI as part of the generic `test`
+job, same as before, and — like every job in this file — is gated by `gate.needs`.
 
 ## Version pins
 
