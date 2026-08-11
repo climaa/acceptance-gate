@@ -226,17 +226,6 @@ jobs:
         # comment/upload steps below still run" — only the explicit failing
         # step at the end turns that into the job's real, visible result.
         continue-on-error: true
-      # Diagnostic: the first live run had the comment step read
-      # summary.md successfully, then upload-artifact reported no files at
-      # the same relative path moments later. Establishing ground truth
-      # (absolute path, real contents) before guessing at a fix.
-      - name: Debug artifact path
-        if: always()
-        run: |
-          echo "pwd: $(pwd)"
-          echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
-          find packages/visual-diff/.visual-diff -type f 2>&1 || echo "not found via relative path"
-          find "$GITHUB_WORKSPACE/packages/visual-diff/.visual-diff" -type f 2>&1 || echo "not found via GITHUB_WORKSPACE path"
       - name: Post report comment
         # Only meaningful on a PR — push-to-main has no PR to comment on.
         if: always() && github.event_name == 'pull_request'
@@ -273,15 +262,22 @@ jobs:
                 body,
               });
             }
+      # actions/upload-artifact@v4 cannot see files written inside this job's
+      # `container:` when given a directory path — confirmed twice: a debug
+      # step proved the files exist at exactly this path, with and without a
+      # trailing slash, and upload-artifact reported "no files" both times
+      # regardless. tar first (a plain `run:` step, proven to see the
+      # container's filesystem) and upload the one resulting file instead —
+      # a single explicit path sidesteps whatever upload-artifact's directory
+      # traversal is failing to do here.
+      - name: Archive the report
+        if: always()
+        run: tar -C packages/visual-diff/.visual-diff -czf /tmp/visual-diff-report.tar.gz .
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: visual-diff-report
-          # No trailing slash: the debug step proved the files exist at this
-          # exact relative path, but upload-artifact's glob found nothing
-          # with one — worth ruling out before assuming a deeper
-          # container-job incompatibility.
-          path: packages/visual-diff/.visual-diff
+          path: /tmp/visual-diff-report.tar.gz
           retention-days: 14
       - name: Fail the job if visual-diff found something
         # The real signal: a visible, non-required ❌ in the PR checks list.
