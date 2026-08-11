@@ -5,5 +5,12 @@
       "sandcastle/*": false
     }
   },
-  "ignoreCommand": "npx --yes turbo@^2.10.8 query affected --packages @gate/storybook --base=${VERCEL_GIT_PREVIOUS_SHA:-HEAD^1} --exit-code"
+  "ignoreCommand": "npx --yes turbo@^2.10.8 query affected --packages @gate/storybook --base=${VERCEL_GIT_PREVIOUS_SHA:-HEAD^1} --exit-code",
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/index.html?path=/docs/docs-system-design--docs",
+      "permanent": false
+    }
+  ]
 }
