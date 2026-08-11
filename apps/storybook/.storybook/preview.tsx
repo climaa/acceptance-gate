@@ -89,7 +89,38 @@ const preview: Preview = {
     },
   },
   initialGlobals: { [COLOR_SCHEME_GLOBAL]: UNSET_THEME },
-  parameters: { viewport: { options: viewportOptions } },
+  parameters: {
+    viewport: { options: viewportOptions },
+    // Default is alphabetical, which puts Docs last (after Templates) and
+    // Diff Policy first within it — neither is the order a reader should
+    // meet the sidebar in. System Design is written as the front door: it's
+    // the one page that explains what the rest of the sidebar is. This only
+    // fixes the sidebar's own order, though — Storybook's manager only ever
+    // auto-selects a `type: "story"` entry when nothing is chosen yet
+    // (confirmed by reading manager-api's selectFirstStory(), which filters
+    // on that type and never falls through to a docs-only page), so it
+    // cannot land a bare visit on Docs by itself. What actually makes the
+    // deployed root URL open on System Design is the redirect in
+    // ../vercel.json.
+    options: {
+      storySort: {
+        order: [
+          'Docs',
+          [
+            'System Design',
+            'Diff Policy',
+            'Layering Rule',
+            'Tokens',
+            'Visual Diff Workflow',
+          ],
+          'Atoms',
+          'Molecules',
+          'Organisms',
+          'Templates',
+        ],
+      },
+    },
+  },
   decorators: [withColorScheme, withFlatRoot],
 };
 
