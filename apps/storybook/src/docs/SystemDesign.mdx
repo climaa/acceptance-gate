@@ -1,0 +1,110 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs/System Design" />
+
+# System design
+
+`designs/acceptance-gate.pen` is the source of truth for this design system — every token,
+component, flow and decision starts there before it exists in code. The three boards below are
+its current exported snapshot. This page narrates them; the other Docs pages are where the same
+decisions are enforced or live-rendered — [Layering Rule](?path=/docs/docs-layering-rule--docs)
+runs the tier rule as a lint, [Tokens](?path=/docs/docs-tokens--docs) renders the live token
+sheet, [Diff Policy](?path=/docs/docs-diff-policy--docs) and
+[Visual Diff Workflow](?path=/docs/docs-visual-diff-workflow--docs) cover the capture pipeline.
+A board can drift from the code it described; a live-rendered page cannot. Where this page
+found drift, it says so rather than repeating the board.
+
+## Board 01 — Component library
+
+<img
+  src="/designs/component-library.png"
+  alt="Component Library — Atomic Design board"
+  style={{ width: '100%' }}
+/>
+
+The normative inventory: every component named here is tier-assigned on this board, and issue
+bodies transcribe it rather than re-deciding tiers downstream. Two things this board records
+that no other Docs page does:
+
+- **The layering enforcement mechanism** (which import direction is a lint error, not just a
+  convention) lives on [Layering Rule](?path=/docs/docs-layering-rule--docs) — same `TIERS`
+  array, read live rather than redrawn here.
+- **The live token values** this board's raw `--c-*` palette resolves to as consumable
+  `--color-*` roles are on [Tokens](?path=/docs/docs-tokens--docs), rendered straight out of
+  `tokens.css` so they can't drift from what components actually use.
+
+**Status, checked against the filesystem, not assumed from the board**: the board names five
+components as still open — `Tag`, `PostMeta`, `Pagination`, `SkipLink`, `EmptyState`. Four of
+those five exist as real components today (`packages/ui/src/{atoms,molecules}/`); only
+`Pagination` remains unbuilt. The board itself hasn't been re-exported since — this page is
+where that gap gets corrected until it is.
+
+## Board 02 — Flows & decisions
+
+<img
+  src="/designs/flows-decisions.png"
+  alt="Flows & Decisions board"
+  style={{ width: '100%' }}
+/>
+
+### Reader flows (F1–F3)
+
+Three entry-point flows, each with real coverage at a different layer today:
+
+- **F1 (Index → Post)** — click a card, land on the article. Covered end-to-end: the "Read a
+  full article" scenario in `apps/e2e/features/blog.feature` opens the first article from the
+  index and asserts the body renders.
+- **F2 (Tag → Filtered index)** — any tag pill routes to `/tags/[tag]`, same index template,
+  `EmptyState` when a tag has no posts. **No e2e scenario covers this yet** — it's asserted only
+  by what the route itself renders, not by a scripted journey.
+- **F3 (Theme toggle)** — flips `[data-theme]` on `<html>`, persisted to `localStorage`, a
+  pre-hydration script kills the flash. Covered by unit tests
+  (`ThemeToggle.test.tsx`, `first-paint.test.ts` in `apps/blog/__tests__/`), not e2e — the
+  mechanism is fully exercised, the user-visible click-and-see-it-change journey isn't scripted.
+
+### Design decisions (D1–D2)
+
+Both of these are recorded twice by design: narratively on the board, and as the literal
+rationale a maintainer reads while editing the token sheet. The second one is authoritative —
+quoted here rather than restated:
+
+- **D1 (Typography)** — `packages/ui/src/tokens.css`: _"Light is editorial parchment: cream
+  ground, terracotta accent, warm ink."_ Fraunces for display, Atkinson Hyperlegible for body
+  (chosen for legibility — it backs the repo's own accessibility story), JetBrains Mono for
+  code and metadata. All three self-hosted as woff2; see `fonts.css` for why the format and the
+  `font-display: block` rule are load-bearing for capture determinism, not just performance.
+- **D2 (Dark mode)** — `packages/ui/src/tokens.css`: _"Dark is deliberately its own personality:
+  terminal lime on green-tinted black... Light stays the editorial parchment theme — the two
+  must never be byte-identical, and the differ proves it."_ Only the semantic `--color-*` roles
+  remap under `[data-theme='dark']`; the raw `--c-*` scale never changes shape between themes.
+  The switch mechanism itself — `[data-theme]`, never a media query — is the same one
+  [Diff Policy](?path=/docs/docs-diff-policy--docs) and
+  [Visual Diff Workflow](?path=/docs/docs-visual-diff-workflow--docs) depend on: Storybook's
+  decorator and the differ's capture URL both set the attribute explicitly, which a live
+  `prefers-color-scheme` query would leave both blind to.
+
+## Board 03 — Pages: the capture matrix
+
+<img
+  src="/designs/pages.png"
+  alt="Pages — the capture matrix board"
+  style={{ width: '100%' }}
+/>
+
+This board describes a **page-level** capture matrix — the three route types (blog index, post,
+tag), each in all four variants the differ's own policy already names (desktop/mobile ×
+light/dark). That's a different matrix from the one on
+[Diff Policy](?path=/docs/docs-diff-policy--docs): this one is routes, that one is Storybook
+stories. `packages/visual-diff` only ever captures stories today — there is no page-level
+pixel-diff in this repo yet. `apps/e2e/features/blog.feature` covers the same three page types
+functionally (the index lists articles, an article opens and renders, drafts stay hidden), but
+none of that asserts appearance.
+
+This board is recording intent, not shipped behavior — worth being direct about, since the
+image alone doesn't say so. It maps onto the distinction
+[Visual regression with agents](https://github.com/climaa/acceptance-gate/blob/main/apps/blog/content/posts/visual-regression-with-agents.mdx)
+draws between a small, zero-tolerance **contract set** and a wider **sweep** that exists to make
+change visible rather than to gate a merge: a page-level capture across three routes × four
+variants is shaped exactly like that wide sweep, not like the tight, gated set that post argues
+for. If this ever gets built, that's the distinction to build it against — not a straight
+port of the story-level matrix to routes.
