@@ -24,6 +24,7 @@ claudedocs/
 CLAUDE.local.md
 coverage/
 packages/ui/.visual-diff/
+packages/visual-diff/.visual-diff/
 
 # Sandcastle runtime (the orchestrator itself IS committed)
 .sandcastle/.env

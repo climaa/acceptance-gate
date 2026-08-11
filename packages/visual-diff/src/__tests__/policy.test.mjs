@@ -3,12 +3,15 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
   ALL_VIEWPORTS_TAG,
+  BASELINE_BUDGET_BYTES,
+  BASELINE_PNG_BUDGET_BYTES,
   COLOR_SCHEME_GLOBAL,
   DETERMINISM,
   EXIT,
   FULLPAGE_TAG,
   HOST,
   MODES,
+  PATHS,
   SKIP_TAG,
   THEMES,
   TIERS,
@@ -182,6 +185,13 @@ describe('HOST', () => {
     expect(pinned).toMatch(/^\d+\.\d+\.\d+$/);
     expect(HOST.image).toBe(`mcr.microsoft.com/playwright:v${pinned}-noble`);
   });
+
+  it('compares the fields BASELINE_ENV.json records, minus the browser build', () => {
+    // `chromium` is recorded for a human reading the file but never compared: it is a
+    // property of the pinned image, and `check` runs its host guard before a browser
+    // exists to ask for a version.
+    expect(HOST.comparedKeys).toEqual(['platform', 'arch', 'image', 'playwright']);
+  });
 });
 
 describe('DETERMINISM', () => {
@@ -193,13 +203,42 @@ describe('DETERMINISM', () => {
 });
 
 describe('EXIT', () => {
-  it('reserves 2 for the sanity gate', () => {
-    expect(EXIT.sanity).toBe(2);
+  // The three-code contract is the thesis: a reader of a red job learns from the number
+  // alone whether the UI changed or the gate did. A fourth code is a distinction the
+  // workflow then has to branch on, so the count is asserted, not only the values.
+  it('is three codes — clean, a human must look, the gate is broken', () => {
+    expect(EXIT).toEqual({ ok: 0, diff: 1, broken: 2 });
   });
 
   it('gives every outcome its own code', () => {
     const codes = Object.values(EXIT);
 
     expect(new Set(codes).size).toBe(codes.length);
+  });
+});
+
+describe('PATHS', () => {
+  it('keeps every path repo-root-relative, so the CLI can be run from anywhere', () => {
+    const paths = Object.values(PATHS);
+
+    expect(paths.every((entry) => !entry.startsWith('/') && !entry.startsWith('.'))).toBe(
+      true,
+    );
+  });
+
+  it('puts BASELINE_ENV.json inside the baseline directory it describes', () => {
+    expect(PATHS.baselineEnv.startsWith(`${PATHS.baselines}/`)).toBe(true);
+  });
+
+  it('writes every per-run artifact under the artifacts directory', () => {
+    const perRun = [PATHS.diffs, PATHS.summaryJson, PATHS.summaryMd, PATHS.reportHtml];
+
+    expect(perRun.every((entry) => entry.startsWith(`${PATHS.artifacts}/`))).toBe(true);
+  });
+});
+
+describe('baseline budgets', () => {
+  it('caps one PNG well below the budget for the whole committed set', () => {
+    expect(BASELINE_PNG_BUDGET_BYTES).toBeLessThan(BASELINE_BUDGET_BYTES);
   });
 });

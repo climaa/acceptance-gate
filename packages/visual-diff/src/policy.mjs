@@ -171,43 +171,64 @@ const PLAYWRIGHT_IMAGE_TAG = 'v1.62.1-noble';
  *  renderer. */
 export const HOST = {
   image: `mcr.microsoft.com/playwright:${PLAYWRIGHT_IMAGE_TAG}`,
+
+  /** The fields of `BASELINE_ENV.json` a run has to match before its shots are
+   *  comparable to the committed baselines. `chromium` is recorded in that file for a
+   *  human reading it but is deliberately absent here: it is a property of the pinned
+   *  {@link HOST.image}, which *is* compared, and the guard runs before a browser
+   *  exists to ask for a version.
+   *  @type {readonly string[]} */
+  comparedKeys: ['platform', 'arch', 'image', 'playwright'],
 };
 
 /** Run artifacts. Baselines are committed; everything under here is per-run output. */
 const ARTIFACTS = 'packages/visual-diff/.visual-diff';
 
+/** Underscored like `__tests__`: the directory is a fixture set the tooling owns, and
+ *  the name keeps it from reading as a source folder anyone edits by hand. */
+const BASELINES = 'packages/visual-diff/__baselines__';
+
 /** Repo-root-relative, so a path means the same thing whichever workspace the CLI
  *  was invoked from. */
 export const PATHS = {
-  baselines: 'packages/visual-diff/baselines',
+  baselines: BASELINES,
+
+  /** The host the committed baselines were captured on, restamped by every `accept`. */
+  baselineEnv: `${BASELINES}/BASELINE_ENV.json`,
+
   artifacts: ARTIFACTS,
   diffs: `${ARTIFACTS}/diffs`,
-  reportJson: `${ARTIFACTS}/report.json`,
+  summaryJson: `${ARTIFACTS}/summary.json`,
+  summaryMd: `${ARTIFACTS}/summary.md`,
   reportHtml: `${ARTIFACTS}/report.html`,
   storybookStatic: 'apps/storybook/storybook-static',
 };
 
-/** Process exit codes. A reader of a red CI job learns what failed from the code
- *  alone, and the codes are a contract the workflow can branch on. */
+/** Process exit codes. Three, and no more: a reader of a red CI job has to learn from
+ *  the number alone whether the UI changed or the differ did, and every further code is
+ *  a distinction the workflow then has to branch on. */
 export const EXIT = {
   ok: 0,
 
-  /** At least one variant exceeded {@link THRESHOLDS}. The UI changed. */
+  /** A human must look. Any variant that is not `unchanged` lands here — a story past
+   *  {@link THRESHOLDS}, a story with no baseline yet, a baseline no story claims, an
+   *  axe violation. Accepting one is a deliberate act, never an implicit pass. */
   diff: 1,
 
-  /** The sanity gate failed — the run proved itself blind (light and dark came back
-   *  byte-identical, say), so no green from it means anything. Its own code because
-   *  it is a broken differ, not a changed UI, and the two want different responses. */
-  sanity: 2,
-
-  /** A story has no baseline yet. Approving it is a deliberate act, never an
-   *  implicit pass. */
-  missingBaseline: 3,
-
-  /** The committed baselines outgrew {@link BASELINE_BUDGET_BYTES}. */
-  budgetExceeded: 4,
+  /** The gate itself is broken, so no verdict from this run means anything: the corpus
+   *  never built, a sanity gate proved the run blind, the host is not the one the
+   *  baselines were captured on, or an `accept` blew {@link BASELINE_BUDGET_BYTES}.
+   *  Deliberately not merged into {@link EXIT.diff} — a changed UI is a report worth
+   *  reading, and this is a run that never had one. */
+  broken: 2,
 };
 
 /** Total budget for the committed baseline set. Baselines live in git forever, so the
- *  ceiling is on the whole directory; the per-PNG cap is the capture CLI's. */
+ *  ceiling is on the whole directory. */
 export const BASELINE_BUDGET_BYTES = 5_000_000;
+
+/** Ceiling on one committed baseline. Under the total on purpose: a single PNG this
+ *  large is a story rendering something it should not — a whole page shot as an atom,
+ *  a photograph inlined into a fixture — and the corpus budget would not catch it until
+ *  ten more had landed beside it. */
+export const BASELINE_PNG_BUDGET_BYTES = 512_000;

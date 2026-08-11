@@ -6,6 +6,9 @@
   "exports": {
     "./policy": "./src/policy.mjs"
   },
+  "bin": {
+    "visual-diff": "./src/cli.mjs"
+  },
   "scripts": {
     "test": "vitest run",
     "health": "node ../../scripts/complexity-gate.mjs",

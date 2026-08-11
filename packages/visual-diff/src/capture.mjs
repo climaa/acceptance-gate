@@ -139,7 +139,7 @@ export async function ensureViewport(page, viewport) {
 /** The gate proved itself blind: not a changed UI but a differ that cannot see the axis
  *  it claims to guard. Its own class because the answer differs — a diff is a report
  *  worth reading, this is a run whose green means nothing. The CLI maps it to
- *  `EXIT.sanity`. */
+ *  `EXIT.broken`. */
 export class SanityError extends Error {
   /** @param {string} message */
   constructor(message) {
