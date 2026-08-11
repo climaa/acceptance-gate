@@ -28,10 +28,18 @@ findings, never from ambition.
   to. Verify `exports`/existing scripts first.
 - **No component hardcodes a visual value.** Everything resolves through a custom
   property in `packages/ui/src/tokens.css`; dark mode remaps semantic roles only.
-- **Theme switching is `[data-theme="dark"]` on `<html>` — never
-  `prefers-color-scheme`.** Storybook's decorator and the visual-diff capture URL
-  will both set `data-theme` once those tools arrive; a media-query theme would
-  leave both blind to dark mode.
+- **Theme rendering is `[data-theme="dark"]` on `<html>` — never a live
+  `prefers-color-scheme` mechanism.** Storybook's decorator and the visual-diff
+  capture URL both set `data-theme` explicitly; a media-query theme would leave
+  both blind to dark mode, since a capture pipeline needs a theme it chose, never
+  one the capture machine's OS happened to be set to — that rule is absolute
+  there. The blog's pre-hydration script (`apps/blog/lib/theme.ts`) is the one
+  documented exception: it may consult `prefers-color-scheme` exactly once, as a
+  first-visit default when no explicit stored choice exists yet, and only
+  because the result still funnels into the same `[data-theme]` attribute the
+  toggle writes — an explicit stored choice always wins over it, in either
+  direction, so there is still exactly one theme mechanism, not two competing
+  ones.
 - **Fonts are self-hosted woff2 in `packages/ui/src/fonts/` only.** Never introduce
   `system-ui`/`-apple-system` as a leading family (`src/fonts/og/` TTF is the one
   documented exemption). No `packages/ui` component animates on mount.

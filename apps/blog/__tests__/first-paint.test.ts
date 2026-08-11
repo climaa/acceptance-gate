@@ -58,14 +58,23 @@ const faceOf = (tag: string) =>
     .replace(/\.[^.]+\.woff2$/, '.woff2');
 
 /**
- * The script runs before React, before the bundle, and before anything defines a
- * window: `document` and `localStorage` are the only two globals it may touch,
- * so handing it exactly those two is both the sandbox and an assertion.
+ * The script runs before React, before the bundle, and before anything defines
+ * a window: `document`, `localStorage` and `matchMedia` are the only three
+ * globals it may touch, so handing it exactly those three is both the sandbox
+ * and an assertion. `matchMedia` defaults to "system prefers light" so a test
+ * that only cares about the stored-choice path doesn't have to pass one.
  */
-const runThemeScript = (storage: Partial<Storage>) => {
+const runThemeScript = (
+  storage: Partial<Storage>,
+  matchMedia: (query: string) => { matches: boolean } = () => ({ matches: false }),
+) => {
   const documentElement = { dataset: {} as Record<string, string> };
 
-  new Function('document', 'localStorage', THEME_SCRIPT)({ documentElement }, storage);
+  new Function('document', 'localStorage', 'matchMedia', THEME_SCRIPT)(
+    { documentElement },
+    storage,
+    matchMedia,
+  );
 
   return documentElement.dataset;
 };
@@ -73,6 +82,8 @@ const runThemeScript = (storage: Partial<Storage>) => {
 const storageHolding = (value: string | null): Partial<Storage> => ({
   getItem: () => value,
 });
+
+const systemPrefers = (dark: boolean) => () => ({ matches: dark });
 
 describe('the font preloads', () => {
   it('covers the faces the header and the first heading paint in', () => {
@@ -127,10 +138,34 @@ describe('the pre-hydration theme script', () => {
     expect(dataset.theme).toBeUndefined();
   });
 
-  it('leaves the attribute off for a first-time reader', () => {
-    const dataset = runThemeScript(storageHolding(null));
+  it('leaves the attribute off for a first-time reader whose system prefers light', () => {
+    const dataset = runThemeScript(storageHolding(null), systemPrefers(false));
 
     expect(dataset.theme).toBeUndefined();
+  });
+
+  // The one case this script exists to fix: a reader who has never touched the
+  // toggle but told their OS they prefer dark should not have to tell this site
+  // too.
+  it('sets the attribute for a first-time reader whose system prefers dark', () => {
+    const dataset = runThemeScript(storageHolding(null), systemPrefers(true));
+
+    expect(dataset.theme).toBe('dark');
+  });
+
+  // The media query is a first-visit default, never a live override — an
+  // explicit choice has to win in both directions, or the toggle would stop
+  // meaning anything the moment a reader's OS disagreed with it.
+  it('an explicit light choice overrides a system that prefers dark', () => {
+    const dataset = runThemeScript(storageHolding('light'), systemPrefers(true));
+
+    expect(dataset.theme).toBeUndefined();
+  });
+
+  it('an explicit dark choice overrides a system that prefers light', () => {
+    const dataset = runThemeScript(storageHolding('dark'), systemPrefers(false));
+
+    expect(dataset.theme).toBe('dark');
   });
 
   // Private mode and blocked site data make `localStorage` throw on access. An
@@ -146,10 +181,9 @@ describe('the pre-hydration theme script', () => {
     expect(() => runThemeScript(blocked)).not.toThrow();
   });
 
-  // CODING_STANDARDS names `[data-theme]` as the one theme mechanism. Honouring
-  // the media query here while the toggle ignores it would give the page two
-  // sources of truth that disagree the moment a reader picks the other one.
-  it('consults no media query', () => {
-    expect(THEME_SCRIPT).not.toContain('prefers-color-scheme');
+  // Presence, not absence, is the invariant now — paired with the override
+  // tests above, which prove it never wins against an explicit choice.
+  it('consults the media query as a first-visit default only', () => {
+    expect(THEME_SCRIPT).toContain('prefers-color-scheme');
   });
 });
