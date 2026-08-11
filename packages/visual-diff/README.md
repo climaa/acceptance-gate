@@ -126,7 +126,7 @@ fingerprint every time.
 
 ### Exit codes
 
-```
+```text
 0  unchanged
 1  a human must look   (any changed/added/removed/errored/a11y variant)
 2  the gate is broken  (corpus never built, a sanity gate tripped, host mismatch, accept over budget)
