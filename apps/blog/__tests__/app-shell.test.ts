@@ -97,4 +97,13 @@ describe('the site footer', () => {
       text: 'GitHub',
     });
   });
+
+  it('links out to the design system', () => {
+    const links = linksIn(shell());
+
+    expect(links).toContainEqual({
+      href: 'https://acceptance-gate-storybook.vercel.app',
+      text: 'Storybook',
+    });
+  });
 });
