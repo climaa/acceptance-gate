@@ -2,7 +2,7 @@ import { Buffer } from 'node:buffer';
 
 import { describe, expect, it } from 'vitest';
 
-import { buildSummary, escapeCell } from '../artifacts.mjs';
+import { buildSummary } from '../artifacts.mjs';
 import { TIERS } from '../policy.mjs';
 import { renderReport } from '../report-html.mjs';
 
@@ -156,14 +156,29 @@ describe('renderReport', () => {
     expect(html).not.toMatch(/<img[^>]*src=""/);
   });
 
-  it('escapes card text through the escaper reused from artifacts.mjs', () => {
-    const raw = 'weird--id|with-pipe';
-    const summary = buildSummary([changedRow({ id: raw })], ENV);
+  it('escapes markup in card text instead of emitting it live', () => {
+    const summary = buildSummary(
+      [changedRow({ id: 'card--<script>alert(1)</script>' })],
+      ENV,
+    );
 
     const html = renderReport(summary, new Map());
 
-    expect(html).toContain(escapeCell(raw));
-    expect(html).not.toContain(raw);
+    expect(html).toContain('<h3>card--&lt;script&gt;alert(1)&lt;/script&gt;</h3>');
+    expect(html).not.toContain('<script>alert(1)</script>');
+  });
+
+  it('escapes the ampersands and quotes an error message can carry', () => {
+    const summary = buildSummary(
+      [changedRow({ bucket: 'errored', error: 'timeout & "no PNG" <b>' })],
+      ENV,
+    );
+
+    const html = renderReport(summary, new Map());
+
+    expect(html).toContain(
+      '<p class="error">timeout &amp; &quot;no PNG&quot; &lt;b&gt;</p>',
+    );
   });
 
   it('keeps the deep-link globals colon literal and the id percent-encoded', () => {

@@ -8,7 +8,7 @@
 
 import { Buffer } from 'node:buffer';
 
-import { BUCKETS, escapeCell } from './artifacts.mjs';
+import { BUCKETS } from './artifacts.mjs';
 import { EXIT, TIERS } from './policy.mjs';
 
 /** @typedef {import('./artifacts.mjs').Summary} Summary */
@@ -41,24 +41,51 @@ const SECTION_TITLES = /** @type {Record<SummaryVariant['bucket'], string>} */ (
   a11y: 'Accessibility',
 });
 
+/** @type {Readonly<Record<string, string>>} */
+const HTML_ESCAPES = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#39;',
+};
+
+/** Every value a `Summary` carries goes through this before it lands in the page,
+ *  text and attribute alike. Deliberately not `artifacts.mjs`'s `escapeCell`, which
+ *  escapes for a GitHub table cell (`|`): that is the wrong alphabet here, and would
+ *  both leave a story id reading `<script>` live in the page and print a stray
+ *  backslash in front of every pipe.
+ *  @param {string} value @returns {string} */
+function escapeHtml(value) {
+  return value.replaceAll(/[&<>"']/g, (char) => HTML_ESCAPES[char]);
+}
+
 /** @param {Uint8Array} bytes @returns {string} */
 function dataUri(bytes) {
   return `data:image/png;base64,${Buffer.from(bytes).toString('base64')}`;
 }
 
-/** @param {Uint8Array | undefined} bytes @param {string} role @param {string} label
- *  @returns {string} */
-function shotOrPlaceholder(bytes, role, label) {
+/** One shot of a card's triptych, or the box standing in for the shot a bucket never
+ *  had. `role` names the shot for the compare tools' selector, the alt text and the
+ *  placeholder alike.
+ *  @param {Uint8Array | undefined} bytes @param {string} role @returns {string} */
+function shotOrPlaceholder(bytes, role) {
+  const label = escapeHtml(role);
   if (!bytes) {
-    return `<div class="shot placeholder">no ${escapeCell(label)}</div>`;
+    return `<div class="shot placeholder">no ${label}</div>`;
   }
-  return `<img class="shot" data-role="${role}" src="${dataUri(bytes)}" alt="${escapeCell(label)}" loading="lazy" />`;
+  return `<img class="shot" data-role="${label}" src="${dataUri(bytes)}" alt="${label}" loading="lazy" />`;
+}
+
+/** @param {string} caption @param {string} content @returns {string} */
+function renderFigure(caption, content) {
+  return `<figure><figcaption>${caption}</figcaption>${content}</figure>`;
 }
 
 /** `allowedDiffPixels` is legitimately 0 under strict mode; a plain division would
  *  print `Infinity`. Restated from `artifacts.mjs`'s own `formatRatio` — the pixel
- *  arithmetic, unlike the escaper, is small enough that sharing it is not worth an
- *  export neither module otherwise needs.
+ *  arithmetic is small enough that sharing it is not worth an export neither module
+ *  otherwise needs.
  *  @param {SummaryVariant} variant @returns {string} */
 function formatRatio(variant) {
   if (variant.allowedDiffPixels > 0) {
@@ -111,50 +138,59 @@ function renderViolations(violations) {
   const items = violations
     .map(
       (violation) =>
-        `<li><code>${escapeCell(violation.id)}</code> (${violation.nodes})</li>`,
+        `<li><code>${escapeHtml(violation.id)}</code> (${violation.nodes})</li>`,
     )
     .join('');
 
   return `<ul class="violations">${items}</ul>`;
 }
 
-/** One card: the metrics a reviewer needs to judge the row, then either the
- *  baseline/candidate/diff triptych or — for `a11y`, which fails on the violation
- *  regardless of what the pixels did — the violation list a diff image cannot show.
+/** One card: the metrics a reviewer needs to judge the row, then the triptych. Its
+ *  third panel is the diff image, except for `a11y` — which fails on the violation
+ *  regardless of what the pixels did, so it shows the violation list instead.
  *  @param {SummaryVariant} variant @param {ReadonlyMap<string, VariantImages>} images
  *  @returns {string} */
 function renderCard(variant, images) {
   const { baseline, candidate, diff } = images.get(variant.key) ?? {};
   const link = deepLink(variant);
 
-  const body =
+  const thirdPanel =
     variant.bucket === 'a11y'
-      ? `<div class="triptych">
-          <figure><figcaption>baseline</figcaption>${shotOrPlaceholder(baseline, 'baseline', 'baseline')}</figure>
-          <figure><figcaption>candidate</figcaption>${shotOrPlaceholder(candidate, 'candidate', 'candidate')}</figure>
-          <figure><figcaption>violations</figcaption>${renderViolations(variant.violations)}</figure>
-        </div>`
-      : `<div class="triptych">
-          <figure><figcaption>baseline</figcaption>${shotOrPlaceholder(baseline, 'baseline', 'baseline')}</figure>
-          <figure><figcaption>candidate</figcaption>${shotOrPlaceholder(candidate, 'candidate', 'candidate')}</figure>
-          <figure><figcaption>diff</figcaption>${shotOrPlaceholder(diff, 'diff', 'diff')}</figure>
-        </div>`;
+      ? renderFigure('violations', renderViolations(variant.violations))
+      : renderFigure('diff', shotOrPlaceholder(diff, 'diff'));
 
   return `
-    <article class="card" data-bucket="${escapeCell(variant.bucket)}">
+    <article class="card" data-bucket="${escapeHtml(variant.bucket)}">
       <header>
-        <h3>${escapeCell(variant.id)}</h3>
-        <span class="mode">${escapeCell(formatMode(variant))}</span>
+        <h3>${escapeHtml(variant.id)}</h3>
+        <span class="mode">${escapeHtml(formatMode(variant))}</span>
         <span class="metric">shared Δ ${variant.overlapDiffPixels}</span>
         <span class="metric">margin Δ ${variant.marginPixels}</span>
         <span class="metric">${formatRatio(variant)}</span>
-        <span class="metric">${escapeCell(variant.sizeDelta ?? '—')}</span>
+        <span class="metric">${escapeHtml(variant.sizeDelta ?? '—')}</span>
         ${link ? `<a class="deep-link" href="${link}" target="_blank" rel="noopener">open in storybook</a>` : ''}
       </header>
-      ${variant.error ? `<p class="error">${escapeCell(variant.error)}</p>` : ''}
-      ${body}
+      ${variant.error ? `<p class="error">${escapeHtml(variant.error)}</p>` : ''}
+      <div class="triptych">
+        ${renderFigure('baseline', shotOrPlaceholder(baseline, 'baseline'))}
+        ${renderFigure('candidate', shotOrPlaceholder(candidate, 'candidate'))}
+        ${thirdPanel}
+      </div>
       ${renderCompareTools(Boolean(baseline && candidate))}
     </article>`;
+}
+
+/** One tier's worth of `changed` cards, or nothing at all when the tier has none.
+ *  @param {string} tier @param {readonly SummaryVariant[]} rows
+ *  @param {ReadonlyMap<string, VariantImages>} images @returns {string} */
+function renderTierGroup(tier, rows, images) {
+  if (rows.length === 0) return '';
+
+  return `
+    <section class="tier-group">
+      <h2>${escapeHtml(tier)}</h2>
+      ${rows.map((row) => renderCard(row, images)).join('')}
+    </section>`;
 }
 
 /** The `changed` bucket, grouped by tier in `policy.TIERS` order and sorted within a
@@ -167,19 +203,13 @@ function renderChangedSection(variants, images) {
   const changed = variants.filter((variant) => variant.bucket === 'changed');
   if (changed.length === 0) return null;
 
-  const groups = TIERS.map(
-    (tier) => /** @type {const} */ ([tier, changed.filter((v) => v.tier === tier)]),
-  ).filter(([, rows]) => rows.length > 0);
-
-  const body = groups
-    .map(
-      ([tier, rows]) => `
-        <section class="tier-group">
-          <h2>${escapeCell(tier)}</h2>
-          ${rows.map((row) => renderCard(row, images)).join('')}
-        </section>`,
-    )
-    .join('');
+  const body = TIERS.map((tier) =>
+    renderTierGroup(
+      tier,
+      changed.filter((variant) => variant.tier === tier),
+      images,
+    ),
+  ).join('');
 
   return `<section class="bucket" data-bucket="changed"><h1>${SECTION_TITLES.changed}</h1>${body}</section>`;
 }
@@ -213,7 +243,7 @@ function renderHeader(summary) {
   const env = Object.entries(summary.env)
     .map(
       ([key, value]) =>
-        `<span class="env-entry">${escapeCell(key)}=${escapeCell(value)}</span>`,
+        `<span class="env-entry">${escapeHtml(key)}=${escapeHtml(value)}</span>`,
     )
     .join('');
 
@@ -221,7 +251,7 @@ function renderHeader(summary) {
     <header class="report-header">
       <h1>${verdict}</h1>
       <div class="counts">${counts}</div>
-      <div class="thresholds">${escapeCell(thresholds)}</div>
+      <div class="thresholds">${escapeHtml(thresholds)}</div>
       <div class="env">${env}</div>
     </header>`;
 }
@@ -265,12 +295,12 @@ const STYLE = `
  *  @type {string} */
 const SCRIPT = `
   document.querySelectorAll('.card').forEach(function (card) {
-    var stage = card.querySelector('.compare');
-    if (!stage) return;
+    var compare = card.querySelector('.compare');
+    if (!compare) return;
     var baseline = card.querySelector('[data-role="baseline"]');
     var candidate = card.querySelector('[data-role="candidate"]');
-    stage.querySelector('.compare-base').src = baseline.src;
-    stage.querySelector('.compare-over').src = candidate.src;
+    compare.querySelector('.compare-base').src = baseline.src;
+    compare.querySelector('.compare-over').src = candidate.src;
   });
 
   document.addEventListener('click', function (event) {

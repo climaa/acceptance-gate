@@ -111,10 +111,10 @@ export function buildSummary(results, env) {
 }
 
 /** An unescaped `|` silently truncates a GitHub table row; every cell goes through
- *  this before it is joined. Exported so `report-html.mjs` reuses it rather than
- *  carrying a second escaping implementation.
+ *  this before it is joined. Markdown-only: `report-html.mjs` escapes for HTML, which
+ *  is a different alphabet and its own function.
  *  @param {string} value @returns {string} */
-export function escapeCell(value) {
+function escapeCell(value) {
   return value.replaceAll('|', '\\|');
 }
 
