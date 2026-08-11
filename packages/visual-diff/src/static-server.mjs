@@ -34,10 +34,13 @@ const MIME_TYPES = {
 const DEFAULT_MIME = 'application/octet-stream';
 
 /** @param {string} filePath */
-const mimeOf = (filePath) =>
-  MIME_TYPES[
-    /** @type {keyof typeof MIME_TYPES} */ (path.extname(filePath).toLowerCase())
-  ] ?? DEFAULT_MIME;
+const mimeOf = (filePath) => {
+  const extension = /** @type {keyof typeof MIME_TYPES} */ (
+    path.extname(filePath).toLowerCase()
+  );
+
+  return MIME_TYPES[extension] ?? DEFAULT_MIME;
+};
 
 /** The requested path as a file inside `root`, or the status refusing it.
  *
@@ -92,38 +95,38 @@ async function serve(root, req, res) {
   res.end(body);
 }
 
+/** @param {import('node:http').Server} server @returns {Promise<void>} */
+const closeServer = (server) =>
+  new Promise((closed, failed) => {
+    // Without this, `close` waits on the keep-alive sockets the capture run leaves
+    // open and the CLI hangs after its last shot.
+    server.closeAllConnections();
+    server.close((cause) => (cause ? failed(cause) : closed()));
+  });
+
 /** A server over one `storybook-static` directory.
  *  @param {string} rootDir the build to serve; resolved once, at construction
  *  @returns {{ listen: () => Promise<{ port: number, close: () => Promise<void> }> }} */
 export function createStaticServer(rootDir) {
   const root = path.resolve(rootDir);
 
-  return {
-    listen: () =>
-      new Promise((resolve, reject) => {
-        const server = createServer((req, res) => {
-          serve(root, req, res).catch(() => refuse(res, 500));
-        });
+  const listen = () =>
+    new Promise((resolve, reject) => {
+      const server = createServer((req, res) => {
+        serve(root, req, res).catch(() => refuse(res, 500));
+      });
 
-        server.once('error', reject);
-        server.listen(0, LOOPBACK_HOST, () => {
-          const address = server.address();
-          if (address === null || typeof address === 'string') {
-            reject(new Error('static server bound no port'));
-            return;
-          }
+      server.once('error', reject);
+      server.listen(0, LOOPBACK_HOST, () => {
+        const address = server.address();
+        if (address === null || typeof address === 'string') {
+          reject(new Error('static server bound no port'));
+          return;
+        }
 
-          resolve({
-            port: address.port,
-            close: () =>
-              new Promise((closed, failed) => {
-                // Without this, `close` waits on the keep-alive sockets the capture run
-                // leaves open and the CLI hangs after its last shot.
-                server.closeAllConnections();
-                server.close((cause) => (cause ? failed(cause) : closed()));
-              }),
-          });
-        });
-      }),
-  };
+        resolve({ port: address.port, close: () => closeServer(server) });
+      });
+    });
+
+  return { listen };
 }

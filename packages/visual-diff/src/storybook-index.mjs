@@ -46,7 +46,6 @@ export class IndexError extends Error {
   }
 }
 
-/** @type {readonly ViewportName[]} */
 const VIEWPORT_NAMES = /** @type {readonly ViewportName[]} */ (Object.keys(VIEWPORTS));
 
 /** @param {unknown} value */
@@ -55,6 +54,9 @@ const isRecord = (value) =>
 
 /** @param {unknown} value */
 const isFilledString = (value) => typeof value === 'string' && value.length > 0;
+
+/** @param {IndexEntry} entry */
+const isSkipped = (entry) => entry.tags.includes(SKIP_TAG);
 
 /** @param {unknown} entry @param {string} key the entry's key in `entries` */
 function readEntry(entry, key) {
@@ -162,8 +164,6 @@ export function planCaptures(entries) {
   if (stories.length === 0) {
     throw new IndexError('index.json lists no stories — only docs pages were built');
   }
-
-  const isSkipped = (/** @type {IndexEntry} */ entry) => entry.tags.includes(SKIP_TAG);
 
   return {
     variants: stories.filter((entry) => !isSkipped(entry)).flatMap(variantsOf),

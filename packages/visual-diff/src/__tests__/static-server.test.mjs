@@ -1,5 +1,5 @@
-import http from 'node:http';
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import http from 'node:http';
 import { networkInterfaces, tmpdir } from 'node:os';
 import path from 'node:path';
 
@@ -17,7 +17,10 @@ let sandbox;
 /** A raw request rather than `fetch`, because the WHATWG URL parser collapses `..`
  *  segments — including the `%2e%2e` spelling — before a byte reaches the socket, and
  *  the traversal and bad-encoding cases exist precisely to exercise paths no URL parser
- *  would let through. `http.request` sends `path` verbatim. */
+ *  would let through. `http.request` sends `path` verbatim.
+ *  @param {string} requestPath the raw request target
+ *  @param {import('node:http').RequestOptions} [options] overrides — a `host` other
+ *  than the loopback one, a `port` other than the suite's server, a timeout */
 const request = (requestPath, options = {}) =>
   new Promise((resolve, reject) => {
     const req = http.request(
