@@ -18,24 +18,15 @@ import type { Decorator, Preview } from '@storybook/nextjs-vite';
 // than by a copy of it. Imported here and nowhere else in this app.
 import '@gate/ui/styles.css';
 
-/** Light is the *absence* of `data-theme`: `tokens.css` has no `[data-theme='light']`
- *  block, so writing the attribute out for it would select nothing. The toolbar has
- *  to start on the theme an untouched root already renders, and every other theme in
- *  `THEMES` is written through as-is — the attribute value is the theme's name. */
-const UNSET_THEME = 'light';
+import { applyColorScheme, UNSET_THEME } from './color-scheme';
+import { ThemedDocsContainer } from './ThemedDocsContainer';
 
 /** `data-theme` on `<html>`, never the OS colour-scheme media query: a media query
  *  cannot be set from a capture URL, so a differ driving it would be blind to one
- *  whole half of the matrix. */
+ *  whole half of the matrix. Only reaches stories — see ThemedDocsContainer for why
+ *  a pure-MDX docs page needs its own hook into the same global. */
 const withColorScheme: Decorator = (Story, { globals }) => {
-  const theme = globals[COLOR_SCHEME_GLOBAL] ?? UNSET_THEME;
-  const root = document.documentElement;
-
-  if (theme === UNSET_THEME) {
-    delete root.dataset.theme;
-  } else {
-    root.dataset.theme = theme;
-  }
+  applyColorScheme(globals[COLOR_SCHEME_GLOBAL] ?? UNSET_THEME);
 
   return Story();
 };
@@ -90,6 +81,9 @@ const preview: Preview = {
   },
   initialGlobals: { [COLOR_SCHEME_GLOBAL]: UNSET_THEME },
   parameters: {
+    // Every Docs page under src/docs is pure MDX with no <Story>/<Canvas> embed, so
+    // withColorScheme above never runs for one — this is the other half of the fix.
+    docs: { container: ThemedDocsContainer },
     viewport: { options: viewportOptions },
     // Default is alphabetical, which puts Docs last (after Templates) and
     // Diff Policy first within it — neither is the order a reader should
