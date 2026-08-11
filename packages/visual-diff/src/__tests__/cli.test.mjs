@@ -48,6 +48,15 @@ describe('parseArgs', () => {
     expect(parseArgs(['check', '--filter']).error).toBeTruthy();
   });
 
+  it('refuses a near-miss of --filter, rather than eating the word after it', () => {
+    // `--filters button` reading as `--filter button` is the same silent misfire as a
+    // dropped flag: the run narrows to whatever the typo swallowed and still exits 0.
+    const parsed = parseArgs(['check', '--filters', 'button']);
+
+    expect(parsed.error).toContain('--filters');
+    expect(parsed.filter).toBeUndefined();
+  });
+
   it('reads --allow-host-mismatch as the flag it is', () => {
     expect(parseArgs(['check', '--allow-host-mismatch']).allowHostMismatch).toBe(true);
   });

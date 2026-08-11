@@ -39,14 +39,23 @@ export const USAGE = [
 /** @typedef {{ command: string, filter?: string, allowHostMismatch: boolean,
  *              error?: string }} ParsedArgs */
 
-/** @param {string} argument @param {string[]} rest */
-function readFilter(argument, rest) {
-  const inline = argument.startsWith('--filter=')
-    ? argument.slice('--filter='.length)
-    : rest.shift();
-  if (!inline) throw new Error('--filter needs a substring to match stories against');
+const FILTER_FLAG = '--filter';
+const FILTER_ASSIGNMENT = `${FILTER_FLAG}=`;
 
-  return inline;
+/** @param {string} argument */
+const isFilter = (argument) =>
+  argument === FILTER_FLAG || argument.startsWith(FILTER_ASSIGNMENT);
+
+/** The value of a `--filter`, whichever spelling it arrived in. `rest` is the argv still
+ *  to be read, so the separated spelling consumes the word after the flag.
+ *  @param {string} argument @param {string[]} rest @returns {string} */
+function readFilter(argument, rest) {
+  const value = argument.startsWith(FILTER_ASSIGNMENT)
+    ? argument.slice(FILTER_ASSIGNMENT.length)
+    : rest.shift();
+  if (!value) throw new Error('--filter needs a substring to match stories against');
+
+  return value;
 }
 
 /** argv (already stripped of `node` and the script) → what to run.
@@ -65,12 +74,11 @@ export function parseArgs(argv) {
       const argument = /** @type {string} */ (rest.shift());
 
       if (argument === '--allow-host-mismatch') parsed.allowHostMismatch = true;
-      else if (argument.startsWith('--filter'))
-        parsed.filter = readFilter(argument, rest);
+      else if (isFilter(argument)) parsed.filter = readFilter(argument, rest);
       else if (argument.startsWith('-')) throw new Error(`unknown option ${argument}`);
       else if (named) throw new Error(`unexpected argument ${argument}`);
+      else if (!(argument in COMMANDS)) throw new Error(`unknown command ${argument}`);
       else {
-        if (!(argument in COMMANDS)) throw new Error(`unknown command ${argument}`);
         parsed.command = argument;
         named = true;
       }
@@ -108,7 +116,9 @@ export async function run(argv, io = CONSOLE_IO, commands = COMMANDS) {
     allowHostMismatch: parsed.allowHostMismatch,
   });
 
-  if (message) (exitCode === EXIT.broken ? io.err : io.out)(message);
+  const report = exitCode === EXIT.broken ? io.err : io.out;
+  if (message) report(message);
+
   return exitCode;
 }
 

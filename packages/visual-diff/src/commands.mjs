@@ -207,6 +207,15 @@ function assertSane(captures) {
   viewportSanity(shots);
 }
 
+/** One committed baseline, as the `[key, bytes]` pair its map is built from: the key is
+ *  the filename minus `.png`, which is `policy.variantKey` by construction.
+ *  @param {GateFs} fs @param {string} dir @param {string} name
+ *  @returns {Promise<[string, Uint8Array]>} */
+const readBaseline = async (fs, dir, name) => [
+  name.slice(0, -PNG_SUFFIX.length),
+  await fs.readFile(path.join(dir, name)),
+];
+
 /** The committed baselines, keyed by `policy.variantKey` — the same name the capture
  *  plan carries. An absent directory is an empty map, not an error: the first run of a
  *  new corpus has no baselines and reports every variant as `added`.
@@ -222,13 +231,7 @@ async function readBaselines(fs, dir) {
   const entries = await Promise.all(
     names
       .filter((name) => name.endsWith(PNG_SUFFIX))
-      .map(
-        async (name) =>
-          /** @type {[string, Uint8Array]} */ ([
-            name.slice(0, -PNG_SUFFIX.length),
-            await fs.readFile(path.join(dir, name)),
-          ]),
-      ),
+      .map((name) => readBaseline(fs, dir, name)),
   );
 
   return new Map(entries);
@@ -259,6 +262,10 @@ const allowsHostMismatch = (env, flag) => flag || env[ALLOW_HOST_MISMATCH_ENV] =
 
 /** @typedef {{ blocked: boolean, message: string, warnings: string[] }} HostGuard */
 
+/** A run the guard lets through, carrying whatever it still wants the report to say.
+ *  @param {string[]} [warnings] @returns {HostGuard} */
+const comparable = (warnings = []) => ({ blocked: false, message: '', warnings });
+
 /** @param {Readonly<Record<string, string | undefined>>} recorded
  *  @param {Readonly<Record<string, string>>} actual @param {readonly string[]} keys */
 const describeMismatch = (recorded, actual, keys) =>
@@ -282,13 +289,18 @@ const describeMismatch = (recorded, actual, keys) =>
 async function guardHost(deps, at, { allowHostMismatch, hasBaselines }) {
   const recorded = await readJson(deps.fs, at(PATHS.baselineEnv));
   if (!recorded) {
-    const missing = `${PATHS.baselineEnv} is missing — the committed baselines name no host, so nothing proves this run is comparable to them`;
-    return { blocked: false, message: '', warnings: hasBaselines ? [missing] : [] };
+    // A first run has no baselines to be incomparable to, so the missing stamp is only
+    // worth saying once there is something committed it should have described.
+    if (!hasBaselines) return comparable();
+
+    return comparable([
+      `${PATHS.baselineEnv} is missing — the committed baselines name no host, so nothing proves this run is comparable to them`,
+    ]);
   }
 
   const actual = await deps.host();
   const mismatched = mismatchedHostKeys(recorded, actual);
-  if (mismatched.length === 0) return { blocked: false, message: '', warnings: [] };
+  if (mismatched.length === 0) return comparable();
 
   const detail = describeMismatch(recorded, actual, mismatched);
   if (!allowsHostMismatch(deps.env, allowHostMismatch)) {
@@ -299,25 +311,20 @@ async function guardHost(deps, at, { allowHostMismatch, hasBaselines }) {
     };
   }
 
-  return {
-    blocked: false,
-    message: '',
-    warnings: [
-      `host mismatch allowed (${detail}) — a pixel difference in this run may be this machine's rather than the UI's`,
-    ],
-  };
+  return comparable([
+    `host mismatch allowed (${detail}) — a pixel difference in this run may be this machine's rather than the UI's`,
+  ]);
 }
 
 /** The baselines a run is answerable for. A filtered run captures part of the corpus by
  *  design, so every baseline outside it would come back `removed` — a narrowed run
  *  failing over the stories it deliberately did not shoot.
  *  @param {ReadonlyMap<string, Uint8Array>} baselines
- *  @param {readonly PlannedVariant[] | null} covered `null` for a whole-corpus run
+ *  @param {readonly PlannedVariant[]} covered
  *  @returns {Map<string, Uint8Array>} */
 function coveredBaselines(baselines, covered) {
-  if (!covered) return new Map(baselines);
-
   const keys = new Set(covered.map((variant) => variant.key));
+
   return new Map([...baselines].filter(([key]) => keys.has(key)));
 }
 
@@ -384,10 +391,8 @@ export async function check(deps = defaultDeps(), opts = {}) {
 
   try {
     const { variants, skipped } = await readPlan(deps, at, filter);
-    const baselines = coveredBaselines(
-      await readBaselines(deps.fs, at(PATHS.baselines)),
-      filter ? variants : null,
-    );
+    const committed = await readBaselines(deps.fs, at(PATHS.baselines));
+    const baselines = filter ? coveredBaselines(committed, variants) : committed;
 
     const guard = await guardHost(deps, at, {
       allowHostMismatch,

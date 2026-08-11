@@ -3,13 +3,7 @@ import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import { accept, check, defaultDeps, mismatchedHostKeys } from '../commands.mjs';
-import {
-  BASELINE_BUDGET_BYTES,
-  BASELINE_PNG_BUDGET_BYTES,
-  EXIT,
-  HOST,
-  PATHS,
-} from '../policy.mjs';
+import { BASELINE_PNG_BUDGET_BYTES, EXIT, HOST, PATHS } from '../policy.mjs';
 
 const ROOT = '/repo';
 const at = (relative) => path.join(ROOT, relative);
@@ -283,7 +277,11 @@ describe('check', () => {
   });
 
   it('lists the stories held back by the skip tag rather than hiding the hole', async () => {
-    const skipped = { ...STORY, id: 'atoms-spinner--default', tags: ['visual-diff:skip'] };
+    const skipped = {
+      ...STORY,
+      id: 'atoms-spinner--default',
+      tags: ['visual-diff:skip'],
+    };
     const gate = deps({ fs: fakeFs({ [INDEX_PATH]: indexJson([STORY, skipped]) }) });
 
     const result = await check(gate, { rootDir: ROOT });
