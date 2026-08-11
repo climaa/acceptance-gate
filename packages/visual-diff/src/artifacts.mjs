@@ -30,12 +30,13 @@ import { EXIT, THRESHOLDS } from './policy.mjs';
  *  would have to change to keep parsing the file. */
 const SCHEMA_VERSION = 1;
 
-/** Canonical bucket order. Every count and grouping in this module iterates this array
- *  rather than `Object.keys` on whatever buckets happen to appear in a run, so
- *  `summary.json`'s key order — and the bucket-count line in the comment — is the same
- *  for a clean run and a red one.
+/** Canonical bucket order. Every count and grouping in this module — and
+ *  `report-html.mjs`'s own bucket sections, so the two never disagree on section order
+ *  — iterates this array rather than `Object.keys` on whatever buckets happen to appear
+ *  in a run, so `summary.json`'s key order and the bucket-count line in the comment are
+ *  the same for a clean run and a red one.
  *  @type {readonly Bucket[]} */
-const BUCKETS = ['unchanged', 'changed', 'added', 'removed', 'errored', 'a11y'];
+export const BUCKETS = ['unchanged', 'changed', 'added', 'removed', 'errored', 'a11y'];
 
 /** Hard cap on the markdown table. A run with hundreds of failures is a broken-build
  *  event, not two hundred rows a reviewer reads one at a time. */
@@ -110,7 +111,8 @@ export function buildSummary(results, env) {
 }
 
 /** An unescaped `|` silently truncates a GitHub table row; every cell goes through
- *  this before it is joined.
+ *  this before it is joined. Markdown-only: `report-html.mjs` escapes for HTML, which
+ *  is a different alphabet and its own function.
  *  @param {string} value @returns {string} */
 function escapeCell(value) {
   return value.replaceAll('|', '\\|');
