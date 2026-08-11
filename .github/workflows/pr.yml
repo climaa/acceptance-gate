@@ -277,7 +277,11 @@ jobs:
         if: always()
         with:
           name: visual-diff-report
-          path: packages/visual-diff/.visual-diff/
+          # No trailing slash: the debug step proved the files exist at this
+          # exact relative path, but upload-artifact's glob found nothing
+          # with one — worth ruling out before assuming a deeper
+          # container-job incompatibility.
+          path: packages/visual-diff/.visual-diff
           retention-days: 14
       - name: Fail the job if visual-diff found something
         # The real signal: a visible, non-required ❌ in the PR checks list.
