@@ -11,7 +11,13 @@ const config: StorybookConfig = {
     '../src/**/*.mdx',
   ],
   framework: '@storybook/nextjs-vite',
-  // addon-docs: autodocs (`tags: ['autodocs']` in preview.ts) plus the four
+  // The design boards System Design embeds. A plain <img src="/designs/..."> in
+  // an MDX doc, not a JS import: an ES import of a .png inside an MDX-compiled
+  // module doesn't get Vite's asset-URL rewrite applied here — it resolves to
+  // the raw module namespace object instead of a string, `?url` included.
+  // staticDirs sidesteps that pipeline entirely.
+  staticDirs: [{ from: '../../../designs/exports', to: '/designs' }],
+  // addon-docs: autodocs (`tags: ['autodocs']` in preview.ts) plus the five
   // hand-written docs pages under src/docs. addon-a11y: axe in the panel, an
   // authoring-time check — the headless per-variant pass that runs in CI (see
   // the Visual Diff Workflow docs page) is `@gate/visual-diff`'s own, separate
