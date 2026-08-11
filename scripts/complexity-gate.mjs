@@ -19,12 +19,22 @@
 // fallow has no per-function pass/fail exit code (`fallow health` exits 1 on any
 // advisory finding; --min-score gates the whole-project score), so the ceiling
 // decision lives here.
+//
+// fallow is a pinned root devDependency, invoked as the locally installed
+// binary — never `npx --yes fallow@<version>`. `turbo run health` runs this
+// script for every workspace in parallel within one job; `npx --yes` re-fetches
+// and re-extracts the same versioned package into one shared npx cache
+// directory per invocation, and concurrent extractions of that one directory
+// corrupt each other's install (seen in CI as ENOTEMPTY, missing files
+// mid-extraction, and failed binary-signature verification, depending on which
+// step of the race two processes collided on). The locally installed binary is
+// extracted exactly once, by `pnpm install`, before any workspace's `health`
+// task runs — there is nothing left for parallel invocations to race over.
 import { execFileSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { dirname, relative, resolve } from 'node:path';
 
 const MAX_COGNITIVE = 20;
-const FALLOW_VERSION = '2.99.0';
 
 function repoRoot(start) {
   let dir = start;
@@ -54,9 +64,19 @@ if (scopeArg) {
   keep = () => true; // --workspace already scoped fallow to this workspace
 }
 
+function fallowBin() {
+  const bin = resolve(root, 'node_modules', '.bin', 'fallow');
+
+  if (!existsSync(bin)) {
+    throw new Error(`fallow binary not found at ${bin} — run \`pnpm install\` first.`);
+  }
+
+  return bin;
+}
+
 function fallowJson() {
   try {
-    return execFileSync('npx', ['--yes', `fallow@${FALLOW_VERSION}`, ...fallowArgs], {
+    return execFileSync(fallowBin(), fallowArgs, {
       cwd: root,
       encoding: 'utf8',
       maxBuffer: 64 * 1024 * 1024,
