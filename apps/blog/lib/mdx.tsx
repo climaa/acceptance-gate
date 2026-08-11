@@ -16,16 +16,25 @@ import { CodeBlock } from '@gate/ui';
  */
 
 /**
- * One theme, named outright.
+ * Two themes, one per site theme.
  *
- * The slab is dark in BOTH themes — `--color-code-bg` resolves to `--c-umber-950`
- * in light and `--c-ink-900` in dark, two near-black steps — so a second theme
- * would repaint tokens that never sit on a different ground. That also keeps the
- * markup free of `--shiki-*` custom properties and of any `prefers-color-scheme`
- * query, which CODING_STANDARDS rules out: `[data-theme]` is the only theme
- * mechanism, and a media query is invisible to Storybook and to the differ.
+ * The slab is now a light plate in light mode and a dark one in dark mode —
+ * `--color-code-bg` no longer resolves to the same near-black step in both, so
+ * a single baked-in palette can no longer serve both grounds. `rose-pine-dawn`
+ * pairs with the light plate rather than `github-light`: its native background
+ * (`#faf4ed`) sits in the same warm-cream family as `--c-cream-50`, so its
+ * token colours read as designed for this ground rather than transplanted
+ * from a cool white one.
+ *
+ * Passing an OBJECT here (rather than a single theme id) makes rehype-pretty-
+ * code set Shiki's `defaultColor: false` internally, which emits every token
+ * span as `style="--shiki-light:#..;--shiki-dark:#.."` with no plain `color`.
+ * `CodeBlock.css` picks between the two with the same `[data-theme='dark']`
+ * attribute selector the rest of the design system uses — never
+ * `prefers-color-scheme`, which CODING_STANDARDS rules out because it is
+ * invisible to Storybook and to the differ.
  */
-const SHIKI_THEME = 'github-dark-dimmed';
+const SHIKI_THEME = { light: 'rose-pine-dawn', dark: 'github-dark-dimmed' } as const;
 
 const prettyCodeOptions: PrettyCodeOptions = {
   theme: SHIKI_THEME,

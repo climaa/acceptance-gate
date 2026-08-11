@@ -132,7 +132,9 @@ describe('rehype pipeline', () => {
   it('highlights a fenced code block at build time', async () => {
     const html = await renderMdx(TS_FENCE);
 
-    expect(html).toMatch(/<span style="color:[^"]+">const<\/span>/);
+    expect(html).toMatch(
+      /<span style="--shiki-light:[^"]+;--shiki-dark:[^"]+">const<\/span>/,
+    );
   });
 
   it('lands the highlighted markup inside CodeBlock', async () => {
@@ -203,14 +205,25 @@ describe('rehype pipeline', () => {
     expect(html).toMatch(/aria-hidden="true"[^>]*>#</);
   });
 
-  // CODING_STANDARDS: [data-theme] is the only theme mechanism. A dual-theme
-  // highlighter emits --shiki-* custom properties or a prefers-color-scheme
-  // query, both of which are invisible to Storybook and to the differ.
-  it('pins one theme instead of reading the OS colour scheme', async () => {
+  // CODING_STANDARDS: [data-theme] is the only theme mechanism — never
+  // prefers-color-scheme, which is invisible to Storybook and to the differ.
+  // The highlighter is deliberately dual-theme (--shiki-light/--shiki-dark
+  // per token, wired to [data-theme='dark'] in CodeBlock.css), so what this
+  // guards is narrower than "no --shiki at all": no media query smuggles the
+  // choice in, and both palettes are genuinely present and different rather
+  // than one theme id duplicated into both slots.
+  it('carries both light and dark token colours without reading the OS colour scheme', async () => {
     const html = await renderMdx(TS_FENCE);
 
     expect(html).not.toContain('prefers-color-scheme');
-    expect(html).not.toContain('--shiki');
+    expect(html).toContain('--shiki-light:');
+    expect(html).toContain('--shiki-dark:');
+
+    const [, lightValue, darkValue] =
+      html.match(/--shiki-light:([^;"]+);--shiki-dark:([^;"]+)"/) ?? [];
+    expect(lightValue).toBeDefined();
+    expect(darkValue).toBeDefined();
+    expect(lightValue).not.toBe(darkValue);
   });
 
   // Named here rather than imported from lib/mdx.tsx: an expectation that reads

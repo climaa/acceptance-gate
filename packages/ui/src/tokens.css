@@ -105,10 +105,11 @@
   --color-skeleton-sheen: var(--c-cream-100);
 
   /* ---- Code roles (the .ds-prose block) ----
-   * Warm ink slab under cream text — the inverse of the page, so a code block
-   * reads as a plate on the parchment rather than a second background. */
-  --color-code-bg: var(--c-umber-950);
-  --color-code-fg: var(--c-cream-50);
+   * A raised plate one step off the page ground: --color-bg is --c-cream-100,
+   * this is --c-cream-50, one step lighter — mirrors the dark remap below,
+   * which is one step darker than its own page ground. */
+  --color-code-bg: var(--c-cream-50);
+  --color-code-fg: var(--c-umber-950);
 
   /* ---- Espaciado (escala de 4px) ---- */
   --space-1: 0.25rem;
