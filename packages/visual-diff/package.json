@@ -11,6 +11,10 @@
     "health": "node ../../scripts/complexity-gate.mjs",
     "clean": "rm -rf .turbo node_modules"
   },
+  "dependencies": {
+    "@axe-core/playwright": "^4.12.1",
+    "playwright": "1.62.1"
+  },
   "devDependencies": {
     "vitest": "^4.1.10"
   }
