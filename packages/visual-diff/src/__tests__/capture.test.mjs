@@ -11,6 +11,7 @@ import {
   drainQueue,
   ensureViewport,
   fontCheckSpec,
+  fontsLoadCheckExpression,
   isLoopbackUrl,
   isZeroSizeError,
   matchesFilter,
@@ -514,6 +515,25 @@ describe('fontCheckSpec', () => {
     const spec = fontCheckSpec('  ');
 
     expect(spec).toBeNull();
+  });
+});
+
+describe('fontsLoadCheckExpression', () => {
+  it('forces the load before checking it, both against the same spec', () => {
+    const expression = fontsLoadCheckExpression('1em "Atkinson Hyperlegible"');
+
+    expect(expression).toContain('document.fonts.load(');
+    expect(expression).toContain('document.fonts.check(');
+    expect(expression).toContain('"1em \\"Atkinson Hyperlegible\\""');
+  });
+
+  it('runs the check only after the load settles, not in parallel', () => {
+    // A load-then-check race would defeat the whole fix: `check` has to observe the
+    // fetch this expression itself triggered, not a fetch some earlier call started.
+    const expression = fontsLoadCheckExpression('1em "Fraunces"');
+
+    expect(expression.indexOf('fonts.load')).toBeLessThan(expression.indexOf('fonts.check'));
+    expect(expression).toMatch(/fonts\.load\([^)]*\)\.then\(/);
   });
 });
 

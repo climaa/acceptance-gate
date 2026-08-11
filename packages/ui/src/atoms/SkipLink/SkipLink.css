@@ -1,10 +1,14 @@
 /*
- * Overrides `.ds-visually-hidden` back to visible on focus. Two classes beat
- * one on specificity, so this wins over the utility regardless of source
- * order. `position: fixed` (not the utility's `absolute`) pins it to the
- * viewport rather than wherever it sits in the document.
+ * Overrides `.ds-visually-hidden` back to visible on focus, or on the
+ * `--force-visible` class a capture story applies instead of real focus (see
+ * SkipLink.stories.tsx: `:focus-visible` is unreliable under a programmatic
+ * `.focus()` call). Two classes beat one on specificity, so this wins over the
+ * utility regardless of source order. `position: fixed` (not the utility's
+ * `absolute`) pins it to the viewport rather than wherever it sits in the
+ * document.
  */
-.ds-skip-link:focus-visible {
+.ds-skip-link:focus-visible,
+.ds-skip-link--force-visible {
   position: fixed;
   top: var(--space-2);
   left: var(--space-2);
@@ -19,4 +23,15 @@
   background: var(--color-bg);
   color: var(--color-text);
   box-shadow: var(--shadow-lg);
+}
+
+/*
+ * `position: fixed` above contributes zero height to `#storybook-root`
+ * regardless of focus state — a capture of the fixed-positioned element would
+ * shoot an empty root box. Static keeps every other revealed style; this is
+ * the one override the real `:focus-visible` path never needs, because a
+ * user's viewport-pinned skip link isn't screenshotted.
+ */
+.ds-skip-link--force-visible {
+  position: static;
 }
