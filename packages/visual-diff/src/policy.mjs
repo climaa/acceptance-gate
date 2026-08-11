@@ -160,16 +160,17 @@ export const DETERMINISM = {
   deviceScaleFactor: 1,
 };
 
-/** Transcribed when Wave 4 pins `playwright`: the image tag has to match the
- *  installed library exactly, and a tag invented before that pin exists is
- *  guaranteed to be the wrong one. */
-const PLAYWRIGHT_IMAGE_TAG_PLACEHOLDER = 'PLACEHOLDER-PIN-IN-WAVE-4';
+/** Transcribed from the exact `@playwright/test` pin `apps/e2e` carries: the image
+ *  ships the browser builds of that one release, and a tag a minor off the installed
+ *  library renders text differently enough to redden the whole matrix. Bump the two
+ *  together, never one alone. */
+const PLAYWRIGHT_IMAGE_TAG = 'v1.62.1-noble';
 
 /** The one host baselines are captured on. Every capture runs in this container,
  *  locally as well as in CI — a baseline is only comparable to a shot from the same
  *  renderer. */
 export const HOST = {
-  image: `mcr.microsoft.com/playwright:${PLAYWRIGHT_IMAGE_TAG_PLACEHOLDER}`,
+  image: `mcr.microsoft.com/playwright:${PLAYWRIGHT_IMAGE_TAG}`,
 };
 
 /** Run artifacts. Baselines are committed; everything under here is per-run output. */

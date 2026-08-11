@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+
 import { describe, expect, it } from 'vitest';
 import {
   ALL_VIEWPORTS_TAG,
@@ -5,6 +7,7 @@ import {
   DETERMINISM,
   EXIT,
   FULLPAGE_TAG,
+  HOST,
   MODES,
   SKIP_TAG,
   THEMES,
@@ -161,6 +164,23 @@ describe('story tags', () => {
     for (const tag of tags) {
       expect(tag.startsWith('visual-diff:')).toBe(true);
     }
+  });
+});
+
+describe('HOST', () => {
+  // Not a config echo: the image tag and the library version are two files apart, and
+  // a container whose bundled browsers are not the ones `apps/e2e` installs renders
+  // differently. That divergence lands as a whole-matrix diff with no UI change behind
+  // it, so the pin is asserted against its source rather than restated here.
+  it('names the container tag for the exact @playwright/test pin apps/e2e carries', () => {
+    const e2ePackage = JSON.parse(
+      readFileSync(new URL('../../../../apps/e2e/package.json', import.meta.url), 'utf8'),
+    );
+
+    const pinned = e2ePackage.devDependencies['@playwright/test'];
+
+    expect(pinned).toMatch(/^\d+\.\d+\.\d+$/);
+    expect(HOST.image).toBe(`mcr.microsoft.com/playwright:v${pinned}-noble`);
   });
 });
 
