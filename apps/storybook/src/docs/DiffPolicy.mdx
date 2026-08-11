@@ -13,10 +13,11 @@ import {
 # The diff policy
 
 `@gate/visual-diff/policy` names the capture matrix — every (tier, viewport, theme) cell a
-story can be captured under. Today its only consumers are this page and the eslint boundaries
-rule described on the [Layering Rule](?path=/docs/docs-layering-rule--docs) page (both read
-the same `TIERS`); the capture CLI, the comparison and the CI gate that read this matrix
-arrive in Wave 4. What follows describes the matrix itself, as it exists in the repo today.
+story can be captured under. This page and the eslint boundaries rule described on the
+[Layering Rule](?path=/docs/docs-layering-rule--docs) page both read the same `TIERS`; the
+capture CLI, the comparison and the CI job that read this matrix to actually run the diff are
+described on the [Visual Diff Workflow](?path=/docs/docs-visual-diff-workflow--docs) page.
+What follows describes the matrix itself, as it exists in the repo today.
 
 ## The matrix
 
