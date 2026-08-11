@@ -37,7 +37,7 @@ import {
 /** The page pool draining the variant queue. Four rather than one per core: each page
  *  is a live Chromium tab holding a rendered story, and past four the pages contend for
  *  the same compositor and the stable-shot loop starts reshooting. */
-export const WORKER_PAGES = 4;
+const WORKER_PAGES = 4;
 
 /** The capture URL: the preview iframe directly, never the manager shell — the manager
  *  would load the whole Storybook UI into every shot.
