@@ -148,32 +148,45 @@ describe('renderSummaryMd', () => {
     expect(md).toContain('image-alt (1)');
   });
 
-  it('renders from the summary object, not shared state with a mutated variants array', () => {
-    const summary = buildSummary(
-      [changedRow({ id: 'first', overlapDiffPixels: 10 })],
-      ENV,
-    );
-    const before = renderSummaryMd(summary);
+  it('renders a warnings section from a summary it did not build', () => {
+    const { variants } = buildSummary([changedRow({ id: 'hand-built' })], ENV);
+    const summary = {
+      schemaVersion: 1,
+      exitCode: EXIT.diff,
+      thresholds: { maxDiffPixels: 40, maxDiffRatio: 0.0005 },
+      env: ENV,
+      counts: { unchanged: 0, changed: 1, added: 0, removed: 0, errored: 0, a11y: 0 },
+      warnings: ['baselines are at 92% of budget'],
+      variants,
+    };
 
-    summary.variants.push({
-      key: 'injected',
-      id: 'injected-after',
-      tier: 'atoms',
-      viewport: 'desktop',
-      theme: 'light',
-      bucket: 'changed',
-      overlapDiffPixels: 999,
-      marginPixels: 0,
-      diffPixels: 999,
-      allowedDiffPixels: 40,
-      width: 200,
-      height: 100,
-      sizeDelta: null,
-      violations: [],
-      error: null,
+    const md = renderSummaryMd(summary);
+
+    expect(md).toContain('### Warnings');
+    expect(md).toContain('- baselines are at 92% of budget');
+    expect(md).toContain('| hand-built |');
+  });
+
+  it('prints a baseline that names no cell of the matrix under ?/?/?', () => {
+    const key = 'atoms__desktop__retired__card--default';
+    const orphan = row({
+      key,
+      id: key,
+      tier: null,
+      viewport: null,
+      theme: null,
+      bucket: 'removed',
+      pass: false,
+      width: null,
+      height: null,
+      allowedDiffPixels: 0,
+      error: `${key} names no cell of the capture matrix`,
     });
+    const summary = buildSummary([orphan], ENV);
 
-    expect(before).not.toContain('injected-after');
+    const md = renderSummaryMd(summary);
+
+    expect(md).toContain(`| ${key} | ?/?/? | 0 | 0 | 0.00× | — |`);
   });
 
   it('shows a clean verdict and omits the table and remediation footer when nothing changed', () => {

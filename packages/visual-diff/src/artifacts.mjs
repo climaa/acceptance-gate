@@ -59,10 +59,7 @@ function worstFirst(left, right) {
   );
 }
 
-/** One `variants[]` entry. Everything a reader needs to place the row and judge it —
- *  never the diff PNG bytes, which the command layer writes to its own file per
- *  variant; a JSON summary is not the place for image data.
- *  @param {Comparison} row @returns {SummaryVariant} */
+/** @param {Comparison} row @returns {SummaryVariant} */
 function variantOf(row) {
   return {
     key: row.key,
@@ -119,8 +116,11 @@ function escapeCell(value) {
   return value.replaceAll('|', '\\|');
 }
 
-/** @param {SummaryVariant} variant @returns {string} */
-function formatVariant(variant) {
+/** The matrix cell a row belongs to. The three fields are `null` together, for a
+ *  baseline whose filename names no cell of the matrix; that row is still printed,
+ *  under `?`, because a key nothing can place is exactly what a reader must see.
+ *  @param {SummaryVariant} variant @returns {string} */
+function formatMode(variant) {
   return [variant.tier ?? '?', variant.viewport ?? '?', variant.theme ?? '?'].join('/');
 }
 
@@ -135,26 +135,30 @@ function formatRatio(variant) {
 }
 
 /** @param {SummaryVariant} variant @returns {string} */
-function tableRow(variant) {
-  return [
+function renderTableRow(variant) {
+  const cells = [
     escapeCell(variant.id),
-    escapeCell(formatVariant(variant)),
+    escapeCell(formatMode(variant)),
     String(variant.overlapDiffPixels),
     String(variant.marginPixels),
     formatRatio(variant),
     escapeCell(variant.sizeDelta ?? '—'),
-  ].join(' | ');
+  ];
+
+  return `| ${cells.join(' | ')} |`;
 }
 
-/** @param {readonly SummaryVariant[]} variants @returns {string} */
+/** @param {readonly SummaryVariant[]} variants @returns {string | null} */
 function renderTable(variants) {
+  if (variants.length === 0) return null;
+
   const shown = variants.slice(0, MAX_TABLE_ROWS);
   const overflow = variants.length - shown.length;
 
   const lines = [
     '| story | variant | Δ shared | Δ margin | ratio | size |',
     '| --- | --- | --- | --- | --- | --- |',
-    ...shown.map((variant) => `| ${tableRow(variant)} |`),
+    ...shown.map(renderTableRow),
   ];
   if (overflow > 0) lines.push('', `_...and ${overflow} more._`);
 
@@ -170,7 +174,7 @@ function renderA11ySection(variants) {
     const violations = variant.violations
       .map((violation) => `${violation.id} (${violation.nodes})`)
       .join(', ');
-    return `- **${escapeCell(variant.id)}** (${formatVariant(variant)}): ${violations}`;
+    return `- **${escapeCell(variant.id)}** (${formatMode(variant)}): ${violations}`;
   });
 
   return ['### Accessibility violations', '', ...lines].join('\n');
@@ -192,9 +196,9 @@ function renderVerdict(summary) {
 function renderWarnings(summary) {
   if (summary.warnings.length === 0) return null;
 
-  return ['### Warnings', '', ...summary.warnings.map((warning) => `- ${warning}`)].join(
-    '\n',
-  );
+  const lines = summary.warnings.map((warning) => `- ${warning}`);
+
+  return ['### Warnings', '', ...lines].join('\n');
 }
 
 const REMEDIATION = [
@@ -205,25 +209,20 @@ const REMEDIATION = [
   '3. `pnpm visual-diff:accept` to accept the intentional changes.',
 ].join('\n');
 
-/** The PR-comment markdown, rendered from the `summary.json` object — never from the
- *  results array again, so the file and the comment can never disagree about what
- *  changed.
+/** The PR-comment markdown. Its only input is the `summary.json` object, so the file
+ *  and the comment cannot disagree about what changed. A section that has nothing to
+ *  say renders `null` and is dropped, blank line and all.
  *  @param {Summary} summary
  *  @returns {string} */
 export function renderSummaryMd(summary) {
-  const sections = [renderVerdict(summary), renderCountsLine(summary)];
+  const sections = [
+    renderVerdict(summary),
+    renderCountsLine(summary),
+    renderTable(summary.variants),
+    renderA11ySection(summary.variants),
+    renderWarnings(summary),
+    summary.exitCode === EXIT.ok ? null : REMEDIATION,
+  ];
 
-  if (summary.variants.length > 0) {
-    sections.push(renderTable(summary.variants));
-  }
-
-  const a11ySection = renderA11ySection(summary.variants);
-  if (a11ySection) sections.push(a11ySection);
-
-  const warningsSection = renderWarnings(summary);
-  if (warningsSection) sections.push(warningsSection);
-
-  if (summary.exitCode !== EXIT.ok) sections.push(REMEDIATION);
-
-  return sections.join('\n\n');
+  return sections.filter((section) => section !== null).join('\n\n');
 }
