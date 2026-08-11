@@ -215,20 +215,27 @@ const NOTHING_COMPARED = {
   diff: null,
 };
 
-/** @param {CaptureResult} capture @param {Bucket} bucket @param {Partial<Comparison>} rest
+/** What a row is about, wherever it was read from: a capture, or — when nothing was
+ *  captured — the baseline key left behind.
+ *  @typedef {Pick<Comparison, 'key' | 'id' | 'tier' | 'viewport' | 'theme' | 'width'
+ *                           | 'height' | 'violations' | 'error'>} RowSubject */
+
+/** One row. `pass` is derived from the bucket and never passed in: an `a11y` variant
+ *  fails whatever its pixels did, so a pixel verdict must not reach `rest`.
+ *  @param {RowSubject} subject @param {Bucket} bucket @param {Partial<Comparison>} [rest]
  *  @returns {Comparison} */
-const rowFor = (capture, bucket, rest) => ({
-  key: capture.key,
-  id: capture.id,
-  tier: capture.tier,
-  viewport: capture.viewport,
-  theme: capture.theme,
+const rowFor = (subject, bucket, rest = {}) => ({
+  key: subject.key,
+  id: subject.id,
+  tier: subject.tier,
+  viewport: subject.viewport,
+  theme: subject.theme,
   bucket,
   pass: bucket === 'unchanged',
-  width: capture.width,
-  height: capture.height,
-  violations: capture.violations,
-  error: capture.error,
+  width: subject.width,
+  height: subject.height,
+  violations: subject.violations,
+  error: subject.error,
   ...NOTHING_COMPARED,
   ...rest,
 });
@@ -253,14 +260,14 @@ function bucketOf(capture, pass) {
  *  @param {CaptureResult} capture @param {Uint8Array | undefined} baseline
  *  @param {boolean} strict @returns {Comparison} */
 function compareCapture(capture, baseline, strict) {
-  if (capture.bucket === 'errored') return rowFor(capture, 'errored', {});
+  if (capture.bucket === 'errored') return rowFor(capture, 'errored');
   if (!capture.bytes) {
     return rowFor(capture, 'errored', { error: 'the capture produced no PNG' });
   }
-  if (!baseline) return rowFor(capture, 'added', {});
+  if (!baseline) return rowFor(capture, 'added');
 
-  const { pass, diff, ...pixels } = comparePixels(baseline, capture.bytes, { strict });
-  return rowFor(capture, bucketOf(capture, pass), { ...pixels, diff });
+  const { pass, ...pixels } = comparePixels(baseline, capture.bytes, { strict });
+  return rowFor(capture, bucketOf(capture, pass), pixels);
 }
 
 /** A baseline no capture claimed: a story that was deleted, one that was renamed, or a
@@ -270,20 +277,20 @@ function compareCapture(capture, baseline, strict) {
 function removedBaseline(key) {
   const variant = parseVariantKey(key);
 
-  return {
-    key,
-    id: variant?.id ?? key,
-    tier: variant?.tier ?? null,
-    viewport: variant?.viewport ?? null,
-    theme: variant?.theme ?? null,
-    bucket: 'removed',
-    pass: false,
-    width: null,
-    height: null,
-    violations: [],
-    error: variant ? null : `${key} names no cell of the capture matrix`,
-    ...NOTHING_COMPARED,
-  };
+  return rowFor(
+    {
+      key,
+      id: variant?.id ?? key,
+      tier: variant?.tier ?? null,
+      viewport: variant?.viewport ?? null,
+      theme: variant?.theme ?? null,
+      width: null,
+      height: null,
+      violations: [],
+      error: variant ? null : `${key} names no cell of the capture matrix`,
+    },
+    'removed',
+  );
 }
 
 /** Code-unit order, never `localeCompare`: collation depends on the ICU build the host

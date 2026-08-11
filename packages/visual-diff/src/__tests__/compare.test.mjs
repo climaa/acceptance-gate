@@ -142,7 +142,10 @@ describe('comparePixels', () => {
   });
 
   it('leaves sizeDelta null when the two shots are the same shape', () => {
-    const result = comparePixels(card(200, 100, 10), card(200, 100, 14));
+    const before = card(200, 100, 10);
+    const after = card(200, 100, 14);
+
+    const result = comparePixels(before, after);
 
     expect(result.sizeDelta).toBeNull();
   });
@@ -310,7 +313,9 @@ describe('compareAll buckets', () => {
   });
 
   it('sizes an added variant from its own shot, so the report can show it', () => {
-    const [result] = compareAll({ captures: [captured()], baselines: new Map() });
+    const captures = [captured()];
+
+    const [result] = compareAll({ captures, baselines: new Map() });
 
     expect(result).toMatchObject({ width: 200, height: 100 });
   });
