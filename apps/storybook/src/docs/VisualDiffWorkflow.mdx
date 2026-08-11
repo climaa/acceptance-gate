@@ -1,0 +1,124 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+import { Mermaid } from './Mermaid';
+
+<Meta title="Docs/Visual Diff Workflow" />
+
+# The visual diff workflow
+
+`packages/visual-diff` captures every story in this Storybook and compares it against a
+single committed baseline corpus, `packages/visual-diff/__baselines__/`. This page is the
+developer-facing half of that story — what happens on your PR, what each section of the
+report means, and what you're expected to do about it. For the CLI itself (flags, exit
+codes, the comparison thresholds, the determinism controls) see
+[`packages/visual-diff/README.md`](https://github.com/climaa/acceptance-gate/blob/main/packages/visual-diff/README.md);
+for the capture matrix (which tier gets which viewports and themes), see the
+[Diff Policy](?path=/docs/docs-diff-policy--docs) page.
+
+## The one baseline
+
+There is exactly one baseline corpus, committed to `main`. Every PR's `visual-diff` job
+compares fresh captures against that same corpus — never a per-branch or per-environment
+copy. If this repo ever grows a `staging` branch ahead of `main`, that changes nothing here:
+`staging` would still just be a pre-merge integration point, not a second baseline. Updating
+the baseline only ever means moving it forward from what `main` already has, and only a merge
+does that.
+
+## The flow
+
+<Mermaid
+  chart={`
+flowchart TD
+    A["Component changes on a PR"] --> B["CI: visual-diff job"]
+    B --> C["Build Storybook, capture every story"]
+    C --> D{"Compare against __baselines__"}
+    D -->|"byte-identical"| E["unchanged"]
+    D -->|"pixels differ past threshold"| F["changed"]
+    D -->|"no baseline exists yet"| G["added"]
+    D -->|"baseline exists, nothing captured claims it"| H["removed"]
+    D -->|"the capture itself failed"| I["errored"]
+    D -->|"axe found a violation"| J["a11y"]
+    E --> K["report.html / summary.json / summary.md written"]
+    F --> K
+    G --> K
+    H --> K
+    I --> K
+    J --> K
+    K --> L["CI posts summary.md as a sticky PR comment, uploads report.html"]
+    L --> M["Job fails loudly on anything but unchanged - visible, never a required check"]
+    M --> N{"Developer reviews the report"}
+    N -->|"intentional visual change"| O["pnpm visual-diff:accept, locally"]
+    O --> P["commit the updated __baselines__/*.png in the SAME PR"]
+    N -->|"errored"| Q["fix the story or capture pipeline - accept cannot write over an error"]
+    N -->|"unintended regression"| R["fix the component, push again"]
+    P --> S["merge - baseline now matches main"]
+`}
+/>
+
+The job runs on every non-draft PR and is deliberately **not** a required check — it fails
+its own status loudly on anything but `unchanged` (a real ❌ in the PR's checks list), but
+nothing about that blocks a merge. A person reviewing the report decides whether the change
+is correct, the same as reviewing a code diff. See
+[`visual-regression-with-agents.mdx`](https://github.com/climaa/acceptance-gate/blob/main/apps/blog/content/posts/visual-regression-with-agents.mdx)
+for the reasoning: a numeric pixel threshold stops being a safety net the moment change
+volume is high, and approving a baseline has to cost real attention or nobody looks at it.
+
+## What each section of the report means
+
+`report.html` groups every non-`unchanged` variant by bucket. This is the part that trips
+people up on first read — a card with **"no baseline"** and **"no diff"** placeholders is
+not a broken report, it's telling you exactly what happened:
+
+| Bucket      | Why it's there                                                                                                                                                                  | What you do                                                                                                                                                                     |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `unchanged` | The new capture is byte-identical to the committed baseline.                                                                                                                    | Nothing — these aren't even listed in the report body, only in the counts line.                                                                                                 |
+| `changed`   | A capture exists for this story, a baseline exists for this story, and the two differ by more than the allowed threshold.                                                       | Open the diff pane — is this the change you meant to make?                                                                                                                      |
+| `added`     | The capture succeeded, but `__baselines__/` has no PNG for this key yet — a brand-new story, or one that changed tier/viewport/theme keys.                                      | There is genuinely no baseline to show — that's why the "baseline" and "diff" panes are empty placeholders. Only the "candidate" pane has a real image: what you just captured. |
+| `removed`   | A baseline PNG exists for this key, but nothing in this run's capture claims it — a deleted or renamed story.                                                                   | Confirm the removal is intentional, same as `added` in reverse.                                                                                                                 |
+| `errored`   | The capture itself never produced a usable screenshot — a font hadn't loaded, the story rendered nothing, a network call outside the sandbox was blocked, etc.                  | This is not a baseline decision. `accept` refuses to write anything while any variant is errored — fix the story or the capture pipeline first.                                 |
+| `a11y`      | The capture succeeded and axe found a WCAG violation on it — this outranks a clean pixel match, so a component that passes pixel-for-pixel but fails contrast is still flagged. | Fix the violation. A pixel-perfect capture says nothing about whether the UI is _correct_.                                                                                      |
+
+## Running `pnpm visual-diff:accept`
+
+`accept` is what moves the baseline — it captures the current state and writes it into
+`__baselines__/` as the new source of truth, restamping `BASELINE_ENV.json` with the
+accepting machine's fingerprint. **Run it on the same branch that introduced the visual
+change, before that branch merges — not on `main` afterward.** Two reasons:
+
+1. **The approval belongs with the change it approves.** A baseline updated after the fact,
+   in a separate commit nobody reviewed alongside the component diff, is exactly the "nobody
+   looks at it" failure mode the whole design exists to avoid. Landing the baseline PNGs in
+   the same PR as the code means a reviewer sees both together.
+2. **A stale baseline compounds.** If a PR's visual changes never get accepted, every
+   subsequent PR keeps reporting the same drift as noise — the report stops being useful for
+   the change actually being reviewed, because it's still carrying the last unresolved one.
+
+It's a local step, not something CI runs for you — deliberately: `accept` is the human
+sign-off, not a bot's. It's also **all-or-nothing**: if any variant errored, `accept` writes
+nothing at all. An error has to be fixed (or the story tagged `visual-diff:skip`, see the
+[Diff Policy](?path=/docs/docs-diff-policy--docs) page) before the corpus can move forward,
+even if the rest of the change is fine.
+
+```bash
+pnpm --filter @gate/storybook build   # accept captures fresh, same as check
+pnpm visual-diff:accept
+git add packages/visual-diff/__baselines__/
+git commit -m "chore(visual-diff): accept baseline for <what changed>"
+```
+
+## What to actually do, in order
+
+1. Push your change. Wait for the `visual-diff` check on the PR (it's not required, but give
+   it a minute — it runs alongside the rest of the pipeline).
+2. If it's green (`unchanged`), you're done — nothing else to read here.
+3. If it's red, open the sticky PR comment first. It's the same content as `report.html`'s
+   text summary — bucket counts, a worst-first table, capped at 20 rows.
+4. For the full picture (every variant, the actual images, the blink/onion-skin compare
+   tools), download the `visual-diff-report` artifact from the workflow run and open
+   `report.html` locally — no server needed, it's fully self-contained.
+5. Triage by bucket, using the table above. `errored` first (nothing else can be accepted
+   until it's clean), then `changed`/`a11y` (read the diff, decide if it's right), then
+   `added`/`removed` (confirm the addition or removal is intentional).
+6. If everything checks out: `pnpm visual-diff:accept` locally, commit the updated
+   `__baselines__/`, push to the same branch.
+7. Merge. The baseline `main` carries now includes your change.
