@@ -28,7 +28,7 @@ import { THRESHOLDS, parseVariantKey } from './policy.mjs';
  *  @type {{ threshold: number, includeAA: boolean, alpha: number,
  *           diffColor: [number, number, number],
  *           diffColorAlt: [number, number, number] }} */
-export const PIXELMATCH_OPTIONS = {
+const PIXELMATCH_OPTIONS = {
   /** Perceptual (YIQ) distance rather than RGB equality — under it the two colours are
    *  one colour to a reader, and a differ that disagrees with the eye is noise. */
   threshold: 0.1,
@@ -93,7 +93,7 @@ const shape = ({ width, height }) => `${width}×${height}`;
  *  @param {{ width: number, height: number }} before
  *  @param {{ width: number, height: number }} after
  *  @returns {string | null} */
-export function formatSizeDelta(before, after) {
+function formatSizeDelta(before, after) {
   if (before.width === after.width && before.height === after.height) return null;
 
   return `${shape(before)} → ${shape(after)}`;
