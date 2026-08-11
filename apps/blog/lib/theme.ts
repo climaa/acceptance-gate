@@ -14,16 +14,26 @@ const KEY = JSON.stringify(THEME_STORAGE_KEY);
  * The key is imported, never retyped: a copy that drifts by a character
  * reinstates the flash and every test in this repo still passes.
  *
- * Deliberately not consulting `prefers-color-scheme` — CODING_STANDARDS names
- * `[data-theme]` as the one theme mechanism, and a script that honoured the
- * media query while the toggle ignored it would leave the page with two sources
- * of truth. Dark is written as an attribute, light as the absence of one,
- * matching what the toggle itself writes.
+ * `prefers-color-scheme` is consulted exactly once, and only as a first-visit
+ * default — never as a live, ongoing mechanism. CODING_STANDARDS still names
+ * `[data-theme]` as the one thing that decides how the page renders: this
+ * script writes into that same attribute and is never asked again once a
+ * reader has an explicit stored choice, which is what keeps there from being
+ * two sources of truth. `null` (no choice yet) is the only case that reaches
+ * the media query; `'dark'` or `'light'` always wins outright. Dark is written
+ * as an attribute, light as the absence of one, matching what the toggle
+ * itself writes.
+ *
+ * This is the blog's script only. Storybook and visual-diff stay on the rule
+ * as originally written — a capture pipeline needs a theme it chose, never
+ * one the capture machine's OS happened to be set to.
  *
  * `localStorage` throws rather than returning null in private mode and with
- * site data blocked. An uncaught throw in `<head>` stops the parser, so the one
- * branch this script has is a `catch` that does nothing.
+ * site data blocked. An uncaught throw in `<head>` stops the parser, so the
+ * one branch this script has is a `catch` that does nothing — wrapping the
+ * media-query read too, so neither API's edge cases can compound the risk.
  */
 export const THEME_SCRIPT =
-  `try{if(localStorage.getItem(${KEY})==='dark')` +
+  `try{var s=localStorage.getItem(${KEY});` +
+  `if(s===null?matchMedia('(prefers-color-scheme: dark)').matches:s==='dark')` +
   `document.documentElement.dataset.theme='dark'}catch(e){}`;
