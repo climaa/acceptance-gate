@@ -23,6 +23,9 @@
   min-width: 0;
   margin: 0;
   padding: var(--space-4);
+  /* The fill alone (--color-code-bg) is too close to the page ground to read as
+     a distinct plate on its own — an edge is what actually separates it. */
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   background: var(--color-code-bg);
   color: var(--color-code-fg);
@@ -40,4 +43,19 @@
   background: none;
   font-family: var(--font-mono);
   font-size: inherit;
+}
+
+/* rehype-pretty-code's dual-theme Shiki config (`apps/blog/lib/mdx.tsx`) stamps
+   every highlighted token with `--shiki-light`/`--shiki-dark` custom
+   properties instead of a plain `color` — passing a `{ light, dark }` theme
+   object is what triggers that. `[data-line]` line-wrapper spans carry no
+   `style` at all, so `[style]` scopes this to actual tokens; unhighlighted
+   text (the `\n` between lines) falls through to this rule's own
+   `color: var(--color-code-fg)` by inheritance. */
+.ds-code__pre code span[style] {
+  color: var(--shiki-light);
+}
+
+[data-theme='dark'] .ds-code__pre code span[style] {
+  color: var(--shiki-dark);
 }
