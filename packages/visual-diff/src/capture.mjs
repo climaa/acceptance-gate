@@ -435,6 +435,21 @@ async function assertNoErrorOverlay(page) {
   }
 }
 
+/** The `page.evaluate` expression that forces `spec` to load before checking it.
+ *
+ *  Forces the load rather than only checking it: a browser only loads a face when
+ *  rendered text *uses* it, so a story with no body-face text (a textless shimmer, a
+ *  mono-only code block) would otherwise fail the gate for never having asked — not
+ *  for the face being missing. `fonts.load()` fetches a registered `@font-face`
+ *  regardless of usage, so the gate keeps its teeth (a face that fails to *fetch* still
+ *  throws) while "no text happened to use it" stops being a failure.
+ *  @param {string} spec a {@link fontCheckSpec} result
+ *  @returns {string} */
+export function fontsLoadCheckExpression(spec) {
+  const json = JSON.stringify(spec);
+  return `document.fonts.load(${json}).then(() => document.fonts.check(${json}))`;
+}
+
 /** The worst silent flake there is: a shot taken between `font-display: block`'s blank
  *  period and the face arriving differs from its baseline in every glyph, and a rerun
  *  makes it disappear. Made loud here rather than left to the comparer.
@@ -446,7 +461,7 @@ async function assertFontsLoaded(page) {
   const spec = fontCheckSpec(stack);
   if (spec === null) throw new Error('the page resolved no body font family');
 
-  const loaded = await page.evaluate(`document.fonts.check(${JSON.stringify(spec)})`);
+  const loaded = await page.evaluate(fontsLoadCheckExpression(spec));
   if (!loaded) throw new Error(`${spec} had not loaded when the shot was taken`);
 }
 

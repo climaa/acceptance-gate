@@ -1,5 +1,4 @@
-import type { Decorator, Meta, StoryObj } from '@storybook/react';
-import { useEffect, useRef } from 'react';
+import type { Meta, StoryObj } from '@storybook/react';
 
 import { SkipLink } from './SkipLink';
 
@@ -12,23 +11,22 @@ export default meta;
 
 type Story = StoryObj<typeof SkipLink>;
 
-export const Default: Story = {};
-
-/**
- * `.ds-skip-link` is visually hidden until it receives focus, so an unfocused
- * baseline captures nothing — this decorator focuses the rendered anchor on
- * mount, giving the differ a frame where the reveal is actually visible.
- */
-const withFocus: Decorator = (Story) => {
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    ref.current?.querySelector('a')?.focus();
-  }, []);
-
-  return <div ref={ref}>{Story()}</div>;
+// Unfocused, `.ds-visually-hidden` clips the link to nothing — there is no box for
+// visual-diff to capture, and there is nothing else this story could show. The
+// revealed appearance is baselined by `Revealed` below instead.
+export const Default: Story = {
+  tags: ['visual-diff:skip'],
 };
 
-export const Focused: Story = {
-  decorators: [withFocus],
+/**
+ * `.ds-skip-link` is visually hidden until it receives focus. A real `.focus()` call
+ * would reveal it via `:focus-visible`, but that selector is unreliable under
+ * programmatic focus in a capture context — so this forces the same revealed
+ * appearance deterministically via `--force-visible` instead of relying on focus
+ * heuristics at all.
+ */
+export const Revealed: Story = {
+  args: {
+    className: 'ds-skip-link--force-visible',
+  },
 };
