@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactElement } from 'react';
 import { GLOBALS_UPDATED, SET_GLOBALS } from 'storybook/internal/core-events';
+import { themes } from 'storybook/theming';
 import { DocsContainer, type DocsContainerProps } from '@storybook/addon-docs/blocks';
 import { COLOR_SCHEME_GLOBAL } from '@gate/visual-diff/policy';
 import { applyColorScheme, UNSET_THEME } from './color-scheme';
@@ -32,7 +33,20 @@ function readColorScheme(payload: GlobalsPayload | undefined): string | undefine
  *  `channel.on(...)` subscription alone missed them and stayed on the light default.
  *  `channel.last(eventName)` returns that already-fired payload (as `[payload]`,
  *  matching `emit(eventName, ...args)`), which is what seeds the initial read below;
- *  `.on(...)` then covers every later toolbar change the same way. */
+ *  `.on(...)` then covers every later toolbar change the same way.
+ *
+ *  `applyColorScheme` alone is not enough: it only ever reaches `document.body`, but
+ *  addon-docs wraps every docs page's own content in `.sbdocs-wrapper`, which carries
+ *  a hardcoded opaque white background from `@storybook/theming`'s own default theme
+ *  — confirmed live, `data-theme="dark"` was correctly set and `body`'s computed
+ *  background genuinely was our dark token, while the actual visible surface stayed
+ *  white because that wrapper sits on top of it, unrelated to our CSS custom
+ *  properties. `theme` on `DocsContainerProps` is addon-docs's own hook for this —
+ *  passing `themes.dark`/`themes.light` (its own built-in presets, not our design
+ *  tokens: this only reaches addon-docs's chrome — the wrapper background, headings,
+ *  ArgTypes/Source blocks — the content itself already inherits our real tokens once
+ *  the wrapper stops painting over them) is what actually makes the wrapper follow
+ *  the toggle instead of only the attribute underneath it. */
 export function ThemedDocsContainer({
   context,
   ...rest
@@ -66,5 +80,11 @@ export function ThemedDocsContainer({
     applyColorScheme(theme);
   }, [theme]);
 
-  return <DocsContainer context={context} {...rest} />;
+  return (
+    <DocsContainer
+      context={context}
+      {...rest}
+      theme={theme === UNSET_THEME ? themes.light : themes.dark}
+    />
+  );
 }
