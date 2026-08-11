@@ -6,6 +6,7 @@ import rehypeAutolinkHeadings, {
 } from 'rehype-autolink-headings';
 import rehypePrettyCode, { type Options as PrettyCodeOptions } from 'rehype-pretty-code';
 import rehypeSlug from 'rehype-slug';
+import remarkGfm from 'remark-gfm';
 import { CodeBlock } from '@gate/ui';
 
 /**
@@ -133,6 +134,11 @@ export const mdxComponents = {
   figure: Figure,
 } satisfies MDXRemoteProps['components'];
 
+// GFM (tables, strikethrough, task lists, autolinks) is not CommonMark — without
+// this, a pipe table in a post silently renders as one run-on paragraph instead
+// of failing loudly, which is exactly what happened before this was added.
+const remarkPlugins: NonNullable<MdxCompileOptions['remarkPlugins']> = [remarkGfm];
+
 export const mdxRemoteOptions: NonNullable<MDXRemoteProps['options']> = {
-  mdxOptions: { rehypePlugins },
+  mdxOptions: { remarkPlugins, rehypePlugins },
 };
