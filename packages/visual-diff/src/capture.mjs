@@ -91,8 +91,12 @@ export async function drainQueue(items, workers, handle) {
 
   await Promise.all(
     workers.map(async (worker) => {
-      for (let index = next; index < items.length; index = next) {
+      while (next < items.length) {
+        // Read and bumped with no `await` between them, so two workers can never come
+        // away holding the same index.
+        const index = next;
         next += 1;
+
         results[index] = await handle(worker, items[index]);
       }
     }),
@@ -100,6 +104,12 @@ export async function drainQueue(items, workers, handle) {
 
   return results;
 }
+
+/** {@link VIEWPORTS} looked up by an unvalidated name. A viewport reaches this module as
+ *  a plain string — off a plan, off the CLI — so a name outside the matrix has to come
+ *  back `undefined` here rather than typecheck as a size.
+ *  @type {Record<string, { width: number, height: number } | undefined>} */
+const VIEWPORT_SIZES = VIEWPORTS;
 
 /** The viewport each pooled page currently sits at.
  *
@@ -119,9 +129,7 @@ const appliedViewport = new WeakMap();
 export async function ensureViewport(page, viewport) {
   if (appliedViewport.get(page) === viewport) return;
 
-  const size = /** @type {Record<string, { width: number, height: number }>} */ (
-    VIEWPORTS
-  )[viewport];
+  const size = VIEWPORT_SIZES[viewport];
   if (!size) throw new Error(`unknown viewport "${viewport}"`);
 
   await page.setViewportSize(size);
@@ -230,8 +238,7 @@ export function themeSanity(shots) {
 }
 
 /** @param {string} viewport */
-const policyWidth = (viewport) =>
-  /** @type {Record<string, { width: number }>} */ (VIEWPORTS)[viewport]?.width ?? 0;
+const policyWidth = (viewport) => VIEWPORT_SIZES[viewport]?.width ?? 0;
 
 /** @param {Map<string, number>} cells viewport name → the width of its shot */
 function reflowed(cells) {
@@ -389,7 +396,7 @@ const messageOf = (cause) => (cause instanceof Error ? cause.message : String(ca
 /** @param {PlannedVariant} variant @param {CaptureResult['bucket']} bucket
  *  @param {Uint8Array | null} bytes @param {Partial<CaptureResult>} [extra]
  *  @returns {CaptureResult} */
-function result(variant, bucket, bytes, extra = {}) {
+function captureResult(variant, bucket, bytes, extra = {}) {
   const size = pngSize(bytes);
 
   return {
@@ -445,8 +452,7 @@ async function assertFontsLoaded(page) {
 
 /** @param {Page} page @param {PlannedVariant} variant @param {string} baseUrl */
 async function openStory(page, variant, baseUrl) {
-  // Before `goto`, always: Storybook's viewport addon only drives a preview embedded in
-  // the manager, so a directly-navigated iframe cannot resize itself afterwards.
+  // Before `goto`, never after — see {@link ensureViewport}.
   await ensureViewport(page, variant.viewport);
 
   await page.goto(buildStoryUrl(baseUrl, variant), { waitUntil: 'load' });
@@ -518,12 +524,12 @@ async function captureVariant(page, variant, baseUrl) {
     const bytes = await stableShot(page, variant);
     const violations = await runAxe(page);
 
-    return result(variant, violations.length > 0 ? 'a11y' : 'captured', bytes, {
+    return captureResult(variant, violations.length > 0 ? 'a11y' : 'captured', bytes, {
       violations,
     });
   } catch (cause) {
     const bytes = await page.screenshot({ animations: 'disabled' }).catch(() => null);
-    return result(variant, 'errored', bytes, { error: messageOf(cause) });
+    return captureResult(variant, 'errored', bytes, { error: messageOf(cause) });
   }
 }
 

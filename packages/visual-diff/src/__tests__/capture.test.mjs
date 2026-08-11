@@ -24,8 +24,12 @@ const STORY_ID = 'atoms-button--primary';
 const BASE_URL = 'http://127.0.0.1:41234';
 
 const PNG_SIGNATURE = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
+/** The IHDR chunk's own length prefix: thirteen bytes of header follow the name. */
+const IHDR_LENGTH = [0, 0, 0, 13];
 /** `IHDR` in ASCII — the first chunk of every PNG, and the one carrying the size. */
 const IHDR = [0x49, 0x48, 0x44, 0x52];
+/** Width and height open the IHDR data, four bytes each. */
+const WIDTH_OFFSET = PNG_SIGNATURE.length + IHDR_LENGTH.length + IHDR.length;
 
 /** A story as `index.json` writes it, narrowed to the two fields `--filter` reads. */
 const story = (overrides = {}) => ({
@@ -39,7 +43,12 @@ const fakePage = () => {
   /** @type {{ width: number, height: number }[]} */
   const resizes = [];
 
-  return { resizes, setViewportSize: async (size) => void resizes.push(size) };
+  return {
+    resizes,
+    setViewportSize: async (size) => {
+      resizes.push(size);
+    },
+  };
 };
 
 describe('buildStoryUrl', () => {
@@ -239,25 +248,19 @@ describe('ensureViewport', () => {
  *  two shots of the same size can still differ byte-wise. No decoder is involved: the
  *  gates read geometry out of the header and compare the rest for equality. */
 const png = (width, height, filler = 0) => {
+  // Zeroes hold the place of the width and height, written through the view below.
+  const sizeBytes = new Array(8).fill(0);
   const bytes = new Uint8Array([
     ...PNG_SIGNATURE,
-    0,
-    0,
-    0,
-    13,
+    ...IHDR_LENGTH,
     ...IHDR,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
+    ...sizeBytes,
     filler,
   ]);
-  new DataView(bytes.buffer).setUint32(16, width);
-  new DataView(bytes.buffer).setUint32(20, height);
+
+  const header = new DataView(bytes.buffer);
+  header.setUint32(WIDTH_OFFSET, width);
+  header.setUint32(WIDTH_OFFSET + 4, height);
 
   return bytes;
 };
@@ -436,19 +439,18 @@ describe('viewportSanity', () => {
 describe('isZeroSizeError', () => {
   // Playwright words the same failure differently across the element-handle and the
   // locator paths, so the classifier matches a set of spellings rather than one.
-  const zeroSizeMessages = [
-    'elementHandle.screenshot: Node has 0 size.',
-    'locator.screenshot: Element is not visible',
-    'locator.screenshot: Timeout 30000ms exceeded.\n  - waiting for element to be visible',
-  ];
+  it.each([
+    ['the element-handle wording', 'elementHandle.screenshot: Node has 0 size.'],
+    ['the locator wording', 'locator.screenshot: Element is not visible'],
+    [
+      'a wait that timed out on visibility',
+      'locator.screenshot: Timeout 30000ms exceeded.\n  - waiting for element to be visible',
+    ],
+  ])('recognises %s', (_label, message) => {
+    const zeroSize = isZeroSizeError(new Error(message));
 
-  for (const message of zeroSizeMessages) {
-    it(`recognises "${message.split('\n')[0]}"`, () => {
-      const zeroSize = isZeroSizeError(new Error(message));
-
-      expect(zeroSize).toBe(true);
-    });
-  }
+    expect(zeroSize).toBe(true);
+  });
 
   it('does not claim an unrelated browser failure was a zero-size element', () => {
     const zeroSize = isZeroSizeError(new Error('page.goto: net::ERR_CONNECTION_REFUSED'));
@@ -464,27 +466,27 @@ describe('isZeroSizeError', () => {
 });
 
 describe('isLoopbackUrl', () => {
-  for (const url of [
+  it.each([
     'http://127.0.0.1:41234/iframe.html',
     'http://localhost:6006/index.json',
     'http://[::1]:41234/assets/preview.mjs',
-  ]) {
-    it(`lets ${url} through to the corpus`, () => {
-      expect(isLoopbackUrl(url)).toBe(true);
-    });
-  }
+  ])('lets %s through to the corpus', (url) => {
+    const loopback = isLoopbackUrl(url);
 
-  for (const url of [
+    expect(loopback).toBe(true);
+  });
+
+  it.each([
     'https://fonts.googleapis.com/css2?family=Fraunces',
     'https://example.com/analytics.js',
     'http://127.0.0.1.evil.example/pixel.gif',
     'http://192.168.1.10/iframe.html',
     'not a url at all',
-  ]) {
-    it(`aborts ${url}`, () => {
-      expect(isLoopbackUrl(url)).toBe(false);
-    });
-  }
+  ])('aborts %s', (url) => {
+    const loopback = isLoopbackUrl(url);
+
+    expect(loopback).toBe(false);
+  });
 });
 
 describe('fontCheckSpec', () => {
