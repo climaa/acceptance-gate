@@ -8,8 +8,17 @@ same gate:
 
 ```
 lint · typecheck · build · test · format · health · sandcastle  (parallel)  →  gate
-                             ↑ e2e (Wave 3) and visual-diff (Wave 4) join gate.needs later
+                             ↑ e2e (Wave 3) joins gate.needs later
 ```
+
+`visual-diff` runs alongside the jobs above but deliberately never joins
+`gate.needs`: it posts its report as a PR comment and fails its own job
+loudly on a real diff, but a human approves the baseline in the PR — the
+same as reviewing a code diff — rather than a numeric threshold silently
+blocking (or silently passing) a merge. See
+[`packages/visual-diff/README.md`](packages/visual-diff/README.md#ci-status)
+and the reasoning in
+[this post](apps/blog/content/posts/visual-regression-with-agents.mdx).
 
 And the part that raises the bar: **this repo is built by its own published
 agent pipeline.** The autonomous multi-agent orchestrator in
@@ -33,7 +42,7 @@ merges carry their model co-author trailer in the squashed commit.
 | `packages/ui` — atomic design system, token-only styling        | ✅ 7 seed components, consumed by the blog · 🔜 Wave 1 completes the 19-component inventory, layering enforced by ESLint |
 | `apps/storybook` — the visual single source of truth            | 🔜 Wave 2                                                                                                                |
 | `apps/e2e` — playwright-bdd acceptance suite                    | 🔜 Wave 3                                                                                                                |
-| `packages/visual-diff` — the self-built CLI that gates PRs      | 🔜 Wave 4                                                                                                                |
+| `packages/visual-diff` — the self-built visual regression CLI   | ✅ reports on every PR, never auto-blocks — see [its README](packages/visual-diff/README.md#ci-status)                   |
 
 ## The design system, in one rule
 
