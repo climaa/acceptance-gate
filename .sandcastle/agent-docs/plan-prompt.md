@@ -29,6 +29,14 @@ on a human, not on another attempt. **Exclude it from the plan.** A comment on
 the issue explains what happened; a human removes the label when it is worth
 running again.
 
+## HELD ISSUES
+
+An issue labelled `sandcastle:hold` is not ready to be worked — it was filed
+deliberately incomplete, or the approach is not decided yet. **Exclude it from the
+plan.** Unlike `sandcastle:no-op`, this is not the record of a prior run that
+produced nothing; it is a deliberate pause, and it holds until a human removes the
+label.
+
 ## SANDBOX CONSTRAINT
 
 The planner is read-only: it only reads and reasons about issues. This sandbox

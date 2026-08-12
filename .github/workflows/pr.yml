@@ -48,16 +48,19 @@ env:
 
 # Draft PRs do not run the gate. GitHub has no draft filter at the `on:` level
 # — a draft fires opened/synchronize like any other PR — so the guard has to sit
-# on every job, and it has to sit on `gate` too: skip the five workers alone and
-# `gate` (if: always()) would see five skips and fail the draft red.
+# on every job, and it has to sit on `gate` too: skip the workers alone and
+# `gate` (if: always()) would see those skips and fail the draft red.
 #
 # The `event_name` half is not redundant. On push-to-main there is no
 # `github.event.pull_request`, and leaning on GitHub's null-to-false coercion to
 # carry that case is a silent footgun. Say it out loud instead.
 #
-# Repeated per job because GitHub Actions does not support YAML anchors. A new
-# job added in a later wave needs this line — and, unless it's meant to stay
-# informational like `visual-diff`, an entry in `gate.needs` too.
+# Repeated per job because GitHub Actions does not support YAML anchors. The
+# `checks` matrix below shares the six per-command jobs' steps, but a matrix
+# cannot share this guard line, so all four jobs (checks, sandcastle,
+# visual-diff, gate) still carry their own copy. A new job added in a later
+# wave needs this line too — and, unless it's meant to stay informational like
+# `visual-diff`, an entry in `gate.needs`.
 #
 # On the action pins below: `cache: pnpm` is set explicitly and must stay that
 # way. setup-node v5 started auto-enabling the cache whenever package.json has a
@@ -67,77 +70,73 @@ env:
 # setup-node — `cache: pnpm` resolves the pnpm store path at key-computation
 # time, so pnpm must already be on PATH.
 jobs:
-  lint:
+  checks:
+    # lint/typecheck/build/test/format/health collapsed into one matrix — they
+    # were byte-identical but for the final `run:` line (GitHub Actions has no
+    # YAML anchors to share that block with instead).
+    #
+    # NEVER put an `if:` on a matrix leg. Matrix aggregation ignores skipped
+    # legs entirely — [success, skipped] reduces to success — so a per-leg
+    # guard would silently defeat the draft check: a future "skip health on
+    # docs-only PRs" would produce a green `checks` containing a leg that
+    # never ran, and `gate` (which treats skipped as failure) could not see
+    # it. The job-level guard below is the only guard, on purpose.
+    #
+    # fail-fast: false is load-bearing. The default cancels the surviving legs
+    # on the first failure; the run goes red either way (gate counts cancelled
+    # as failure too), but losing those five results defeats the whole reason
+    # six checks exist.
+    #
+    # name: ${{ matrix.name }} keeps the check names byte-identical to the
+    # pre-matrix jobs (lint, typecheck, …). Without it each leg renders as
+    # "checks (lint, pnpm turbo run lint)", joining every include value.
+    # Nothing about branch protection changes — gate is still the only
+    # required check regardless of how the legs are named.
+    name: ${{ matrix.name }}
     if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     runs-on: ubuntu-24.04-arm
+    # 20, not 15: one timeout now covers both format (~1 minute) and a
+    # cold-cache build, and a cold cache happens on every Dependabot PR by
+    # design (those runs never see TURBO_TOKEN, above). A ceiling to tighten
+    # later from measured p95, not a target.
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: lint, run: pnpm turbo run lint }
+          - { name: typecheck, run: pnpm turbo run typecheck }
+          - { name: build, run: pnpm turbo run build }
+          - { name: test, run: pnpm turbo run test }
+          # Prettier is the formatter of record for the whole repo, including
+          # .sandcastle/*.mts (added to the glob so the orchestrator is held to
+          # the same printWidth as everything else). `--check` fails on drift.
+          - { name: format, run: pnpm format:check }
+          # Cognitive-complexity ceiling — COGNITIVE, not cyclomatic (cyclomatic
+          # over-counts flat guard sequences); see scripts/complexity-gate.mjs.
+          # `pnpm health:check` = `turbo run health` (per-workspace,
+          # cached/parallel — unchanged apps hit the shared turbo remote cache)
+          # + a standalone .sandcastle/ check (orchestrator scripts, not a turbo
+          # workspace).
+          - { name: health, run: pnpm health:check }
     steps:
       - uses: actions/checkout@v7
-        with:
-          # --affected and TURBO_SCM_BASE need the base SHA in history; the
-          # default shallow clone silently degrades "affected" to "everything".
-          fetch-depth: 0
       - run: corepack enable
       - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm turbo run lint
-
-  typecheck:
-    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
-    runs-on: ubuntu-24.04-arm
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
-      - run: corepack enable
-      - uses: actions/setup-node@v7
-        with:
-          node-version-file: .nvmrc
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm turbo run typecheck
-
-  build:
-    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
-    runs-on: ubuntu-24.04-arm
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
-      - run: corepack enable
-      - uses: actions/setup-node@v7
-        with:
-          node-version-file: .nvmrc
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm turbo run build
-
-  test:
-    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
-    runs-on: ubuntu-24.04-arm
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
-      - run: corepack enable
-      - uses: actions/setup-node@v7
-        with:
-          node-version-file: .nvmrc
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm turbo run test
+      - run: ${{ matrix.run }}
 
   sandcastle:
     # The orchestrator's own hermetic suite: prompt contracts, merge flow,
     # model-override grammar. Agents edit prompts; this is what catches them.
     if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     runs-on: ubuntu-24.04-arm
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
       - run: corepack enable
       - uses: actions/setup-node@v7
         with:
@@ -151,42 +150,6 @@ jobs:
       - run: pnpm typecheck:sandcastle
       - run: pnpm test:sandcastle
 
-  format:
-    # Prettier is the formatter of record for the whole repo, including
-    # .sandcastle/*.mts (added to the glob so the orchestrator is held to the
-    # same printWidth as everything else). `--check` fails the job on any drift.
-    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
-    runs-on: ubuntu-24.04-arm
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
-      - run: corepack enable
-      - uses: actions/setup-node@v7
-        with:
-          node-version-file: .nvmrc
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm format:check
-
-  health:
-    # Cognitive-complexity ceiling — COGNITIVE, not cyclomatic (cyclomatic
-    # over-counts flat guard sequences); see scripts/complexity-gate.mjs.
-    # `pnpm health:check` = `turbo run health` (per-workspace, cached/parallel —
-    # unchanged apps hit the shared turbo remote cache) + a standalone
-    # .sandcastle/ check (orchestrator scripts, not a turbo workspace).
-    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
-    runs-on: ubuntu-24.04-arm
-    steps:
-      - uses: actions/checkout@v7
-      - run: corepack enable
-      - uses: actions/setup-node@v7
-        with:
-          node-version-file: .nvmrc
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm health:check
-
   visual-diff:
     # Not in gate.needs — see the file header. Runs on the pinned
     # arm64 + Playwright container `packages/visual-diff/src/policy.mjs`'s
@@ -196,6 +159,7 @@ jobs:
     # (exit 2) on every run before a single pixel is compared.
     if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     runs-on: ubuntu-24.04-arm
+    timeout-minutes: 30
     container: mcr.microsoft.com/playwright:v1.62.1-noble
     permissions:
       contents: read
@@ -206,8 +170,6 @@ jobs:
       pull-requests: write
     steps:
       - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
       - run: corepack enable
       - uses: actions/setup-node@v7
         with:
@@ -289,9 +251,17 @@ jobs:
     # The aggregator — the ONLY required status check. `if: always()` so it
     # reports even when a needed job fails; it fails unless every result is
     # exactly 'success' (skipped/cancelled count as failure).
-    needs: [lint, typecheck, build, test, sandcastle, format, health]
+    #
+    # needs.checks.result is a single aggregate over the six matrix legs: any
+    # leg failure -> failure, any leg cancelled -> cancelled, draft PR (the
+    # job-level guard skips the whole job) -> skipped. The one thing lost
+    # versus six separate jobs: the failure echo below no longer names which
+    # leg failed — the checks list still does, the log line just doesn't
+    # repeat it.
+    needs: [checks, sandcastle]
     if: always() && (github.event_name != 'pull_request' || github.event.pull_request.draft == false)
     runs-on: ubuntu-24.04-arm
+    timeout-minutes: 2
     steps:
       - name: Fail unless every needed job succeeded
         if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') || contains(needs.*.result, 'skipped')
