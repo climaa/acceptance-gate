@@ -1,0 +1,263 @@
+---
+title: 'Cache Components on a site with nothing to cache'
+description: 'Only two of the Next.js agent skills apply to this blog. One found nothing to fix. The other turned eighteen prerendered routes into a partial prerender with a TTL — and the thing blocking it was a syntax highlighter looking at the clock.'
+date: '2026-08-12'
+tags: ['nextjs', 'caching', 'migration', 'agents']
+draft: false
+---
+
+There is a directory of agent skills for Next.js. Three of them are published as the
+canonical set: `next-best-practices`, `next-cache-components`, and `next-upgrade`. Two more
+sit downstream of them — an adoption skill and an optimizer.
+
+Only two of those five have anything to say about this blog. Deciding **which two, and
+saying so out loud before running anything**, turned out to be the useful part of the
+exercise. A skill you load without a reason produces advice you have no way to evaluate.
+
+## The two that apply
+
+**`next-best-practices`** is a reviewer's checklist: file conventions, RSC boundaries, data
+patterns, the async request APIs, metadata, route handlers, bundling. Twenty reference files.
+It carries `user-invocable: false` in its frontmatter, which means you never type its name —
+it loads itself when the work in front of the agent is Next.js code.
+
+**`next-cache-components`** is the one with teeth. It covers the `cacheComponents` flag,
+partial prerendering, the `use cache` directive, `cacheLife`, `cacheTag`, and the Next 16
+deprecations around them: `unstable_cache`, the singular `cacheHandler`, single-argument
+`revalidateTag`.
+
+The other three do not apply, for boring reasons worth stating anyway. `next-upgrade` is
+spent — this app is already on Next 16.3.0 and React 19.2.8, and
+[that migration has its own scars](/blog/the-migration-that-passed-ci). The adoption skill
+and the optimizer are both downstream of a decision I had not made yet: whether to enable
+Cache Components at all. That is the decision this post is about.
+
+## Before the analysis
+
+Five things have to be true before the output of this analysis means anything. I learned
+most of them by not having them.
+
+**A build baseline you can diff against.** This is the one that matters. Without a route
+table from *before* the flag, a green build afterwards reads as success, and it is not the
+same claim. Mine:
+
+```
+✓ Generating static pages using 11 workers (18/18) in 733ms
+
+Route (app)
+┌ ○ /
+├ ○ /about
+├ ○ /blog
+├   /blog/[slug]
+│ ├ ● /blog/the-migration-that-passed-ci
+│ └ ● /blog/visual-regression-with-agents
+├   /blog/[slug]/opengraph-image
+│ ├ ● /blog/the-migration-that-passed-ci/opengraph-image
+│ └ ● /blog/visual-regression-with-agents/opengraph-image
+├ ○ /rss.xml
+└ ○ /sitemap.xml
+
+○  (Static)  prerendered as static content
+●  (SSG)     prerendered as static HTML (uses generateStaticParams)
+```
+
+Eighteen routes. Every one of them a file on disk at the end of the build. No `cookies()`,
+no `headers()`, no `searchParams`, nothing read at request time anywhere in the app.
+
+**A version floor.** Cache Components wants 16.3 or later — that release is where the
+top-level flag, `export const instant`, and the dev-overlay validation land.
+
+**A grep for sync-IO, run first.** `Date.now()`, `new Date()`, `Math.random()`,
+`crypto.randomUUID()`. These fail the build *even on routes you have opted out of
+validation*, and no codemod fixes them. Finding them after you have started converting
+routes means unwinding work.
+
+**Translate, don't delete.** `cacheComponents: true` errors on any file still exporting
+`dynamic`, `revalidate`, or `fetchCache`. The tempting fix is to delete the line that is
+erroring. Each of those exports encodes behaviour the route is currently doing, and deleting
+it silently stops the behaviour instead of moving it.
+
+**The docs that shipped with your Next, not the ones in the model's memory.** Since 16.2 the
+guides are bundled at `node_modules/next/dist/docs/`. This repo's `AGENTS.md` opens with a
+blunt version of the same instruction, and it is right to: every claim in this post about
+what the migration guide says was read out of that directory, at the version installed.
+
+## What `next-best-practices` found: nothing
+
+I want to report this accurately, because "the checklist found nothing" is a real outcome and
+it usually gets written up as if the check never happened.
+
+I checked the specific things this skill flags. The async request APIs are handled correctly —
+`params` is typed as a `Promise` and awaited, not read synchronously. There is no
+`unstable_cache` anywhere. No singular `cacheHandler`. No deprecated `revalidateTag` call,
+because there is no `revalidateTag` call. That is not a full audit of all twenty reference
+files; it is the subset with mechanical, checkable rules, and it came back clean.
+
+The time discipline was already there too, and not by accident:
+
+```tsx
+// packages/ui/src/organisms/SiteFooter/SiteFooter.tsx
+/**
+ * The year printed ahead of `copyright`. A prop, not `new Date().getFullYear()`:
+ * ...
+ */
+```
+
+There is a unit test next to that component whose stated purpose is to fail if a `new Date()`
+call sneaks back in. The blog's RSS feed derives `pubDate` from frontmatter rather than the
+clock, with a comment explaining that a feed whose bytes change on every build defeats both
+caching and any snapshot test.
+
+None of that was done for Cache Components. It was done because a build that is not a pure
+function of its inputs cannot be diffed, and this repo's whole premise is diffing builds. The
+payoff arrived years later in a different currency, which is the only way that kind of payoff
+ever arrives.
+
+So: a skill that finds nothing is not a wasted skill. It converts *"I think we're fine"* into
+*"I checked the list"*. Those are different sentences, and only one of them survives someone
+asking how you know.
+
+## What Cache Components found: two blockers and one wrong fix
+
+I flipped the flag on a throwaway branch and ran the build.
+
+**Blocker one** was immediate:
+
+```
+Error: Route segment config "dynamic" is not compatible with
+`nextConfig.cacheComponents`. Please remove it.
+
+  > 6 | export const dynamic = 'force-static';
+```
+
+The RSS route. Note what the error says — *remove it* — and what the migration guide says,
+which is not that. Under Cache Components a `GET` handler prerenders when it reads no runtime
+data, and cached work moves into a `use cache` helper. Remove-and-stop would have quietly
+made the feed render on demand.
+
+**Blocker two** is the interesting one:
+
+```
+Error: Route "/blog/[slug]": Next.js encountered the unstable value `Date.now()`
+while prerendering.
+    at ignore-listed frames
+```
+
+`ignore-listed frames` means the call is not in my code. And the failing post changed on every
+run — `visual-regression-with-agents`, then `the-guardrail-you-can-switch-off`, then
+`gherkin-specs-that-survive` — because eleven workers race and whichever one gets there first
+reports it. A non-deterministic error message pointing at no source line.
+
+It traces to `@shikijs/vscode-textmate`, inside the tokenizer that highlights every code block
+on this page:
+
+```js
+// node_modules/@shikijs/vscode-textmate/dist/index.js
+const startTime = Date.now();
+while (!STOP) {
+  if (timeLimit !== 0) {
+    const elapsedTime = Date.now() - startTime;
+```
+
+That is a stopwatch. Shiki reads the clock to enforce a tokenizer time limit, on a path that
+only ever runs at build time, and that is enough to block the prerender. My code is time-pure
+by policy, enforced by a test — and the blocker is four levels down the dependency tree in a
+syntax highlighter's watchdog.
+
+**Then I fixed it wrong.** Following the guide's route-handler recipe from memory rather than
+from the page, I put the cache boundary around the whole feed handler:
+
+```ts
+async function renderFeed(): Promise<Response> {
+  'use cache';
+  // ...
+  return new Response(xml, { headers: { 'Content-Type': 'application/rss+xml' } });
+}
+```
+
+TypeScript accepted it. The build did not:
+
+```
+Error: Only plain objects, and a few built-ins, can be passed to Client Components
+from Server Components. Classes or null prototypes are not supported.
+```
+
+A `Response` is a class instance and cannot cross a cache boundary. The boundary belongs
+around the *string*; the `Response` gets constructed outside it. That is the same shape of bug
+as [the migration that passed CI](/blog/the-migration-that-passed-ci): a change the type
+checker signs off on, wrong for a reason types do not model.
+
+## After: read the route table, not the exit code
+
+With the RSS boundary in the right place and a `use cache` component around the MDX render,
+the build passes:
+
+```
+✓ Generating static pages using 11 workers (20/20) in 1137ms
+
+Route (app)                                Revalidate  Expire
+├   /blog/[slug]
+│ ├ ◐ /blog/[slug]
+│ ├ ○ /blog/the-migration-that-passed-ci          15m      1y
+│ └ ○ /blog/visual-regression-with-agents         15m      1y
+├ ƒ /blog/[slug]/opengraph-image
+├ ○ /rss.xml                                      15m      1y
+
+○  (Static)             prerendered as static content
+◐  (Partial Prerender)  prerendered as static HTML with dynamic server-streamed content
+ƒ  (Dynamic)            server-rendered on demand
+```
+
+Green. And strictly worse than what it replaced.
+
+The OG image route went from `●` prerendered to `ƒ` server-rendered on demand — I changed
+nothing in that file; the flag did that. Two route shells became partial prerenders with a
+dynamic hole. And there are now TTL columns: content that used to be an immutable build
+artifact is a cache entry that expires in fifteen minutes and dies in a year.
+
+For an application that reads request-time data, that trade is the entire point — you get an
+instant static shell and stream the personalised part into it. For a blog whose content only
+changes when I commit a Markdown file, a cache with a lifetime is a strictly weaker version of
+a file. Nothing here is dynamic, so partial prerendering has nothing to partition.
+
+The analysis's verdict is **not yet**, and that verdict is worth more than a green build would
+have been.
+
+## The next additions to cover
+
+Ordered, because the order is load-bearing:
+
+1. **Get the OG image route back to prerendered.** Right now this is an observation, not a
+   diagnosis — I know the flag caused it and I have not established why. Metadata routes with
+   `generateStaticParams` have their own section in the migration guide. Until that is
+   understood, everything below is premature.
+2. **Make the MDX cache boundary content-addressed.** A `cacheTag` keyed on the post slug
+   expresses the real invalidation rule — *this post changed* — where `cacheLife` expresses a
+   guess about time. The content is derived from a file in the repo; a clock should not be
+   anywhere in that story.
+3. **Find a reason.** The honest precondition. The flag buys nothing until there is a
+   genuinely request-time surface — search, or anything per-visitor. If that never arrives,
+   the correct end state is that this blog never enables Cache Components, and that is a fine
+   place to land.
+4. **Decide about `export const instant = false` before it is needed.** It marks a route as
+   allowed to block, which clears both dev and build. It is a guardrail with an off switch,
+   and this repo has been bitten by that category before. The time to decide who may switch it
+   off, and what has to be written down when they do, is before the first person needs it at
+   the end of an afternoon.
+5. **Re-run the visual differ against a partial prerender.** PPR changes what exists at first
+   paint. The [wide route-level sweep](/blog/visual-regression-with-agents) is exactly the
+   layer that would catch a shell rendering without the content that used to be baked into it —
+   and it has never run against a build with a dynamic hole in it.
+
+## What I have not solved
+
+I cannot fix `Date.now()` inside Shiki. The options are to wrap highlighting in a cache
+boundary — which is what I did, and it works, and it means the highlighter's output is now a
+cache entry rather than build output — or to pre-render MDX to HTML in a separate build step
+and take the highlighter out of the request path entirely. The second is cleaner and is a
+larger project than the thing it would enable.
+
+And a smaller honest gap: I verified that the build *passes* with `use cache` around the MDX
+render. I did not verify that it produces byte-identical output to the prerendered version.
+Given everything above about builds being pure functions of their inputs, that is the check I
+should have run, and it is the first thing I will run if this comes back.
