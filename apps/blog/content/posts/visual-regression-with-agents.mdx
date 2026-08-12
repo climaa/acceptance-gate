@@ -141,6 +141,13 @@ That last point is the one that has surprised me most: the agent's statement of 
 written _before_ running the tests, works as an oracle. You do not need a human to judge
 every pixel; you need to compare two claims.
 
+I ended up building a version of this into a real pipeline:
+[`packages/visual-diff`](https://github.com/climaa/acceptance-gate/tree/main/packages/visual-diff),
+in this repo, runs on every PR and posts its report as a sticky comment — but it is
+deliberately never a required check, on exactly the reasoning above: an approval nobody
+has to read is not a safety net. The report groups by component tier and worst-diff-first
+today, not by cause yet — that part of the idea above is still just the idea.
+
 ## What I have not solved
 
 There is still a gap: changes that are individually correct and incoherent as a whole. Every
