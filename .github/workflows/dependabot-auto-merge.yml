@@ -35,6 +35,7 @@ jobs:
     # (a human push to a bot branch flips the actor and disables auto-merge).
     if: github.actor == 'dependabot[bot]' && github.event.pull_request.user.login == 'dependabot[bot]'
     runs-on: ubuntu-24.04-arm
+    timeout-minutes: 5
     steps:
       - id: metadata
         # Reads PR metadata only. Deliberately still the read-only GITHUB_TOKEN:
