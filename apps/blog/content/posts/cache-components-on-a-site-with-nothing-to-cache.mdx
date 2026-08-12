@@ -1,6 +1,6 @@
 ---
 title: 'Cache Components on a site with nothing to cache'
-description: 'Only two of the Next.js agent skills apply to this blog. One found nothing to fix. The other turned eighteen prerendered routes into a partial prerender with a TTL — and the thing blocking it was a syntax highlighter looking at the clock.'
+description: 'Enabling Cache Components on a fully static blog turned eighteen prerendered routes into a partial prerender with a TTL, and cost the OG images their prerender — while the thing blocking the build outright was a syntax highlighter looking at the clock.'
 date: '2026-08-12'
 updated: '2026-08-12'
 tags: ['nextjs', 'caching', 'migration', 'agents']
@@ -98,41 +98,6 @@ guides are bundled at `node_modules/next/dist/docs/`. This repo's `AGENTS.md` op
 blunt version of the same instruction, and it is right to: every claim in this post about
 what the migration guide says was read out of that directory, at the version installed.
 
-## What `next-best-practices` found: nothing
-
-I want to report this accurately, because "the checklist found nothing" is a real outcome and
-it usually gets written up as if the check never happened.
-
-I checked the specific things this skill flags. The async request APIs are handled correctly —
-`params` is typed as a `Promise` and awaited, not read synchronously. There is no
-`unstable_cache` anywhere. No singular `cacheHandler`. No deprecated `revalidateTag` call,
-because there is no `revalidateTag` call. That is not a full audit of all twenty reference
-files; it is the subset with mechanical, checkable rules, and it came back clean.
-
-The time discipline was already there too, and not by accident:
-
-```tsx
-// packages/ui/src/organisms/SiteFooter/SiteFooter.tsx
-/**
- * The year printed ahead of `copyright`. A prop, not `new Date().getFullYear()`:
- * ...
- */
-```
-
-There is a unit test next to that component whose stated purpose is to fail if a `new Date()`
-call sneaks back in. The blog's RSS feed derives `pubDate` from frontmatter rather than the
-clock, with a comment explaining that a feed whose bytes change on every build defeats both
-caching and any snapshot test.
-
-None of that was done for Cache Components. It was done because a build that is not a pure
-function of its inputs cannot be diffed, and this repo's whole premise is diffing builds. The
-payoff arrived years later in a different currency, which is the only way that kind of payoff
-ever arrives.
-
-So: a skill that finds nothing is not a wasted skill. It converts *"I think we're fine"* into
-*"I checked the list"*. Those are different sentences, and only one of them survives someone
-asking how you know.
-
 ## What Cache Components found: two blockers and one wrong fix
 
 I flipped the flag on a throwaway branch and ran the build.
@@ -176,9 +141,12 @@ while (!STOP) {
 ```
 
 That is a stopwatch. Shiki reads the clock to enforce a tokenizer time limit, on a path that
-only ever runs at build time, and that is enough to block the prerender. My code is time-pure
-by policy, enforced by a test — and the blocker is four levels down the dependency tree in a
-syntax highlighter's watchdog.
+only ever runs at build time, and that is enough to block the prerender. My own code is
+time-pure by policy — the footer takes the year as a prop and has a unit test whose stated
+purpose is to fail if a `new Date()` call sneaks back in, and the RSS feed derives `pubDate`
+from frontmatter rather than the clock. None of that was done for Cache Components; it was
+done because a build that is not a pure function of its inputs cannot be diffed. And the
+blocker is still four levels down the dependency tree, in a syntax highlighter's watchdog.
 
 **Then I fixed it wrong.** Following the guide's route-handler recipe from memory rather than
 from the page, I put the cache boundary around the whole feed handler:
@@ -292,9 +260,9 @@ All three "canonical" skills are retired, and they were retired in two different
 Read that second one against [what this post already told you to do](#before-the-analysis):
 *read the docs that shipped with your Next, not the ones in the model's memory*. That
 instruction was not an alternative to `next-best-practices`. **It is what `next-best-practices`
-became.** The reason the skill found nothing to fix here is partly that this repo had already
-committed its replacement — `apps/blog/AGENTS.md`, landed months earlier for the unrelated
-reason that leaving it untracked made every build dirty the tree.
+became.** This repo had already committed that replacement — `apps/blog/AGENTS.md`, landed
+months earlier for the unrelated reason that leaving it untracked made every build dirty the
+tree — which is why reading the shipped docs was available as a step at all.
 
 So the honest version of the opening is: I evaluated two skills, one of which no longer exists
 and one of which had already become two. The analysis is unaffected — the flag, the blockers
