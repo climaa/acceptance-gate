@@ -43,6 +43,9 @@ Thumbs.db
 .vscode/*
 !.vscode/extensions.json
 .idea/
+# Obsidian writes this wherever a vault is opened — including inside
+# apps/blog/content/posts, which is a natural vault root for writing drafts.
+.obsidian/
 
 # Turborepo
 .turbo

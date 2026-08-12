@@ -57,7 +57,7 @@ most of them by not having them.
 table from *before* the flag, a green build afterwards reads as success, and it is not the
 same claim. Mine:
 
-```
+```bash
 ✓ Generating static pages using 11 workers (18/18) in 733ms
 
 Route (app)
@@ -139,7 +139,7 @@ I flipped the flag on a throwaway branch and ran the build.
 
 **Blocker one** was immediate:
 
-```
+```bash
 Error: Route segment config "dynamic" is not compatible with
 `nextConfig.cacheComponents`. Please remove it.
 
@@ -153,7 +153,7 @@ made the feed render on demand.
 
 **Blocker two** is the interesting one:
 
-```
+```bash
 Error: Route "/blog/[slug]": Next.js encountered the unstable value `Date.now()`
 while prerendering.
     at ignore-listed frames
@@ -193,7 +193,7 @@ async function renderFeed(): Promise<Response> {
 
 TypeScript accepted it. The build did not:
 
-```
+```bash
 Error: Only plain objects, and a few built-ins, can be passed to Client Components
 from Server Components. Classes or null prototypes are not supported.
 ```
@@ -208,7 +208,7 @@ checker signs off on, wrong for a reason types do not model.
 With the RSS boundary in the right place and a `use cache` component around the MDX render,
 the build passes:
 
-```
+```bash
 ✓ Generating static pages using 11 workers (20/20) in 1137ms
 
 Route (app)                                Revalidate  Expire
