@@ -1,0 +1,25 @@
+---
+title: 'Checking whether the advice is still true'
+description: 'AI coding agents can load packaged expertise on demand. I picked two guides for this project, went to install them, and found that every one the public directory advertises had quietly been retired — with install commands that still worked perfectly.'
+date: '2026-08-12'
+updated: '2026-08-12'
+tags: ['agents', 'tooling', 'nextjs']
+draft: true
+---
+
+An AI coding agent can load a 'skill,' which is a small bundle of expertise it pulls in when needed. Think of it as giving a contractor the current building code for their task, instead of relying on memory. Someone writes this guide once, publishes it, and all agents that install it follow the same instructions.
+
+This project runs on [Next.js](https://nextjs.org/), and there is [a public directory of Next.js skills](https://www.ui-skills.com/skills/nextjs). Five of them. Three are presented as the canonical set; two sit downstream of those.
+
+Only two had anything to say about this codebase. Deciding **which two, and writing down why before running anything**, is the part of this I would defend: a guide you load without a reason produces advice you have no way to evaluate. If you cannot say what you expected it to tell you, you cannot tell whether it was any good.
+
+## The two I picked
+
+[`next-best-practices`](https://www.ui-skills.com/skills/vercel-labs/next-best-practices) This document serves as a reviewer's checklist — the standards that a Next.js codebase is expected to adhere to, documented across twenty reference files. It is not explicitly invoked by name; rather, it automatically loads itself whenever the code being reviewed pertains to Next.js.
+
+[`next-cache-components`](https://www.ui-skills.com/skills/vercel-labs/next-cache-components) It is the component associated with teeth. It encompasses a more contemporary framework feature pertaining to caching—the mechanism that determines which segments of a page are pre-rendered and which are assembled dynamically for each visitor. An incorrect configuration results in slow or outdated pages; accurately configuring this aspect constitutes a significant portion of what defines a "fast site."
+
+Caching seems simple until you need to identify a specific page part and confidently state, "this part never changes," which is easy to say but hard to prove unless designed to be pointed at. Here, a [design system](https://acceptance-gate-storybook.vercel.app/index.html?path=/docs/docs-system-design--docs) becomes more than just a design exercise and starts paying rent. Each component in this project is cataloged, rendered alone, and *presentational*, meaning it receives inputs and fetches nothing itself. Such components produce consistent output for the same inputs, making them safe to build once and reuse. 
+The [site header](https://acceptance-gate-storybook.vercel.app/index.html?path=/story/organisms-siteheader--default) and [site footer](https://acceptance-gate-storybook.vercel.app/index.html?path=/story/organisms-sitefooter--default) are the first candidates: they appear on every page and look identical for all visitors. The footer is clearer; it takes the year as input, not reading the clock — a choice made years ago to depend solely on its input, allowing it to be cached without concern. This supports building the [design system](https://acceptance-gate-storybook.vercel.app/index.html?path=/docs/docs-system-design--docs) first, as an existing catalog simplifies identifying cache-worthy parts, making performance a decision, not an excavation.
+
+Nothing in either guide was beyond reach here. Every change in this repository already passes through the same automated gates — [the project's build configuration](https://github.com/climaa/acceptance-gate/blob/main/package.json) handles currently, we are using Next.js version 16.3. Now, it's the right moment to try out **next-cache-components** and see how they work.
