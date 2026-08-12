@@ -7,72 +7,38 @@ tags: ['agents', 'tooling', 'nextjs']
 draft: true
 ---
 
-An AI coding agent can load what the industry has started calling a **skill**: a small package
-of written expertise it pulls in when the work calls for it. Think of it as handing a
-contractor the current building code for the thing they are about to touch, rather than hoping
-they remember it. Someone writes the guide once, publishes it, and every agent that installs it
-works from the same instructions.
+An AI coding agent can load a 'skill,' which is a small bundle of expertise it pulls in when needed. Think of it as giving a contractor the current building code for their task, instead of relying on memory. Someone writes this guide once, publishes it, and all agents that install it follow the same instructions.
 
-This project runs on [Next.js](https://nextjs.org/), and there is
-[a public directory of Next.js skills](https://www.ui-skills.com/skills/nextjs). Five of them.
-Three are presented as the canonical set, two sit downstream of those.
+This project runs on [Next.js](https://nextjs.org/), and there is [a public directory of Next.js skills](https://www.ui-skills.com/skills/nextjs). Five of them. Three are presented as the canonical set; two sit downstream of those.
 
-Only two had anything to say about this codebase. Deciding **which two, and writing down why
-before running anything**, is the part of this I would defend: a guide you load without a
-reason produces advice you have no way to evaluate. If you cannot say what you expected it to
-tell you, you cannot tell whether it was any good.
+Only two had anything to say about this codebase. Deciding **which two, and writing down why before running anything**, is the part of this I would defend: a guide you load without a reason produces advice you have no way to evaluate. If you cannot say what you expected it to tell you, you cannot tell whether it was any good.
 
 ## The two I picked
 
-[`next-best-practices`](https://www.ui-skills.com/skills/vercel-labs/next-best-practices) is a
-reviewer's checklist — the conventions a Next.js codebase is supposed to follow, in twenty
-reference files. It never gets invoked by name; it loads itself whenever the work in front of
-the agent is Next.js code.
+[`next-best-practices`](https://www.ui-skills.com/skills/vercel-labs/next-best-practices) This document serves as a reviewer's checklist — the standards that a Next.js codebase is expected to adhere to, documented across twenty reference files. It is not explicitly invoked by name; rather, it automatically loads itself whenever the code being reviewed pertains to Next.js.
 
-[`next-cache-components`](https://www.ui-skills.com/skills/vercel-labs/next-cache-components) is
-the one with teeth. It covers a newer framework feature for caching — the machinery that decides
-which parts of a page are built once in advance and which are assembled per visitor. Getting
-that wrong is slow or stale pages; getting it right is most of what "fast site" means.
+[`next-cache-components`](https://www.ui-skills.com/skills/vercel-labs/next-cache-components) It is the component associated with teeth. It encompasses a more contemporary framework feature pertaining to caching—the mechanism that determines which segments of a page are pre-rendered and which are assembled dynamically for each visitor. An incorrect configuration results in slow or outdated pages; accurately configuring this aspect constitutes a significant portion of what defines a "fast site."
 
-Nothing in either guide was out of reach here. Every change in this repository already runs
-through the same automated gates on the way in —
-[the project's build configuration](https://github.com/climaa/acceptance-gate/blob/main/package.json)
-wires up type checking, linting, tests, formatting, a visual comparison against the previous
-build, and a code-health check, each as its own separate hurdle on every proposed change. That
-matters here for one reason: whatever the eventual answer about adopting the feature turned out
-to be, it would be a judgement about this application, not an excuse about its pipeline.
+Nothing in either guide was out of reach here. Every change in this repository already runs through the same automated gates on the way in — [the project's build configuration](https://github.com/climaa/acceptance-gate/blob/main/package.json) wires up type checking, linting, tests, formatting, a visual comparison against the previous build, and a code-health check, each as its own separate hurdle on every proposed change. That matters here for one reason: whatever the eventual answer about adopting the feature turned out to be, it would be a judgment about this application, not an excuse about its pipeline.
 
 ## Then I went to install them
 
-Two decisions at that point. The first was where to put them: committed into the repository
-itself, rather than left in my own account on my own laptop. This project runs autonomous agents
-in a sandbox, and that sandbox only ever sees what has been committed. A guide installed on my
-machine does not exist as far as they are concerned.
+I made two decisions at that point. First, where to store the files: either directly in the repository or just in my personal account on my laptop. Since this project runs autonomous agents in a sandbox, only what is committed is visible to them. Any guides or tools installed on my machine are invisible to the sandbox.
 
-The second decision was made for me. The published source the directory points at is no longer a
-library of skills. It is three files and a redirect:
+The second decision was made for me because the source indicated by the directory is no longer a skills library. Instead, it now consists of three files and a redirect.
 
 > ## Next.js Agent Skills have moved
 >
 > The Next.js agent skills that used to live here now live in the Next.js repository, so they
 > stay version-matched with the framework instead of drifting in a separate repo.
 
-All three of the "canonical" skills had been retired, in two different ways. One was **split**
-into two successors with narrower jobs. The other two **stopped being skills at all** — their
-content now ships inside the framework itself, which writes its own guidance file into every
-project it builds. We had already committed ours months earlier, for the entirely unrelated
-reason that leaving it untracked made every build look like it had uncommitted changes.
+All three of the "canonical" skills had been retired, in two different ways. One was **split** into two successors with narrower scopes. The other two **stopped being skills altogether** — their content now ships inside the framework itself, which writes its own guidance file into every project it builds. We had already committed ours months earlier, for the entirely unrelated reason that leaving it untracked made every build appear to have uncommitted changes.
 
-Here is the part worth sitting with: **nothing failed.** No broken link, no error, no warning.
-The directory still lists all three. The install commands still work. Run one and you get files
-that arrive cleanly, read authoritatively, and are simply no longer true. That is a quieter
-failure than a 404, and a more expensive one, because the thing you install has every
-appearance of being current.
+Here's the key insight: **nothing failed.** There are no broken links, errors, or warnings. The directory still shows all three items, and the install commands still function. When you run one, the files arrive intact and authoritative, but are no longer accurate. This type of failure is subtler than a 404 and more costly because the installed content appears current.
 
 ## What I installed instead
 
-The four guides that actually exist today, copied in unmodified and pinned to one exact
-published version:
+The four guides that currently exist are all identical copies, pinned to a single, specific published version.
 
 | Guide | What it covers |
 | --- | --- |
@@ -81,23 +47,10 @@ published version:
 | `next-dev-loop` | Verifying a change actually works in a running app |
 | `next-partial-prefetching-adoption` | Loading the next page before the visitor asks for it |
 
-None of the three retired ones came along; installing one would have parked a superseded copy
-next to its own replacement. Alongside them sits a short record of where every file came from,
-which exact version, and a fingerprint of each one — because the failure mode for copied content
-is not that it breaks. It is that it quietly stops matching the original and nobody can say when
-that happened.
+None of the three retired ones came along; installing one would have placed an outdated copy next to its replacement. Nearby, there's a brief record of each file's origin, specific version, and a fingerprint — because the issue with copied content isn't failure, but that it gradually ceases to match the original without anyone noticing when this change occurred.
 
-Worth noting: the copies already sitting on my laptop turned out to be stale in a way I would
-never have noticed. Same names, different contents.
+It's worth noting that the copies on my laptop were actually stale in a way I hadn't noticed before—same names, but different contents.
 
-## The bit I got wrong
+## The mistake I made
 
-I had treated "which guides apply here?" as the careful question, and it was — I just answered
-it one layer too shallow. There was a second half I never thought to ask, which is whether the
-answer was still current.
-
-The directory was not wrong, exactly. It was describing a past, in the present tense, with an
-install command that still worked. And this is the shape of the problem that keeps recurring
-with AI tooling: the advice is easy to obtain, the advice sounds confident, and the effort of
-checking whether it is still true falls entirely on you. That check is not optional work. It is
-the work.
+I considered "which guides apply here?" as a careful question, and indeed it was — I just answered it too superficially. There was a second part I never thought to ask: whether the answer remained current. The directory wasn't wrong exactly; it was describing a past situation in the present tense, with an install command that still worked. This reflects a common issue with AI tools: advice is easy to find, sounds convincing, but the effort to verify if it's still valid falls entirely on the user. That verification isn't optional; it's essential work.
