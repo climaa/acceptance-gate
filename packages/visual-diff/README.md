@@ -113,6 +113,46 @@ not guaranteed a clean capture (font-rendering and platform drift are exactly wh
 determinism controls above exist to route around); a bare-metal capture is only useful
 for a quick local sanity check, not for accepting baselines.
 
+### Running the pinned container locally
+
+`accept` carries no host guard (see below), so a bare-metal `accept` doesn't fail loud —
+it silently writes baselines rendered by whatever font/graphics stack the host has, then
+stamps `BASELINE_ENV.json` as if they came from the pinned container. The fix is running
+`check`/`accept` inside that container, from the repo root:
+
+```bash
+pnpm --filter @gate/storybook build   # host build first — static output, not platform-dependent
+
+docker run --rm --ipc=host \
+  -v "$(pwd)":/repo -w /repo \
+  -e PLAYWRIGHT_BROWSERS_PATH=/ms-playwright \
+  mcr.microsoft.com/playwright:v1.62.1-noble \
+  node packages/visual-diff/src/cli.mjs check    # review packages/visual-diff/.visual-diff/report.html
+
+docker run --rm --ipc=host \
+  -v "$(pwd)":/repo -w /repo \
+  -e PLAYWRIGHT_BROWSERS_PATH=/ms-playwright \
+  mcr.microsoft.com/playwright:v1.62.1-noble \
+  node packages/visual-diff/src/cli.mjs accept
+```
+
+No `pnpm install` inside the container — every dependency this package touches
+(`playwright`, `pixelmatch`, `pngjs`, `@axe-core/playwright`) is pure JS with no native
+binaries to rebuild per-OS, so the host-installed `node_modules` works as-is once
+mounted. `PLAYWRIGHT_BROWSERS_PATH=/ms-playwright` points Playwright at the browser
+already baked into the image instead of the host's own Playwright cache (which won't
+exist, or won't be the right OS's build, inside the container). `--ipc=host` avoids
+Chromium crashing against Docker's default 64MB `/dev/shm`.
+
+If bare-metal output has already landed in the working tree, discard it before rerunning
+in the container — both the committed baselines the `accept` touched and any newly
+untracked ones it added:
+
+```bash
+git checkout -- packages/visual-diff/__baselines__/
+git clean -fd packages/visual-diff/__baselines__/
+```
+
 ### The host guard
 
 `check` reads `__baselines__/BASELINE_ENV.json` and compares `platform`/`arch`/`image`/
