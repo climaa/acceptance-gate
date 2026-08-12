@@ -291,4 +291,20 @@ describe('parseFrontmatter', () => {
     const fm = parseFrontmatter({ ...valid, draft: true }, 'draft.mdx');
     expect(fm.draft).toBe(true);
   });
+
+  it('leaves updated undefined when absent', () => {
+    const fm = parseFrontmatter(valid, 'no-updated.mdx');
+    expect(fm.updated).toBeUndefined();
+  });
+
+  it('carries updated through when present', () => {
+    const fm = parseFrontmatter({ ...valid, updated: '2026-08-12' }, 'updated.mdx');
+    expect(fm.updated).toBe('2026-08-12');
+  });
+
+  it('throws when updated is not YYYY-MM-DD', () => {
+    expect(() =>
+      parseFrontmatter({ ...valid, updated: '12/08/2026' }, 'bad-updated.mdx'),
+    ).toThrow(/bad-updated\.mdx/);
+  });
 });

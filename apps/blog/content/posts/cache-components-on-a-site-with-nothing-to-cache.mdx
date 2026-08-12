@@ -2,17 +2,24 @@
 title: 'Cache Components on a site with nothing to cache'
 description: 'Only two of the Next.js agent skills apply to this blog. One found nothing to fix. The other turned eighteen prerendered routes into a partial prerender with a TTL — and the thing blocking it was a syntax highlighter looking at the clock.'
 date: '2026-08-12'
+updated: '2026-08-12'
 tags: ['nextjs', 'caching', 'migration', 'agents']
 draft: false
 ---
 
-There is a directory of agent skills for Next.js. Three of them are published as the
-canonical set: `next-best-practices`, `next-cache-components`, and `next-upgrade`. Two more
-sit downstream of them — an adoption skill and an optimizer.
+There is a directory of agent skills for Next.js. Three of them are published as the canonical
+set: `next-best-practices`, `next-cache-components`, and `next-upgrade`. Two more sit
+downstream — an adoption skill and an optimizer.
 
-Only two of those five have anything to say about this blog. Deciding **which two, and
-saying so out loud before running anything**, turned out to be the useful part of the
-exercise. A skill you load without a reason produces advice you have no way to evaluate.
+Only two of those five have anything to say about this blog. Deciding **which two, and saying
+so out loud before running anything**, turned out to be the useful part of the exercise. A
+skill you load without a reason produces advice you have no way to evaluate.
+
+That paragraph is how this post started, and every sentence in it is out of date. I found that
+out at the end, while installing the skills I had just written about, and it is a better
+finding than the one I went looking for. The correction is in
+[the last section](#the-directory-was-describing-a-past); the analysis in between stands, and
+it is worth reading in the order it happened.
 
 ## The two that apply
 
@@ -248,6 +255,61 @@ Ordered, because the order is load-bearing:
    paint. The [wide route-level sweep](/blog/visual-regression-with-agents) is exactly the
    layer that would catch a shell rendering without the content that used to be baked into it —
    and it has never run against a build with a dynamic hole in it.
+
+## The directory was describing a past
+
+Everything above was written against the five skills named at the top. Then I went to install
+them properly — committed into this repo rather than sitting in my own `~/.claude`, because
+the sandbox that runs the autonomous agents here only ever sees committed git content. A skill
+installed on my laptop does not exist inside it.
+
+The install is where the premise fell over. `vercel-labs/next-skills`, the source the public
+directories point at, is now three files and a redirect:
+
+> # Next.js Agent Skills have moved
+>
+> The Next.js agent skills that used to live here now live in the Next.js repository, so they
+> stay version-matched with the framework instead of drifting in a separate repo.
+
+All three "canonical" skills are retired, and they were retired in two different ways:
+
+- **`next-cache-components` was split**, into `next-cache-components-adoption` and
+  `next-cache-components-optimizer`. Those are its successors. The two I filed as "downstream
+  of a decision I had not made" *are* the skill I spent this post using.
+- **`next-best-practices` and `next-upgrade` stopped being skills at all.** Their content now
+  ships as the bundled docs under `next/dist/docs/` and the `AGENTS.md` / `CLAUDE.md` that
+  `next dev` generates on 16.3+.
+
+Read that second one against [what this post already told you to do](#before-the-analysis):
+*read the docs that shipped with your Next, not the ones in the model's memory*. That
+instruction was not an alternative to `next-best-practices`. **It is what `next-best-practices`
+became.** The reason the skill found nothing to fix here is partly that this repo had already
+committed its replacement — `apps/blog/AGENTS.md`, landed months earlier for the unrelated
+reason that leaving it untracked made every build dirty the tree.
+
+So the honest version of the opening is: I evaluated two skills, one of which no longer exists
+and one of which had already become two. The analysis is unaffected — the flag, the blockers
+and the route table do not care what the advice was called. But "which skills apply here" had
+a component I never thought to check, which is whether the answer was still current. The
+directory was not wrong. It was describing a past, in the present tense, with an install
+command that still worked.
+
+What actually got installed, then — pinned, MIT, copied unmodified into `.claude/skills/`:
+
+| Skill | Covers |
+| --- | --- |
+| `next-cache-components-adoption` | Enabling the flag and walking an app to a passing build |
+| `next-cache-components-optimizer` | Tuning the static shell and navigation once it is on |
+| `next-dev-loop` | Driving a dev-server iteration loop |
+| `next-partial-prefetching-adoption` | Adopting partial prefetching |
+
+That is the whole current set. None of the three retired skills came with it; vendoring one
+would pin a superseded copy next to its own replacement. And the copies already on my laptop
+turned out to be stale in a way I would not have noticed — at the pinned commit the optimizer
+ships a `reference/` directory and two templates, where my installed copy still had the older
+two-file layout. A `PROVENANCE.md` next to them records the commit and a checksum per file,
+because the failure mode for vendored content is not "it breaks", it is "it quietly stops
+matching upstream and nobody can tell when it stopped".
 
 ## What I have not solved
 
