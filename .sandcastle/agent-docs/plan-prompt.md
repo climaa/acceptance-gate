@@ -31,11 +31,11 @@ running again.
 
 ## HELD ISSUES
 
-An issue labelled `sandcastle:hold` is not ready to be worked — a human removes the
-label when it is. **Exclude it from the plan.** Unlike `sandcastle:no-op`, this is not
-a signal that a prior run was attempted and produced nothing; it means the issue was
-filed deliberately incomplete or not yet decided on, and no run should be spent on it
-until a human says otherwise. Do not conflate the two labels.
+An issue labelled `sandcastle:hold` is not ready to be worked — it was filed
+deliberately incomplete, or the approach is not decided yet. **Exclude it from the
+plan.** Unlike `sandcastle:no-op`, this is not the record of a prior run that
+produced nothing; it is a deliberate pause, and it holds until a human removes the
+label.
 
 ## SANDBOX CONSTRAINT
 
