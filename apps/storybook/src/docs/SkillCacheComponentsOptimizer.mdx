@@ -1,0 +1,68 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs/Skills/Cache Components Optimizer" />
+
+# `next-cache-components-optimizer`
+
+Drives a route to instant navigation once Cache Components is on — either the static shell on
+first paint (hard navigation) or client-side navigation between routes (soft navigation). It
+picks the matching diagnostic loop and runs it.
+
+This is the largest of the four skills, and the only one that expects to **write files into
+your repo** as part of setup.
+
+## Invoke it
+
+```text
+/next-cache-components-optimizer
+```
+
+Say which navigation you care about — first paint or in-app navigation — or it will work that
+out from the symptom you describe.
+
+## Before you run it here
+
+**It cannot run yet.** It requires `cacheComponents: true`, and `apps/blog/next.config.mjs`
+does not set it. Run
+[Cache Components Adoption](?path=/docs/docs-skills-cache-components-adoption--docs) first; the
+skill will direct you there itself if the flag is missing, and will direct an upgrade if Next
+is older than 16.3.
+
+It also expects a Playwright end-to-end harness. This repo has `apps/e2e`, but the skill wants
+`@next/playwright` specifically, for its `instant()` testing API. Standing up a minimal harness
+is explicitly part of its setup step rather than a prerequisite you must satisfy first.
+
+## What it does
+
+The workflow is a red-green loop, and the order is the point:
+
+1. **Setup, once per repo.** It answers six questions about how this project builds, deploys,
+   authenticates and tests — BUILD / EXPOSE / RUN / TEST USER / DRIFT / LOOP — and writes them
+   to a committed `instant-nav.rig.md`. Later runs read that file instead of rediscovering.
+   The template ships with the skill as `rig-template.md`.
+2. **Rig.** A production build with the testing API exposed. Not a dev server — dev-mode
+   timings do not tell you anything about a shell.
+3. **Baseline.** A development scaffold, explicitly marked _do not ship_.
+4. **Red + the verify-red gate.** Encode the goal as a **failing** `@next/playwright` test, and
+   then prove the failure is real before fixing anything. A test that passes before the work is
+   a test that proves nothing.
+5. **Fix.** Push each cache boundary down to the data it actually guards.
+
+The most common blocker it names is a top-level `await` in a layout on a fallback route: the
+whole subtree waits on it. The fix is to defer the gate and render children.
+
+## Why this repo is a good fit and a bad fit at once
+
+**Good fit:** every component in `packages/ui` is presentational — inputs as props, no data
+fetching — so pushing boundaries down is mostly mechanical rather than architectural.
+
+**Bad fit, today:** `apps/blog` is entirely static. There is no request-time data anywhere, so
+there is no dynamic hole to stream into a shell, and nothing for the optimizer to optimize.
+This skill earns its place when a genuinely per-visitor surface exists — search, or anything
+personalised.
+
+## What it leaves behind
+
+A committed `instant-nav.rig.md`, a Playwright test that failed before the fix and passes
+after, and boundaries moved down the tree. The rig file is the durable part: it is what makes
+the second run cheap.

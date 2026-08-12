@@ -107,6 +107,15 @@ const preview: Preview = {
             'Tokens',
             'Visual Diff Workflow',
             'Skills',
+            [
+              'Overview',
+              // Adoption first: the optimizer and the prefetching skill both
+              // require the flag it sets, and Dev Loop is the one usable today.
+              'Cache Components Adoption',
+              'Cache Components Optimizer',
+              'Partial Prefetching Adoption',
+              'Dev Loop',
+            ],
           ],
           'Atoms',
           'Molecules',
