@@ -1,10 +1,10 @@
 ---
 title: 'Cache Components on a site with nothing to cache'
-description: 'Enabling Cache Components on a fully static blog turned eighteen prerendered routes into a partial prerender with a TTL, and cost the OG images their prerender — while the thing blocking the build outright was a syntax highlighter looking at the clock.'
+description: 'Groundwork before enabling Cache Components: which two agent skills actually apply to a fully static blog, what has to be true before their advice means anything — and the discovery, made while installing them, that all three of the skills the directories advertise had been retired upstream.'
 date: '2026-08-12'
 updated: '2026-08-12'
 tags: ['nextjs', 'caching', 'migration', 'agents']
-draft: false
+draft: true
 ---
 
 There is [a directory of agent skills for Next.js](https://www.ui-skills.com/skills/nextjs).
@@ -17,10 +17,15 @@ so out loud before running anything**, turned out to be the useful part of the e
 skill you load without a reason produces advice you have no way to evaluate.
 
 That paragraph is how this post started, and every sentence in it is out of date. I found that
-out at the end, while installing the skills I had just written about, and it is a better
-finding than the one I went looking for. The correction is in
-[the last section](#the-directory-was-describing-a-past); the analysis in between stands, and
-it is worth reading in the order it happened.
+out while installing the skills I had just written about, and it is a better finding than the
+one I went looking for. The correction is in
+[the last section](#the-directory-was-describing-a-past), left there rather than folded back
+into the opening, because the order it happened in is the point.
+
+What this post is, then: the two skills, the preconditions you need before pointing either of
+them at an app, and the discovery that the directory advertising them was describing a past.
+The Cache Components analysis itself — flipping the flag, what it broke, what the route table
+looked like afterwards — is a separate piece of work and gets its own post.
 
 ## The two that apply
 
@@ -37,10 +42,10 @@ is the one with teeth. It covers the `cacheComponents` flag, partial prerenderin
 that list is out of reach here: the
 [root `package.json`](https://github.com/climaa/acceptance-gate/blob/main/package.json) already
 wires `lint`, `typecheck`, `test`, `format:check`, `visual-diff` and `health:check` as separate
-gates on a pinned Node and pnpm, and every one of them runs on every PR. The capability to
-adopt all of this safely is in place and has been for a while. Hold onto that, because it makes
-the conclusion sharper rather than softer — the answer this post arrives at is *not yet*, and
-it was never a tooling answer.
+gates on a pinned Node and pnpm, and every one of them runs on every PR. The capability to adopt
+all of this safely is in place and has been for a while. Worth stating up front, because it
+means that whatever the analysis concludes, it will be a judgement about this app rather than an
+excuse about its pipeline.
 
 The other three do not apply, for boring reasons worth stating anyway. `next-upgrade` is
 spent — this app is already on Next 16.3.0 and React 19.2.8, and
@@ -80,6 +85,14 @@ Route (app)
 Eighteen routes. Every one of them a file on disk at the end of the build. No `cookies()`,
 no `headers()`, no `searchParams`, nothing read at request time anywhere in the app.
 
+The `opengraph-image` rows are worth naming, because they are the ones that will matter later.
+`opengraph-image.tsx` is a Next metadata file convention: it draws the social preview card for
+a post — the image that appears when someone pastes the link into Slack or Mastodon — and Next
+invokes it by convention, so nothing in the app imports it. It carries its own
+`generateStaticParams`, and the comment above that function says why: the card should prerender
+alongside the post it belongs to, "rather than on the first crawler request after a deploy".
+That is a deliberate choice, written down, and it is the line item to watch.
+
 **A version floor.** Cache Components wants 16.3 or later — that release is where the
 top-level flag, `export const instant`, and the dev-overlay validation land.
 
@@ -97,141 +110,6 @@ it silently stops the behaviour instead of moving it.
 guides are bundled at `node_modules/next/dist/docs/`. This repo's `AGENTS.md` opens with a
 blunt version of the same instruction, and it is right to: every claim in this post about
 what the migration guide says was read out of that directory, at the version installed.
-
-## What Cache Components found: two blockers and one wrong fix
-
-I flipped the flag on a throwaway branch and ran the build.
-
-**Blocker one** was immediate:
-
-```bash
-Error: Route segment config "dynamic" is not compatible with
-`nextConfig.cacheComponents`. Please remove it.
-
-  > 6 | export const dynamic = 'force-static';
-```
-
-The RSS route. Note what the error says — *remove it* — and what the migration guide says,
-which is not that. Under Cache Components a `GET` handler prerenders when it reads no runtime
-data, and cached work moves into a `use cache` helper. Remove-and-stop would have quietly
-made the feed render on demand.
-
-**Blocker two** is the interesting one:
-
-```bash
-Error: Route "/blog/[slug]": Next.js encountered the unstable value `Date.now()`
-while prerendering.
-    at ignore-listed frames
-```
-
-`ignore-listed frames` means the call is not in my code. And the failing post changed on every
-run — `visual-regression-with-agents`, then `the-guardrail-you-can-switch-off`, then
-`gherkin-specs-that-survive` — because eleven workers race and whichever one gets there first
-reports it. A non-deterministic error message pointing at no source line.
-
-It traces to `@shikijs/vscode-textmate`, inside the tokenizer that highlights every code block
-on this page:
-
-```js
-// node_modules/@shikijs/vscode-textmate/dist/index.js
-const startTime = Date.now();
-while (!STOP) {
-  if (timeLimit !== 0) {
-    const elapsedTime = Date.now() - startTime;
-```
-
-That is a stopwatch. Shiki reads the clock to enforce a tokenizer time limit, on a path that
-only ever runs at build time, and that is enough to block the prerender. My own code is
-time-pure by policy — the footer takes the year as a prop and has a unit test whose stated
-purpose is to fail if a `new Date()` call sneaks back in, and the RSS feed derives `pubDate`
-from frontmatter rather than the clock. None of that was done for Cache Components; it was
-done because a build that is not a pure function of its inputs cannot be diffed. And the
-blocker is still four levels down the dependency tree, in a syntax highlighter's watchdog.
-
-**Then I fixed it wrong.** Following the guide's route-handler recipe from memory rather than
-from the page, I put the cache boundary around the whole feed handler:
-
-```ts
-async function renderFeed(): Promise<Response> {
-  'use cache';
-  // ...
-  return new Response(xml, { headers: { 'Content-Type': 'application/rss+xml' } });
-}
-```
-
-TypeScript accepted it. The build did not:
-
-```bash
-Error: Only plain objects, and a few built-ins, can be passed to Client Components
-from Server Components. Classes or null prototypes are not supported.
-```
-
-A `Response` is a class instance and cannot cross a cache boundary. The boundary belongs
-around the *string*; the `Response` gets constructed outside it. That is the same shape of bug
-as [the migration that passed CI](/blog/the-migration-that-passed-ci): a change the type
-checker signs off on, wrong for a reason types do not model.
-
-## After: read the route table, not the exit code
-
-With the RSS boundary in the right place and a `use cache` component around the MDX render,
-the build passes:
-
-```bash
-✓ Generating static pages using 11 workers (20/20) in 1137ms
-
-Route (app)                                Revalidate  Expire
-├   /blog/[slug]
-│ ├ ◐ /blog/[slug]
-│ ├ ○ /blog/the-migration-that-passed-ci          15m      1y
-│ └ ○ /blog/visual-regression-with-agents         15m      1y
-├ ƒ /blog/[slug]/opengraph-image
-├ ○ /rss.xml                                      15m      1y
-
-○  (Static)             prerendered as static content
-◐  (Partial Prerender)  prerendered as static HTML with dynamic server-streamed content
-ƒ  (Dynamic)            server-rendered on demand
-```
-
-Green. And strictly worse than what it replaced.
-
-The OG image route went from `●` prerendered to `ƒ` server-rendered on demand — I changed
-nothing in that file; the flag did that. Two route shells became partial prerenders with a
-dynamic hole. And there are now TTL columns: content that used to be an immutable build
-artifact is a cache entry that expires in fifteen minutes and dies in a year.
-
-For an application that reads request-time data, that trade is the entire point — you get an
-instant static shell and stream the personalised part into it. For a blog whose content only
-changes when I commit a Markdown file, a cache with a lifetime is a strictly weaker version of
-a file. Nothing here is dynamic, so partial prerendering has nothing to partition.
-
-The analysis's verdict is **not yet**, and that verdict is worth more than a green build would
-have been.
-
-## The next additions to cover
-
-Ordered, because the order is load-bearing:
-
-1. **Get the OG image route back to prerendered.** Right now this is an observation, not a
-   diagnosis — I know the flag caused it and I have not established why. Metadata routes with
-   `generateStaticParams` have their own section in the migration guide. Until that is
-   understood, everything below is premature.
-2. **Make the MDX cache boundary content-addressed.** A `cacheTag` keyed on the post slug
-   expresses the real invalidation rule — *this post changed* — where `cacheLife` expresses a
-   guess about time. The content is derived from a file in the repo; a clock should not be
-   anywhere in that story.
-3. **Find a reason.** The honest precondition. The flag buys nothing until there is a
-   genuinely request-time surface — search, or anything per-visitor. If that never arrives,
-   the correct end state is that this blog never enables Cache Components, and that is a fine
-   place to land.
-4. **Decide about `export const instant = false` before it is needed.** It marks a route as
-   allowed to block, which clears both dev and build. It is a guardrail with an off switch,
-   and this repo has been bitten by that category before. The time to decide who may switch it
-   off, and what has to be written down when they do, is before the first person needs it at
-   the end of an afternoon.
-5. **Re-run the visual differ against a partial prerender.** PPR changes what exists at first
-   paint. The [wide route-level sweep](/blog/visual-regression-with-agents) is exactly the
-   layer that would catch a shell rendering without the content that used to be baked into it —
-   and it has never run against a build with a dynamic hole in it.
 
 ## The directory was describing a past
 
@@ -251,8 +129,9 @@ directories point at, is now three files and a redirect:
 All three "canonical" skills are retired, and they were retired in two different ways:
 
 - **`next-cache-components` was split**, into `next-cache-components-adoption` and
-  `next-cache-components-optimizer`. Those are its successors. The two I filed as "downstream
-  of a decision I had not made" *are* the skill I spent this post using.
+  `next-cache-components-optimizer`. Those are its successors. The two I filed above as
+  "downstream of a decision I had not made" *are* the skill I had just spent two sections
+  describing as the one with teeth.
 - **`next-best-practices` and `next-upgrade` stopped being skills at all.** Their content now
   ships as the bundled docs under `next/dist/docs/` and the `AGENTS.md` / `CLAUDE.md` that
   `next dev` generates on 16.3+.
@@ -264,12 +143,12 @@ became.** This repo had already committed that replacement — `apps/blog/AGENTS
 months earlier for the unrelated reason that leaving it untracked made every build dirty the
 tree — which is why reading the shipped docs was available as a step at all.
 
-So the honest version of the opening is: I evaluated two skills, one of which no longer exists
-and one of which had already become two. The analysis is unaffected — the flag, the blockers
-and the route table do not care what the advice was called. But "which skills apply here" had
-a component I never thought to check, which is whether the answer was still current. The
-directory was not wrong. It was describing a past, in the present tense, with an install
-command that still worked.
+So the honest version of the opening is: I set out to evaluate two skills, one of which no
+longer exists and one of which had already become two. The analysis this was groundwork for is
+unaffected — the flag, the blockers and the route table will not care what the advice was
+called. But "which skills apply here" had a component I never thought to check, which is
+whether the answer was still current. The directory was not wrong. It was describing a past, in
+the present tense, with an install command that still worked.
 
 What actually got installed, then — pinned, MIT, copied unmodified into `.claude/skills/`:
 
@@ -287,16 +166,3 @@ ships a `reference/` directory and two templates, where my installed copy still 
 two-file layout. A `PROVENANCE.md` next to them records the commit and a checksum per file,
 because the failure mode for vendored content is not "it breaks", it is "it quietly stops
 matching upstream and nobody can tell when it stopped".
-
-## What I have not solved
-
-I cannot fix `Date.now()` inside Shiki. The options are to wrap highlighting in a cache
-boundary — which is what I did, and it works, and it means the highlighter's output is now a
-cache entry rather than build output — or to pre-render MDX to HTML in a separate build step
-and take the highlighter out of the request path entirely. The second is cleaner and is a
-larger project than the thing it would enable.
-
-And a smaller honest gap: I verified that the build *passes* with `use cache` around the MDX
-render. I did not verify that it produces byte-identical output to the prerendered version.
-Given everything above about builds being pure functions of their inputs, that is the check I
-should have run, and it is the first thing I will run if this comes back.
