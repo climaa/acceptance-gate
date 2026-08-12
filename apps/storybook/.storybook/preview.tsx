@@ -106,6 +106,7 @@ const preview: Preview = {
             'Layering Rule',
             'Tokens',
             'Visual Diff Workflow',
+            'Skills',
           ],
           'Atoms',
           'Molecules',
