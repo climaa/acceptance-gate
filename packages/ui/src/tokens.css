@@ -32,14 +32,16 @@
 
   /* ---- Light-theme state raws (success / warning / danger) ----
    * Consumed exclusively by the light state roles below. Only danger has a
-   * filled variant, which is why it alone carries a -500 step. */
+   * filled variant, which is why it alone carries two darker steps: -700 for
+   * the solid fill itself (cream text needs that much depth to clear AA — see
+   * the solid trio below) and -800 for its hover. */
   --c-success-100: #dcfce7;
   --c-success-700: #15803d;
   --c-warning-100: #fef3c7;
   --c-warning-700: #b45309;
   --c-danger-100: #fee2e2;
-  --c-danger-500: #ef4444;
   --c-danger-700: #b91c1c;
+  --c-danger-800: #991b1b;
 
   /* ---- Dark-theme raw families (terminal lime on green-black) ----
    * Consumed exclusively by the [data-theme='dark'] role remap below. */
@@ -92,8 +94,8 @@
   --color-warning-fg: var(--c-warning-700);
   --color-danger-surface: var(--c-danger-100);
   --color-danger-fg: var(--c-danger-700);
-  --color-danger-solid: var(--c-danger-500);
-  --color-danger-solid-hover: var(--c-danger-700);
+  --color-danger-solid: var(--c-danger-700);
+  --color-danger-solid-hover: var(--c-danger-800);
   --color-on-danger-solid: var(--c-cream-50);
 
   /* ---- Skeleton roles ----
