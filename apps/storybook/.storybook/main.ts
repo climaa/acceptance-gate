@@ -43,6 +43,36 @@ const config: StorybookConfig = {
       },
     },
   },
+  // ThemeToggle.tsx's `'use client'` is for Next.js/webpack's RSC pipeline (the
+  // blog is what needs the boundary); this plain Rollup build has no RSC concept,
+  // drops the directive, and renders the component as a client component either
+  // way — the drop is correct, not a bug. Rollup still emits two warnings for it
+  // (the directive itself, and a sourcemap warning from trying to locate it), so
+  // both are silenced by module id rather than by message text, which would also
+  // catch an unrelated future warning that happens to mention the same words.
+  viteFinal: async (viteConfig) => {
+    const previousOnwarn = viteConfig.build?.rollupOptions?.onwarn;
+
+    return {
+      ...viteConfig,
+      build: {
+        ...viteConfig.build,
+        rollupOptions: {
+          ...viteConfig.build?.rollupOptions,
+          onwarn(warning, warn) {
+            const fromThemeToggleDirective =
+              warning.id?.endsWith('ThemeToggle.tsx') &&
+              (warning.code === 'MODULE_LEVEL_DIRECTIVE' ||
+                warning.code === 'SOURCEMAP_ERROR');
+
+            if (fromThemeToggleDirective) return;
+
+            (previousOnwarn ?? warn)(warning, warn);
+          },
+        },
+      },
+    };
+  },
 } as StorybookConfig & {
   options: { mdxPluginOptions: { mdxCompileOptions: { remarkPlugins: unknown[] } } };
 };
