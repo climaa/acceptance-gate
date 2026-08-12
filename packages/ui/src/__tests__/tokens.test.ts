@@ -236,16 +236,14 @@ const ALL_TEXT_PAIRS: Pair[] = THEME_NAMES.flatMap((theme) =>
 );
 
 /**
- * One pair does not meet AA today: light `--color-on-danger-solid` on
- * `--color-danger-solid` is 3.28:1 (cream on `#ef4444`). That is a palette
- * defect, and the palette is not this suite's to edit — so the assertion is not
- * relaxed. `it.fails` runs the identical `expectContrast` call and asserts only
- * that it currently throws, which means retuning the red makes this row go red
- * too: delete the row then and the pair joins the enforced table above it.
+ * Every pair meets AA today. Used to carry one exception here (light
+ * `--color-on-danger-solid` on `--color-danger-solid`, 3.28:1 on `#ef4444`) via
+ * an `it.fails` row instead of the enforced table below — retuning the danger
+ * solid to `--c-danger-700` (5.64:1) closed it, so the row is gone rather than
+ * relaxed. A future palette regression belongs back here the same way: add the
+ * pair to `KNOWN_AA_GAPS`, not a softened threshold.
  */
-const KNOWN_AA_GAPS: Pair[] = [
-  ['light', '--color-on-danger-solid', '--color-danger-solid'],
-];
+const KNOWN_AA_GAPS: Pair[] = [];
 
 const KNOWN_AA_GAP_KEYS = new Set(KNOWN_AA_GAPS.map((pair) => pair.join(' ')));
 
