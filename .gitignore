@@ -26,6 +26,11 @@ coverage/
 packages/ui/.visual-diff/
 packages/visual-diff/.visual-diff/
 
+# Claude Code local state (.claude/skills/ IS committed — vendored skills are the
+# only channel that reaches a Sandcastle agent, which never sees ~/.claude)
+.claude/settings.local.json
+.claude/scheduled_tasks.lock
+
 # Sandcastle runtime (the orchestrator itself IS committed)
 .sandcastle/.env
 .sandcastle/logs/
