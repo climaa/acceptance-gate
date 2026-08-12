@@ -24,15 +24,23 @@ it is worth reading in the order it happened.
 
 ## The two that apply
 
-**`next-best-practices`** is a reviewer's checklist: file conventions, RSC boundaries, data
-patterns, the async request APIs, metadata, route handlers, bundling. Twenty reference files.
-It carries `user-invocable: false` in its frontmatter, which means you never type its name —
-it loads itself when the work in front of the agent is Next.js code.
+**[`next-best-practices`](https://www.ui-skills.com/skills/vercel-labs/next-best-practices)**
+is a reviewer's checklist: file conventions, RSC boundaries, data patterns, the async request
+APIs, metadata, route handlers, bundling. Twenty reference files. It carries
+`user-invocable: false` in its frontmatter, which means you never type its name — it loads
+itself when the work in front of the agent is Next.js code.
 
-**`next-cache-components`** is the one with teeth. It covers the `cacheComponents` flag,
-partial prerendering, the `use cache` directive, `cacheLife`, `cacheTag`, and the Next 16
-deprecations around them: `unstable_cache`, the singular `cacheHandler`, single-argument
-`revalidateTag`.
+**[`next-cache-components`](https://www.ui-skills.com/skills/vercel-labs/next-cache-components)**
+is the one with teeth. It covers the `cacheComponents` flag, partial prerendering, the
+`use cache` directive, `cacheLife`, `cacheTag`, and the Next 16 deprecations around them:
+`unstable_cache`, the singular `cacheHandler`, single-argument `revalidateTag`. Nothing in
+that list is out of reach here: the
+[root `package.json`](https://github.com/climaa/acceptance-gate/blob/main/package.json) already
+wires `lint`, `typecheck`, `test`, `format:check`, `visual-diff` and `health:check` as separate
+gates on a pinned Node and pnpm, and every one of them runs on every PR. The capability to
+adopt all of this safely is in place and has been for a while. Hold onto that, because it makes
+the conclusion sharper rather than softer — the answer this post arrives at is *not yet*, and
+it was never a tooling answer.
 
 The other three do not apply, for boring reasons worth stating anyway. `next-upgrade` is
 spent — this app is already on Next 16.3.0 and React 19.2.8, and
