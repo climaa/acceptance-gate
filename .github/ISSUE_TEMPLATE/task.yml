@@ -1,0 +1,45 @@
+name: Task
+description: File a task for the Sandcastle planner to pick up.
+title: "<type>(<scope>): <summary>"
+labels:
+  - sandcastle:hold
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Filing this issue queues it for the Sandcastle planner (`gh issue list --state
+        open --author climaa ...`). It arrives labelled `sandcastle:hold`, which the
+        planner is told to skip — see `.sandcastle/agent-docs/plan-prompt.md`. Remove
+        the label yourself once the issue is actually ready to be worked.
+
+        If `plan-prompt.md` was never updated to exclude this label, that guard does
+        not exist yet and this label is documentation only — check the file before
+        relying on it.
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Why this issue exists — the problem, or what prompted it.
+    validations:
+      required: true
+  - type: textarea
+    id: task
+    attributes:
+      label: Task
+      description: What should change, concretely.
+    validations:
+      required: true
+  - type: textarea
+    id: verify
+    attributes:
+      label: Verify
+      description: Commands or checks that confirm the task is done.
+    validations:
+      required: false
+  - type: textarea
+    id: do-not-touch
+    attributes:
+      label: Do not touch
+      description: Files, paths, or approaches that are explicitly out of scope.
+    validations:
+      required: false
