@@ -9,8 +9,20 @@ pnpm-lock.yaml
 storybook-static/
 
 # Prettier 3.x rewrites MDX `{/* ... */}` comments as `{/_ ... _/}`, which is not a
-# valid JS expression and breaks the MDX compile at build time.
+# valid JS expression and breaks the MDX compile at build time. `.md` is listed too:
+# `lib/posts.ts` reads either extension, drafting a post in Obsidian produces `.md`,
+# and post prose is not Prettier's business whichever suffix it lands under.
 apps/blog/content/**/*.mdx
+apps/blog/content/**/*.md
+
+# Vendored third-party skills, copied unmodified from vercel/next.js at a pinned
+# commit. PROVENANCE.md records a SHA-256 per file, so reformatting them would
+# invalidate every checksum and break the "copied unmodified" claim they rest on.
+.claude/skills/
+
+# Playwright's run artifacts. Gitignored via apps/e2e/.gitignore, but Prettier
+# does not read .gitignore, so a local run leaves a file this glob would flag.
+apps/e2e/test-results/
 
 # Committed font payload: the binaries, their OFL texts and the OG provenance
 # record. The only file here `format`'s glob reaches is `og/PROVENANCE.md`, whose

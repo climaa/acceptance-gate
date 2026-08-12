@@ -1,0 +1,71 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs/Skills/Partial Prefetching Adoption" />
+
+# `next-partial-prefetching-adoption`
+
+Turns Partial Prefetching on and works through the insights it surfaces. Partial prefetching
+loads the next page's shell before the visitor asks for it, so a click lands on something
+already rendered rather than on a spinner.
+
+## Invoke it
+
+```text
+/next-partial-prefetching-adoption
+```
+
+Its description also matches "enable partial prefetching", "flip the `partialPrefetching`
+flag", auditing `<Link prefetch={true}>`, and the `link-prefetch-partial` /
+`instant-shell-url-data` insights.
+
+## Before you run it here
+
+**It cannot run yet.** `cacheComponents: true` is the one hard requirement — partial
+prefetching is built on it — and `apps/blog/next.config.mjs` does not set it. Run
+[Cache Components Adoption](?path=/docs/docs-skills-cache-components-adoption--docs) first.
+Next.js 16.3+ is also required, which this repo already meets.
+
+Worth knowing, because it reads as alarming and is not: **full Cache Components adoption is
+not a gate.** Prerender insights on an unadopted route — a leftover `unstable_noStore`, a
+`cookies()` read outside `<Suspense>` — are non-blocking dev signals, expected on any fresh
+branch. The only thing that genuinely stops this skill is a build-blocking failure.
+
+**Repo-specific:** the skill says `next.config.ts`; this app uses `next.config.mjs`.
+
+## What it does
+
+Five steps, and the first one happens _before_ the flag is touched:
+
+1. **Audit `<Link prefetch={true}>` — before enabling.** Every destination that a link
+   force-prefetches gets opted in with `export const prefetch = 'partial'`. Doing this first
+   means the flag flips onto an already-correct set of routes.
+2. **Enable the flag**, then strip the now-redundant per-route exports.
+3. **Sweep for URL-data insights** raised after enabling.
+4. **Verify.**
+5. **Per-link prefetching** — optional, driven by `TODO(per-link-prefetch)` markers the
+   earlier steps leave behind.
+
+## Commands it runs
+
+```bash
+npx @next/codemod@latest remove-partial-prefetch ./app
+```
+
+Run from `apps/blog`. Two things about this codemod are worth knowing before you invoke it:
+
+- **It refuses to run on a dirty working tree.** Commit or stash first, or pass `--force` to
+  let its edits land alongside work in progress.
+- **It is deliberately narrow.** It removes only `export const prefetch = 'partial'` and the
+  generated guide comment above it. Other values such as `prefetch = 'force-disabled'` survive,
+  as do the `TODO(per-link-prefetch)` markers step 5 depends on.
+
+The skill is explicit that a text find-and-replace is not an acceptable substitute — and if the
+codemod is unavailable (offline, sandboxed, older `@next/codemod`), it reproduces the same edit
+by hand under the same constraints rather than widening the match.
+
+## Fit for this repo
+
+`apps/blog` is a small static site, so the prefetching win is modest — the pages it would
+prefetch are already files on disk. The audit step still has value independent of the flag: it
+makes every force-prefetching link explicit, which is a useful thing to know about a site
+regardless of whether you enable anything.

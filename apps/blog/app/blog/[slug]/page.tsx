@@ -27,6 +27,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       title: post.title,
       description: post.description,
       publishedTime: post.date,
+      // Omitted rather than mirrored from `date` when the post has never been
+      // revised: an `article:modified_time` equal to the publish time tells a
+      // reader nothing and is indistinguishable from a stale one.
+      ...(post.updated ? { modifiedTime: post.updated } : {}),
       tags: post.tags,
     },
   };

@@ -9,6 +9,16 @@ export const PostFrontmatterSchema = z.object({
   title: z.string(),
   description: z.string(),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'must be an ISO date (YYYY-MM-DD)'),
+  /**
+   * When the post was last materially revised. Absent on a post that has not
+   * been revised since publication — it is not defaulted to `date`, because
+   * "never revised" and "revised on the day it shipped" are different claims
+   * and only the first one should leave `article:modified_time` unset.
+   */
+  updated: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'must be an ISO date (YYYY-MM-DD)')
+    .optional(),
   tags: z.array(z.string().min(1)).default([]),
   /** Set `draft: true` to exclude the post from the production build. */
   draft: z.boolean().optional(),
@@ -61,6 +71,7 @@ function readPostFile(fileName: string): Post {
     title: fm.title,
     description: fm.description,
     date: fm.date,
+    updated: fm.updated,
     tags: fm.tags,
     draft: fm.draft,
     content,

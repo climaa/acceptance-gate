@@ -1,0 +1,126 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+import { Mermaid } from './Mermaid';
+
+<Meta title="Docs/Skills/Overview" />
+
+# Agent skills committed to this repo
+
+An **agent skill** is a directory holding a `SKILL.md` — YAML frontmatter naming it and
+describing when it applies, followed by instructions the agent reads once the skill is
+loaded. Nothing registers a skill: a coding agent discovers it by scanning known locations
+when a session starts.
+
+Only the `description` stays in context permanently. The body loads when the skill is
+invoked, and any reference files load when the body points at them — so a skill can ship
+tens of kilobytes of procedure without spending tens of kilobytes of context.
+
+`.claude/skills/` holds four of them, committed rather than installed. That distinction is
+the whole reason this page exists.
+
+## Why committed, not installed
+
+A skill installed into a developer's home directory exists for that developer's sessions on
+that machine. The autonomous agents this repo runs work from a checkout in a sandbox, and
+**a sandbox only ever sees what has been committed.** A skill on someone's laptop does not
+exist as far as they are concerned.
+
+Committing them into `.claude/skills/` is what puts the same instructions in front of a
+sandbox agent and a human's local session. There is a caveat worth stating plainly, because
+nothing in this repo enforces it:
+
+> No code in `.sandcastle/` handles skills. They reach sandbox agents because the agent
+> resolves project-scope skills relative to the repository root, and the repository is
+> checked out there. It works as a consequence of committing them, not because anything
+> wires it up — so nothing would warn you if that behaviour changed upstream.
+
+## The four
+
+Each has its own page covering how to invoke it, what it needs, and the commands it runs:
+[Cache Components Adoption](?path=/docs/docs-skills-cache-components-adoption--docs) ·
+[Cache Components Optimizer](?path=/docs/docs-skills-cache-components-optimizer--docs) ·
+[Partial Prefetching Adoption](?path=/docs/docs-skills-partial-prefetching-adoption--docs) ·
+[Dev Loop](?path=/docs/docs-skills-dev-loop--docs)
+
+| Skill                                                                                                                                       | What it does                                                                                                                                | Needs                            |
+| ------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
+| [`next-cache-components-adoption`](https://github.com/climaa/acceptance-gate/tree/main/.claude/skills/next-cache-components-adoption)       | Turns Cache Components on and walks the app to a passing build, resolving each blocking route it surfaces                                   | Next.js 16.3+, App Router        |
+| [`next-cache-components-optimizer`](https://github.com/climaa/acceptance-gate/tree/main/.claude/skills/next-cache-components-optimizer)     | Drives a route to instant navigation once the flag is on, encoding the goal as a failing `@next/playwright` test first                      | Cache Components already enabled |
+| [`next-partial-prefetching-adoption`](https://github.com/climaa/acceptance-gate/tree/main/.claude/skills/next-partial-prefetching-adoption) | Turns Partial Prefetching on and works through the insights it raises                                                                       | `cacheComponents: true`          |
+| [`next-dev-loop`](https://github.com/climaa/acceptance-gate/tree/main/.claude/skills/next-dev-loop)                                         | Confirms a change actually works in a running app, rather than merely compiling — combines Next's own `/_next/mcp` view with a real browser | A running `next dev`             |
+
+## They are not independent
+
+Three of the four sit behind one flag. Reading the "Needs" column as a graph:
+
+<Mermaid
+  chart={`
+flowchart TD
+    A["cacheComponents: false<br/>(where apps/blog is today)"] --> B["next-cache-components-adoption"]
+    B --> C["cacheComponents: true"]
+    C --> D["next-cache-components-optimizer"]
+    C --> E["next-partial-prefetching-adoption"]
+    F["next-dev-loop"] -.->|"needs only a running dev server"| G["usable today"]
+    style A fill:#f8d7da
+    style C fill:#d4edda
+    style G fill:#d4edda
+`}
+/>
+
+**`apps/blog` has not enabled Cache Components.** `apps/blog/next.config.mjs` carries no
+`cacheComponents` key, so the adoption skill is the only entry point of the three, and the
+other two cannot do anything useful until it has run. `next-dev-loop` is the exception —
+it needs nothing but `pnpm --filter @gate/blog dev`.
+
+That ordering is the practical value of having them committed together: the dependency is
+recorded in the skills' own prerequisites rather than in someone's memory.
+
+## Provenance and integrity
+
+All four are copied **unmodified** from
+[`vercel/next.js`](https://github.com/vercel/next.js/tree/canary/skills), pinned to commit
+`ec1a44d0f112d7a3dd7ce5138ddde19a3a1a876b`, MIT licensed, vendored 2026-08-12.
+[`.claude/skills/PROVENANCE.md`](https://github.com/climaa/acceptance-gate/blob/main/.claude/skills/PROVENANCE.md)
+records the source, the commit, the licence and a SHA-256 for every file.
+
+Checksums are only worth recording if something stops them drifting silently, so:
+
+- **`.prettierignore` covers `.claude/skills/`.** Seven of the vendored files fail Prettier's
+  style check. Fixing them by reformatting would rewrite third-party content, invalidate all
+  eleven checksums, and falsify the "copied unmodified" claim the provenance record rests on.
+  Ignoring the directory is the fix; reformatting is not. This is not hypothetical — the
+  `format` CI job failed for exactly this reason before the rule was added.
+- **`.gitignore` covers `.claude/settings.local.json` and `.claude/scheduled_tasks.lock`.**
+  Both were previously ignored only by an individual machine's global gitignore. Now that
+  `.claude/` is a tracked directory in a public repository, a contributor without that global
+  rule would otherwise stage local settings.
+
+## Updating them
+
+Re-pin to a newer upstream commit and re-copy **every** file. Do not hand-edit, and do not
+update part of a skill.
+
+Upstream restructures these between releases: at the pinned commit the optimizer ships a
+`reference/` directory plus `rig-template.md` and `test-template.md`, where an earlier release
+shipped `instant-nav-loop.md` and `ppr-loop.md`. A partial update leaves both layouts present
+and the skill reads as self-contradictory. After re-copying, regenerate the checksum table in
+`PROVENANCE.md` and verify with `shasum -a 256`.
+
+## One thing to watch: scope precedence
+
+The same skill can exist in more than one place. A skill in `~/.claude/skills/` is personal to
+one machine; the four here are project scope; installed plugins contribute a third, namespaced
+set.
+
+When a name exists in two scopes the agent loads one of them, and **which one is not visible
+from the session's skill list** — each name appears once regardless. If a personal copy of
+`next-cache-components-adoption` or `next-cache-components-optimizer` predates this
+directory, it may hold an older layout than the pinned copy here. Deleting the personal copy
+is the reliable fix; there is no way to tell from the outside which one answered.
+
+## Related
+
+- [System Design](?path=/docs/docs-system-design--docs) — where the design system's decisions
+  originate
+- [Visual Diff Workflow](?path=/docs/docs-visual-diff-workflow--docs) — the other place this
+  repo trades a committed artefact for a reproducible check

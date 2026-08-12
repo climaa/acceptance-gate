@@ -1,0 +1,69 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs/Skills/Dev Loop" />
+
+# `next-dev-loop`
+
+Confirms a change actually **works in a running app** — not merely that it compiles or
+type-checks. It combines two views that disagree in useful ways: `/_next/mcp`, which is Next's
+own account of what it did, and a real Chrome driven by `agent-browser`, which is what the
+visitor gets.
+
+Of the four committed skills this is the only one usable in this repo **today**. It has no
+dependency on Cache Components.
+
+## Invoke it
+
+```text
+/next-dev-loop
+```
+
+Or ask for what it does — "check this actually works in the browser", "verify the change at
+runtime" — since compiling and working are the distinction its description is built around.
+
+## Before you run it
+
+One requirement: **a running dev server.**
+
+```bash
+pnpm --filter @gate/blog dev    # serves on port 3000
+```
+
+It also needs the `agent-browser` CLI available on your PATH. The skill's preflight derives one
+stable session id per checkout and reuses it for every command, so a login survives across
+steps instead of being re-established each time:
+
+```bash
+SESSION="$(agent-browser session id --scope worktree --prefix next-dev-loop)"
+export AGENT_BROWSER_SESSION="$SESSION"
+export AGENT_BROWSER_RESTORE="$SESSION"
+
+agent-browser --session "$SESSION" --restore --headed --enable react-devtools open <url>
+```
+
+## What it does
+
+The loop has a step most verification skips — one _before_ the edit:
+
+- **Before the edit — narrow the scope.** Establish what you are about to change and how you
+  will know it changed. This is what stops "it looks fine" from counting as verification.
+- **After the edit — verify.** Cross-check Next's own view against the browser's. When they
+  disagree, the disagreement is the finding.
+
+It ends with an explicit teardown step, so a dev server and a headed Chrome are not left
+running after the session.
+
+## Why the two views matter here
+
+This blog is entirely prerendered — 18 routes, every one a file on disk at the end of the
+build. That makes a specific class of bug easy to miss: something that renders correctly in
+the built HTML but breaks once React hydrates in the browser, or a route that Next reports as
+static while the page a visitor receives is not what you expected.
+
+Neither `next build` nor a unit test catches that. The build reports what it produced; the
+browser reports what happened. This skill is the only one of the four that asks the second
+question.
+
+It pairs naturally with
+[the visual diff workflow](?path=/docs/docs-visual-diff-workflow--docs), which answers a
+different question — _did the pixels change?_ — rather than _does it work?_

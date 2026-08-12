@@ -1,0 +1,80 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs/Skills/Cache Components Adoption" />
+
+# `next-cache-components-adoption`
+
+Turns Cache Components on and walks the app to a passing build, resolving each blocking route
+it surfaces. This is the **entry point** of the three caching skills — the optimizer and the
+partial-prefetching skill both require the flag it sets.
+
+## Invoke it
+
+```text
+/next-cache-components-adoption
+```
+
+Or describe the job and let it load itself — its description matches on "enable Cache
+Components", "flip the cacheComponents flag", "blocking-prerender errors", and the
+`cache-components-instant-false` codemod.
+
+The skill will **ask you a question before it starts**, phrased in terms of the PRs you want:
+whether to open one mechanical PR that turns the flag on and opts every route out of
+validation, then adopt routes feature-by-feature in follow-ups — or do it all on one branch.
+Answer it; the skill is explicitly told not to choose on your behalf. With no answer it
+defaults to the incremental path and records that it did.
+
+## Before you run it here
+
+| Requirement                                        | Status in this repo                                                    |
+| -------------------------------------------------- | ---------------------------------------------------------------------- |
+| App Router                                         | ✅ `apps/blog/app`                                                     |
+| Next.js 16.3+                                      | ✅ 16.3.0                                                              |
+| No `experimental.dynamicIO`                        | ✅ absent — it is fatal if present                                     |
+| No `dynamic` / `revalidate` / `fetchCache` exports | ⚠️ `apps/blog/app/rss.xml/route.ts` exports `dynamic = 'force-static'` |
+
+That last row is the one that will stop the build immediately. The error says _remove it_; the
+migration guide says **translate** it into a `use cache` helper. Removing it would silently
+make the feed render on demand instead of at build time, which is the behaviour the export was
+there to guarantee. Translate, don't delete.
+
+**One repo-specific correction:** every instruction in the skill names `next.config.ts`. This
+app uses `apps/blog/next.config.mjs`. Same key, different file — set `cacheComponents: true` at
+the top level, not under `experimental`.
+
+## What it does
+
+Two blockers matter more than the rest, because neither the codemod nor an opt-out will save
+you from them:
+
+1. **Sync-IO at module or render time** — `new Date()`, `Date.now()`, `Math.random()`,
+   `crypto.randomUUID()`. These fail the build _even on routes opted out of validation_. The
+   skill greps the whole repo for them before touching anything else, and unblocks each with
+   `await connection()` inside `<Suspense>`, marked with a `// TODO: Cache Components adoption`
+   comment so the work queue is greppable later.
+2. **Incompatible segment configs** — `dynamic`, `revalidate`, `fetchCache`. The codemod does
+   not touch these; leaving them in place fails the build after the codemod runs.
+
+Then it enters a loop: remove one opt-out, adopt that route, confirm the dev overlay is clean
+and `next build` passes, check in with you, repeat.
+
+## Commands it may run
+
+```bash
+# only if the version floor were not already met
+npx @next/codemod@latest upgrade latest
+
+# the pre-step, incremental path only
+npx @next/codemod@latest cache-components-instant-false ./app
+```
+
+Run these from `apps/blog`, not the repo root — the codemod takes an app-directory path.
+
+## When it is done
+
+The bar per route is both halves, not either: **the dev loop reports no errors AND
+`next build` passes.** Expect most of the time to go into the loop rather than the pre-step.
+
+Once the flag is on, [Cache Components Optimizer](?path=/docs/docs-skills-cache-components-optimizer--docs)
+and [Partial Prefetching Adoption](?path=/docs/docs-skills-partial-prefetching-adoption--docs)
+become usable.
