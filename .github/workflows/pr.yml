@@ -188,10 +188,14 @@ jobs:
         uses: actions/cache@v6
         with:
           path: ~/.cache/ms-playwright
-          # Keyed on apps/e2e/package.json, not pnpm-lock.yaml. @playwright/test is
-          # pinned exactly there and Dependabot ignores it, so this key moves on the
-          # hand-authored bump and on nothing else. A lockfile key would miss on every
-          # weekly bump PR — the runs that already build cold — for no benefit.
+          # Keyed on apps/e2e/package.json, not pnpm-lock.yaml: the lockfile moves on
+          # every bump anywhere in the monorepo, so a key built from it would miss on
+          # every weekly bump PR — the runs that already build cold — for no benefit.
+          # Correctness comes from the exact @playwright/test pin living in this file:
+          # the browser cannot change without the key changing. The reverse does not
+          # hold — Dependabot edits manifests, not just the lockfile, so a weekly bump
+          # of this workspace's other devDependencies moves the key too and costs one
+          # redundant download.
           key: playwright-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('apps/e2e/package.json') }}
       # --with-deps runs whether or not that cache hit: the cache carries the browser,
       # apt carries the system libraries it dynamically links, and only one of those
@@ -205,9 +209,12 @@ jobs:
       # retries, failOnFlakyTests, forbidOnly and list reporter (#226) and disables
       # reuseExistingServer.
       - run: pnpm turbo run e2e
-      # always(), not failure(): a run that went green only on a retry still produced
-      # a trace (trace: 'retain-on-failure'), and that trace is the only evidence of
-      # the flake. Directory paths and no tar — this job is not in a container.
+      # always(), not failure(): failure() would already cover the flake case, since
+      # failOnFlakyTests reds a run that passed only on a retry and the failed
+      # attempt's trace (trace: 'retain-on-failure') rides along with it. What
+      # failure() drops is the green run's report — the only record of which
+      # scenarios actually ran, and what you compare against when a later run
+      # disagrees. Directory paths and no tar — this job is not in a container.
       - name: Upload the Playwright report
         if: always()
         uses: actions/upload-artifact@v7
