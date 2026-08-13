@@ -5,6 +5,11 @@ const nextConfig = {
   // property rather than a description: a route that starts reading cookies or
   // headers fails the build instead of quietly becoming dynamic.
   cacheComponents: true,
+  // A link warms the shared App Shell rather than its whole destination, so the
+  // index stops prefetching a full payload per post and per tag chip. Adopted
+  // with no per-link exceptions: nothing here passes `prefetch`, so no link was
+  // relying on the old behaviour of fetching everything ahead of the click.
+  partialPrefetching: true,
   // The design system ships as uncompiled TypeScript (source-direct).
   transpilePackages: ['@gate/ui'],
   experimental: {
