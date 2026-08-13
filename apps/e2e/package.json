@@ -13,7 +13,7 @@
     "clean": "rm -rf .features-gen playwright-report test-results .turbo node_modules"
   },
   "devDependencies": {
-    "@axe-core/playwright": "^4.12.1",
+    "@axe-core/playwright": "4.12.1",
     "@gate/tsconfig": "workspace:*",
     "@playwright/test": "1.62.1",
     "@typescript-eslint/parser": "^8.66.0",
