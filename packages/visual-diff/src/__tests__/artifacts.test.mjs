@@ -204,8 +204,8 @@ describe('renderSummaryMd', () => {
     const md = renderSummaryMd(summary);
 
     expect(md).toContain('### To fix');
-    // No bare `pnpm visual-diff` / `pnpm visual-diff:accept` — those fail (loudly, then
-    // silently) off the pinned platform. See #243.
+    // No bare `pnpm visual-diff` / `pnpm visual-diff:accept`: off the pinned platform the
+    // first fails on the host guard, and the second has none and corrupts the corpus.
     expect(md).not.toContain('pnpm visual-diff`');
     expect(md).not.toContain('pnpm visual-diff:accept`');
     expect(md).toContain('inside the pinned container');
