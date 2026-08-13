@@ -62,6 +62,10 @@ Three entry-point flows, each with real coverage at a different layer today:
   (`ThemeToggle.test.tsx`, `first-paint.test.ts` in `apps/blog/__tests__/`), not e2e — the
   mechanism is fully exercised, the user-visible click-and-see-it-change journey isn't scripted.
 
+Why the flows are written as `.feature` files at all — and why a step definition is allowed to
+change when the markup does, while the scenario above it is not — is the argument in
+[Cypress and Gherkin: specs an agent can maintain](https://acceptance-gate-blog.vercel.app/blog/gherkin-specs-that-survive).
+
 ### Design decisions (D1–D2)
 
 Both of these are recorded twice by design: narratively on the board, and as the literal
@@ -102,7 +106,7 @@ none of that asserts appearance.
 
 This board is recording intent, not shipped behavior — worth being direct about, since the
 image alone doesn't say so. It maps onto the distinction
-[Visual regression with agents](https://github.com/climaa/acceptance-gate/blob/main/apps/blog/content/posts/visual-regression-with-agents.mdx)
+[Visual regression with agents](https://acceptance-gate-blog.vercel.app/blog/visual-regression-with-agents)
 draws between a small, zero-tolerance **contract set** and a wider **sweep** that exists to make
 change visible rather than to gate a merge: a page-level capture across three routes × four
 variants is shaped exactly like that wide sweep, not like the tight, gated set that post argues
