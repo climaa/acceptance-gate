@@ -106,6 +106,11 @@ const preview: Preview = {
             'Layering Rule',
             'Tokens',
             'Visual Diff Workflow',
+            // DevOps sits after the design-system pages and before Skills: it
+            // describes what happens to a change after you have made one, so it
+            // only makes sense once the reader knows what the change is to.
+            'DevOps',
+            ['The Gate'],
             'Skills',
             [
               'Overview',
