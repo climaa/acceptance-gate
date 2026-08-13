@@ -33,17 +33,33 @@ instance per scenario, shared across its steps. That file sits under `steps/` be
 ## Running
 
 ```bash
-pnpm --filter @gate/e2e test:e2e   # bddgen + playwright test
-turbo run e2e                      # the same, after building the blog it boots
+pnpm --filter @gate/e2e test:e2e     # bddgen + check:suite + playwright test
+pnpm --filter @gate/e2e check:suite  # the integrity guard alone — no browser, no server
+turbo run e2e                        # the full run, after building the blog it boots
 ```
 
 `turbo run e2e` is the entry point that matters: the task depends on `@gate/blog#build`,
 so what the suite boots is what the build produced. `playwright.config.ts` starts
 `next start` on port **3100** (not 3000 — a dev server may already hold that) and
 `E2E_BASE_URL` overrides the target for a run against an already-running deployment.
+That override is **local-only**: under `CI` the config throws rather than honour it,
+because a merge-gating check that passes against a live deployment says nothing about
+the commit under review.
 
 Browsers are not installed by `pnpm install`; a first local run needs
 `pnpm --filter @gate/e2e exec playwright install chromium`.
+
+## Suite integrity
+
+`scripts/suite-integrity.mjs` runs before `playwright test` and fails the run if the
+suite still exits 0 while claiming less than it did — a scenario deleted, `@skip`,
+`@fixme`, `@fail`, `@only`, `@retries:N`, or a project left running nothing. It drives
+`playwright test --list`, which skips global setup, so it needs no browser and no web
+server and costs about a second.
+
+`EXPECTED_SCENARIOS` in that file is an exact count, **8** today. Adding a scenario
+raises it in the same PR. Lowering it is a product decision — a hand-authored PR with
+the reason written down, never a step on the way to green.
 
 ## Tags select projects
 
@@ -58,7 +74,8 @@ of them run it:
 | _untagged_          | both projects  |
 
 Untagged is the default on purpose: a journey that is only claimed on one form factor
-should say so out loud.
+should say so out loud. Both tags at once means neither project runs it — each project
+excludes the other's tag — so the integrity guard refuses that combination by name.
 
 ## Version pins
 
