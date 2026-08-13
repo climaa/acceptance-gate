@@ -8,9 +8,17 @@ export class PostPage {
    *  `<article>`, so scoping through that role rules out any other prose
    *  block ever appearing on the page. */
   readonly body: Locator;
+  /** The article's highlighted code slabs. Selected on `data-language` rather
+   *  than by role, for the reason `blog-index.ts` selects `<time>` by tag:
+   *  `pre` maps to no ARIA role, so there is none to ask for. The attribute is
+   *  `CodeBlock`'s own contract with the rehype pipeline, pinned by
+   *  apps/blog/__tests__/content.test.ts, so it is a stabler handle than the
+   *  class beside it. */
+  readonly codeBlocks: Locator;
 
   constructor(page: Page) {
     this.mainHeading = page.getByRole('heading', { level: 1 });
     this.body = page.getByRole('article').locator('.ds-prose');
+    this.codeBlocks = this.body.locator('pre[data-language]');
   }
 }

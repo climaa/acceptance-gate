@@ -9,6 +9,11 @@ Feature: Accessibility
     And I open the first article
     Then the page has no accessibility violations
 
+  Scenario: An article with code blocks has no accessibility violations
+    When I visit the blog index
+    And I open the first article carrying a code block
+    Then the page has no accessibility violations
+
   Scenario: A tag page has no accessibility violations
     When I visit the first tag page
     Then the page has no accessibility violations

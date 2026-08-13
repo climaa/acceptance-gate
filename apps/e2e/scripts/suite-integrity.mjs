@@ -42,7 +42,7 @@ const workspace = resolve(dirname(fileURLToPath(import.meta.url)), '..');
  * scenario is a two-line diff; LOWERING it is a product decision and belongs in
  * its own hand-authored PR with the reason written down.
  */
-const EXPECTED_SCENARIOS = 8;
+const EXPECTED_SCENARIOS = 9;
 
 /**
  * playwright-bdd's control vocabulary (dist/generate/specialTags.js). A denylist

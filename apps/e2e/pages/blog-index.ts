@@ -29,7 +29,15 @@ export class BlogIndexPage {
   /** The link inside the first listed post's title — the only way in to the
    *  full article, per the requirement that a step never knows a slug. */
   async openFirstArticle() {
-    await this.articleTitles.first().getByRole('link').click();
+    await this.openArticleAt(0);
+  }
+
+  /** The same way in, for a step that has to walk the list rather than take the
+   *  top of it — searching the index for an article with some property cannot
+   *  be done from the index, because the index does not render post bodies. The
+   *  position is still the only identifier used: no slug, no title. */
+  async openArticleAt(index: number) {
+    await this.articleTitles.nth(index).getByRole('link').click();
   }
 
   /** `/tags/[tag]` is reached only by clicking a rendered chip — a step must
