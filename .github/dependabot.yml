@@ -2,7 +2,11 @@
 # gate as feature work. Minor+patch grouped weekly (a pnpm monorepo without
 # grouping is a PR-per-package noise machine); majors arrive individually.
 #
-# Four ignores, all deliberate — these are hand-authored issues, never bot PRs:
+# The ignore list has two kinds of entry, and the difference matters when you
+# come to remove one.
+#
+# ALL UPDATES IGNORED — a bump here is a hand-authored issue, never a bot PR,
+# because landing it means changing more than a version number:
 # - playwright: a bump must move the container image, the policy-sync test and
 #   a mass-rebaseline together
 # - storybook: the differ's capture URL rides Storybook's internal globals
@@ -11,6 +15,27 @@
 # - @axe-core/*: a bump changes which rules the a11y scenarios enforce, so
 #   it's a deliberate review of new violations against real markup, not a
 #   version number to roll forward
+#
+# MAJORS ONLY IGNORED — the next major is blocked UPSTREAM, so there is no diff
+# that makes it work and reopening the PR only re-proves that. These are not
+# "we will do it by hand"; they are "do not ask again until the checks written
+# into the issue start passing." Minor and patch updates still flow, which is
+# the whole reason these are scoped rather than blanket:
+# - eslint: #68. eslint-config-next@16's own dependencies eslint-plugin-react
+#   and eslint-plugin-jsx-a11y both declare peer ranges topping out at ESLint 9
+#   and still call the context.getFilename() API that ESLint 10 removed.
+#   Re-verified 2026-08-13 against PR #221, which failed on exactly the stack
+#   frame #68 recorded. The issue carries the three commands that decide when
+#   this entry comes out.
+# - typescript: #47. TS 7 removes `baseUrl` (TS5102) and typescript-eslint 8.x
+#   refuses TS 7.0 outright, so the `lint` leg fails independently of anything
+#   Next does. Re-verified 2026-08-13 against PR #223. Note that #223 died at
+#   TS5102 before reaching #47's headline finding, so that one is still
+#   unmeasured under Next 16 — removing this entry needs that measurement, not
+#   just a green npm-view.
+#
+# Both blocked entries stay until their issue's own re-check commands pass.
+# Deleting one without running them puts a permanently red PR back on the board.
 version: 2
 updates:
   - package-ecosystem: npm
@@ -29,6 +54,12 @@ updates:
       - dependency-name: "@storybook/*"
       - dependency-name: pnpm
       - dependency-name: "@axe-core/*"
+      # Scoped to majors on purpose — see the header. A 9.x or 5.x bump is
+      # still wanted and still flows through the weekly group.
+      - dependency-name: eslint
+        update-types: ["version-update:semver-major"]
+      - dependency-name: typescript
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: github-actions
     directory: /
