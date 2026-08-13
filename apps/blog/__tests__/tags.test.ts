@@ -50,7 +50,13 @@ const draftOnlySlugs = slugsOf(rawPosts.filter((post) => post.draft)).filter(
  */
 const PUBLISHED_TAG = { slug: 'agents', label: 'agents' };
 const MULTI_WORD_TAG = { slug: 'visual-regression', label: 'visual regression' };
-const DRAFT_ONLY_TAG = 'cypress';
+/**
+ * `fixture` is the one draft-only tag that is stable by contract: it belongs to
+ * e2e-draft-fixture.mdx, whose own suite pins `draft: true` forever. Every other
+ * candidate goes stale the day the post carrying it is published — which is
+ * exactly how `cypress` broke, when gherkin-specs-that-survive.mdx shipped.
+ */
+const DRAFT_ONLY_TAG = 'fixture';
 
 const paramsFor = (tag: string) => ({ params: Promise.resolve({ tag }) });
 
