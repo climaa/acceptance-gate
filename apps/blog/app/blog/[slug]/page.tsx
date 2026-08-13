@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { cacheLife } from 'next/cache';
 import NextLink from 'next/link';
 import { notFound } from 'next/navigation';
 import { MDXRemote } from 'next-mdx-remote/rsc';
@@ -36,6 +37,28 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
+/**
+ * The highlighter reads the clock, so the body render is a cache boundary.
+ *
+ * Shiki's tokenizer (`@shikijs/vscode-textmate`) calls `Date.now()` as an
+ * internal guard. The value never reaches the output, but under Cache
+ * Components any clock read during a prerender is a build error — and it is not
+ * ours to remove. `'use cache'` evaluates this once per cache key, which puts
+ * the read inside a cached scope instead of the prerender.
+ *
+ * `'max'` because the input is a file on disk: the same source produces the
+ * same HTML until the next deployment, which is exactly what the pipeline
+ * already assumed when it ran every plugin at build time.
+ */
+async function PostBody({ source }: { source: string }) {
+  'use cache';
+  cacheLife('max');
+
+  return (
+    <MDXRemote source={source} options={mdxRemoteOptions} components={mdxComponents} />
+  );
+}
+
 export default async function PostPage({ params }: PageProps) {
   const { slug } = await params;
   const post = getPostBySlug(slug);
@@ -53,11 +76,7 @@ export default async function PostPage({ params }: PageProps) {
       tagHref={tagPath}
       as={NextLink}
     >
-      <MDXRemote
-        source={post.content}
-        options={mdxRemoteOptions}
-        components={mdxComponents}
-      />
+      <PostBody source={post.content} />
     </PostTemplate>
   );
 }

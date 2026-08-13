@@ -1,9 +1,6 @@
+import { cacheLife } from 'next/cache';
 import { getAllPosts } from '@/lib/posts';
 import { absoluteUrl, SITE_DESCRIPTION, SITE_TITLE } from '@/lib/site';
-
-// No request data is read, so the response is identical on every call —
-// prerender it at build time like the rest of the site instead of on demand.
-export const dynamic = 'force-static';
 
 function escapeXml(value: string): string {
   return value
@@ -20,7 +17,17 @@ function toPubDate(isoDate: string): string {
   return new Date(`${isoDate}T00:00:00Z`).toUTCString();
 }
 
-export function GET(): Response {
+// The cached unit is the XML string, not the `Response` that carries it: only
+// plain values cross a `"use cache"` boundary, and a `Response` is neither
+// plain nor reusable once its body has been read.
+//
+// No request data is read, so those bytes are identical on every call. `'max'`
+// keeps the previous `force-static` behaviour — the feed is rebuilt when the
+// deployment is, never per request.
+async function renderFeed(): Promise<string> {
+  'use cache';
+  cacheLife('max');
+
   const posts = getAllPosts();
 
   const items = posts
@@ -47,7 +54,11 @@ ${items}
 </rss>
 `;
 
-  return new Response(xml, {
+  return xml;
+}
+
+export async function GET(): Promise<Response> {
+  return new Response(await renderFeed(), {
     headers: {
       'Content-Type': 'application/rss+xml; charset=utf-8',
     },

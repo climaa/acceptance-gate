@@ -10,6 +10,6 @@ export const alt = `${SITE_TITLE} — ${SITE_TAGLINE}`;
 export const size = OG_SIZE;
 export const contentType = OG_CONTENT_TYPE;
 
-export default function Image() {
+export default async function Image() {
   return ogImageResponse(SITE_CARD_COPY);
 }

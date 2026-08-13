@@ -1,5 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Every route here is built from the filesystem, so the whole site is
+  // prerenderable and nothing reads request data. The flag makes that a checked
+  // property rather than a description: a route that starts reading cookies or
+  // headers fails the build instead of quietly becoming dynamic.
+  cacheComponents: true,
   // The design system ships as uncompiled TypeScript (source-direct).
   transpilePackages: ['@gate/ui'],
   experimental: {

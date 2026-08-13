@@ -1,4 +1,5 @@
 import { readFile } from 'node:fs/promises';
+import { cacheLife } from 'next/cache';
 import * as path from 'node:path';
 import { ImageResponse } from 'next/og';
 import { formatDate, type Post } from './posts';
@@ -44,8 +45,26 @@ const OG_FONT_WEIGHT = 600;
 
 let displayFont: Promise<Buffer> | undefined;
 
-/** Cached at module scope: every prerendered card would otherwise re-read 64 kB. */
-export function loadDisplayFont(): Promise<Buffer> {
+/**
+ * Two caches, because they answer two different questions.
+ *
+ * The module-scope promise is the original one: every prerendered card would
+ * otherwise re-read 64 kB, and one build worker renders many cards.
+ *
+ * `'use cache'` is what makes the route prerender at all. This read is the
+ * card's only data access, and under Cache Components an uncached access is
+ * what drops `opengraph-image` to on-demand rendering — the cards stop
+ * shipping with the deployment and are built on the first crawler request
+ * instead, which is exactly what the comment in `[slug]/opengraph-image.tsx`
+ * says must not happen.
+ *
+ * `'max'`: the file is a build artifact, pinned by `outputFileTracingIncludes`
+ * in `next.config.mjs`. It cannot change without a new deployment.
+ */
+export async function loadDisplayFont(): Promise<Buffer> {
+  'use cache';
+  cacheLife('max');
+
   displayFont ??= readFile(OG_FONT_PATH);
   return displayFont;
 }

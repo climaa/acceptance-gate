@@ -14,6 +14,10 @@ export default defineConfig({
     // via this alias, and vitest doesn't read tsconfig paths on its own.
     alias: {
       '@': path.resolve(__dirname),
+      // `cacheLife()` throws without the compiled `cacheComponents` config, so
+      // every module declaring a cache profile would fail at import. See the
+      // stub for why only that one export is provided.
+      'next/cache': path.resolve(__dirname, '__tests__/stubs/next-cache.ts'),
     },
   },
   test: {
