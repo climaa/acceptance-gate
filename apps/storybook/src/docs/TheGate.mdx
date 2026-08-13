@@ -51,6 +51,11 @@ leg wants; `visual-diff` runs alongside all of them and is deliberately outside
 `always()`, paired with the same draft guard every other job carries — and failing unless
 every result is exactly `success`.
 
+This page shows the mechanism. For why it is shaped this way — what a branch protection rule
+actually decides (nothing: no model evaluates the push), and what it costs to switch one off
+for two seconds — see
+[The guardrail you can switch off](https://acceptance-gate-blog.vercel.app/blog/the-guardrail-you-can-switch-off).
+
 ## Invariants that look cosmetic and are not
 
 **`skipped` counts as failure.** `gate`'s guard treats `failure`, `cancelled` _and_
