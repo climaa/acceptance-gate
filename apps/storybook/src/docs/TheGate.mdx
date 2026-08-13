@@ -129,9 +129,11 @@ setup, so it boots no server and needs no browser binary.
 
 Two Playwright settings carry the same intent. `forbidOnly` under CI closes `@only`, which
 playwright-bdd translates straight into `test.only()`. And `failOnFlakyTests` with
-`retries: 1` means a test that passed only on a retry **fails the run** — because
-Dependabot PRs auto-merge on `gate`, and a silent retry there absorbs the finding rather
-than infra flake.
+`retries: 1` means a test that passed only on a retry **fails the run**. A retry cannot
+tell infra flake from a genuine race in the product — it absorbs both, identically and
+silently — so there is no way to swallow the first without also swallowing the second. On a
+check that gates merges, and this repo auto-merges Dependabot PRs on `gate`, swallowing the
+second is swallowing the finding.
 
 **Never add** `--pass-with-no-tests`, `--shard`, `--only-changed`, `--test-list` or
 `--test-list-invert` to any e2e invocation. Each one independently disables Playwright's
