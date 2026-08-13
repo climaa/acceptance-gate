@@ -48,48 +48,137 @@ Look at the second scenario: _"without revealing whether the email exists"_ is a
 
 ## The step definitions are the layer that absorbs change
 
-With the intent in the `.feature`, the coupling to the DOM is concentrated in a single place:
+With the intent in the `.feature`, everything that knows about the DOM sits below it. The usual advice at this point is to add a page object. That is not what I did, and the thing I did instead is the part of the practice I would actually defend: **the reusable unit is the step**.
+
+Step definitions live in one flat namespace: a phrase written in a `.feature` is matched against every step registered in the suite. The Cucumber preprocessor exports a `Step` helper that runs that same match from *inside* a step definition — so a step body can call any phrase a feature file could have written. One function, and a Gherkin line becomes composable:
 
 ```ts
 // cypress/e2e/steps/auth.steps.ts
-import { Given, When, Then } from '@badeball/cypress-cucumber-preprocessor';
-import { loginPage } from '../pages/login.page';
+import { Given, When, Step, DataTable } from '@badeball/cypress-cucumber-preprocessor';
 
-Given('a registered user with valid credentials', () => {
-  cy.task('db:seedUser', { email: 'carlos@example.com', password: 'hunter2' }).as('user');
-});
+// The role in the .feature is a key, not a credential: it indexes a map of
+// seeded users, so no password ever appears in a spec.
+Given(
+  'a registered user with valid credentials in the role {string}',
+  function (role: string) {
+    this.user = resolveUser(role);
+  },
+);
 
 When('they sign in', function () {
-  loginPage.visit();
-  loginPage.submitCredentials(this.user.email, this.user.password);
-});
-
-Then('they reach their dashboard', () => {
-  cy.location('pathname').should('eq', '/dashboard');
-  cy.findByRole('heading', { name: /dashboard/i }).should('be.visible');
-});
-
-Then('their session survives a reload', () => {
-  cy.reload();
-  cy.findByRole('heading', { name: /dashboard/i }).should('be.visible');
+  Step(this, 'the user goes to the relative path "/login"');
+  Step(this, `the user fills the input with the label "Email" with the value "${this.user.email}"`);
+  Step(this, `the user fills the input with the label "Password" with the value "${this.user.password}"`);
+  Step(this, 'the user clicks on the button with the label "Sign in"');
 });
 ```
 
-And the page object concentrates the selectors:
+Compare that to the page-object version of the same step:
 
 ```ts
-// cypress/e2e/pages/login.page.ts
-export const loginPage = {
-  visit: () => cy.visit('/login'),
-  submitCredentials(email: string, password: string) {
-    cy.findByLabelText(/email/i).type(email);
-    cy.findByLabelText(/password/i).type(password, { log: false });
-    cy.findByRole('button', { name: /sign in/i }).click();
-  },
-};
+When('they sign in', function () {
+  loginPage.visit();
+  loginPage.fillEmail(this.user.email);
+  loginPage.fillPassword(this.user.password);
+  loginPage.submit();
+});
 ```
 
-Three layers, each with a single reason to change: the feature changes if the requirement changes, the steps if the flow changes, the page object if the markup changes. It is the same old separation, but Gherkin makes it hard to skip — which is exactly its value.
+Four lines either way, and the page-object version has the compiler on its side — which is a real thing to give up. The difference is not length; it is who else can call those lines. `loginPage.fillEmail` is reachable from TypeScript and nowhere else. `the user fills the input with the label "Email" with the value "…"` is reachable from every feature file in the suite, because it is resolved out of the same namespace a `.feature` is resolved out of. That is what the flat namespace buys, and it is the whole trade.
+
+So `they sign in` is not a function that happens to be called from Gherkin. It is a phrase built out of smaller phrases.
+
+(Note the `function` keyword rather than an arrow: `this` is the Mocha context, one object shared by every step in a scenario — it is how `this.user` survives from the `Given` into the `When` — and an arrow has no `this` to hand to `Step`.)
+
+`they sign in` is the middle of three tiers, all made of the same material:
+
+- **atomic steps** — one interaction: each of the four lines in that body, a fill or a click
+- **compound steps** — `they sign in` itself: a handful of atomic steps and nothing else
+- **composite Givens** — `Given an Admin has created a record ready for review`: an entire multi-role workflow behind one line of a `Background`
+
+Only the first tier touches the DOM.
+
+One constraint comes with all this. `Step` queues a Cypress command rather than running one, so anything a step writes to `this` lands after the enclosing body has already returned. Context flows *between* step definitions — the queue drains in between — never between two `Step()` calls in the same body. Read `this.user` from the `Given`, as above; never from a `Step()` on the line before.
+
+### Where the selectors go, then
+
+At the bottom of the vocabulary the DOM finally appears, and when it does it is generic:
+
+```ts
+// cypress/support/selectByLabel.ts — one rule for every labelled field in the app
+export function getFieldControlByLabel(label: string) {
+  const isFieldLabel = (_index: number, element: HTMLElement) =>
+    element.textContent?.replace('*', '').trim() === label;
+
+  return cy.get('label').filter(isFieldLabel).siblings('div');
+}
+```
+
+Call that the resolver. A page object maps a name to a selector, one entry per field per screen; the resolver maps a whole *class* of fields with a single rule — any field whose visible label is X. Add a field to a form and nothing in the support code changes: naming the new label is the whole edit.
+
+The trade is explicit in both directions. You depend on the label text, which the requirement depends on anyway, instead of on a `data-testid`, which only the tests depend on. In exchange, a copy change to a label is a change to the tests — the right amount of coupling when the label is part of the requirement, and a nuisance the day the app is translated.
+
+And it buys that with two holes worth knowing about. Two identical labels on one page is an ambiguous match rather than a clean failure. A control named only by `aria-label` has no `<label>` to find at all — which is the one place the Playwright half below is better, since a role-based locator asks for the accessible name and gets it either way. For controls with no label the testid goes into the `.feature` as a `{string}` instead: still an argument, still not a map. And the shape of that sibling lookup is a contract with one app's form markup, not a universal rule — in a label-column layout the control is not the label's sibling and the same function returns nothing.
+
+### A form is a table, not a paragraph of steps
+
+Once that vocabulary exists, filling a form stops being one Gherkin line per field:
+
+```gherkin
+When the user fills the form with table
+  | Label                | Type           | Value            |
+  | Reference ID         | Input          | {randomRef}      |
+  | Category             | Multi Select   | Premium          |
+  | Destination          | Select         | Northside Office |
+  | Notes                | Textarea       | Automated check  |
+  | Pickup Date and Time | DateTimePicker | +1 day           |
+```
+
+And the step that consumes it is a router, not an implementation:
+
+```ts
+When('the user fills the form with table', function (dataTable: DataTable) {
+  for (const [label, type, value] of dataTable.rows() as Array<[string, string, string]>) {
+    const expanded = interpolate(value, this); // {randomRef} → this.randomRef
+
+    switch (type) {
+      case 'Input':
+        Step(this, `the user clears the input with the label "${label}"`);
+        Step(this, `the user fills the input with the label "${label}" with the value "${expanded}"`);
+        break;
+      case 'Select':
+        Step(this, `the user selects the option "${expanded}" in the select with the label "${label}"`);
+        break;
+      // …one branch per widget family, each of them a step a feature could call itself
+      default:
+        throw new Error(`Unknown field type "${type}" for label "${label}"`);
+    }
+  }
+});
+```
+
+That `default` is not decoration. Without it a mistyped `Type` — `Multiselect` for `Multi Select`, a trailing space — silently skips the row, leaves the field empty, and lets the scenario pass. A dispatch table with no `default` is exactly the kind of test that is green because it verified nothing.
+
+The `Type` column is a dispatch key onto another Gherkin step. In the suite this comes from, that one step carried around a hundred and fifty call sites across some fifty feature files — the most reused line in the whole thing.
+
+And because `DataTable` is a class you can construct, a composite Given fills the same form from TypeScript through the same step:
+
+```ts
+Step(this, 'the user fills the form with table', new DataTable([
+  ['Label', 'Type', 'Value'],
+  ['Reference ID', 'Input', referenceId],
+]));
+```
+
+One filler, two callers. A page object with a `fillCreateForm(…)` method buys the same reuse in TypeScript, but the feature file loses the table — and with it the ability to read, in the spec, exactly which fields a scenario sets.
+
+### What it costs
+
+One flat namespace is what makes all of the above work, and it is also the bill. Every definition is a candidate for every step in the suite, so a phrasing loose enough to be convenient at fifty features can start colliding at three hundred — and a collision is a hard `MultipleDefinitionsError`, not silent shadowing. Better than shadowing, but it is thrown when the step *runs*, so a careless new definition in one app's step file breaks another app's features and you find out scenario by scenario.
+
+Which is why a second app in the same suite has to carry its scope in the wording — `the user is logged in to the chat app as …`. That reads like a style preference and is not one: it is collision avoidance, because step resolution has no other namespace to offer.
+
+So: three things, each with one reason to change, but only two of them grow with the app. The `.feature` changes when the requirement changes. The vocabulary changes when the interaction changes. The resolver changes when the markup changes — and there is one of it for the whole suite, not one per screen.
 
 ## Why this matters more with agents
 
@@ -106,6 +195,20 @@ The files `cypress/e2e/features/**/*.feature` describe product requirements. Do 
 It is a simple rule and it works surprisingly well, because it turns a fuzzy judgment ("does this change weaken the test?") into a binary check on which files the diff touches.
 
 ## The minimal setup I use
+
+`.cypress-cucumber-preprocessorrc.json` is the short half, and the load-bearing one:
+
+```json
+{
+  "stepDefinitions": ["cypress/e2e/steps/**/*.ts"]
+}
+```
+
+That one glob is what makes resolution global, and it is easy to get wrong by leaving it out. The default patterns interpolate `[filepath]` — the feature file's own path — so out of the box each feature sees only its own paired step directory plus `cypress/support/step_definitions`. A pattern with no `[filepath]` in it resolves to the same file set for every feature. That is the entire reuse story above, and it is one line.
+
+Nothing needs configuring to make a missing step fail loudly: the registry throws `MissingDefinitionError` when no expression matches, and `MultipleDefinitionsError` when more than one does. There is no pending state to quietly fall into.
+
+The runner config is longer and less interesting — `specPattern` pointing at `.feature` files and `setupNodeEvents` wiring the preprocessor into the bundler are the two lines that matter, the rest is the shape any Cypress config has:
 
 ```ts
 // cypress.config.ts
@@ -130,17 +233,23 @@ export default defineConfig({
 });
 ```
 
-## The same three layers, running in this repo
+## Where the markup coupling lives is a size question
 
-Everything above is Cypress, because that is where I learned it. But the argument was never about the runner — it is about the layering, and the layering outlives the tool. The acceptance suite for this blog is Playwright with [`playwright-bdd`](https://github.com/vitalets/playwright-bdd), and it lands in exactly the same three files:
+Everything above is Cypress, and it is what a suite of roughly three hundred feature files across two apps pushed me towards. The acceptance suite for this blog is nothing like that size — nine scenarios behind three page objects, Playwright with [`playwright-bdd`](https://github.com/vitalets/playwright-bdd) — and it does have a `pages/` layer:
 
 ```text
 apps/e2e/features/blog.feature   ← intent, no selectors
-apps/e2e/steps/blog.steps.ts     ← the layer that absorbs change
-apps/e2e/pages/blog-index.ts     ← selectors concentrated here
+apps/e2e/steps/blog.steps.ts     ← intent → action
+apps/e2e/pages/blog-index.ts     ← the only layer that may know about markup
 ```
 
-[The feature file](https://github.com/climaa/acceptance-gate/blob/main/apps/e2e/features/blog.feature) is short enough to read in full:
+That is not a contradiction. It is the same rule answered at a different size, and the rule is this: **no line of a `.feature` names a selector.** Below that line the only open question is where to concentrate the markup coupling.
+
+The number to look at is not the feature count; it is how many different flows name the same field. While that is one, a map per screen is one name per field and costs nothing. Once it is a dozen, the map is a dozen names for one input — where a resolver keyed on the visible label has exactly one. That is a check you can run against your own suite this afternoon, and it is why these two suites landed where they did.
+
+`playwright-bdd` exports a `Step` too, but it is a step *constructor* that does not care which keyword you wrote, not a way to call one step from inside another; here the sharing happens through fixtures instead, and [`steps/fixtures.ts`](https://github.com/climaa/acceptance-gate/blob/main/apps/e2e/steps/fixtures.ts) hands every step of a scenario the same page-object instance. So the runner does not decide this either — the shape of the suite does.
+
+[The blog feature file](https://github.com/climaa/acceptance-gate/blob/main/apps/e2e/features/blog.feature) — three of the nine scenarios — is short enough to read in full:
 
 ```gherkin
 Feature: Blog publication
@@ -167,13 +276,13 @@ Feature: Blog publication
     Then no listed article is marked as a draft
 ```
 
-Not one line names a CSS class, a URL or a specific post. The selectors live one layer down, in [the page object](https://github.com/climaa/acceptance-gate/blob/main/apps/e2e/pages/blog-index.ts), whose own doc comment states the rule the file exists to enforce: _"the only layer that may know about markup."_ Its locators are role-based, so a heading is a heading to a screen reader and to the suite alike, and a class rename does not turn the build red. It also refuses to expose a way in by slug — the only route to an article is clicking the first listed title — because a step that hardcodes a slug rots the day the content changes.
+Not one line names a CSS class, a URL or a specific post. At this size the selectors live one layer down, in [the page object](https://github.com/climaa/acceptance-gate/blob/main/apps/e2e/pages/blog-index.ts), which states that rule in its own doc comment because it is the file the rule is about. Its locators are role-based, so a heading is a heading to a screen reader and to the suite alike, and a class rename does not turn the build red. It also refuses to expose a way in by slug: the only way to an article is a click on the rendered list, identified by position, because a step that hardcodes a slug rots the day the content changes.
 
 The last scenario is the one I would point at first. _"No listed article is marked as a draft"_ is trivial to write and trivially passed by accident: a site with no drafts in it satisfies that line forever while verifying nothing. So the repo carries `e2e-draft-fixture.mdx`, a post whose entire reason to exist is to be a draft that must never ship, plus a unit test pinning its `draft: true` flag and its exact title string so that nobody can quietly publish it and leave the scenario green. The spec and the fixture built to make it fail honestly are the same commit.
 
 And this is not a suite I run when I remember to. It is a [required job in the merge gate](https://acceptance-gate-storybook.vercel.app/index.html?path=/docs/docs-the-gate--docs), alongside type checking, lint, unit tests and the visual diff. No branch reaches `main` without it.
 
-That is the part that makes the whole argument checkable rather than merely stated: the three layers above are not an illustration of how I would organise a suite. They are the files this page was published through.
+That is the part that makes the whole argument checkable rather than merely stated: the files above are not an illustration of how I would organise a suite. They are the files this page was published through.
 
 ## When not to use Gherkin
 
