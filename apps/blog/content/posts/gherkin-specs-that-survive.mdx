@@ -2,20 +2,13 @@
 title: 'Cypress and Gherkin: specs an agent can maintain'
 description: 'How to write Gherkin features that act as an executable contract instead of becoming a layer of indirection nobody reads.'
 date: '2026-08-04'
-tags: ['cypress', 'gherkin', 'testing']
-draft: true
+tags: ['cypress', 'gherkin', 'testing', 'e2e']
+draft: false
 ---
 
-Gherkin has a bad name among developers, and a good part of that is our own fault. The
-original promise — that the business writes the scenarios — almost never happens, and what
-is left is a translation layer between structured English and code that has to be
-maintained twice over.
+Gherkin has a bad name among developers, and a good part of that is our own fault. The original promise — that the business writes the scenarios — almost never happens, and what is left is a translation layer between structured English and code that has to be maintained twice over.
 
-My position, after several projects with Cypress and the Cucumber preprocessor, is that
-Gherkin is still worth it, but **for a different reason than the one usually given**. It is
-not so the business can write tests. It is so the test declares _what_ it verifies
-independently of _how_ it verifies it. And that separation has become far more valuable now
-that there are agents touching the code.
+My position, after several projects with Cypress and the Cucumber preprocessor, is that Gherkin is still worth it, but **for a different reason than the one usually given**. It is not so the business can write tests. It is so the test declares _what_ it verifies independently of _how_ it verifies it. And that separation has become far more valuable now that there are agents touching the code.
 
 ## The symptom of a badly written feature
 
@@ -24,15 +17,13 @@ This is the degenerate form, the one that gives the format its bad reputation:
 ```gherkin
 Scenario: Login
   Given I visit "/login"
-  When I type "carles@example.com" into "#email"
+  When I type "carlos@example.com" into "#email"
   And I type "hunter2" into "#password"
   And I click "#submit"
   Then the URL should be "/dashboard"
 ```
 
-This is not a specification. It is a Selenium script with an accent. Every DOM selector is
-embedded in the natural language, so any markup refactor breaks the feature, and reading it
-tells you nothing you did not already know.
+This is not a specification. It is a Selenium script with an accent. Every DOM selector is embedded in the natural language, so any markup refactor breaks the feature, and reading it tells you nothing you did not already know.
 
 The version that does work describes intent:
 
@@ -40,7 +31,7 @@ The version that does work describes intent:
 Feature: Access to the private dashboard
 
   Background:
-    Given a registered user with valid credentials
+    Given a registered user with valid credentials in the role "Admin"
 
   Scenario: Successful sign-in
     When they sign in
@@ -53,14 +44,11 @@ Feature: Access to the private dashboard
     And they stay on the sign-in screen
 ```
 
-Look at the second scenario: _"without revealing whether the email exists"_ is a real
-security requirement, expressed in a verifiable way, that would never show up in a script of
-clicks. That is what Gherkin contributes.
+Look at the second scenario: _"without revealing whether the email exists"_ is a real security requirement, expressed in a verifiable way, that would never show up in a script of clicks. That is what Gherkin contributes.
 
 ## The step definitions are the layer that absorbs change
 
-With the intent in the `.feature`, the coupling to the DOM is concentrated in a single
-place:
+With the intent in the `.feature`, the coupling to the DOM is concentrated in a single place:
 
 ```ts
 // cypress/e2e/steps/auth.steps.ts
@@ -68,7 +56,7 @@ import { Given, When, Then } from '@badeball/cypress-cucumber-preprocessor';
 import { loginPage } from '../pages/login.page';
 
 Given('a registered user with valid credentials', () => {
-  cy.task('db:seedUser', { email: 'carles@example.com', password: 'hunter2' }).as('user');
+  cy.task('db:seedUser', { email: 'carlos@example.com', password: 'hunter2' }).as('user');
 });
 
 When('they sign in', function () {
@@ -101,32 +89,21 @@ export const loginPage = {
 };
 ```
 
-Three layers, each with a single reason to change: the feature changes if the requirement
-changes, the steps if the flow changes, the page object if the markup changes. It is the
-same old separation, but Gherkin makes it hard to skip — which is exactly its value.
+Three layers, each with a single reason to change: the feature changes if the requirement changes, the steps if the flow changes, the page object if the markup changes. It is the same old separation, but Gherkin makes it hard to skip — which is exactly its value.
 
 ## Why this matters more with agents
 
-An agent you ask to "fix the failing test" has a perverse incentive: the fastest way to make
-a test pass is to weaken it. Swap a `should('be.visible')` for a `should('exist')`. Raise a
-timeout. Add a `.first()` to an ambiguous selector. All of those edits are local, plausible,
-and they switch the verification off.
+An agent you ask to "fix the failing test" has a perverse incentive: the fastest way to make a test pass is to weaken it. Swap a `should('be.visible')` for a `should('exist')`. Raise a timeout. Add a `.first()` to an ambiguous selector. All of those edits are local, plausible, and they switch the verification off.
 
-When the intent lives in a `.feature` the agent does **not** need to touch in order to fix a
-selector, you have an anchor. Reviewing the PR collapses into one question: did any
-`.feature` change? If not, the contract still stands and the diff is mechanical. If it did,
-it has to be read carefully, because what the system promises has been modified.
+When the intent lives in a `.feature`, the agent does **not** need to touch it in order to fix a selector; you have an anchor. Reviewing the PR collapses into one question: did any `.feature` change? If not, the contract still stands, and the diff is mechanical. If it did, it has to be read carefully, because what the system promises has been modified.
 
-In practice I make this explicit in the repository instructions:
+In practice, I make this explicit in the repository instructions:
 
 ```md
-The files `cypress/e2e/features/**/*.feature` describe product requirements.
-Do not modify them to make a test pass. If a scenario fails and you believe the
-scenario is wrong, say so in the PR and wait for human review.
+The files `cypress/e2e/features/**/*.feature` describe product requirements. Do not modify them to make a test pass. If a scenario fails and you believe the scenario is wrong, say so in the PR and wait for human review.
 ```
 
-It is a simple rule and it works surprisingly well, because it turns a fuzzy judgment ("does
-this change weaken the test?") into a binary check on which files the diff touches.
+It is a simple rule and it works surprisingly well, because it turns a fuzzy judgment ("does this change weaken the test?") into a binary check on which files the diff touches.
 
 ## The minimal setup I use
 
@@ -153,8 +130,51 @@ export default defineConfig({
 });
 ```
 
+## The same three layers, running in this repo
+
+Everything above is Cypress, because that is where I learned it. But the argument was never about the runner — it is about the layering, and the layering outlives the tool. The acceptance suite for this blog is Playwright with [`playwright-bdd`](https://github.com/vitalets/playwright-bdd), and it lands in exactly the same three files:
+
+```text
+apps/e2e/features/blog.feature   ← intent, no selectors
+apps/e2e/steps/blog.steps.ts     ← the layer that absorbs change
+apps/e2e/pages/blog-index.ts     ← selectors concentrated here
+```
+
+[The feature file](https://github.com/climaa/acceptance-gate/blob/main/apps/e2e/features/blog.feature) is short enough to read in full:
+
+```gherkin
+Feature: Blog publication
+  As a site visitor
+  I want to read the published articles
+  so I can judge the author's technical judgment.
+
+  Background:
+    Given at least one published article exists
+
+  Scenario: The index lists the articles
+    When I visit the blog index
+    Then I see the list of articles
+    And each article shows its date and reading time
+
+  Scenario: Read a full article
+    When I visit the blog index
+    And I open the first article
+    Then I see the article body
+    And the article title is the page's main heading
+
+  Scenario: Drafts are not published
+    When I visit the blog index
+    Then no listed article is marked as a draft
+```
+
+Not one line names a CSS class, a URL or a specific post. The selectors live one layer down, in [the page object](https://github.com/climaa/acceptance-gate/blob/main/apps/e2e/pages/blog-index.ts), whose own doc comment states the rule the file exists to enforce: _"the only layer that may know about markup."_ Its locators are role-based, so a heading is a heading to a screen reader and to the suite alike, and a class rename does not turn the build red. It also refuses to expose a way in by slug — the only route to an article is clicking the first listed title — because a step that hardcodes a slug rots the day the content changes.
+
+The last scenario is the one I would point at first. _"No listed article is marked as a draft"_ is trivial to write and trivially passed by accident: a site with no drafts in it satisfies that line forever while verifying nothing. So the repo carries `e2e-draft-fixture.mdx`, a post whose entire reason to exist is to be a draft that must never ship, plus a unit test pinning its `draft: true` flag and its exact title string so that nobody can quietly publish it and leave the scenario green. The spec and the fixture built to make it fail honestly are the same commit.
+
+And this is not a suite I run when I remember to. It is a [required job in the merge gate](https://acceptance-gate-storybook.vercel.app/index.html?path=/docs/docs-the-gate--docs), alongside type checking, lint, unit tests and the visual diff. No branch reaches `main` without it.
+
+That is the part that makes the whole argument checkable rather than merely stated: the three layers above are not an illustration of how I would organise a suite. They are the files this page was published through.
+
 ## When not to use Gherkin
 
-For component tests, I do not use it. The ceremony does not pay for itself: a component test
-is already readable, and its contract is the component's API, not a user story. Gherkin wins
-in flows that cross several screens and where the requirement is debatable.
+For component tests, I do not use it. The ceremony does not pay for itself: a component test is already readable, and its contract is the component's API, not a user story. Gherkin wins in flows that cross several screens and where the requirement is debatable.
