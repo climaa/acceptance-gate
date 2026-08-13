@@ -1,4 +1,4 @@
-# The gate, thin form. Wave 3 adds an `e2e` job to `gate.needs` — no
+# The gate, thin form. Wave 3 added an `e2e` job to `gate.needs` — no
 # branch-protection edit ever needed again: `gate` is the only required check.
 #
 # `visual-diff` (below) is deliberately NOT in that list. Per
@@ -57,7 +57,7 @@ env:
 #
 # Repeated per job because GitHub Actions does not support YAML anchors. The
 # `checks` matrix below shares the six per-command jobs' steps, but a matrix
-# cannot share this guard line, so all four jobs (checks, sandcastle,
+# cannot share this guard line, so all five jobs (checks, sandcastle, e2e,
 # visual-diff, gate) still carry their own copy. A new job added in a later
 # wave needs this line too — and, unless it's meant to stay informational like
 # `visual-diff`, an entry in `gate.needs`.
@@ -149,6 +149,74 @@ jobs:
       # test failure.
       - run: pnpm typecheck:sandcastle
       - run: pnpm test:sandcastle
+
+  e2e:
+    # The acceptance suite (apps/e2e): Gherkin scenarios compiled by playwright-bdd,
+    # run against `next start` on the BUILT blog. In gate.needs, unlike visual-diff —
+    # this one has no baselines to approve, so a red is a binary claim about product
+    # behavior rather than a judgment call about pixels.
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
+    runs-on: ubuntu-24.04-arm
+    # Same ceiling as `checks`, and for the same reason: the worst case is a cold
+    # Turbo cache paying for @gate/blog#build before a single scenario starts, which
+    # is every Dependabot run by design. Not visual-diff's 30 — most of that budget
+    # is the container image pull this job deliberately does not do. Must stay
+    # strictly ABOVE playwright.config.ts's globalTimeout (15m, set by #226), or a
+    # wedged run is killed by the job before it can flush its report.
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - run: corepack enable
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # Deliberately NOT the mcr.microsoft.com/playwright container visual-diff runs
+      # in. That container exists to freeze the exact Chromium the pixel baselines
+      # were recorded against — __baselines__/BASELINE_ENV.json pins the image tag AND
+      # the chromium revision, and a mismatch is a mass rebaseline. This suite compares
+      # roles, text and axe results, so it has no such coupling, and adopting the
+      # container would buy a SECOND hand-maintained version string that can drift from
+      # the exact @playwright/test pin in apps/e2e/package.json. `playwright install`
+      # derives the browser from that pin, so there is nothing to keep in sync.
+      #
+      # Staying out of a container also keeps upload-artifact working on plain
+      # directory paths — which, as the tar workaround in visual-diff below documents,
+      # it demonstrably does not do from inside one.
+      - name: Restore the Chromium download
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/ms-playwright
+          # Keyed on apps/e2e/package.json, not pnpm-lock.yaml. @playwright/test is
+          # pinned exactly there and Dependabot ignores it, so this key moves on the
+          # hand-authored bump and on nothing else. A lockfile key would miss on every
+          # weekly bump PR — the runs that already build cold — for no benefit.
+          key: playwright-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('apps/e2e/package.json') }}
+      # --with-deps runs whether or not that cache hit: the cache carries the browser,
+      # apt carries the system libraries it dynamically links, and only one of those
+      # two lives under HOME. On a hit the download half is a no-op.
+      - run: pnpm --filter @gate/e2e exec playwright install --with-deps chromium
+      # `turbo run e2e`, not `pnpm --filter @gate/e2e test:e2e`: the task dependsOn
+      # @gate/blog#build, so what the suite boots is what the build produced rather
+      # than whatever .next was lying around. Same convention as every other job here
+      # — build what you need yourself, hit the shared remote cache if `build` already
+      # primed it. CI=true is set by Actions, which is what turns on the config's
+      # retries, failOnFlakyTests, forbidOnly and list reporter (#226) and disables
+      # reuseExistingServer.
+      - run: pnpm turbo run e2e
+      # always(), not failure(): a run that went green only on a retry still produced
+      # a trace (trace: 'retain-on-failure'), and that trace is the only evidence of
+      # the flake. Directory paths and no tar — this job is not in a container.
+      - name: Upload the Playwright report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: e2e-report
+          path: |
+            apps/e2e/playwright-report
+            apps/e2e/test-results
+          retention-days: 14
 
   visual-diff:
     # Not in gate.needs — see the file header. Runs on the pinned
@@ -258,7 +326,7 @@ jobs:
     # versus six separate jobs: the failure echo below no longer names which
     # leg failed — the checks list still does, the log line just doesn't
     # repeat it.
-    needs: [checks, sandcastle]
+    needs: [checks, sandcastle, e2e]
     if: always() && (github.event_name != 'pull_request' || github.event.pull_request.draft == false)
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 2

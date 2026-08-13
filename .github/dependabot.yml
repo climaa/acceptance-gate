@@ -2,12 +2,15 @@
 # gate as feature work. Minor+patch grouped weekly (a pnpm monorepo without
 # grouping is a PR-per-package noise machine); majors arrive individually.
 #
-# Three ignores, all deliberate — these are hand-authored issues, never bot PRs:
+# Four ignores, all deliberate — these are hand-authored issues, never bot PRs:
 # - playwright: a bump must move the container image, the policy-sync test and
 #   a mass-rebaseline together
 # - storybook: the differ's capture URL rides Storybook's internal globals
 #   serialization, and any Storybook bump can shift pixels (reds the gate)
 # - pnpm: pinned via packageManager + sha512
+# - @axe-core/*: a bump changes which rules the a11y scenarios enforce, so
+#   it's a deliberate review of new violations against real markup, not a
+#   version number to roll forward
 version: 2
 updates:
   - package-ecosystem: npm
@@ -25,6 +28,7 @@ updates:
       - dependency-name: storybook
       - dependency-name: "@storybook/*"
       - dependency-name: pnpm
+      - dependency-name: "@axe-core/*"
 
   - package-ecosystem: github-actions
     directory: /
