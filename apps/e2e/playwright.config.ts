@@ -12,16 +12,51 @@ const testDir = defineBddConfig({
 // The server is started on it and the tests are pointed at it, so it is one constant:
 // the two drifting apart boots a server nothing visits.
 const PORT = 3100;
+
+// E2E_BASE_URL aims the suite at an already-running deployment — a local
+// convenience. In CI it can only aim a merge-gating check at something that is
+// not this PR's build: a run that is green against the live site says nothing
+// about the commit under review, which is the entire claim the check makes.
+// Refused rather than honoured, so the override is structurally local-only.
+if (process.env.CI && process.env.E2E_BASE_URL) {
+  throw new Error(
+    'E2E_BASE_URL is a local-only override: in CI the suite must run against the build this PR produced. Unset it.',
+  );
+}
+
 const baseURL = process.env.E2E_BASE_URL ?? `http://localhost:${PORT}`;
 
 export default defineConfig({
   testDir,
-  reporter: [['html', { open: 'never' }]],
+  // playwright-bdd translates an `@only` tag on a scenario straight into
+  // `test.only(...)`, which narrows the whole run to that one scenario and still
+  // exits 0. Playwright enforces this in the load task, outside the filterOnly
+  // branch, so it trips under `--list` too — which is what
+  // scripts/suite-integrity.mjs leans on.
+  forbidOnly: !!process.env.CI,
+  // `html` writes a report nobody opens unless something failed, so under CI the
+  // job log would say nothing about which scenarios ran. `list` puts that where
+  // a person reading the checks list actually looks.
+  reporter: process.env.CI
+    ? [['list'], ['html', { open: 'never' }]]
+    : [['html', { open: 'never' }]],
   timeout: 30_000,
+  // Strictly below the e2e job's `timeout-minutes`. A job GitHub kills on its own
+  // timeout skips its remaining steps — `if: always()` uploads included — so a
+  // wedged run destroys the report and traces that would explain it. Playwright
+  // ending the run itself flushes the reporter first and leaves the upload step
+  // to run. MUST stay strictly below that job timeout if either ever moves.
+  globalTimeout: 15 * 60 * 1000,
   expect: { timeout: 10_000 },
-  // Retries are CI-only backstop for infra flake; locally a real failure is
-  // never masked by a passing re-run.
-  retries: process.env.CI ? 2 : 0,
+  // A retry cannot tell infra flake from a genuine race in the product; it
+  // absorbs both, identically and silently. On a suite that gates merges — and
+  // this repo auto-merges Dependabot PRs on `gate` — absorbing the second is
+  // absorbing the finding. `failOnFlakyTests` makes a pass-on-retry red the run,
+  // which leaves retry 1 buying only the report's flaky-vs-failed distinction
+  // and retry 2 buying nothing at all (fail/fail/pass and fail/pass both red it)
+  // at twice the worst-case per-test time.
+  retries: process.env.CI ? 1 : 0,
+  failOnFlakyTests: !!process.env.CI,
   use: {
     baseURL,
     // Trace the actual failing attempt, not only a retried run.

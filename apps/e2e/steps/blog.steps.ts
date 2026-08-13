@@ -8,7 +8,10 @@ const { Given, When, Then } = createBdd(test);
 // Matches the fixture post's title exactly — see
 // apps/blog/content/posts/e2e-draft-fixture.mdx. Never flip that post to
 // draft: false; this scenario exists to fail loudly if someone does.
-const DRAFT_FIXTURE_TITLE = 'Draft fixture — must never be published';
+// Exported so there is one string to compare against: the fixture's existence,
+// its draft flag and this exact title are pinned by
+// apps/blog/__tests__/e2e-draft-fixture.test.ts, which reads this declaration.
+export const DRAFT_FIXTURE_TITLE = 'Draft fixture — must never be published';
 
 // "I visit the blog index" is already defined in smoke.steps.ts and reused
 // here — one step definition per Gherkin line, shared across every feature.

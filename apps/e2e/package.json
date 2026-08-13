@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test:e2e": "bddgen && playwright test",
+    "check:suite": "node scripts/suite-integrity.mjs",
+    "test:e2e": "bddgen && pnpm run check:suite && playwright test",
     "e2e": "pnpm run test:e2e",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
