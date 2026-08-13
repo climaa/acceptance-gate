@@ -51,9 +51,10 @@ leg wants; `visual-diff` runs alongside all of them and is deliberately outside
 `always()`, paired with the same draft guard every other job carries — and failing unless
 every result is exactly `success`.
 
-This page shows the mechanism. For why it is shaped this way — what a branch protection rule
-actually decides (nothing: no model evaluates the push), and what it costs to switch one off
-for two seconds — see
+This page shows the mechanism, where the requirement that makes it binding is declared, and
+what removing it costs. For the afternoon those conclusions came from — a supervised model
+trying to skip the gate twice while the autonomous one never did, and what a branch
+protection rule actually decides (nothing: no model evaluates the push) — see
 [The guardrail you can switch off](https://acceptance-gate-blog.vercel.app/blog/the-guardrail-you-can-switch-off).
 
 ## Invariants that look cosmetic and are not
@@ -81,6 +82,82 @@ reason six checks exist.
 **Never add a second required context.** A required context that never reports blocks
 every PR forever, and it presents as a hung check rather than a misconfiguration. If a new
 job should block merges, it goes in `gate.needs`.
+
+## Where the requirement is declared
+
+`pr.yml` decides what runs. It does not decide what _blocks_ — that is a repository rule,
+and it lives outside the workflow entirely. The rule is committed as
+[`.github/rulesets/main.json`](https://github.com/climaa/acceptance-gate/blob/main/.github/rulesets/main.json),
+with the argument for each clause in
+[its README](https://github.com/climaa/acceptance-gate/blob/main/.github/rulesets/README.md)
+rather than restated here: one required context, no bypass actors, and no deletion or
+force-push of `main`.
+
+Two things about it belong on this page, because neither is visible from the file itself.
+
+**Status: committed, not applied.** The ruleset _declares_ a posture; it is not in force
+until someone runs `scripts/apply-ruleset.mjs --apply`, and what enforces `main` today is
+still the older classic protection it is meant to replace. Its README is written in the
+conditional throughout for that reason. Do not read the presence of the file as a
+description of the repository's current state — run the script, which prints the mismatches
+or says the live rule satisfies everything the file declares.
+
+**`bypass_actors: []` is a seatbelt, not a padlock.** Nobody bypasses the rule while the
+rule exists, and whoever can delete the rule is exactly who it binds. That is not a flaw to
+be engineered away. It is the ceiling on what any rule can do, and it makes the useful
+question not _how strong is it_ but _what does it cost to take off_.
+
+<Mermaid
+  chart={`
+flowchart TD
+    H["Human<br/>git push origin main"] -.->|"protected branch<br/>hook declined"| X["Rejected —<br/>main never moves"]
+    A["Agent<br/>gh pr create<br/>gh pr merge --squash --auto"] --> G{"gate green?"}
+    G -->|"no"| W["PR sits there,<br/>nothing merges"]
+    G -->|"yes"| M["main"]
+`}
+/>
+
+Two ways to reach `main`, and only one of them is open. The part worth sitting with is not
+that the agent is better behaved — it is that the protected route is the only route in its
+instructions. The protection is invisible to it, because it never had the shortcut to reach
+for.
+
+## Removing the rule, and what could not be removed
+
+The rule came off `main` for about two seconds one afternoon, deliberately, to purge a
+string from the repository's history. Three calls: `gh api -X DELETE` on the protection,
+`git push --force`, then `gh api -X PUT` to put it back. It was restored byte for byte
+because the configuration had been written to a file first.
+
+That is the disaster-recovery story, and it is also the measure of what a rule costs to
+remove: one call, no confirmation, no second party, no audit entry anybody reads. Set
+against it, the control that actually held.
+
+**The agent's token carries four permissions.** Contents, issues, pull requests, metadata.
+There is no `Administration` — the scope that edits branch protection. The distinction is
+not that the agent is instructed not to touch the rule. It is that it cannot: the API
+returns 403, and no wording in any prompt changes that.
+
+**The asymmetry is the whole point.** Removing the rule is one API call from a session that
+already holds the credential. Granting the permission that was never granted means going
+back to GitHub, generating a new token with a wider scope, and pasting it into the secret
+store — three deliberate steps, each one an opportunity to notice what you are doing.
+
+<Mermaid
+  chart={`
+flowchart LR
+    R["Rule<br/>branch protection on main"] --> R1["one API call"] --> RX["gone"]
+    P["Permission<br/>Administration — never granted"] --> P1["open GitHub"] --> P2["generate a wider token"] --> P3["paste into the secret store"] --> PX["only now possible"]
+`}
+/>
+
+**It got tested by accident.** A smoke-test issue asked for two things: a CI badge in the
+README, and a repository description. The second half needs `Administration: write`. The fix
+was not to widen the token — it was to cut the issue down to the half the agent was allowed
+to do. A permission boundary is only real if you would sooner shrink the task than widen the
+boundary. The same reasoning is why `--apply` is not wired into CI, and why the break-glass
+path in the ruleset README is a UI action: anything that can turn the protection off from
+inside the pipeline defeats it.
 
 ## Why `visual-diff` is exempt and `e2e` is not
 

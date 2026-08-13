@@ -36,37 +36,26 @@ Autonomy is not the risky variable. Available surface is.
 
 ## What the rule actually is
 
-Four lines of configuration, verified through the API rather than trusted from a settings page:
-
-```json
-{
-  "required_status_checks": { "contexts": ["gate"], "strict": true },
-  "enforce_admins": true,
-  "allow_force_pushes": false,
-  "allow_deletions": false
-}
-```
-
-One detail carries more weight than the rest: `contexts` names a single check called `gate`, and `gate` is not a real job. It is an aggregator that fails unless every other job reports success:
-
-```yaml
-gate:
-  needs: [lint, typecheck, build, test, sandcastle]
-  if: always()
-  steps:
-    - if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
-      run: exit 1
-```
+Four lines of configuration, which I read back through the API rather than trusting a
+settings page. The protection requires a single passing check named `gate` — and `gate` is
+not a real job. It is an aggregator that fails unless every job it depends on reports
+success.
 
 The indirection matters because it separates two things that usually get tangled. Adding a
-job to CI means editing `needs`. Changing what is *required to merge* means editing branch
-protection — a security setting, in a different system, with different consequences if you
+job to CI means editing a list in a workflow file. Changing what is *required to merge*
+means editing a security setting, in a different system, with different consequences if you
 get it wrong. Point protection at an aggregator once and you never touch it again while
 tightening the pipeline underneath.
 
-`if: always()` is the part people leave out. Without it the gate is skipped when a
-dependency fails, and a skipped check is not a failed check — the merge sails through. The
-condition treats `skipped` and `cancelled` as failures for exactly that reason.
+The part people leave out is that a skipped check is not a failed check. Without the right
+condition the aggregator is skipped when a dependency fails, GitHub reads the silence as
+nothing to object to, and the merge sails through. `skipped` and `cancelled` have to count
+as red for exactly that reason.
+
+The exact configuration — where the requirement is declared, what else the rule forbids, and
+what it costs to take it away — is in
+[The Gate](https://acceptance-gate-storybook.vercel.app/index.html?path=/docs/docs-devops-the-gate--docs),
+next to the diagram of the two paths to `main`.
 
 ## Then I switched it off
 
@@ -151,8 +140,11 @@ naming the model that wrote it.
 
 The repository history distinguishes three models by trailer: one did the Phase 0 setup, one
 did the afternoon's infrastructure work, one wrote the single autonomous commit — routed
-there by a label on the issue, `sc:implementer:sonnet-5`, which resolved through the planner
-into the sandbox and out into the commit message.
+there by a label on the issue,
+[`sc:implementer:sonnet-5`](https://github.com/climaa/acceptance-gate/labels?q=sc%3A), which
+resolved through the planner into the sandbox and out into the commit message. That link
+goes to the whole `sc:` family rather than the one label, because the vocabulary is the
+interesting part: routing an issue through the pipeline is done by naming it.
 
 That the trailer survives the whole chain is the useful part. Not because the model matters
 much for a one-line change, but because six months from now the only durable record of what
