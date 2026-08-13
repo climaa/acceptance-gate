@@ -206,9 +206,12 @@ function renderWarnings(summary) {
 const REMEDIATION = [
   '### To fix',
   '',
-  '1. `pnpm visual-diff`',
-  "2. Review `report.html` for every failing variant's diff.",
-  '3. `pnpm visual-diff:accept` to accept the intentional changes.',
+  "1. Review `report.html` for every failing variant's diff.",
+  '2. If the changes are intentional, accept them **inside the pinned container**, not ' +
+    'bare-metal — `accept` carries no host guard, so a bare-metal run succeeds but ' +
+    "silently corrupts the baseline corpus with your host's font rendering. See " +
+    "`packages/visual-diff/README.md` → \"Running the pinned container locally\" for the " +
+    'exact commands.',
 ].join('\n');
 
 /** The PR-comment markdown. Its only input is the `summary.json` object, so the file

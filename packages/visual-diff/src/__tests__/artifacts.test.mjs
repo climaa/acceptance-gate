@@ -198,6 +198,21 @@ describe('renderSummaryMd', () => {
     expect(md).not.toContain('To fix');
   });
 
+  it('remediates with a container-only recipe, not a bare-metal command', () => {
+    const summary = buildSummary([row(), changedRow()], ENV);
+
+    const md = renderSummaryMd(summary);
+
+    expect(md).toContain('### To fix');
+    // No bare `pnpm visual-diff` / `pnpm visual-diff:accept` — those fail (loudly, then
+    // silently) off the pinned platform. See #243.
+    expect(md).not.toContain('pnpm visual-diff`');
+    expect(md).not.toContain('pnpm visual-diff:accept`');
+    expect(md).toContain('inside the pinned container');
+    expect(md).toContain('no host guard');
+    expect(md).toContain('packages/visual-diff/README.md');
+  });
+
   it('formats a size change and a strict-mode (zero-allowance) ratio', () => {
     const summary = buildSummary(
       [
