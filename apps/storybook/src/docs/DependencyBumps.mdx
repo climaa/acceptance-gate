@@ -1,0 +1,139 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+import { Mermaid } from './Mermaid';
+
+<Meta title="Docs/DevOps/Dependency Bumps" />
+
+# Dependency bumps
+
+Dependency maintenance runs through the same gate as feature work — a bump PR is not a
+special case, it is the cheapest possible test of whether the gate means anything. A green
+patch bump merges itself; anything that reds a check waits for a person.
+
+The configuration is
+[`.github/dependabot.yml`](https://github.com/climaa/acceptance-gate/blob/main/.github/dependabot.yml)
+and
+[`.github/workflows/dependabot-auto-merge.yml`](https://github.com/climaa/acceptance-gate/blob/main/.github/workflows/dependabot-auto-merge.yml),
+both of which carry their reasoning in comments. This page does not restate what they say —
+it covers the parts that are not visible in either file: why auto-merge needs a PAT, and
+the failure mode that took this pipeline out silently for its entire life until it was
+found. See also [The Gate](?path=/docs/docs-devops-the-gate--docs).
+
+## Two kinds of ignore, and why the difference matters
+
+`dependabot.yml` has two categories of ignore entry and the distinction is not cosmetic —
+it decides what has to be true before an entry can come out.
+
+**Blanket ignores** mean _a bump here is a hand-authored issue._ Landing one changes more
+than a version number: a Playwright bump has to move the container image, the policy-sync
+test and a mass rebaseline together, in one PR. There is no version of that which arrives
+as a bot PR.
+
+**Major-scoped ignores** — carrying `update-types: ["version-update:semver-major"]` — mean
+something different: _the next major is blocked upstream, so there is no diff that makes it
+work._ Minor and patch updates still flow. These exist because a blocked major otherwise
+reopens every cycle, burning a full cold-cache run to rediscover a blocker that is already
+written up in an issue, and leaving a permanently red PR on the board.
+
+The removal criteria differ accordingly. A blanket entry comes out when someone decides to
+do the work. A major-scoped entry comes out only when the checks written into its issue
+start passing — and those issues carry the exact commands. Deleting one without running
+them puts the red PR straight back.
+
+## Why auto-merge runs on a PAT
+
+Two non-obvious constraints, both of which have already been got wrong once.
+
+**`GITHUB_TOKEN` does not trigger further workflows.** A merge performed with it is a
+dead end: the push-to-`main` run that seeds the shared Turbo cache never fires, so every
+bot merge would leave the cache cold for the next PR. A PAT-authored merge fires it.
+
+**The PAT must live in the Dependabot secret store, not the Actions store.** Dependabot-
+triggered runs read a different secret store. An Actions secret of the same name resolves
+to an empty string — no error, no warning, the variable is simply blank. This is the same
+mechanism that makes Dependabot runs build cold with no `TURBO_TOKEN`.
+
+Because a blank credential produces a confusing `gh` auth error rather than a useful one,
+the workflow has a guard step that fails with the fix instead. That guard is correct and it
+worked. It still failed to tell anyone, for the reason below.
+
+## The failure mode worth knowing: a loud check that goes quiet
+
+This is the part no file records, because it is an interaction between three mechanisms
+that are individually fine.
+
+<Mermaid
+  chart={`
+flowchart TD
+    A["Dependabot opens a PR"] --> B["dependabot-auto-merge runs<br/>actor = dependabot[bot]"]
+    B --> C{"GH_TOKEN present?"}
+    C -->|"yes"| D["gh pr merge --auto<br/>waits for gate"]
+    C -->|"no"| E["Guard FAILS loudly<br/>red check, names the fix"]
+    E --> F["main moves, PR goes BEHIND<br/>(strict protection)"]
+    F --> G["Someone clicks 'Update branch'"]
+    G --> H["Merge commit authored by a HUMAN<br/>actor is no longer dependabot[bot]"]
+    H --> I["Job SKIPS via its own if: guard"]
+    I --> J["Checks list reads<br/>'all passed, 1 skipped'<br/>The red is gone. Nothing is fixed."]
+`}
+/>
+
+Every step is working as designed. The guard fails loudly _while the actor is still the
+bot_. Strict branch protection makes PRs go `BEHIND` on every merge to `main`, so
+"Update branch" is the natural reflex. And the job's actor check is deliberate — a human
+push to a bot branch **should** disable auto-merge, because the PR is no longer purely the
+bot's work.
+
+The result is that the one action a maintainer reaches for to unstick a bot PR is also the
+action that hides why it was stuck. A misconfiguration that fails red on Monday is a
+skipped check by Tuesday.
+
+**Observed, not theorised.** Three runs on the same PR tell the whole story:
+
+| Run           | Actor             | Result      | What it means                                   |
+| ------------- | ----------------- | ----------- | ----------------------------------------------- |
+| `31681889445` | `dependabot[bot]` | **failure** | Guard fired: `GH_TOKEN` empty                   |
+| `31686204691` | `climaa`          | **skipped** | Human updated the branch; failure now invisible |
+| `31687240886` | `dependabot[bot]` | **success** | Secret fixed, branch recreated, `--auto` armed  |
+
+The PR then merged itself. That was the first successful run of this workflow since it was
+written — the secret had been in the wrong store from the beginning.
+
+## Runbook: a bot PR that will not merge
+
+Work down this list. The order matters, because the cheap options stop being available once
+the expensive ones are needed.
+
+**Is the auto-merge job skipping rather than failing?** Then a human has pushed to the
+branch and the actor check is doing its job. Nothing is wrong with the workflow; the PR
+needs a bot-authored update to recover.
+
+**Never click "Update branch" on a Dependabot PR.** It permanently disables auto-merge for
+that PR, hides any guard failure behind a skipped check, _and_ blocks the cheapest recovery
+below. This is the single most useful thing on this page.
+
+**`@dependabot rebase`** — the cheap fix, for a `BEHIND` PR whose branch carries only
+`dependabot[bot]` commits. Updates against `main`, keeps the actor correct, preserves an
+already-armed auto-merge. Dependabot refuses this outright on a branch a human has touched:
+_"Looks like this PR has been edited by someone other than Dependabot."_
+
+**`@dependabot recreate`** — the expensive fix, and the only one available once a human has
+edited the branch. Discards the branch and rebuilds it from `main`, authored by the bot.
+Everything on the old branch is thrown away, which is fine when the only human commit was
+an "Update branch" click and is not fine otherwise.
+
+**Closing and reopening the PR by hand does not work.** The workflow gates on
+`github.actor`, and the actor of a manual reopen is _you_ — so the job skips again for
+exactly the reason you were trying to fix. Only Dependabot acting restores the actor.
+
+**Ordering, when merging something else at the same time.** Any merge to `main` flips an
+open bot PR to `BEHIND`, and GitHub's auto-merge waits for checks but never updates a stale
+branch. If a bot PR is armed and close to merging, let it land first — otherwise it sits
+armed and stuck until someone issues a rebase.
+
+## The unresolved part
+
+The guard only fails loudly while the actor is still `dependabot[bot]`. Once the actor
+flips, the misconfiguration becomes invisible, and strict protection makes that flip likely
+rather than exceptional. Nothing currently detects the state "auto-merge has been silently
+disabled on this PR". If you are reading this because a bot PR is stuck again, that gap is
+still open.

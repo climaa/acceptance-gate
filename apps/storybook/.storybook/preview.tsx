@@ -110,7 +110,9 @@ const preview: Preview = {
             // describes what happens to a change after you have made one, so it
             // only makes sense once the reader knows what the change is to.
             'DevOps',
-            ['The Gate'],
+            // The Gate first: it explains what `gate` is, which Dependency
+            // Bumps then assumes when it talks about a bump PR waiting on it.
+            ['The Gate', 'Dependency Bumps'],
             'Skills',
             [
               'Overview',
