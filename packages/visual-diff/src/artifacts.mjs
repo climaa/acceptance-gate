@@ -203,12 +203,24 @@ function renderWarnings(summary) {
   return ['### Warnings', '', ...lines].join('\n');
 }
 
+/** Linked, never restated: the README stays the single source for the container recipe,
+ *  while this is the copy a reader actually sees. It names the bare-metal risk rather
+ *  than a command because `accept` has no host guard — a bare-metal run goes green and
+ *  the corrupted corpus only surfaces when CI's guard trips. Fragments join on a space,
+ *  so re-wrapping the paragraph can't drop a trailing one and run two words together. */
+const CONTAINER_ACCEPT_STEP = [
+  'If the changes are intentional, accept them **inside the pinned container**, not',
+  'bare-metal — `accept` carries no host guard, so a bare-metal run succeeds but',
+  "silently corrupts the baseline corpus with your host's font rendering. See",
+  '`packages/visual-diff/README.md` → "Running the pinned container locally" for the',
+  'exact commands.',
+].join(' ');
+
 const REMEDIATION = [
   '### To fix',
   '',
-  '1. `pnpm visual-diff`',
-  "2. Review `report.html` for every failing variant's diff.",
-  '3. `pnpm visual-diff:accept` to accept the intentional changes.',
+  "1. Review `report.html` for every failing variant's diff.",
+  `2. ${CONTAINER_ACCEPT_STEP}`,
 ].join('\n');
 
 /** The PR-comment markdown. Its only input is the `summary.json` object, so the file
