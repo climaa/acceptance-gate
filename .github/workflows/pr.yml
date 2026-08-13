@@ -191,7 +191,7 @@ jobs:
       - name: Post report comment
         # Only meaningful on a PR — push-to-main has no PR to comment on.
         if: always() && github.event_name == 'pull_request'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const fs = require('fs');
