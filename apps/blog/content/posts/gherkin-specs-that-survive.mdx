@@ -3,7 +3,7 @@ title: 'Cypress and Gherkin: specs an agent can maintain'
 description: 'How to write Gherkin features that act as an executable contract instead of becoming a layer of indirection nobody reads.'
 date: '2026-08-04'
 tags: ['cypress', 'gherkin', 'testing', 'e2e']
-draft: true
+draft: false
 ---
 
 Gherkin has a bad name among developers, and a good part of that is our own fault. The original promise — that the business writes the scenarios — almost never happens, and what is left is a translation layer between structured English and code that has to be maintained twice over.
@@ -129,6 +129,51 @@ export default defineConfig({
   },
 });
 ```
+
+## The same three layers, running in this repo
+
+Everything above is Cypress, because that is where I learned it. But the argument was never about the runner — it is about the layering, and the layering outlives the tool. The acceptance suite for this blog is Playwright with [`playwright-bdd`](https://github.com/vitalets/playwright-bdd), and it lands in exactly the same three files:
+
+```text
+apps/e2e/features/blog.feature   ← intent, no selectors
+apps/e2e/steps/blog.steps.ts     ← the layer that absorbs change
+apps/e2e/pages/blog-index.ts     ← selectors concentrated here
+```
+
+[The feature file](https://github.com/climaa/acceptance-gate/blob/main/apps/e2e/features/blog.feature) is short enough to read in full:
+
+```gherkin
+Feature: Blog publication
+  As a site visitor
+  I want to read the published articles
+  so I can judge the author's technical judgment.
+
+  Background:
+    Given at least one published article exists
+
+  Scenario: The index lists the articles
+    When I visit the blog index
+    Then I see the list of articles
+    And each article shows its date and reading time
+
+  Scenario: Read a full article
+    When I visit the blog index
+    And I open the first article
+    Then I see the article body
+    And the article title is the page's main heading
+
+  Scenario: Drafts are not published
+    When I visit the blog index
+    Then no listed article is marked as a draft
+```
+
+Not one line names a CSS class, a URL or a specific post. The selectors live one layer down, in [the page object](https://github.com/climaa/acceptance-gate/blob/main/apps/e2e/pages/blog-index.ts), whose own doc comment states the rule the file exists to enforce: _"the only layer that may know about markup."_ Its locators are role-based, so a heading is a heading to a screen reader and to the suite alike, and a class rename does not turn the build red. It also refuses to expose a way in by slug — the only route to an article is clicking the first listed title — because a step that hardcodes a slug rots the day the content changes.
+
+The last scenario is the one I would point at first. _"No listed article is marked as a draft"_ is trivial to write and trivially passed by accident: a site with no drafts in it satisfies that line forever while verifying nothing. So the repo carries `e2e-draft-fixture.mdx`, a post whose entire reason to exist is to be a draft that must never ship, plus a unit test pinning its `draft: true` flag and its exact title string so that nobody can quietly publish it and leave the scenario green. The spec and the fixture built to make it fail honestly are the same commit.
+
+And this is not a suite I run when I remember to. It is a [required job in the merge gate](https://acceptance-gate-storybook.vercel.app/index.html?path=/docs/docs-the-gate--docs), alongside type checking, lint, unit tests and the visual diff. No branch reaches `main` without it.
+
+That is the part that makes the whole argument checkable rather than merely stated: the three layers above are not an illustration of how I would organise a suite. They are the files this page was published through.
 
 ## When not to use Gherkin
 
