@@ -280,7 +280,7 @@ Not one line names a CSS class, a URL or a specific post. At this size the selec
 
 The last scenario is the one I would point at first. _"No listed article is marked as a draft"_ is trivial to write and trivially passed by accident: a site with no drafts in it satisfies that line forever while verifying nothing. So the repo carries `e2e-draft-fixture.mdx`, a post whose entire reason to exist is to be a draft that must never ship, plus a unit test pinning its `draft: true` flag and its exact title string so that nobody can quietly publish it and leave the scenario green. The spec and the fixture built to make it fail honestly are the same commit.
 
-And this is not a suite I run when I remember to. It is a [required job in the merge gate](https://acceptance-gate-storybook.vercel.app/index.html?path=/docs/docs-the-gate--docs), alongside type checking, lint, unit tests and the visual diff. No branch reaches `main` without it.
+And this is not a suite I run when I remember to. It is a [required job in the merge gate](https://acceptance-gate-storybook.vercel.app/index.html?path=/docs/docs-devops-the-gate--docs), alongside type checking, lint, unit tests and the visual diff. No branch reaches `main` without it.
 
 That is the part that makes the whole argument checkable rather than merely stated: the files above are not an illustration of how I would organise a suite. They are the files this page was published through.
 
