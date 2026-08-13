@@ -6,7 +6,7 @@
 request — including the ones that build the repo itself — walks through the
 same gate:
 
-```
+```text
 lint · typecheck · build · test · format · health · sandcastle  (parallel)  →  gate
                              ↑ e2e (Wave 3) joins gate.needs later
 ```
