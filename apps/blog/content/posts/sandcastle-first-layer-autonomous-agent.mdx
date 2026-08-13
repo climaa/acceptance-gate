@@ -6,51 +6,31 @@ tags: ['agents', 'orchestration', 'automation']
 draft: true
 ---
 
-I have spent a few weeks building **Sandcastle**, a multi-agent system that lives inside one
-of my repos and whose only input is the GitHub issue backlog. It reads the open issues,
-decides which ones can be worked on in parallel, implements them in isolated Docker sandboxes,
-reviews the result and opens PRs against `main`. Without me touching a branch anywhere in
-the process.
+I have spent a few weeks building **Sandcastle**, a multi-agent system that lives inside one of my repos and whose only input is the GitHub issue backlog. It reads the open issues, works out which ones are unblocked and in what order, implements them in isolated Docker sandboxes, reviews the result, and opens PRs against `main`. Without me touching a branch anywhere in the process.
 
-This first post is not about what Sandcastle *already* achieves — it has not yet completed a
-full cycle unsupervised — but about the base layer: the design decisions I have had to make
-before letting it run on its own, and why most of them have more to do with "failing loudly"
-than with "working".
+This first post is not about what Sandcastle *already* achieves — it has not yet completed a full cycle unsupervised — but about the base layer: the design decisions I have had to make before letting it run on its own, and why most of them have more to do with "failing loudly" than with "working".
 
 ## The four-phase loop
 
 Every iteration passes through four agents, each with its own prompt and its own model
 budget:
 
-| Phase        | Agent          | What it does                                                                     |
-| ------------ | -------------- | -------------------------------------------------------------------------------- |
+| Phase        | Agent          | What it does                                                                        |
+| ------------ | -------------- | ----------------------------------------------------------------------------------- |
 | 1. Plan      | Opus 5 · high  | Reads the open issues, builds a dependency graph, decides what can be worked on now |
-| 2. Implement | Opus 5 · high  | Writes code and tests, commits on the issue branch                               |
-| 3. Review    | Opus 5 · high  | Reviews the branch for correctness and style; may push fixup commits             |
-| 4. Merge     | Sonnet 5 · low | Opens the PR, enables auto-merge, waits for CI, closes the issue                  |
+| 2. Implement | Opus 5 · high  | Writes code and tests, commits on the issue branch                                  |
+| 3. Review    | Opus 5 · high  | Reviews the branch for correctness and style; may push fixup commits                |
+| 4. Merge     | Sonnet 5 · low | Opens the PR, enables auto-merge, waits for CI, closes the issue                    |
 
-Implement and Review share one Docker sandbox per issue, and all issues are processed
-serially — not in parallel. That was not an up-front design decision: I learned it after a
-concurrent `pnpm install` deadlocked in production on pnpm 10.x. The lesson now lives as a
-comment in the code, not only in my head.
+Implement and Review share one Docker sandbox per issue, and all issues are processed serially — not in parallel. That was not an up-front design decision: I learned it after a concurrent `pnpm install` deadlocked in production on pnpm 10.x. The lesson now lives as a comment in the code, not only in my head.
 
-The model and effort for each role can be overridden per issue (a GitHub label) or per run
-(an environment variable), with a fixed resolution order — `PROFILES < env var < label` —
-and any value outside the accepted vocabulary (`opus-5`/`sonnet-5`,
-`low|medium|high|xhigh|max`) fails the run **before** any sandbox is created. A typo cannot
-silently downgrade you into a more expensive model.
+The model and effort for each role can be overridden per issue (a GitHub label) or per run (an environment variable), with a fixed resolution order — `PROFILES < env var < label` — and any value outside the accepted vocabulary (`opus-5`/`sonnet-5`, `low|medium|high|xhigh|max`) fails the run **before** any sandbox is created. A typo cannot silently downgrade you into a more expensive model.
 
 ## Designing so that silence is the worst possible failure
 
-The part that has taken me the most time is not orchestrating the four agents — it is
-closing off the places where a failure swallows itself, and the system keeps running on false
-data.
+The part that has taken me the most time is not orchestrating the four agents — it is closing off the places where a failure swallows itself, and the system keeps running on false data.
 
-The clearest case is startup. Every `gh` call fails silently if the binary is not on `PATH`:
-`fetchIssue` returns `null`, `branchHasOpenPr` returns `false`. Without an explicit
-preflight, an environment with a badly installed `gh` would not raise an error — it would
-simply ignore the model-override labels and report that no branch has an open PR, with the
-real cost hidden behind a result that looks reasonable:
+The clearest case is startup. Every `gh` call fails silently if the binary is not on `PATH`: `fetchIssue` returns `null`, `branchHasOpenPr` returns `false`. Without an explicit preflight, an environment with a badly installed `gh` would not raise an error — it would simply ignore the model-override labels and report that no branch has an open PR, with the real cost hidden behind a result that looks reasonable:
 
 ```ts
 // sandcastle-config.mts
@@ -114,7 +94,7 @@ red, and today a fix because the `.gitignore` pattern for `.env*` was also swall
 
 The first real run attempt, this very morning, did not even get as far as planning:
 
-```
+```bash
 Failed to resolve prompt: Command `gh issue list ...` exited with code 4:
 To get started with GitHub CLI, please run: gh auth login
 ```
