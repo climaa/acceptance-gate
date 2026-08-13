@@ -6,52 +6,37 @@ tags: ['agents', 'ci', 'git']
 draft: true
 ---
 
-I spent an afternoon wiring credentials into a repo where an autonomous agent opens its own
-pull requests. Twice I tried to push straight to `main`. Twice GitHub refused:
+I spent an afternoon wiring credentials into a repo where an autonomous agent opens its own pull requests. Twice I tried to push straight to `main`. Twice GitHub refused:
 
-```
+```bash
 remote: - Required status check "gate" is expected.
 ! [remote rejected] main -> main (protected branch hook declined)
 ```
 
-The obvious question is which part of the system decided to stop me. The answer is that
-nothing decided anything. No model evaluated the push. GitHub's pre-receive hook compared a
-config value against a commit status and rejected on mismatch, the same way it would for a
-typo in a branch name. The decision had been made the previous afternoon, by me, and written
-down as a rule.
+The obvious question is which part of the system decided to stop me. The answer is that nothing decided anything. No model evaluated the push. GitHub's pre-receive hook compared a config value against a commit status and rejected on mismatch, the same way it would for a typo in a branch name. The decision had been made the previous afternoon, by me, and written down as a rule.
 
-That is worth stating plainly because the interesting parts only appear once you stop
-looking for a decision.
+That is worth stating plainly because the interesting parts only appear once you stop looking for a decision.
 
 ## The agent never hit the wall
 
-Both rejections were mine. I was doing manual work — a refactor, then a batch of comment
-translations — and reached for the shortest path each time.
+Both rejections were mine. I was doing manual work — a refactor, then a batch of comment translations — and reached for the shortest path each time.
 
-The agent that runs unattended in the same repo has never been rejected, because it cannot
-be. Its merge phase does this:
+The agent that runs unattended in the same repo has never been rejected, because it cannot be. Its merge phase does this:
 
 ```bash
 gh pr create --title "$TITLE" --body "$BODY"
 gh pr merge "$PR_NUMBER" --squash --auto
 ```
 
-There is no `git push origin main` anywhere in its instructions. It opens a pull request,
-enables auto-merge, and waits for the gate to go green. The protected path is the only path
-it knows, so protection is invisible to it.
+There is no `git push origin main` anywhere in its instructions. It opens a pull request, enables auto-merge, and waits for the gate to go green. The protected path is the only path it knows, so protection is invisible to it.
 
-I found this genuinely uncomfortable. The supervised process — a capable model with a human
-watching every step — tried to bypass the gate twice in one afternoon. The unsupervised
-process took the correct route on its first attempt and every attempt after. Not because it
-is more careful, but because its options were narrowed in advance. It never had the shortcut
-available to reach for.
+I found this genuinely uncomfortable. The supervised process — a capable model with a human watching every step — tried to bypass the gate twice in one afternoon. The unsupervised process took the correct route on its first attempt and every attempt after. Not because it is more careful, but because its options were narrowed in advance. It never had the shortcut available to reach for.
 
 Autonomy is not the risky variable. Available surface is.
 
 ## What the rule actually is
 
-Four lines of configuration, verified through the API rather than trusted from a settings
-page:
+Four lines of configuration, verified through the API rather than trusted from a settings page:
 
 ```json
 {
@@ -62,9 +47,7 @@ page:
 }
 ```
 
-One detail carries more weight than the rest: `contexts` names a single check called `gate`,
-and `gate` is not a real job. It is an aggregator that fails unless every other job reports
-success:
+One detail carries more weight than the rest: `contexts` names a single check called `gate`, and `gate` is not a real job. It is an aggregator that fails unless every other job reports success:
 
 ```yaml
 gate:
