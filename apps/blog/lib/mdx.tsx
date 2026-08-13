@@ -7,7 +7,10 @@ import rehypeAutolinkHeadings, {
 import rehypePrettyCode, { type Options as PrettyCodeOptions } from 'rehype-pretty-code';
 import rehypeSlug from 'rehype-slug';
 import remarkGfm from 'remark-gfm';
+import githubDarkDimmed from 'shiki/themes/github-dark-dimmed.mjs';
+import rosePineDawn from 'shiki/themes/rose-pine-dawn.mjs';
 import { CodeBlock } from '@gate/ui';
+import { CODE_GROUND, withAccessibleTokens } from './shiki-contrast';
 
 /**
  * The build-time MDX pipeline: highlighting, heading ids, heading anchors.
@@ -17,15 +20,27 @@ import { CodeBlock } from '@gate/ui';
  */
 
 /**
- * Two themes, one per site theme.
+ * Two themes, one per site theme, each repaired for contrast before use.
  *
- * The slab is now a light plate in light mode and a dark one in dark mode —
+ * The slab is a light plate in light mode and a dark one in dark mode —
  * `--color-code-bg` no longer resolves to the same near-black step in both, so
  * a single baked-in palette can no longer serve both grounds. `rose-pine-dawn`
  * pairs with the light plate rather than `github-light`: its native background
  * (`#faf4ed`) sits in the same warm-cream family as `--c-cream-50`, so its
  * token colours read as designed for this ground rather than transplanted
  * from a cool white one.
+ *
+ * That reasoning is about hue, and hue was the wrong axis to stop on. Measured
+ * against the plate the tokens actually land on, `rose-pine-dawn` failed WCAG AA
+ * on four of its nine token colours — `#EA9D34` at 1.95:1 against a 4.5:1
+ * requirement — and `github-dark-dimmed` on one, `#768390` at 4.34:1. The hue
+ * argument still holds; it just never checked whether the result was readable.
+ *
+ * Swapping themes does not fix it: no light theme in Shiki's bundle clears 4.5:1
+ * on this ground. So both themes keep their identity and have only their failing
+ * colours moved, by the smallest step that clears AA — see `shiki-contrast.ts`.
+ * Whether the rendered page is accessible stays axe's claim, asserted on real DOM
+ * by the `An article with code blocks…` scenario in `apps/e2e/features/a11y.feature`.
  *
  * Passing an OBJECT here (rather than a single theme id) makes rehype-pretty-
  * code set Shiki's `defaultColor: false` internally, which emits every token
@@ -35,7 +50,10 @@ import { CodeBlock } from '@gate/ui';
  * `prefers-color-scheme`, which CODING_STANDARDS rules out because it is
  * invisible to Storybook and to the differ.
  */
-const SHIKI_THEME = { light: 'rose-pine-dawn', dark: 'github-dark-dimmed' } as const;
+const SHIKI_THEME = {
+  light: withAccessibleTokens(rosePineDawn, CODE_GROUND.light),
+  dark: withAccessibleTokens(githubDarkDimmed, CODE_GROUND.dark),
+};
 
 const prettyCodeOptions: PrettyCodeOptions = {
   theme: SHIKI_THEME,

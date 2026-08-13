@@ -26,7 +26,17 @@ export function CodeBlock({ language, children, className }: CodeBlockProps) {
   return (
     <div className={['ds-code', className].filter(Boolean).join(' ')}>
       {languageId ? <span className="ds-code__language">{languageId}</span> : null}
-      <pre className="ds-code__pre" data-language={languageId}>
+      {/*
+        `tabIndex={0}` because the slab scrolls: `.ds-code__pre` carries
+        `overflow-x: auto`, and a region that scrolls but cannot be focused is
+        unreachable for anyone driving the page from the keyboard — WCAG 2.1.1,
+        and axe's `scrollable-region-focusable`. It is unconditional because
+        whether a given block overflows is a runtime measurement this component
+        cannot make, and a tab stop on a block that happens to fit costs a
+        keystroke while the missing one costs the content. The focus ring comes
+        from base.css's `:where(:focus-visible)`, so it needs no styling here.
+      */}
+      <pre className="ds-code__pre" data-language={languageId} tabIndex={0}>
         <code>{children}</code>
       </pre>
     </div>

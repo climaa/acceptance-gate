@@ -54,6 +54,29 @@ describe('CodeBlock', () => {
     expect(pre?.getAttribute('data-language')).toBe('typescript');
   });
 
+  // Structural, not appearance: that the slab scrolls is `overflow-x: auto` in
+  // CodeBlock.css and belongs to the differ, but whether the scrolling region can
+  // be reached at all is a DOM fact pixels cannot show. axe reports the rendered
+  // verdict (`scrollable-region-focusable`, WCAG 2.1.1) from the acceptance suite;
+  // this pins the attribute that satisfies it so it cannot be dropped silently.
+  it('makes the scrollable slab reachable from the keyboard', () => {
+    const { container } = render(
+      <CodeBlock language="typescript">{'const x = 1;'}</CodeBlock>,
+    );
+
+    const pre = container.querySelector('pre');
+
+    expect(pre?.getAttribute('tabindex')).toBe('0');
+  });
+
+  it('stays focusable when no language is given', () => {
+    // The tab stop follows the overflow, and the overflow is on every slab —
+    // tying it to `language` instead would leave unlabelled blocks unreachable.
+    const { container } = render(<CodeBlock>{'const x = 1;'}</CodeBlock>);
+
+    expect(container.querySelector('pre')?.getAttribute('tabindex')).toBe('0');
+  });
+
   it('renders no label and no data-language attribute when `language` is omitted', () => {
     const { container } = render(<CodeBlock>{'const x = 1;'}</CodeBlock>);
 
