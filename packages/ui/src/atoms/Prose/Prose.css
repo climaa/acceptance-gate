@@ -7,6 +7,25 @@
   color: var(--color-text);
 }
 
+/* Kill the UA's block margins, then let the owl below own all vertical rhythm in
+   one place.
+
+   `:where()` contributes no specificity, so this rule lands at 0,1,0 — the same
+   weight as the owl, which therefore wins on the elements it matches by source
+   order alone. Writing the reset as `.ds-prose p { margin: 0 }` instead scores
+   0,1,1, outranks the owl and silently deletes the spacing it sets: that is the
+   bug this replaces, and it shipped paragraphs, lists and blockquotes with zero
+   separation. Headings are exempt on purpose — their own 0,1,1 rules below still
+   win, which is what gives a heading more air than a paragraph.
+
+   Kept as a descendant selector rather than `> *`: a `<p>` inside a blockquote or
+   a loose list item is not a direct child of `.ds-prose`, and it still needs the
+   reset. The owl never matches those, so nothing gives them rhythm they should
+   not have. */
+.ds-prose :where(p, ul, ol, blockquote) {
+  margin: 0;
+}
+
 .ds-prose > * + * {
   margin-top: var(--space-5);
 }
@@ -33,13 +52,8 @@
   line-height: var(--leading-tight);
 }
 
-.ds-prose p {
-  margin: 0;
-}
-
 .ds-prose ul,
 .ds-prose ol {
-  margin: 0;
   padding-left: var(--space-6);
 }
 
@@ -72,7 +86,6 @@
 }
 
 .ds-prose blockquote {
-  margin: 0;
   padding-left: var(--space-4);
   border-left: 3px solid var(--color-border-strong);
   color: var(--color-text-muted);
