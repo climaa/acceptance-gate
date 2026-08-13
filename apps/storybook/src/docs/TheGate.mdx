@@ -1,0 +1,154 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+import { Mermaid } from './Mermaid';
+
+<Meta title="Docs/DevOps/The Gate" />
+
+# The gate
+
+`.github/workflows/pr.yml` is the whole of CI for this repo, and `gate` is the only
+**required** status check on `main`. Everything else is arranged so that stays true: new
+checks join `gate`'s `needs:` list rather than becoming required contexts of their own,
+which means tightening the merge bar never requires a repository-settings change.
+
+This page is the developer-facing half — what runs on your PR, what blocks a merge, and
+the handful of invariants that look like style choices and are not. For the pixel side of
+the pipeline see [Visual Diff Workflow](?path=/docs/docs-visual-diff-workflow--docs) and
+[Diff Policy](?path=/docs/docs-diff-policy--docs).
+
+## The shape
+
+<Mermaid
+  chart={`
+flowchart TD
+    A["PR opened, synchronized, or marked ready"] --> B{"Is it a draft?"}
+    B -->|"yes"| Z["Every job skips, including gate"]
+    B -->|"no"| C["checks (matrix, 6 legs)"]
+    B -->|"no"| D["sandcastle"]
+    B -->|"no"| E["e2e"]
+    B -->|"no"| F["visual-diff"]
+    C --> G{"gate: every needed result exactly 'success'?"}
+    D --> G
+    E --> G
+    F -.->|"never in gate.needs"| H["Fails its own check loudly, blocks nothing"]
+    G -->|"yes"| I["Mergeable"]
+    G -->|"no — failure, cancelled, OR skipped"| J["Blocked"]
+`}
+/>
+
+## What each job is
+
+**`checks`** — one matrix, six legs: `lint`, `typecheck`, `build`, `test`, `format`,
+`health`. They were six byte-identical jobs differing only in a final `run:` line;
+GitHub Actions has no YAML anchors, so a matrix is the only way to share the
+checkout/install block. `format` is Prettier as the formatter of record for the whole
+repo including `.sandcastle/*.mts`; `health` is a **cognitive**-complexity ceiling
+(`scripts/complexity-gate.mjs`), not cyclomatic — cyclomatic over-counts flat guard
+sequences.
+
+**`sandcastle`** — the orchestrator's own hermetic suite: prompt contracts, merge flow,
+model-override grammar. Agents edit those prompts; this is what catches them. It also
+type-checks `.sandcastle/`, which `turbo run typecheck` cannot reach because it is not a
+workspace.
+
+**`e2e`** — the acceptance suite (`apps/e2e`): Gherkin scenarios compiled by
+playwright-bdd, run against `next start` on the **built** blog. Eight scenarios across two
+Chromium projects, `desktop` and `mobile`.
+
+**`visual-diff`** — captures every story and compares against the committed baseline. It
+is deliberately **not** in `gate.needs`.
+
+**`gate`** — the aggregator. `if: always()`, so it reports even when a needed job fails,
+and it fails unless every result is exactly `success`.
+
+## Invariants that look cosmetic and are not
+
+**`skipped` counts as failure.** `gate`'s guard treats `failure`, `cancelled` _and_
+`skipped` as red. This is what makes the design safe, and it is also why no job in
+`gate.needs` may carry an `if:` beyond the draft guard.
+
+**Never put an `if:` on a matrix leg.** Matrix aggregation _ignores_ skipped legs:
+`[success, skipped]` reduces to **`success`**. A future "skip `health` on docs-only PRs"
+would produce a green `checks` containing a leg that never ran, and `gate` could not see
+it. The job-level guard is the only guard, on purpose. Note the failure mode **inverts**
+for a standalone job — a skipped job in `gate.needs` goes loudly red rather than quietly
+green. Less dangerous, still unusable.
+
+**`ready_for_review` and the draft guard are a matched pair.** Every job skips while the
+PR is a draft, and GitHub counts a skipped required check as **passing**. Without the
+`ready_for_review` event, a draft's skipped-therefore-green `gate` would still be standing
+when the PR is marked ready — mergeable, having never run a check.
+
+**`fail-fast: false` is load-bearing.** The default cancels the surviving legs on the
+first failure. The run goes red either way, but losing the other five results defeats the
+reason six checks exist.
+
+**Never add a second required context.** A required context that never reports blocks
+every PR forever, and it presents as a hung check rather than a misconfiguration. If a new
+job should block merges, it goes in `gate.needs`.
+
+## Why `visual-diff` is exempt and `e2e` is not
+
+Both drive Playwright. Only one blocks. The distinction is **baselines**.
+
+A numeric pixel threshold stops being a safety net once change volume is high — an agent
+refactoring thirty components in an afternoon — and approving a baseline has to cost the
+same as reviewing a code diff: a person, in the PR, not a required check nobody reads
+before merging. `visual-diff` still runs, still fails its own status loudly on a real
+diff, and still posts its report as a sticky PR comment. It just never blocks on its own.
+
+`e2e` has no baselines and nothing to approve. A failing scenario is a binary claim about
+product behaviour — a heading is missing, a draft leaked onto the index, axe found a WCAG
+violation — with a right answer that does not depend on taste. `visual-diff` exit 1 means
+"a human must look"; an `e2e` failure means "the requirement is not met".
+
+## The acceptance suite is guarded against itself
+
+Because `e2e` blocks merges on a repo whose main traffic is agent-authored PRs, the
+interesting question is not "does it pass" but "can it be made to pass without meeting the
+requirement". `apps/e2e/scripts/suite-integrity.mjs` runs before `playwright test` and
+closes the ways it can:
+
+| Vector                                                | Caught by                            |
+| ----------------------------------------------------- | ------------------------------------ |
+| Scenarios deleted, or filtered out at generation time | `EXPECTED_SCENARIOS`, exact equality |
+| `@skip` / `@fixme` / a `skip-scenario` regression     | every listed test's `expectedStatus` |
+| A project that runs nothing                           | project coverage                     |
+| `@fail`, `@retries:N`, `@only`                        | the `.feature` scan                  |
+
+`@fail` and `@retries:N` never appear in `--list` output at all — one inverts the
+expectation inside the test body, the other compiles to a `test.describe.configure`
+wrapper — which is why the `.feature` scan exists alongside the list-based assertions.
+
+The count is **exact equality, not a floor**: a floor decays, so after ten more scenarios
+a floor of 8 would permit deleting nine. Raising it alongside a new scenario is a two-line
+diff. Lowering it is a product decision and belongs in its own hand-authored PR.
+
+The check is hermetic and costs about a second — `playwright test --list` skips global
+setup, so it boots no server and needs no browser binary.
+
+Two Playwright settings carry the same intent. `forbidOnly` under CI closes `@only`, which
+playwright-bdd translates straight into `test.only()`. And `failOnFlakyTests` with
+`retries: 1` means a test that passed only on a retry **fails the run**. A retry cannot
+tell infra flake from a genuine race in the product — it absorbs both, identically and
+silently — so there is no way to swallow the first without also swallowing the second. On a
+check that gates merges, and this repo auto-merges Dependabot PRs on `gate`, swallowing the
+second is swallowing the finding.
+
+**Never add** `--pass-with-no-tests`, `--shard`, `--only-changed`, `--test-list` or
+`--test-list-invert` to any e2e invocation. Each one independently disables Playwright's
+"No tests found" error, which is the only thing stopping an empty suite from exiting 0.
+
+## Dependency bumps run the same gate
+
+`dependabot-auto-merge.yml` arms auto-merge on non-major bumps. It changes nothing about
+the bar: `--auto` still waits for `gate`, and nobody bypasses branch protection, so a red
+bump PR sits there like any other. Majors wait for a human deliberately.
+
+Two things about it are worth knowing. The merge runs on a PAT rather than
+`GITHUB_TOKEN`, because a `GITHUB_TOKEN` merge does not trigger further workflows and the
+push-to-main run that seeds the shared Turbo cache was being skipped for every bot merge.
+That PAT must live in the **Dependabot** secret store, not Actions — an Actions secret of
+the same name resolves to an empty string here, which is the same mechanism that makes
+Dependabot runs build cold with no `TURBO_TOKEN`. A guard step fails loudly on the empty
+value rather than letting `gh` emit a confusing auth error months later.
