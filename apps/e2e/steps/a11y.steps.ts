@@ -10,6 +10,41 @@ const { When, Then } = createBdd(test);
 // (blog.steps.ts) are already defined and reused here — one step definition
 // per Gherkin line, shared across every feature.
 
+/**
+ * Walks the index rather than taking the top of it, because "the first article"
+ * is whichever post sorts newest — which is a property of the content, not of
+ * the page under test. That is how the code slabs went unscanned: the newest
+ * published post happened to be the only one carrying no code fences, so the
+ * post-page scenario stayed green for a year of publishing while never once
+ * putting a highlighted token in front of axe.
+ *
+ * Throws rather than skips when nothing matches. A scan that quietly passes on
+ * an empty selection is the defect `e2e-draft-fixture.mdx` already exists to
+ * prevent one layer down, and repeating it here would leave this scenario
+ * exactly as decorative as the one it was added to reinforce.
+ */
+When(
+  'I open the first article carrying a code block',
+  async ({ page, blogIndex, post }) => {
+    const listed = await blogIndex.articleTitles.count();
+
+    for (let index = 0; index < listed; index += 1) {
+      await blogIndex.openArticleAt(index);
+      await expect(post.body).toBeVisible();
+
+      if ((await post.codeBlocks.count()) > 0) return;
+
+      await page.goBack();
+    }
+
+    throw new Error(
+      `No published article renders a code block — walked all ${listed} on the index. ` +
+        'This scenario exists to put highlighted tokens in front of axe, so it fails ' +
+        'rather than passes on a catalogue that gives it nothing to look at.',
+    );
+  },
+);
+
 When('I visit the first tag page', async ({ blogIndex }) => {
   await blogIndex.open();
   await blogIndex.openFirstTag();
