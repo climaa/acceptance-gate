@@ -14,10 +14,10 @@ import { describe, expect, it } from 'vitest';
  * publish it, or retitle it, and the scenario goes green while proving nothing
  * — with no diff anywhere near `apps/e2e/`, so nothing there can notice.
  *
- * None of the other nine suites here covers it. `content.test.ts` compiles every
- * post including drafts, but says nothing about which posts must exist. This one
- * pins existence, `draft: true` and the exact title string, at the layer that
- * owns the content.
+ * No other suite here covers it. `content.test.ts` compiles every post including
+ * drafts, but says nothing about which posts must exist. This one pins
+ * existence, `draft: true` and the exact title string, at the layer that owns
+ * the content.
  */
 
 const FIXTURE = path.resolve(

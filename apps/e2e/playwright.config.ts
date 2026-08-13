@@ -13,12 +13,14 @@ const testDir = defineBddConfig({
 // the two drifting apart boots a server nothing visits.
 const PORT = 3100;
 
+const isCI = !!process.env.CI;
+
 // E2E_BASE_URL aims the suite at an already-running deployment — a local
 // convenience. In CI it can only aim a merge-gating check at something that is
 // not this PR's build: a run that is green against the live site says nothing
 // about the commit under review, which is the entire claim the check makes.
 // Refused rather than honoured, so the override is structurally local-only.
-if (process.env.CI && process.env.E2E_BASE_URL) {
+if (isCI && process.env.E2E_BASE_URL) {
   throw new Error(
     'E2E_BASE_URL is a local-only override: in CI the suite must run against the build this PR produced. Unset it.',
   );
@@ -33,11 +35,11 @@ export default defineConfig({
   // exits 0. Playwright enforces this in the load task, outside the filterOnly
   // branch, so it trips under `--list` too — which is what
   // scripts/suite-integrity.mjs leans on.
-  forbidOnly: !!process.env.CI,
+  forbidOnly: isCI,
   // `html` writes a report nobody opens unless something failed, so under CI the
   // job log would say nothing about which scenarios ran. `list` puts that where
   // a person reading the checks list actually looks.
-  reporter: process.env.CI
+  reporter: isCI
     ? [['list'], ['html', { open: 'never' }]]
     : [['html', { open: 'never' }]],
   timeout: 30_000,
@@ -55,8 +57,8 @@ export default defineConfig({
   // which leaves retry 1 buying only the report's flaky-vs-failed distinction
   // and retry 2 buying nothing at all (fail/fail/pass and fail/pass both red it)
   // at twice the worst-case per-test time.
-  retries: process.env.CI ? 1 : 0,
-  failOnFlakyTests: !!process.env.CI,
+  retries: isCI ? 1 : 0,
+  failOnFlakyTests: isCI,
   use: {
     baseURL,
     // Trace the actual failing attempt, not only a retried run.
@@ -75,7 +77,7 @@ export default defineConfig({
   webServer: {
     command: `pnpm --filter @gate/blog exec next start --port ${PORT}`,
     url: baseURL,
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: !isCI,
     timeout: 120_000,
   },
 });

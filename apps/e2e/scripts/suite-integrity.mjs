@@ -91,7 +91,7 @@ function fail(failures) {
  * scenarios. `test:e2e` runs bddgen too, so the pipeline still reads in order;
  * regenerating is idempotent and costs half a second.
  */
-function listReport() {
+function regenerateSpecs() {
   try {
     execFileSync(bin('bddgen'), [], { cwd: workspace, stdio: 'pipe' });
   } catch (err) {
@@ -100,6 +100,11 @@ function listReport() {
     // spawn stack.
     fail([(err.stderr?.toString() || err.message).trim()]);
   }
+}
+
+/** The `--list` report: every test Playwright would collect, none of them run. */
+function listReport() {
+  regenerateSpecs();
 
   const args = ['test', '--list', '--forbid-only', '--reporter=json'];
   try {
@@ -141,9 +146,10 @@ function scenarioKey(spec) {
 function scenariosByProject(specs) {
   const scenarios = new Map();
   for (const spec of specs) {
-    const projects = scenarios.get(scenarioKey(spec)) ?? new Set();
+    const key = scenarioKey(spec);
+    const projects = scenarios.get(key) ?? new Set();
     for (const test of spec.tests ?? []) projects.add(test.projectName);
-    scenarios.set(scenarioKey(spec), projects);
+    scenarios.set(key, projects);
   }
 
   return scenarios;
@@ -178,13 +184,13 @@ function checkExpectedStatus(specs) {
 /** Every configured project must run something, and every scenario must land in
  *  a project. Tagging all eight scenarios `@desktop` leaves the count at 8 and
  *  every expectedStatus at "passed" while `mobile` silently runs nothing. */
-function checkProjectCoverage(scenarios, report) {
+function checkProjectCoverage(scenarios, configuredProjects) {
   const covered = new Set([...scenarios.values()].flatMap((projects) => [...projects]));
   const failures = [...scenarios]
     .filter(([, projects]) => projects.size === 0)
     .map(([key]) => `${key} runs in no project`);
 
-  for (const project of report.config.projects) {
+  for (const project of configuredProjects) {
     if (!covered.has(project.name)) {
       failures.push(`project "${project.name}" runs nothing`);
     }
@@ -219,12 +225,13 @@ function parseFeature(text) {
   return { featureTags, scenarios };
 }
 
-const isControlTag = ({ tag }) =>
-  CONTROL_TAGS.some((control) =>
-    control.endsWith(':')
-      ? tag.toLowerCase().startsWith(control)
-      : tag.toLowerCase() === control,
+function isControlTag({ tag }) {
+  const lowered = tag.toLowerCase();
+
+  return CONTROL_TAGS.some((control) =>
+    control.endsWith(':') ? lowered.startsWith(control) : lowered === control,
   );
+}
 
 /** Literal scan, deliberately stricter than playwright-bdd's own matching (which
  *  is case-sensitive for the flags and case-insensitive for `@retries:` and
@@ -307,7 +314,7 @@ const scenarios = scenariosByProject(specs);
 const failures = [
   ...checkScenarioCount(scenarios),
   ...checkExpectedStatus(specs),
-  ...checkProjectCoverage(scenarios, report),
+  ...checkProjectCoverage(scenarios, report.config.projects),
   ...checkFeatureFiles(),
 ];
 
