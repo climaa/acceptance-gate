@@ -24,7 +24,7 @@ are self-contained — treat them as the spec.
 step) · English only in public artifacts · commits explain why, never cite
 private sources · fonts self-hosted woff2 only (one documented TTF exemption
 for OG images) · no `packages/ui` component animates on mount (Skeleton's
-CSS shimmer will be the one sanctioned exception when Wave 1 lands).
+CSS shimmer is the one sanctioned exception).
 
 ## Labels that route you
 

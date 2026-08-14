@@ -79,7 +79,8 @@ excludes the other's tag — so the integrity guard refuses that combination by 
 
 ## Version pins
 
-`@playwright/test` is pinned **exactly**, no caret. Wave 4 transcribes that version into
-the visual-diff capture container tag, which carries a placeholder until then — so a
-Playwright bump moves the image tag, the baselines and this pin together, a hand-authored
-change and never a bot PR. Dependabot ignores `@playwright/*` for that reason.
+`@playwright/test` is pinned **exactly**, no caret. That same version is transcribed into
+the visual-diff capture container tag (`mcr.microsoft.com/playwright:v1.62.1-noble`, named
+in `packages/visual-diff/src/policy.mjs`) — so a Playwright bump moves the image tag, the
+baselines and this pin together, a hand-authored change and never a bot PR. Dependabot
+ignores `@playwright/*` for that reason.
