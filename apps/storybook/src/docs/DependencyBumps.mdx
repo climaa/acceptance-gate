@@ -57,10 +57,11 @@ Because a blank credential produces a confusing `gh` auth error rather than a us
 the workflow has a guard step that fails with the fix instead. That guard is correct and it
 worked. It still failed to tell anyone, for the reason below.
 
-## The failure mode worth knowing: a loud check that goes quiet
+## The failure mode that used to hide itself
 
-This is the part no file records, because it is an interaction between three mechanisms
-that are individually fine.
+This was the part no file recorded, because it was an interaction between three mechanisms
+that are individually fine — until a human does the one thing strict branch protection
+makes reflexive.
 
 <Mermaid
   chart={`
@@ -77,17 +78,17 @@ flowchart TD
 `}
 />
 
-Every step is working as designed. The guard fails loudly _while the actor is still the
+Every step was working as designed. The guard failed loudly _while the actor was still the
 bot_. Strict branch protection makes PRs go `BEHIND` on every merge to `main`, so
 "Update branch" is the natural reflex. And the job's actor check is deliberate — a human
 push to a bot branch **should** disable auto-merge, because the PR is no longer purely the
 bot's work.
 
-The result is that the one action a maintainer reaches for to unstick a bot PR is also the
-action that hides why it was stuck. A misconfiguration that fails red on Monday is a
+The result was that the one action a maintainer reaches for to unstick a bot PR was also
+the action that hid why it was stuck. A misconfiguration that failed red on Monday was a
 skipped check by Tuesday.
 
-**Observed, not theorised.** Three runs on the same PR tell the whole story:
+**Observed, not theorised.** Three runs on the same PR told the whole story:
 
 | Run           | Actor             | Result      | What it means                                   |
 | ------------- | ----------------- | ----------- | ----------------------------------------------- |
@@ -96,7 +97,8 @@ skipped check by Tuesday.
 | `31687240886` | `dependabot[bot]` | **success** | Secret fixed, branch recreated, `--auto` armed  |
 
 The PR then merged itself. That was the first successful run of this workflow since it was
-written — the secret had been in the wrong store from the beginning.
+written — the secret had been in the wrong store from the beginning. It is also what
+motivated the fix below: the guard should never have depended on who last pushed.
 
 ## Runbook: a bot PR that will not merge
 
@@ -105,7 +107,10 @@ the expensive ones are needed.
 
 **Is the auto-merge job skipping rather than failing?** Then a human has pushed to the
 branch and the actor check is doing its job. Nothing is wrong with the workflow; the PR
-needs a bot-authored update to recover.
+needs a bot-authored update to recover. Check the `preflight` job's own checks — it stays
+author-gated (not actor-gated), so it keeps running and, if a human push is why auto-merge
+is off, its `::notice::` step names that explicitly rather than leaving you to infer it from
+a skip.
 
 **Never click "Update branch" on a Dependabot PR.** It permanently disables auto-merge for
 that PR, hides any guard failure behind a skipped check, _and_ blocks the cheapest recovery
@@ -130,10 +135,25 @@ open bot PR to `BEHIND`, and GitHub's auto-merge waits for checks but never upda
 branch. If a bot PR is armed and close to merging, let it land first — otherwise it sits
 armed and stuck until someone issues a rebase.
 
-## The unresolved part
+## What closed the gap
 
-The guard only fails loudly while the actor is still `dependabot[bot]`. Once the actor
-flips, the misconfiguration becomes invisible, and strict protection makes that flip likely
-rather than exceptional. Nothing currently detects the state "auto-merge has been silently
-disabled on this PR". If you are reading this because a bot PR is stuck again, that gap is
-still open.
+The fix was not to change when auto-merge itself runs — a human push to a bot branch
+**should** disable it, that part was always correct. It was to stop the credential guard
+from sharing that same gate.
+
+`dependabot-auto-merge.yml` now has two jobs instead of one:
+
+- **`preflight`** is gated on the PR **author** only (`github.event.pull_request.user.login
+== 'dependabot[bot]'`), which never changes no matter who pushed last. It asserts
+  `GH_TOKEN` is present and, separately, emits an `::notice::` the moment the **actor**
+  diverges from the author — the exact state that used to render as a silent skip. Both
+  checks run independently, because a human push to a PR whose token is _also_ missing
+  needs both diagnoses at once.
+- **`auto-merge`** keeps the original, stricter gate — actor **and** author both
+  `dependabot[bot]` — unchanged. It still disables itself the moment a human touches the
+  branch, exactly as designed.
+
+The guard can no longer go quiet just because someone clicked "Update branch": `preflight`
+keeps failing (or noting) regardless, and its `::notice::` names the recovery path
+(`@dependabot recreate`) instead of leaving a maintainer to reconstruct it from a skipped
+check.
