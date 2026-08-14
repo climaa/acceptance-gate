@@ -15,12 +15,24 @@ name: dependabot-auto-merge
 # resolve to empty strings here, which is the same mechanism pr.yml documents
 # when it notes Dependabot runs never see TURBO_TOKEN and build cold. Putting it
 # in the Actions store looks right in the UI and silently does nothing, so the
-# guard step below fails loudly rather than letting `gh` emit a confusing auth
-# error months from now. Same fine-grained, this-repo-only discipline as
+# `preflight` job below fails loudly rather than letting `gh` emit a confusing
+# auth error months from now. Same fine-grained, this-repo-only discipline as
 # .sandcastle/.env.example — never a classic repo-scope token.
 #
 # This does not weaken the gate: enforce_admins is on, so even an admin PAT
 # cannot bypass branch protection, and `--auto` still waits for `gate`.
+#
+# `preflight` and `auto-merge` are deliberately separate jobs, gated
+# differently. `github.event.pull_request.user.login` (the PR author) never
+# changes; `github.actor` (who triggered this run) flips to a human the moment
+# anyone pushes to the branch — including clicking "Update branch", which
+# strict branch protection makes the obvious response to a bot PR going
+# BEHIND. Gating the credential guard on actor as well as author meant it went
+# silent at exactly the moment someone needed to see it: the checks list read
+# "all passed, 1 skipped" instead of naming the missing secret. `preflight`
+# gates on author only, so it keeps running (and keeps failing loudly) no
+# matter who pushed last. `auto-merge` keeps both gates, unchanged — a human
+# push to a bot branch must still disable auto-merge itself.
 on:
   pull_request:
     types: [opened, synchronize, reopened]
@@ -30,6 +42,55 @@ permissions:
   pull-requests: write
 
 jobs:
+  preflight:
+    # Author only, never actor — see the file header. This is what keeps the
+    # guard running after a human pushes to the branch.
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 5
+    # Narrower than the workflow-level block above: this job only reads PR
+    # metadata and checks an env var, neither of which needs contents or
+    # pull-requests write access.
+    permissions:
+      pull-requests: read
+    steps:
+      - id: metadata
+        # Reads PR metadata only. Deliberately still the read-only GITHUB_TOKEN:
+        # this step gains nothing from the PAT, so it does not get one.
+        uses: dependabot/fetch-metadata@v3
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Note when a human push has disabled auto-merge
+        # Author is dependabot[bot] (this job's own `if:`) but actor is not —
+        # the exact state that used to render as a silently skipped job. Ahead
+        # of the credential guard on purpose: a failed step skips every step
+        # after it, and the two diagnostics are independent — a human push to a
+        # PR whose token is also missing needs both, and that is precisely the
+        # run someone is staring at. Same major-bump exemption as the guard
+        # below: a major bump never had auto-merge armed, so there is nothing
+        # to report as disabled.
+        if: steps.metadata.outputs.update-type != 'version-update:semver-major' && github.actor != 'dependabot[bot]'
+        run: |
+          echo "::notice::auto-merge is disabled for this PR: it was pushed by '$ACTOR', not dependabot[bot] (likely 'Update branch'). Recovery: comment '@dependabot recreate' — '@dependabot rebase' is refused once a human has edited the branch."
+        env:
+          # Via env, not inline `${{ }}`, matching PR_URL in the merge job:
+          # context values reach `run:` as data, never as shell source text.
+          ACTOR: ${{ github.actor }}
+      - name: Require GH_TOKEN from the Dependabot secret store
+        # An Actions-store GH_TOKEN arrives here as "" and `gh` would fail with
+        # an auth error that says nothing about which store is wrong. Fail with
+        # the fix instead. Same condition as the merge step so a major bump —
+        # which is meant to wait for a human — is not turned into a red run.
+        if: steps.metadata.outputs.update-type != 'version-update:semver-major'
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::error::GH_TOKEN is empty, so auto-merge cannot authenticate."
+            echo "::error::Add it under Settings > Secrets and variables > Dependabot."
+            echo "::error::A secret of the same name under Actions does NOT reach Dependabot-triggered runs."
+            exit 1
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
   auto-merge:
     # Both checks matter: actor gates the event, author gates the PR itself
     # (a human push to a bot branch flips the actor and disables auto-merge).
@@ -43,21 +104,6 @@ jobs:
         uses: dependabot/fetch-metadata@v3
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Require GH_TOKEN from the Dependabot secret store
-        # An Actions-store GH_TOKEN arrives here as "" and `gh` would fail with
-        # an auth error that says nothing about which store is wrong. Fail with
-        # the fix instead. Same `if:` as the merge so a major bump — which is
-        # meant to wait for a human — is not turned into a red run.
-        if: steps.metadata.outputs.update-type != 'version-update:semver-major'
-        run: |
-          if [ -z "$GH_TOKEN" ]; then
-            echo "::error::GH_TOKEN is empty, so auto-merge cannot authenticate."
-            echo "::error::Add it under Settings > Secrets and variables > Dependabot."
-            echo "::error::A secret of the same name under Actions does NOT reach Dependabot-triggered runs."
-            exit 1
-          fi
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
       - if: steps.metadata.outputs.update-type != 'version-update:semver-major'
         run: gh pr merge --auto --squash "$PR_URL"
         env:
