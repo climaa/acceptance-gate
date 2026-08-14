@@ -52,7 +52,12 @@ import {
   reapExitedContainers,
 } from './sandcastle-lifecycle.mts';
 import { ensureImageFreshness } from './sandcastle-image-freshness.mts';
-import { markIssueNoOp, probeBranchCommitsAhead, probeIssue } from './sandcastle-git.mts';
+import {
+  markIssueNoOp,
+  probeBranchCommitsAhead,
+  probeBranchDiffEmpty,
+  probeIssue,
+} from './sandcastle-git.mts';
 import { parsePlanOutput, screenPlan } from './sandcastle-orchestrator.mts';
 import { guardPhase } from './sandcastle-guard-phase.mts';
 import {
@@ -229,7 +234,7 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
     // branches with commits ahead of main and no PR (e.g. previous reviewer
     // crashed mid-pipeline). Rescue them directly into the merge phase before
     // exiting, otherwise the orchestrator declares done with stranded work.
-    const stranded = collectStrandedIssues(new Set());
+    const stranded = collectStrandedIssues(new Set(), iteration);
     if (stranded.length === 0) {
       console.log(
         planned.length > 0
@@ -366,14 +371,26 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
           `  ✗ ${issue.id} (${issue.branch}): could not verify commits ahead — ` +
             `treating as failed: ${ahead.stderr.trim()}`,
         );
-        return { issue, status: 'rejected' as const, commitCount: 0, branchAhead: false };
+        return {
+          issue,
+          status: 'rejected' as const,
+          commitCount: 0,
+          branchAhead: false,
+          diffEmpty: false,
+        };
       }
+      // Commits can exist and still net to nothing — an implementer that tried
+      // an approach and reverted it leaves a branch ahead of base with nothing
+      // to land. Only a definite answer retires the issue: an errored or absent
+      // probe reads as "has content", never as "empty".
+      const diff = probeBranchDiffEmpty(issue.branch);
       return {
         issue,
         status: outcome.status,
         commitCount: outcome.status === 'fulfilled' ? outcome.value.commits.length : 0,
         // absent (no branch yet) → false, exactly as the old sentinel did.
         branchAhead: ahead.kind === 'ok' ? ahead.value : false,
+        diffEmpty: diff.kind === 'ok' && diff.value,
       };
     }),
   );
@@ -414,14 +431,18 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
   // sandbox on it every iteration up to MAX_ITERATIONS — the whole reason this
   // path exists. Deliberately a comment plus a label, never a close: "nothing
   // to do" can also mean the agent misread the task.
-  for (const issue of noOpThisIteration) {
+  for (const { issue, reason } of noOpThisIteration) {
     noOpIssueIds.add(issue.id);
     const { commented, labeled } = markIssueNoOp(
       issue.id,
-      noOpIssueComment({ id: issue.id, branch: issue.branch, iteration }),
+      noOpIssueComment({ id: issue.id, branch: issue.branch, iteration, reason }),
     );
+    const finding =
+      reason === 'empty-diff'
+        ? 'committed work that nets to an empty diff'
+        : 'produced no changes';
     console.log(
-      `  ⊘ #${issue.id} produced no changes — left open, excluded from re-planning ` +
+      `  ⊘ #${issue.id} ${finding} — left open, excluded from re-planning ` +
         `(comment ${commented ? 'posted' : 'FAILED'}, ${NOOP_LABEL} ${labeled ? 'added' : 'FAILED'}).`,
     );
   }
@@ -441,7 +462,7 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
     completedIssues.map((i) => i.branch),
     failedBranches,
   );
-  const stranded = collectStrandedIssues(queuedBranches);
+  const stranded = collectStrandedIssues(queuedBranches, iteration);
   if (stranded.length > 0) {
     console.log(
       `\nFound ${stranded.length} stranded branch(es) ahead of ${BASE_BRANCH} not in this iteration's plan:`,
