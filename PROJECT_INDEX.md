@@ -55,7 +55,7 @@ designs/               acceptance-gate.pen (Pencil source) + exports/*.png
 ## 🧪 Tests
 
 - Orchestrator hermetic suite: 24 files / 337 tests (prompt contracts, merge flow, override grammar, worktree safety, provenance guard)
-- Blog unit suites: `apps/blog/__tests__` (61 tests, in CI); packages/ui component suites arrive with Wave 1 (70% floor); e2e Wave 3; visual-diff's own unit suite already runs in CI, and its capture/compare job now runs on every PR too — informationally, never in `gate.needs` (see `packages/visual-diff/README.md#ci-status`)
+- Blog unit suites: `apps/blog/__tests__` (61 tests, in CI); packages/ui component suites arrive with Wave 1 (70% floor); `apps/e2e` acceptance suite is in `gate.needs`; visual-diff's own unit suite already runs in CI, and its capture/compare job now runs on every PR too — informationally, never in `gate.needs` (see `packages/visual-diff/README.md#ci-status`)
 
 ## 🔗 Key Dependencies
 
