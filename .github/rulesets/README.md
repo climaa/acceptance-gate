@@ -8,13 +8,13 @@ node scripts/apply-ruleset.mjs            # prints what differs, exits 1 on drif
 node scripts/apply-ruleset.mjs --apply    # writes; needs admin:repo
 ```
 
-## Status: applied, migration in progress
+## Status: applied, migration complete
 
-`main.json` was applied via `--apply` and verified on a throwaway PR that a red `gate` is
+`main.json` was applied via `--apply`, verified on a throwaway PR that a red `gate` is
 actually blocked (`mergeStateStatus: BLOCKED`, "the base branch policy prohibits the
-merge"). Classic branch protection is still live alongside it — removing it is the last
-step of the migration (#232) — so both are currently in force, and this file remains a
-**subset** of the enforced posture, not the posture itself, until that step lands.
+merge"), and observed merging a real PR end to end. Classic branch protection has since
+been removed (`gh api repos/climaa/acceptance-gate/branches/main/protection` 404s) — this
+ruleset is now the sole enforcement on `main` (#232).
 
 To find out the current live state at any time, run the script: it prints the mismatches
 or says the live ruleset satisfies everything this file declares. Do not infer it from the
@@ -130,11 +130,15 @@ anything that can turn the protection off from inside the pipeline defeats it.
 the obvious way to stage a migration — is **Enterprise-only** and unavailable on this plan.
 The throwaway-PR verification in the migration notes is the substitute, not laziness.
 
-## This ruleset does not replace the classic protection
+## Migration history: running both rulesets and classic protection together
 
-Both would be live, and GitHub evaluates them together: _"all applicable rules are
+For the (brief) period between applying this ruleset and removing classic protection, both
+were live at once. Kept here because the reasoning generalises to any future ruleset
+migration on this repo, not just this one.
+
+GitHub evaluates rulesets and classic protection together: _"all applicable rules are
 enforced"_, and where the same rule is defined differently, the most restrictive version
-applies. Running both is safe and is the intended migration path.
+applies. Running both at once is safe, and was the intended migration path.
 
 Two caveats worth having in writing.
 
@@ -147,13 +151,13 @@ the posture itself.
 
 **The layering of required status checks specifically is undocumented.** GitHub documents
 that rulesets and branch protection aggregate, but not how required-check contexts union,
-nor how `strict` behaves when only one side sets it. It happens not to matter here because
-both sides are `gate` with `strict: true` — that is a coincidence, not a guarantee, and it
-stops being true the moment the two configs diverge. Which is mid-migration, i.e. exactly
-when you would want to rely on it.
+nor how `strict` behaves when only one side sets it. It happened not to matter here because
+both sides were `gate` with `strict: true` — that was a coincidence, not a guarantee, and it
+would have stopped being true the moment the two configs diverged. Which is mid-migration,
+i.e. exactly when you would want to rely on it.
 
-So: do not leave the migration half-done. Apply, verify on a throwaway PR that `gate` reds,
-remove the classic rule, confirm
+So: do not leave a future migration half-done. Apply, verify on a throwaway PR that `gate`
+reds, remove the classic rule, confirm
 `gh api repos/climaa/acceptance-gate/branches/main/protection` 404s.
 
 ## Editing
