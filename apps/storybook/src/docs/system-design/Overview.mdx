@@ -1,16 +1,16 @@
 import { Meta } from '@storybook/addon-docs/blocks';
 
-<Meta title="Docs/System Design" />
+<Meta title="Docs/System Design/Overview" />
 
 # System design
 
 `designs/acceptance-gate.pen` is the source of truth for this design system — every token,
 component, flow and decision starts there before it exists in code. The three boards below are
 its current exported snapshot. This page narrates them; the other Docs pages are where the same
-decisions are enforced or live-rendered — [Layering Rule](?path=/docs/docs-layering-rule--docs)
-runs the tier rule as a lint, [Tokens](?path=/docs/docs-tokens--docs) renders the live token
-sheet, [Diff Policy](?path=/docs/docs-diff-policy--docs) and
-[Visual Diff Workflow](?path=/docs/docs-visual-diff-workflow--docs) cover the capture pipeline.
+decisions are enforced or live-rendered — [Layering Rule](?path=/docs/docs-atomic-design-layering-rule--docs)
+runs the tier rule as a lint, [Tokens](?path=/docs/docs-system-design-tokens--docs) renders the live token
+sheet, [Diff Policy](?path=/docs/docs-qa-diff-policy--docs) and
+[Visual Diff Workflow](?path=/docs/docs-qa-visual-diff-workflow--docs) cover the capture pipeline.
 A board can drift from the code it described; a live-rendered page cannot. Where this page
 found drift, it says so rather than repeating the board.
 
@@ -27,10 +27,10 @@ bodies transcribe it rather than re-deciding tiers downstream. Two things this b
 that no other Docs page does:
 
 - **The layering enforcement mechanism** (which import direction is a lint error, not just a
-  convention) lives on [Layering Rule](?path=/docs/docs-layering-rule--docs) — same `TIERS`
+  convention) lives on [Layering Rule](?path=/docs/docs-atomic-design-layering-rule--docs) — same `TIERS`
   array, read live rather than redrawn here.
 - **The live token values** this board's raw `--c-*` palette resolves to as consumable
-  `--color-*` roles are on [Tokens](?path=/docs/docs-tokens--docs), rendered straight out of
+  `--color-*` roles are on [Tokens](?path=/docs/docs-system-design-tokens--docs), rendered straight out of
   `tokens.css` so they can't drift from what components actually use.
 
 **Status, checked against the filesystem, not assumed from the board**: the board names five
@@ -82,8 +82,8 @@ quoted here rather than restated:
   must never be byte-identical, and the differ proves it."_ Only the semantic `--color-*` roles
   remap under `[data-theme='dark']`; the raw `--c-*` scale never changes shape between themes.
   The switch mechanism itself — `[data-theme]`, never a media query — is the same one
-  [Diff Policy](?path=/docs/docs-diff-policy--docs) and
-  [Visual Diff Workflow](?path=/docs/docs-visual-diff-workflow--docs) depend on: Storybook's
+  [Diff Policy](?path=/docs/docs-qa-diff-policy--docs) and
+  [Visual Diff Workflow](?path=/docs/docs-qa-visual-diff-workflow--docs) depend on: Storybook's
   decorator and the differ's capture URL both set the attribute explicitly, which a live
   `prefers-color-scheme` query would leave both blind to.
 
@@ -98,7 +98,7 @@ quoted here rather than restated:
 This board describes a **page-level** capture matrix — the three route types (blog index, post,
 tag), each in all four variants the differ's own policy already names (desktop/mobile ×
 light/dark). That's a different matrix from the one on
-[Diff Policy](?path=/docs/docs-diff-policy--docs): this one is routes, that one is Storybook
+[Diff Policy](?path=/docs/docs-qa-diff-policy--docs): this one is routes, that one is Storybook
 stories. `packages/visual-diff` only ever captures stories today — there is no page-level
 pixel-diff in this repo yet. `apps/e2e/features/blog.feature` covers the same three page types
 functionally (the index lists articles, an article opens and renders, drafts stay hidden), but

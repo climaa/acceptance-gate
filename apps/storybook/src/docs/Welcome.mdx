@@ -1,0 +1,45 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs/Welcome" />
+
+# Welcome
+
+This repo is a design system and a blog that consumes it, wrapped in an acceptance gate:
+a fixed set of checks — types, lint, unit tests, end-to-end scenarios, a pixel diff — that
+every change passes before it reaches `main`. The components are in the sidebar below this
+section, rendered in isolation. These Docs pages are the written half: what the system is,
+what the rules are, and what happens to a change after you make one.
+
+## What's in here
+
+- **[System Design](?path=/docs/docs-system-design-overview--docs)** — the design boards
+  that everything starts from, and the live
+  [token sheet](?path=/docs/docs-system-design-tokens--docs) rendered straight out of
+  `tokens.css`.
+- **[Atomic Design](?path=/docs/docs-atomic-design-layering-rule--docs)** — how
+  `packages/ui/src` is tiered, and the lint rule that makes the tier order an error rather
+  than a convention.
+- **[QA](?path=/docs/docs-qa-diff-policy--docs)** — the capture matrix the visual differ
+  works from, and the
+  [workflow](?path=/docs/docs-qa-visual-diff-workflow--docs) you meet when it reports a
+  change on your PR.
+- **[DevOps](?path=/docs/docs-devops-the-gate--docs)** — the gate itself, and how
+  [dependency bumps](?path=/docs/docs-devops-dependency-bumps--docs) get through it.
+- **[Skills](?path=/docs/docs-skills-overview--docs)** — the agent skills committed to this
+  repo, and what each one is for.
+
+## Start here
+
+Two pages carry the most: [System Design → Overview](?path=/docs/docs-system-design-overview--docs)
+for what the system is, and [DevOps → The Gate](?path=/docs/docs-devops-the-gate--docs) for
+what happens to a change once you have made one. The rest read fine in any order.
+
+## Further reading
+
+The longer arguments behind these decisions are on the blog rather than here — these pages
+describe what the repo does, the posts describe why:
+
+- [The guardrail you can switch off](https://acceptance-gate-blog.vercel.app/blog/the-guardrail-you-can-switch-off)
+- [Visual regression with agents: the pixel diff is no longer enough](https://acceptance-gate-blog.vercel.app/blog/visual-regression-with-agents)
+- [Cypress and Gherkin: specs an agent can maintain](https://acceptance-gate-blog.vercel.app/blog/gherkin-specs-that-survive)
+- [The migration that passed CI and broke the app](https://acceptance-gate-blog.vercel.app/blog/the-migration-that-passed-ci)

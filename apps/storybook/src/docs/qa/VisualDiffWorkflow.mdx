@@ -1,8 +1,8 @@
 import { Meta } from '@storybook/addon-docs/blocks';
 
-import { Mermaid } from './Mermaid';
+import { Mermaid } from '../Mermaid';
 
-<Meta title="Docs/Visual Diff Workflow" />
+<Meta title="Docs/QA/Visual Diff Workflow" />
 
 # The visual diff workflow
 
@@ -13,7 +13,7 @@ report means, and what you're expected to do about it. For the CLI itself (flags
 codes, the comparison thresholds, the determinism controls) see
 [`packages/visual-diff/README.md`](https://github.com/climaa/acceptance-gate/blob/main/packages/visual-diff/README.md);
 for the capture matrix (which tier gets which viewports and themes), see the
-[Diff Policy](?path=/docs/docs-diff-policy--docs) page.
+[Diff Policy](?path=/docs/docs-qa-diff-policy--docs) page.
 
 ## The one baseline
 
@@ -96,7 +96,7 @@ change, before that branch merges — not on `main` afterward.** Two reasons:
 It's a local step, not something CI runs for you — deliberately: `accept` is the human
 sign-off, not a bot's. It's also **all-or-nothing**: if any variant errored, `accept` writes
 nothing at all. An error has to be fixed (or the story tagged `visual-diff:skip`, see the
-[Diff Policy](?path=/docs/docs-diff-policy--docs) page) before the corpus can move forward,
+[Diff Policy](?path=/docs/docs-qa-diff-policy--docs) page) before the corpus can move forward,
 even if the rest of the change is fine.
 
 ```bash

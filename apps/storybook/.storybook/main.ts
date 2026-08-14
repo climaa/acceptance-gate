@@ -17,8 +17,9 @@ const config: StorybookConfig = {
   // the raw module namespace object instead of a string, `?url` included.
   // staticDirs sidesteps that pipeline entirely.
   staticDirs: [{ from: '../../../designs/exports', to: '/designs' }],
-  // addon-docs: autodocs (`tags: ['autodocs']` in preview.ts) plus the five
-  // hand-written docs pages under src/docs. addon-a11y: axe in the panel, an
+  // addon-docs: autodocs (`tags: ['autodocs']` in preview.ts) plus the thirteen
+  // hand-written docs pages under src/docs, whose subdirectories mirror the
+  // sidebar folders their <Meta title> puts them in. addon-a11y: axe in the panel, an
   // authoring-time check — the headless per-variant pass that runs in CI (see
   // the Visual Diff Workflow docs page) is `@gate/visual-diff`'s own, separate
   // from this addon and never blocking on its own.
