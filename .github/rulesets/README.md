@@ -8,21 +8,21 @@ node scripts/apply-ruleset.mjs            # prints what differs, exits 1 on drif
 node scripts/apply-ruleset.mjs --apply    # writes; needs admin:repo
 ```
 
-## Status: committed, not applied
+## Status: applied, migration in progress
 
-**Nothing in this directory is in force until someone runs `--apply`.** Merging a change
-here changes no behaviour whatsoever. Everything below is written in the conditional for
-that reason — these are the rules the file _declares_, not a description of the
-repository's current state.
+`main.json` was applied via `--apply` and verified on a throwaway PR that a red `gate` is
+actually blocked (`mergeStateStatus: BLOCKED`, "the base branch policy prohibits the
+merge"). Classic branch protection is still live alongside it — removing it is the last
+step of the migration (#232) — so both are currently in force, and this file remains a
+**subset** of the enforced posture, not the posture itself, until that step lands.
 
-To find out which it is, run the script: it prints the mismatches or says the live ruleset
-satisfies everything this file declares. Do not infer it from the presence of this file.
+To find out the current live state at any time, run the script: it prints the mismatches
+or says the live ruleset satisfies everything this file declares. Do not infer it from the
+presence of this file.
 
-That gap is the known weakness of the approach. A committed file that nothing enforces can
-be wrong indefinitely, which is the opposite of how every other rule in this repo works —
-`pr.yml` is committed _and_ GitHub runs it, `scripts/complexity-gate.mjs` is committed
-_and_ the `health` leg executes it. Closing it needs a read-only drift check on a schedule;
-that is tracked separately and deliberately not bundled here.
+A read-only scheduled drift check (#233) is tracked separately and deliberately not
+bundled here — it keeps this file from being wrong indefinitely the way a committed-only
+rule could be.
 
 ## Why this exists at all
 
