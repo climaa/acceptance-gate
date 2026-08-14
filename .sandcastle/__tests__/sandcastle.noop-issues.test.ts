@@ -3,6 +3,7 @@ import {
   hasNoOpLabel,
   noOpIssueComment,
   partitionOutcomes,
+  strandedDisposition,
 } from '../sandcastle-noop-issues.mts';
 import { LABEL_PREFIX, parseOverrideLabels } from '../sandcastle-model-overrides.mts';
 import { read } from './helpers';
@@ -31,12 +32,44 @@ describe('partitionOutcomes', () => {
 
     // Act
     const { completed, noop, failed } = partitionOutcomes([
-      { issue: a, status: 'fulfilled', commitCount: 3, branchAhead: true },
+      {
+        issue: a,
+        status: 'fulfilled',
+        commitCount: 3,
+        branchAhead: true,
+        diffEmpty: false,
+      },
     ]);
 
     // Assert
     expect(completed).toEqual([a]);
     expect(noop).toEqual([]);
+    expect(failed).toEqual([]);
+  });
+
+  it('files a run whose commits net to an empty diff under noop, not completed', () => {
+    // The add-then-revert pair: the implementer committed an approach, found it
+    // wrong and reverted it in the same branch. `commitCount` and `branchAhead`
+    // both say "there is work here"; the net diff says there is nothing to
+    // land. Filed as completed it reaches a merger with nothing to merge, and
+    // is found again — with no PR to exclude it — every iteration after that.
+    // Arrange
+    const a = issue('233');
+
+    // Act
+    const { completed, noop, failed } = partitionOutcomes([
+      {
+        issue: a,
+        status: 'fulfilled',
+        commitCount: 2,
+        branchAhead: true,
+        diffEmpty: true,
+      },
+    ]);
+
+    // Assert
+    expect(noop).toEqual([{ issue: a, reason: 'empty-diff' }]);
+    expect(completed).toEqual([]);
     expect(failed).toEqual([]);
   });
 
@@ -46,11 +79,17 @@ describe('partitionOutcomes', () => {
 
     // Act
     const { completed, noop, failed } = partitionOutcomes([
-      { issue: a, status: 'fulfilled', commitCount: 0, branchAhead: false },
+      {
+        issue: a,
+        status: 'fulfilled',
+        commitCount: 0,
+        branchAhead: false,
+        diffEmpty: true,
+      },
     ]);
 
     // Assert
-    expect(noop).toEqual([a]);
+    expect(noop).toEqual([{ issue: a, reason: 'no-commits' }]);
     expect(completed).toEqual([]);
     expect(failed).toEqual([]);
   });
@@ -63,7 +102,36 @@ describe('partitionOutcomes', () => {
 
     // Act
     const { completed, noop } = partitionOutcomes([
-      { issue: a, status: 'fulfilled', commitCount: 0, branchAhead: true },
+      {
+        issue: a,
+        status: 'fulfilled',
+        commitCount: 0,
+        branchAhead: true,
+        diffEmpty: false,
+      },
+    ]);
+
+    // Assert
+    expect(completed).toEqual([a]);
+    expect(noop).toEqual([]);
+  });
+
+  it('keeps a branch whose diff could not be read under completed', () => {
+    // `diffEmpty: false` is what the caller reports when git could not answer
+    // (the probe errored, or the branch is absent). Unknown must never retire
+    // an issue durably — the same F9 rule the commits-ahead probe follows.
+    // Arrange
+    const a = issue('11');
+
+    // Act
+    const { completed, noop } = partitionOutcomes([
+      {
+        issue: a,
+        status: 'fulfilled',
+        commitCount: 2,
+        branchAhead: true,
+        diffEmpty: false,
+      },
     ]);
 
     // Assert
@@ -79,7 +147,13 @@ describe('partitionOutcomes', () => {
 
     // Act
     const { failed, noop, completed } = partitionOutcomes([
-      { issue: a, status: 'rejected', commitCount: 0, branchAhead: false },
+      {
+        issue: a,
+        status: 'rejected',
+        commitCount: 0,
+        branchAhead: false,
+        diffEmpty: false,
+      },
     ]);
 
     // Assert
@@ -96,7 +170,13 @@ describe('partitionOutcomes', () => {
 
     // Act
     const { failed, completed } = partitionOutcomes([
-      { issue: a, status: 'rejected', commitCount: 4, branchAhead: true },
+      {
+        issue: a,
+        status: 'rejected',
+        commitCount: 4,
+        branchAhead: true,
+        diffEmpty: false,
+      },
     ]);
 
     // Assert
@@ -104,21 +184,79 @@ describe('partitionOutcomes', () => {
     expect(completed).toEqual([]);
   });
 
+  it('files a thrown pipeline whose diff is empty under failed, never under noop', () => {
+    // Same rule as above from the other side: an empty diff on a pipeline that
+    // threw says nothing about whether the issue was attempted successfully.
+    // Arrange
+    const a = issue('9');
+
+    // Act
+    const { failed, noop, completed } = partitionOutcomes([
+      {
+        issue: a,
+        status: 'rejected',
+        commitCount: 4,
+        branchAhead: true,
+        diffEmpty: true,
+      },
+    ]);
+
+    // Assert
+    expect(failed).toEqual([a]);
+    expect(noop).toEqual([]);
+    expect(completed).toEqual([]);
+  });
+
   it('splits a mixed batch and preserves input order within each bucket', () => {
     // Arrange
-    const [a, b, c, d] = [issue('1'), issue('2'), issue('3'), issue('4')];
+    const [a, b, c, d, e] = [issue('1'), issue('2'), issue('3'), issue('4'), issue('5')];
 
     // Act
     const { completed, noop, failed } = partitionOutcomes([
-      { issue: a, status: 'fulfilled', commitCount: 1, branchAhead: true },
-      { issue: b, status: 'fulfilled', commitCount: 0, branchAhead: false },
-      { issue: c, status: 'rejected', commitCount: 0, branchAhead: false },
-      { issue: d, status: 'fulfilled', commitCount: 0, branchAhead: false },
+      {
+        issue: a,
+        status: 'fulfilled',
+        commitCount: 1,
+        branchAhead: true,
+        diffEmpty: false,
+      },
+      {
+        issue: b,
+        status: 'fulfilled',
+        commitCount: 0,
+        branchAhead: false,
+        diffEmpty: true,
+      },
+      {
+        issue: c,
+        status: 'rejected',
+        commitCount: 0,
+        branchAhead: false,
+        diffEmpty: false,
+      },
+      {
+        issue: d,
+        status: 'fulfilled',
+        commitCount: 0,
+        branchAhead: false,
+        diffEmpty: true,
+      },
+      {
+        issue: e,
+        status: 'fulfilled',
+        commitCount: 5,
+        branchAhead: true,
+        diffEmpty: true,
+      },
     ]);
 
     // Assert
     expect(completed).toEqual([a]);
-    expect(noop).toEqual([b, d]);
+    expect(noop).toEqual([
+      { issue: b, reason: 'no-commits' },
+      { issue: d, reason: 'no-commits' },
+      { issue: e, reason: 'empty-diff' },
+    ]);
     expect(failed).toEqual([c]);
   });
 
@@ -177,6 +315,7 @@ describe('noOpIssueComment', () => {
     id: '14',
     branch: 'sandcastle/issue-14-ci-badge',
     iteration: 2,
+    reason: 'no-commits',
   });
 
   it('names the branch it inspected', () => {
@@ -200,6 +339,79 @@ describe('noOpIssueComment', () => {
 
   it('never claims the issue is resolved', () => {
     expect(body).not.toMatch(/\bclos(ed|ing)\b/i);
+  });
+});
+
+describe('noOpIssueComment — empty-diff variant', () => {
+  const body = noOpIssueComment({
+    id: '233',
+    branch: 'sandcastle/issue-233-ruleset-drift-check',
+    iteration: 2,
+    reason: 'empty-diff',
+  });
+
+  it('says commits were produced, not that nothing ran', () => {
+    // The no-commits wording is inaccurate here and reads as "the agent did
+    // nothing" to whoever finds the issue later — when in fact an approach was
+    // implemented and then deliberately reverted.
+    expect(body).not.toMatch(/with no commits/i);
+    expect(body).toMatch(/commits/i);
+    expect(body).toMatch(/revert/i);
+  });
+
+  it('names the empty net diff against the base branch as the finding', () => {
+    expect(body).toMatch(/net diff/i);
+    expect(body).toMatch(/empty/i);
+  });
+
+  it('names the branch it inspected', () => {
+    expect(body).toContain('sandcastle/issue-233-ruleset-drift-check');
+  });
+
+  it('states the issue was deliberately left open for a human', () => {
+    expect(body).toMatch(/left open/i);
+  });
+
+  it('gives the exact command that makes the issue eligible again', () => {
+    expect(body).toContain(`gh issue edit 233 --remove-label "${NOOP_LABEL}"`);
+  });
+
+  it('never claims the issue is resolved', () => {
+    expect(body).not.toMatch(/\bclos(ed|ing)\b/i);
+  });
+});
+
+describe('strandedDisposition', () => {
+  it('rescues a branch that carries real content', () => {
+    // Arrange & Act & Assert
+    expect(strandedDisposition({ diffEmpty: false, labels: [] })).toBe('rescue');
+  });
+
+  it('retires a branch whose commits net to an empty diff', () => {
+    // Nothing upstream will mark it: the pipeline that produced it never
+    // finished (crash recovery is the only way an empty-diff branch reaches the
+    // rescue path at all), so this is the last chance to record it.
+    // Arrange & Act & Assert
+    expect(strandedDisposition({ diffEmpty: true, labels: ['bug'] })).toBe('retire');
+  });
+
+  it('does not re-retire a branch whose issue already carries the marker', () => {
+    // The duplicate-comment guard: rescue runs once per iteration, so marking
+    // an already-marked issue posts one more near-identical comment per
+    // iteration until MAX_ITERATIONS.
+    // Arrange & Act & Assert
+    expect(strandedDisposition({ diffEmpty: true, labels: ['bug', NOOP_LABEL] })).toBe(
+      'already-retired',
+    );
+  });
+
+  it('still rescues a marked issue whose branch has real content', () => {
+    // The marker is a record of a past run, not a permanent ban: a human who
+    // pushed a fix to the branch (or removed the label later) must not lose it.
+    // Arrange & Act & Assert
+    expect(strandedDisposition({ diffEmpty: false, labels: [NOOP_LABEL] })).toBe(
+      'rescue',
+    );
   });
 });
 
