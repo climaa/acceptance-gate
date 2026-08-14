@@ -160,6 +160,27 @@ describe('compare', () => {
     });
   });
 
+  // The shape the list endpoint returns: a summary carrying no `rules` at all.
+  // apply-ruleset.mjs re-fetches by id to avoid it, and this pins what it would
+  // report if that fetch were ever dropped — every declared rule, not a crash.
+  it('reports every declared rule when the response carries no rules array', () => {
+    const desired = desiredRuleset();
+    const live = liveFrom(desired);
+    delete live.rules;
+
+    const result = compare(desired, live);
+
+    expect(result).toEqual({
+      ok: false,
+      mismatches: [
+        'rules.deletion: missing from the live ruleset',
+        'rules.non_fast_forward: missing from the live ruleset',
+        'rules.pull_request: missing from the live ruleset',
+        'rules.required_status_checks: missing from the live ruleset',
+      ],
+    });
+  });
+
   it('reports every mismatch in one pass rather than stopping at the first', () => {
     const desired = desiredRuleset();
     const live = liveFrom(desired);

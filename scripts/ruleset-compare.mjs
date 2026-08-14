@@ -2,11 +2,9 @@
 // and the one the API returned, what — if anything — differs?
 //
 // A module of its own because apply-ruleset.mjs shells out to `gh` at import
-// time, so importing it to reach these functions would run the real thing. This
-// file touches nothing outside its two arguments, which is what makes the
-// comparison testable at all — and it is the half worth testing: a false
-// positive here reports drift that is not there, which makes a scheduled drift
-// check permanently red, and a check that is always red is a check nobody reads.
+// time, so importing it to reach these functions would run the real thing.
+// Nothing here reaches past its own arguments, which is what makes the
+// comparison testable at all.
 
 // The top-level fields this repo manages. Everything else the API returns (id,
 // source_type, created_at, _links, current_user_can_bypass) is GitHub's, not
@@ -14,7 +12,8 @@
 const MANAGED = ['name', 'target', 'enforcement', 'bypass_actors', 'conditions', 'rules'];
 
 /**
- * Is every value `want` declares present and equal in `have`?
+ * Records, onto `mismatches`, every value `want` declares that `have` does not
+ * carry equally.
  *
  * A SUBSET check, not equality, and that is the whole design. GitHub
  * materialises parameter defaults that main.json does not declare — live
@@ -32,42 +31,42 @@ const MANAGED = ['name', 'target', 'enforcement', 'bypass_actors', 'conditions',
  * that main.json says nothing about. It answers "is what we declared still
  * true", not "is the live ruleset identical to this file".
  */
-function subsetOf(want, have, path, mismatches) {
+function collectMismatches(want, have, path, mismatches) {
   // An empty array we declare and GitHub omits entirely are the same state.
   // `bypass_actors: []` is the live case: it may come back absent rather than
   // empty, and treating that as drift would be a second permanent false diff.
-  if (Array.isArray(want) && want.length === 0 && have === undefined) return true;
+  if (Array.isArray(want) && want.length === 0 && have === undefined) return;
 
   if (Array.isArray(want)) {
     if (!Array.isArray(have) || want.length !== have.length) {
       mismatches.push(path);
-      return false;
+      return;
     }
     // Element-wise and positional, EXCEPT where the caller matched by identity
     // first (see `rules` below). Fine for the leaf arrays here — contexts and
     // merge methods — which are short and authored in one place.
-    return want
-      .map((v, i) => subsetOf(v, have[i], `${path}[${i}]`, mismatches))
-      .every(Boolean);
+    want.forEach((item, index) =>
+      collectMismatches(item, have[index], `${path}[${index}]`, mismatches),
+    );
+    return;
   }
 
   if (want && typeof want === 'object') {
     if (!have || typeof have !== 'object') {
       mismatches.push(path);
-      return false;
+      return;
     }
-    return Object.keys(want)
-      .map((key) => subsetOf(want[key], have[key], `${path}.${key}`, mismatches))
-      .every(Boolean);
+    Object.keys(want).forEach((key) =>
+      collectMismatches(want[key], have[key], `${path}.${key}`, mismatches),
+    );
+    return;
   }
 
   if (want !== have) {
     mismatches.push(
       `${path}: want ${JSON.stringify(want)}, live ${JSON.stringify(have)}`,
     );
-    return false;
   }
-  return true;
 }
 
 /**
@@ -75,33 +74,33 @@ function subsetOf(want, have, path, mismatches) {
  * documented to preserve the order rules were submitted in, and a reordering
  * that changed nothing about enforcement would otherwise read as drift.
  */
-function rulesMatch(want, have, mismatches) {
+function collectRuleMismatches(want, have, mismatches) {
   const liveByType = new Map((have ?? []).map((rule) => [rule.type, rule]));
 
-  return want
-    .map((rule) => {
-      const live = liveByType.get(rule.type);
-      if (!live) {
-        mismatches.push(`rules.${rule.type}: missing from the live ruleset`);
-        return false;
-      }
-      return subsetOf(rule, live, `rules.${rule.type}`, mismatches);
-    })
-    .every(Boolean);
+  for (const rule of want) {
+    const live = liveByType.get(rule.type);
+    if (!live) {
+      mismatches.push(`rules.${rule.type}: missing from the live ruleset`);
+      continue;
+    }
+    collectMismatches(rule, live, `rules.${rule.type}`, mismatches);
+  }
 }
 
 export function compare(desired, live) {
   const mismatches = [];
-  let ok = true;
 
   for (const key of MANAGED) {
     if (!(key in desired)) continue;
     if (key === 'rules') {
-      ok = rulesMatch(desired.rules, live.rules, mismatches) && ok;
+      collectRuleMismatches(desired.rules, live.rules, mismatches);
     } else {
-      ok = subsetOf(desired[key], live[key], key, mismatches) && ok;
+      collectMismatches(desired[key], live[key], key, mismatches);
     }
   }
 
-  return { ok, mismatches };
+  // Every path that decides something differs records it, so "ok" is exactly
+  // "nothing to report" — a separately tracked success flag could only ever
+  // drift from the list the caller prints.
+  return { ok: mismatches.length === 0, mismatches };
 }

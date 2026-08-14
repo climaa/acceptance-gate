@@ -118,8 +118,8 @@ jobs:
           # `pnpm health:check` = `turbo run health` (per-workspace,
           # cached/parallel — unchanged apps hit the shared turbo remote cache)
           # + standalone .sandcastle/ and scripts/ checks (orchestrator and gate
-          # scripts, neither of them a turbo workspace). The second of those has
-          # the gate scoring itself, which is the point.
+          # scripts, neither of them a turbo workspace). The second of those is
+          # complexity-gate.mjs scoring its own source, which is the point.
           - { name: health, run: pnpm health:check }
           # scripts/ is not a workspace, so `turbo run lint`/`turbo run test`
           # cannot reach it — same structural gap `.sandcastle/` has, same
@@ -339,7 +339,7 @@ jobs:
     # needs.checks.result is a single aggregate over the eight matrix legs: any
     # leg failure -> failure, any leg cancelled -> cancelled, draft PR (the
     # job-level guard skips the whole job) -> skipped. The one thing lost
-    # versus six separate jobs: the failure echo below no longer names which
+    # versus eight separate jobs: the failure echo below no longer names which
     # leg failed — the checks list still does, the log line just doesn't
     # repeat it.
     needs: [checks, sandcastle, e2e]
