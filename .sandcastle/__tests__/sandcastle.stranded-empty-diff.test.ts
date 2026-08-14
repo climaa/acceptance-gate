@@ -33,7 +33,7 @@ describe('rescue path — branches whose commits net to an empty diff', () => {
 
   it('routes the branch through the pure disposition rule', () => {
     expect(stranded).toMatch(
-      /import \{[^}]*strandedDisposition[^}]*\} from ["']\.\/sandcastle-noop-issues\.mts["']/s,
+      /import \{[^}]*strandedDisposition[^}]*\} from ["']\.\/sandcastle-noop-issues\.mts["']/,
     );
     expect(strandedCode).toMatch(/strandedDisposition\(/);
   });
@@ -75,7 +75,7 @@ describe('rescue path — branches whose commits net to an empty diff', () => {
 describe('main.mts wiring', () => {
   it('probes diff emptiness for every pipeline outcome it partitions', () => {
     expect(main).toMatch(
-      /import \{[^}]*probeBranchDiffEmpty[^}]*\} from ["']\.\/sandcastle-git\.mts["']/s,
+      /import \{[^}]*probeBranchDiffEmpty[^}]*\} from ["']\.\/sandcastle-git\.mts["']/,
     );
     const partitionIdx = main.indexOf('partitionOutcomes(');
     const probeIdx = main.indexOf('probeBranchDiffEmpty(', partitionIdx);
@@ -90,9 +90,10 @@ describe('main.mts wiring', () => {
   });
 
   it('carries the no-op reason from the partition into the comment', () => {
-    const markIdx = main.indexOf('markIssueNoOp(');
-    expect(markIdx).toBeGreaterThan(-1);
-    expect(main.slice(markIdx - 400, markIdx + 300)).toMatch(/reason/);
+    // If `reason` is dropped on the way through, both shapes fall back to the
+    // no-commits wording — which reads as "the agent did nothing" on a branch
+    // that committed an approach and reverted it.
+    expect(main).toMatch(/noOpIssueComment\(\{[^}]*reason[^}]*\}\)/);
   });
 
   it('still never closes an issue on either path', () => {
@@ -101,7 +102,9 @@ describe('main.mts wiring', () => {
   });
 
   it('uses the same marker label as the per-iteration no-op path', () => {
-    expect(stranded).toMatch(/NOOP_LABEL/);
+    // Asserted against the stripped source: a comment naming the constant must
+    // not stand in for the code importing and logging it.
+    expect(strandedCode).toMatch(/NOOP_LABEL/);
     expect(NOOP_LABEL).toBe('sandcastle:no-op');
   });
 });

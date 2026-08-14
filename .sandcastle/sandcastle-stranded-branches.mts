@@ -5,7 +5,7 @@
 //
 // "Commits ahead" is necessary but not sufficient: a branch whose commits
 // cancel out is ahead of base and has nothing to land, and every filter here
-// used to wave it through. See retireEmptyDiffBranch.
+// used to wave it through. See strandedDisposition (sandcastle-noop-issues.mts).
 import { execSync } from 'node:child_process';
 import { createWorktreeSandbox } from './sandcastle-worktree-sandbox.mts';
 import { parseOverrideLabels } from './sandcastle-model-overrides.mts';
@@ -77,22 +77,19 @@ function reapClosedIssueBranch(branch: string, id: string, state: string): void 
   }
 }
 
-// Retire a branch whose commits net to an empty diff: it is ahead of base by
-// every commit-counting measure, so it passes the rescue filters, but there is
-// nothing to merge. Rescuing it anyway spends a build-verify sandbox, hands the
-// merger nothing, and — because an empty diff never gets a PR to exclude it —
-// finds the same branch again on the very next iteration, forever.
+// Record a branch whose commits net to an empty diff: mark the issue (a comment
+// saying what happened, plus NOOP_LABEL) unless a previous run already marked
+// it, in which case say so and move on. The reasoning for retiring rather than
+// rescuing, and for marking rather than skipping silently, lives with the rule
+// itself (strandedDisposition, sandcastle-noop-issues.mts).
 //
-// Marked, not merely skipped. partitionOutcomes already retires this shape on
-// the iteration that produced it, so a branch arriving here means nothing
-// upstream ever got to mark it (orchestrator killed mid-run, or `gh` down while
-// marking). Skipping silently would leave the issue with no record of what
-// happened and nothing to stop the next run repeating the rescue. The branch is
-// deliberately left in place: it holds the reverted attempt, which is what a
-// human reading the comment goes to look at.
+// The branch is deliberately left in place: it holds the reverted attempt, which
+// is what a human reading the comment goes to look at.
 //
-// Extracted so collectStrandedIssues stays a shallow filter loop, same as
-// reapClosedIssueBranch.
+// Takes the disposition rather than letting the caller split the two cases at
+// the call site: `collectStrandedIssues` sits one guard below the cognitive-
+// complexity ceiling, so the second branch has to live here — same reason
+// reapClosedIssueBranch is extracted.
 function retireEmptyDiffBranch(
   branch: string,
   id: string,
@@ -148,7 +145,7 @@ export function collectStrandedIssues(
       continue;
     }
     // Commits ahead is a count, not a diff — an add-then-revert branch passes
-    // every check above and still has nothing to land. See retireEmptyDiffBranch.
+    // every check above and still has nothing to land. See strandedDisposition.
     const disposition = strandedDisposition({
       diffEmpty: branchDiffIsEmpty(branch),
       labels: issue.labels,
