@@ -40,7 +40,7 @@ merges carry their model co-author trailer in the squashed commit.
 | `apps/blog` — Next.js App Router + MDX, consumes `@gate/ui`     | ✅ seed, English                                                                                                         |
 | `packages/ui` — atomic design system, token-only styling        | ✅ 7 seed components, consumed by the blog · 🔜 Wave 1 completes the 19-component inventory, layering enforced by ESLint |
 | `apps/storybook` — the visual single source of truth            | 🔜 Wave 2                                                                                                                |
-| `apps/e2e` — playwright-bdd acceptance suite                    | ✅ in `gate.needs`                                                                                                       |
+| `apps/e2e` — playwright-bdd acceptance suite                    | ✅ runs on every PR, blocks the merge — in `gate.needs`                                                                  |
 | `packages/visual-diff` — the self-built visual regression CLI   | ✅ reports on every PR, never auto-blocks — see [its README](packages/visual-diff/README.md#ci-status)                   |
 
 ## The design system, in one rule
@@ -65,8 +65,9 @@ pnpm format:check && pnpm health:check
 pnpm test:sandcastle  # the orchestrator's own hermetic suite
 ```
 
-Those last three lines are the seven parallel gate jobs from the diagram above,
-in the same order.
+Those last three lines are the first seven parallel gate jobs from the diagram
+above, in the same order. `e2e` is the eighth; it needs a Chromium download
+before its first local run — see [`apps/e2e/README.md`](apps/e2e/README.md).
 
 Run turbo through the `pnpm` scripts rather than `pnpm turbo run ...` directly.
 The scripts wrap turbo in `dotenv -e .env -o --` so its credentials come from
