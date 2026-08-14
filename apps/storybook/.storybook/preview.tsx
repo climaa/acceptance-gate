@@ -87,25 +87,34 @@ const preview: Preview = {
     viewport: { options: viewportOptions },
     // Default is alphabetical, which puts Docs last (after Templates) and
     // Diff Policy first within it — neither is the order a reader should
-    // meet the sidebar in. System Design is written as the front door: it's
-    // the one page that explains what the rest of the sidebar is. This only
-    // fixes the sidebar's own order, though — Storybook's manager only ever
+    // meet the sidebar in. Welcome is written as the front door: it's the one
+    // page that explains what the rest of the sidebar is. This only fixes the
+    // sidebar's own order, though — Storybook's manager only ever
     // auto-selects a `type: "story"` entry when nothing is chosen yet
     // (confirmed by reading manager-api's selectFirstStory(), which filters
     // on that type and never falls through to a docs-only page), so it
     // cannot land a bare visit on Docs by itself. What actually makes the
-    // deployed root URL open on System Design is the redirect in
-    // ../vercel.json.
+    // deployed root URL open on Welcome is the redirect in ../vercel.json —
+    // which the blog's "Storybook" nav link (apps/blog/app/layout.tsx) also
+    // routes through, since it points at the bare origin with no slug.
     options: {
       storySort: {
         order: [
           'Docs',
           [
+            'Welcome',
+            // Then the system itself, narrowest first: what it's made of, how
+            // it's layered, how it's checked, how it ships.
             'System Design',
-            'Diff Policy',
-            'Layering Rule',
-            'Tokens',
-            'Visual Diff Workflow',
+            // Overview before Tokens: it narrates the boards Tokens renders a
+            // live slice of, and a page cannot share a name with its folder.
+            ['Overview', 'Tokens'],
+            'Atomic Design',
+            ['Layering Rule'],
+            'QA',
+            // Diff Policy first: it defines the capture matrix that Visual
+            // Diff Workflow then describes running.
+            ['Diff Policy', 'Visual Diff Workflow'],
             // DevOps sits after the design-system pages and before Skills: it
             // describes what happens to a change after you have made one, so it
             // only makes sense once the reader knows what the change is to.

@@ -2,7 +2,7 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 import { TIERS } from '@gate/visual-diff/policy';
 
-<Meta title="Docs/Layering Rule" />
+<Meta title="Docs/Atomic Design/Layering Rule" />
 
 # The layering rule
 
@@ -31,7 +31,7 @@ one entry per tier, plus one for each tier's barrel (`src/<tier>/index.ts`) — 
 mapping over the very `TIERS` array rendered above, imported from
 `@gate/visual-diff/policy`. There is only one array naming the tiers in this repo: the same
 one drives this list, the boundaries rule, and the visual-diff capture matrix (see the
-[Diff Policy](?path=/docs/docs-diff-policy--docs) page), so a tier added to the design system
+[Diff Policy](?path=/docs/docs-qa-diff-policy--docs) page), so a tier added to the design system
 extends all three without an edit anywhere else.
 
 ## Where else the same list drives the matrix

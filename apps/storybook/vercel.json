@@ -9,7 +9,7 @@
   "redirects": [
     {
       "source": "/",
-      "destination": "/index.html?path=/docs/docs-system-design--docs",
+      "destination": "/index.html?path=/docs/docs-welcome--docs",
       "permanent": false
     }
   ]
