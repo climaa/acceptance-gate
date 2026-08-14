@@ -78,6 +78,50 @@ export function branchHasCommitsAhead(branch: string): boolean {
   return probe.kind === 'ok' ? probe.value : false;
 }
 
+// Is `branch`'s NET diff against origin/BASE_BRANCH empty? Asked ALONGSIDE
+// probeBranchCommitsAhead, never instead of it: a branch that adds something and
+// reverts it in the next commit is genuinely ahead of base (the count is real)
+// and genuinely has nothing to land, and only the diff can tell the two apart.
+//
+// Three-dot, like isDocsOnlyDiff: the question is what this branch changed since
+// it forked, so base moving ahead on its own must not read as content.
+//
+// `git diff --quiet` implies --exit-code — 0 means no differences, 1 means
+// differences, anything else is a real failure. Missing refs come back through
+// git's revision parser with the same "unknown revision / ambiguous argument"
+// family that rev-list uses, so the classification is shared.
+//
+// `cwd` defaults to the process cwd; it exists so a test can drive a scratch
+// repo without chdir'ing the whole process, the same seam currentBranch uses.
+export function probeBranchDiffEmpty(
+  branch: string,
+  cwd: string = process.cwd(),
+): GitProbe<boolean> {
+  try {
+    execSync(`git diff --quiet origin/${BASE_BRANCH}...${branch}`, {
+      cwd,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    return { kind: 'ok', value: true };
+  } catch (err) {
+    if ((err as { status?: number }).status === 1) return { kind: 'ok', value: false };
+    const stderr = stderrOf(err);
+    return classifyRevListFailure(stderr) === 'absent'
+      ? { kind: 'absent' }
+      : { kind: 'error', stderr };
+  }
+}
+
+// Boolean convenience for callers that act on the answer directly. Both absent
+// and error collapse to false — "has content" — because this answer is what
+// durably retires an issue, and a diff nobody could read is not evidence of an
+// empty one.
+export function branchDiffIsEmpty(branch: string, cwd?: string): boolean {
+  const probe = probeBranchDiffEmpty(branch, cwd);
+  return probe.kind === 'ok' && probe.value;
+}
+
 // The branch the given checkout is on, or null (detached HEAD or not a repo).
 // `cwd` defaults to the process cwd; it exists so a test can point at a scratch
 // repo without chdir'ing the whole process.

@@ -2,17 +2,29 @@
 // BASE_BRANCH that weren't part of the current plan (typically because a
 // prior merge phase crashed or was interrupted), build-verifies them, and
 // hands back only the ones safe to merge.
+//
+// "Commits ahead" is necessary but not sufficient: a branch whose commits
+// cancel out is ahead of base and has nothing to land, and every filter here
+// used to wave it through. See retireEmptyDiffBranch.
 import { execSync } from 'node:child_process';
 import { createWorktreeSandbox } from './sandcastle-worktree-sandbox.mts';
 import { parseOverrideLabels } from './sandcastle-model-overrides.mts';
 import { isDocsOnlyDiff, runBuildVerify } from './sandcastle-build-verify.mts';
 import {
+  type StrandedDisposition,
+  NOOP_LABEL,
+  noOpIssueComment,
+  strandedDisposition,
+} from './sandcastle-noop-issues.mts';
+import {
   type IssueRef,
+  branchDiffIsEmpty,
   branchHasCommitsAhead,
   branchHasOpenPr,
   fetchIssue,
   findWorktreeForBranch,
   listSandcastleBranches,
+  markIssueNoOp,
   parseIssueIdFromBranch,
   worktreeReapBlockerFor,
 } from './sandcastle-git.mts';
@@ -65,7 +77,50 @@ function reapClosedIssueBranch(branch: string, id: string, state: string): void 
   }
 }
 
-export function collectStrandedIssues(alreadyQueued: Set<string>): IssueRef[] {
+// Retire a branch whose commits net to an empty diff: it is ahead of base by
+// every commit-counting measure, so it passes the rescue filters, but there is
+// nothing to merge. Rescuing it anyway spends a build-verify sandbox, hands the
+// merger nothing, and — because an empty diff never gets a PR to exclude it —
+// finds the same branch again on the very next iteration, forever.
+//
+// Marked, not merely skipped. partitionOutcomes already retires this shape on
+// the iteration that produced it, so a branch arriving here means nothing
+// upstream ever got to mark it (orchestrator killed mid-run, or `gh` down while
+// marking). Skipping silently would leave the issue with no record of what
+// happened and nothing to stop the next run repeating the rescue. The branch is
+// deliberately left in place: it holds the reverted attempt, which is what a
+// human reading the comment goes to look at.
+//
+// Extracted so collectStrandedIssues stays a shallow filter loop, same as
+// reapClosedIssueBranch.
+function retireEmptyDiffBranch(
+  branch: string,
+  id: string,
+  disposition: StrandedDisposition,
+  iteration: number,
+): void {
+  if (disposition === 'already-retired') {
+    console.log(
+      `  ⊘ skipping stranded branch ${branch}: commits net to an empty diff ` +
+        `(#${id} already marked ${NOOP_LABEL}).`,
+    );
+    return;
+  }
+  const { commented, labeled } = markIssueNoOp(
+    id,
+    noOpIssueComment({ id, branch, iteration, reason: 'empty-diff' }),
+  );
+  console.log(
+    `  ⊘ stranded branch ${branch}: commits net to an empty diff — #${id} left open, ` +
+      `excluded from rescue (comment ${commented ? 'posted' : 'FAILED'}, ` +
+      `${NOOP_LABEL} ${labeled ? 'added' : 'FAILED'}).`,
+  );
+}
+
+export function collectStrandedIssues(
+  alreadyQueued: Set<string>,
+  iteration: number,
+): IssueRef[] {
   const stranded: IssueRef[] = [];
   for (const branch of listSandcastleBranches()) {
     if (alreadyQueued.has(branch)) continue;
@@ -90,6 +145,16 @@ export function collectStrandedIssues(alreadyQueued: Set<string>): IssueRef[] {
     }
     if (branchHasOpenPr(branch)) {
       console.warn(`  ⚠ skipping stranded branch ${branch}: already has an open PR`);
+      continue;
+    }
+    // Commits ahead is a count, not a diff — an add-then-revert branch passes
+    // every check above and still has nothing to land. See retireEmptyDiffBranch.
+    const disposition = strandedDisposition({
+      diffEmpty: branchDiffIsEmpty(branch),
+      labels: issue.labels,
+    });
+    if (disposition !== 'rescue') {
+      retireEmptyDiffBranch(branch, id, disposition, iteration);
       continue;
     }
     // Honour the same `sc:` model overrides on the rescue path — a rescued

@@ -85,7 +85,7 @@ describe('sandcastle stranded-rescue build-verify + turbo cache (build-gate hard
     it('end-of-iteration rescue verifies stranded branches before pushing them to merge', () => {
       // collectStrandedIssues(queuedBranches) result must be verified before
       // completedIssues.push(...) feeds runMerger.
-      const strandedIdx = mainContent.indexOf('collectStrandedIssues(queuedBranches)');
+      const strandedIdx = mainContent.indexOf('collectStrandedIssues(queuedBranches');
       expect(strandedIdx).toBeGreaterThan(-1);
       const pushIdx = mainContent.indexOf('completedIssues.push(', strandedIdx);
       expect(pushIdx).toBeGreaterThan(strandedIdx);
@@ -94,7 +94,7 @@ describe('sandcastle stranded-rescue build-verify + turbo cache (build-gate hard
     });
 
     it('empty-plan rescue verifies stranded branches before runMerger', () => {
-      const emptyPlanIdx = mainContent.indexOf('collectStrandedIssues(new Set())');
+      const emptyPlanIdx = mainContent.indexOf('collectStrandedIssues(new Set()');
       expect(emptyPlanIdx).toBeGreaterThan(-1);
       const mergerIdx = mainContent.indexOf('runMerger(', emptyPlanIdx);
       expect(mergerIdx).toBeGreaterThan(emptyPlanIdx);

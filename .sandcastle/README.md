@@ -189,6 +189,14 @@ clean, produced nothing) or **failed** (threw — retried next iteration). A no-
 issue gets a comment and the `sandcastle:no-op` label, and is dropped from every
 later plan in the run.
 
+"Produced nothing" covers two shapes. The second is an implementer that
+committed an approach and then reverted it: the branch _is_ ahead of `main` and
+still has nothing to land. Commit counts cannot see that, so the classification
+also asks whether the branch's net diff against `main` is empty, and the comment
+says which of the two happened. The stranded-branch rescue below asks the same
+question — an empty-diff branch never gets a PR, so nothing else would stop it
+being rescued again every iteration.
+
 It is **not closed**. "Nothing to do" can mean the work already landed, or that
 the agent misread the task; closing would hide the second case. A human reads
 the comment and decides:
@@ -218,7 +226,9 @@ If branches accumulate anyway:
 2. `gh issue view <ID>` — if the issue is **closed**, the branch is stale and
    can be deleted: `git branch -D sandcastle/issue-<ID>-*`.
 3. If the issue is still open and the branch has commits ahead of `main`,
-   re-run `pnpm sandcastle` — the rescue path will pick it up.
+   re-run `pnpm sandcastle` — the rescue path will pick it up, unless those
+   commits net to an empty diff, in which case it marks the issue
+   `sandcastle:no-op` and leaves the branch in place for you to read.
 
 ---
 
