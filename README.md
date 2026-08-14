@@ -7,8 +7,7 @@ request — including the ones that build the repo itself — walks through the
 same gate:
 
 ```text
-lint · typecheck · build · test · format · health · sandcastle  (parallel)  →  gate
-                             ↑ e2e (Wave 3) joins gate.needs later
+lint · typecheck · build · test · format · health · sandcastle · e2e  (parallel)  →  gate
 ```
 
 `visual-diff` runs alongside the jobs above but deliberately never joins
@@ -41,7 +40,7 @@ merges carry their model co-author trailer in the squashed commit.
 | `apps/blog` — Next.js App Router + MDX, consumes `@gate/ui`     | ✅ seed, English                                                                                                         |
 | `packages/ui` — atomic design system, token-only styling        | ✅ 7 seed components, consumed by the blog · 🔜 Wave 1 completes the 19-component inventory, layering enforced by ESLint |
 | `apps/storybook` — the visual single source of truth            | 🔜 Wave 2                                                                                                                |
-| `apps/e2e` — playwright-bdd acceptance suite                    | 🔜 Wave 3                                                                                                                |
+| `apps/e2e` — playwright-bdd acceptance suite                    | ✅ in `gate.needs`                                                                                                       |
 | `packages/visual-diff` — the self-built visual regression CLI   | ✅ reports on every PR, never auto-blocks — see [its README](packages/visual-diff/README.md#ci-status)                   |
 
 ## The design system, in one rule
