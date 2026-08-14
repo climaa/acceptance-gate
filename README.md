@@ -1,6 +1,10 @@
 # acceptance-gate
 
 [![pr](https://github.com/climaa/acceptance-gate/actions/workflows/pr.yml/badge.svg)](https://github.com/climaa/acceptance-gate/actions/workflows/pr.yml)
+[![release](https://img.shields.io/github/v/tag/climaa/acceptance-gate?label=release&sort=semver)](https://github.com/climaa/acceptance-gate/releases)
+
+Live: **[blog](https://acceptance-gate-blog.vercel.app)** — the argument ·
+**[Storybook](https://acceptance-gate-storybook.vercel.app)** — the evidence.
 
 **The pipeline is the product.** A public portfolio monorepo where every pull
 request — including the ones that build the repo itself — walks through the
@@ -33,15 +37,15 @@ merges carry their model co-author trailer in the squashed commit.
 
 ## What's here, what's coming
 
-| Piece                                                           | Status                                                                                                                   |
-| --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| `.sandcastle/` — the orchestrator, with its hermetic test suite | ✅ committed, public                                                                                                     |
-| `designs/` — the design source of truth + PNG exports           | ✅ normative component inventory, two theme personalities                                                                |
-| `apps/blog` — Next.js App Router + MDX, consumes `@gate/ui`     | ✅ seed, English                                                                                                         |
-| `packages/ui` — atomic design system, token-only styling        | ✅ 7 seed components, consumed by the blog · 🔜 Wave 1 completes the 19-component inventory, layering enforced by ESLint |
-| `apps/storybook` — the visual single source of truth            | 🔜 Wave 2                                                                                                                |
-| `apps/e2e` — playwright-bdd acceptance suite                    | ✅ runs on every PR, blocks the merge — in `gate.needs`                                                                  |
-| `packages/visual-diff` — the self-built visual regression CLI   | ✅ reports on every PR, never auto-blocks — see [its README](packages/visual-diff/README.md#ci-status)                   |
+| Piece                                                           | Status                                                                                                                                             |
+| --------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `.sandcastle/` — the orchestrator, with its hermetic test suite | ✅ committed, public                                                                                                                               |
+| `designs/` — the design source of truth + PNG exports           | ✅ normative component inventory, two theme personalities                                                                                          |
+| `apps/blog` — Next.js 16 App Router + MDX, consumes `@gate/ui`  | ✅ [published](https://acceptance-gate-blog.vercel.app) — posts, tags, RSS, sitemap, OG images, Cache Components + Partial Prefetching             |
+| `packages/ui` — atomic design system, token-only styling        | ✅ all 19 components of the inventory, in four tiers, layering enforced by `eslint-plugin-boundaries`                                              |
+| `apps/storybook` — the visual single source of truth            | ✅ [published](https://acceptance-gate-storybook.vercel.app) — every component rendered in isolation, plus the docs pages that describe the system |
+| `apps/e2e` — playwright-bdd acceptance suite                    | ✅ runs on every PR, blocks the merge — in `gate.needs`                                                                                            |
+| `packages/visual-diff` — the self-built visual regression CLI   | ✅ reports on every PR, never auto-blocks — see [its README](packages/visual-diff/README.md#ci-status)                                             |
 
 ## The design system, in one rule
 
