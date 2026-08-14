@@ -95,12 +95,13 @@ force-push of `main`.
 
 Two things about it belong on this page, because neither is visible from the file itself.
 
-**Status: committed, not applied.** The ruleset _declares_ a posture; it is not in force
-until someone runs `scripts/apply-ruleset.mjs --apply`, and what enforces `main` today is
-still the older classic protection it is meant to replace. Its README is written in the
-conditional throughout for that reason. Do not read the presence of the file as a
-description of the repository's current state — run the script, which prints the mismatches
-or says the live rule satisfies everything the file declares.
+**Status: applied.** The ruleset is live — `main` runs on it, not on the classic branch
+protection it replaced. Getting there was a six-step migration, executed and verified in
+order: apply, confirm the drift check converges, verify on a throwaway PR that a red `gate`
+is actually blocked, watch a real PR merge end to end, remove the classic rule, confirm it
+is gone (`gh api .../branches/main/protection` 404s). Do not read the presence of the file
+alone as proof of any of that — run the script, which prints the mismatches or says the
+live rule satisfies everything the file declares.
 
 **`bypass_actors: []` is a seatbelt, not a padlock.** Nobody bypasses the rule while the
 rule exists, and whoever can delete the rule is exactly who it binds. That is not a flaw to
@@ -127,21 +128,35 @@ for.
 The rule came off `main` for about two seconds one afternoon, deliberately, to purge a
 string from the repository's history. Three calls: `gh api -X DELETE` on the protection,
 `git push --force`, then `gh api -X PUT` to put it back. It was restored byte for byte
-because the configuration had been written to a file first.
+because the configuration had been written to a file first. That happened under the classic
+branch protection this repo has since migrated off of — the mechanics below are the
+ruleset's, but the shape of the argument is unchanged.
 
 That is the disaster-recovery story, and it is also the measure of what a rule costs to
-remove: one call, no confirmation, no second party, no audit entry anybody reads. Set
-against it, the control that actually held.
+remove: one call, no confirmation, no second party, no audit entry anybody reads. The
+ruleset's own version of that call is no smaller — `gh api -X DELETE
+repos/{owner}/{repo}/rulesets/{id}` is exactly as fast, and `bypass_actors: []` has no
+`enforce_admins`-style toggle to flip instead; the only lever is deleting or disabling the
+rule itself. That is precisely why the ruleset README's break-glass path is a UI action
+(Settings → Rules → the `main` ruleset → enforcement Disabled) rather than a script: turning
+protection off is never something CI can do to itself. Set against it, the control that
+actually holds.
 
 **The agent's token carries four permissions.** Contents, issues, pull requests, metadata.
-There is no `Administration` — the scope that edits branch protection. The distinction is
-not that the agent is instructed not to touch the rule. It is that it cannot: the API
-returns 403, and no wording in any prompt changes that.
+There is no `Administration` — the scope that edits branch protection or rulesets. The
+distinction is not that the agent is instructed not to touch the rule. It is that it
+cannot: the API returns 403, and no wording in any prompt changes that. It goes further
+than that, in fact — confirmed while scoping the ruleset's own drift check:
+`administration` is not a permission a workflow's `GITHUB_TOKEN` can be granted at all, at
+any level. It parses only as a fine-grained-PAT or GitHub-App-installation scope, never a
+workflow one.
 
 **The asymmetry is the whole point.** Removing the rule is one API call from a session that
 already holds the credential. Granting the permission that was never granted means going
-back to GitHub, generating a new token with a wider scope, and pasting it into the secret
-store — three deliberate steps, each one an opportunity to notice what you are doing.
+back to GitHub, generating a new credential with a wider scope — a PAT, or an entirely
+different credential type such as a GitHub App installation — and pasting it into the
+secret store — several deliberate steps, each one an opportunity to notice what you are
+doing.
 
 <Mermaid
   chart={`
