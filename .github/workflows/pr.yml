@@ -56,7 +56,7 @@ env:
 # carry that case is a silent footgun. Say it out loud instead.
 #
 # Repeated per job because GitHub Actions does not support YAML anchors. The
-# `checks` matrix below shares the six per-command jobs' steps, but a matrix
+# `checks` matrix below shares the eight per-command jobs' steps, but a matrix
 # cannot share this guard line, so all five jobs (checks, sandcastle, e2e,
 # visual-diff, gate) still carry their own copy. A new job added in a later
 # wave needs this line too — and, unless it's meant to stay informational like
@@ -84,8 +84,8 @@ jobs:
     #
     # fail-fast: false is load-bearing. The default cancels the surviving legs
     # on the first failure; the run goes red either way (gate counts cancelled
-    # as failure too), but losing those five results defeats the whole reason
-    # six checks exist.
+    # as failure too), but losing those seven results defeats the whole reason
+    # eight checks exist.
     #
     # name: ${{ matrix.name }} keeps the check names byte-identical to the
     # pre-matrix jobs (lint, typecheck, …). Without it each leg renders as
@@ -109,16 +109,25 @@ jobs:
           - { name: build, run: pnpm turbo run build }
           - { name: test, run: pnpm turbo run test }
           # Prettier is the formatter of record for the whole repo, including
-          # .sandcastle/*.mts (added to the glob so the orchestrator is held to
-          # the same printWidth as everything else). `--check` fails on drift.
+          # .sandcastle/*.mts and scripts/*.mjs (both added to the glob so the
+          # orchestrator and the gate scripts are held to the same printWidth as
+          # everything else). `--check` fails on drift.
           - { name: format, run: pnpm format:check }
           # Cognitive-complexity ceiling — COGNITIVE, not cyclomatic (cyclomatic
           # over-counts flat guard sequences); see scripts/complexity-gate.mjs.
           # `pnpm health:check` = `turbo run health` (per-workspace,
           # cached/parallel — unchanged apps hit the shared turbo remote cache)
-          # + a standalone .sandcastle/ check (orchestrator scripts, not a turbo
-          # workspace).
+          # + standalone .sandcastle/ and scripts/ checks (orchestrator and gate
+          # scripts, neither of them a turbo workspace). The second of those has
+          # the gate scoring itself, which is the point.
           - { name: health, run: pnpm health:check }
+          # scripts/ is not a workspace, so `turbo run lint`/`turbo run test`
+          # cannot reach it — same structural gap `.sandcastle/` has, same
+          # answer: standalone root scripts run as legs here rather than a pnpm
+          # workspace joining build/typecheck/test graphs it has no place in.
+          # One command per leg, like every leg above.
+          - { name: lint:scripts, run: pnpm lint:scripts }
+          - { name: test:scripts, run: pnpm test:scripts }
     steps:
       - uses: actions/checkout@v7
       - run: corepack enable
@@ -327,7 +336,7 @@ jobs:
     # reports even when a needed job fails; it fails unless every result is
     # exactly 'success' (skipped/cancelled count as failure).
     #
-    # needs.checks.result is a single aggregate over the six matrix legs: any
+    # needs.checks.result is a single aggregate over the eight matrix legs: any
     # leg failure -> failure, any leg cancelled -> cancelled, draft PR (the
     # job-level guard skips the whole job) -> skipped. The one thing lost
     # versus six separate jobs: the failure echo below no longer names which

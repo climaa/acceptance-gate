@@ -48,7 +48,7 @@ is a different project.
 ## What each rule is for
 
 **`required_status_checks` → `gate`, and only `gate`.** This is the load-bearing decision
-and it is deliberate, not an omission. `pr.yml` runs `checks` (six matrix legs),
+and it is deliberate, not an omission. `pr.yml` runs `checks` (eight matrix legs),
 `sandcastle`, `e2e` and `visual-diff`, but only `gate` is required, because `gate`
 aggregates the first three through its `needs:` and fails unless every one reports exactly
 `success`. Adding a job to `gate.needs` therefore tightens the merge bar with no settings

@@ -76,8 +76,8 @@ PR is a draft, and GitHub counts a skipped required check as **passing**. Withou
 when the PR is marked ready — mergeable, having never run a check.
 
 **`fail-fast: false` is load-bearing.** The default cancels the surviving legs on the
-first failure. The run goes red either way, but losing the other five results defeats the
-reason six checks exist.
+first failure. The run goes red either way, but losing the other seven results defeats the
+reason eight checks exist.
 
 **Never add a second required context.** A required context that never reports blocks
 every PR forever, and it presents as a hung check rather than a misconfiguration. If a new

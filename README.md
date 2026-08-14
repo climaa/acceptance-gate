@@ -7,7 +7,7 @@ request — including the ones that build the repo itself — walks through the
 same gate:
 
 ```text
-lint · typecheck · build · test · format · health · sandcastle  (parallel)  →  gate
+lint · typecheck · build · test · format · health · lint:scripts · test:scripts · sandcastle  (parallel)  →  gate
                              ↑ e2e (Wave 3) joins gate.needs later
 ```
 
@@ -63,10 +63,11 @@ cp .env.example .env  # turbo remote-cache credentials — see the comments insi
 pnpm dev              # blog on :3000
 pnpm lint && pnpm typecheck && pnpm build && pnpm test
 pnpm format:check && pnpm health:check
+pnpm lint:scripts && pnpm test:scripts  # scripts/ — not a workspace, so turbo cannot reach it
 pnpm test:sandcastle  # the orchestrator's own hermetic suite
 ```
 
-Those last three lines are the seven parallel gate jobs from the diagram above,
+Those last four lines are the nine parallel gate jobs from the diagram above,
 in the same order.
 
 Run turbo through the `pnpm` scripts rather than `pnpm turbo run ...` directly.

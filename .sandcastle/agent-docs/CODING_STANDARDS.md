@@ -9,15 +9,20 @@ findings, never from ambition.
 - pnpm **11.20.0** (pinned via `packageManager` + sha512), Node **22** (`.nvmrc`)
 - Turborepo monorepo: `apps/{blog}`, `packages/{ui,tsconfig}` — Storybook, e2e and
   `packages/visual-diff` arrive by issue
-- TypeScript strict; ESLint runs today only in `apps/blog` (via `eslint .` on
-  ESLint 9 flat config, no `--max-warnings=0`) — treat warnings as errors, and
-  keep doing so as the other workspaces gain lint
-- **`pnpm format:check`** — Prettier over `**/*.{ts,mts,tsx,md,mdx,json,css}`.
-  Docs and Markdown count. `pnpm format` fixes.
+- TypeScript strict; ESLint runs per workspace that carries a config (`eslint .`
+  on ESLint 9 flat config, none of them passing `--max-warnings=0`), plus
+  **`pnpm lint:scripts`** at the root for `scripts/` — not a workspace, so
+  `turbo run lint` cannot reach it, and the one lint that does pass
+  `--max-warnings=0`. Treat warnings as errors everywhere.
+- **`pnpm format:check`** — Prettier over `**/*.{ts,mts,tsx,mjs,md,mdx,json,css}`.
+  Docs and Markdown count, and so does every `.mjs`. `pnpm format` fixes.
 - **`pnpm health:check`** — cognitive-complexity ceiling of **20** per function
-  (`scripts/complexity-gate.mjs`, fallow under the hood). Cognitive, not
-  cyclomatic, on purpose: a flat sequence of guard-returns is fine, nesting is
-  what scores. A diff that trips it fails CI — extract a helper (see #63-#65).
+  (`scripts/complexity-gate.mjs`, fallow under the hood), over every workspace
+  plus `.sandcastle/` and `scripts/`. Cognitive, not cyclomatic, on purpose: a
+  flat sequence of guard-returns is fine, nesting is what scores. A diff that
+  trips it fails CI — extract a helper (see #63-#65).
+- **`pnpm test:scripts`** — the specs for `scripts/`, which `turbo run test`
+  cannot reach either. Same shape as `pnpm test:sandcastle`.
 - Everything public is **English** — code, comments, docs, commit messages
 
 ## Workspace conventions
