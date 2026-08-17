@@ -127,26 +127,33 @@ function Alert({ children }: { children: ReactNode }) {
   );
 }
 
+/** Which mode a key moves to from the one selected, or nothing for a key the
+ *  tablist does not own. Wrapping, both axes: the strip reads as a row and stacks
+ *  to a column below 768 px. */
+const KEYS: Record<string, (from: Mode) => Mode> = {
+  ArrowRight: (from) => step(from, 1),
+  ArrowDown: (from) => step(from, 1),
+  ArrowLeft: (from) => step(from, -1),
+  ArrowUp: (from) => step(from, -1),
+  Home: () => MODES[0],
+  End: () => MODES[MODES.length - 1] as Mode,
+};
+
+const step = (from: Mode, by: number) =>
+  MODES[(MODES.indexOf(from) + by + MODES.length) % MODES.length] as Mode;
+
 /** The mode tabs. One tab stop for the four of them, arrows between: a tablist
  *  where every tab is tabbable puts three stops in front of the fields. */
 function ModeTabs({ mode, onSelect }: { mode: Mode; onSelect: (mode: Mode) => void }) {
-  const step = (by: number) =>
-    onSelect(MODES[(MODES.indexOf(mode) + by + MODES.length) % MODES.length] as Mode);
-
-  const KEYS: Record<string, () => void> = {
-    ArrowRight: () => step(1),
-    ArrowDown: () => step(1),
-    ArrowLeft: () => step(-1),
-    ArrowUp: () => step(-1),
-    Home: () => onSelect(MODES[0]),
-    End: () => onSelect(MODES[MODES.length - 1] as Mode),
-  };
-
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    const move = KEYS[event.key];
-    if (!move) return;
+    const next = KEYS[event.key]?.(mode);
+    if (!next) return;
 
-    move();
+    onSelect(next);
+    // Focus follows the selection, because the roving `tabIndex` below is about
+    // to make the tab under it untabbable: leaving focus there would send the
+    // next Tab out of the tablist from a stop that no longer exists.
+    event.currentTarget.querySelector<HTMLButtonElement>(`#${tabId(next)}`)?.focus();
     event.preventDefault();
   };
 

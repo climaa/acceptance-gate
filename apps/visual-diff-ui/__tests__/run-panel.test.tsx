@@ -190,6 +190,18 @@ describe('the mode tabs', () => {
     expect(tab('capture').getAttribute('aria-selected')).toBe('true');
   });
 
+  // Selection and focus move together, or the keyboard reader is left on a tab
+  // that just became untabbable and the next Tab leaves the tablist from
+  // wherever the browser decides.
+  it('takes focus with the selection', () => {
+    renderPanel();
+    tab('capture').focus();
+
+    fireEvent.keyDown(tab('capture'), { key: 'ArrowRight' });
+
+    expect(document.activeElement).toBe(tab('compare'));
+  });
+
   it('names the start button after the mode it would run', () => {
     renderPanel();
 

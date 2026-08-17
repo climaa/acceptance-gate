@@ -38,6 +38,10 @@ export function LogTail({ lines }: LogTailProps) {
   }, [lines.length]);
 
   return (
+    // `tabIndex={0}` because the frame scrolls: a region that scrolls but cannot
+    // be focused is unreachable from the keyboard (WCAG 2.1.1, and axe's
+    // `scrollable-region-focusable`), and this one scrolls by construction — it
+    // is a tail with a height.
     <pre
       ref={frame}
       data-testid="log-tail"
