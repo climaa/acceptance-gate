@@ -1,0 +1,21 @@
+{
+  "isSample": true,
+  "sets": [
+    {
+      "label": "main-2026-08-17",
+      "sha": "f2570e1",
+      "branch": "main",
+      "capturedAt": "2026-08-17",
+      "stories": 106,
+      "note": "the committed __baselines__ corpus as of this sha"
+    },
+    {
+      "label": "main-2026-08-13",
+      "sha": "e0427b4",
+      "branch": "main",
+      "capturedAt": "2026-08-13",
+      "stories": 106,
+      "note": "main's tip on 2026-08-13, the commit before #242 merged"
+    }
+  ]
+}
