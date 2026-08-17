@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
+import { Stack } from '../Stack/Stack';
 import { TriStateCheckbox } from './TriStateCheckbox';
 
 const meta: Meta<typeof TriStateCheckbox> = {
@@ -16,7 +17,7 @@ type Story = StoryObj<typeof TriStateCheckbox>;
  *  and three baselines to show what one deterministic row already shows. */
 export const States: Story = {
   render: () => (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+    <Stack gap={3}>
       <TriStateCheckbox checked={false} label="None selected" onChange={() => {}} />
       <TriStateCheckbox
         checked={false}
@@ -25,6 +26,6 @@ export const States: Story = {
         onChange={() => {}}
       />
       <TriStateCheckbox checked label="All selected" onChange={() => {}} />
-    </div>
+    </Stack>
   ),
 };

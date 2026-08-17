@@ -25,6 +25,16 @@ const MODES = [
   { value: 'diff', label: 'Diff' },
 ] as const;
 
+// The props every test starts from; each spreads them and overrides only what it
+// is about. `onChange` is a filler — the tests that assert on the callback pass
+// their own mock, so nothing accumulates calls across the file.
+const baseProps = {
+  label: 'Comparison mode',
+  options: MODES,
+  value: 'overlay',
+  onChange: () => {},
+};
+
 const group = () => screen.getByRole('group', { name: 'Comparison mode' });
 
 /** Every segment's `aria-pressed`, in DOM order. */
@@ -35,41 +45,19 @@ const pressedStates = (container: HTMLElement) =>
 
 describe('SegmentedControl', () => {
   it('names the container group with its label', () => {
-    render(
-      <SegmentedControl
-        label="Comparison mode"
-        options={MODES}
-        value="overlay"
-        onChange={vi.fn()}
-      />,
-    );
+    render(<SegmentedControl {...baseProps} />);
 
     group();
   });
 
   it('takes toolbar as the container role when asked', () => {
-    render(
-      <SegmentedControl
-        label="Comparison mode"
-        options={MODES}
-        role="toolbar"
-        value="overlay"
-        onChange={vi.fn()}
-      />,
-    );
+    render(<SegmentedControl {...baseProps} role="toolbar" />);
 
     screen.getByRole('toolbar', { name: 'Comparison mode' });
   });
 
   it('gives every segment its option label, exactly, as the accessible name', () => {
-    render(
-      <SegmentedControl
-        label="Comparison mode"
-        options={MODES}
-        value="overlay"
-        onChange={vi.fn()}
-      />,
-    );
+    render(<SegmentedControl {...baseProps} />);
 
     // The downstream e2e contract is `{ name, exact: true }`; a string `name`
     // here is already exact-matched by Testing Library, and the textContent
@@ -83,28 +71,14 @@ describe('SegmentedControl', () => {
   });
 
   it('presses exactly one segment, the one matching value', () => {
-    const { container } = render(
-      <SegmentedControl
-        label="Comparison mode"
-        options={MODES}
-        value="overlay"
-        onChange={vi.fn()}
-      />,
-    );
+    const { container } = render(<SegmentedControl {...baseProps} />);
 
     expect(pressedStates(container)).toEqual(['false', 'true', 'false']);
   });
 
   it('reports the clicked segment’s value to onChange', () => {
     const onChange = vi.fn();
-    render(
-      <SegmentedControl
-        label="Comparison mode"
-        options={MODES}
-        value="overlay"
-        onChange={onChange}
-      />,
-    );
+    render(<SegmentedControl {...baseProps} onChange={onChange} />);
 
     fireEvent.click(screen.getByRole('button', { name: 'Diff' }));
 
@@ -115,14 +89,7 @@ describe('SegmentedControl', () => {
     function Host() {
       const [value, setValue] = useState<string>('overlay');
 
-      return (
-        <SegmentedControl
-          label="Comparison mode"
-          options={MODES}
-          value={value}
-          onChange={setValue}
-        />
-      );
+      return <SegmentedControl {...baseProps} value={value} onChange={setValue} />;
     }
 
     const { container } = render(<Host />);
@@ -135,27 +102,13 @@ describe('SegmentedControl', () => {
   });
 
   it('presses nothing when value matches no option', () => {
-    const { container } = render(
-      <SegmentedControl
-        label="Comparison mode"
-        options={MODES}
-        value="a11y"
-        onChange={vi.fn()}
-      />,
-    );
+    const { container } = render(<SegmentedControl {...baseProps} value="a11y" />);
 
     expect(pressedStates(container)).toEqual(['false', 'false', 'false']);
   });
 
   it('keeps every segment tabbable and out of form submission', () => {
-    const { container } = render(
-      <SegmentedControl
-        label="Comparison mode"
-        options={MODES}
-        value="overlay"
-        onChange={vi.fn()}
-      />,
-    );
+    const { container } = render(<SegmentedControl {...baseProps} />);
 
     for (const button of container.querySelectorAll('button')) {
       // No roving tabindex: this is a button group, and Space/Enter come free
@@ -166,14 +119,7 @@ describe('SegmentedControl', () => {
   });
 
   it('is a button group, never a radio group', () => {
-    render(
-      <SegmentedControl
-        label="Comparison mode"
-        options={MODES}
-        value="overlay"
-        onChange={vi.fn()}
-      />,
-    );
+    render(<SegmentedControl {...baseProps} />);
 
     // The comparison-modal e2e contract pins button + aria-pressed on both form
     // factors; radios would make every mode scenario unfindable.
@@ -183,27 +129,14 @@ describe('SegmentedControl', () => {
   });
 
   it('carries only the block class when no className is supplied', () => {
-    const { container } = render(
-      <SegmentedControl
-        label="Comparison mode"
-        options={MODES}
-        value="overlay"
-        onChange={vi.fn()}
-      />,
-    );
+    const { container } = render(<SegmentedControl {...baseProps} />);
 
     expect(container.firstElementChild?.className).toBe('ds-segmented');
   });
 
   it('appends a caller-supplied className', () => {
     const { container } = render(
-      <SegmentedControl
-        className="u-ml-auto"
-        label="Comparison mode"
-        options={MODES}
-        value="overlay"
-        onChange={vi.fn()}
-      />,
+      <SegmentedControl {...baseProps} className="u-ml-auto" />,
     );
 
     expect(container.firstElementChild?.className).toBe('ds-segmented u-ml-auto');
@@ -211,12 +144,7 @@ describe('SegmentedControl', () => {
 
   it('renders nothing but the container when given no options', () => {
     const { container } = render(
-      <SegmentedControl
-        label="Comparison mode"
-        options={[]}
-        value=""
-        onChange={vi.fn()}
-      />,
+      <SegmentedControl {...baseProps} options={[]} value="" />,
     );
 
     expect(container.querySelectorAll('button')).toHaveLength(0);
@@ -224,28 +152,13 @@ describe('SegmentedControl', () => {
   });
 
   it('passes axe as a group', async () => {
-    const { container } = render(
-      <SegmentedControl
-        label="Comparison mode"
-        options={MODES}
-        value="overlay"
-        onChange={vi.fn()}
-      />,
-    );
+    const { container } = render(<SegmentedControl {...baseProps} />);
 
     await expectNoAxeViolations(container);
   });
 
   it('passes axe as a toolbar', async () => {
-    const { container } = render(
-      <SegmentedControl
-        label="Comparison mode"
-        options={MODES}
-        role="toolbar"
-        value="overlay"
-        onChange={vi.fn()}
-      />,
-    );
+    const { container } = render(<SegmentedControl {...baseProps} role="toolbar" />);
 
     await expectNoAxeViolations(container);
   });
