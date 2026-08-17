@@ -46,6 +46,14 @@ export type QueuedPr = {
   mergeStateStatus: string;
   /** Whether `--squash --auto` is currently armed on the PR. */
   autoMergeEnabled: boolean;
+  /**
+   * Files this PR changes, or `null` when gh did not report it.
+   *
+   * Zero is the shape this module refuses to help along: a PR that changes
+   * nothing still merges, and the `Closes #<ID>` line every merge-prompt body
+   * carries then auto-closes an issue nobody resolved.
+   */
+  changedFiles: number | null;
 };
 
 export type QueueActionKind = 'update-branch' | 'arm-auto-merge' | 'needs-human' | 'wait';
@@ -77,11 +85,40 @@ function normalizeMergeState(raw: string): PrMergeState {
  * in a previous incident, so it is reported and left. DRAFT likewise: arming
  * auto-merge on a draft fails, so a repeating failed write would be the only
  * result. Everything else is CI doing its job — wait and look again next pass.
+ *
+ * A PR that changes no files is checked FIRST, ahead of every merge state.
+ * This loop cannot open a PR and cannot close an issue, so it is not where an
+ * empty-diff PR with an auto-closing `Closes #<ID>` comes from — merge-prompt.md
+ * Step 1b is what stops that. But arming auto-merge on one is the last push that
+ * outcome needs, and updating its branch is what makes it mergeable at all, so
+ * neither write happens here either. Withholding the writes is the whole guard:
+ * disarming an existing arming is deliberately NOT done, because GitHub computes
+ * a PR's diff stats asynchronously and a freshly-opened PR can briefly report
+ * zero. A withheld write costs one pass and self-heals; a disarm would take down
+ * a legitimate PR on a transient reading.
  */
 export function decideActions(queued: QueuedPr): QueueAction[] {
   if (queued.state !== 'OPEN') return [];
   const { number: pr, branch } = queued;
   const status = normalizeMergeState(queued.mergeStateStatus);
+
+  // `null` (gh did not report a count) lands here too. "Has content" is the one
+  // guess that can let the bad merge through, so an unreadable count is
+  // reported rather than assumed away — the same fail-closed stance
+  // worktreeDirtiness takes on a checkout it cannot inspect.
+  if (queued.changedFiles === null || queued.changedFiles === 0) {
+    return [
+      {
+        kind: 'needs-human',
+        pr,
+        branch,
+        reason:
+          queued.changedFiles === 0
+            ? 'PR changes no files — merging it would auto-close its issue with nothing landed'
+            : 'gh did not report a changed-file count — cannot confirm the PR changes anything',
+      },
+    ];
+  }
 
   if (status === 'DIRTY') {
     return [
@@ -133,16 +170,23 @@ type RawPr = {
   state?: unknown;
   mergeStateStatus?: unknown;
   autoMergeRequest?: unknown;
+  changedFiles?: unknown;
 };
 
 /**
- * `gh pr list --json number,headRefName,state,mergeStateStatus,autoMergeRequest`.
+ * `gh pr list --json number,headRefName,state,mergeStateStatus,autoMergeRequest,changedFiles`.
  *
  * Reads anything malformed as an empty list: a gh blip must degrade to "nothing
  * to reconcile this pass", never to a crash in a phase that runs after the
  * branches are already pushed. An entry missing a field the state machine reads
  * is dropped rather than defaulted — a PR whose status did not arrive must not
  * present as CLEAN.
+ *
+ * `changedFiles` is the exception: it is carried through as `null` instead of
+ * dropping the entry, so an unreported count still reaches `decideActions` and
+ * still shows up in the pass's log and `stillOpen` list. Defaulting it to 0
+ * would report every PR as empty; dropping the entry would make the same PR
+ * invisible.
  */
 export function parsePrQueueJson(stdout: string): QueuedPr[] {
   let parsed: unknown;
@@ -164,6 +208,7 @@ export function parsePrQueueJson(stdout: string): QueuedPr[] {
         state: entry.state as QueuedPr['state'],
         mergeStateStatus: entry.mergeStateStatus,
         autoMergeEnabled: Boolean(entry.autoMergeRequest),
+        changedFiles: typeof entry.changedFiles === 'number' ? entry.changedFiles : null,
       },
     ];
   });
@@ -188,7 +233,7 @@ export type QueueOutcome = {
   armed: number[];
   /** Writes gh refused. */
   failed: number[];
-  /** DIRTY or DRAFT — reported, never touched. */
+  /** DIRTY, DRAFT, or nothing changed — reported, never touched. */
   conflicted: number[];
   stillOpen: number[];
   /** True when the pass cap was reached with PRs still open. */
@@ -212,7 +257,9 @@ export function summarizeQueueOutcome(outcome: QueueOutcome): string {
   if (outcome.armed.length > 0) parts.push(`re-armed ${list(outcome.armed)}`);
   if (outcome.failed.length > 0) parts.push(`gh refused ${list(outcome.failed)}`);
   if (outcome.conflicted.length > 0) {
-    parts.push(`${list(outcome.conflicted)} need a human (conflict)`);
+    // No longer only conflicts — a PR that changes nothing lands here too, and
+    // the per-PR log line above carries the actual reason.
+    parts.push(`${list(outcome.conflicted)} need a human`);
   }
   parts.push(
     outcome.stillOpen.length === 0
