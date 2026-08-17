@@ -9,7 +9,7 @@ const nextConfig = {
   // pays off on an index that links to many distinct destinations; this app has
   // two routes, and everything worth prefetching on the console is already the
   // shared shell. Revisit when the report route gains links of its own.
-  //
+
   // The design system ships as uncompiled TypeScript (source-direct).
   transpilePackages: ['@gate/ui'],
   // Every route below reads `fixtures/` with `readFile` at request time, off a

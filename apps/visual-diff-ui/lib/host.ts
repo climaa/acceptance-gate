@@ -32,8 +32,11 @@ export interface HostFingerprint {
 /** `mcr.microsoft.com/playwright:v1.62.1-noble` → `1.62.1`. */
 const IMAGE_TAG = /playwright:v(\d+\.\d+\.\d+)/;
 
-const playwrightFrom = (image: string | null) =>
-  (image && IMAGE_TAG.exec(image)?.[1]) || null;
+function playwrightFrom(image: string | null): string | null {
+  if (!image) return null;
+
+  return IMAGE_TAG.exec(image)?.[1] ?? null;
+}
 
 /**
  * `VISUAL_DIFF_FAKE_HOST_FINGERPRINT` names the image this host claims to be.

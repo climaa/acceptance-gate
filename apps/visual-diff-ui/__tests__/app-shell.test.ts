@@ -2,9 +2,9 @@ import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
 import { createElement, type ReactElement, type ReactNode } from 'react';
+import { renderToReadableStream } from 'react-dom/server';
 // Imported explicitly rather than relying on `globals: true` — tsconfig's
 // `**/*.ts` include means tsc typechecks this file.
-import { renderToReadableStream } from 'react-dom/server';
 import { afterEach, describe, expect, it } from 'vitest';
 import RootLayout from '../app/layout';
 import { APP_NAME, APP_TAGLINE, SAMPLE_LABEL } from '../lib/site';

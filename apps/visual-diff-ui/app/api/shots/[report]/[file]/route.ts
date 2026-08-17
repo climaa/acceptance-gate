@@ -5,6 +5,8 @@ interface Context {
   params: Promise<{ report: string; file: string }>;
 }
 
+const notFound = () => new Response('Not found', { status: 404 });
+
 /**
  * One shot — baseline, candidate or diff — out of a report's `shots/`.
  *
@@ -39,5 +41,3 @@ export async function GET(_request: Request, { params }: Context): Promise<Respo
     return notFound();
   }
 }
-
-const notFound = () => new Response('Not found', { status: 404 });
