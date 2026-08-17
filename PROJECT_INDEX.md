@@ -71,7 +71,7 @@ scripts/               complexity-gate.mjs (the health gate) · apply-ruleset.mj
 - `apps/storybook/src/docs/` — the published written half: System Design, Atomic Design, QA, DevOps, Skills
 - `packages/visual-diff/README.md` — capture matrix, determinism controls, exit codes, and why the job never joins `gate.needs`
 - `apps/e2e/README.md` — the three-layer split and the tag→project matrix
-- `designs/exports/` — component library (normative inventory), flows & decisions, pages
+- `designs/exports/` — component library (normative inventory), flows & decisions, pages, visual-diff pages (Board 04 — console `/` and `/report/[id]`)
 
 ## 🧪 Tests
 
