@@ -28,8 +28,8 @@ export default function AboutPage() {
           International&apos;s insurance quote wizard went from nothing to a shipped MVP
           in three months, with teams across Argentina, Mexico, the US. `acceptance-gate`
           — this blog, its design system, its CI gate, a tagged v1.0.0 — took a week.
-          Along the way I&apos; ve built proofs-of-concept at several companies whose
-          whole job was to answer a question fast enough that the answer still mattered.
+          Along the way I&apos;ve built proofs-of-concept at several companies whose whole
+          job was to answer a question fast enough that the answer still mattered.
         </p>
         <p>
           That&apos;s also where the interest in verification comes from. Building fast is
