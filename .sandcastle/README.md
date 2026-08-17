@@ -210,6 +210,15 @@ The label is created on first use. It deliberately does **not** use the `sc:`
 prefix — that vocabulary is the model-override grammar, where an unknown role is
 a hard error that would abort the next run before any sandbox started.
 
+The **merge phase** asks the same question a third time, because it is the one
+place where "nothing to land" can do real damage. Every PR body carries
+`Closes #<ID>`, a pull request with zero file changes still merges, and GitHub
+then closes an issue nobody resolved — hiding work instead of merely repeating
+it. So `agent-docs/merge-prompt.md` Step 1b checks the net diff before it pushes
+or opens anything, and takes the same comment-and-label exit; and the host-side
+PR-queue loop declines to update or arm a PR that changes no files, so it cannot
+finish the job for one that got opened anyway.
+
 ---
 
 ## Stranded branches
