@@ -5,7 +5,7 @@ import { Meta } from '@storybook/addon-docs/blocks';
 # System design
 
 `designs/acceptance-gate.pen` is the source of truth for this design system — every token,
-component, flow and decision starts there before it exists in code. The three boards below are
+component, flow and decision starts there before it exists in code. The four boards below are
 its current exported snapshot. This page narrates them; the other Docs pages are where the same
 decisions are enforced or live-rendered — [Layering Rule](?path=/docs/docs-atomic-design-layering-rule--docs)
 runs the tier rule as a lint, [Tokens](?path=/docs/docs-system-design-tokens--docs) renders the live token
@@ -33,11 +33,19 @@ that no other Docs page does:
   `--color-*` roles are on [Tokens](?path=/docs/docs-system-design-tokens--docs), rendered straight out of
   `tokens.css` so they can't drift from what components actually use.
 
-**Status, checked against the filesystem, not assumed from the board**: the board names five
-components as still open — `Tag`, `PostMeta`, `Pagination`, `SkipLink`, `EmptyState`. Four of
-those five exist as real components today (`packages/ui/src/{atoms,molecules}/`); only
-`Pagination` remains unbuilt. The board itself hasn't been re-exported since — this page is
-where that gap gets corrected until it is.
+**Status, checked against the filesystem, not assumed from the board**: the board's "Named
+candidates" row still lists five components as open — `Tag`, `PostMeta`, `Pagination`,
+`SkipLink`, `EmptyState`. Four of those five exist as real components today
+(`packages/ui/src/{atoms,molecules}/`); only `Pagination` remains unbuilt. The board _has_
+been re-exported since (2026-08-17, for the addition below) — but that row wasn't redrawn,
+so this page is still where the gap gets corrected until it is.
+
+That 2026-08-17 revision added a second inventory to this board: the **Visual-diff console**
+tier section — the NET-NEW components `apps/visual-diff-ui` needs, each tile carrying its
+settled home. The generic primitives (`BucketChip`, `TriStateCheckbox`, `SegmentedControl`,
+`Thumbnail`, and the extracted `Table` and `Dialog`) enter `packages/ui` and its capture
+matrix; everything that knows the visual-diff domain stays an app-local composition. Board 04
+narrates the pages they compose.
 
 ## Board 02 — Flows & decisions
 
@@ -87,6 +95,13 @@ quoted here rather than restated:
   decorator and the differ's capture URL both set the attribute explicitly, which a live
   `prefers-color-scheme` query would leave both blind to.
 
+Since 2026-08-17 the board also carries a second, visual-diff-scoped set (ink-black chips,
+where the blog flows wear terracotta): flows **F1–F4** — the review loop, launching a
+comparison, meeting an `a11y` failure, accepting baselines — and decisions **D1–D3** — one
+job at a time, nothing deleted implicitly, and accept is container-bound and atomic, with
+the UI supplying the host guard the CLI deliberately lacks. They belong to the pages on
+Board 04, and are narrated there.
+
 ## Board 03 — Pages: the capture matrix
 
 <img
@@ -112,3 +127,44 @@ change visible rather than to gate a merge: a page-level capture across three ro
 variants is shaped exactly like that wide sweep, not like the tight, gated set that post argues
 for. If this ever gets built, that's the distinction to build it against — not a straight
 port of the story-level matrix to routes.
+
+## Board 04 — Pages: the visual-diff console
+
+<img
+  src="/designs/visual-diff-pages.png"
+  alt="Pages — visual-diff console board"
+  style={{ width: '100%' }}
+/>
+
+The design for `apps/visual-diff-ui` — a console over the capture pipeline that
+[Diff Policy](?path=/docs/docs-qa-diff-policy--docs) and
+[Visual Diff Workflow](?path=/docs/docs-qa-visual-diff-workflow--docs) document. Two routes,
+`/` and `/report/[id]`, drawn in the same four variants as Board 03, plus the comparison
+modal in both of its presentations: a floating overlay on desktop, and a full-screen bottom
+sheet on mobile with every control moved into thumb reach and `actual size` yielding to
+native pinch-zoom.
+
+Like Board 03, this is **intent, not shipped behavior** — no `apps/visual-diff-ui` workspace
+exists yet. Unlike Board 03, it is drawn as a buildable spec, and its structural decisions
+are already settled rather than deferred:
+
+- **Component homes are decided on Board 01.** The generic primitives enter `packages/ui`
+  and its capture matrix; everything that knows about a comparison's data — the story card,
+  the three-up viewer, the tables, the modal's contents — stays an app-local composition.
+  Domain semantics never leak into the design system, and the pixel budget grows by
+  primitives, not organisms.
+- **The `a11y` bucket outranks the pixel verdict.** That rule is already
+  `packages/visual-diff`'s — `a11y` is a first-class bucket that never folds into
+  `changed` or `unchanged`. This board gives it the treatment a pixel differ can't: the
+  report page leads with the accessibility section whenever it is non-empty, an `a11y`
+  variant shows its violation list where the diff image would be, and reviewing it never
+  clears it — only a fix does.
+- **Accepting baselines is container-bound, and the UI is the guard.** The CLI's `accept`
+  deliberately carries no host guard; the console's accept mode refuses to offer a run
+  button unless the runner matches the pinned Playwright image, degrading to a copyable
+  `docker run` command below that bar.
+
+The board's mockups resolve their colors through `.pen` variables that mirror the
+`success`/`warning`/`danger` role pairs on
+[Tokens](?path=/docs/docs-system-design-tokens--docs) — same values, both themes — so the
+drawings can't quietly drift from the sheet the components will actually consume.
