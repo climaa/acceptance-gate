@@ -17,6 +17,9 @@ import type { TableColumn, TableRow } from './Table';
  *  human moved. Zero would claim it holds nothing. */
 const UNKNOWN = '—';
 
+/** What `git rev-parse --short` gives by default, and what the board draws. */
+const SHORT_SHA = 7;
+
 export const SET_COLUMNS: readonly TableColumn[] = [
   { header: 'label', truncate: true },
   { header: 'sha' },
@@ -44,11 +47,13 @@ export function setRow(set: CaptureSet, bytes: number | undefined): TableRow {
         ),
         title: set.label,
       },
-      // Keyed because the cells are an array literal, which the JSX lint
-      // rule cannot tell from a render list; the table keys its own `<td>`s.
-      <span className="vd-mono" key="sha">
-        {set.sha}
-      </span>,
+      {
+        // The board's column is a short sha, and a `sets.json` written with a
+        // full one would widen the column past everything beside it. The whole
+        // sha stays on `title`, which is what a reviewer copies out.
+        content: <span className="vd-mono">{set.sha.slice(0, SHORT_SHA)}</span>,
+        title: set.sha,
+      },
       { content: set.branch, title: set.branch },
       set.capturedAt,
       set.stories,

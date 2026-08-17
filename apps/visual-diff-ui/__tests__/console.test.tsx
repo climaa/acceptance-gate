@@ -155,6 +155,18 @@ describe('the snapshot sets panel', () => {
     expect(screen.getByText(/captured nothing yet/i)).toBeDefined();
   });
 
+  // The board's column is seven characters wide. A registry written with a full
+  // sha must not widen it past every cell beside it, and the whole sha is what
+  // a reviewer copies out of the row.
+  it('shortens a full-length sha and keeps the whole one on title', () => {
+    const full = 'f2570e10ba3739e79f7124c06b823e5b8fb806ce';
+    render(consoleWith({ sets: [{ ...CLEAN, sha: full }] }));
+
+    const sha = screen.getByTitle(full);
+
+    expect(sha.textContent).toBe('f2570e1');
+  });
+
   it('carries the full branch name on a cell that truncates it', () => {
     render(consoleWith({ sets: [DIRTY] }));
 
