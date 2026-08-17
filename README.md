@@ -46,7 +46,7 @@ merges carry their model co-author trailer in the squashed commit.
 | `apps/storybook` — the visual single source of truth            | ✅ [published](https://acceptance-gate-storybook.vercel.app) — every component rendered in isolation, plus the docs pages that describe the system |
 | `apps/e2e` — playwright-bdd acceptance suite                    | ✅ runs on every PR, blocks the merge — in `gate.needs`                                                                                            |
 | `packages/visual-diff` — the self-built visual regression CLI   | ✅ reports on every PR, never auto-blocks — see [its README](packages/visual-diff/README.md#ci-status)                                             |
-| `apps/visual-diff-ui` — the console that reviews those runs     | 🚧 read path, sample mode and the job system behind it; the console, report and comparison screens land by issue                                   |
+| `apps/visual-diff-ui` — the console that reviews those runs     | 🚧 read path, sample mode, the job system, and the console's sets/reports/history tables; the run panel and report screens land by issue           |
 
 ## The design system, in one rule
 

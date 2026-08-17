@@ -20,10 +20,15 @@ export default defineConfig({
       // are deliberately absent.
       'next/cache': path.resolve(__dirname, '__tests__/stubs/next-cache.ts'),
       'next/server': path.resolve(__dirname, '__tests__/stubs/next-server.ts'),
+      'next/navigation': path.resolve(__dirname, '__tests__/stubs/next-navigation.ts'),
     },
   },
   test: {
-    include: ['__tests__/**/*.test.ts'],
+    // `.tsx` as well as `.ts`: the console's components render in jsdom, which
+    // the one suite that needs it declares for itself with a
+    // `@vitest-environment` docblock — every other suite here is real
+    // filesystem work and stays in node.
+    include: ['__tests__/**/*.test.{ts,tsx}'],
     environment: 'node',
     // No `globals` — the suite imports from 'vitest' explicitly, because
     // tsconfig's `**/*.ts` include means tsc typechecks it.

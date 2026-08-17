@@ -1,21 +1,22 @@
-import NextLink from 'next/link';
 import { Suspense } from 'react';
-import { EmptyState, Link, Skeleton, Stack } from '@gate/ui';
-import { readReports, readSets, resolveDataDir } from '@/lib/data';
+import { Skeleton, Stack } from '@gate/ui';
+import { DashboardTemplate } from '@/components/DashboardTemplate';
+import { readReports, readSetSizes, readSets, resolveDataDir } from '@/lib/data';
+import { readHistory } from '@/lib/jobs';
 
 /**
- * The console, as far as this issue builds it: proof that the read path works
- * end to end, and the links into the report route. The snapshot-set table, the
- * report table and the run panel are later issues — this page is the frame they
- * land in, not a first draft of them.
+ * The console: what this instance has captured, compared and run.
+ *
+ * Everything below the boundary is request-time work — the data directory is
+ * resolved per request (see lib/data.ts), so this is a dynamic hole in an
+ * otherwise static shell. The run panel and the current-job region are a later
+ * issue's; this page is the read surface.
  */
 
 export default function ConsolePage() {
   return (
     <Stack gap={6}>
-      {/* The data is resolved per request (see lib/data.ts), so it is a dynamic
-          hole in an otherwise static shell — which is what this boundary is. */}
-      <Suspense fallback={<Skeleton lines={3} />}>
+      <Suspense fallback={<Skeleton lines={6} />}>
         <ConsoleContents />
       </Suspense>
     </Stack>
@@ -24,34 +25,19 @@ export default function ConsolePage() {
 
 async function ConsoleContents() {
   const { dir } = await resolveDataDir();
-  const [{ sets }, reports] = await Promise.all([readSets(dir), readReports(dir)]);
+  const [{ sets }, sizes, reports] = await Promise.all([
+    readSets(dir),
+    readSetSizes(dir),
+    readReports(dir),
+  ]);
+
+  // Read uncached, unlike the three above: history is what a job that finished
+  // a second ago just wrote, and `cacheLife('seconds')` would leave a reviewer
+  // watching a run that is already over. It is one small JSON file, read
+  // synchronously — see lib/jobs.ts, which owns the record and its writers.
+  const history = readHistory(dir);
 
   return (
-    <Stack gap={4}>
-      <p className="vd-scaffold">
-        <span className="vd-count">{sets.length}</span> capture set(s) ·{' '}
-        <span className="vd-count">{reports.length}</span> report(s)
-      </p>
-
-      {reports.length === 0 ? (
-        <EmptyState message="No reports yet — compare two capture sets and one appears here." />
-      ) : (
-        <Stack as="ul" gap={2}>
-          {reports.map((report) => (
-            <li key={report.id}>
-              <Link
-                as={NextLink}
-                href={`/report/${report.id}`}
-                className="vd-report-id"
-                title={report.id}
-              >
-                {report.id}
-              </Link>{' '}
-              <span className="vd-count">{report.counts.changed} changed</span>
-            </li>
-          ))}
-        </Stack>
-      )}
-    </Stack>
+    <DashboardTemplate sets={sets} sizes={sizes} reports={reports} history={history} />
   );
 }

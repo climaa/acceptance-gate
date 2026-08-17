@@ -27,6 +27,7 @@ import type { z } from 'zod';
 export const FIXTURES_DIR = path.join(process.cwd(), 'fixtures');
 
 const REPORTS_DIR = 'reports';
+const SETS_DIR = 'sets';
 const SETS_FILE = 'sets.json';
 const SUMMARY_FILE = 'summary.json';
 const SHOTS_DIR = 'shots';
@@ -223,6 +224,63 @@ export async function readSets(dataDir: string): Promise<SetsFile> {
   const read = await readJsonFile(file);
 
   return read.missing ? { sets: [] } : parseFile(SetsFileSchema, read.value, file);
+}
+
+/** The bytes one flat set directory holds. A file that has gone away between the
+ *  listing and the stat is worth nothing rather than worth a thrown read. */
+async function dirBytes(dir: string): Promise<number> {
+  const names = await fs.promises.readdir(dir);
+  const sizes = await Promise.all(
+    names.map(async (name) => {
+      try {
+        return (await fs.promises.stat(path.join(dir, name))).size;
+      } catch {
+        return 0;
+      }
+    }),
+  );
+
+  return sizes.reduce((total, size) => total + size, 0);
+}
+
+/**
+ * What each capture set weighs on disk, by label.
+ *
+ * Measured rather than recorded: `sets.json` carries no size, and a number
+ * written at capture time would go on claiming a set's weight after a human
+ * moved half its shots. A label with no entry here has no shot tree in this
+ * instance — the registry and the trees are two facts, and the table says
+ * "unknown" rather than "0" when it only has one of them.
+ *
+ * Tagged `SETS_TAG`, which every mutation already refreshes (see lib/jobs.ts),
+ * so a delete or a prune retires these sizes with the list they belong to.
+ */
+export async function readSetSizes(dataDir: string): Promise<Record<string, number>> {
+  'use cache';
+  cacheLife('seconds');
+  cacheTag(SETS_TAG);
+
+  const root = path.join(dataDir, SETS_DIR);
+
+  let entries: fs.Dirent[];
+  try {
+    entries = await fs.promises.readdir(root, { withFileTypes: true });
+  } catch {
+    return {};
+  }
+
+  const measured = await Promise.all(
+    entries
+      // One flat directory of PNGs per set: a file sitting beside them is
+      // something a human put there, not a set.
+      .filter((entry) => entry.isDirectory())
+      .map(async (entry): Promise<[string, number]> => [
+        entry.name,
+        await dirBytes(path.join(root, entry.name)),
+      ]),
+  );
+
+  return Object.fromEntries(measured);
 }
 
 /** Every report with a readable summary, newest first. */
