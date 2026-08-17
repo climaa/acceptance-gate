@@ -1,0 +1,38 @@
+/* The frame is what stays constant across the three states — placeholder, image,
+   fallback all sit inside the same box, so the layout around a thumbnail never
+   moves as one resolves. */
+.ds-thumbnail {
+  display: block;
+  overflow: hidden;
+  max-width: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-subtle);
+}
+
+.ds-thumbnail__img {
+  width: 100%;
+  height: auto;
+}
+
+/* `display: none` rather than an opacity or visibility hop: the image is still
+   fetched and still fires `load` from here — that is what retires the skeleton —
+   but it contributes no height, so the frame is exactly the placeholder's until
+   the pixels exist. */
+.ds-thumbnail__img--pending {
+  display: none;
+}
+
+/* Whatever the consumer put here is centred in the frame's own aspect. The atom
+   states no copy of its own — an empty fallback is an empty frame, not a broken
+   image. */
+.ds-thumbnail__fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--space-16);
+  padding: var(--space-2);
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  text-align: center;
+}

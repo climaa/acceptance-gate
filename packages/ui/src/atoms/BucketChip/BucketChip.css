@@ -1,0 +1,64 @@
+/* The Badge look on a <button>: same pill, same size, same weight. The two are
+   not one component because a badge labels the thing it sits on and a chip
+   reports a count that can be filtered by — different element, different
+   accessible name rule. */
+.ds-bucket-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0.125rem var(--space-2);
+  border: 1px solid transparent;
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+  line-height: 1.4;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out);
+}
+
+/* The count is the one number on the chip and the column it lines up in when a
+   row of chips stacks, so it takes the mono face and tabular figures: 1 and 7
+   then occupy the same advance and the counts stop shifting as they update.
+   JetBrains Mono ships a 400 face only — the weight is stated rather than
+   inherited from the chip's bold, which the engine would otherwise synthesize. */
+.ds-bucket-chip__count {
+  font-family: var(--font-mono);
+  font-weight: var(--weight-normal);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Pressed is drawn on the attribute the reader is announced, not on a class of
+   its own: one state, one source. */
+.ds-bucket-chip[aria-pressed='true'] {
+  border-color: currentcolor;
+}
+
+.ds-bucket-chip--danger {
+  background: var(--color-danger-surface);
+  color: var(--color-danger-fg);
+}
+.ds-bucket-chip--accent {
+  background: var(--color-accent-subtle);
+  color: var(--color-accent);
+}
+.ds-bucket-chip--neutral {
+  background: var(--color-bg-muted);
+  color: var(--color-text-muted);
+}
+/* The quietest chip in the row — an outline rather than a fill, so a report that
+   is mostly unchanged reads as mostly empty. */
+.ds-bucket-chip--muted {
+  background: transparent;
+  color: var(--color-text-muted);
+  border-color: var(--color-border);
+}
+/* Exclusive: the warning pair is spent here and on nothing else in this sheet,
+   which is what lets an accessibility failure be told apart from a pixel diff at
+   a glance rather than by reading the label. */
+.ds-bucket-chip--a11y {
+  background: var(--color-warning-surface);
+  color: var(--color-warning-fg);
+}

@@ -40,3 +40,5 @@
 @import './organisms/SiteFooter/SiteFooter.css';
 @import './molecules/PostCard/PostCard.css';
 @import './templates/BlogIndexTemplate/BlogIndexTemplate.css';
+@import './atoms/BucketChip/BucketChip.css';
+@import './atoms/Thumbnail/Thumbnail.css';
