@@ -72,6 +72,7 @@ describe('Thumbnail', () => {
     const { container, rerender } = render(<Thumbnail src={SRC} alt="baseline" />);
 
     fireEvent.load(screen.getByRole('img', { name: 'baseline' }));
+
     rerender(<Thumbnail src={`${SRC}#next`} alt="baseline" />);
 
     // The previous image's `load` says nothing about the new one; treating it as

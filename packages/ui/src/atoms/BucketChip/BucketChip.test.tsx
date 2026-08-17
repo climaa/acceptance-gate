@@ -13,6 +13,8 @@ afterEach(cleanup);
 // row until someone writes it.
 const TONES: BucketChipTone[] = ['danger', 'accent', 'neutral', 'muted', 'a11y'];
 
+const OTHER_TONES = TONES.filter((tone) => tone !== 'a11y');
+
 describe('BucketChip', () => {
   it('renders a button whose accessible name is exactly the label', () => {
     // The count is beside the label inside the chip, so a name taken from the
@@ -68,17 +70,12 @@ describe('BucketChip', () => {
     expect(chip.className).toBe(`ds-bucket-chip ds-bucket-chip--${tone}`);
   });
 
-  it('emits the a11y modifier class for no other tone', () => {
-    // The exclusivity the tone exists for: an accessibility failure must not be
-    // able to borrow the look of a pixel bucket, or vice versa.
-    const others = TONES.filter((tone) => tone !== 'a11y');
+  // The exclusivity the tone exists for: an accessibility failure must not be
+  // able to borrow the look of a pixel bucket, or vice versa.
+  it.each(OTHER_TONES)('does not emit the a11y modifier class for %s', (tone) => {
+    const { container } = render(<BucketChip tone={tone} label="changed" count={1} />);
 
-    for (const tone of others) {
-      const { container } = render(<BucketChip tone={tone} label="changed" count={1} />);
-
-      expect(container.querySelector('.ds-bucket-chip--a11y')).toBeNull();
-      cleanup();
-    }
+    expect(container.querySelector('.ds-bucket-chip--a11y')).toBeNull();
   });
 
   it('reflects `pressed` into aria-pressed', () => {

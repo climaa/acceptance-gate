@@ -21,6 +21,10 @@ type Story = StoryObj<typeof Thumbnail>;
 const SHOT =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='100'%3E%3Crect width='160' height='100' fill='%23efe9df'/%3E%3Crect x='16' y='20' width='128' height='12' rx='3' fill='%23713520'/%3E%3Crect x='16' y='44' width='96' height='10' rx='3' fill='%23b9ada0'/%3E%3Crect x='16' y='66' width='112' height='10' rx='3' fill='%23b9ada0'/%3E%3C/svg%3E";
 
+/** One object for both sides: the pair only reads as one comparison while
+ *  neither side's width can drift from the other's. */
+const SIDE = { width: '10rem' };
+
 /**
  * The two states a reader meets in a report: a side that has a capture, and a
  * side that never had one. Both frames are given the same width by the story, so
@@ -30,10 +34,10 @@ const SHOT =
 export const LoadedAndFallback: Story = {
   render: () => (
     <Stack direction="row" gap={4} align="start">
-      <div style={{ width: '10rem' }}>
+      <div style={SIDE}>
         <Thumbnail src={SHOT} alt="Baseline capture of the report header" />
       </div>
-      <div style={{ width: '10rem' }}>
+      <div style={SIDE}>
         <Thumbnail alt="Candidate capture" fallback={<>not on this side</>} />
       </div>
     </Stack>
