@@ -1,12 +1,18 @@
-import { Button, Stack } from '@gate/ui';
+'use client';
+
+import { useState } from 'react';
+import { Stack } from '@gate/ui';
+import { PruneButton } from './ConfirmDialogs';
 
 /**
  * How many capture sets to keep, and the button that retires the rest.
  *
- * Rendered and named here, wired later: the confirm dialog D2 requires and
- * `POST /api/prune` behind it belong to the run-panel issue. Nothing is deleted
- * implicitly in this app, and a prune that fired straight off this button would
- * be exactly that.
+ * A client island because the number and the confirmation are one control: the
+ * dialog names the sets this count is about to remove, so the count cannot live
+ * in an uncontrolled input the dialog would have to read back out of the DOM.
+ *
+ * Nothing is deleted from here (D2). The button opens the confirmation; the
+ * confirmation is what calls `POST /api/prune`.
  */
 
 const KEEP_ID = 'vd-keep-latest';
@@ -15,27 +21,34 @@ const KEEP_ID = 'vd-keep-latest';
  *  a comparison is still open against. */
 const DEFAULT_KEEP = 3;
 
-export function RetentionControl() {
+export interface RetentionControlProps {
+  /** Every set label, in the order the console shows them — the dialog splits
+   *  this list at `keep` to name both halves. */
+  labels: readonly string[];
+}
+
+export function RetentionControl({ labels }: RetentionControlProps) {
+  // Held as text, because a number input can legitimately be empty mid-edit and
+  // `NaN` is not a retention policy. The prune button reads the parsed value.
+  const [keep, setKeep] = useState(String(DEFAULT_KEEP));
+  const parsed = Number.parseInt(keep, 10);
+
   return (
     <Stack direction="row" gap={3} align="center" wrap className="vd-retention">
       <label className="vd-retention__label" htmlFor={KEEP_ID}>
         keep latest
       </label>
-      {/* Uncontrolled: the value is read by the prune request the run-panel
-          issue adds, and a controlled input here would need client state for a
-          number nothing has asked for yet. */}
       <input
         id={KEEP_ID}
         className="vd-retention__count"
         type="number"
-        min={1}
+        min={0}
         step={1}
-        defaultValue={DEFAULT_KEEP}
+        value={keep}
         inputMode="numeric"
+        onChange={(event) => setKeep(event.target.value)}
       />
-      <Button variant="secondary" size="sm">
-        prune the rest
-      </Button>
+      <PruneButton keep={Number.isNaN(parsed) ? 0 : parsed} labels={labels} />
     </Stack>
   );
 }

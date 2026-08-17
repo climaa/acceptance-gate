@@ -10,7 +10,7 @@ import { Button, Stack } from '@gate/ui';
  *
  * **The URL is the seam.** Clicking `compare A ⇄ B` writes
  * `?a=<label>&b=<label>&mode=compare` and nothing else: no store, no context, no
- * fetch. The run panel (a later issue) reads the same three params back with
+ * fetch. The run panel reads the same three params back with
  * `useSearchParams()`, selects its compare tab and fills its two fields. That
  * choice buys three things a shared store would not — the request is shareable,
  * the server never sees it, and the prerendered shell stays cacheable because

@@ -10,26 +10,29 @@
  *
  * `cacheTag` is stubbed alongside it — unlike apps/blog, every cached reader in
  * this app tags itself, so a suite without it could not import lib/data.ts at
- * all. The tag is a registration for a later `revalidateTag`, which nothing in
- * this suite calls, so recording it would only assert the stub.
+ * all. The tag is a registration for a later `revalidateTag`, so recording it
+ * would only assert the stub.
  *
- * `updateTag` is the one export here that IS recorded, because it is the one
+ * `revalidateTag` is the one export here that IS recorded, because it is the one
  * with behaviour this suite asserts: every mutation this app performs ends by
  * refreshing the lists a reviewer is looking at, and "the console reflects the
  * mutation without a rebuild" is not observable from the filesystem. Reading
- * `updateTagCalls` is how a test sees it; clear it between tests.
+ * `revalidateTagCalls` is how a test sees it; clear it between tests.
  *
- * Nothing else is stubbed, deliberately: anything else imported from
- * `next/cache` arrives as `undefined` and fails loudly, because `revalidateTag`
- * and friends DO have behaviour worth deciding about rather than no-opping.
+ * `updateTag` is deliberately NOT stubbed, and nothing in this app may call it:
+ * it is Server-Action-only, and from a route handler Next throws — answering 500
+ * for a delete that already happened. `__tests__/config.test.ts` is what holds
+ * that shut, since a stub here would have hidden it.
  */
 export function cacheLife(_profile: string): void {}
 
 export function cacheTag(..._tags: string[]): void {}
 
-/** Every tag passed to {@link updateTag}, in call order. */
-export const updateTagCalls: string[] = [];
+/** Every tag passed to {@link revalidateTag}, in call order. The window beside
+ *  it is one value for this whole app (`PURGE` in lib/data.ts), so recording it
+ *  per call would assert the constant rather than the invalidation. */
+export const revalidateTagCalls: string[] = [];
 
-export function updateTag(tag: string): void {
-  updateTagCalls.push(tag);
+export function revalidateTag(tag: string, _window: string | { expire: number }): void {
+  revalidateTagCalls.push(tag);
 }

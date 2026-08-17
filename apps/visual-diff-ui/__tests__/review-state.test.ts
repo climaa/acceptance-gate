@@ -36,7 +36,7 @@ afterEach(() => {
 });
 
 describe('reviewStorageKey', () => {
-  // Two later issues read this key — the report review loop and the accept
+  // Two screens read this key — the report review loop and the accept
   // gate. Its shape is the contract between them.
   it('namespaces the marks by report id', () => {
     const key = reviewStorageKey(REPORT);

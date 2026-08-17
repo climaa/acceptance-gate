@@ -12,6 +12,14 @@ const nextConfig = {
 
   // The design system ships as uncompiled TypeScript (source-direct).
   transpilePackages: ['@gate/ui'],
+  // The differ runs, it does not get bundled. Two reasons, both fatal to a
+  // built server that tries: `commands.mjs` derives its repo root from
+  // `new URL('../../..', import.meta.url)`, which the bundler reads as an asset
+  // import and cannot resolve, and `capture.mjs` reaches for `playwright`, a
+  // dependency of that package rather than of this app. Required at runtime,
+  // both are just what they are on disk. Verified against a production build:
+  // `POST /api/jobs` compare writes its report and exits 1.
+  serverExternalPackages: ['@gate/visual-diff'],
   // Every route below reads `fixtures/` with `readFile` at request time, off a
   // path no bundler follows statically — the same trap apps/blog documents for
   // its OG display face. Without naming the files, the deployed function ships

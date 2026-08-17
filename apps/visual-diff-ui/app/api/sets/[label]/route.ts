@@ -1,4 +1,4 @@
-import { SETS_TAG, resolveDataDir } from '@/lib/data';
+import { PURGE, SETS_TAG, resolveDataDir } from '@/lib/data';
 import { SetLabelSchema, hasSet, holderOf, removeSet } from '@/lib/jobs';
 import {
   SAMPLE_DATA,
@@ -7,7 +7,7 @@ import {
   notFound,
   refuseWhileRunning,
 } from '@/lib/refusals';
-import { updateTag } from 'next/cache';
+import { revalidateTag } from 'next/cache';
 
 interface Context {
   params: Promise<{ label: string }>;
@@ -47,7 +47,7 @@ export async function DELETE(_request: Request, { params }: Context): Promise<Re
   // Only the set list moved, so only it is refreshed: `vd:reports` names a list
   // this deletion did not change, and refreshing it would throw away a reader's
   // cached reports to say nothing.
-  updateTag(SETS_TAG);
+  revalidateTag(SETS_TAG, PURGE);
 
   return Response.json({ removed: label });
 }

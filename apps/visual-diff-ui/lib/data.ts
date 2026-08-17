@@ -32,10 +32,22 @@ const SETS_FILE = 'sets.json';
 const SUMMARY_FILE = 'summary.json';
 const SHOTS_DIR = 'shots';
 
-/** Revalidation handles for the readers below; `revalidateTag` lands with the jobs that write. */
+/** Revalidation handles for the readers below; every mutation purges the ones it
+ *  moved (lib/jobs.ts and the two mutating routes). */
 export const SETS_TAG = 'vd:sets';
 export const REPORTS_TAG = 'vd:reports';
 export const reportTag = (id: string) => `vd:report:${id}`;
+
+/**
+ * How long an entry a mutation invalidated may still be served: not at all.
+ *
+ * `revalidateTag` takes that window as its second argument, and this app's answer
+ * is the same for every tag — a deleted set is not "a bit stale", it is gone, and
+ * the list that still names it is wrong rather than old. (`updateTag`, which
+ * expires immediately by definition, is Server-Action-only and throws in a route
+ * handler — see `__tests__/config.test.ts`.)
+ */
+export const PURGE = { expire: 0 };
 
 /** The one variable this app reads to find real data, named as a type so a
  *  caller — and every test — can hand over exactly what the resolution reads. */

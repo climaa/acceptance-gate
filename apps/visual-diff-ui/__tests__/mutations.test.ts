@@ -8,7 +8,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { POST as postPrune } from '../app/api/prune/route';
 import { DELETE as deleteSet } from '../app/api/sets/[label]/route';
 import { JobRequestSchema, startJob } from '../lib/jobs';
-import { updateTagCalls } from './stubs/next-cache';
+import { revalidateTagCalls } from './stubs/next-cache';
 
 /**
  * The two guarded deletions (D2): nothing is deleted implicitly, a held set is
@@ -125,7 +125,7 @@ beforeAll(() => {
 });
 
 afterEach(() => {
-  updateTagCalls.length = 0;
+  revalidateTagCalls.length = 0;
   delete process.env.VISUAL_DIFF_DATA_DIR;
 });
 
@@ -155,7 +155,7 @@ describe('DELETE /api/sets/[label]', () => {
 
     await deleteSet(new Request('http://localhost:3300/'), context('main-2026-08-15'));
 
-    expect(updateTagCalls).toContain('vd:sets');
+    expect(revalidateTagCalls).toContain('vd:sets');
   });
 
   it('refuses a held set, naming the worktree and the set', async () => {

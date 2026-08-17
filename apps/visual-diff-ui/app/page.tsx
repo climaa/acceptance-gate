@@ -9,8 +9,9 @@ import { readHistory } from '@/lib/jobs';
  *
  * Everything below the boundary is request-time work — the data directory is
  * resolved per request (see lib/data.ts), so this is a dynamic hole in an
- * otherwise static shell. The run panel and the current-job region are a later
- * issue's; this page is the read surface.
+ * otherwise static shell. The write half — the run panel, the live log and the
+ * confirmations — is client-side inside that hole and polls its own endpoints;
+ * nothing on this page is cached beyond the readers below.
  */
 
 export default function ConsolePage() {
@@ -24,7 +25,7 @@ export default function ConsolePage() {
 }
 
 async function ConsoleContents() {
-  const { dir } = await resolveDataDir();
+  const { dir, isSample } = await resolveDataDir();
   const [{ sets }, sizes, reports] = await Promise.all([
     readSets(dir),
     readSetSizes(dir),
@@ -38,6 +39,12 @@ async function ConsoleContents() {
   const history = readHistory(dir);
 
   return (
-    <DashboardTemplate sets={sets} sizes={sizes} reports={reports} history={history} />
+    <DashboardTemplate
+      sets={sets}
+      sizes={sizes}
+      reports={reports}
+      history={history}
+      isSample={isSample}
+    />
   );
 }
