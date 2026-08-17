@@ -11,8 +11,8 @@ import { type TableColumn, type TableRow, Table } from './Table';
  * (lib/outcome.ts), never stored: a verdict on file can disagree with the code
  * printed in the cell beside it.
  *
- * The row builder lives here rather than in a file of its own — unlike SetRow
- * and ReportRow, nothing else in the console shows a run.
+ * The row is built as data rather than as a component — see SetsTable.tsx for
+ * why.
  */
 
 const HISTORY_TABLE_LABEL = 'History';
@@ -46,11 +46,11 @@ function historyRow(run: HistoryRecord): TableRow {
       took === null ? NOTHING : formatDuration(took),
       // A capture writes no report, and an interrupted run never got to. The
       // cell stays empty rather than offering a link into a 404.
-      run.reportId && (
+      run.reportId ? (
         <Link as={NextLink} href={`/report/${run.reportId}`} key="view">
           view
         </Link>
-      ),
+      ) : null,
     ],
   };
 }

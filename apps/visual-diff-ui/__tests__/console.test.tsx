@@ -74,7 +74,7 @@ const INTERRUPTED: HistoryRecord = {
   reportId: null,
 };
 
-interface Console {
+interface ConsoleContents {
   sets?: CaptureSet[];
   sizes?: Record<string, number>;
   reports?: ReportListEntry[];
@@ -87,7 +87,7 @@ function consoleWith({
   sizes = { [CLEAN.label]: 95_500_000, [DIRTY.label]: 1000 },
   reports = [REPORT],
   history = [RUN, INTERRUPTED],
-}: Console = {}) {
+}: ConsoleContents = {}) {
   return (
     <DashboardTemplate sets={sets} sizes={sizes} reports={reports} history={history} />
   );
@@ -95,11 +95,27 @@ function consoleWith({
 
 const table = (name: string) => screen.getByRole('table', { name });
 
-/** One data row of a named table — `rowgroup` skips the header row. */
-function rowsOf(name: string): HTMLElement[] {
-  const [, body] = within(table(name)).getAllByRole('rowgroup');
+/** A named table's two row groups: the header row's, then the data rows'. */
+function groupsOf(name: string): [HTMLElement, HTMLElement] {
+  const [head, body] = within(table(name)).getAllByRole('rowgroup');
+  if (!head || !body) throw new Error(`${name} is missing a row group`);
 
-  return within(body as HTMLElement).getAllByRole('row');
+  return [head, body];
+}
+
+/** The data rows of a named table — the second `rowgroup` skips the header. */
+function rowsOf(name: string): HTMLElement[] {
+  const [, body] = groupsOf(name);
+
+  return within(body).getAllByRole('row');
+}
+
+/** The first data row, for the cases that render exactly one. */
+function firstRowOf(name: string): HTMLElement {
+  const [row] = rowsOf(name);
+  if (!row) throw new Error(`${name} has no data rows`);
+
+  return row;
 }
 
 const cellsOf = (row: HTMLElement) =>
@@ -119,9 +135,9 @@ describe('the snapshot sets panel', () => {
   it('lists a set with its branch, story count and size', () => {
     render(consoleWith({ sets: [CLEAN] }));
 
-    const [row] = rowsOf('Snapshot sets');
+    const row = firstRowOf('Snapshot sets');
 
-    expect(cellsOf(row as HTMLElement)).toEqual([
+    expect(cellsOf(row)).toEqual([
       'main-2026-08-17',
       'f2570e1',
       'main',
@@ -135,17 +151,19 @@ describe('the snapshot sets panel', () => {
   it('reports a set this instance holds no shots for as an unknown size', () => {
     render(consoleWith({ sets: [CLEAN], sizes: {} }));
 
-    const [row] = rowsOf('Snapshot sets');
+    const row = firstRowOf('Snapshot sets');
 
-    expect(cellsOf(row as HTMLElement)).toContain('—');
+    expect(cellsOf(row)).toContain('—');
   });
 
   it('offers a delete button per set', () => {
     render(consoleWith());
 
-    const table = screen.getByRole('table', { name: 'Snapshot sets' });
+    const deletes = within(table('Snapshot sets')).getAllByRole('button', {
+      name: 'delete',
+    });
 
-    expect(within(table).getAllByRole('button', { name: 'delete' })).toHaveLength(2);
+    expect(deletes).toHaveLength(2);
   });
 
   it('shows an empty state instead of a table when nothing has been captured', () => {
@@ -272,9 +290,9 @@ describe('the history panel', () => {
   it('lists a run with its outcome, exit code and duration', () => {
     render(consoleWith({ history: [RUN] }));
 
-    const [row] = rowsOf('History');
+    const row = firstRowOf('History');
 
-    expect(cellsOf(row as HTMLElement)).toEqual([
+    expect(cellsOf(row)).toEqual([
       'succeeded (diffs)',
       'compare',
       RUN.startedAt,
@@ -289,9 +307,9 @@ describe('the history panel', () => {
   it('reports a run that never finished as interrupted, with nothing to show', () => {
     render(consoleWith({ history: [INTERRUPTED] }));
 
-    const [row] = rowsOf('History');
+    const row = firstRowOf('History');
 
-    expect(cellsOf(row as HTMLElement)).toEqual([
+    expect(cellsOf(row)).toEqual([
       'interrupted',
       'capture',
       INTERRUPTED.startedAt,
@@ -337,25 +355,25 @@ describe('the reports panel', () => {
   it('dates a report from the run that produced it', () => {
     render(consoleWith());
 
-    const [row] = rowsOf('Reports');
+    const row = firstRowOf('Reports');
 
-    expect(cellsOf(row as HTMLElement)).toEqual([REPORT.id, '2026-08-17', 'delete']);
+    expect(cellsOf(row)).toEqual([REPORT.id, '2026-08-17', 'delete']);
   });
 
   it('has no date for a report no run in this history claims', () => {
     render(consoleWith({ history: [] }));
 
-    const [row] = rowsOf('Reports');
+    const row = firstRowOf('Reports');
 
-    expect(cellsOf(row as HTMLElement)).toEqual([REPORT.id, '—', 'delete']);
+    expect(cellsOf(row)).toEqual([REPORT.id, '—', 'delete']);
   });
 
   it('offers a delete button per report', () => {
     render(consoleWith());
 
-    const reports = screen.getByRole('table', { name: 'Reports' });
+    const deletes = within(table('Reports')).getAllByRole('button', { name: 'delete' });
 
-    expect(within(reports).getAllByRole('button', { name: 'delete' })).toHaveLength(1);
+    expect(deletes).toHaveLength(1);
   });
 
   it('shows an empty state instead of a table when nothing has been compared', () => {
@@ -428,9 +446,9 @@ describe('the table roles', () => {
   it('keeps the header row in the document', () => {
     render(consoleWith());
 
-    const [head] = within(table('Snapshot sets')).getAllByRole('rowgroup');
+    const [head] = groupsOf('Snapshot sets');
 
-    expect(within(head as HTMLElement).getAllByRole('columnheader')).toHaveLength(7);
+    expect(within(head).getAllByRole('columnheader')).toHaveLength(7);
   });
 });
 

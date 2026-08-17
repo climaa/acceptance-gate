@@ -16,13 +16,20 @@ import { EXIT } from '@gate/visual-diff/policy';
  * a stored verdict is a claim that can disagree with the code beside it.
  */
 
-const OUTCOMES = ['succeeded', 'succeeded (diffs)', 'failed', 'interrupted'] as const;
-
-export type Outcome = (typeof OUTCOMES)[number];
-
-/** The state role each outcome is drawn in. `muted` is not a state token pair —
+/** The state role an outcome is drawn in. `muted` is not a state token pair —
  *  an interrupted run reported nothing, so it is greyed rather than coloured. */
 export type OutcomeTone = 'success' | 'warning' | 'danger' | 'muted';
+
+/** The four words, each with the role it is drawn in. One table rather than two
+ *  lists: a word without a tone would not compile. */
+const TONES = {
+  succeeded: 'success',
+  'succeeded (diffs)': 'warning',
+  failed: 'danger',
+  interrupted: 'muted',
+} satisfies Record<string, OutcomeTone>;
+
+export type Outcome = keyof typeof TONES;
 
 /**
  * What a recorded exit code came to.
@@ -42,11 +49,7 @@ export function outcomeOf(exitCode: number | null): Outcome {
 }
 
 export function outcomeTone(outcome: Outcome): OutcomeTone {
-  if (outcome === 'succeeded') return 'success';
-  if (outcome === 'succeeded (diffs)') return 'warning';
-  if (outcome === 'failed') return 'danger';
-
-  return 'muted';
+  return TONES[outcome];
 }
 
 /** How long a run took, or `null` when the pair of stamps cannot say. */
@@ -62,7 +65,7 @@ export function durationOf(startedAt: string, endedAt: string | null): number | 
   return ended - started;
 }
 
-const MINUTE_MS = 60_000;
+const SECONDS_PER_MINUTE = 60;
 
 /**
  * `1m 35s`, or `42s` under a minute. Seconds floor rather than round: a run's
@@ -71,9 +74,9 @@ const MINUTE_MS = 60_000;
  */
 export function formatDuration(ms: number): string {
   const seconds = Math.floor(ms / 1000);
-  if (ms < MINUTE_MS) return `${seconds}s`;
+  if (seconds < SECONDS_PER_MINUTE) return `${seconds}s`;
 
-  return `${Math.floor(seconds / 60)}m ${seconds % 60}s`;
+  return `${Math.floor(seconds / SECONDS_PER_MINUTE)}m ${seconds % SECONDS_PER_MINUTE}s`;
 }
 
 /** Decimal units, in step with the byte budgets in `@gate/visual-diff/policy`,

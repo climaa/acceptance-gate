@@ -274,9 +274,10 @@ export async function readSetSizes(dataDir: string): Promise<Record<string, numb
       // One flat directory of PNGs per set: a file sitting beside them is
       // something a human put there, not a set.
       .filter((entry) => entry.isDirectory())
-      .map(async (entry): Promise<[string, number]> => {
-        return [entry.name, await dirBytes(path.join(root, entry.name))];
-      }),
+      .map(async (entry): Promise<[string, number]> => [
+        entry.name,
+        await dirBytes(path.join(root, entry.name)),
+      ]),
   );
 
   return Object.fromEntries(measured);
