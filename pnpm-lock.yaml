@@ -247,6 +247,9 @@ importers:
       '@vitest/coverage-v8':
         specifier: ^4.1.10
         version: 4.1.10(vitest@4.1.10)
+      axe-core:
+        specifier: 4.12.1
+        version: 4.12.1
       eslint:
         specifier: ^9.39.5
         version: 9.39.5(supports-color@7.2.0)

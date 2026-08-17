@@ -1,0 +1,167 @@
+/* The modal surface, in its two presentations. Everything below the breakpoint
+   is the bottom sheet; everything above it is the centred overlay. There is no
+   class, prop or state distinguishing them — the media query is the only switch,
+   which is what makes "the sheet is presentation, not a different component"
+   a fact about this file rather than a promise in the docs.
+
+   The scrim is deliberately dark in BOTH themes (board 04 draws it as one ink at
+   ~0.87 alpha over the light and the dark page alike): a scrim is a dimming, and
+   a veil that goes lighter in the dark theme dims nothing. tokens.css has no
+   scrim role, and this component may not add one, so the two roles that are dark
+   in their own theme are aliased into one local variable — `--color-text` is warm
+   ink in light, `--color-text-inverted` is the same near-black in dark. Composed
+   with `transparent`, which styles.css's header calls an absence rather than a
+   palette value; no literal colour appears here. */
+.ds-dialog {
+  --ds-dialog-scrim: var(--color-text);
+
+  position: fixed;
+  inset: 0;
+  /* Above every page chrome this system draws. SkipLink is the only other fixed
+     element and it is `position: fixed` with no stacking of its own, so one
+     value settles the question; a token would imply a scale that does not exist. */
+  z-index: 100;
+  display: flex;
+  /* Bottom-aligned is the sheet; the desktop query re-centres it. Written this
+     way round because the sheet is the constrained presentation — the one whose
+     geometry is load-bearing — and the overlay is what relaxes it. */
+  align-items: flex-end;
+  justify-content: center;
+}
+
+[data-theme='dark'] .ds-dialog {
+  --ds-dialog-scrim: var(--color-text-inverted);
+}
+
+.ds-dialog__backdrop {
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--ds-dialog-scrim) 87%, transparent);
+  animation: ds-dialog-scrim-in var(--duration-fast) var(--ease-out);
+}
+
+.ds-dialog__surface {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+  /* The page-peek from board 04: the sheet stops short of the top edge so the
+     dimmed page behind stays visible and the sheet reads as over it, not as a
+     new screen. */
+  max-height: calc(100% - var(--space-8));
+  padding: var(--space-2) var(--space-4) var(--space-4);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  box-shadow: var(--shadow-lg);
+  animation: ds-dialog-sheet-in var(--duration-base) var(--ease-out);
+}
+
+/* The surface scrolls, and the scroll stops here: without this a flick that
+   reaches the end of the content keeps going and scrolls the page behind — the
+   sheet's own gesture handing control to a page the reader cannot see. */
+.ds-dialog__content {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* Full-bleed row so the whole top of the sheet answers the drag, not just the
+   36x4 bar the reader aims at. */
+.ds-dialog__grabber {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-1) 0;
+  touch-action: none;
+  cursor: grab;
+}
+
+.ds-dialog__grabber-bar {
+  width: var(--space-10);
+  height: var(--space-1);
+  border-radius: var(--radius-full);
+  background: var(--color-bg-muted);
+}
+
+.ds-dialog__header {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.ds-dialog__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* 2.5rem square: the sheet's controls are thumb targets, and the close button
+     is the one control every dialog has. Matches --space-10 rather than being
+     stated twice. */
+  width: var(--space-10);
+  height: var(--space-10);
+  padding: 0;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  color: var(--color-text);
+  cursor: pointer;
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
+}
+
+.ds-dialog__close:hover {
+  background: var(--color-bg-subtle);
+}
+
+/* 768px, the one breakpoint in the system. Above it the sheet becomes a floating
+   overlay: centred, corner-radiused all round, and no grabber — a swipe means
+   nothing to a mouse, and the button it was a shortcut for is still there. */
+@media (min-width: 768px) {
+  .ds-dialog {
+    align-items: center;
+    padding: var(--space-8);
+  }
+
+  .ds-dialog__surface {
+    width: auto;
+    min-width: 20rem;
+    max-width: var(--width-container);
+    max-height: 100%;
+    padding: var(--space-4) var(--space-6) var(--space-6);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-lg);
+    animation-name: ds-dialog-overlay-in;
+  }
+
+  .ds-dialog__grabber {
+    display: none;
+  }
+}
+
+/* One-shot entrances, so the resting frame is also the last frame: a capture
+   taken any time after --duration-base lands on it. No exit counterpart — a
+   closed dialog renders nothing, and an exit animation would need the node to
+   outlive its own `open: false`, which is the one thing the contract forbids.
+
+   The global `prefers-reduced-motion` block in tokens.css clamps
+   animation-duration to 0.01ms, which retires all three of these outright.
+   Unlike the Skeleton shimmer they need no `animation: none` of their own:
+   these are finite, so a clamped duration means "already finished", not
+   "restarting thousands of times a second". */
+@keyframes ds-dialog-scrim-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes ds-dialog-sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes ds-dialog-overlay-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--space-2));
+  }
+}
