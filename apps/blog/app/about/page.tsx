@@ -22,6 +22,21 @@ export default function AboutPage() {
           components, and designing CI pipelines that fail for the right reasons. Lately,
           on how all of that changes when part of the code is written by an agent.
         </p>
+        <p>
+          Most of this has happened in startups, and that&apos;s where I like to be. HUB
+          International&apos;s insurance quote wizard went from nothing to a shipped MVP
+          in three months, with teams across Argentina, Mexico, the US and Germany.
+          acceptance-gate — this blog, its design system, its CI gate, a tagged v1.0.0 —
+          took a week. Along the way I&apos;ve built proof-of-concepts at several
+          companies whose whole job was to answer a question fast enough that the answer
+          still mattered.
+        </p>
+        <p>
+          That&apos;s also where the interest in verification comes from. Building fast is
+          the easy half. The hard half is knowing which of the things you built quickly
+          you&apos;re allowed to trust — and that question gets sharper, not softer, when
+          an agent is writing the code.
+        </p>
         <h2>Contact</h2>
         <p>
           <a href="https://github.com/climaa">GitHub</a> ·{' '}
