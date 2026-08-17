@@ -13,6 +13,12 @@
  * all. The tag is a registration for a later `revalidateTag`, which nothing in
  * this suite calls, so recording it would only assert the stub.
  *
+ * `updateTag` is the one export here that IS recorded, because it is the one
+ * with behaviour this suite asserts: every mutation this app performs ends by
+ * refreshing the lists a reviewer is looking at, and "the console reflects the
+ * mutation without a rebuild" is not observable from the filesystem. Reading
+ * `updateTagCalls` is how a test sees it; clear it between tests.
+ *
  * Nothing else is stubbed, deliberately: anything else imported from
  * `next/cache` arrives as `undefined` and fails loudly, because `revalidateTag`
  * and friends DO have behaviour worth deciding about rather than no-opping.
@@ -20,3 +26,10 @@
 export function cacheLife(_profile: string): void {}
 
 export function cacheTag(..._tags: string[]): void {}
+
+/** Every tag passed to {@link updateTag}, in call order. */
+export const updateTagCalls: string[] = [];
+
+export function updateTag(tag: string): void {
+  updateTagCalls.push(tag);
+}

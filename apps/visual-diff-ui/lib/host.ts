@@ -8,6 +8,8 @@
  * and a seam bolted on later is a seam the e2e worlds cannot drive.
  */
 
+import { HOST } from '@gate/visual-diff/policy';
+
 /** The one variable this endpoint reads, named as a type for the same reason
  *  `DataDirEnv` is: the env surface of this app is two variables, both declared. */
 export interface HostEnv {
@@ -53,4 +55,18 @@ export function hostFingerprint(env: HostEnv = process.env): HostFingerprint {
     image,
     playwright: playwrightFrom(image),
   };
+}
+
+/**
+ * Whether this host may write baselines — the accept gate's whole question.
+ *
+ * Equality against `HOST.image`, and only that field. `platform` and `arch` are
+ * deliberately not compared: the pinned image runs on both architectures this
+ * repo captures from, so holding them to a value would refuse a legitimate
+ * container, and `playwright` is read back off the same tag `image` carries,
+ * so comparing it twice would only assert the parse. An absent image is a
+ * refusal, never a pass — see {@link HostFingerprint.image}.
+ */
+export function hostMatches(fingerprint: HostFingerprint = hostFingerprint()): boolean {
+  return fingerprint.image === HOST.image;
 }
