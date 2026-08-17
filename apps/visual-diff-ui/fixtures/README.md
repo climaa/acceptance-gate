@@ -1,0 +1,71 @@
+# Sample fixtures for `visual-diff-ui`
+
+The demo data a deployed instance falls back to when `.snapshots`/`.reports` are empty —
+served with `isSample: true` so the UI can badge every screen as sample data. Committed so
+that an instance with no CLI behind it still shows **the moment of deciding**, not an empty
+console.
+
+## What the report is
+
+A real regression from this repo's history, not a manufactured diff. PR
+[#242](https://github.com/climaa/acceptance-gate/pull/242) (_fix(ui): let the owl selector
+own prose vertical rhythm_, merged 2026-08-13) moved the vertical rhythm of every prose
+surface. This fixture is that change, seen backwards through the differ:
+
+- **A / baseline** — the committed `packages/visual-diff/__baselines__` corpus
+  (`main` @ `f2570e1`, 2026-08-17), which carries the fix.
+- **B / candidate** — a fresh capture of `main`'s tip from just before the fix
+  (`e0427b4`, 2026-08-13), taken in the pinned Playwright container.
+
+Six variants changed — exactly the two prose surfaces the owl selector owns, across
+themes and viewports — and all six are kept, so `summary.json`'s counts are the run's
+real counts, untrimmed:
+
+| variant                                                      | diff pixels |
+| ------------------------------------------------------------ | ----------- |
+| `atoms__desktop__dark__atoms-prose--default`                 | 65,944      |
+| `atoms__desktop__light__atoms-prose--default`                | 62,136      |
+| `templates__desktop__dark__templates-posttemplate--default`  | 28,172      |
+| `templates__desktop__light__templates-posttemplate--default` | 27,942      |
+| `templates__mobile__dark__templates-posttemplate--default`   | 13,882      |
+| `templates__mobile__light__templates-posttemplate--default`  | 13,666      |
+
+The run also produced a real corpus warning (2 stories skipped by `visual-diff:skip`),
+kept in `warnings[]` for the report's warning strip. There is no `a11y` variant because
+the corpus has no accessibility violations — the fixture doesn't fabricate one.
+
+## Layout
+
+```
+fixtures/
+├── sets.json                     # the two capture sets the console lists
+└── reports/
+    └── main-2026-08-17__main-2026-08-13/
+        ├── summary.json          # schema of packages/visual-diff, plus isSample: true
+        └── shots/
+            └── <variantKey>.{baseline,candidate,diff}.png
+```
+
+`summary.json` follows `packages/visual-diff`'s schema (`schemaVersion` 1); `isSample:
+true` is the one addition, per the fixture contract in the design docs. Unchanged
+variants carry no shots, matching the real pipeline (`buildSummary` drops them).
+
+## Regenerating
+
+```bash
+git clone --local . /tmp/ag-old && cd /tmp/ag-old && git checkout e0427b4
+pnpm install --frozen-lockfile
+rm -rf packages/visual-diff/__baselines__
+cp -R <repo>/packages/visual-diff/__baselines__ packages/visual-diff/__baselines__
+pnpm --filter @gate/storybook build
+docker run --rm --ipc=host -v "$(pwd)":/repo -w /repo \
+  -e PLAYWRIGHT_BROWSERS_PATH=/ms-playwright \
+  mcr.microsoft.com/playwright:v1.62.1-noble \
+  node packages/visual-diff/src/cli.mjs check
+# then collect: __baselines__/<key>.png, .visual-diff/diffs/<key>.png,
+# and the candidate data-URIs from .visual-diff/report.html
+```
+
+The capture must run in the pinned container — a bare-metal capture renders with the
+host's font stack and would visibly disagree with the committed baselines, which is the
+exact failure mode this tool exists to catch.

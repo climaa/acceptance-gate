@@ -1,0 +1,131 @@
+{
+  "schemaVersion": 1,
+  "exitCode": 1,
+  "thresholds": {
+    "maxDiffPixels": 40,
+    "maxDiffRatio": 0.0005
+  },
+  "env": {
+    "platform": "linux",
+    "arch": "arm64",
+    "image": "mcr.microsoft.com/playwright:v1.62.1-noble",
+    "playwright": "1.62.1",
+    "chromium": "151.0.7922.34"
+  },
+  "counts": {
+    "unchanged": 100,
+    "changed": 6,
+    "added": 0,
+    "removed": 0,
+    "errored": 0,
+    "a11y": 0
+  },
+  "warnings": [
+    "2 story(ies) skipped by visual-diff:skip: atoms-skiplink--default, molecules-taglist--empty"
+  ],
+  "isSample": true,
+  "variants": [
+    {
+      "key": "atoms__desktop__light__atoms-prose--default",
+      "id": "atoms-prose--default",
+      "tier": "atoms",
+      "viewport": "desktop",
+      "theme": "light",
+      "bucket": "changed",
+      "overlapDiffPixels": 12216,
+      "marginPixels": 49920,
+      "diffPixels": 62136,
+      "allowedDiffPixels": 292.656,
+      "width": 1248,
+      "height": 469,
+      "sizeDelta": "1248\u00d7469 \u2192 1248\u00d7429",
+      "violations": [],
+      "error": null
+    },
+    {
+      "key": "atoms__desktop__dark__atoms-prose--default",
+      "id": "atoms-prose--default",
+      "tier": "atoms",
+      "viewport": "desktop",
+      "theme": "dark",
+      "bucket": "changed",
+      "overlapDiffPixels": 16024,
+      "marginPixels": 49920,
+      "diffPixels": 65944,
+      "allowedDiffPixels": 292.656,
+      "width": 1248,
+      "height": 469,
+      "sizeDelta": "1248\u00d7469 \u2192 1248\u00d7429",
+      "violations": [],
+      "error": null
+    },
+    {
+      "key": "templates__desktop__light__templates-posttemplate--default",
+      "id": "templates-posttemplate--default",
+      "tier": "templates",
+      "viewport": "desktop",
+      "theme": "light",
+      "bucket": "changed",
+      "overlapDiffPixels": 7974,
+      "marginPixels": 19968,
+      "diffPixels": 27942,
+      "allowedDiffPixels": 300.768,
+      "width": 1248,
+      "height": 482,
+      "sizeDelta": "1248\u00d7482 \u2192 1248\u00d7466",
+      "violations": [],
+      "error": null
+    },
+    {
+      "key": "templates__desktop__dark__templates-posttemplate--default",
+      "id": "templates-posttemplate--default",
+      "tier": "templates",
+      "viewport": "desktop",
+      "theme": "dark",
+      "bucket": "changed",
+      "overlapDiffPixels": 8204,
+      "marginPixels": 19968,
+      "diffPixels": 28172,
+      "allowedDiffPixels": 300.768,
+      "width": 1248,
+      "height": 482,
+      "sizeDelta": "1248\u00d7482 \u2192 1248\u00d7466",
+      "violations": [],
+      "error": null
+    },
+    {
+      "key": "templates__mobile__light__templates-posttemplate--default",
+      "id": "templates-posttemplate--default",
+      "tier": "templates",
+      "viewport": "mobile",
+      "theme": "light",
+      "bucket": "changed",
+      "overlapDiffPixels": 7938,
+      "marginPixels": 5728,
+      "diffPixels": 13666,
+      "allowedDiffPixels": 102.746,
+      "width": 358,
+      "height": 574,
+      "sizeDelta": "358\u00d7574 \u2192 358\u00d7558",
+      "violations": [],
+      "error": null
+    },
+    {
+      "key": "templates__mobile__dark__templates-posttemplate--default",
+      "id": "templates-posttemplate--default",
+      "tier": "templates",
+      "viewport": "mobile",
+      "theme": "dark",
+      "bucket": "changed",
+      "overlapDiffPixels": 8154,
+      "marginPixels": 5728,
+      "diffPixels": 13882,
+      "allowedDiffPixels": 102.746,
+      "width": 358,
+      "height": 574,
+      "sizeDelta": "358\u00d7574 \u2192 358\u00d7558",
+      "violations": [],
+      "error": null
+    }
+  ]
+}
