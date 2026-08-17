@@ -127,6 +127,9 @@ function Alert({ children }: { children: ReactNode }) {
   );
 }
 
+const step = (from: Mode, by: number) =>
+  MODES[(MODES.indexOf(from) + by + MODES.length) % MODES.length] as Mode;
+
 /** Which mode a key moves to from the one selected, or nothing for a key the
  *  tablist does not own. Wrapping, both axes: the strip reads as a row and stacks
  *  to a column below 768 px. */
@@ -138,9 +141,6 @@ const KEYS: Record<string, (from: Mode) => Mode> = {
   Home: () => MODES[0],
   End: () => MODES[MODES.length - 1] as Mode,
 };
-
-const step = (from: Mode, by: number) =>
-  MODES[(MODES.indexOf(from) + by + MODES.length) % MODES.length] as Mode;
 
 /** The mode tabs. One tab stop for the four of them, arrows between: a tablist
  *  where every tab is tabbable puts three stops in front of the fields. */
@@ -301,7 +301,10 @@ function readPrefill(params: URLSearchParams): Prefill | null {
  * keeps it to once per request — a tab the reviewer picks afterwards is a choice,
  * and the same URL must not take it back.
  */
-function useJobForm(prefill: Prefill | null, firstReportId: string): [JobForm, Patch] {
+function useJobForm(
+  prefill: Prefill | null,
+  reportIds: readonly string[],
+): [JobForm, Patch] {
   const [form, patch] = useReducer(
     (state: JobForm, update: Partial<JobForm>) => ({ ...state, ...update }),
     {
@@ -310,7 +313,7 @@ function useJobForm(prefill: Prefill | null, firstReportId: string): [JobForm, P
       filter: '',
       baseline: prefill?.baseline ?? '',
       candidate: prefill?.candidate ?? '',
-      reportId: firstReportId,
+      reportId: reportIds[0] ?? '',
     },
   );
   const [applied, setApplied] = useState(prefill?.key ?? '');
@@ -322,6 +325,15 @@ function useJobForm(prefill: Prefill | null, firstReportId: string): [JobForm, P
       baseline: prefill.baseline,
       candidate: prefill.candidate,
     });
+  }
+
+  // The report picker follows the list it is handed. An instance whose first
+  // compare finishes while this panel is mounted arrives here with a list the
+  // picker's value is not in, and every question the gate below asks is about
+  // the report that value names.
+  const [firstReport] = reportIds;
+  if (firstReport && !reportIds.includes(form.reportId)) {
+    patch({ reportId: firstReport });
   }
 
   return [form, patch];
@@ -596,7 +608,10 @@ export interface RunPanelProps {
 
 export function RunPanel({ isSample, reports }: RunPanelProps) {
   const prefill = readPrefill(useSearchParams());
-  const [form, patch] = useJobForm(prefill, reports[0]?.id ?? '');
+  const [form, patch] = useJobForm(
+    prefill,
+    reports.map((entry) => entry.id),
+  );
   const runner = useRunnerFingerprint();
   const { start, refusal, starting } = useStartJob();
 

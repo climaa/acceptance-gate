@@ -29,14 +29,20 @@ function sourceFiles(): string[] {
 
 const read = (file: string) => fs.readFileSync(path.join(APP_ROOT, file), 'utf8');
 
+/** Only the field the case below asks about — the rest of the file is not this
+ *  suite's business. */
+interface Tsconfig {
+  compilerOptions?: { paths?: Record<string, string[]> };
+}
+
 /** `tsconfig.json` is JSONC — this app's comments are all whole-line. */
-function readTsconfig(): { compilerOptions?: { paths?: Record<string, string[]> } } {
+function readTsconfig(): Tsconfig {
   const withoutComments = read('tsconfig.json')
     .split('\n')
     .filter((line) => !line.trimStart().startsWith('//'))
     .join('\n');
 
-  return JSON.parse(withoutComments) as ReturnType<typeof readTsconfig>;
+  return JSON.parse(withoutComments) as Tsconfig;
 }
 
 describe('module resolution', () => {

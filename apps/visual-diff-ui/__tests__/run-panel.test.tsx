@@ -427,6 +427,28 @@ describe('the accept gate', () => {
     );
   });
 
+  // A fresh instance's first compare finishes while this panel is open: the
+  // reports arrive as a prop on a panel that is already mounted, and a picker
+  // still naming nothing would leave the gate asking about a report the list
+  // does not hold.
+  it('picks up a report list that arrived after it mounted', async () => {
+    const panel = (reports: readonly ReportListEntry[]) => (
+      <CurrentJobProvider>
+        <RunPanel isSample={false} reports={reports} />
+      </CurrentJobProvider>
+    );
+    stubApi();
+    const { rerender } = render(panel([]));
+    selectTab('accept');
+
+    rerender(panel([REPORT]));
+
+    // The gate asks every one of its questions about the report the picker
+    // names: with the picker still naming nothing, the tab sits on "checking
+    // what this host is" for as long as it is open.
+    expect(await screen.findByRole('note', { name: 'accept gate' })).toBeDefined();
+  });
+
   it('has nothing to accept on an instance that has compared nothing', async () => {
     await openAcceptTab({ reports: [] });
 

@@ -162,11 +162,11 @@ function useElapsed(job: HistoryRecord, running: boolean): string | null {
     return took === null ? null : formatDuration(took);
   }
 
-  const since = now === null ? null : now - Date.parse(job.startedAt);
+  if (now === null) return null;
 
-  return since === null || Number.isNaN(since) || since < 0
-    ? null
-    : formatDuration(since);
+  const since = now - Date.parse(job.startedAt);
+
+  return Number.isNaN(since) || since < 0 ? null : formatDuration(since);
 }
 
 /** The four outcome tones a finished run is drawn in, plus the one a live job
