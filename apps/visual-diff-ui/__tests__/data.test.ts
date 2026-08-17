@@ -8,6 +8,7 @@ import {
   FIXTURES_DIR,
   readReport,
   readReports,
+  readSetSizes,
   readSets,
   resolveDataDir,
   resolveShotPath,
@@ -248,6 +249,49 @@ describe('readReport', () => {
 
     expect(seededReport?.exitCode).toBe(2);
     expect(fixtureReport).toBeNull();
+  });
+});
+
+describe('readSetSizes', () => {
+  it('measures every capture set on disk, by label', async () => {
+    const seeded = makeDataDir({
+      'sets/main-2026-08-17/atoms__desktop__light__a--b.png': '1234567890',
+      'sets/main-2026-08-17/atoms__desktop__dark__a--b.png': '12345',
+      'sets/main-2026-08-13/atoms__desktop__light__a--b.png': '1',
+    });
+
+    const sizes = await readSetSizes(seeded);
+
+    expect(sizes).toEqual({ 'main-2026-08-17': 15, 'main-2026-08-13': 1 });
+  });
+
+  // The registry and the shot trees are two facts, and a console that has one
+  // without the other still has to render: the table says "unknown", not "0".
+  it('has no entry for a registered set whose shots are not here', async () => {
+    const seeded = makeDataDir({ 'sets.json': setsFile('main-2026-08-17') });
+
+    const sizes = await readSetSizes(seeded);
+
+    expect(sizes).toEqual({});
+  });
+
+  it('reads nothing from a tree that has captured nothing', async () => {
+    const sizes = await readSetSizes(makeDataDir());
+
+    expect(sizes).toEqual({});
+  });
+
+  // `sets/` holds one flat directory of PNGs per set — a file dropped beside
+  // them is not a set, and counting it would invent one.
+  it('ignores a file sitting where a set directory would be', async () => {
+    const seeded = makeDataDir({
+      'sets/notes.txt': 'not a capture set',
+      'sets/main-2026-08-17/a.png': '123',
+    });
+
+    const sizes = await readSetSizes(seeded);
+
+    expect(sizes).toEqual({ 'main-2026-08-17': 3 });
   });
 });
 
