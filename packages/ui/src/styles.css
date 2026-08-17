@@ -42,3 +42,4 @@
 @import './templates/BlogIndexTemplate/BlogIndexTemplate.css';
 @import './atoms/BucketChip/BucketChip.css';
 @import './atoms/Thumbnail/Thumbnail.css';
+@import './organisms/Dialog/Dialog.css';
