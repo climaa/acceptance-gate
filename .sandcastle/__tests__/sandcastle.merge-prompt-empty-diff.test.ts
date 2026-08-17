@@ -33,7 +33,7 @@ const gate = content.slice(content.indexOf('## Step 1b'), content.indexOf('## St
  * read the fenced blocks — the markdown equivalent of `stripComments`.
  */
 const gateCommands = [...gate.matchAll(/```bash\n([\s\S]*?)```/g)]
-  .map((m) => m[1])
+  .map((m) => m[1]!)
   .join('\n');
 
 describe('merge-prompt.md — the empty-net-diff gate', () => {

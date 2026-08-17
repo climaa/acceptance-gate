@@ -171,7 +171,9 @@ describe('decideActions', () => {
     const actions = decideActions(unknown);
 
     // Assert
+    expect(actions.map((a) => a.kind)).toEqual(['needs-human']);
     expect(actions.some(isWriteAction)).toBe(false);
+    expect(actions[0]!.reason).toMatch(/did not report/i);
   });
 
   it.each(['MERGED', 'CLOSED'] as const)('leaves a %s PR alone', (state) => {

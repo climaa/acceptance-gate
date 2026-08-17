@@ -99,27 +99,21 @@ function normalizeMergeState(raw: string): PrMergeState {
  */
 export function decideActions(queued: QueuedPr): QueueAction[] {
   if (queued.state !== 'OPEN') return [];
-  const { number: pr, branch } = queued;
-  const status = normalizeMergeState(queued.mergeStateStatus);
+  const { number: pr, branch, changedFiles } = queued;
 
   // `null` (gh did not report a count) lands here too. "Has content" is the one
   // guess that can let the bad merge through, so an unreadable count is
   // reported rather than assumed away — the same fail-closed stance
   // worktreeDirtiness takes on a checkout it cannot inspect.
-  if (queued.changedFiles === null || queued.changedFiles === 0) {
-    return [
-      {
-        kind: 'needs-human',
-        pr,
-        branch,
-        reason:
-          queued.changedFiles === 0
-            ? 'PR changes no files — merging it would auto-close its issue with nothing landed'
-            : 'gh did not report a changed-file count — cannot confirm the PR changes anything',
-      },
-    ];
+  if (changedFiles === null || changedFiles === 0) {
+    const reason =
+      changedFiles === 0
+        ? 'PR changes no files — merging it would auto-close its issue with nothing landed'
+        : 'gh did not report a changed-file count — cannot confirm the PR changes anything';
+    return [{ kind: 'needs-human', pr, branch, reason }];
   }
 
+  const status = normalizeMergeState(queued.mergeStateStatus);
   if (status === 'DIRTY') {
     return [
       {

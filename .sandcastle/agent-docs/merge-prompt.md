@@ -37,10 +37,11 @@ A branch can be ahead of `main` and still carry nothing to land: an implementer 
 ```bash
 git fetch origin main
 git diff --quiet origin/main...HEAD
-case $? in
+DIFF_STATUS=$?
+case $DIFF_STATUS in
   0) echo EMPTY ;;
   1) echo HAS_CONTENT ;;
-  *) echo DIFF_UNREADABLE ;;
+  *) echo "DIFF_UNREADABLE (git exited $DIFF_STATUS)" ;;
 esac
 ```
 
