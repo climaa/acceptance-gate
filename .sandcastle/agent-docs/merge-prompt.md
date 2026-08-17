@@ -12,9 +12,7 @@ For **each** branch+issue pair, execute the steps below in order. One failure do
 
 ---
 
-## Step 1 — Publish the issue branch (skip the push when it is already published)
-
-Never pass `--no-verify` to `git commit` or `git push`. If a hook fails, fix it or stop — do not bypass.
+## Step 1 — Check out the issue branch
 
 **Check out the branch first.** The PR-body steps below read `HEAD` — `git diff origin/main...HEAD` for the changed-files summary and `gh pr create --head <branch>` — so put the branch in your working tree before you start. Always:
 
@@ -30,7 +28,67 @@ git checkout <branch>
 >
 > The orchestrator also restores this in a `finally` as a backstop, but do it yourself so the log shows the run ended clean.
 
-**Then check whether there is actually anything to push.** The host already pushes every completed branch to `origin` before this merger runs (`main.mts` `[ci-trigger]`), so in the normal case the branch is _already published_ and a second push is a no-op. Do not gate `gh pr create` on a redundant push that has nothing to send — skip it. First refresh the tracking ref, then compare:
+---
+
+## Step 1b — Confirm the branch has something to land (empty net diff → no PR)
+
+A branch can be ahead of `main` and still carry nothing to land: an implementer that commits an approach and then reverts it leaves commits that cancel out. Every commit-counting check reads that as work, so such a branch can reach you looking exactly like any other. Only the diff can tell the two apart, so ask before you push or open anything:
+
+```bash
+git fetch origin main
+git diff --quiet origin/main...HEAD
+DIFF_STATUS=$?
+case $DIFF_STATUS in
+  0) echo EMPTY ;;
+  1) echo HAS_CONTENT ;;
+  *) echo "DIFF_UNREADABLE (git exited $DIFF_STATUS)" ;;
+esac
+```
+
+Three dots, not two: the question is what _this branch_ changed since it forked, so `main` moving ahead on its own must not read as content. `--quiet` implies `--exit-code`, so read the exit status, not the output: `0` is "no differences", `1` is "differences", and anything above that is git failing to answer — which is a third answer, not a synonym for either.
+
+- **`HAS_CONTENT`** → go to Step 1c and continue through Step 6 exactly as written.
+- **`DIFF_UNREADABLE`** → you do not know which case this is, so do not guess. Open no PR; instead `gh issue comment <ID> --body "Merge phase could not read the diff of branch <branch> against main (git exited <status>). No PR opened. Awaiting manual resolution."` and continue to the next pair. Do **not** apply the label below — nothing here says the branch is a no-op, and labelling it would exclude the issue from the next run's planning on the strength of a git error. Leaving it unmarked is what lets the next run's stranded-branch rescue pick the branch up again.
+- **`EMPTY`** → this branch has nothing to land. **Do not run `git push`, do not run `gh pr create`, and do not write `Closes #<ID>` anywhere for this pair.** A PR with zero file changes still merges, and that keyword then makes GitHub auto-close the issue on merge — recording as resolved an issue nobody resolved. That is worse than leaving it open: it hides work that still needs doing. Instead, mark the issue and move on:
+
+```bash
+gh label create "sandcastle:no-op" --color ededed \
+  --description "Sandcastle ran this issue and produced no changes — needs a human decision" \
+  2>/dev/null || true
+
+gh issue comment <ID> --body-file - <<'EOF'
+**Sandcastle: no net changes produced** (merge phase)
+
+`<branch>` has commits ahead of the base branch, but they cancel out: its net diff
+against base is empty. Something was implemented and then reverted (or the same
+change reached base another way), so there is nothing to land and **no PR was
+opened** — a pull request with zero file changes still merges, and a `Closes`
+line in it would auto-close this issue without the work having been done.
+
+This issue is **left open** on purpose. A real attempt was made and undone — read
+the branch's commits before re-queuing, since re-running the issue as written will
+most likely reproduce the same dead end. Whether the issue itself still stands is a
+human call.
+
+It is labelled `sandcastle:no-op` and skipped for the rest of this run so the
+orchestrator does not re-plan it every iteration. To make it eligible again:
+`gh issue edit <ID> --remove-label "sandcastle:no-op"`.
+EOF
+
+gh issue edit <ID> --add-label "sandcastle:no-op"
+```
+
+The comment body goes in on stdin via `--body-file -` because it is multi-line and full of backticks, neither of which survives interpolation into `--body "…"`. `gh label create` is expected to fail once the label exists; the `--add-label` edit is what actually has to succeed.
+
+**Never `gh issue close` here** — "nothing to land" can mean the work already reached `main` another way, or that the implementer misread the task, and closing would hide the second case. A human reads the comment and decides. **Leave the branch in place** too: it holds the attempt that was reverted, which is what that human goes to read. Then continue to the next branch+issue pair.
+
+---
+
+## Step 1c — Publish the issue branch (skip the push when it is already published)
+
+Never pass `--no-verify` to `git commit` or `git push`. If a hook fails, fix it or stop — do not bypass.
+
+**Check whether there is actually anything to push.** The host already pushes every completed branch to `origin` before this merger runs (`main.mts` `[ci-trigger]`), so in the normal case the branch is _already published_ and a second push is a no-op. Do not gate `gh pr create` on a redundant push that has nothing to send — skip it. First refresh the tracking ref, then compare:
 
 ```bash
 git fetch origin <branch>
@@ -121,7 +179,7 @@ EOF
 Rules:
 
 - Title **must** follow Conventional Commits: `<type>(<scope>): <subject>`.
-- Body **must** contain `Closes #<ID>` so GitHub auto-links the issue.
+- Body **must** contain `Closes #<ID>` so GitHub auto-links the issue — on the `HAS_CONTENT` path only. Step 1b is what guarantees you are on it; the keyword auto-closes the issue on merge, so a PR that changes nothing must never carry it.
 - Capture the PR URL or number returned by `gh pr create` for use in later steps.
 
 ---

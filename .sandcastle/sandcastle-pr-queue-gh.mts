@@ -67,8 +67,11 @@ export function ghQueueGateway(
     listOwnedPrs: () => {
       if (abortSignal.aborted) return [];
       const out = ghRead(
+        // changedFiles is what the empty-PR guard in decideActions reads: a PR
+        // with zero of them still merges, and the merge prompt's `Closes #<ID>`
+        // then auto-closes an issue nothing landed for.
         `gh pr list --state open --base ${BASE_BRANCH} --limit 100 ` +
-          `--json number,headRefName,state,mergeStateStatus,autoMergeRequest`,
+          `--json number,headRefName,state,mergeStateStatus,autoMergeRequest,changedFiles`,
       );
       return out === null
         ? []

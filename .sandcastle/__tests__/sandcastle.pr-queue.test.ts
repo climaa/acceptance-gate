@@ -25,6 +25,7 @@ function pr(overrides: Partial<QueuedPr> = {}): QueuedPr {
     state: 'OPEN',
     mergeStateStatus: 'CLEAN',
     autoMergeEnabled: true,
+    changedFiles: 3,
     ...overrides,
   };
 }
@@ -132,6 +133,49 @@ describe('decideActions', () => {
     expect(actions.map((a) => a.kind)).toEqual(['wait']);
   });
 
+  // A PR with zero changed files still merges, and the `Closes #<ID>` line the
+  // merge prompt puts in every body then auto-closes an issue nobody resolved.
+  // This loop cannot open such a PR — but it can arm auto-merge on one, which is
+  // the last push the outcome needs.
+  it('never writes to a PR that changes no files', () => {
+    // Arrange
+    const empty = pr({ changedFiles: 0, autoMergeEnabled: false });
+
+    // Act
+    const actions = decideActions(empty);
+
+    // Assert
+    expect(actions.map((a) => a.kind)).toEqual(['needs-human']);
+    expect(actions.some(isWriteAction)).toBe(false);
+    expect(actions[0]!.reason).toMatch(/no file|empty/i);
+  });
+
+  it('does not update a zero-change PR that is also BEHIND', () => {
+    // Arrange — making it mergeable is exactly what must not happen.
+    const empty = pr({ changedFiles: 0, mergeStateStatus: 'BEHIND' });
+
+    // Act
+    const actions = decideActions(empty);
+
+    // Assert
+    expect(actions.map((a) => a.kind)).toEqual(['needs-human']);
+  });
+
+  it('reports an unknown changed-file count as needing a human, not as content', () => {
+    // Arrange — gh answered without the field (older gh, or a partial reply).
+    // Guessing "has content" here is the one guess that can let the bad merge
+    // through, so the loop declines to write and says so.
+    const unknown = pr({ changedFiles: null, autoMergeEnabled: false });
+
+    // Act
+    const actions = decideActions(unknown);
+
+    // Assert
+    expect(actions.map((a) => a.kind)).toEqual(['needs-human']);
+    expect(actions.some(isWriteAction)).toBe(false);
+    expect(actions[0]!.reason).toMatch(/did not report/i);
+  });
+
   it.each(['MERGED', 'CLOSED'] as const)('leaves a %s PR alone', (state) => {
     // Arrange
     const settled = pr({ state, mergeStateStatus: 'BEHIND', autoMergeEnabled: false });
@@ -174,6 +218,7 @@ describe('parsePrQueueJson', () => {
       state: 'OPEN',
       mergeStateStatus: 'BEHIND',
       autoMergeRequest: { enabledAt: '2026-08-10T00:00:00Z' },
+      changedFiles: 4,
     },
     {
       number: 8,
@@ -181,6 +226,7 @@ describe('parsePrQueueJson', () => {
       state: 'OPEN',
       mergeStateStatus: 'CLEAN',
       autoMergeRequest: null,
+      changedFiles: 0,
     },
   ]);
 
@@ -196,6 +242,7 @@ describe('parsePrQueueJson', () => {
         state: 'OPEN',
         mergeStateStatus: 'BEHIND',
         autoMergeEnabled: true,
+        changedFiles: 4,
       },
       {
         number: 8,
@@ -203,8 +250,26 @@ describe('parsePrQueueJson', () => {
         state: 'OPEN',
         mergeStateStatus: 'CLEAN',
         autoMergeEnabled: false,
+        changedFiles: 0,
       },
     ]);
+  });
+
+  it('reads an absent changed-file count as unknown rather than as zero', () => {
+    // Arrange — zero would report a real PR as empty; the state machine gets to
+    // decide what "unknown" means, and it declines to write.
+    const noCount = JSON.stringify([
+      {
+        number: 9,
+        headRefName: 'sandcastle/issue-9-c',
+        state: 'OPEN',
+        mergeStateStatus: 'CLEAN',
+        autoMergeRequest: null,
+      },
+    ]);
+
+    // Act / Assert
+    expect(parsePrQueueJson(noCount)[0]!.changedFiles).toBeNull();
   });
 
   it('reads unparseable output as no PRs rather than throwing', () => {
@@ -470,6 +535,12 @@ describe('sandcastle-pr-queue-gh.mts — the gh wiring', () => {
   it('reads the states the policy needs, including mergeStateStatus', () => {
     expect(source).toMatch(/gh pr list[\s\S]*mergeStateStatus/);
     expect(source).toMatch(/autoMergeRequest/);
+  });
+
+  it('asks gh for the changed-file count the empty-PR guard reads', () => {
+    // Without the field in the --json list the guard would see `null` on every
+    // PR and the loop would decline every write.
+    expect(source).toMatch(/gh pr list[\s\S]*changedFiles/);
   });
 });
 

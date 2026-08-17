@@ -57,14 +57,14 @@ describe('.sandcastle/README.md', () => {
     expect(content).toMatch(/not closed/i);
   });
 
-  // Ceiling raised from 200 when the no-op section landed, then to 240 when
-  // that section gained the empty-diff shape. It is a guard against the file
-  // becoming a manual, not a budget — each new paragraph has to earn its lines,
-  // and these document a mechanism an operator has to interact with by hand
-  // (removing the label).
-  it('is within reasonable length (80–240 lines)', () => {
+  // Ceiling raised from 200 when the no-op section landed, to 240 when that
+  // section gained the empty-diff shape, and to 250 when the merge phase gained
+  // its own empty-diff exit. It is a guard against the file becoming a manual,
+  // not a budget — each new paragraph has to earn its lines, and these document
+  // a mechanism an operator has to interact with by hand (removing the label).
+  it('is within reasonable length (80–250 lines)', () => {
     const lines = content.split('\n').length;
     expect(lines).toBeGreaterThanOrEqual(80);
-    expect(lines).toBeLessThanOrEqual(240);
+    expect(lines).toBeLessThanOrEqual(250);
   });
 });

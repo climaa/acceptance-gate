@@ -41,6 +41,18 @@ describe('sandcastle PR-based merge flow', () => {
       expect(content).toMatch(/Closes #/);
     });
 
+    it('closes an issue from exactly one command, and only on the MERGED path', () => {
+      // `Closes #<ID>` in a PR body is a second, implicit closing mechanism —
+      // GitHub fires it on merge — and a PR that changes no files still merges.
+      // Step 1b keeps such a branch out of a PR entirely; this guards the
+      // explicit half: no other command in the prompt may close an issue.
+      const closing = [...content.matchAll(/```bash\n([\s\S]*?)```/g)]
+        .map((m) => m[1]!)
+        .filter((block) => block.includes('gh issue close'));
+      expect(closing).toHaveLength(1);
+      expect(closing[0]).toMatch(/Merged via PR/);
+    });
+
     it('ticks issue checkboxes only on MERGED state', () => {
       const tickBlock = content.match(
         /if \[ "\$PR_STATE" = "MERGED" \][\s\S]*?gh issue edit.*--body-file[\s\S]*?fi/,

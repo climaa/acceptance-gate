@@ -16,7 +16,7 @@ means the index needs a refresh)
                        plan-parse · pr-queue (+ gh) · sandbox hooks · turbo cache ·
                        variables · orchestrator
   agent-docs/          the four phase prompts + CODING_STANDARDS.md
-  __tests__/           38 hermetic vitest files (629 tests) guarding the contracts
+  __tests__/           39 hermetic vitest files (654 tests) guarding the contracts
 apps/
   blog/                Next.js 16 App Router + MDX (English) — index, post, tag, about,
                        RSS, sitemap, OG images; Cache Components + Partial Prefetching on
@@ -75,7 +75,7 @@ scripts/               complexity-gate.mjs (the health gate) · apply-ruleset.mj
 
 ## 🧪 Tests
 
-- Orchestrator hermetic suite: 38 files / 629 tests (prompt contracts, merge flow, override grammar, worktree safety, provenance guard)
+- Orchestrator hermetic suite: 39 files / 654 tests (prompt contracts, merge flow, override grammar, worktree safety, provenance guard)
 - Workspace suites, all in the `test` gate job: `packages/ui` 22 files / 308 tests (70% coverage floor), `apps/blog` 12 / 286, `packages/visual-diff` 10 / 291, `apps/storybook` 4 / 99
 - `apps/e2e`: 9 Gherkin scenarios across smoke, blog and axe a11y — in `gate.needs`, blocking
 - `packages/visual-diff`: 106 committed baselines; the capture/compare job runs on every PR but is deliberately never in `gate.needs` (see `packages/visual-diff/README.md#ci-status`)
