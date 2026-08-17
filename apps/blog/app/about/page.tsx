@@ -13,29 +13,28 @@ export default function AboutPage() {
       <Prose>
         <p>
           I am Carlos Lima, a senior frontend engineer in Barcelona. I work mostly with
-          Next.js and TypeScript, focusing on what many people find boring: making sure
-          what we build can be verified automatically and repeatably.
+          Next.js and TypeScript, on the part a lot of people find boring: making sure
+          what gets built can be verified automatically and repeatably.
         </p>
         <h2>What I work on</h2>
         <p>
           End-to-end test suites with Cypress and Gherkin, visual regression for
-          components, designing accurate CI pipelines, and developing my own quality
-          tools. Recently, I&apos;ve been considering how these aspects shift when an
-          agent contributes to the code.
+          components, and designing CI pipelines that fail for the right reasons. Lately,
+          on how all of that changes when part of the code is written by an agent.
         </p>
         <p>
           Most of this has happened in startups, and that&apos;s where I like to be. HUB
           International&apos;s insurance quote wizard went from nothing to a shipped MVP
-          in three months, with teams across Argentina, Mexico, the US. `acceptance-gate`
+          in three months, with teams across Argentina, Mexico and the US. acceptance-gate
           — this blog, its design system, its CI gate, a tagged v1.0.0 — took a week.
-          Along the way I&apos;ve built proofs-of-concept at several companies whose whole
+          Along the way I&apos;ve built proofs of concept at several companies whose whole
           job was to answer a question fast enough that the answer still mattered.
         </p>
         <p>
           That&apos;s also where the interest in verification comes from. Building fast is
-          the easy half. The hard half is knowing which of the things you built
-          you&apos;re allowed to trust—and that question gets sharper, not softer, when an
-          agent is writing the code.
+          the easy half. The hard half is knowing which of the things you built quickly
+          you&apos;re allowed to trust — and that question gets sharper, not softer, when
+          an agent is writing the code.
         </p>
         <h2>Contact</h2>
         <p>
