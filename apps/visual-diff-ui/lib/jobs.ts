@@ -32,9 +32,7 @@ import { type CaptureSet, SetsFileSchema } from './summary';
  */
 
 /** Every mode `POST /api/jobs` accepts. */
-export const JOB_MODES = ['capture', 'compare', 'run', 'accept'] as const;
-
-export const JobModeSchema = z.enum(JOB_MODES);
+export const JobModeSchema = z.enum(['capture', 'compare', 'run', 'accept']);
 export type JobMode = z.infer<typeof JobModeSchema>;
 
 /**
@@ -48,7 +46,7 @@ const SET_LABEL = /^[A-Za-z0-9][A-Za-z0-9.-]*$/;
 const REPORT_ID = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
 
 export const SetLabelSchema = z.string().regex(SET_LABEL, 'not a snapshot-set label');
-export const ReportIdSchema = z.string().regex(REPORT_ID, 'not a report id');
+const ReportIdSchema = z.string().regex(REPORT_ID, 'not a report id');
 
 /**
  * What `POST /api/jobs` accepts, per mode. A discriminated union rather than one
@@ -91,11 +89,11 @@ export const HistoryRecordSchema = z
 
 export type HistoryRecord = z.infer<typeof HistoryRecordSchema>;
 
-export const HistorySchema = z.array(HistoryRecordSchema);
+const HistorySchema = z.array(HistoryRecordSchema);
 
 /** What the lock file says. `pid` is the whole staleness test: a lock whose
  *  process is gone is a job nobody is running. */
-export const LockSchema = z.object({
+const LockSchema = z.object({
   pid: z.number(),
   mode: JobModeSchema,
   label: z.string(),
@@ -105,7 +103,7 @@ export const LockSchema = z.object({
 export type Lock = z.infer<typeof LockSchema>;
 
 /** The D2 hold: a set checked out into a worktree is not the console's to delete. */
-export const WorktreeSchema = z.object({
+const WorktreeSchema = z.object({
   path: z.string(),
   set: z.string(),
   registeredAt: z.string(),
@@ -118,7 +116,7 @@ export type Worktree = z.infer<typeof WorktreeSchema>;
 /** A path that would have landed outside the data directory. Thrown, never
  *  returned: an escaped write corrupts the corpus the whole gate protects, so
  *  the only safe answer is to stop rather than to fall back to something. */
-export class ConfinementError extends Error {}
+class ConfinementError extends Error {}
 
 /**
  * `path.resolve` under the data directory, and nothing else — the one gate every
@@ -140,7 +138,6 @@ export function within(dataDir: string, ...segments: string[]): string {
   return target;
 }
 
-export const setsDir = (dataDir: string) => within(dataDir, 'sets');
 export const setDir = (dataDir: string, label: string) => within(dataDir, 'sets', label);
 export const reportDir = (dataDir: string, id: string) => within(dataDir, 'reports', id);
 export const baselinesDir = (dataDir: string) => within(dataDir, '__baselines__');
@@ -178,7 +175,7 @@ function writeJson(file: string, value: unknown): void {
 }
 
 /** The registered worktrees, or an empty registry when nothing holds anything. */
-export function readWorktrees(dataDir: string): Worktree[] {
+function readWorktrees(dataDir: string): Worktree[] {
   return readJson(worktreesPath(dataDir), WorktreesFileSchema, { worktrees: [] })
     .worktrees;
 }
