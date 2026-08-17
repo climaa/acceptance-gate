@@ -153,7 +153,8 @@ const logPath = (dataDir: string, id: string) => within(dataDir, 'jobs', `${id}.
 
 /** A JSON file that may not be there yet: an instance that has run nothing has
  *  no history and no registry. Unreadable or malformed is a different thing and
- *  says so, naming the file. */
+ *  says so, naming the file — a half-written `history.json` is what a crash
+ *  mid-rewrite leaves behind, and every later request would report it. */
 function readJson<T>(file: string, schema: z.ZodType<T>, fallback: T): T {
   let raw: string;
   try {
@@ -163,7 +164,14 @@ function readJson<T>(file: string, schema: z.ZodType<T>, fallback: T): T {
     throw new Error(`Could not read ${file}`, { cause });
   }
 
-  const result = schema.safeParse(JSON.parse(raw) as unknown);
+  let value: unknown;
+  try {
+    value = JSON.parse(raw) as unknown;
+  } catch (cause) {
+    throw new Error(`Could not parse ${file}`, { cause });
+  }
+
+  const result = schema.safeParse(value);
   if (!result.success) throw new Error(`${file} does not match its schema`);
 
   return result.data;

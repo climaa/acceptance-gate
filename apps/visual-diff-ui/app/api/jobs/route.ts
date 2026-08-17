@@ -1,20 +1,20 @@
-import * as fs from 'node:fs';
-import * as path from 'node:path';
+import { HOST } from '@gate/visual-diff/policy';
 import { resolveDataDir } from '@/lib/data';
 import { hostFingerprint, hostMatches } from '@/lib/host';
-import { JobRequestSchema, reportDir, startJob } from '@/lib/jobs';
+import { JobRequestSchema, startJob } from '@/lib/jobs';
 import {
   ACCEPT_RECOVERY,
   JOB_RUNNING,
   SAMPLE_DATA,
   badRequest,
   conflict,
+  hostMismatch,
+  jsonBody,
+  noReportAt,
   notFound,
   refuseWhileRunning,
 } from '@/lib/refusals';
-import { runJob } from '@/lib/runner';
-import { HOST } from '@gate/visual-diff/policy';
-import { SummarySchema } from '@/lib/summary';
+import { readSummary, runJob } from '@/lib/runner';
 
 /**
  * Start a job — the one mutating entry point into the runner.
@@ -37,7 +37,7 @@ export async function POST(request: Request): Promise<Response> {
   const busy = refuseWhileRunning(dir);
   if (busy) return busy;
 
-  const parsed = JobRequestSchema.safeParse(await readBody(request));
+  const parsed = JobRequestSchema.safeParse(await jsonBody(request));
   if (!parsed.success) {
     return badRequest(
       `that is not a job this console can run: ${issuesOf(parsed.error)}`,
@@ -56,14 +56,6 @@ export async function POST(request: Request): Promise<Response> {
   return Response.json({ job: outcome.started.job }, { status: 202 });
 }
 
-async function readBody(request: Request): Promise<unknown> {
-  try {
-    return (await request.json()) as unknown;
-  } catch {
-    return null;
-  }
-}
-
 const issuesOf = (error: { issues: { path: PropertyKey[]; message: string }[] }) =>
   error.issues
     .map((issue) => `${issue.path.join('.') || '(root)'}: ${issue.message}`)
@@ -80,7 +72,7 @@ const issuesOf = (error: { issues: { path: PropertyKey[]; message: string }[] })
  */
 function refuseAccept(dataDir: string, reportId: string): Response | null {
   const summary = readSummary(dataDir, reportId);
-  if (!summary) return notFound(`no report at reports/${reportId}`);
+  if (!summary) return notFound(noReportAt(reportId));
 
   if (summary.counts.a11y > 0) {
     return conflict(
@@ -91,23 +83,11 @@ function refuseAccept(dataDir: string, reportId: string): Response | null {
 
   const fingerprint = hostFingerprint();
   if (!hostMatches(fingerprint)) {
-    return conflict(
-      `this runner is ${fingerprint.image ?? 'not running in a declared container'}, not ${HOST.image} — baselines are only acceptable from the pinned container`,
-      { recovery: ACCEPT_RECOVERY, image: HOST.image },
-    );
+    return conflict(hostMismatch(fingerprint.image), {
+      recovery: ACCEPT_RECOVERY,
+      image: HOST.image,
+    });
   }
 
   return null;
-}
-
-function readSummary(dataDir: string, reportId: string) {
-  try {
-    return SummarySchema.parse(
-      JSON.parse(
-        fs.readFileSync(path.join(reportDir(dataDir, reportId), 'summary.json'), 'utf8'),
-      ),
-    );
-  } catch {
-    return null;
-  }
 }

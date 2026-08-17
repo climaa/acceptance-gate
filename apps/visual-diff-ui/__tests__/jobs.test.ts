@@ -326,6 +326,19 @@ describe('POST /api/jobs', () => {
     expect(response.status).toBe(400);
   });
 
+  // A body nothing could parse is the same refusal as a body that parsed into
+  // something this console cannot run: neither names a job, and neither starts.
+  it('answers 400 for a body that is not JSON at all', async () => {
+    const dir = configuredDataDir();
+
+    const response = await postJob(
+      new Request('http://localhost:3300/api/jobs', { method: 'POST', body: 'not json' }),
+    );
+
+    expect(response.status).toBe(400);
+    expect(readLock(dir)).toBeNull();
+  });
+
   it('refuses every mutation while the console is showing sample data', async () => {
     const response = await postJob(
       jobRequest({ mode: 'compare', baseline: 'set-a', candidate: 'set-b' }),
@@ -458,5 +471,23 @@ describe('a stale lock', () => {
     writeStaleLock(dir, '2026-08-17T14:03:22.000Z');
 
     expect(currentJob(dir)).toBeNull();
+  });
+});
+
+describe('readHistory', () => {
+  // The state a crash mid-rewrite leaves behind, and every later request reads
+  // it — so the failure has to name the file rather than a JSON offset.
+  it('names the file it could not parse', () => {
+    const dir = makeDataDir();
+    fs.writeFileSync(path.join(dir, 'history.json'), '[{');
+
+    expect(() => readHistory(dir)).toThrow(/history\.json/);
+  });
+
+  it('names a history file that does not match its schema', () => {
+    const dir = makeDataDir();
+    fs.writeFileSync(path.join(dir, 'history.json'), JSON.stringify([{ id: 'no mode' }]));
+
+    expect(() => readHistory(dir)).toThrow(/history\.json/);
   });
 });

@@ -7,7 +7,6 @@ import {
   BASELINE_BUDGET_BYTES,
   BASELINE_PNG_BUDGET_BYTES,
   EXIT,
-  HOST,
   parseVariantKey,
 } from '@gate/visual-diff/policy';
 import { type HostEnv, hostFingerprint, hostMatches } from './host';
@@ -20,6 +19,7 @@ import {
   setDir,
   within,
 } from './jobs';
+import { hostMismatch, noReportAt } from './refusals';
 import { type Summary, SummarySchema } from './summary';
 
 /**
@@ -61,22 +61,25 @@ function readSet(
     throw new Error(`no capture set at sets/${label}`);
   }
 
-  const ignored = names.filter(
-    (name) => !name.endsWith(PNG) || !parseVariantKey(name.slice(0, -PNG.length)),
-  );
+  const shots = new Map<string, Uint8Array>();
+  const ignored: string[] = [];
+
+  for (const name of names) {
+    const key = name.endsWith(PNG) ? name.slice(0, -PNG.length) : null;
+    if (!key || !parseVariantKey(key)) {
+      ignored.push(name);
+      continue;
+    }
+
+    shots.set(key, fs.readFileSync(path.join(dir, name)));
+  }
+
   if (ignored.length > 0) {
     log(`ignored ${ignored.length} file(s) in sets/${label}: ${ignored.join(', ')}`);
   }
+  if (shots.size === 0) throw new Error(`the capture set sets/${label} holds no shots`);
 
-  const shots = names
-    .filter((name) => !ignored.includes(name))
-    .map(
-      (name) =>
-        [name.slice(0, -PNG.length), fs.readFileSync(path.join(dir, name))] as const,
-    );
-  if (shots.length === 0) throw new Error(`the capture set sets/${label} holds no shots`);
-
-  return new Map(shots);
+  return shots;
 }
 
 /** A set's shots as capture results. Dimensions are read out of the PNG header
@@ -189,7 +192,10 @@ function refuse(log: (message: string) => void, reason: string): JobOutcome {
   return { exitCode: EXIT.broken, reportId: null };
 }
 
-function readSummary(dataDir: string, reportId: string): Summary | null {
+/** One report's `summary.json`, or null when there is no readable report there.
+ *  Shared with `POST /api/jobs`, whose accept gate asks the same question of the
+ *  same file before the lock is claimed. */
+export function readSummary(dataDir: string, reportId: string): Summary | null {
   try {
     return SummarySchema.parse(
       JSON.parse(
@@ -241,7 +247,7 @@ function candidateShots(
  *  half-promoted. */
 function assertWithinBudget(
   shots: ReadonlyMap<string, Uint8Array>,
-  retainedBytes: number,
+  retained: number,
 ): void {
   const oversized = [...shots]
     .filter(([, bytes]) => bytes.length > BASELINE_PNG_BUDGET_BYTES)
@@ -253,7 +259,7 @@ function assertWithinBudget(
   }
 
   const total =
-    retainedBytes + [...shots.values()].reduce((sum, bytes) => sum + bytes.length, 0);
+    retained + [...shots.values()].reduce((sum, bytes) => sum + bytes.length, 0);
   if (total > BASELINE_BUDGET_BYTES) {
     throw new Error(
       `the baseline set would be ${total} bytes, over the ${BASELINE_BUDGET_BYTES}-byte budget — nothing was written`,
@@ -297,7 +303,7 @@ export async function promoteBaselines(
   env: HostEnv = process.env,
 ): Promise<JobOutcome> {
   const summary = readSummary(dataDir, reportId);
-  if (!summary) return refuse(log, `no report at reports/${reportId}`);
+  if (!summary) return refuse(log, noReportAt(reportId));
 
   if (summary.counts.a11y > 0) {
     return refuse(
@@ -308,10 +314,9 @@ export async function promoteBaselines(
 
   const fingerprint = hostFingerprint(env);
   if (!hostMatches(fingerprint)) {
-    return refuse(
-      log,
-      `this runner is ${fingerprint.image ?? 'not running in a declared container'}, not ${HOST.image} — baselines are only acceptable from the pinned container, so nothing was written`,
-    );
+    // The same sentence the accept gate answered with, plus the half only this
+    // gate can promise: it is the last one before a byte would have landed.
+    return refuse(log, `${hostMismatch(fingerprint.image)}, so nothing was written`);
   }
 
   const dir = baselinesDir(dataDir);

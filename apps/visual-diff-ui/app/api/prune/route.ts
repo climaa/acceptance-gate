@@ -5,6 +5,7 @@ import {
   badRequest,
   conflict,
   heldByWorktree,
+  jsonBody,
   refuseWhileRunning,
 } from '@/lib/refusals';
 import { updateTag } from 'next/cache';
@@ -34,7 +35,7 @@ export async function POST(request: Request): Promise<Response> {
   const busy = refuseWhileRunning(dir);
   if (busy) return busy;
 
-  const parsed = PruneRequestSchema.safeParse(await readBody(request));
+  const parsed = PruneRequestSchema.safeParse(await jsonBody(request));
   if (!parsed.success) {
     return badRequest('prune needs a whole number of sets to keep');
   }
@@ -80,12 +81,4 @@ function refusalFor(dataDir: string, label: string): string | null {
   const holder = holderOf(dataDir, label);
 
   return holder ? heldByWorktree(label, holder.path) : null;
-}
-
-async function readBody(request: Request): Promise<unknown> {
-  try {
-    return (await request.json()) as unknown;
-  } catch {
-    return null;
-  }
 }
