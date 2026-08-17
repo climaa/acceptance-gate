@@ -1,6 +1,6 @@
 'use client';
 
-import { type PointerEvent, type ReactNode, useEffect, useState } from 'react';
+import { type PointerEvent, type ReactNode, useEffect, useRef, useState } from 'react';
 
 export interface DialogProps {
   /** Closed renders nothing — there is no hidden copy of the dialog in the page. */
@@ -45,8 +45,10 @@ const focusablesIn = (surface: HTMLElement) => [
  */
 const wrapTab = (surface: HTMLElement, event: KeyboardEvent) => {
   const stops = focusablesIn(surface);
-  const leavingFrom = event.shiftKey ? stops[0] : stops.at(-1);
-  const wrapTo = event.shiftKey ? stops.at(-1) : stops[0];
+  const first = stops[0];
+  const last = stops.at(-1);
+  const leavingFrom = event.shiftKey ? first : last;
+  const wrapTo = event.shiftKey ? last : first;
 
   if (!wrapTo || surface.ownerDocument.activeElement !== leavingFrom) return;
 
@@ -56,6 +58,35 @@ const wrapTab = (surface: HTMLElement, event: KeyboardEvent) => {
 
 /** Downward travel on the grabber, in CSS pixels, that reads as "dismiss". */
 const SWIPE_DISMISS_PX = 56;
+
+/**
+ * The sheet's swipe, as the three handlers the grabber spreads. Start and end
+ * only — no move handler, so the sheet does not follow the finger. A drag that
+ * travels down and comes back up ends where it started and dismisses nothing,
+ * which is the whole of the cancel gesture.
+ *
+ * Where the gesture began is a ref rather than state: nothing rendered reads it,
+ * so a re-render per pointer event would redraw the surface to record something
+ * only the next pointer event will look at.
+ */
+const useSwipeDismiss = (onDismiss: () => void) => {
+  const grabbedAt = useRef<number | null>(null);
+
+  return {
+    onPointerDown: (event: PointerEvent<HTMLDivElement>) => {
+      grabbedAt.current = event.clientY;
+    },
+    onPointerUp: (event: PointerEvent<HTMLDivElement>) => {
+      const from = grabbedAt.current;
+
+      grabbedAt.current = null;
+      if (from !== null && event.clientY - from >= SWIPE_DISMISS_PX) onDismiss();
+    },
+    onPointerCancel: () => {
+      grabbedAt.current = null;
+    },
+  };
+};
 
 /**
  * The system's modal surface: `role="dialog"` over a dimmed backdrop, focus
@@ -97,7 +128,7 @@ function DialogSurface({
   // A state node rather than a ref: the effects below need to run *once the
   // surface exists*, and a ref's mutation is not a dependency React can see.
   const [surface, setSurface] = useState<HTMLDivElement | null>(null);
-  const [grabbedAt, setGrabbedAt] = useState<number | null>(null);
+  const swipeToDismiss = useSwipeDismiss(onClose);
 
   // Focus in on open, back out on close. The opener is read at the moment the
   // surface appears and restored from the cleanup, so an unmount while open
@@ -142,16 +173,6 @@ function DialogSurface({
     };
   }, []);
 
-  // Start and end only — no move handler, so the sheet does not follow the
-  // finger. A drag that travels down and comes back up ends where it started and
-  // dismisses nothing, which is the whole of the cancel gesture.
-  const onGrabberUp = (event: PointerEvent<HTMLDivElement>) => {
-    const from = grabbedAt;
-
-    setGrabbedAt(null);
-    if (from !== null && event.clientY - from >= SWIPE_DISMISS_PX) onClose();
-  };
-
   return (
     <div className={['ds-dialog', className].filter(Boolean).join(' ')}>
       <div className="ds-dialog__backdrop" />
@@ -170,13 +191,7 @@ function DialogSurface({
         {/* Out of the accessibility tree on purpose: a pointer affordance for one
             presentation. The close button below is the path every reader has, in
             both presentations. */}
-        <div
-          aria-hidden="true"
-          className="ds-dialog__grabber"
-          onPointerDown={(event) => setGrabbedAt(event.clientY)}
-          onPointerUp={onGrabberUp}
-          onPointerCancel={() => setGrabbedAt(null)}
-        >
+        <div aria-hidden="true" className="ds-dialog__grabber" {...swipeToDismiss}>
           <span className="ds-dialog__grabber-bar" />
         </div>
 

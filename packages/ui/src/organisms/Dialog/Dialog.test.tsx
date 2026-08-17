@@ -3,7 +3,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import axe from 'axe-core';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { Dialog } from './Dialog';
+import { Dialog, type DialogProps } from './Dialog';
 import dialogStories from './Dialog.stories';
 
 // `globals` is off in vitest.config.ts, so Testing Library never sees a global
@@ -11,8 +11,9 @@ import dialogStories from './Dialog.stories';
 // stacks in the same document and `getByRole` matches the previous test's DOM.
 afterEach(cleanup);
 
-// The dialog writes to two things `cleanup` does not own: `document.body`'s
-// inline style, and whatever had focus when it opened.
+// `document.body`'s inline style is the one thing the dialog writes that
+// `cleanup` does not own: unmounting restores the value the *test* left there,
+// which is only `''` for the tests that did not set one.
 afterEach(() => {
   document.body.style.overflow = '';
 });
@@ -25,12 +26,19 @@ const Body = () => (
   </>
 );
 
-const openDialog = (props: Partial<Parameters<typeof Dialog>[0]> = {}) =>
-  render(
-    <Dialog open onClose={() => {}} label="Comparison" {...props}>
-      <Body />
-    </Dialog>,
-  );
+/**
+ * The dialog as every test below renders it, with whichever props that test is
+ * about overridden. Closing one is `rerender(dialogWith({ open: false }))` —
+ * the same element with the same children, which is what makes it a close
+ * rather than a fresh render of a different tree.
+ */
+const dialogWith = ({ children = <Body />, ...props }: Partial<DialogProps> = {}) => (
+  <Dialog open onClose={() => {}} label="Comparison" {...props}>
+    {children}
+  </Dialog>
+);
+
+const openDialog = (props: Partial<DialogProps> = {}) => render(dialogWith(props));
 
 const dialog = () => screen.getByRole('dialog', { name: 'Comparison' });
 const closeButton = () => screen.getByRole('button', { name: 'close' });
@@ -43,11 +51,7 @@ describe('Dialog', () => {
   });
 
   it('renders nothing at all when closed', () => {
-    const { container } = render(
-      <Dialog open={false} onClose={() => {}} label="Comparison">
-        <Body />
-      </Dialog>,
-    );
+    const { container } = render(dialogWith({ open: false }));
 
     expect(container.innerHTML).toBe('');
   });
@@ -70,15 +74,11 @@ describe('the focus trap', () => {
   it('moves focus into the dialog on open', () => {
     openDialog();
 
-    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'close' }));
+    expect(document.activeElement).toBe(closeButton());
   });
 
   it('has a tab stop of its own, so content with none still traps focus', () => {
-    render(
-      <Dialog open onClose={() => {}} label="Comparison">
-        <p>Nothing focusable here.</p>
-      </Dialog>,
-    );
+    render(dialogWith({ children: <p>Nothing focusable here.</p> }));
 
     // The close button is rendered by the primitive rather than by the caller,
     // which is what makes "the trap is never empty" a property of the component
@@ -124,18 +124,10 @@ describe('the focus trap', () => {
     document.body.append(trigger);
     trigger.focus();
 
-    const { rerender } = render(
-      <Dialog open onClose={() => {}} label="Comparison">
-        <Body />
-      </Dialog>,
-    );
+    const { rerender } = openDialog();
     expect(document.activeElement).not.toBe(trigger);
 
-    rerender(
-      <Dialog open={false} onClose={() => {}} label="Comparison">
-        <Body />
-      </Dialog>,
-    );
+    rerender(dialogWith({ open: false }));
 
     expect(document.activeElement).toBe(trigger);
     trigger.remove();
@@ -163,17 +155,9 @@ describe('dismissal', () => {
 
   it('stops listening for Escape once closed', () => {
     const onClose = vi.fn();
-    const { rerender } = render(
-      <Dialog open onClose={onClose} label="Comparison">
-        <Body />
-      </Dialog>,
-    );
+    const { rerender } = openDialog({ onClose });
 
-    rerender(
-      <Dialog open={false} onClose={onClose} label="Comparison">
-        <Body />
-      </Dialog>,
-    );
+    rerender(dialogWith({ open: false, onClose }));
     fireEvent.keyDown(document, { key: 'Escape' });
 
     expect(onClose).not.toHaveBeenCalled();
@@ -299,17 +283,9 @@ describe('body scroll', () => {
 
   it('gives the page back whatever overflow it had before', () => {
     document.body.style.overflow = 'clip';
-    const { rerender } = render(
-      <Dialog open onClose={() => {}} label="Comparison">
-        <Body />
-      </Dialog>,
-    );
+    const { rerender } = openDialog();
 
-    rerender(
-      <Dialog open={false} onClose={() => {}} label="Comparison">
-        <Body />
-      </Dialog>,
-    );
+    rerender(dialogWith({ open: false }));
 
     expect(document.body.style.overflow).toBe('clip');
   });
