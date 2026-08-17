@@ -2,7 +2,7 @@ import { cleanup, render, screen, within } from '@testing-library/react';
 import axe from 'axe-core';
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { Table, type TableColumn, type TableRow } from './Table';
+import { Table, type TableColumn, type TableProps, type TableRow } from './Table';
 
 // `globals` is off in vitest.config.ts, so Testing Library registers no automatic
 // cleanup — without this every render stacks in the same document and the queries
@@ -15,17 +15,14 @@ const columns: TableColumn[] = [
   { header: 'Stories', numeric: true },
 ];
 
+// The value the truncating column ellipsizes, named so the fixture and the
+// assertions that look it up by accessible name cannot drift apart.
+const LONG_STORY_ID = 'organisms-table--numeric-and-truncating';
+
 const rows: TableRow[] = [
   {
     key: 'set-1',
-    cells: [
-      {
-        content: 'organisms-table--numeric-and-truncating',
-        title: 'organisms-table--numeric-and-truncating',
-      },
-      'main',
-      106,
-    ],
+    cells: [{ content: LONG_STORY_ID, title: LONG_STORY_ID }, 'main', 106],
   },
   {
     key: 'set-2',
@@ -37,7 +34,7 @@ const rows: TableRow[] = [
   },
 ];
 
-const renderTable = (props: Partial<Parameters<typeof Table>[0]> = {}) =>
+const renderTable = (props: Partial<TableProps> = {}) =>
   render(<Table label="Snapshot sets" columns={columns} rows={rows} {...props} />);
 
 describe('Table', () => {
@@ -103,7 +100,7 @@ describe('Table', () => {
         cell.getAttribute('role'),
       );
 
-      expect(attributes).toEqual(Array(6).fill('cell'));
+      expect(attributes).toEqual(Array(rows.length * columns.length).fill('cell'));
     });
 
     it('leaves no element inside the table without one', () => {
@@ -148,13 +145,6 @@ describe('Table', () => {
       ).toEqual([columns.length, columns.length]);
     });
 
-    it('renders header cells as columnheader and body cells as cell', () => {
-      renderTable();
-
-      expect(screen.getAllByRole('columnheader')).toHaveLength(columns.length);
-      expect(screen.getAllByRole('cell')).toHaveLength(rows.length * columns.length);
-    });
-
     it('renders a row with no cells at all', () => {
       renderTable({ rows: [{ key: 'empty', cells: [] }] });
 
@@ -173,14 +163,12 @@ describe('Table', () => {
     it('gives a numeric column’s cells the tabular-nums class', () => {
       renderTable();
 
-      const numeric = screen
-        .getAllByRole('cell')
-        .filter((cell) => cell.textContent === '106' || cell.textContent === '12');
+      const numeric = ['106', '12'].map((name) => screen.getByRole('cell', { name }));
 
-      expect(numeric).toHaveLength(2);
-      for (const cell of numeric) {
-        expect(cell.classList.contains('ds-table__cell--numeric')).toBe(true);
-      }
+      expect(numeric.map((cell) => cell.className)).toEqual([
+        'ds-table__cell ds-table__cell--numeric',
+        'ds-table__cell ds-table__cell--numeric',
+      ]);
     });
 
     it('gives the numeric column’s header the same class, so the two align', () => {
@@ -202,9 +190,7 @@ describe('Table', () => {
     it('gives a truncating column’s cells the truncate class', () => {
       renderTable();
 
-      const truncating = screen.getByRole('cell', {
-        name: 'organisms-table--numeric-and-truncating',
-      });
+      const truncating = screen.getByRole('cell', { name: LONG_STORY_ID });
 
       expect(truncating.classList.contains('ds-table__cell--truncate')).toBe(true);
     });
@@ -212,13 +198,9 @@ describe('Table', () => {
     it('puts the object form’s full value on the cell’s title attribute', () => {
       renderTable();
 
-      const truncating = screen.getByRole('cell', {
-        name: 'organisms-table--numeric-and-truncating',
-      });
+      const truncating = screen.getByRole('cell', { name: LONG_STORY_ID });
 
-      expect(truncating.getAttribute('title')).toBe(
-        'organisms-table--numeric-and-truncating',
-      );
+      expect(truncating.getAttribute('title')).toBe(LONG_STORY_ID);
     });
 
     it('renders no title attribute for the bare form', () => {

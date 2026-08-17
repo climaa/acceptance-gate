@@ -54,9 +54,8 @@ const isTitled = (cell: TableCell): cell is TitledCell =>
   'title' in cell &&
   'content' in cell;
 
-/** `ds-table__cell` plus whatever the column asks for. Header and body cells take
- *  the same modifiers: a right-aligned number under a left-aligned heading reads
- *  as two columns rather than one. */
+/** `ds-table__cell` plus whatever the column asks for. A header cell takes the same
+ *  modifiers as the body cells under it, so the column reads as one. */
 const cellClass = (column: TableColumn | undefined) =>
   [
     'ds-table__cell',
