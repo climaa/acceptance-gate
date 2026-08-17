@@ -106,4 +106,17 @@ describe('the site footer', () => {
       text: 'Storybook',
     });
   });
+
+  // The console is the third published surface, and it sits beside Storybook
+  // rather than anywhere else in the footer: static evidence, then the tool
+  // that produced it. The order is asserted, not just the membership.
+  it('links out to the visual-diff console, beside Storybook', () => {
+    const links = linksIn(shell());
+
+    const storybook = links.findIndex((link) => link.text === 'Storybook');
+    expect(links[storybook + 1]).toEqual({
+      href: 'https://acceptance-gate-visual-diff-ui.vercel.app',
+      text: 'Visual diff',
+    });
+  });
 });
