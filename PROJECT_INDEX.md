@@ -22,6 +22,8 @@ apps/
                        RSS, sitemap, OG images; Cache Components + Partial Prefetching on
   storybook/           Storybook 10 + nextjs-vite — 18 stories, 13 docs pages
   e2e/                 playwright-bdd acceptance suite — 9 Gherkin scenarios
+  visual-diff-ui/      Next.js 16 console over the differ — scaffold, zod-validated read
+                       path, committed sample fixtures; the screens land by issue
 packages/
   ui/                  design system: tokens.css + 19 components in 4 tiers
   visual-diff/         the self-built visual-regression CLI + 106 committed baselines
@@ -38,6 +40,7 @@ scripts/               complexity-gate.mjs (the health gate) · apply-ruleset.mj
 - Pipeline: `pnpm sandcastle` → `.sandcastle/main.mts` (dispatch: open issues by repo owner)
 - Blog: `pnpm dev` → `apps/blog` on :3000
 - Storybook: `pnpm --filter @gate/storybook dev` on :6006
+- Visual-diff console: `pnpm --filter @gate/visual-diff-ui dev` on :3300 (`VISUAL_DIFF_DATA_DIR` to read real runs; unset = committed sample data)
 - Acceptance suite: `pnpm turbo run e2e` (builds the blog first, then runs the scenarios)
 - Visual diff: `pnpm visual-diff` / `pnpm visual-diff:accept`
 - CI: `.github/workflows/pr.yml` → `gate` aggregator (only required check)
@@ -76,7 +79,7 @@ scripts/               complexity-gate.mjs (the health gate) · apply-ruleset.mj
 ## 🧪 Tests
 
 - Orchestrator hermetic suite: 39 files / 654 tests (prompt contracts, merge flow, override grammar, worktree safety, provenance guard)
-- Workspace suites, all in the `test` gate job: `packages/ui` 22 files / 308 tests (70% coverage floor), `apps/blog` 12 / 286, `packages/visual-diff` 10 / 291, `apps/storybook` 4 / 99
+- Workspace suites, all in the `test` gate job: `packages/ui` 22 files / 308 tests (70% coverage floor), `apps/blog` 12 / 286, `packages/visual-diff` 10 / 291, `apps/storybook` 4 / 99, `apps/visual-diff-ui` 5 / 76
 - `apps/e2e`: 9 Gherkin scenarios across smoke, blog and axe a11y — in `gate.needs`, blocking
 - `packages/visual-diff`: 106 committed baselines; the capture/compare job runs on every PR but is deliberately never in `gate.needs` (see `packages/visual-diff/README.md#ci-status`)
 

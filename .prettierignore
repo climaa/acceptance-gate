@@ -35,3 +35,4 @@ packages/ui/src/fonts/
 # config rewrites — and the next build rewrites straight back. Formatting it makes
 # every build dirty the tree, so it is excluded instead.
 apps/blog/next-env.d.ts
+apps/visual-diff-ui/next-env.d.ts
