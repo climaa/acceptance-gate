@@ -18,7 +18,7 @@ import {
   startJob,
   within,
 } from '../lib/jobs';
-import { updateTagCalls } from './stubs/next-cache';
+import { revalidateTagCalls } from './stubs/next-cache';
 
 /**
  * The job system: one job at a time (D1), a log whose last line is the exit
@@ -92,7 +92,7 @@ async function waitForIdle(dir: string): Promise<void> {
 }
 
 afterEach(() => {
-  updateTagCalls.length = 0;
+  revalidateTagCalls.length = 0;
   delete process.env.VISUAL_DIFF_DATA_DIR;
   delete process.env.VISUAL_DIFF_FAKE_HOST_FINGERPRINT;
 });
@@ -242,7 +242,7 @@ describe('startJob', () => {
 
     await outcome.started.done;
 
-    expect(updateTagCalls).toEqual(['vd:sets', 'vd:reports', 'vd:report:a__b']);
+    expect(revalidateTagCalls).toEqual(['vd:sets', 'vd:reports', 'vd:report:a__b']);
   });
 });
 

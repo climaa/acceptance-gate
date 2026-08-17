@@ -4,9 +4,11 @@ import type { ReportListEntry } from '@/lib/data';
 import type { HistoryRecord } from '@/lib/jobs';
 import type { CaptureSet } from '@/lib/summary';
 import { ComparePickers } from './ComparePickers';
+import { CurrentJob, CurrentJobProvider } from './CurrentJob';
 import { HistoryTable } from './HistoryTable';
 import { ReportsTable } from './ReportsTable';
 import { RetentionControl } from './RetentionControl';
+import { RunPanel } from './RunPanel';
 import { SetsTable } from './SetsTable';
 
 /**
@@ -18,8 +20,8 @@ import { SetsTable } from './SetsTable';
  * filesystem, and the panels can be rendered from literal rows.
  *
  * Two columns on the desktop board (sets and reports left, jobs and history
- * right) and one below 768 px. The run panel and the current-job region are a
- * later issue's; the right column holds history alone until they land.
+ * right) and one below 768 px. The right column is the write half: start a job,
+ * watch it, and the history of everything that has run.
  */
 
 export interface DashboardTemplateProps {
@@ -28,13 +30,18 @@ export interface DashboardTemplateProps {
   sizes: Readonly<Record<string, number>>;
   reports: readonly ReportListEntry[];
   history: readonly HistoryRecord[];
+  /** Resolved server-side (lib/data.ts). The run panel disables every start
+   *  control under it: an instance with no data directory is serving this
+   *  repo's committed fixtures, and every mutation is refused there. */
+  isSample: boolean;
 }
 
 interface PanelProps {
   id: string;
   title: string;
-  /** Drawn beside the title, as the board does: how many rows are below. */
-  count: number;
+  /** Drawn beside the title, as the board does: how many rows are below. Absent
+   *  on a panel that holds a control rather than a list. */
+  count?: number;
   children: ReactNode;
 }
 
@@ -51,7 +58,7 @@ function Panel({ id, title, count, children }: PanelProps) {
     <section aria-labelledby={id} className="vd-panel">
       <Stack gap={4}>
         <h2 className="vd-panel__title" id={id}>
-          {title} <span className="vd-count">({count})</span>
+          {title} {count !== undefined && <span className="vd-count">({count})</span>}
         </h2>
         {children}
       </Stack>
@@ -85,6 +92,7 @@ export function DashboardTemplate({
   sizes,
   reports,
   history,
+  isSample,
 }: DashboardTemplateProps) {
   return (
     <div className="vd-console">
@@ -96,7 +104,7 @@ export function DashboardTemplate({
             <>
               <SetsTable sets={sets} sizes={sizes} />
               <ComparePickers labels={sets.map((set) => set.label)} />
-              <RetentionControl />
+              <RetentionControl labels={sets.map((set) => set.label)} />
             </>
           )}
         </Panel>
@@ -110,15 +118,29 @@ export function DashboardTemplate({
         </Panel>
       </Stack>
 
-      <Stack gap={6} className="vd-console__column">
-        <Panel id="vd-history" title="history" count={history.length}>
-          {history.length === 0 ? (
-            <EmptyState message="Nothing has run yet — this instance keeps a row per job." />
-          ) : (
-            <HistoryTable runs={history} />
-          )}
-        </Panel>
-      </Stack>
+      {/* One poller for the column: the run panel and the current-job region ask
+          the same endpoint the same question, and two of them would be two
+          consoles disagreeing about whether anything is running. */}
+      <CurrentJobProvider>
+        <Stack gap={6} className="vd-console__column">
+          <Panel id="vd-run" title="start a job">
+            <RunPanel isSample={isSample} reports={reports} />
+          </Panel>
+
+          {/* Not wrapped in `Panel`: this region owns a live region and an
+              accessible name the acceptance scenarios pin, so it brings its own
+              section — see CurrentJob.tsx. */}
+          <CurrentJob />
+
+          <Panel id="vd-history" title="history" count={history.length}>
+            {history.length === 0 ? (
+              <EmptyState message="Nothing has run yet — this instance keeps a row per job." />
+            ) : (
+              <HistoryTable runs={history} />
+            )}
+          </Panel>
+        </Stack>
+      </CurrentJobProvider>
     </div>
   );
 }

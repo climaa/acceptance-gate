@@ -1,6 +1,7 @@
-import { Badge, Button } from '@gate/ui';
+import { Badge } from '@gate/ui';
 import { formatBytes } from '@/lib/outcome';
 import type { CaptureSet } from '@/lib/summary';
+import { DeleteSetButton } from './ConfirmDialogs';
 import { type TableColumn, type TableRow, Table } from './Table';
 
 /**
@@ -62,12 +63,10 @@ function setRow(set: CaptureSet, bytes: number | undefined): TableRow {
       set.capturedAt,
       set.stories,
       bytes === undefined ? UNKNOWN : formatBytes(bytes),
-      // Named `delete` and nothing more: the confirm dialog and the endpoint
-      // arrive with the run-panel issue, and a button that says what it will
-      // delete belongs on that dialog, not here.
-      <Button variant="danger" size="sm" key="delete">
-        delete
-      </Button>,
+      // Named `delete` and nothing more. What it will delete is named by the
+      // dialog it opens — D2: nothing here is deleted implicitly, and the row is
+      // not where a set's whole identity is repeated.
+      <DeleteSetButton label={set.label} key="delete" />,
     ],
   };
 }

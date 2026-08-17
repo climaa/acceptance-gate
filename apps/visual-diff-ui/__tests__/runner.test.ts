@@ -5,7 +5,7 @@ import * as path from 'node:path';
 import { HOST } from '@gate/visual-diff/policy';
 // Imported explicitly rather than relying on `globals: true` — tsconfig's
 // `**/*.ts` include means tsc typechecks this file.
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { SummarySchema } from '../lib/summary';
 import { compareSets, promoteBaselines, runJob } from '../lib/runner';
 
@@ -336,6 +336,81 @@ describe('runJob', () => {
     );
 
     expect(outcome.exitCode).toBe(0);
+  });
+});
+
+/**
+ * The one mode that reaches for a browser, so the one that is mocked: a real
+ * `check` needs a repo-shaped tree under the data directory and the pinned
+ * container. What is asserted here is the invocation this app composes — the
+ * options it passes are the whole of its side of that contract.
+ */
+describe('runCheck', () => {
+  /** `check`, replaced for the length of one case. Modules are reset around it so
+   *  every other suite in this file keeps the real one. */
+  async function withMockedCheck(
+    run: (
+      runCheck: typeof import('../lib/runner').runCheck,
+      check: ReturnType<typeof vi.fn>,
+    ) => Promise<void>,
+  ) {
+    const check = vi.fn(() => Promise.resolve({ exitCode: 0, message: 'nothing moved' }));
+    vi.resetModules();
+    vi.doMock('@gate/visual-diff/commands', () => ({ check }));
+
+    try {
+      const { runCheck } = await import('../lib/runner');
+      await run(runCheck, check);
+    } finally {
+      vi.doUnmock('@gate/visual-diff/commands');
+      vi.resetModules();
+    }
+  }
+
+  it('runs the differ against the data directory, and nothing outside it', async () => {
+    const dir = makeDataDir();
+
+    await withMockedCheck(async (runCheck, check) => {
+      await runCheck(dir, { mode: 'capture', label: 'main-2026-08-17' }, silent);
+
+      expect(check).toHaveBeenCalledWith(undefined, { rootDir: dir });
+    });
+  });
+
+  // `--filter` is the CLI's own flag and the run panel spells it verbatim; a
+  // field the console shows and the runner drops would be a lie about what it
+  // just ran.
+  it('passes the story filter the console was given', async () => {
+    const dir = makeDataDir();
+
+    await withMockedCheck(async (runCheck, check) => {
+      await runCheck(
+        dir,
+        { mode: 'run', label: 'main-2026-08-17', filter: 'atoms-button' },
+        silent,
+      );
+
+      expect(check).toHaveBeenCalledWith(undefined, {
+        rootDir: dir,
+        filter: 'atoms-button',
+      });
+    });
+  });
+
+  // An empty box is not a filter: `check` reads any filter as "only stories
+  // matching this", and the empty string would match nothing at all.
+  it('passes no filter when none was typed', async () => {
+    const dir = makeDataDir();
+
+    await withMockedCheck(async (runCheck, check) => {
+      await runCheck(
+        dir,
+        { mode: 'capture', label: 'main-2026-08-17', filter: '' },
+        silent,
+      );
+
+      expect(check).toHaveBeenCalledWith(undefined, { rootDir: dir });
+    });
   });
 });
 

@@ -1,4 +1,4 @@
-import { SETS_TAG, resolveDataDir } from '@/lib/data';
+import { PURGE, SETS_TAG, resolveDataDir } from '@/lib/data';
 import { SetLabelSchema, holderOf, listSets, removeSet } from '@/lib/jobs';
 import {
   SAMPLE_DATA,
@@ -8,7 +8,7 @@ import {
   jsonBody,
   refuseWhileRunning,
 } from '@/lib/refusals';
-import { updateTag } from 'next/cache';
+import { revalidateTag } from 'next/cache';
 import { z } from 'zod';
 
 /** How many of the latest sets survive. A whole number, and zero is legal —
@@ -58,7 +58,7 @@ export async function POST(request: Request): Promise<Response> {
 
   // Only the set list moved. A report is a record of a decision and outlives the
   // sets it compared, so `vd:reports` is deliberately left alone.
-  updateTag(SETS_TAG);
+  revalidateTag(SETS_TAG, PURGE);
 
   return Response.json({ kept, removed, refused });
 }

@@ -266,6 +266,201 @@ main {
   font-variant-numeric: tabular-nums;
 }
 
+/* ---- The run panel ------------------------------------------------------ */
+
+/* The four modes. One tab stop for the group (the component moves the roving
+   tabindex), so the row is a strip rather than four separate controls. */
+.vd-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  border-block-end: 1px solid var(--color-border);
+}
+
+.vd-tab {
+  appearance: none;
+  border: 0;
+  background: none;
+  padding: var(--space-2) var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  border-block-end: 2px solid transparent;
+  margin-block-end: -1px;
+  touch-action: manipulation;
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.vd-tab:hover {
+  color: var(--color-text);
+}
+
+.vd-tab--selected {
+  color: var(--color-text);
+  font-weight: var(--weight-bold);
+  border-block-end-color: var(--color-accent);
+}
+
+.vd-field__label {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+  color: var(--color-text-muted);
+}
+
+/* Native controls take the UA's palette unless told otherwise — the same reason
+   the pickers above state both. */
+.vd-field__input,
+.vd-field__select {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  min-height: 2.25rem;
+  width: 100%;
+  touch-action: manipulation;
+}
+
+.vd-field__input::placeholder {
+  color: var(--color-text-muted);
+}
+
+/* D1: while the lock is held there is no button, only the way to what holds it. */
+.vd-run__running {
+  color: var(--color-accent);
+  font-size: var(--text-sm);
+}
+
+/* An explanation, never a refusal — those are alerts. */
+.vd-note {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.vd-alert {
+  background: var(--color-danger-surface);
+  color: var(--color-danger-fg);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  font-size: var(--text-sm);
+}
+
+.vd-alert__line {
+  margin: 0;
+}
+
+.vd-alert__list {
+  margin: 0;
+  padding-inline-start: var(--space-5);
+}
+
+/* ---- The current job and its log ---------------------------------------- */
+
+.vd-job {
+  font-size: var(--text-sm);
+}
+
+.vd-job__label {
+  font-family: var(--font-mono);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+/* Elapsed time and exit codes: figures a reviewer reads while they change. */
+.vd-job__figure {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-muted);
+}
+
+.vd-outcome--accent {
+  color: var(--color-accent);
+}
+
+/* The tail follows its newest line, so it needs a height to scroll inside. */
+.vd-log {
+  margin: 0;
+  max-block-size: 14rem;
+  overflow: auto;
+  background: var(--color-code-bg);
+  color: var(--color-code-fg);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  line-height: var(--leading-normal);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* ---- The accept gate ---------------------------------------------------- */
+
+/* What the baselines require, above what this runner is. Two rows on a phone,
+   label and value paired on a wider column. */
+.vd-fingerprints {
+  margin: 0;
+  display: grid;
+  gap: var(--space-1);
+  font-size: var(--text-sm);
+}
+
+.vd-fingerprints dt {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.vd-fingerprints dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.vd-accept__copied {
+  font-size: var(--text-xs);
+  color: var(--color-success-fg);
+}
+
+.vd-accept__pending,
+.vd-accept__empty {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+/* ---- The confirmations -------------------------------------------------- */
+
+.vd-confirm__question {
+  margin: 0;
+  font-size: var(--text-base);
+}
+
+.vd-confirm__detail {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.vd-confirm__list-title {
+  margin: 0 0 var(--space-1);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+  color: var(--color-text-muted);
+}
+
+.vd-confirm__labels {
+  margin: 0;
+  padding-inline-start: var(--space-5);
+  font-size: var(--text-sm);
+}
+
 /* ---- From 768 px: two columns, and the tables become tables -------------- */
 
 @media (min-width: 768px) {
@@ -336,5 +531,26 @@ main {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  /* A field is a labelled row once there is width for one; stacked below, where
+     an input beside its label would leave neither enough room. */
+  .vd-field {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  .vd-field__label {
+    flex: none;
+    width: 6rem;
+  }
+
+  /* The fingerprint pairs read as a table at this width: the two values line up
+     under one another, which is the comparison the gate is making. */
+  .vd-fingerprints {
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: var(--space-3);
+    align-items: baseline;
   }
 }

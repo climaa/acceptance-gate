@@ -1,9 +1,9 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { EXIT } from '@gate/visual-diff/policy';
-import { updateTag } from 'next/cache';
+import { revalidateTag } from 'next/cache';
 import { z } from 'zod';
-import { REPORTS_TAG, SETS_TAG, reportTag } from './data';
+import { PURGE, REPORTS_TAG, SETS_TAG, reportTag } from './data';
 import { type CaptureSet, SetsFileSchema } from './summary';
 
 /**
@@ -48,6 +48,11 @@ const REPORT_ID = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
 export const SetLabelSchema = z.string().regex(SET_LABEL, 'not a snapshot-set label');
 const ReportIdSchema = z.string().regex(REPORT_ID, 'not a report id');
 
+/** The CLI's `--filter`: a substring matched against story ids and titles, so
+ *  anything is a legal value and only its absence is a shape. Optional, because
+ *  a run without one is the whole corpus — which is what the gate runs. */
+const FilterSchema = z.string().optional();
+
 /**
  * What `POST /api/jobs` accepts, per mode. A discriminated union rather than one
  * object with optional fields: a `compare` with no candidate and an `accept`
@@ -60,8 +65,8 @@ export const JobRequestSchema = z.discriminatedUnion('mode', [
     candidate: SetLabelSchema,
   }),
   z.object({ mode: z.literal('accept'), reportId: ReportIdSchema }),
-  z.object({ mode: z.literal('capture'), label: SetLabelSchema }),
-  z.object({ mode: z.literal('run'), label: SetLabelSchema }),
+  z.object({ mode: z.literal('capture'), label: SetLabelSchema, filter: FilterSchema }),
+  z.object({ mode: z.literal('run'), label: SetLabelSchema, filter: FilterSchema }),
 ]);
 
 export type JobRequest = z.infer<typeof JobRequestSchema>;
@@ -436,9 +441,9 @@ const messageOf = (cause: unknown) =>
  */
 function refreshConsole(reportId: string | null): void {
   try {
-    updateTag(SETS_TAG);
-    updateTag(REPORTS_TAG);
-    if (reportId) updateTag(reportTag(reportId));
+    revalidateTag(SETS_TAG, PURGE);
+    revalidateTag(REPORTS_TAG, PURGE);
+    if (reportId) revalidateTag(reportTag(reportId), PURGE);
   } catch {
     // Nothing to say here that the log has not already said.
   }

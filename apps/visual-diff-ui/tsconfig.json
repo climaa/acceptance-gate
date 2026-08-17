@@ -2,22 +2,16 @@
   "extends": "@gate/tsconfig/nextjs.json",
   "compilerOptions": {
     "baseUrl": ".",
+    "allowJs": false,
     "paths": {
-      "@/*": ["./*"],
-      // The four `@gate/visual-diff` modules the runner composes are read from
-      // local declarations, never from the package's own `// @ts-check`ed
-      // sources: those are clean under the flags they were written with and not
-      // under this app's, and this issue may not edit that workspace. Runtime
-      // resolution is untouched — it still goes through the package's `exports`
-      // map. `@gate/visual-diff/policy` is deliberately absent: it typechecks
-      // clean here, so its real types are the ones this app reads.
-      // See types/visual-diff/compare.d.ts.
-      "@gate/visual-diff/artifacts": ["./types/visual-diff/artifacts.d.ts"],
-      "@gate/visual-diff/capture": ["./types/visual-diff/capture.d.ts"],
-      "@gate/visual-diff/commands": ["./types/visual-diff/commands.d.ts"],
-      "@gate/visual-diff/compare": ["./types/visual-diff/compare.d.ts"]
+      "@/*": ["./*"]
     }
   },
+  // `types/visual-diff/*.d.ts` declares four of the differ's modules for this
+  // app — see types/visual-diff/compare.d.ts for why, and for why they are
+  // ambient `declare module` blocks rather than `paths` entries pointing at
+  // them: Turbopack reads `paths` as runtime resolution, and a bundle built from
+  // a declaration file exports nothing at all.
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
   "exclude": ["node_modules"]
 }

@@ -365,14 +365,26 @@ export async function promoteBaselines(
  */
 export async function runCheck(
   dataDir: string,
-  label: string,
+  request: Extract<JobRequest, { mode: 'capture' | 'run' }>,
   log: (message: string) => void,
 ): Promise<JobOutcome> {
   const rootDir = within(dataDir);
+  const { label, filter } = request;
   log(`running check against ${label} under the data directory`);
 
-  const { check } = await import('@gate/visual-diff/commands');
-  const result = await check(undefined, { rootDir });
+  // Resolved by Node at the moment it is needed, never bundled: `commands.mjs`
+  // derives its repo root from `new URL('../../..', import.meta.url)`, which a
+  // bundler reads as an asset import of a directory and refuses to build, and it
+  // reaches through `capture.mjs` for `playwright` — a dependency of that
+  // package, not of this app. Both are only ever true of a console running on a
+  // real checkout, which is the only place this mode can work at all.
+  const { check } = await import(
+    /* turbopackIgnore: true */ '@gate/visual-diff/commands'
+  );
+  // Spread rather than passed as `filter: undefined`: `check` reads any filter
+  // as "only stories matching this", and an empty box from the console must not
+  // arrive as a filter that matches nothing.
+  const result = await check(undefined, { rootDir, ...(filter ? { filter } : {}) });
   log(result.message);
 
   return { exitCode: result.exitCode, reportId: null };
@@ -391,5 +403,5 @@ export async function runJob(
     return promoteBaselines(dataDir, request.reportId, log, env);
   }
 
-  return runCheck(dataDir, request.label, log);
+  return runCheck(dataDir, request, log);
 }

@@ -81,7 +81,13 @@ interface ConsoleContents {
   history?: HistoryRecord[];
 }
 
-/** The console with everything populated, unless a case says otherwise. */
+/** The console with everything populated, unless a case says otherwise.
+ *
+ *  Never in sample mode: this suite is about the read surface, and the write
+ *  half's own suites (run-panel, current-job, confirm-dialogs) own what the
+ *  controls do. The two client islands in the right column poll on mount and
+ *  jsdom answers neither — both treat an unreachable API as "nothing running",
+ *  which is what keeps this suite about the tables. */
 function consoleWith({
   sets = [CLEAN, DIRTY],
   sizes = { [CLEAN.label]: 95_500_000, [DIRTY.label]: 1000 },
@@ -89,7 +95,13 @@ function consoleWith({
   history = [RUN, INTERRUPTED],
 }: ConsoleContents = {}) {
   return (
-    <DashboardTemplate sets={sets} sizes={sizes} reports={reports} history={history} />
+    <DashboardTemplate
+      sets={sets}
+      sizes={sizes}
+      reports={reports}
+      history={history}
+      isSample={false}
+    />
   );
 }
 
@@ -234,7 +246,8 @@ describe('the compare pickers', () => {
   });
 
   // Nothing pre-fills the run panel but the URL: no store, no context. The panel
-  // (a later issue) reads these three params back with `useSearchParams()`.
+  // reads these three params back with `useSearchParams()` — see
+  // __tests__/run-panel.test.tsx, which drives the other half of this seam.
   it('writes the chosen pair into the URL as a compare request', () => {
     render(consoleWith());
 
