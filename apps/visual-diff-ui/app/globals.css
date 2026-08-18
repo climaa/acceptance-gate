@@ -56,11 +56,6 @@ main {
   color: var(--color-text-muted);
 }
 
-.vd-scaffold {
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
-}
-
 /* Counts, pixel numbers and ids: figures that line up column-wise, and a key
    that has to be readable character by character when a variant is looked up. */
 .vd-count,
@@ -470,6 +465,555 @@ main {
   font-size: var(--text-sm);
 }
 
+/* ---- The report: header, review bar, sections, cards --------------------- */
+
+/* The report's own landmark. The app shell already renders a `banner` at body
+   scope, so this one is labelled — `banner "report"` — and a reader hears which
+   is which. */
+.vd-report__header {
+  border-block-end: 1px solid var(--color-border);
+  padding-block-end: var(--space-4);
+}
+
+.vd-report__back {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  text-decoration: none;
+}
+
+.vd-report__back:hover {
+  color: var(--color-text);
+}
+
+.vd-report-id {
+  margin: 0;
+  font-size: var(--text-base);
+  font-weight: var(--weight-bold);
+  overflow-wrap: anywhere;
+}
+
+.vd-report__run-info {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.vd-report__run-info summary {
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+/* One row per side, label above value below 768 px and paired across from it
+   above — the same shape the fingerprint pairs take, for the same reason. */
+.vd-report__sets {
+  margin: 0;
+  display: grid;
+  gap: var(--space-1);
+  font-size: var(--text-sm);
+}
+
+.vd-report__side {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+  color: var(--color-text-muted);
+}
+
+.vd-report__identity {
+  margin: 0;
+  min-width: 0;
+}
+
+/* A label and a branch name both truncate, and both carry the whole value on
+   `title` — the pattern the console's tables already use. */
+.vd-report__label {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: bottom;
+}
+
+.vd-report__meta {
+  color: var(--color-text-muted);
+}
+
+/* ---- The review bar ----------------------------------------------------- */
+
+.vd-review {
+  padding-block: var(--space-3);
+  border-block: 1px solid var(--color-border);
+}
+
+.vd-review__search {
+  min-width: 12rem;
+}
+
+.vd-review__hide,
+.vd-tri {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.vd-tri__label {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+/* Decorative and aria-hidden: the number beside it is what is announced, and a
+   bar that was also read out would say the same thing twice. */
+.vd-review__bar {
+  display: block;
+  inline-size: 6rem;
+  block-size: var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--color-bg-muted);
+  overflow: hidden;
+}
+
+.vd-review__bar-fill {
+  display: block;
+  block-size: 100%;
+  background: var(--color-accent);
+  transition: inline-size var(--duration-base) var(--ease-out);
+}
+
+.vd-review__percent {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+/* ---- The corpus warnings ------------------------------------------------ */
+
+/* Evidence, not a toast: the warning surface, and nothing that dismisses it. */
+.vd-warnings {
+  background: var(--color-warning-surface);
+  color: var(--color-warning-fg);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  font-size: var(--text-sm);
+}
+
+.vd-warnings__list {
+  margin: 0;
+  padding-inline-start: var(--space-5);
+}
+
+/* ---- The sections ------------------------------------------------------- */
+
+.vd-section {
+  min-width: 0;
+}
+
+.vd-section__head {
+  border-block-end: 1px solid var(--color-border);
+  padding-block-end: var(--space-2);
+}
+
+.vd-section__title {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-normal);
+  color: var(--color-text-muted);
+}
+
+.vd-section__collapse {
+  appearance: none;
+  border: 0;
+  background: none;
+  margin-inline-start: auto;
+  padding: var(--space-1) var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.vd-section__collapse:hover {
+  color: var(--color-text);
+}
+
+.vd-section__note {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-warning-fg);
+}
+
+/* ---- The story card ----------------------------------------------------- */
+
+.vd-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+/* The walk unit says where it is. `j`/`k` move focus here, so the ring is the
+   whole feedback a keyboard reviewer gets. */
+.vd-card:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+.vd-card__title {
+  margin: 0;
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  min-width: 0;
+}
+
+.vd-card__worst {
+  font-size: var(--text-sm);
+}
+
+.vd-card__slug {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.vd-card__verdict {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-danger-fg);
+}
+
+/* ---- The variant row ---------------------------------------------------- */
+
+.vd-variant {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-inline-start: var(--space-3);
+  border-inline-start: 2px solid var(--color-border);
+  min-width: 0;
+}
+
+.vd-variant__mode,
+.vd-variant__metric,
+.vd-variant__link {
+  font-size: var(--text-sm);
+}
+
+.vd-variant__metric {
+  color: var(--color-text-muted);
+}
+
+.vd-variant__error {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-danger-fg);
+  overflow-wrap: anywhere;
+}
+
+/* ---- The violation list ------------------------------------------------- */
+
+/* Where a pixel report puts the diff image. Danger foreground on the danger
+   surface, because the pixels can be identical and the failure is still total. */
+.vd-violations {
+  margin: 0;
+  padding: var(--space-3) var(--space-3) var(--space-3) var(--space-6);
+  background: var(--color-danger-surface);
+  color: var(--color-danger-fg);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+}
+
+.vd-violations__item + .vd-violations__item {
+  margin-block-start: var(--space-2);
+}
+
+.vd-violations__nodes {
+  font-size: var(--text-xs);
+}
+
+.vd-violations__docs {
+  color: inherit;
+}
+
+/* ---- The three-up viewer ------------------------------------------------ */
+
+/* A grid inside a flex column: without this a wide screenshot sets the
+   viewer's minimum width and pushes the card past the viewport. */
+.vd-three-up {
+  min-width: 0;
+}
+
+/* One column below the breakpoint: three side-by-side crops of a 1248 px
+   screenshot inside a 390 px viewport are three unreadable strips. */
+.vd-three-up__frames {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-2);
+}
+
+.vd-shot {
+  margin: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+/* The caption names the capture set, which is a label a reviewer copies out —
+   so it truncates and carries the whole value on `title`, as every other
+   truncating cell in this app does. */
+.vd-shot__label {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The frame is the control: a reviewer aims at the picture, never at a caption
+   beside it. The cursor says what the click does — the modal is a magnifier. */
+.vd-shot__open {
+  appearance: none;
+  display: block;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: none;
+  cursor: zoom-in;
+  touch-action: manipulation;
+}
+
+.vd-shot__open:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+.vd-shot__absent {
+  font-family: var(--font-mono);
+}
+
+/* ---- The compare tools -------------------------------------------------- */
+
+.vd-tool {
+  appearance: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-subtle);
+  color: var(--color-text);
+  padding: var(--space-1) var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+
+.vd-tool:hover {
+  background: var(--color-bg-muted);
+}
+
+/* ---- The segmented control ---------------------------------------------- */
+
+/* Wraps rather than scrolls: six modes at 390 px are two rows in the thumb's
+   reach, and a row that scrolled sideways would hide the mode nobody scrolled
+   to. */
+.vd-seg {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  padding: var(--space-1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-subtle);
+}
+
+.vd-seg__option {
+  appearance: none;
+  flex: 1 1 auto;
+  /* A thumb target below the breakpoint; the desktop query relaxes it. */
+  min-height: var(--space-10);
+  padding: var(--space-1) var(--space-3);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  cursor: pointer;
+  touch-action: manipulation;
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
+}
+
+.vd-seg__option:hover {
+  color: var(--color-text);
+}
+
+/* Drawn off the attribute rather than a class: the state a reader hears and the
+   state a reviewer sees are then the same value. */
+.vd-seg__option[aria-pressed='true'] {
+  background: var(--color-bg);
+  color: var(--color-text);
+  box-shadow: var(--shadow-sm);
+}
+
+.vd-seg__option:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+/* ---- The comparison modal ----------------------------------------------- */
+
+.vd-compare__head {
+  justify-content: space-between;
+}
+
+/* The thumb bar: the full width of the sheet below the breakpoint, so every
+   mode is a target the thumb reaches without crossing it. */
+.vd-compare__modes {
+  width: 100%;
+}
+
+.vd-compare__title {
+  margin: 0;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vd-compare__metric,
+.vd-compare__sides,
+.vd-compare__hint {
+  margin: 0;
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+/* The stage scrolls and the scroll stops here: a flick that reaches the end of
+   a screenshot must not carry on into the report behind the modal. The
+   checkerboard is what makes a transparent pixel visible as one — a shot on a
+   flat ground would read as opaque wherever the ground shows through. */
+.vd-compare__stage {
+  position: relative;
+  max-height: 60vh;
+  overflow: auto;
+  overscroll-behavior: contain;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background-color: var(--color-bg-subtle);
+  background-image: repeating-conic-gradient(
+    var(--color-bg-muted) 0% 25%,
+    transparent 0% 50%
+  );
+  background-size: var(--space-4) var(--space-4);
+}
+
+.vd-compare__shot {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* 1:1 CSS pixels, and every pixel drawn as itself: a scaled screenshot
+   interpolates exactly the one-pixel differences this whole tool exists to
+   find. The stage scrolls to reach the rest of the shot. */
+.vd-compare__shot--actual {
+  width: auto;
+  max-width: none;
+  image-rendering: pixelated;
+}
+
+.vd-compare__absent {
+  margin: 0;
+  padding: var(--space-6);
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.vd-compare__split {
+  position: relative;
+}
+
+/* The candidate over the baseline, clipped at the divider — the clip is inline,
+   because it is the one value the pointer decides. */
+.vd-compare__over {
+  position: absolute;
+  inset: 0;
+}
+
+.vd-compare__divider {
+  position: absolute;
+  inset-block: 0;
+  width: 2px;
+  background: var(--color-accent);
+  cursor: ew-resize;
+  /* The gesture is the drag itself, so the browser must not read it as a pan. */
+  touch-action: none;
+}
+
+.vd-compare__handle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--space-6);
+  height: var(--space-6);
+  border-radius: var(--radius-full);
+  background: var(--color-accent);
+  box-shadow: var(--shadow-md);
+  transform: translate(-50%, -50%);
+}
+
+/* ---- The scrubber ------------------------------------------------------- */
+
+/* The divider's accessible twin: the same number, reachable from the keyboard
+   and wide enough to drag with a thumb. */
+.vd-scrub {
+  position: relative;
+  height: var(--space-6);
+  border-radius: var(--radius-full);
+  background: var(--color-bg-muted);
+  cursor: ew-resize;
+  touch-action: none;
+}
+
+.vd-scrub:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+.vd-scrub__fill {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  border-radius: inherit;
+  background: var(--color-accent-subtle);
+}
+
+.vd-scrub__knob {
+  position: absolute;
+  top: 50%;
+  width: var(--space-5);
+  height: var(--space-5);
+  border-radius: var(--radius-full);
+  background: var(--color-accent);
+  transform: translate(-50%, -50%);
+}
+
 /* ---- From 768 px: two columns, and the tables become tables -------------- */
 
 @media (min-width: 768px) {
@@ -561,5 +1105,38 @@ main {
     grid-template-columns: auto minmax(0, 1fr);
     column-gap: var(--space-3);
     align-items: baseline;
+  }
+
+  /* The two identity lines read as a table once there is width for one. */
+  .vd-report__sets {
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: var(--space-3);
+    align-items: baseline;
+  }
+
+  .vd-review__search {
+    min-width: 16rem;
+  }
+
+  /* The three shots side by side, which is the comparison the viewer is named
+     after — `minmax(0, 1fr)` so a wide screenshot cannot widen its column past
+     the two beside it. */
+  .vd-three-up__frames {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  /* A mode is a pointer target rather than a thumb target at this width, and a
+     toolbar of thumb-sized buttons would be the tallest thing in the header. */
+  .vd-seg__option {
+    min-height: auto;
+  }
+
+  /* A row of pointer targets in the header, sized by its own contents. */
+  .vd-compare__modes {
+    width: auto;
+  }
+
+  .vd-compare__stage {
+    max-height: 70vh;
   }
 }

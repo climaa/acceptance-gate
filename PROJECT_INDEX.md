@@ -26,8 +26,9 @@ apps/
   visual-diff-ui/      Next.js 16 console over the differ — zod-validated read path,
                        locked job runner + guarded mutations, sample fixtures,
                        the dashboard's sets/reports/history tables, the run
-                       panel with its live log, current job and accept gate;
-                       the report screens land by issue
+                       panel with its live log, current job and accept gate,
+                       the report's tier sections, review loop and a11y
+                       treatment, the three-up viewer and comparison modal
 packages/
   ui/                  design system: tokens.css + 19 components in 4 tiers
   visual-diff/         the self-built visual-regression CLI + 106 committed baselines
@@ -83,7 +84,7 @@ scripts/               complexity-gate.mjs (the health gate) · apply-ruleset.mj
 ## 🧪 Tests
 
 - Orchestrator hermetic suite: 39 files / 654 tests (prompt contracts, merge flow, override grammar, worktree safety, provenance guard)
-- Workspace suites, all in the `test` gate job: `packages/ui` 22 files / 308 tests (70% coverage floor), `apps/blog` 12 / 287, `packages/visual-diff` 10 / 291, `apps/storybook` 4 / 99, `apps/visual-diff-ui` 17 / 295
+- Workspace suites, all in the `test` gate job: `packages/ui` 22 files / 308 tests (70% coverage floor), `apps/blog` 12 / 287, `packages/visual-diff` 10 / 291, `apps/storybook` 4 / 99, `apps/visual-diff-ui` 23 / 387
 - `apps/e2e`: 20 Gherkin scenarios across smoke, blog, axe a11y, the visual-diff console and sample mode — in `gate.needs`, blocking. `@mutating` scenarios run alone in their own project against their own server
 - `packages/visual-diff`: 106 committed baselines; the capture/compare job runs on every PR but is deliberately never in `gate.needs` (see `packages/visual-diff/README.md#ci-status`)
 
