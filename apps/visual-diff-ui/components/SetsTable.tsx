@@ -61,7 +61,14 @@ function setRow(set: CaptureSet, bytes: number | undefined): TableRow {
       },
       { content: set.branch, title: set.branch },
       set.capturedAt,
-      set.stories,
+      // The unit rides with the number, clipped. Below 768 px the row reflows
+      // into a card whose per-cell label is `::before` generated content, which
+      // is not in the accessibility tree — so without this a reader hears the
+      // figure with nothing to say what it counts.
+      <>
+        {set.stories}
+        <span className="ds-visually-hidden">{' stories'}</span>
+      </>,
       bytes === undefined ? UNKNOWN : formatBytes(bytes),
       // Named `delete` and nothing more. What it will delete is named by the
       // dialog it opens — D2: nothing here is deleted implicitly, and the row is

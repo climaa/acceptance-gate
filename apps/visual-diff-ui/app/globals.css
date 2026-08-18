@@ -324,10 +324,19 @@ main {
   color: var(--color-text-muted);
 }
 
-/* D1: while the lock is held there is no button, only the way to what holds it. */
+/* D1's refusal, standing where the start button was while the lock is held.
+   Deliberately NOT the `.vd-alert` danger surface below: a job holding the lock
+   is the console working, not the console failing, and the red box would say
+   otherwise. */
 .vd-run__running {
-  color: var(--color-accent);
+  background: var(--color-accent-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
   font-size: var(--text-sm);
+}
+
+.vd-run__anchor {
+  color: var(--color-accent);
 }
 
 /* An explanation, never a refusal — those are alerts. */
