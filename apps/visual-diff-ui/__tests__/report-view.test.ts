@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 import {
   buildSections,
   filterByBucket,
+  sectionViewportNote,
   showsDevStorybook,
   storybookLink,
   viewportGaps,
@@ -69,14 +70,15 @@ const PROSE = 'atoms-prose--default';
 const POST = 'templates-posttemplate--default';
 
 describe('the viewports a card has no rows for', () => {
-  it('says an atoms card was never shot at mobile', () => {
+  // The tier-scoped half now belongs to the section, so the card says nothing:
+  // "atoms are captured at desktop only" is identically true of every card in
+  // the tier, and twenty cards repeating it is twenty times a reader hears it.
+  it('leaves a never-captured viewport to the section rather than the card', () => {
     const card = cardOf(cell('atoms', PROSE), cell('atoms', PROSE, { theme: 'dark' }));
 
     const gaps = viewportGaps(card);
 
-    expect(gaps).toHaveLength(1);
-    expect(gaps[0]).toContain('no mobile shot');
-    expect(gaps[0]).toContain('atoms are captured at desktop only');
+    expect(gaps).toEqual([]);
   });
 
   it('says a templates card matched, because that tier is shot at mobile', () => {
@@ -217,6 +219,46 @@ describe('the viewports a card has no rows for', () => {
     const gaps = viewportGaps(card);
 
     expect(gaps).toEqual([]);
+  });
+});
+
+describe('the viewport note a tier carries', () => {
+  it('says once that atoms are never shot at mobile', () => {
+    const [section] = buildSections([
+      cell('atoms', PROSE),
+      cell('atoms', PROSE, { theme: 'dark' }),
+    ]);
+
+    const note = sectionViewportNote(section!);
+
+    expect(note).toContain('no mobile shot');
+    expect(note).toContain('atoms are captured at desktop only');
+  });
+
+  it('says nothing for a tier that is shot at every viewport', () => {
+    const [section] = buildSections([
+      cell('templates', POST),
+      cell('templates', POST, { theme: 'dark' }),
+    ]);
+
+    const note = sectionViewportNote(section!);
+
+    // Mobile is missing from this section, but templates *are* shot at mobile —
+    // that is the card's "matched its baseline", not a fact about the tier.
+    expect(note).toBeUndefined();
+  });
+
+  it('says nothing when the tier only holds a story captured beyond it', () => {
+    // `visual-diff:all-viewports` gives one atoms story mobile rows. The tier
+    // note is derived from the cards, so a section with nothing missing is quiet.
+    const [section] = buildSections([
+      cell('atoms', PROSE),
+      cell('atoms', PROSE, { viewport: 'mobile' }),
+    ]);
+
+    const note = sectionViewportNote(section!);
+
+    expect(note).toBeUndefined();
   });
 });
 

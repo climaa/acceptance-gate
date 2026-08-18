@@ -245,18 +245,46 @@ type ViewportName = keyof typeof VIEWPORTS;
 
 const VIEWPORT_NAMES = Object.keys(VIEWPORTS) as readonly ViewportName[];
 
-/** A viewport this tier is never shot at. The absence is a capture-matrix fact,
- *  not a verdict: there is no evidence to look at and there never was. */
-const notCaptured = (viewport: ViewportName, tier: Variant['tier']) =>
-  `no ${viewport} shot — ${tier} are captured at ${TIER_VIEWPORTS[tier].join(' and ')} only`;
-
 /** …and one that is shot, whose every variant matched. Same reasoning as
  *  {@link EMPTY_UNCHANGED}: the count is real, the rows never existed. */
 const allMatched = (viewport: ViewportName) =>
   `no ${viewport} rows — every ${viewport} variant matched its baseline, and unchanged variants are counted, never written`;
 
+/** A viewport this tier is never shot at. A capture-matrix fact, so it is true
+ *  of every card in the tier at once — which is why it is reported by the
+ *  section rather than repeated under each card. */
+const notCaptured = (viewports: readonly ViewportName[], tier: Variant['tier']) =>
+  `no ${viewports.join(' or ')} shot — ${tier} are captured at ${TIER_VIEWPORTS[tier].join(' and ')} only`;
+
+/** The viewports with no row under this card, split by why they have none. */
+function absentViewports(card: ReportCard): {
+  uncaptured: readonly ViewportName[];
+  matched: readonly ViewportName[];
+} {
+  // An a11y card renders the violation list instead of a viewer, so no frame is
+  // missing from it — its finding was never in the pixels. A card with no
+  // variants has no tier evidence to reason from; `cardsOf` cannot build one,
+  // and `cardReviewed` guards the same shape for the same reason.
+  if (card.bucket === 'a11y' || card.variants.length === 0) {
+    return { uncaptured: [], matched: [] };
+  }
+
+  // Shown anywhere in the report, not merely on this card: a story is split into
+  // a card per bucket and per section, so one that changed at desktop and
+  // errored at mobile is two cards — and reading only this card's variants, each
+  // would call the other's viewport missing while its row sits further down.
+  const shown = new Set<string>(card.viewportsShown);
+  const matrix: readonly string[] = TIER_VIEWPORTS[card.tier];
+  const absent = VIEWPORT_NAMES.filter((viewport) => !shown.has(viewport));
+
+  return {
+    uncaptured: absent.filter((viewport) => !matrix.includes(viewport)),
+    matched: absent.filter((viewport) => matrix.includes(viewport)),
+  };
+}
+
 /**
- * Why a viewport has no rows under this card — the two answers, kept apart.
+ * Why a viewport has no rows under this card — the card-scoped half.
  *
  * A card showing only `desktop/*` is two very different reports depending on its
  * tier. `TIER_VIEWPORTS` captures atoms and molecules at desktop only, so an
@@ -264,37 +292,43 @@ const allMatched = (viewport: ViewportName) =>
  * card with the same rows was shot at mobile and matched. Saying "unchanged" for
  * the first, or "not captured" for the second, would both be false.
  *
+ * Only the second is answered here, because only the second varies per card.
+ * The first is a fact about the tier and belongs to
+ * {@link sectionViewportNote} — said once for the section instead of verbatim
+ * under every card in it.
+ *
  * Reported per viewport, never per cell: a viewport with any row visible is not
  * missing, which holds this to at most one sentence per viewport rather than one
  * per variant that happened to match.
- *
- * "Visible" means anywhere on the page, which is why the denominator is
- * {@link ReportCard.viewportsShown} rather than this card's own variants. A
- * story is split into a card per bucket and per section, so one that changed at
- * desktop and errored at mobile is two cards — and reading only this card's
- * variants, each would announce the other's viewport as missing while the row
- * for it sits further down the same report.
  *
  * The one case it cannot see: a story tagged `visual-diff:all-viewports` whose
  * every extra-viewport variant matched. `summary.json` records no story tags, so
  * that card is indistinguishable from an untagged one — it is read as its tier.
  */
 export function viewportGaps(card: ReportCard): readonly string[] {
-  // An a11y card renders the violation list instead of a viewer, so no frame is
-  // missing from it — its finding was never in the pixels.
-  if (card.bucket === 'a11y') return [];
+  return absentViewports(card).matched.map(allMatched);
+}
 
-  // Nothing to reason from: a card with no variants has no tier evidence and no
-  // absence worth explaining. `cardsOf` cannot build one, and `cardReviewed`
-  // guards the same shape for the same reason.
-  if (card.variants.length === 0) return [];
+/**
+ * The tier-scoped half: a viewport the whole section was never captured at.
+ *
+ * "atoms are captured at desktop only" is true of every card in the atoms
+ * section identically, so a report with twenty changed atoms rendered it twenty
+ * times — read once and heard twenty times by anyone walking the page with a
+ * screen reader. The section says it, once, above the cards it applies to.
+ *
+ * Still derived from the cards rather than from the tier alone: a story tagged
+ * `visual-diff:all-viewports` does have rows its tier never promises, and a
+ * section made only of those has nothing missing to explain.
+ */
+export function sectionViewportNote(section: ReportSection): string | undefined {
+  const uncaptured = [
+    ...new Set(section.cards.flatMap((card) => absentViewports(card).uncaptured)),
+  ];
+  const [tier] = section.cards.map((card) => card.tier);
+  if (uncaptured.length === 0 || tier === undefined) return undefined;
 
-  const shown = new Set<string>(card.viewportsShown);
-  const matrix: readonly string[] = TIER_VIEWPORTS[card.tier];
-
-  return VIEWPORT_NAMES.filter((viewport) => !shown.has(viewport)).map((viewport) =>
-    matrix.includes(viewport) ? allMatched(viewport) : notCaptured(viewport, card.tier),
-  );
+  return notCaptured(uncaptured, tier);
 }
 
 /** How many of `keys` are marked. The denominator lives elsewhere: a section

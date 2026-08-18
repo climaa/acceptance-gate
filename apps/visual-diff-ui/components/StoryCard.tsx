@@ -32,9 +32,10 @@ import { VariantRow } from './VariantRow';
  *  (lib/accept-gate.ts) and this is the card's half of that same refusal. */
 export const A11Y_VERDICT = 'reviewing does not clear this — fixing does';
 
-/** The gap list's accessible name. Pinned: it is what says the list explains
- *  absences rather than reporting further findings. */
-const GAPS_LABEL = 'viewports not shown';
+/** The gap list's accessible name. Carries the story, because a report renders
+ *  one of these per card and a rotor listing twenty identically-named lists
+ *  names nothing. */
+const gapsLabel = (title: string) => `viewports not shown for ${title}`;
 
 export interface StoryCardProps {
   reportId: string;
@@ -116,7 +117,7 @@ export function StoryCard({
           two different reports — never captured, or captured and unchanged —
           and the card says which. */}
       {gaps.length > 0 && (
-        <ul className="vd-card__gaps" aria-label={GAPS_LABEL}>
+        <ul className="vd-card__gaps" aria-label={gapsLabel(card.title)}>
           {gaps.map((gap) => (
             <li key={gap}>{gap}</li>
           ))}

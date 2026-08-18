@@ -76,11 +76,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* `as={NextLink}` once, forwarded to the brand: the design system
             depends on no framework, so this is where the app names its router
             link. The header supplies the skip link and the theme toggle. */}
-        <SiteHeader brand={BRAND} as={NextLink} />
+        <SiteHeader brand={BRAND} as={NextLink} container="full" />
 
         {/* The id is SkipLink's default target, and the landmark the header's
             first tab stop jumps to. */}
-        <main id="main" className="ds-container">
+        <main id="main" className="ds-container ds-container--full">
           <Suspense fallback={null}>
             <SampleNotice />
           </Suspense>

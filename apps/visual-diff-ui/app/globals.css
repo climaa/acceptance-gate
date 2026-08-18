@@ -19,21 +19,6 @@ main {
   min-height: 60vh;
 }
 
-/* The console is a workspace, not a reading column: three screenshots side by
-   side want every pixel the window has, and `--width-container` leaves a third
-   of a wide monitor empty. The gutters stay — only the cap goes, and with it the
-   centring, since `width: 100%` then has nothing left to distribute.
-
-   The shell's header row is capped by that same class, so it is released here
-   too or the wordmark would sit centred above content that is not. This is the
-   one place this app styles a `ds-` class it does not own; it reaches no further
-   than this stylesheet, and Storybook — which loads `@gate/ui` alone — never
-   sees it, so the design system's own baselines are untouched. */
-main.ds-container,
-.ds-site-header__inner {
-  max-width: none;
-}
-
 /* The header's brand line, which is also the console's heading — the board
    draws the wordmark and its tagline as one row, not as a title above the
    panels. */
@@ -693,6 +678,15 @@ main.ds-container,
   margin: 0;
   font-size: var(--text-sm);
   color: var(--color-warning-text);
+}
+
+/* A viewport the whole tier is never captured at. Muted rather than warned —
+   the note beside it reports a verdict that outranks the pixels; this one only
+   explains why a row a reader might go looking for was never taken. */
+.vd-section__viewports {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
 }
 
 /* ---- The story card ----------------------------------------------------- */

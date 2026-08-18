@@ -23,6 +23,7 @@ import {
   filterByBucket,
   type ReportCard,
   type ReportSection,
+  sectionViewportNote,
   type ReportSides,
 } from '@/lib/report-view';
 import { BUCKETS, type Bucket, type Summary, type Variant } from '@/lib/summary';
@@ -269,6 +270,7 @@ export function ReportResults({ reportId, report, sides }: ReportResultsProps) {
             sides={sides}
             reviewed={marks}
             note={section.name === A11Y_SECTION ? A11Y_NOTE : undefined}
+            viewportNote={sectionViewportNote(section)}
             collapsed={collapsed[section.key] ?? false}
             onCollapse={(next) =>
               setCollapsed((current) => ({ ...current, [section.key]: next }))

@@ -170,10 +170,29 @@ describe('a pixel card', () => {
     expect(within(card()).getByRole('link', { name: 'baseline Storybook' })).toBeTruthy();
   });
 
-  // An atoms story is captured at desktop only, so its card has no mobile rows
-  // and never could. An empty space where a viewport should be reads as a
-  // screenshot that failed to arrive, which is a different report entirely.
-  it('says why a viewport it was never captured at has no rows', () => {
+  // The card explains only what varies per card: a viewport its tier *is* shot
+  // at, whose every variant matched. The tier-scoped half — "atoms are captured
+  // at desktop only" — is identical for every card in the section and is said
+  // once by the section instead.
+  it('names a viewport whose rows all matched their baseline', () => {
+    renderCard(
+      cardOf(
+        variant({
+          key: 'templates__desktop__light__templates-posttemplate--default',
+          id: 'templates-posttemplate--default',
+          tier: 'templates',
+        }),
+      ),
+    );
+
+    const gaps = within(card()).getByRole('list', {
+      name: 'viewports not shown for PostTemplate — Default',
+    });
+
+    expect(gaps.textContent).toContain('matched its baseline');
+  });
+
+  it('does not repeat its tier\u2019s capture policy under the card', () => {
     renderCard(
       cardOf(
         variant({
@@ -183,10 +202,9 @@ describe('a pixel card', () => {
       ),
     );
 
-    const gaps = within(card()).getByRole('list', { name: 'viewports not shown' });
-
-    expect(gaps.textContent).toContain('no mobile shot');
-    expect(gaps.textContent).toContain('atoms are captured at desktop only');
+    expect(
+      within(card()).queryByRole('list', { name: /viewports not shown/ }),
+    ).toBeNull();
   });
 
   it('marks itself as some, rather than all, when one variant is reviewed', () => {
