@@ -1,0 +1,48 @@
+/* One connected strip: the container carries the border and the rounding, the
+   segments carry only a hairline between them. Selection is painted off
+   `[aria-pressed='true']` rather than a modifier class, so the picture cannot
+   disagree with what the accessibility tree reports — the same rule
+   .ds-theme-toggle follows. */
+.ds-segmented {
+  display: inline-flex;
+  align-items: stretch;
+  padding: var(--space-1);
+  gap: var(--space-1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-muted);
+}
+
+.ds-segmented__segment {
+  padding: var(--space-1) var(--space-3);
+  min-height: 2rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-muted);
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
+}
+
+.ds-segmented__segment:hover {
+  color: var(--color-text);
+}
+
+.ds-segmented__segment[aria-pressed='true'] {
+  background: var(--color-bg);
+  border-color: var(--color-border);
+  color: var(--color-text);
+  box-shadow: var(--shadow-sm);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ds-segmented__segment {
+    transition: none;
+  }
+}

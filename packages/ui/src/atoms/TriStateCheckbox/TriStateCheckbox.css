@@ -1,0 +1,93 @@
+/* A label-wrapped checkbox whose box is a span, not the input: `appearance:
+   none` on the input would work in Chromium but leaves the glyph to a
+   pseudo-element on a replaced element, which is the one part of this pattern
+   browsers still disagree about. The input stays in the layout — sized to the
+   box and stacked on top of it — rather than being moved off-screen, so the
+   pointer target, the focus ring's anchor and the painted box are one place.
+
+   Both painted states are selected off the input's own pseudo-classes
+   (`:checked`, `:indeterminate`) rather than off a modifier class, so what the
+   control looks like and what the accessibility tree reports cannot drift. */
+.ds-tristate-checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+  font-size: var(--text-sm);
+  color: var(--color-text);
+}
+
+.ds-tristate-checkbox__input {
+  /* Its own size, in rem, for the same reason .ds-btn states min-heights that
+     way: a control's geometry is not a spacing step the theme retunes. */
+  width: 1.125rem;
+  height: 1.125rem;
+  margin: 0;
+  /* Transparent rather than hidden: `visibility: hidden` and `display: none`
+     both drop the element from the focus order along with the picture. */
+  opacity: 0;
+  cursor: pointer;
+}
+
+.ds-tristate-checkbox__box {
+  /* Pulled back over the input it follows, which is why the input is
+     transparent rather than absolutely positioned: one box, one hit area. */
+  margin-left: -1.125rem;
+  width: 1.125rem;
+  height: 1.125rem;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  pointer-events: none;
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out);
+}
+
+.ds-tristate-checkbox__input:checked + .ds-tristate-checkbox__box,
+.ds-tristate-checkbox__input:indeterminate + .ds-tristate-checkbox__box {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+/* The glyph is drawn with borders rather than a font character: a check that
+   came from the text stack would change shape with the reader's font settings.
+   `:indeterminate` wins over `:checked` on source order — a mixed control is
+   mixed whatever its underlying boolean says. */
+.ds-tristate-checkbox__input:checked + .ds-tristate-checkbox__box::after {
+  content: '';
+  width: 0.25rem;
+  height: 0.5rem;
+  margin-bottom: 0.125rem;
+  border: 2px solid var(--color-text-inverted);
+  border-top: 0;
+  border-left: 0;
+  transform: rotate(45deg);
+}
+
+.ds-tristate-checkbox__input:indeterminate + .ds-tristate-checkbox__box::after {
+  content: '';
+  width: 0.5rem;
+  height: 0;
+  margin: 0;
+  border: 1px solid var(--color-text-inverted);
+  border-radius: var(--radius-full);
+  transform: none;
+}
+
+/* The ring is drawn around the box because the input carrying focus is
+   transparent; base.css's :where(:focus-visible) rule is what it replaces. */
+.ds-tristate-checkbox__input:focus-visible + .ds-tristate-checkbox__box {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ds-tristate-checkbox__box {
+    transition: none;
+  }
+}
