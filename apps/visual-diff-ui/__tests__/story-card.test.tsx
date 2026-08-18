@@ -10,14 +10,16 @@ import type { Variant } from '../lib/summary';
 /**
  * One card, and the two failures a pixel tool cannot show.
  *
- * An `a11y` card is the differentiator: its third pane is the violation list
- * rather than a diff — the shots can be byte-identical and a diff of two
- * identical images says nothing about a contrast ratio — and it carries no way
- * to accept anything, because reviewing has never fixed one.
+ * An `a11y` card is the differentiator: its viewer is replaced by the violation
+ * list — the shots can be byte-identical and a diff of two identical images
+ * says nothing about a contrast ratio — and it carries no way to accept
+ * anything, because reviewing has never fixed one.
  *
  * A `removed` card is the other: one side of the comparison does not exist, and
- * the card says which rather than rendering an empty frame.
+ * the frame for that side says so rather than standing empty.
  */
+
+const REPORT_ID = 'main-2026-08-17__main-2026-08-13';
 
 const SIDES = { a: 'main-2026-08-17', b: 'main-2026-08-13' };
 
@@ -53,15 +55,20 @@ function cardOf(...variants: Variant[]): ReportCard {
 function renderCard(card: ReportCard, reviewed: readonly string[] = []) {
   return render(
     <StoryCard
+      reportId={REPORT_ID}
       card={card}
       sides={SIDES}
       reviewed={new Set(reviewed)}
       onToggle={vi.fn()}
+      onCompare={vi.fn()}
     />,
   );
 }
 
 const card = () => screen.getByRole('article');
+
+/** One of the viewer's three frames, by the side it shows. */
+const frame = (name: string) => within(card()).getByRole('figure', { name });
 
 afterEach(cleanup);
 
@@ -212,14 +219,13 @@ describe('a card with a missing side', () => {
           tier: 'molecules',
           bucket: 'removed',
           overlapDiffPixels: 0,
+          diffPixels: 0,
+          allowedDiffPixels: 0,
         }),
       ),
     );
 
-    const absent = within(card()).getByText(/not on this side/);
-
-    expect(absent.textContent).toContain('B');
-    expect(absent.textContent).toContain(SIDES.b);
+    expect(within(frame(`B · ${SIDES.b}`)).getByText('not on this side')).toBeTruthy();
   });
 
   it('names the other side for a story that was added', () => {
@@ -230,13 +236,13 @@ describe('a card with a missing side', () => {
           id: 'atoms-bucketchip--tones',
           bucket: 'added',
           overlapDiffPixels: 0,
+          diffPixels: 0,
+          allowedDiffPixels: 0,
         }),
       ),
     );
 
-    const absent = within(card()).getByText(/not on this side/);
-
-    expect(absent.textContent).toContain(SIDES.a);
+    expect(within(frame(`A · ${SIDES.a}`)).getByText('not on this side')).toBeTruthy();
   });
 
   it('shows what a capture error said', () => {

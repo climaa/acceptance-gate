@@ -7,6 +7,13 @@ import { useReportKeys } from '@/hooks/useReportKeys';
 import { useReviewMarks } from '@/hooks/useReviewMarks';
 import { reviewableCount } from '@/lib/accept-gate';
 import {
+  comparableVariants,
+  type ComparisonMode,
+  DEFAULT_MODE,
+  isComparisonMode,
+  variantByParam,
+} from '@/lib/comparison';
+import {
   A11Y_SECTION,
   buildSections,
   cardMatches,
@@ -18,8 +25,9 @@ import {
   type ReportSection,
   type ReportSides,
 } from '@/lib/report-view';
-import { BUCKETS, type Bucket, type Summary } from '@/lib/summary';
+import { BUCKETS, type Bucket, type Summary, type Variant } from '@/lib/summary';
 import { BucketChipRow } from './BucketChipRow';
+import { ComparisonModal } from './ComparisonModal';
 import { ReviewBar } from './ReviewBar';
 import { TierSection } from './TierSection';
 
@@ -38,6 +46,10 @@ import { TierSection } from './TierSection';
  *  - **What you have judged** is in `localStorage` and nowhere else. It is one
  *    person keeping their place, never a fact about the run, so it is never
  *    written to the URL, to a cookie, or to the server.
+ *
+ * Which variant the comparison modal is on, and in which mode, is the first
+ * kind: `story` and `mode` ride the same query string, so the exact pixels a
+ * reviewer is looking at are a link they can send.
  *
  * The filters unmount cards rather than hiding them. A card that is display:none
  * is still a card a reviewer can be told they have seen.
@@ -58,6 +70,10 @@ interface ReportView {
   filter: string;
   bucket: Bucket | null;
   hideReviewed: boolean;
+  /** The variant the comparison modal is open on — its key, which is also the
+   *  stem of the shot filenames. Null closes it. */
+  story: string | null;
+  mode: ComparisonMode | null;
 }
 
 const isBucket = (value: string | null): value is Bucket =>
@@ -66,21 +82,26 @@ const isBucket = (value: string | null): value is Bucket =>
 /** The review position this render was served with. */
 function readView(params: URLSearchParams): ReportView {
   const bucket = params.get('bucket');
+  const mode = params.get('mode');
 
   return {
     filter: params.get('filter') ?? '',
     bucket: isBucket(bucket) ? bucket : null,
     hideReviewed: params.get('hideReviewed') === '1',
+    story: params.get('story'),
+    mode: isComparisonMode(mode) ? mode : null,
   };
 }
 
 /** …and the same position, back as a query string. Defaults are left out, so a
  *  reviewer who has moved nothing shares the bare report URL. */
-function toQuery({ filter, bucket, hideReviewed }: ReportView): string {
+function toQuery({ filter, bucket, hideReviewed, story, mode }: ReportView): string {
   const params = new URLSearchParams();
   if (filter !== '') params.set('filter', filter);
   if (bucket) params.set('bucket', bucket);
   if (hideReviewed) params.set('hideReviewed', '1');
+  if (story) params.set('story', story);
+  if (story && mode) params.set('mode', mode);
 
   return params.toString();
 }
@@ -171,6 +192,19 @@ export function ReportResults({ reportId, report, sides }: ReportResultsProps) {
     collapsed[entry.section.key] ? [] : entry.cards,
   );
 
+  // Every variant the modal can show, and the order ← → walks them in. Read
+  // off the whole report rather than off `visible`: a shared link has to open
+  // on the variant it names whatever bucket the recipient is filtered to, and
+  // whatever their own browser has already marked reviewed.
+  const comparable = useMemo(
+    () => comparableVariants(report.variants),
+    [report.variants],
+  );
+  const open = view.story === null ? null : variantByParam(comparable, view.story);
+
+  const compare = (variant: Variant, mode: ComparisonMode) =>
+    update({ story: variant.key, mode });
+
   const toggleCard = (card: ReportCard, reviewed: boolean) =>
     mark(
       card.variants.map((variant) => variant.key),
@@ -184,6 +218,15 @@ export function ReportResults({ reportId, report, sides }: ReportResultsProps) {
     cards: walkable,
     isReviewed: (card) => cardReviewed(card, marks),
     onToggle: toggleCard,
+    // `b` opens the card's first variant — the producer sorted them worst
+    // first, so that is the one the card is named after in the first place. An
+    // a11y card opens nothing: its finding is not in the pixels, and a modal
+    // framing two identical shots would say it was.
+    onCompare: (card) => {
+      const [first] = card.variants;
+      if (card.bucket !== 'a11y' && first) compare(first, 'blink');
+    },
+    enabled: open === null,
   });
 
   const allCollapsed =
@@ -217,6 +260,7 @@ export function ReportResults({ reportId, report, sides }: ReportResultsProps) {
         {visible.map(({ section, cards }) => (
           <TierSection
             key={section.key}
+            reportId={reportId}
             section={section}
             cards={cards}
             sides={sides}
@@ -228,11 +272,25 @@ export function ReportResults({ reportId, report, sides }: ReportResultsProps) {
             }
             onToggleSection={toggleSection}
             onToggleCard={toggleCard}
+            onCompare={compare}
           />
         ))}
 
         {visible.length === 0 && <EmptyState message={emptyMessage(view, report)} />}
       </Stack>
+
+      {open && (
+        <ComparisonModal
+          reportId={reportId}
+          variant={open}
+          variants={comparable}
+          sides={sides}
+          mode={view.mode ?? DEFAULT_MODE}
+          onMode={(mode) => update({ mode })}
+          onVariant={(next) => update({ story: next.key })}
+          onClose={() => update({ story: null, mode: null })}
+        />
+      )}
     </Stack>
   );
 }
