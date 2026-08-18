@@ -17,6 +17,7 @@ import path from 'node:path';
 import { buildSummary, renderSummaryMd } from './artifacts.mjs';
 import {
   captureAll,
+  filterNeedles,
   launchBrowser,
   matchesFilter,
   themeSanity,
@@ -84,7 +85,8 @@ const under = (rootDir) => (relative) => path.join(rootDir, relative);
  *              host: () => Promise<Record<string, string>>,
  *              env: Record<string, string | undefined> }} Deps */
 
-/** @typedef {{ rootDir?: string, filter?: string, allowHostMismatch?: boolean }} Options */
+/** @typedef {{ rootDir?: string, filter?: string | readonly string[],
+ *              allowHostMismatch?: boolean }} Options */
 
 /** @typedef {{ exitCode: number, message: string, summary?: Summary,
  *              written?: string[], pruned?: string[] }} CommandResult */
@@ -153,7 +155,8 @@ const broken = (message) => ({ exitCode: EXIT.broken, message });
 /** The variants one run captures. Every failure here is `EXIT.broken`, never a quietly
  *  smaller run: a differ that captures fewer stories than the build contains reports
  *  green over an unexamined UI.
- *  @param {Deps} deps @param {(relative: string) => string} at @param {string} [filter]
+ *  @param {Deps} deps @param {(relative: string) => string} at
+ *  @param {string | readonly string[]} [filter]
  *  @returns {Promise<{ variants: PlannedVariant[], skipped: string[] }>} */
 async function readPlan(deps, at, filter) {
   const indexPath = at(`${PATHS.storybookStatic}/index.json`);
@@ -169,7 +172,9 @@ async function readPlan(deps, at, filter) {
 
   const entries = deps.readIndex(text).filter((entry) => matchesFilter(filter, entry));
   if (entries.length === 0) {
-    throw new Error(`--filter ${filter} matched no story in ${PATHS.storybookStatic}`);
+    throw new Error(
+      `--filter ${filterNeedles(filter).join(', ')} matched no story in ${PATHS.storybookStatic}`,
+    );
   }
 
   const { variants, skipped } = deps.planCaptures(entries);
@@ -392,7 +397,8 @@ export async function check(deps = defaultDeps(), opts = {}) {
   try {
     const { variants, skipped } = await readPlan(deps, at, filter);
     const committed = await readBaselines(deps.fs, at(PATHS.baselines));
-    const baselines = filter ? coveredBaselines(committed, variants) : committed;
+    const baselines =
+      filterNeedles(filter).length > 0 ? coveredBaselines(committed, variants) : committed;
 
     const guard = await guardHost(deps, at, {
       allowHostMismatch,

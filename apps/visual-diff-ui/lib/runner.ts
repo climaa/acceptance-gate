@@ -443,7 +443,7 @@ function captureArgv(
   rootDir: string,
   dataDir: string,
   label: string,
-  filter: string | undefined,
+  filter: readonly string[] | undefined,
   root: Checkout | null,
 ): { command: string; args: string[]; inContainer: boolean } {
   const inContainer = !hostMatches();
@@ -457,7 +457,11 @@ function captureArgv(
     at(DATA_MOUNT) ?? dataDir,
     '--label',
     label,
-    ...(filter ? ['--filter', filter] : []),
+    // One `--filter` per ticked component, which `capture-set.mjs` collects back
+    // into the list `matchesFilter` reads as a union. An empty list passes none:
+    // the differ reads no filter as the whole corpus, and a `--filter` with
+    // nothing after it would be a flag with no value.
+    ...(filter ?? []).flatMap((value) => ['--filter', value]),
     // Git is the host's answer: the container has no `.git` worth reading and
     // may have no `git` at all, and a set's provenance is not a thing to guess.
     '--sha',

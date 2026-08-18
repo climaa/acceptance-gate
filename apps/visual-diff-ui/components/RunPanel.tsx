@@ -19,7 +19,9 @@ import {
 import type { ReportListEntry } from '@/lib/data';
 import type { RunnerEnv } from '@/lib/host';
 import { readReviewed } from '@/lib/review-state';
+import type { StoryTier } from '@/lib/stories';
 import { CURRENT_JOB_ANCHOR, useCurrentJob } from './CurrentJob';
+import { FilterPicker } from './FilterPicker';
 
 /**
  * Start a job — the console's write half, and a front for a CLI it is honest
@@ -58,10 +60,10 @@ const PANEL_ID = 'vd-run-fields';
 
 const tabId = (mode: Mode) => `vd-tab-${mode}`;
 
-/** Placeholders end in an ellipsis so a shape can never be read as a value. */
+/** Placeholders end in an ellipsis so a shape can never be read as a value. Only
+ *  the label is typed now — `--filter` is ticked off the corpus (FilterPicker). */
 const PLACEHOLDER = {
   label: 'main-2026-08-17…',
-  filter: 'atoms-button…',
 };
 
 /** Sample mode explains itself, and the deployed case does not appear here: an
@@ -292,7 +294,9 @@ function GateNotice({ gate }: { gate: AcceptGate }) {
 interface JobForm {
   mode: Mode;
   label: string;
-  filter: string;
+  /** The component filters ticked in the picker — a list, because a reviewer
+   *  means every one they ticked and `matchesFilter` reads several as a union. */
+  filter: string[];
   baseline: string;
   candidate: string;
   reportId: string;
@@ -337,7 +341,7 @@ function useJobForm(
     {
       mode: prefill?.mode ?? 'capture',
       label: '',
-      filter: '',
+      filter: [],
       baseline: prefill?.baseline ?? '',
       candidate: prefill?.candidate ?? '',
       reportId: reportIds[0] ?? '',
@@ -403,17 +407,53 @@ function useRunnerFingerprint(): RunnerEnv | undefined {
   return runner;
 }
 
+/**
+ * The corpus a reviewer ticks from, as `GET /api/stories` answers it.
+ *
+ * An empty list is a real answer — a checkout with no Storybook build yet — so
+ * there is no pending state to distinguish: the picker says what an empty corpus
+ * means, and a build that lands is one poll of this away.
+ */
+function useStories(): StoryTier[] {
+  const [tiers, setTiers] = useState<StoryTier[]>([]);
+
+  useEffect(() => {
+    let live = true;
+
+    void (async () => {
+      try {
+        const response = await fetch('/api/stories', { cache: 'no-store' });
+        const body = (await response.json()) as { tiers?: StoryTier[] };
+        if (live) setTiers(body.tiers ?? []);
+      } catch {
+        // Unreachable is an empty corpus: the picker then offers nothing to tick,
+        // which is a run over everything — the same thing the gate does.
+        if (live) setTiers([]);
+      }
+    })();
+
+    return () => {
+      live = false;
+    };
+  }, []);
+
+  return tiers;
+}
+
 /** The body `POST /api/jobs` parses, per mode. An empty filter is left out
  *  rather than sent: the differ reads any filter as "only stories matching
  *  this", and an empty one would match nothing. */
-function jobRequest(form: JobForm): Record<string, string> {
+function jobRequest(form: JobForm): Record<string, unknown> {
   const { mode } = form;
   if (mode === 'compare') {
     return { mode, baseline: form.baseline, candidate: form.candidate };
   }
   if (mode === 'accept') return { mode, reportId: form.reportId };
 
-  return form.filter
+  // An empty list is left out rather than sent: the differ reads no filter as the
+  // whole corpus, which is what nothing ticked means, and sending `[]` would say
+  // the same thing in a second way.
+  return form.filter.length > 0
     ? { mode, label: form.label, filter: form.filter }
     : { mode, label: form.label };
 }
@@ -424,7 +464,7 @@ function useStartJob() {
   const [refusal, setRefusal] = useState<string | null>(null);
   const [starting, setStarting] = useState(false);
 
-  const start = async (request: Record<string, string>) => {
+  const start = async (request: Record<string, unknown>) => {
     setStarting(true);
     setRefusal(null);
 
@@ -517,6 +557,8 @@ interface FieldsProps {
   reports: readonly ReportListEntry[];
   runner: RunnerEnv | undefined;
   gate: AcceptGate | null;
+  /** The corpus to tick from, from `GET /api/stories`. */
+  stories: readonly StoryTier[];
 }
 
 /** capture and run take the same two: what the set will be called, and the one
@@ -524,7 +566,7 @@ interface FieldsProps {
  *  `--skip-build` checkbox beside them; neither exists in `visual-diff`'s CLI —
  *  its whole surface is `check | accept` with `--filter` — and the console never
  *  builds Storybook, so both would be controls for something that cannot happen. */
-function CaptureFields({ form, patch, disabled }: FieldsProps) {
+function CaptureFields({ form, patch, disabled, stories }: FieldsProps) {
   return (
     <>
       <Field
@@ -535,11 +577,9 @@ function CaptureFields({ form, patch, disabled }: FieldsProps) {
         onChange={(label) => patch({ label })}
         disabled={disabled}
       />
-      <Field
-        name="filter"
-        label="--filter"
+      <FilterPicker
+        tiers={stories}
         value={form.filter}
-        placeholder={PLACEHOLDER.filter}
         onChange={(filter) => patch({ filter })}
         disabled={disabled}
       />
@@ -720,6 +760,7 @@ export function RunPanel({ isSample, isLocal, reports }: RunPanelProps) {
     reports.map((entry) => entry.id),
   );
   const runner = useRunnerFingerprint();
+  const stories = useStories();
   const { start, refusal, starting } = useStartJob();
 
   // One word for the two reasons a composer is inert. They are different
@@ -751,6 +792,7 @@ export function RunPanel({ isSample, isLocal, reports }: RunPanelProps) {
             reports={reports}
             runner={runner}
             gate={gate}
+            stories={stories}
           />
 
           {isSample && <Note name="sample mode">{SAMPLE_NOTE}</Note>}

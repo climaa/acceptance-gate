@@ -49,11 +49,26 @@ const RUNNING: HistoryRecord = {
   reportId: null,
 };
 
+/** The corpus `GET /api/stories` answers with. Two tiers and three components is
+ *  enough to drive a group's none/some/all without restating the real build. */
+const CORPUS = [
+  {
+    tier: 'atoms',
+    components: [
+      { filter: 'atoms-button', name: 'Button' },
+      { filter: 'atoms-badge', name: 'Badge' },
+    ],
+  },
+  { tier: 'molecules', components: [{ filter: 'molecules-card', name: 'Card' }] },
+];
+
 interface ApiStub {
   /** What `GET /api/env` says this runner is. */
   image?: string | null;
   /** Whether `GET /api/env` says a container could be started. */
   docker?: boolean;
+  /** What `GET /api/stories` says there is to capture. */
+  tiers?: typeof CORPUS;
   /** What `GET /api/jobs/current` says is happening. */
   current?: { running: boolean; job: HistoryRecord | null };
   /** What `POST /api/jobs` answers. */
@@ -66,7 +81,13 @@ const answered = (ok: boolean, status: number, body: unknown) =>
 /** The three endpoints this panel talks to, answered per case. An unstubbed URL
  *  throws rather than resolving: a screen quietly reading something this suite
  *  never arranged is exactly what the fingerprint seam must not do. */
-function stubApi({ image = HOST.image, docker = true, current, jobs }: ApiStub = {}) {
+function stubApi({
+  image = HOST.image,
+  docker = true,
+  tiers = CORPUS,
+  current,
+  jobs,
+}: ApiStub = {}) {
   const fetchMock = vi.fn((url: string) => {
     if (url === '/api/env') {
       return answered(true, 200, {
@@ -77,6 +98,7 @@ function stubApi({ image = HOST.image, docker = true, current, jobs }: ApiStub =
         docker,
       });
     }
+    if (url === '/api/stories') return answered(true, 200, { tiers });
     if (url === '/api/jobs/current') {
       return answered(true, 200, { running: false, job: null, log: [], ...current });
     }
@@ -243,14 +265,15 @@ describe('starting a job', () => {
 
   // `--filter` is the CLI's own flag, and the only one of the three the composed
   // `check` takes: an empty box must not become a filter matching nothing.
-  it('carries the story filter only when one was typed', async () => {
+  // Ticked, not typed: `--filter` used to be a text box over a vocabulary that
+  // only exists inside a Storybook build.
+  it('carries the components that were ticked', async () => {
     const fetchMock = renderPanel();
     fireEvent.change(screen.getByRole('textbox', { name: 'label' }), {
       target: { value: 'main-2026-08-17' },
     });
-    fireEvent.change(screen.getByRole('textbox', { name: '--filter' }), {
-      target: { value: 'atoms-button' },
-    });
+    fireEvent.click(await screen.findByRole('button', { name: /2$/ }));
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Button' }));
 
     fireEvent.click(screen.getByRole('button', { name: 'start capture' }));
 
@@ -261,7 +284,7 @@ describe('starting a job', () => {
           body: JSON.stringify({
             mode: 'capture',
             label: 'main-2026-08-17',
-            filter: 'atoms-button',
+            filter: ['atoms-button'],
           }),
         }),
       ),

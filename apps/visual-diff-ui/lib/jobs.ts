@@ -48,10 +48,12 @@ const REPORT_ID = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
 export const SetLabelSchema = z.string().regex(SET_LABEL, 'not a snapshot-set label');
 const ReportIdSchema = z.string().regex(REPORT_ID, 'not a report id');
 
-/** The CLI's `--filter`: a substring matched against story ids and titles, so
- *  anything is a legal value and only its absence is a shape. Optional, because
- *  a run without one is the whole corpus — which is what the gate runs. */
-const FilterSchema = z.string().optional();
+/** The `--filter` values: substrings matched against story ids and titles, so
+ *  anything is a legal value and only the shape is a contract. A LIST, because
+ *  the panel offers the corpus as checkboxes and a reviewer ticks as many as they
+ *  mean — `matchesFilter` reads several as a union. Optional, and an empty list is
+ *  the same thing as absent: the whole corpus, which is what the gate runs. */
+const FilterSchema = z.array(z.string()).optional();
 
 /**
  * What `POST /api/jobs` accepts, per mode. A discriminated union rather than one

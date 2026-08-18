@@ -54,20 +54,40 @@ export function buildStoryUrl(baseUrl, { id, theme }) {
   return `${origin}/iframe.html?id=${encodeURIComponent(id)}&globals=${COLOR_SCHEME_GLOBAL}:${theme}`;
 }
 
-/** `--filter`: a case-insensitive substring of a story's id or its title. Applied by the
- *  CLI to index entries before the plan is expanded, so a filter narrows whole stories
- *  rather than half a matrix row.
+/** The substrings a filter asks for, as a list, with the empty ones dropped.
  *
- *  An absent *or empty* filter keeps everything — `--filter=` is a caller who typed no
- *  value, never a request to capture nothing.
- *  @param {string | undefined} filter
+ *  One value or many: the CLI passes the one `--filter` it was given, and a caller
+ *  composing a run programmatically — `apps/visual-diff-ui`, whose reviewer ticks
+ *  components off a list — passes the set. An absent, empty or all-blank filter yields
+ *  none, which {@link matchesFilter} reads as "keep everything": `--filter=` is a caller
+ *  who typed no value, never a request to capture nothing.
+ *  @param {string | readonly string[] | undefined} filter
+ *  @returns {string[]} */
+export function filterNeedles(filter) {
+  const values = typeof filter === 'string' ? [filter] : filter ?? [];
+
+  return values.filter((value) => value.trim() !== '').map((value) => value.toLowerCase());
+}
+
+/** `--filter`: a case-insensitive substring of a story's id or its title, or any of
+ *  several. Applied by the CLI to index entries before the plan is expanded, so a filter
+ *  narrows whole stories rather than half a matrix row.
+ *
+ *  ANY of the needles is enough. Several filters are a union rather than an
+ *  intersection: a reviewer who ticked Button and Badge means both, and no story is ever
+ *  both at once — an intersection would capture nothing every time.
+ *  @param {string | readonly string[] | undefined} filter
  *  @param {{ id: string, title?: string }} story
  *  @returns {boolean} */
 export function matchesFilter(filter, { id, title = '' }) {
-  if (!filter) return true;
+  const needles = filterNeedles(filter);
+  if (needles.length === 0) return true;
 
-  const needle = filter.toLowerCase();
-  return id.toLowerCase().includes(needle) || title.toLowerCase().includes(needle);
+  // Joined with a newline rather than concatenated: a needle must fall inside the id or
+  // inside the title, never across the seam between them.
+  const haystack = `${id}\n${title}`.toLowerCase();
+
+  return needles.some((needle) => haystack.includes(needle));
 }
 
 /** Run `items` through a fixed pool of `workers`, one item per worker at a time.

@@ -47,7 +47,10 @@ function parseArgs(argv) {
       continue;
     }
 
-    args[name] = next;
+    // Repeated flags collect. `--filter` is the one that repeats — one per
+    // component the reviewer ticked — and the last-one-wins alternative would
+    // silently capture a single component out of a set of five.
+    args[name] = name in args ? [...[args[name]].flat(), next] : next;
     i += 1;
   }
 
@@ -147,7 +150,7 @@ const result = await check(
       return captured;
     },
   },
-  { rootDir, ...(args.filter ? { filter: args.filter } : {}) },
+  { rootDir, ...(args.filter ? { filter: [args.filter].flat() } : {}) },
 );
 
 say(result.message);

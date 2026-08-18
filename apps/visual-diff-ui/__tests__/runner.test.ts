@@ -490,17 +490,27 @@ describe('runCheck', () => {
   // field the console shows and the runner drops would be a lie about what it
   // just ran. An empty box is not a filter — `check` reads any filter as "only
   // stories matching this", and the empty string would match nothing.
+  // One `--filter` per component the reviewer ticked, which is what the panel now
+  // composes and `matchesFilter` reads as a union. Nothing ticked passes no flag:
+  // the differ reads an absent filter as the whole corpus.
   it.each([
-    ['atoms-button', true],
-    ['', false],
-  ])('passes --filter %j: %s', async (filter, passed) => {
+    [['atoms-button'], ['atoms-button']],
+    [
+      ['atoms-button', 'molecules-card'],
+      ['atoms-button', 'molecules-card'],
+    ],
+    [[], []],
+    [undefined, []],
+  ])('passes --filter %j as %j', async (filter, expected) => {
     const dir = makeDataDir();
 
     await withSpawn(async (runCheck) => {
       await runCheck(dir, { mode: 'run', label: 'main-2026-08-17', filter }, silent);
     });
 
-    expect(capture()?.args.includes('--filter')).toBe(passed);
+    const args = capture()?.args ?? [];
+    const passed = args.filter((_, index) => args[index - 1] === '--filter');
+    expect(passed).toEqual(expected);
   });
 
   // Git is the host's answer: the container has no `.git` worth reading and may
