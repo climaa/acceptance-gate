@@ -4,7 +4,9 @@ import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
+import { ACCEPT_IMAGE } from '../lib/accept-gate';
 import { HistoryRecordSchema, WorktreesFileSchema } from '../lib/jobs';
+import { promoteBaselines } from '../lib/runner';
 import { SetsFileSchema, SummarySchema } from '../lib/summary';
 
 /**
@@ -35,7 +37,15 @@ const SEED_SCRIPT = path.join(
   'seed-visual-diff.mjs',
 );
 
+/** The report the review, a11y and report-suite scenarios read: the one
+ *  carrying the fabricated accessibility failure. */
 const REPORT_ID = 'main-2026-08-17__main-2026-08-13';
+
+/** The report the accept scenarios promote from. A second report, and a clean
+ *  one: `acceptGate` refuses an accessibility failure before it asks anything
+ *  else, so the report above can never reach the review gate or the host one —
+ *  and those are two of the four acceptance scenarios. */
+const ACCEPT_REPORT = 'main-2026-08-17__main-2026-08-16';
 
 const root = fs.mkdtempSync(path.join(os.tmpdir(), 'vd-seed-'));
 
@@ -161,6 +171,65 @@ describe('the seeded world', () => {
   });
 });
 
+describe('the accept report', () => {
+  const summaryOf = (dir: string): unknown =>
+    readJson(path.join(dir, 'reports', ACCEPT_REPORT, 'summary.json'));
+
+  // `acceptGate` asks accessibility first and refuses outright, so a world
+  // whose only report carries a violation can never show the review gate or
+  // the host one — two of the four acceptance scenarios.
+  it('carries no accessibility failure, so the accept gate can be reached', () => {
+    const summary = SummarySchema.parse(summaryOf(world('seeded')));
+
+    expect(summary.counts.a11y).toBe(0);
+    expect(summary.variants.length).toBeGreaterThan(0);
+  });
+
+  it('counts what its variants say', () => {
+    const summary = SummarySchema.parse(summaryOf(world('seeded')));
+    const counted = Object.values(summary.counts).reduce((sum, count) => sum + count, 0);
+
+    expect(summary.variants.length + summary.counts.unchanged).toBe(counted);
+  });
+
+  // `promoteBaselines` reads one candidate shot per reviewable variant before
+  // it writes a byte, and refuses the whole accept over a missing one.
+  it('has a candidate shot for every variant an accept would promote', () => {
+    const dir = path.join(world('mutating', '--mutating'), 'reports', ACCEPT_REPORT);
+    const summary = SummarySchema.parse(readJson(path.join(dir, 'summary.json')));
+
+    for (const variant of summary.variants) {
+      expect(fs.existsSync(path.join(dir, 'shots', `${variant.key}.candidate.png`))).toBe(
+        true,
+      );
+    }
+  });
+
+  // The candidate side IS the B set's shot tree — this report is a comparison
+  // of two sets the registry lists, so an accept promotes those very bytes.
+  it('takes its candidate shots from the set its id names', () => {
+    const dir = world('seeded');
+    const summary = SummarySchema.parse(summaryOf(dir));
+    const [, candidateSet] = ACCEPT_REPORT.split('__');
+
+    for (const variant of summary.variants) {
+      expect(
+        fs.readFileSync(
+          path.join(
+            dir,
+            'reports',
+            ACCEPT_REPORT,
+            'shots',
+            `${variant.key}.candidate.png`,
+          ),
+        ),
+      ).toEqual(
+        fs.readFileSync(path.join(dir, 'sets', `${candidateSet}`, `${variant.key}.png`)),
+      );
+    }
+  });
+});
+
 describe('the mutating world', () => {
   // Its prune retires the oldest set. A registered worktree would make the
   // server skip that row instead, and the scenario asserts it is gone.
@@ -180,6 +249,53 @@ describe('the mutating world', () => {
       18,
     );
     expect(stamp.image).toBe('mcr.microsoft.com/playwright:v1.62.1-noble');
+  });
+});
+
+/**
+ * The one scenario whose work is entirely server-side, run here rather than
+ * only in a browser: `@mutating` "A matched host accepts the baselines" clicks
+ * a button, and everything that happens after that click is this call. A seed
+ * that cannot be accepted from fails it as a refusal — which reads as the gate
+ * working rather than as a world one shot short.
+ */
+describe('an accept over the seeded world', () => {
+  it('promotes the report’s candidates and restamps the corpus', async () => {
+    // Its own world: this writes, and every other case above reads a tree it
+    // expects to be the seed's output.
+    const dir = world('accepted', '--mutating');
+    const log: string[] = [];
+
+    const outcome = await promoteBaselines(dir, ACCEPT_REPORT, (line) => log.push(line), {
+      VISUAL_DIFF_FAKE_HOST_FINGERPRINT: ACCEPT_IMAGE,
+    });
+
+    expect(outcome.exitCode).toBe(0);
+    // The line the live-log assertion waits for.
+    expect(log.join('\n')).toContain('BASELINE_ENV.json');
+  });
+
+  it('writes the report’s candidate bytes into the baselines', () => {
+    const dir = world('accepted', '--mutating');
+    const summary = SummarySchema.parse(
+      readJson(path.join(dir, 'reports', ACCEPT_REPORT, 'summary.json')),
+    );
+
+    for (const variant of summary.variants) {
+      expect(
+        fs.readFileSync(path.join(dir, '__baselines__', `${variant.key}.png`)),
+      ).toEqual(
+        fs.readFileSync(
+          path.join(
+            dir,
+            'reports',
+            ACCEPT_REPORT,
+            'shots',
+            `${variant.key}.candidate.png`,
+          ),
+        ),
+      );
+    }
   });
 });
 

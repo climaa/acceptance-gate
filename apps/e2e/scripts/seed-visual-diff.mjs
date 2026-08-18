@@ -25,6 +25,7 @@
 // workspace closes the loop against the real zod schemas.
 import { createHash } from 'node:crypto';
 import {
+  copyFileSync,
   cpSync,
   mkdirSync,
   readFileSync,
@@ -184,6 +185,7 @@ function readOverlay() {
     worktrees: readJson(join(OVERLAY, 'worktrees.json')),
     shots: readJson(join(OVERLAY, 'shots.json')),
     graft: readJson(join(OVERLAY, 'report-graft.json')),
+    accept: readJson(join(OVERLAY, 'report-accept.json')),
     baselineEnv: readJson(join(OVERLAY, 'baseline-env.json')),
   };
 }
@@ -264,6 +266,59 @@ function writeShotTrees(target, sets, shots) {
         shotPng(shotSeed(set.label, key, shots.drifted)),
       );
     }
+  }
+}
+
+/** What every report in one world shares: one schema, one set of thresholds,
+ *  one host. Read off the report the fixture brought, which is the run that
+ *  recorded them. */
+function runProvenance(target, reportId) {
+  const { schemaVersion, thresholds, env } = readJson(
+    join(target, 'reports', reportId, 'summary.json'),
+  );
+
+  return { schemaVersion, thresholds, env };
+}
+
+/**
+ * The world's second report: the clean comparison an accept can promote from.
+ *
+ * The grafted report above carries an accessibility failure, and `acceptGate`
+ * asks that question first and refuses outright — so on a world holding only
+ * that report, the accept tab can never show the review gate or the host one,
+ * which is two of the four acceptance scenarios. This is the report those two
+ * are about: the two newest sets, compared, with nothing but pixels between
+ * them.
+ *
+ * Its sides ARE those sets' own shot trees, copied rather than synthesised, so
+ * the accept promotes the very bytes `sets/<candidate>/` holds. Only the diff
+ * is invented: nothing here paints one, and the console never opens it for an
+ * assertion.
+ *
+ * `schemaVersion`, `thresholds` and `env` come from the fixture's own run: one
+ * differ on one host wrote both reports in this tree, and two summaries
+ * disagreeing about either would be a tree no run could have produced.
+ */
+function writeAcceptReport(target, accept, provenance) {
+  const [baselineSet, candidateSet] = accept.report.split('__');
+  const dir = join(target, 'reports', accept.report);
+  const shots = join(dir, 'shots');
+  mkdirSync(shots, { recursive: true });
+
+  writeJson(join(dir, 'summary.json'), {
+    ...provenance,
+    exitCode: accept.exitCode,
+    counts: accept.counts,
+    warnings: [],
+    variants: accept.variants,
+  });
+
+  for (const { key } of accept.variants) {
+    const sideShot = (label) => join(target, 'sets', label, `${key}.png`);
+
+    copyFileSync(sideShot(baselineSet), join(shots, `${key}.baseline.png`));
+    copyFileSync(sideShot(candidateSet), join(shots, `${key}.candidate.png`));
+    writeFileSync(join(shots, `${key}.diff.png`), shotPng(`${key}.diff`));
   }
 }
 
@@ -357,15 +412,23 @@ function verifyHistory(target) {
   }
 }
 
-function verifyReport(target, graft) {
-  const summary = readJson(join(target, 'reports', graft.report, 'summary.json'));
-  const counted = summary.variants.length + summary.counts.unchanged;
-  const total = Object.values(summary.counts).reduce((sum, count) => sum + count, 0);
+/** A report's chips have to add up to the cards under them: every bucket but
+ *  `unchanged` is one variant in the array, and `unchanged` is only ever the
+ *  count the differ left behind. */
+function verifyCounts(reportId, { counts, variants }) {
+  const present = variants.length + counts.unchanged;
+  const counted = Object.values(counts).reduce((sum, count) => sum + count, 0);
 
   check(
-    counted === total,
-    `${graft.report}: ${total} counted, ${counted} variants + unchanged`,
+    present === counted,
+    `${reportId}: ${counted} counted, ${present} variants + unchanged`,
   );
+}
+
+function verifyReport(target, graft) {
+  const summary = readJson(join(target, 'reports', graft.report, 'summary.json'));
+
+  verifyCounts(graft.report, summary);
   check(summary.counts.a11y > 0, `${graft.report} carries no accessibility failure`);
   check(summary.counts.removed > 0, `${graft.report} carries no removed variant`);
   check(
@@ -382,11 +445,47 @@ function existsAsFile(file) {
   }
 }
 
+/**
+ * The accept report, against what an accept actually reads.
+ *
+ * `promoteBaselines` reads one candidate shot per reviewable variant before it
+ * writes a byte and refuses the whole accept over a missing one, so a seed that
+ * is one shot short fails the scenario as a refusal — which reads as the gate
+ * working rather than as a thin seed.
+ */
+function verifyAcceptReport(target, accept, sets, shots) {
+  const labels = sets.map((set) => set.label);
+  const sides = accept.report.split('__');
+  check(
+    sides.length === 2 && sides.every((side) => labels.includes(side)),
+    `${accept.report} does not name two registered capture sets`,
+  );
+
+  verifyCounts(accept.report, accept);
+  check(
+    accept.counts.a11y === 0,
+    `${accept.report} carries an accessibility failure — the accept gate refuses that before it asks anything else, so the review and host scenarios could never reach their answers`,
+  );
+
+  const dir = join(target, 'reports', accept.report, 'shots');
+  for (const { key } of accept.variants) {
+    check(
+      shots.variants.includes(key),
+      `${key} is not a seeded variant, so an accept would promote a baseline no set holds`,
+    );
+    check(
+      existsAsFile(join(dir, `${key}.candidate.png`)),
+      `${accept.report} has no candidate shot for ${key} — the accept would refuse rather than run`,
+    );
+  }
+}
+
 function verify(target, overlay, mutating) {
   verifyShots(overlay.shots);
   verifySets(target, overlay.sets);
   verifyHistory(target);
   verifyReport(target, overlay.graft);
+  verifyAcceptReport(target, overlay.accept, overlay.sets, overlay.shots);
 
   const registry = join(target, 'worktrees.json');
   check(
@@ -438,6 +537,8 @@ if (empty) {
   if (!mutating) writeJson(join(target, 'worktrees.json'), overlay.worktrees);
   graftReport(target, overlay.graft);
   writeShotTrees(target, overlay.sets, overlay.shots);
+  // After the shot trees: the accept report's two sides are copied out of them.
+  writeAcceptReport(target, overlay.accept, runProvenance(target, overlay.graft.report));
   if (mutating) writeBaselines(target, overlay.shots, overlay.baselineEnv);
 
   verify(target, overlay, mutating);

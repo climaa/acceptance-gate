@@ -1,0 +1,65 @@
+{
+  "report": "main-2026-08-17__main-2026-08-16",
+  "exitCode": 1,
+  "counts": {
+    "unchanged": 15,
+    "changed": 3,
+    "added": 0,
+    "removed": 0,
+    "errored": 0,
+    "a11y": 0
+  },
+  "variants": [
+    {
+      "key": "atoms__desktop__light__atoms-prose--default",
+      "id": "atoms-prose--default",
+      "tier": "atoms",
+      "viewport": "desktop",
+      "theme": "light",
+      "bucket": "changed",
+      "overlapDiffPixels": 256,
+      "marginPixels": 0,
+      "diffPixels": 256,
+      "allowedDiffPixels": 40,
+      "width": 16,
+      "height": 16,
+      "sizeDelta": null,
+      "violations": [],
+      "error": null
+    },
+    {
+      "key": "templates__desktop__dark__templates-posttemplate--long-prose",
+      "id": "templates-posttemplate--long-prose",
+      "tier": "templates",
+      "viewport": "desktop",
+      "theme": "dark",
+      "bucket": "changed",
+      "overlapDiffPixels": 256,
+      "marginPixels": 0,
+      "diffPixels": 256,
+      "allowedDiffPixels": 40,
+      "width": 16,
+      "height": 16,
+      "sizeDelta": null,
+      "violations": [],
+      "error": null
+    },
+    {
+      "key": "templates__desktop__light__templates-posttemplate--long-prose",
+      "id": "templates-posttemplate--long-prose",
+      "tier": "templates",
+      "viewport": "desktop",
+      "theme": "light",
+      "bucket": "changed",
+      "overlapDiffPixels": 256,
+      "marginPixels": 0,
+      "diffPixels": 256,
+      "allowedDiffPixels": 40,
+      "width": 16,
+      "height": 16,
+      "sizeDelta": null,
+      "violations": [],
+      "error": null
+    }
+  ]
+}

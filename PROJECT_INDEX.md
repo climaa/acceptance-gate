@@ -21,7 +21,7 @@ apps/
   blog/                Next.js 16 App Router + MDX (English) — index, post, tag, about,
                        RSS, sitemap, OG images; Cache Components + Partial Prefetching on
   storybook/           Storybook 10 + nextjs-vite — 18 stories, 13 docs pages
-  e2e/                 playwright-bdd acceptance suite — 20 Gherkin scenarios across
+  e2e/                 playwright-bdd acceptance suite — 45 Gherkin scenarios across
                        the blog and three seeded visual-diff worlds (:3200/:3201/:3202)
   visual-diff-ui/      Next.js 16 console over the differ — zod-validated read path,
                        locked job runner + guarded mutations, sample fixtures,
@@ -84,8 +84,8 @@ scripts/               complexity-gate.mjs (the health gate) · apply-ruleset.mj
 ## 🧪 Tests
 
 - Orchestrator hermetic suite: 39 files / 654 tests (prompt contracts, merge flow, override grammar, worktree safety, provenance guard)
-- Workspace suites, all in the `test` gate job: `packages/ui` 22 files / 308 tests (70% coverage floor), `apps/blog` 12 / 287, `packages/visual-diff` 10 / 291, `apps/storybook` 4 / 99, `apps/visual-diff-ui` 23 / 387
-- `apps/e2e`: 20 Gherkin scenarios across smoke, blog, axe a11y, the visual-diff console and sample mode — in `gate.needs`, blocking. `@mutating` scenarios run alone in their own project against their own server
+- Workspace suites, all in the `test` gate job: `packages/ui` 22 files / 308 tests (70% coverage floor), `apps/blog` 12 / 287, `packages/visual-diff` 10 / 291, `apps/storybook` 4 / 99, `apps/visual-diff-ui` 24 / 412
+- `apps/e2e`: 45 Gherkin scenarios across smoke, blog, axe a11y, the visual-diff console, sample mode, the report, its accessibility treatment and baseline acceptance — in `gate.needs`, blocking. `@mutating` scenarios run alone in their own project against their own server
 - `packages/visual-diff`: 106 committed baselines; the capture/compare job runs on every PR but is deliberately never in `gate.needs` (see `packages/visual-diff/README.md#ci-status`)
 
 ## 🔗 Key Dependencies

@@ -58,10 +58,10 @@ suite still exits 0 while claiming less than it did — a scenario deleted, `@sk
 `playwright test --list`, which skips global setup, so it needs no browser and no web
 server and costs about a second.
 
-`EXPECTED_SCENARIOS` in that file is an exact count, **20** today: 9 blog + 8 visual-diff
-console + 3 sample mode. Adding a scenario raises it in the same PR. Lowering it is a
-product decision — a hand-authored PR with the reason written down, never a step on the
-way to green.
+`EXPECTED_SCENARIOS` in that file is an exact count, **45** today: 9 blog + 8 visual-diff
+console + 3 sample mode + 14 report + 7 accessibility + 4 baseline acceptance. Adding a
+scenario raises it in the same PR. Lowering it is a product decision — a hand-authored PR
+with the reason written down, never a step on the way to green.
 
 ## Tags select projects
 
@@ -99,8 +99,9 @@ build of `@gate/visual-diff-ui` is booted three times against three data directo
 | `sample`   | `3201` | `.worlds/sample` (empty) | nobody — there is nothing to      |
 | `mutating` | `3202` | `.worlds/mutating`       | the `@mutating` project, serially |
 
-`pages/visual-diff-hosts.ts` is the one place a world's URL and its directory are
-written; `playwright.config.ts` and the steps both read them from there.
+`pages/visual-diff-hosts.ts` is the one place a world's URL, its directory and the
+pinned image its server claims are written; `playwright.config.ts` and the steps both
+read them from there.
 
 **Seeding is the webServer's job, never a test's.** Each entry runs
 `scripts/seed-visual-diff.mjs <dir>` before `next start`, so a scenario that needs the
@@ -110,6 +111,14 @@ run, which is a real regression and fabricates nothing — and applies the fabri
 overlay in `seed/visual-diff/` on top of the copy. The fixture itself is never touched.
 The overlay is what the fixture cannot honestly show: a set captured from a dirty tree,
 a worktree hold, all four outcome words, a removed variant and an accessibility failure.
+
+Two reports, deliberately. `main-2026-08-17__main-2026-08-13` is the one carrying the
+fabricated accessibility failure — what the report and a11y suites read — and
+`main-2026-08-17__main-2026-08-16` is a clean comparison of the two newest sets, which is
+the only kind an accept can promote from: the gate refuses an accessibility failure before
+it asks anything else, so on a world holding only the first report the review gate and the
+host warning are answers no scenario could ever reach. An accept scenario names the report
+it means; nothing rides on which one the picker opens with.
 
 The `sample` world seeds nothing at all. An empty data directory is exactly what a
 deployed instance that has captured nothing looks like, so the app falls back to its
@@ -135,6 +144,7 @@ run.
 `@playwright/test` is pinned **exactly**, no caret. That same version is transcribed into
 the visual-diff capture container tag (`mcr.microsoft.com/playwright:v1.62.1-noble`, named
 in `packages/visual-diff/src/policy.mjs` and again in this workspace's
-`playwright.config.ts`, which declares it to the mutating world) — so a Playwright bump
-moves the image tag, the baselines and this pin together, a hand-authored change and
-never a bot PR. Dependabot ignores `@playwright/*` for that reason.
+`pages/visual-diff-hosts.ts`, where the mutating world's server and the accept scenarios
+both read it from) — so a Playwright bump moves the image tag, the baselines and this pin
+together, a hand-authored change and never a bot PR. Dependabot ignores `@playwright/*`
+for that reason.

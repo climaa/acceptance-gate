@@ -34,6 +34,23 @@ export type VdWorld = keyof typeof VD_HOSTS;
 export const VD_WORLDS_DIR = path.join(import.meta.dirname, '..', '.worlds');
 
 /**
+ * The pinned capture container, transcribed from
+ * `packages/visual-diff/src/policy.mjs`'s `HOST.image` — the same value the
+ * `@playwright/test` pin is bumped with. Restated rather than imported: that
+ * module is a `.mjs` this workspace's `tsconfig` cannot type (`allowJs: false`,
+ * no declarations), and the seed script — a `.mjs` itself — does import it.
+ *
+ * Written once for both readers of it. `playwright.config.ts` hands it to the
+ * mutating world's server as `VISUAL_DIFF_FAKE_HOST_FINGERPRINT`, which is the
+ * whole D3 seam: the app reads it server-side and reports it from
+ * `GET /api/env`, so a scenario drives the accept gate's decision from one
+ * variable and the client cannot disagree with the server about what host it is
+ * on. The accept steps read the same constant back off the screen. Inert for
+ * every scenario except the matched-host accept (#285).
+ */
+export const VD_PINNED_IMAGE = 'mcr.microsoft.com/playwright:v1.62.1-noble';
+
+/**
  * The absolute path one world's server reads as `VISUAL_DIFF_DATA_DIR`.
  *
  * Absolute because the app is started with its own workspace as the working

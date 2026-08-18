@@ -15,9 +15,9 @@ import type { Bucket } from '../lib/summary';
  *
  * The CLI has no host guard on `accept` — this is the guard it lacks (D3), so
  * the order the four answers come in is the contract: an accessibility failure
- * outranks everything, the host outranks the review, and only a report that
- * cleared all three is acceptable. The panel renders the answer; what the answer
- * IS lives here, where it can be asked without a DOM.
+ * outranks everything, the review is asked before the host, and only a report
+ * that cleared all three is acceptable. The panel renders the answer; what the
+ * answer IS lives here, where it can be asked without a DOM.
  */
 
 const CLEAN: Record<Bucket, number> = {
@@ -82,6 +82,20 @@ describe('acceptGate', () => {
 
   it('holds accept closed while variants remain unreviewed', () => {
     const gate = acceptGate({ ...READY, reviewed: 4 });
+
+    expect(gate).toEqual({ state: 'unreviewed', reviewed: 4, total: 6 });
+  });
+
+  // The review comes before the host, which is the order
+  // `features/visual-diff-accept.feature` reads: accept is gated until the
+  // review completes, and only then does a host that cannot write degrade it to
+  // a command. Off the pinned container — a reviewer's own machine, which is
+  // where reports are read — the host answer would otherwise be the only one
+  // that ever came back, and the reading a reviewer is there to do would never
+  // be asked for. Nothing is loosened: the button under `unreviewed` is
+  // disabled, and the server refuses the host independently.
+  it('asks for the reading before it names a host that could not write anyway', () => {
+    const gate = acceptGate({ counts: CLEAN, image: null, reviewed: 4 });
 
     expect(gate).toEqual({ state: 'unreviewed', reviewed: 4, total: 6 });
   });
