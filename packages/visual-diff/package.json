@@ -4,7 +4,11 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./policy": "./src/policy.mjs"
+    "./policy": "./src/policy.mjs",
+    "./artifacts": "./src/artifacts.mjs",
+    "./capture": "./src/capture.mjs",
+    "./commands": "./src/commands.mjs",
+    "./compare": "./src/compare.mjs"
   },
   "bin": {
     "visual-diff": "./src/cli.mjs"

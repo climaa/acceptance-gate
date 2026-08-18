@@ -4,7 +4,9 @@
 [![release](https://img.shields.io/github/v/tag/climaa/acceptance-gate?label=release&sort=semver)](https://github.com/climaa/acceptance-gate/releases)
 
 Live: **[blog](https://acceptance-gate-blog.vercel.app)** — the argument ·
-**[Storybook](https://acceptance-gate-storybook.vercel.app)** — the evidence.
+**[Storybook](https://acceptance-gate-storybook.vercel.app)** — the evidence ·
+**[visual diff](https://acceptance-gate-visual-diff-ui.vercel.app)** — the tool,
+working.
 
 **The pipeline is the product.** A public portfolio monorepo where every pull
 request — including the ones that build the repo itself — walks through the
@@ -37,15 +39,16 @@ merges carry their model co-author trailer in the squashed commit.
 
 ## What's here, what's coming
 
-| Piece                                                           | Status                                                                                                                                             |
-| --------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `.sandcastle/` — the orchestrator, with its hermetic test suite | ✅ committed, public                                                                                                                               |
-| `designs/` — the design source of truth + PNG exports           | ✅ normative component inventory, two theme personalities                                                                                          |
-| `apps/blog` — Next.js 16 App Router + MDX, consumes `@gate/ui`  | ✅ [published](https://acceptance-gate-blog.vercel.app) — posts, tags, RSS, sitemap, OG images, Cache Components + Partial Prefetching             |
-| `packages/ui` — atomic design system, token-only styling        | ✅ all 19 components of the inventory, in four tiers, layering enforced by `eslint-plugin-boundaries`                                              |
-| `apps/storybook` — the visual single source of truth            | ✅ [published](https://acceptance-gate-storybook.vercel.app) — every component rendered in isolation, plus the docs pages that describe the system |
-| `apps/e2e` — playwright-bdd acceptance suite                    | ✅ runs on every PR, blocks the merge — in `gate.needs`                                                                                            |
-| `packages/visual-diff` — the self-built visual regression CLI   | ✅ reports on every PR, never auto-blocks — see [its README](packages/visual-diff/README.md#ci-status)                                             |
+| Piece                                                           | Status                                                                                                                                                                                                                                                                                                                                                                       |
+| --------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `.sandcastle/` — the orchestrator, with its hermetic test suite | ✅ committed, public                                                                                                                                                                                                                                                                                                                                                         |
+| `designs/` — the design source of truth + PNG exports           | ✅ normative component inventory, two theme personalities, four exported boards including the visual-diff console pages                                                                                                                                                                                                                                                      |
+| `apps/blog` — Next.js 16 App Router + MDX, consumes `@gate/ui`  | ✅ [published](https://acceptance-gate-blog.vercel.app) — posts, tags, RSS, sitemap, OG images, Cache Components + Partial Prefetching                                                                                                                                                                                                                                       |
+| `packages/ui` — atomic design system, token-only styling        | ✅ all 19 components of the inventory, in four tiers, layering enforced by `eslint-plugin-boundaries`                                                                                                                                                                                                                                                                        |
+| `apps/storybook` — the visual single source of truth            | ✅ [published](https://acceptance-gate-storybook.vercel.app) — every component rendered in isolation, plus the docs pages that describe the system                                                                                                                                                                                                                           |
+| `apps/e2e` — playwright-bdd acceptance suite                    | ✅ runs on every PR, blocks the merge — in `gate.needs`                                                                                                                                                                                                                                                                                                                      |
+| `packages/visual-diff` — the self-built visual regression CLI   | ✅ reports on every PR, never auto-blocks — see [its README](packages/visual-diff/README.md#ci-status)                                                                                                                                                                                                                                                                       |
+| `apps/visual-diff-ui` — the console that reviews those runs     | ✅ [published](https://acceptance-gate-visual-diff-ui.vercel.app) — the visual-diff review console: sets, reports and history, the run panel with its live log and the container-bound accept gate, and the report's tier sections, review loop, accessibility treatment and the three-up viewer behind its comparison modal; sample mode browses the #242 regression report |
 
 ## The design system, in one rule
 

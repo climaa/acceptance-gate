@@ -41,3 +41,6 @@
 @import './molecules/PostCard/PostCard.css';
 @import './templates/BlogIndexTemplate/BlogIndexTemplate.css';
 @import './organisms/Table/Table.css';
+@import './atoms/BucketChip/BucketChip.css';
+@import './atoms/Thumbnail/Thumbnail.css';
+@import './organisms/Dialog/Dialog.css';

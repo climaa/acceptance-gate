@@ -49,6 +49,10 @@ const FOOTER_LINKS = [
   { label: 'RSS', href: '/rss.xml' },
   { label: 'GitHub', href: 'https://github.com/climaa' },
   { label: 'Storybook', href: 'https://acceptance-gate-storybook.vercel.app' },
+  {
+    label: 'Visual diff',
+    href: 'https://acceptance-gate-visual-diff-ui.vercel.app',
+  },
 ];
 
 export const metadata: Metadata = {

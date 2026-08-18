@@ -1,3 +1,4 @@
+export { Dialog, type DialogProps } from './Dialog/Dialog';
 export {
   SiteFooter,
   type SiteFooterLink,
