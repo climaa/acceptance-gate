@@ -34,11 +34,21 @@
    * Consumed exclusively by the light state roles below. Only danger has a
    * filled variant, which is why it alone carries two darker steps: -700 for
    * the solid fill itself (cream text needs that much depth to clear AA — see
-   * the solid trio below) and -800 for its hover. */
+   * the solid trio below) and -800 for its hover.
+   *
+   * The -700 steps are tuned against their own -100 surface (the chip shape),
+   * where they clear AA with little to spare: 4.57:1 success, 4.51:1 warning,
+   * 5.30:1 danger. That margin is why they cannot double as text colours on
+   * the page ground — cream is far darker than a -100 tint, and the same steps
+   * land at 4.03/4.04/5.20 on --color-bg and 3.34/3.34/4.30 on
+   * --color-bg-muted. The -800 steps below exist for that second job; each one
+   * clears 4.5:1 on all three cream grounds. */
   --c-success-100: #dcfce7;
   --c-success-700: #15803d;
+  --c-success-800: #166534;
   --c-warning-100: #fef3c7;
   --c-warning-700: #b45309;
+  --c-warning-800: #92400e;
   --c-danger-100: #fee2e2;
   --c-danger-700: #b91c1c;
   --c-danger-800: #991b1b;
@@ -97,6 +107,23 @@
   --color-danger-solid: var(--c-danger-700);
   --color-danger-solid-hover: var(--c-danger-800);
   --color-on-danger-solid: var(--c-cream-50);
+
+  /* ---- State text roles ----
+   * A state word set in running text — a run's outcome, a section's caveat —
+   * is not a chip: it has no surface of its own and sits directly on whichever
+   * cream ground its container uses. `-fg` is the wrong role there (it is
+   * rated against its -100 surface, and fails AA on all three creams), so
+   * these are the roles for that job. They join the --color-text* family
+   * deliberately: what varies here is the ground, not the tone.
+   *
+   * Rated against the darkest ground a consumer can put them on,
+   * --color-bg-muted: success 4.74:1, warning 4.72:1, danger 5.53:1. On
+   * --color-bg they are 5.74/5.70/6.68. Dark needs no second pair — its
+   * bright -300 fgs already clear 8:1 on every ink ground, so the roles below
+   * simply follow them there. */
+  --color-success-text: var(--c-success-800);
+  --color-warning-text: var(--c-warning-800);
+  --color-danger-text: var(--c-danger-800);
 
   /* ---- Skeleton roles ----
    * The placeholder's resting surface, and the band that sweeps across it. Their
@@ -220,6 +247,16 @@
   --color-warning-fg: var(--c-amber-300);
   --color-danger-surface: var(--c-red-900);
   --color-danger-fg: var(--c-red-300);
+
+  /* State text, dark. Light needs a darker step than its chip fg to survive
+   * the cream ground; dark does not — these fgs are bright tints picked
+   * against the ground already, and on ink they run 12.9–15.1:1 (success),
+   * 10.3–12.1:1 (warning) and 8.4–9.8:1 (danger) across bg, bg-subtle and
+   * bg-muted. So the text roles alias the chip fgs here rather than inventing
+   * a second set that would only be the same colour twice. */
+  --color-success-text: var(--c-green-300);
+  --color-warning-text: var(--c-amber-300);
+  --color-danger-text: var(--c-red-300);
 
   /* The filled danger button darkens instead of brightening: the light theme's
    * #ef4444 would glare against the ground, and only a deeper red leaves room
