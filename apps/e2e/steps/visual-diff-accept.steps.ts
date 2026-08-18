@@ -1,6 +1,7 @@
 import { expect } from '@playwright/test';
 import { createBdd } from 'playwright-bdd';
 
+import type { ConsolePage } from '../pages/console';
 import type { ReportPage } from '../pages/report';
 import { VD_HOSTS } from '../pages/visual-diff-hosts';
 import { test } from './fixtures';
@@ -69,14 +70,23 @@ Given('the runner matches the pinned container', async ({ page }) => {
   expect(env.image).toBe(PINNED_IMAGE);
 });
 
-When('I select the accept job mode', async ({ console: consolePage, scenarioState }) => {
+/** The accept tab, on the report this scenario is about. Every question the
+ *  gate asks below is about that report, so naming it is part of opening the
+ *  tab rather than something a Then is left to assume. */
+async function openAcceptTab(
+  consolePage: ConsolePage,
+  scenarioState: { acceptReport?: string },
+) {
   await consolePage.selectJobMode('accept');
   await consolePage.chooseAcceptReport(scenarioState.acceptReport ?? ACCEPT_REPORT);
+}
+
+When('I select the accept job mode', async ({ console: consolePage, scenarioState }) => {
+  await openAcceptTab(consolePage, scenarioState);
 });
 
 When('I run the accept', async ({ console: consolePage, scenarioState }) => {
-  await consolePage.selectJobMode('accept');
-  await consolePage.chooseAcceptReport(scenarioState.acceptReport ?? ACCEPT_REPORT);
+  await openAcceptTab(consolePage, scenarioState);
   await consolePage.startButton.click();
 });
 
