@@ -9,6 +9,11 @@ export { EmptyState, type EmptyStateProps } from './EmptyState/EmptyState';
 export { Link, type LinkProps, type LinkTone } from './Link/Link';
 export { Prose } from './Prose/Prose';
 export {
+  SegmentedControl,
+  type SegmentedControlOption,
+  type SegmentedControlProps,
+} from './SegmentedControl/SegmentedControl';
+export {
   Skeleton,
   type SkeletonProps,
   type SkeletonSpace,
@@ -22,3 +27,7 @@ export { ThemeToggle, type ThemeToggleProps } from './ThemeToggle/ThemeToggle';
 // hands a server component a client reference rather than the string itself.
 export { THEME_STORAGE_KEY, type Theme } from './ThemeToggle/theme';
 export { Thumbnail, type ThumbnailProps } from './Thumbnail/Thumbnail';
+export {
+  TriStateCheckbox,
+  type TriStateCheckboxProps,
+} from './TriStateCheckbox/TriStateCheckbox';
