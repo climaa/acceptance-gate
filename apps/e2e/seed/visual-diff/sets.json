@@ -1,0 +1,45 @@
+{
+  "sets": [
+    {
+      "label": "main-2026-08-17",
+      "sha": "f2570e1",
+      "branch": "main",
+      "capturedAt": "2026-08-17",
+      "stories": 6,
+      "note": "the newest capture — the A side of every comparison this world runs"
+    },
+    {
+      "label": "main-2026-08-16",
+      "sha": "4a46e71",
+      "branch": "main",
+      "capturedAt": "2026-08-16",
+      "stories": 6,
+      "note": "the set a prune keeping three has to keep once the deleted one is gone"
+    },
+    {
+      "label": "main-2026-08-13",
+      "sha": "e0427b4",
+      "branch": "main",
+      "capturedAt": "2026-08-13",
+      "stories": 6,
+      "dirty": true,
+      "note": "captured from a working tree with uncommitted changes"
+    },
+    {
+      "label": "main-2026-08-12",
+      "sha": "9c31b7d",
+      "branch": "main",
+      "capturedAt": "2026-08-12",
+      "stories": 6,
+      "note": "held by nothing, so the delete scenario can retire it"
+    },
+    {
+      "label": "main-2026-08-11",
+      "sha": "2b8de40",
+      "branch": "main",
+      "capturedAt": "2026-08-11",
+      "stories": 6,
+      "note": "the oldest set — held by a worktree in the seeded world, pruned away in the mutating one"
+    }
+  ]
+}

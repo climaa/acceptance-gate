@@ -5,9 +5,10 @@ import { HOST } from '@gate/visual-diff/policy';
 // `**/*.tsx` include means tsc typechecks this file.
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CurrentJobProvider } from '../components/CurrentJob';
-import { RunPanel } from '../components/RunPanel';
+import { RUNNING_REFUSAL, RunPanel } from '../components/RunPanel';
 import type { ReportListEntry } from '../lib/data';
 import type { HistoryRecord } from '../lib/jobs';
+import { JOB_RUNNING } from '../lib/refusals';
 import { reviewStorageKey } from '../lib/review-state';
 import { refreshCalls, setSearchParams } from './stubs/next-navigation';
 
@@ -42,8 +43,6 @@ const RUNNING: HistoryRecord = {
   exitCode: null,
   reportId: null,
 };
-
-const JOB_RUNNING = 'a job is already running';
 
 interface ApiStub {
   /** What `GET /api/env` says this runner is. */
@@ -298,6 +297,27 @@ describe('starting a job', () => {
 
     expect(link.getAttribute('href')).toBe('#vd-current-job');
     expect(startButtons('capture')).toHaveLength(0);
+  });
+
+  /**
+   * Standing where the control was, and announced: a control that vanishes
+   * without a word is a console that has silently stopped working, and this is
+   * the same refusal `POST /api/jobs` answers a second start with. The
+   * acceptance contract pins `role=alert` and this sentence as D1's surface.
+   */
+  it('announces the refusal in the sentence the server would have used', async () => {
+    renderPanel({ current: { running: true, job: RUNNING } });
+
+    const alert = await screen.findByRole('alert');
+
+    expect(alert.textContent).toContain(JOB_RUNNING);
+  });
+
+  // The panel is a client component and lib/refusals.ts reaches the filesystem,
+  // so the sentence is spelled twice. This is the drift under a test rather
+  // than under a convention.
+  it('spells that sentence the way lib/refusals.ts does', () => {
+    expect(RUNNING_REFUSAL).toBe(JOB_RUNNING);
   });
 });
 

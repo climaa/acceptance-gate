@@ -32,17 +32,18 @@ import { fileURLToPath } from 'node:url';
 const workspace = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 /**
- * Scenarios, not Playwright tests. Test count is 16 today only because nothing
- * is tagged; one legitimate `@desktop` makes it 15, which would train everyone
- * to edit this number for a non-event. Scenario count moves only when a
- * requirement is added or removed.
+ * Scenarios, not Playwright tests: 9 blog + 8 visual-diff console + 3 sample
+ * mode. Test count is higher because an untagged scenario is listed once per
+ * project; one legitimate `@desktop` lowers that number without removing a
+ * requirement, which would train everyone to edit this constant for a
+ * non-event. Scenario count moves only when a requirement is added or removed.
  *
  * Exact equality, not a floor: a floor decays, and after ten more scenarios a
  * floor of 8 would permit deleting nine of them. Raising this alongside a new
  * scenario is a two-line diff; LOWERING it is a product decision and belongs in
  * its own hand-authored PR with the reason written down.
  */
-const EXPECTED_SCENARIOS = 9;
+const EXPECTED_SCENARIOS = 20;
 
 /**
  * playwright-bdd's control vocabulary (dist/generate/specialTags.js). A denylist

@@ -1,0 +1,7 @@
+{
+  "platform": "linux",
+  "arch": "arm64",
+  "image": "mcr.microsoft.com/playwright:v1.62.1-noble",
+  "playwright": "1.62.1",
+  "chromium": "151.0.7922.34"
+}
