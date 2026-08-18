@@ -2,6 +2,9 @@ import type { Locator, Page } from '@playwright/test';
 
 import { VD_HOSTS, type VdWorld } from './visual-diff-hosts';
 
+/** The four modes the run panel offers, which are the four the runner has. */
+export type JobMode = 'capture' | 'compare' | 'run' | 'accept';
+
 /**
  * The visual-diff console at `/`, in every world.
  *
@@ -29,6 +32,7 @@ export class ConsolePage {
   readonly acceptDockerCommand: Locator;
   readonly copyCommandButton: Locator;
   readonly sampleBadge: Locator;
+  readonly sampleModeNote: Locator;
   readonly sampleReportLink: Locator;
 
   constructor(private readonly page: Page) {
@@ -57,6 +61,7 @@ export class ConsolePage {
     this.acceptDockerCommand = page.getByTestId('accept-docker-command');
     this.copyCommandButton = page.getByRole('button', { name: 'copy command' });
     this.sampleBadge = page.getByRole('status', { name: 'sample data' });
+    this.sampleModeNote = page.getByRole('note', { name: 'sample mode' });
     this.sampleReportLink = page.getByRole('link', { name: /__/ }).first();
   }
 
@@ -68,11 +73,11 @@ export class ConsolePage {
     return this.setRows.filter({ hasText: label });
   }
 
-  jobTab(mode: 'capture' | 'compare' | 'run' | 'accept'): Locator {
+  jobTab(mode: JobMode): Locator {
     return this.page.getByRole('tab', { name: mode });
   }
 
-  async selectJobMode(mode: 'capture' | 'compare' | 'run' | 'accept') {
+  async selectJobMode(mode: JobMode) {
     await this.jobTab(mode).click();
   }
 

@@ -243,7 +243,10 @@ function writeGraftedShots(dir, variants) {
     const kinds =
       variant.bucket === 'removed' ? ['baseline'] : ['baseline', 'candidate', 'diff'];
     for (const kind of kinds) {
-      writeFileSync(join(dir, `${variant.key}.${kind}.png`), shotPng(`${variant.key}.${kind}`));
+      writeFileSync(
+        join(dir, `${variant.key}.${kind}.png`),
+        shotPng(`${variant.key}.${kind}`),
+      );
     }
   }
 }
@@ -256,7 +259,10 @@ function writeShotTrees(target, sets, shots) {
     mkdirSync(dir, { recursive: true });
 
     for (const key of shots.variants) {
-      writeFileSync(join(dir, `${key}.png`), shotPng(shotSeed(set.label, key, shots.drifted)));
+      writeFileSync(
+        join(dir, `${key}.png`),
+        shotPng(shotSeed(set.label, key, shots.drifted)),
+      );
     }
   }
 }
@@ -284,7 +290,10 @@ const HISTORY_KEYS = [
 ];
 
 function dirBytes(dir) {
-  return readdirSync(dir).reduce((total, name) => total + statSync(join(dir, name)).size, 0);
+  return readdirSync(dir).reduce(
+    (total, name) => total + statSync(join(dir, name)).size,
+    0,
+  );
 }
 
 function verifySets(target, sets) {
@@ -305,10 +314,16 @@ function verifySets(target, sets) {
 
 function verifyShots(shots) {
   for (const key of shots.variants) {
-    check(parseVariantKey(key) !== null, `${key} is not a variant key the differ can place`);
+    check(
+      parseVariantKey(key) !== null,
+      `${key} is not a variant key the differ can place`,
+    );
   }
   for (const key of shots.drifted) {
-    check(shots.variants.includes(key), `drifted key ${key} is not one of the seeded variants`);
+    check(
+      shots.variants.includes(key),
+      `drifted key ${key} is not one of the seeded variants`,
+    );
   }
 
   const drifted = SHOT_PX * SHOT_PX;
@@ -317,6 +332,11 @@ function verifyShots(shots) {
     `a ${SHOT_PX}x${SHOT_PX} shot differs by at most ${drifted} pixels, inside the ${THRESHOLDS.maxDiffPixels}-pixel allowance`,
   );
 }
+
+/** The canonical field order, as a comparator: a record carrying an extra key
+ *  sorts it to the front (`indexOf` −1) and fails the join below. */
+const byKeyOrder = (left, right) =>
+  HISTORY_KEYS.indexOf(left) - HISTORY_KEYS.indexOf(right);
 
 function verifyHistory(target) {
   const history = readJson(join(target, 'history.json'));
@@ -337,20 +357,29 @@ function verifyHistory(target) {
   }
 }
 
-const byKeyOrder = (left, right) => HISTORY_KEYS.indexOf(left) - HISTORY_KEYS.indexOf(right);
-
 function verifyReport(target, graft) {
   const summary = readJson(join(target, 'reports', graft.report, 'summary.json'));
   const counted = summary.variants.length + summary.counts.unchanged;
   const total = Object.values(summary.counts).reduce((sum, count) => sum + count, 0);
 
-  check(counted === total, `${graft.report}: ${total} counted, ${counted} variants + unchanged`);
+  check(
+    counted === total,
+    `${graft.report}: ${total} counted, ${counted} variants + unchanged`,
+  );
   check(summary.counts.a11y > 0, `${graft.report} carries no accessibility failure`);
   check(summary.counts.removed > 0, `${graft.report} carries no removed variant`);
   check(
     summary.warnings.some((warning) => warning.includes('unstable')),
     `${graft.report} carries no warning about an unstable story`,
   );
+}
+
+function existsAsFile(file) {
+  try {
+    return statSync(file).isFile();
+  } catch {
+    return false;
+  }
 }
 
 function verify(target, overlay, mutating) {
@@ -368,21 +397,14 @@ function verify(target, overlay, mutating) {
   );
 }
 
-function existsAsFile(file) {
-  try {
-    return statSync(file).isFile();
-  } catch {
-    return false;
-  }
-}
-
 // ---- The script -----------------------------------------------------------
 
 function parseArgs(argv) {
   const flags = argv.filter((arg) => arg.startsWith('--'));
   const [dir, ...extra] = argv.filter((arg) => !arg.startsWith('--'));
 
-  if (!dir || extra.length > 0) fail('usage: seed-visual-diff.mjs <target-dir> [--mutating|--empty]');
+  if (!dir || extra.length > 0)
+    fail('usage: seed-visual-diff.mjs <target-dir> [--mutating|--empty]');
   for (const flag of flags) {
     if (flag !== '--mutating' && flag !== '--empty') fail(`unknown flag ${flag}`);
   }

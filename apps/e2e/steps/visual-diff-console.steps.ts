@@ -4,35 +4,53 @@ import * as path from 'node:path';
 import { expect } from '@playwright/test';
 import { createBdd } from 'playwright-bdd';
 
+import type { JobMode } from '../pages/console';
 import { vdWorldDir } from '../pages/visual-diff-hosts';
 import { test } from './fixtures';
 
 const { Given, When, Then, After } = createBdd(test);
 
 /**
- * The seeded worlds' sets — cross-pinned by the seed script; every label,
- * branch and marker below routes through this constant.
- *
- * Five, not four. The mutating world runs its scenarios serially in the order
- * this feature declares them, so the delete lands before the prune: "keep the
- * latest three" only retires the oldest set if something newer than it is still
- * there once the deleted one is gone.
+ * The seeded worlds' sets, each named for the part it plays. Cross-pinned by
+ * `scripts/seed-visual-diff.mjs`, which restates the same five labels and
+ * refuses to seed a world that does not match them.
  */
-export const SEEDED_SETS = [
-  { label: 'main-2026-08-17', branch: 'main' },
-  { label: 'main-2026-08-16', branch: 'main' },
-  { label: 'main-2026-08-13', branch: 'main', dirty: true },
-  { label: 'main-2026-08-12', branch: 'main' },
-  { label: 'main-2026-08-11', branch: 'main', heldByWorktree: true },
-] as const;
 
-const DIRTY_SET = SEEDED_SETS[2];
+/** The A side of every comparison, and the newest row in the table. */
+const BASELINE_SET = { label: 'main-2026-08-17', branch: 'main' } as const;
+
+/** The fifth set, and the reason there are five. The mutating world runs its
+ *  scenarios in the order the feature declares them, so the delete lands before
+ *  the prune — and "keep the latest three" only retires the oldest set if
+ *  something newer than it survives that delete. */
+const SPARE_SET = { label: 'main-2026-08-16', branch: 'main' } as const;
+
+/** Captured from a working tree with uncommitted changes. Also the B side. */
+const DIRTY_SET = { label: 'main-2026-08-13', branch: 'main', dirty: true } as const;
+
+/** Nothing holds it, so the delete scenario can retire it. */
+const UNHELD_SET = { label: 'main-2026-08-12', branch: 'main' } as const;
+
 /** The oldest set. A registered worktree holds it in the SEEDED world, which is
  *  where the refused delete runs; the mutating world registers no worktree, or
  *  the prune it owns would skip this row instead of retiring it. */
-const HELD_SET = SEEDED_SETS[4];
-const UNHELD_SET = SEEDED_SETS[3];
-const [COMPARE_A, COMPARE_B] = [SEEDED_SETS[0].label, DIRTY_SET.label];
+const HELD_SET = {
+  label: 'main-2026-08-11',
+  branch: 'main',
+  heldByWorktree: true,
+} as const;
+
+/** Every set the worlds hold, newest first — the order `sets.json` is written
+ *  in and the console shows. */
+export const SEEDED_SETS = [
+  BASELINE_SET,
+  SPARE_SET,
+  DIRTY_SET,
+  UNHELD_SET,
+  HELD_SET,
+] as const;
+
+const [COMPARE_A, COMPARE_B] = [BASELINE_SET.label, DIRTY_SET.label];
 
 /** The one-job-at-a-time lock, as `apps/visual-diff-ui/lib/jobs.ts` publishes
  *  it: one file under the data directory, whose `pid` is the whole staleness
@@ -58,7 +76,7 @@ let heldLock: string | null = null;
  * `wx`, so a lock a real job is holding is an error here rather than something
  * this quietly overwrites.
  */
-function holdJobLock(mode: string, label: string): void {
+function holdJobLock(mode: JobMode, label: string): void {
   const file = path.join(vdWorldDir('mutating'), LOCK_FILE);
   const lock = { pid: process.pid, mode, label, startedAt: new Date().toISOString() };
 
@@ -79,14 +97,14 @@ Given('the console has snapshot sets', async ({ console: consolePage }) => {
   // The webServer seeded the data dir before boot (no test seeds).
   // This step only verifies the world is the one the scenario assumes.
   await consolePage.open();
-  await expect(consolePage.setRow(SEEDED_SETS[0].label)).toBeVisible();
+  await expect(consolePage.setRow(BASELINE_SET.label)).toBeVisible();
 });
 
 Given('a job is already running', async ({ console: consolePage }) => {
   // The lock is not boot-seeded — a boot-time lock would deadlock every other
   // mutating scenario against the same server. This scenario owns its world
   // (serial project), so it creates the state it needs and asserts it.
-  holdJobLock('capture', SEEDED_SETS[0].label);
+  holdJobLock('capture', BASELINE_SET.label);
   await consolePage.open('mutating');
   await expect(consolePage.currentJob).not.toContainText('Nothing running');
 });
