@@ -4,3 +4,6 @@
 # Playwright run artifacts
 playwright-report/
 test-results/
+
+# The visual-diff worlds, rebuilt by `scripts/seed-visual-diff.mjs` on every boot
+.worlds/

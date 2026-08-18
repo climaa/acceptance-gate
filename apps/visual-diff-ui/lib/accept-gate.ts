@@ -74,12 +74,23 @@ export interface AcceptGateInput {
 }
 
 /**
- * Accessibility first, then the host, then the review.
+ * Accessibility first, then the review, then the host.
  *
- * The order is the decision. An accessibility failure outranks a matching
- * container — a violation baselined away is hidden for good, and reviewing never
- * clears one — and the host outranks the review, because a reviewer who has read
- * every card on the wrong machine still may not write baselines from it.
+ * The order is the decision. An accessibility failure outranks both of the
+ * others — a violation baselined away is hidden for good, reviewing never clears
+ * one, and no container makes it acceptable — so it is asked first and answered
+ * alone.
+ *
+ * The review comes before the host because that is the order the work happens
+ * in, and the order `features/visual-diff-accept.feature` pins: accept is gated
+ * until the review completes, and only a report that has been read through
+ * degrades to the container command. Reports are read on the machine the
+ * reviewer has, which is almost never the pinned image — asking the host first
+ * would mean a console that never once asks for the reading it exists to
+ * collect. Nothing is loosened by the swap: the button under `unreviewed` is
+ * disabled either way, `POST /api/jobs` re-asks the host question with the
+ * process in front of it, and `promoteBaselines` asks it again as the last thing
+ * before a byte would land.
  *
  * `reviewed >= total` rather than equality: marks are keyed by variant, and a
  * report rewritten under the same id can hold fewer variants than the reader
@@ -88,11 +99,9 @@ export interface AcceptGateInput {
  */
 export function acceptGate({ counts, image, reviewed }: AcceptGateInput): AcceptGate {
   if (counts.a11y > 0) return { state: 'accessibility', failures: counts.a11y };
-  if (image !== HOST.image) return { state: 'host', image };
 
   const total = reviewableCount(counts);
+  if (reviewed < total) return { state: 'unreviewed', reviewed, total };
 
-  return reviewed >= total
-    ? { state: 'ready' }
-    : { state: 'unreviewed', reviewed, total };
+  return image === HOST.image ? { state: 'ready' } : { state: 'host', image };
 }

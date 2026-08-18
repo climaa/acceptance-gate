@@ -1,0 +1,27 @@
+{
+  "variants": [
+    "atoms__desktop__light__atoms-prose--default",
+    "atoms__desktop__dark__atoms-prose--default",
+    "atoms__desktop__light__atoms-badge--tones",
+    "atoms__desktop__dark__atoms-badge--tones",
+    "molecules__desktop__light__molecules-taglist--empty",
+    "molecules__desktop__dark__molecules-taglist--empty",
+    "organisms__desktop__light__organisms-siteheader--default",
+    "organisms__desktop__dark__organisms-siteheader--default",
+    "organisms__mobile__light__organisms-siteheader--default",
+    "organisms__mobile__dark__organisms-siteheader--default",
+    "templates__desktop__light__templates-posttemplate--default",
+    "templates__desktop__dark__templates-posttemplate--default",
+    "templates__mobile__light__templates-posttemplate--default",
+    "templates__mobile__dark__templates-posttemplate--default",
+    "templates__desktop__light__templates-posttemplate--long-prose",
+    "templates__desktop__dark__templates-posttemplate--long-prose",
+    "templates__mobile__light__templates-posttemplate--long-prose",
+    "templates__mobile__dark__templates-posttemplate--long-prose"
+  ],
+  "drifted": [
+    "atoms__desktop__light__atoms-prose--default",
+    "templates__desktop__light__templates-posttemplate--long-prose",
+    "templates__desktop__dark__templates-posttemplate--long-prose"
+  ]
+}

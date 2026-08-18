@@ -21,7 +21,8 @@ apps/
   blog/                Next.js 16 App Router + MDX (English) — index, post, tag, about,
                        RSS, sitemap, OG images; Cache Components + Partial Prefetching on
   storybook/           Storybook 10 + nextjs-vite — 18 stories, 13 docs pages
-  e2e/                 playwright-bdd acceptance suite — 9 Gherkin scenarios
+  e2e/                 playwright-bdd acceptance suite — 45 Gherkin scenarios across
+                       the blog and three seeded visual-diff worlds (:3200/:3201/:3202)
   visual-diff-ui/      Next.js 16 console over the differ — zod-validated read path,
                        locked job runner + guarded mutations, sample fixtures,
                        the dashboard's sets/reports/history tables, the run
@@ -45,7 +46,7 @@ scripts/               complexity-gate.mjs (the health gate) · apply-ruleset.mj
 - Blog: `pnpm dev` → `apps/blog` on :3000
 - Storybook: `pnpm --filter @gate/storybook dev` on :6006
 - Visual-diff console: `pnpm --filter @gate/visual-diff-ui dev` on :3300 (`VISUAL_DIFF_DATA_DIR` to read real runs; unset = committed sample data)
-- Acceptance suite: `pnpm turbo run e2e` (builds the blog first, then runs the scenarios)
+- Acceptance suite: `pnpm turbo run e2e` (builds the blog and the visual-diff console first, seeds the three worlds, then runs the scenarios)
 - Visual diff: `pnpm visual-diff` / `pnpm visual-diff:accept`
 - CI: `.github/workflows/pr.yml` → `gate` aggregator (only required check)
 - Orchestrator tests: `pnpm test:sandcastle` → `vitest.sandcastle.config.mts`
@@ -63,7 +64,7 @@ scripts/               complexity-gate.mjs (the health gate) · apply-ruleset.mj
 
 ## 🔧 Configuration
 
-- `turbo.json` — `build`/`lint`/`typecheck`/`test` (+`dependsOn: ["^build"]`), `e2e` (dependsOn `@gate/blog#build`, uncached), `health` (whose `inputs` include `$TURBO_ROOT$/scripts/complexity-gate.mjs`, so editing the gate script busts every cached result), `dev`, `clean`
+- `turbo.json` — `build`/`lint`/`typecheck`/`test` (+`dependsOn: ["^build"]`), `e2e` (dependsOn `@gate/blog#build` and `@gate/visual-diff-ui#build`, uncached), `health` (whose `inputs` include `$TURBO_ROOT$/scripts/complexity-gate.mjs`, so editing the gate script busts every cached result), `dev`, `clean`
 - `pnpm-workspace.yaml` — apps/* + packages/*; `allowBuilds` for sharp, unrs-resolver
 - `package.json` — pnpm 11.20.0 pinned (sha512), Node `>=22.14.0 <23`, turbo ^2.10.9. `@types/node` is deliberately held on the `^22` line: it describes the runtime `engines` pins and `.sandcastle/Dockerfile` (`node:22-bookworm`) runs, so a newer major would type built-ins that do not exist here. It moves when the runtime moves, not when `ncu` says so
 - `.github/rulesets/main.json` — the branch ruleset as committed JSON: PR required, squash-only, `gate` the sole required status check, no bypass actors
@@ -77,14 +78,14 @@ scripts/               complexity-gate.mjs (the health gate) · apply-ruleset.mj
 - `.sandcastle/agent-docs/CODING_STANDARDS.md` — the review contract (testing conventions, scope discipline)
 - `apps/storybook/src/docs/` — the published written half: System Design, Atomic Design, QA, DevOps, Skills
 - `packages/visual-diff/README.md` — capture matrix, determinism controls, exit codes, and why the job never joins `gate.needs`
-- `apps/e2e/README.md` — the three-layer split and the tag→project matrix
+- `apps/e2e/README.md` — the three-layer split, the tag→project matrix and the three visual-diff worlds
 - `designs/exports/` — component library (normative inventory), flows & decisions, pages, visual-diff pages (Board 04 — console `/` and `/report/[id]`)
 
 ## 🧪 Tests
 
 - Orchestrator hermetic suite: 39 files / 654 tests (prompt contracts, merge flow, override grammar, worktree safety, provenance guard)
-- Workspace suites, all in the `test` gate job: `packages/ui` 22 files / 308 tests (70% coverage floor), `apps/blog` 12 / 287, `packages/visual-diff` 10 / 291, `apps/storybook` 4 / 99, `apps/visual-diff-ui` 23 / 387
-- `apps/e2e`: 9 Gherkin scenarios across smoke, blog and axe a11y — in `gate.needs`, blocking
+- Workspace suites, all in the `test` gate job: `packages/ui` 22 files / 308 tests (70% coverage floor), `apps/blog` 12 / 287, `packages/visual-diff` 10 / 291, `apps/storybook` 4 / 99, `apps/visual-diff-ui` 24 / 412
+- `apps/e2e`: 45 Gherkin scenarios across smoke, blog, axe a11y, the visual-diff console, sample mode, the report, its accessibility treatment and baseline acceptance — in `gate.needs`, blocking. `@mutating` scenarios run alone in their own project against their own server
 - `packages/visual-diff`: 106 committed baselines; the capture/compare job runs on every PR but is deliberately never in `gate.needs` (see `packages/visual-diff/README.md#ci-status`)
 
 ## 🔗 Key Dependencies

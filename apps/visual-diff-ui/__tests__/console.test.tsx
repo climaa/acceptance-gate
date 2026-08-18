@@ -154,10 +154,27 @@ describe('the snapshot sets panel', () => {
       'f2570e1',
       'main',
       '2026-08-17',
-      '106',
+      '106 stories',
       '95.5 MB',
       'delete',
     ]);
+  });
+
+  /**
+   * The unit is in the cell, clipped, rather than left to the column header.
+   *
+   * Below 768 px the row reflows into a card whose per-cell label is `::before`
+   * generated content, and generated content is not in the accessibility tree —
+   * so a reader hears "106" with nothing to say what 106 is. The acceptance
+   * scenario reads the same text ("its branch, story count and size"), which is
+   * why the words are the cell's rather than the stylesheet's.
+   */
+  it('carries the story count with its unit, clipped rather than drawn', () => {
+    render(consoleWith({ sets: [CLEAN] }));
+
+    const unit = within(firstRowOf('Snapshot sets')).getByText('stories');
+
+    expect(unit.className).toBe('ds-visually-hidden');
   });
 
   it('reports a set this instance holds no shots for as an unknown size', () => {
@@ -473,6 +490,8 @@ describe('the table roles', () => {
  */
 describe('the numeric cells', () => {
   const NUMERIC: [string, string][] = [
+    // The figure's own text node — the clipped unit beside it is a sibling
+    // element, which `getByText` does not fold in.
     ['Snapshot sets', '106'],
     ['Snapshot sets', '95.5 MB'],
     ['History', '1'],

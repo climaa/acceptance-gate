@@ -142,6 +142,25 @@ describe('the delete confirmation', () => {
 });
 
 describe('the prune confirmation', () => {
+  /**
+   * The confirm button says the word the control it stands behind says.
+   *
+   * "remove" would name the effect and lose the act: the reviewer opened this
+   * from `prune the rest`, and the acceptance scenario reaches into the dialog
+   * for the button that finishes what it started. It still carries the count,
+   * which is the half `prune the rest` cannot show.
+   */
+  it('confirms with the word the control it stands behind uses', () => {
+    stubFetch({});
+    render(<PruneButton keep={3} labels={SETS} />);
+
+    openPrune();
+
+    expect(
+      within(dialog('Confirm prune')).getByRole('button', { name: 'prune 1 set' }),
+    ).toBeDefined();
+  });
+
   it('names what it will remove and what it will keep', () => {
     stubFetch({});
     render(<PruneButton keep={3} labels={SETS} />);
@@ -160,7 +179,7 @@ describe('the prune confirmation', () => {
     render(<PruneButton keep={3} labels={SETS} />);
     openPrune();
 
-    fireEvent.click(screen.getByRole('button', { name: 'remove 1 set' }));
+    fireEvent.click(screen.getByRole('button', { name: 'prune 1 set' }));
 
     expect(fetchMock).toHaveBeenCalledWith('/api/prune', {
       method: 'POST',
@@ -178,7 +197,7 @@ describe('the prune confirmation', () => {
     render(<PruneButton keep={3} labels={SETS} />);
     openPrune();
 
-    fireEvent.click(screen.getByRole('button', { name: 'remove 1 set' }));
+    fireEvent.click(screen.getByRole('button', { name: 'prune 1 set' }));
 
     const alert = await screen.findByRole('alert');
     expect(alert.textContent).toContain(HELD);
@@ -189,7 +208,7 @@ describe('the prune confirmation', () => {
     render(<PruneButton keep={3} labels={SETS} />);
     openPrune();
 
-    fireEvent.click(screen.getByRole('button', { name: 'remove 1 set' }));
+    fireEvent.click(screen.getByRole('button', { name: 'prune 1 set' }));
 
     const alert = await screen.findByRole('alert');
     expect(alert.textContent).toBe(JOB_RUNNING);
@@ -202,7 +221,7 @@ describe('the prune confirmation', () => {
     openPrune();
 
     expect(
-      within(dialog('Confirm prune')).getByRole('button', { name: 'remove 0 sets' }),
+      within(dialog('Confirm prune')).getByRole('button', { name: 'prune 0 sets' }),
     ).toHaveProperty('disabled', true);
   });
 });

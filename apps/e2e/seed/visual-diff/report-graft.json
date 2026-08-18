@@ -1,0 +1,60 @@
+{
+  "report": "main-2026-08-17__main-2026-08-13",
+  "warnings": [
+    "organisms-siteheader--default was unstable on its first attempt and settled on retry 2",
+    "atoms-badge--tones: color-contrast on 2 node(s) — contrast ratio 1.95:1 against the required 4.5:1"
+  ],
+  "variants": [
+    {
+      "key": "templates__desktop__light__templates-posttemplate--long-prose",
+      "id": "templates-posttemplate--long-prose",
+      "tier": "templates",
+      "viewport": "desktop",
+      "theme": "light",
+      "bucket": "changed",
+      "overlapDiffPixels": 8421,
+      "marginPixels": 0,
+      "diffPixels": 8421,
+      "allowedDiffPixels": 512,
+      "width": 1280,
+      "height": 800,
+      "sizeDelta": null,
+      "violations": [],
+      "error": null
+    },
+    {
+      "key": "molecules__desktop__light__molecules-taglist--empty",
+      "id": "molecules-taglist--empty",
+      "tier": "molecules",
+      "viewport": "desktop",
+      "theme": "light",
+      "bucket": "removed",
+      "overlapDiffPixels": 0,
+      "marginPixels": 30240,
+      "diffPixels": 30240,
+      "allowedDiffPixels": 40,
+      "width": null,
+      "height": null,
+      "sizeDelta": null,
+      "violations": [],
+      "error": null
+    },
+    {
+      "key": "atoms__desktop__light__atoms-badge--tones",
+      "id": "atoms-badge--tones",
+      "tier": "atoms",
+      "viewport": "desktop",
+      "theme": "light",
+      "bucket": "a11y",
+      "overlapDiffPixels": 0,
+      "marginPixels": 0,
+      "diffPixels": 0,
+      "allowedDiffPixels": 40,
+      "width": 320,
+      "height": 96,
+      "sizeDelta": null,
+      "violations": [{ "id": "color-contrast", "nodes": 2 }],
+      "error": null
+    }
+  ]
+}

@@ -3,11 +3,12 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/re
 import { HOST } from '@gate/visual-diff/policy';
 // Imported explicitly rather than relying on `globals: true` — tsconfig's
 // `**/*.tsx` include means tsc typechecks this file.
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CurrentJobProvider } from '../components/CurrentJob';
-import { RunPanel } from '../components/RunPanel';
+import { RUNNING_REFUSAL, RunPanel } from '../components/RunPanel';
 import type { ReportListEntry } from '../lib/data';
 import type { HistoryRecord } from '../lib/jobs';
+import { JOB_RUNNING } from '../lib/refusals';
 import { reviewStorageKey } from '../lib/review-state';
 import { refreshCalls, setSearchParams } from './stubs/next-navigation';
 
@@ -42,8 +43,6 @@ const RUNNING: HistoryRecord = {
   exitCode: null,
   reportId: null,
 };
-
-const JOB_RUNNING = 'a job is already running';
 
 interface ApiStub {
   /** What `GET /api/env` says this runner is. */
@@ -299,6 +298,27 @@ describe('starting a job', () => {
     expect(link.getAttribute('href')).toBe('#vd-current-job');
     expect(startButtons('capture')).toHaveLength(0);
   });
+
+  /**
+   * Standing where the control was, and announced: a control that vanishes
+   * without a word is a console that has silently stopped working, and this is
+   * the same refusal `POST /api/jobs` answers a second start with. The
+   * acceptance contract pins `role=alert` and this sentence as D1's surface.
+   */
+  it('announces the refusal in the sentence the server would have used', async () => {
+    renderPanel({ current: { running: true, job: RUNNING } });
+
+    const alert = await screen.findByRole('alert');
+
+    expect(alert.textContent).toContain(JOB_RUNNING);
+  });
+
+  // The panel is a client component and lib/refusals.ts reaches the filesystem,
+  // so the sentence is spelled twice. This is the drift under a test rather
+  // than under a convention.
+  it('spells that sentence the way lib/refusals.ts does', () => {
+    expect(RUNNING_REFUSAL).toBe(JOB_RUNNING);
+  });
 });
 
 describe('the compare pre-fill', () => {
@@ -460,6 +480,16 @@ describe('the accept gate', () => {
 describe('the accept gate off the pinned container', () => {
   const CASE: PanelCase = { image: null };
 
+  /** The host is the LAST question the gate asks, so every case below is a
+   *  report that has already been read through. An unreviewed one is held at
+   *  the review gate instead — the answer a reviewer can still act on. */
+  beforeEach(() => {
+    localStorage.setItem(
+      reviewStorageKey(REPORT.id),
+      JSON.stringify(['a', 'b', 'c', 'd', 'e', 'f']),
+    );
+  });
+
   it('offers no run button at all — the mismatch is a refusal, not a disabled control', async () => {
     await openAcceptTab(CASE);
 
@@ -500,17 +530,20 @@ describe('the accept gate off the pinned container', () => {
     expect(writeText.mock.calls[0]?.[0]).toContain(HOST.image);
   });
 
-  // The gate is fingerprint-first: a reviewer who has read every card still may
-  // not write baselines from the wrong renderer.
-  it('refuses even a report that has been reviewed through', async () => {
-    localStorage.setItem(
-      reviewStorageKey(REPORT.id),
-      JSON.stringify(['a', 'b', 'c', 'd', 'e', 'f']),
-    );
+  // The reading comes first: on the machine a report is actually read — which
+  // is never the pinned image — a host-first gate would be the only answer this
+  // panel ever gave, and it would never once ask for the pass it exists to
+  // collect. The host is still refused, one question later.
+  it('asks for the reading before it names the host', async () => {
+    localStorage.clear();
 
     await openAcceptTab(CASE);
 
-    expect(startButtons('accept')).toHaveLength(0);
+    const [start] = startButtons('accept');
+    expect(start).toHaveProperty('disabled', true);
+    expect(screen.getByRole('note', { name: 'accept gate' }).textContent).toMatch(
+      /unreviewed/,
+    );
   });
 });
 
