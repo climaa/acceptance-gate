@@ -34,8 +34,13 @@ export const BUCKET_TONES: Record<Bucket, BucketChipTone> = {
 
 const TOTAL_TONE: BucketChipTone = 'neutral';
 
-const toneOf = (chip: BucketFilter): BucketChipTone =>
-  chip === TOTAL_CHIP ? TOTAL_TONE : BUCKET_TONES[chip];
+const toneOf = (bucket: Bucket | null): BucketChipTone =>
+  bucket === null ? TOTAL_TONE : BUCKET_TONES[bucket];
+
+/** Which bucket a chip filters to — `total` filters to none, which is what "no
+ *  selection" already means, so the two are the same value from here down. */
+const bucketOf = (chip: BucketFilter): Bucket | null =>
+  chip === TOTAL_CHIP ? null : chip;
 
 export interface BucketChipRowProps {
   counts: Record<Bucket, number>;
@@ -52,16 +57,20 @@ export function BucketChipRow({ counts, selected, onSelect }: BucketChipRowProps
     // attributes, so the name lives on the wrapper and the spacing inside it.
     <div role="group" aria-label="Buckets" className="vd-chips">
       <Stack direction="row" gap={2} wrap>
-        {chipOrder(counts.a11y).map((chip) => (
-          <BucketChip
-            key={chip}
-            tone={toneOf(chip)}
-            label={chip}
-            count={chip === TOTAL_CHIP ? total : counts[chip]}
-            pressed={chip === TOTAL_CHIP ? selected === null : selected === chip}
-            onClick={() => onSelect(chip === TOTAL_CHIP ? null : chip)}
-          />
-        ))}
+        {chipOrder(counts.a11y).map((chip) => {
+          const bucket = bucketOf(chip);
+
+          return (
+            <BucketChip
+              key={chip}
+              tone={toneOf(bucket)}
+              label={chip}
+              count={bucket === null ? total : counts[bucket]}
+              pressed={selected === bucket}
+              onClick={() => onSelect(bucket)}
+            />
+          );
+        })}
       </Stack>
     </div>
   );

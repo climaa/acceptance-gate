@@ -50,7 +50,6 @@ export function TierSection({
   onToggleSection,
   onToggleCard,
 }: TierSectionProps) {
-  const headingId = useId();
   const bodyId = useId();
 
   const total = section.variantKeys.length;
@@ -67,7 +66,7 @@ export function TierSection({
             onChange={(next) => onToggleSection(section, next)}
           />
 
-          <h2 className="vd-section__title" id={headingId}>
+          <h2 className="vd-section__title">
             {/* The name is the checkbox's visible label beside this heading, so
                 it is not repeated on screen — but a heading reading "(6) 2/6"
                 names nothing, and this is a landmark's heading. */}

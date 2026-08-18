@@ -174,7 +174,10 @@ export function cardMatches(card: ReportCard, query: string): boolean {
 /** A card is reviewed when every variant under it is. An empty card cannot be,
  *  which keeps `some`/`all` from both answering true for nothing. */
 export function cardReviewed(card: ReportCard, reviewed: ReadonlySet<string>): boolean {
-  return card.variants.length > 0 && card.variants.every((v) => reviewed.has(v.key));
+  return (
+    card.variants.length > 0 &&
+    card.variants.every((variant) => reviewed.has(variant.key))
+  );
 }
 
 /** How many of `keys` are marked. The denominator lives elsewhere: a section

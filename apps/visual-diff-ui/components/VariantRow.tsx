@@ -26,11 +26,12 @@ import type { Variant } from '@/lib/summary';
  *  look at, and colouring them apart would rank failures against each other. */
 const passes = (variant: Variant) => variant.bucket === 'unchanged';
 
-/** Which side of the comparison a bucket says is absent, if either. `added` had
- *  no baseline to compare against; `removed` has no candidate left. */
-function absentSide(variant: Variant): 'A' | 'B' | null {
-  if (variant.bucket === 'added') return 'A';
-  if (variant.bucket === 'removed') return 'B';
+/** Which side of the comparison a bucket says is absent, if either, named as
+ *  `ReportSides` keys it — `added` had no baseline to compare against;
+ *  `removed` has no candidate left. */
+function absentSide(variant: Variant): keyof ReportSides | null {
+  if (variant.bucket === 'added') return 'a';
+  if (variant.bucket === 'removed') return 'b';
 
   return null;
 }
@@ -108,8 +109,8 @@ export function VariantRow({ variant, sides }: VariantRowProps) {
 
       {absent && (
         <p className="vd-variant__absent">
-          {absent} <span className="vd-mono">{sides[absent === 'A' ? 'a' : 'b']}</span> —
-          not on this side
+          {absent.toUpperCase()} <span className="vd-mono">{sides[absent]}</span> — not on
+          this side
         </p>
       )}
 

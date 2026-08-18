@@ -263,6 +263,19 @@ describe('the review accelerators', () => {
     expect(document.activeElement).toBe(search);
   });
 
+  // …and `space` additionally belongs to whatever is pressable under it. A
+  // reviewer pressing the Storybook link inside a card is opening the story, not
+  // declaring they have finished reviewing it.
+  it('leaves space to the link the reviewer is pressing', () => {
+    renderReport();
+    fireEvent.keyDown(document, { key: 'j' });
+    const link = within(firstCard()).getByRole('link', { name: 'dev Storybook' });
+
+    fireEvent.keyDown(link, { key: ' ' });
+
+    expect(progress().textContent).toBe('reviewed 0/2');
+  });
+
   it('collapses every section at once', () => {
     renderReport();
 

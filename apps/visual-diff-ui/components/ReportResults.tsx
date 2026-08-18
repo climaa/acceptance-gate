@@ -186,9 +186,10 @@ export function ReportResults({ reportId, report, sides }: ReportResultsProps) {
     onToggle: toggleCard,
   });
 
-  const allCollapsed = sections.length > 0 && sections.every((s) => collapsed[s.key]);
+  const allCollapsed =
+    sections.length > 0 && sections.every((section) => collapsed[section.key]);
   const collapseAll = (next: boolean) =>
-    setCollapsed(Object.fromEntries(sections.map((s) => [s.key, next])));
+    setCollapsed(Object.fromEntries(sections.map((section) => [section.key, next])));
 
   return (
     <Stack gap={5}>

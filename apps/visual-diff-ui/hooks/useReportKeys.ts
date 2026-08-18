@@ -88,15 +88,29 @@ export function useReportKeys(options: ReportKeysOptions): ReportKeys {
       const { cards, isReviewed, onToggle } = latest.current;
       const index = focusedIndex(cards);
 
-      if (event.key === 'j') focusCard(cards[Math.min(index + 1, cards.length - 1)]);
-      else if (event.key === 'k') focusCard(cards[Math.max(index - 1, 0)]);
-      else if (event.key === 'n') nextUnreviewed();
-      else if (event.key === ' ' && !isPressable(event.target)) {
-        const card = cards[index];
-        if (!card) return;
+      switch (event.key) {
+        case 'j':
+          focusCard(cards[Math.min(index + 1, cards.length - 1)]);
+          break;
+        case 'k':
+          focusCard(cards[Math.max(index - 1, 0)]);
+          break;
+        case 'n':
+          nextUnreviewed();
+          break;
+        case ' ': {
+          // Space over a button, a link or a `summary` presses it; and with no
+          // card under the cursor there is nothing to mark. Both leave the key
+          // to whatever is next, exactly as an unbound key does.
+          const card = cards[index];
+          if (isPressable(event.target) || !card) return;
 
-        onToggle(card, !isReviewed(card));
-      } else return;
+          onToggle(card, !isReviewed(card));
+          break;
+        }
+        default:
+          return;
+      }
 
       // Only the keys above: `space` scrolls the page and `j` may be someone
       // else's shortcut, but a key this hook ignored must reach whatever is next.
