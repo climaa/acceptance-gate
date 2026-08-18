@@ -1,0 +1,243 @@
+import { TIERS } from '@gate/visual-diff/policy';
+import { type Bucket, type Variant } from './summary';
+import { storyTitle } from './title';
+
+/**
+ * What the report page shows, derived from `summary.json` and nothing else.
+ *
+ * Pure and framework-free on purpose: the grouping, the ordering and the
+ * filtering are the report's argument — a11y outranks pixels, a story is judged
+ * as one card, a filter removes rather than hides — and each of those is a claim
+ * a test can make without a browser.
+ *
+ * `summary.variants` never carries `unchanged` rows: the differ drops them
+ * before it writes the file, keeping only their count. Every list below is
+ * therefore already "everything worth reviewing", and the `unchanged` chip is a
+ * count with nothing behind it — see `EMPTY_UNCHANGED`.
+ */
+
+/** The a11y section's accessible name, pinned: it is what "the accessibility
+ *  section leads the report" is asserted by. */
+export const A11Y_SECTION = 'Accessibility';
+
+/** The chip row's own vocabulary. `total` is not a bucket — it is the row's
+ *  "no filter" chip, and it is pressed whenever no bucket is selected. */
+export const TOTAL_CHIP = 'total';
+
+export type BucketFilter = Bucket | typeof TOTAL_CHIP;
+
+/**
+ * The chip order the board draws, worst-to-quietest, with `total` last.
+ * `a11y` moves to the front when it is non-empty — see {@link chipOrder}.
+ */
+const CHIP_ORDER: readonly BucketFilter[] = [
+  'changed',
+  'added',
+  'removed',
+  'errored',
+  'a11y',
+  'unchanged',
+  TOTAL_CHIP,
+];
+
+/**
+ * The chips, in the order the row renders them.
+ *
+ * An accessibility failure leads the row when there is one: the first screenful
+ * has to answer *is anything inaccessible?* before *did anything move?*, and a
+ * chip sitting fifth is a chip a reviewer reads last.
+ */
+export function chipOrder(a11yCount: number): readonly BucketFilter[] {
+  if (a11yCount === 0) return CHIP_ORDER;
+
+  return ['a11y', ...CHIP_ORDER.filter((chip) => chip !== 'a11y')];
+}
+
+/** What the reviewer is told when they ask for the one bucket the file does not
+ *  carry. Not an error: the count beside it is real, the rows never existed. */
+export const EMPTY_UNCHANGED =
+  'unchanged variants are counted, never written — the differ keeps their number and drops their rows, so there is nothing here to open.';
+
+/** One story's variants, within one section and one bucket: the unit a reviewer
+ *  marks, walks and filters by. */
+export interface ReportCard {
+  /** Unique within the report — section, bucket and story. */
+  key: string;
+  storyId: string;
+  title: string;
+  bucket: Bucket;
+  /** The biggest shared-area difference any of this card's variants recorded. */
+  worst: number;
+  variants: readonly Variant[];
+}
+
+/** A named `region` of the results: the accessibility section, or one tier. */
+export interface ReportSection {
+  key: string;
+  /** The region's accessible name, and the word its heading leads with. */
+  name: string;
+  cards: readonly ReportCard[];
+  /** Every variant the section holds, flattened — what its progress counts. */
+  variantKeys: readonly string[];
+}
+
+/** The variants a bucket chip selects. `total`, and no selection at all, are the
+ *  same answer: everything the report carries. */
+export function filterByBucket(
+  variants: readonly Variant[],
+  bucket: BucketFilter | null,
+): readonly Variant[] {
+  if (bucket === null || bucket === TOTAL_CHIP) return variants;
+
+  return variants.filter((variant) => variant.bucket === bucket);
+}
+
+/** Cards, in the order their first variant appears — which the producer already
+ *  sorted worst-first, so the biggest difference in a section leads it. */
+function cardsOf(sectionKey: string, variants: readonly Variant[]): ReportCard[] {
+  const cards = new Map<string, ReportCard & { variants: Variant[] }>();
+
+  for (const variant of variants) {
+    const key = `${sectionKey}|${variant.bucket}|${variant.id}`;
+    const card = cards.get(key);
+
+    if (card) {
+      card.variants.push(variant);
+      card.worst = Math.max(card.worst, variant.overlapDiffPixels);
+      continue;
+    }
+
+    cards.set(key, {
+      key,
+      storyId: variant.id,
+      title: storyTitle(variant.id),
+      bucket: variant.bucket,
+      worst: variant.overlapDiffPixels,
+      variants: [variant],
+    });
+  }
+
+  return [...cards.values()];
+}
+
+function section(key: string, name: string, variants: readonly Variant[]): ReportSection {
+  return {
+    key,
+    name,
+    cards: cardsOf(key, variants),
+    variantKeys: variants.map((variant) => variant.key),
+  };
+}
+
+/**
+ * The result sections, in the order `main` renders them.
+ *
+ * Accessibility first and never folded: an `a11y` variant appears in that
+ * section and in no other, whatever its pixels did. The bucket outranks the
+ * pixel verdict, so a violation cannot be read as "also changed" and reviewed
+ * away with the rest of its tier.
+ *
+ * The rest follow the design system's own ladder — `TIERS`, innermost first —
+ * so a reviewer walks the report the way the library is built. A tier with
+ * nothing in it is absent rather than empty.
+ */
+export function buildSections(variants: readonly Variant[]): ReportSection[] {
+  const a11y = variants.filter((variant) => variant.bucket === 'a11y');
+  const pixels = variants.filter((variant) => variant.bucket !== 'a11y');
+
+  const tiers = TIERS.map((tier) =>
+    section(
+      tier,
+      tier,
+      pixels.filter((variant) => variant.tier === tier),
+    ),
+  );
+
+  return [
+    ...(a11y.length > 0 ? [section('a11y', A11Y_SECTION, a11y)] : []),
+    ...tiers,
+  ].filter((entry) => entry.cards.length > 0);
+}
+
+/** Whether a card answers the text filter. Title and story id, because a
+ *  reviewer types whichever of the two they have in front of them. */
+export function cardMatches(card: ReportCard, query: string): boolean {
+  const needle = query.trim().toLowerCase();
+  if (needle === '') return true;
+
+  return (
+    card.title.toLowerCase().includes(needle) ||
+    card.storyId.toLowerCase().includes(needle)
+  );
+}
+
+/** A card is reviewed when every variant under it is. An empty card cannot be,
+ *  which keeps `some`/`all` from both answering true for nothing. */
+export function cardReviewed(card: ReportCard, reviewed: ReadonlySet<string>): boolean {
+  return card.variants.length > 0 && card.variants.every((v) => reviewed.has(v.key));
+}
+
+/** How many of `keys` are marked. The denominator lives elsewhere: a section
+ *  counts its own variants, the bar counts the whole report's. */
+export function countReviewed(
+  keys: readonly string[],
+  reviewed: ReadonlySet<string>,
+): number {
+  return keys.filter((key) => reviewed.has(key)).length;
+}
+
+/** The DOM id a card carries, so the keyboard walk can focus one without the
+ *  list it is walking having to hold element references. */
+export const cardElementId = (cardKey: string) =>
+  `vd-card-${cardKey.replace(/[^A-Za-z0-9_-]/g, '-')}`;
+
+/** Figures a reviewer reads as quantities, grouped the way the board draws
+ *  them. `en-US` explicitly: the grouping must not depend on the host's locale,
+ *  the same determinism rule the differ's own ordering follows. */
+export const formatPixels = (pixels: number) => pixels.toLocaleString('en-US');
+
+/** The published Storybook — the one a reviewer can open from a phone, and the
+ *  one the baselines were built from. */
+export const PUBLISHED_STORYBOOK = 'https://acceptance-gate-storybook.vercel.app';
+
+/** The Storybook a developer has running beside the console. */
+export const DEV_STORYBOOK = 'http://localhost:6006';
+
+/**
+ * A deep link to one story, in one theme.
+ *
+ * The `colorScheme:` colon stays literal. Percent-encoding it produces a URL
+ * Storybook accepts and silently ignores, which renders every dark link light —
+ * the exact failure mode `COLOR_SCHEME_GLOBAL` exists to prevent one layer down.
+ * The id is encoded; the globals expression is not.
+ */
+export function storybookLink(base: string, storyId: string, theme: string): string {
+  return `${base}/iframe.html?id=${encodeURIComponent(storyId)}&globals=colorScheme:${theme}`;
+}
+
+/** axe's own rule documentation, keyed by rule id. The version is the one
+ *  `@axe-core/playwright` is pinned to in packages/visual-diff — Deque scopes
+ *  these pages per release, and an unversioned guess 404s. */
+const AXE_DOCS_VERSION = '4.12';
+
+export const ruleDocsLink = (ruleId: string) =>
+  `https://dequeuniversity.com/rules/axe/${AXE_DOCS_VERSION}/${encodeURIComponent(ruleId)}`;
+
+/** The two capture sets a report compares, as its id names them. */
+export interface ReportSides {
+  a: string;
+  b: string;
+}
+
+/**
+ * A report id is `<setA>__<setB>` — the only place the two sides are recorded,
+ * since `summary.json` names neither. An id that does not split is a report
+ * written by something other than this app's runner; it still renders, with the
+ * two sides called what the comparison calls them.
+ */
+export function reportSides(id: string): ReportSides {
+  const separator = id.indexOf('__');
+  if (separator === -1) return { a: 'baseline', b: 'candidate' };
+
+  return { a: id.slice(0, separator), b: id.slice(separator + '__'.length) };
+}
