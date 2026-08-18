@@ -27,6 +27,11 @@ export class ConsolePage {
   readonly liveLog: Locator;
   readonly historyRows: Locator;
   readonly refusalAlert: Locator;
+  readonly acceptReport: Locator;
+  readonly acceptGateNote: Locator;
+  readonly acceptHostAlert: Locator;
+  readonly acceptDockerCommand: Locator;
+  readonly copyCommandButton: Locator;
   readonly sampleBadge: Locator;
   readonly sampleModeNote: Locator;
   readonly sampleReportLink: Locator;
@@ -50,7 +55,21 @@ export class ConsolePage {
     // so it carries a testid instead.
     this.liveLog = page.getByTestId('log-tail');
     this.historyRows = page.getByRole('table', { name: 'History' }).getByRole('row');
-    this.refusalAlert = page.getByRole('alert');
+    // Scoped to `main`, because Next's app router keeps a permanent
+    // `<div role="alert" id="__next-route-announcer__">` appended to
+    // `document.body` for route changes: a page-wide `role=alert` lookup
+    // resolves to two elements the moment the console refuses anything, and
+    // every refusal this suite reads is inside the page's own landmark.
+    this.refusalAlert = page.getByRole('main').getByRole('alert');
+    this.acceptReport = page.getByRole('combobox', { name: 'report' });
+    this.acceptGateNote = page.getByRole('note', { name: 'accept gate' });
+    // The same `role=alert` `refusalAlert` finds, under the name the accept
+    // scenarios read it by: on the accept tab, the refusal on screen is the
+    // gate's.
+    this.acceptHostAlert = this.refusalAlert;
+    // Command text is a code block, not interactive — testid, like log-tail.
+    this.acceptDockerCommand = page.getByTestId('accept-docker-command');
+    this.copyCommandButton = page.getByRole('button', { name: 'copy command' });
     this.sampleBadge = page.getByRole('status', { name: 'sample data' });
     this.sampleModeNote = page.getByRole('note', { name: 'sample mode' });
     this.sampleReportLink = page.getByRole('link', { name: /__/ }).first();
@@ -70,6 +89,14 @@ export class ConsolePage {
 
   async selectJobMode(mode: JobMode) {
     await this.jobTab(mode).click();
+  }
+
+  /** Which report an accept would promote from. Named rather than left to the
+   *  picker's default: the gate asks every one of its questions about this
+   *  report, so a scenario about one of its answers has to say which report it
+   *  means. */
+  async chooseAcceptReport(reportId: string) {
+    await this.acceptReport.selectOption({ label: reportId });
   }
 
   async chooseCompare(a: string, b: string) {

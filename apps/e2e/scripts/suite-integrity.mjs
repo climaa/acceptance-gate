@@ -33,7 +33,8 @@ const workspace = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 /**
  * Scenarios, not Playwright tests: 9 blog + 8 visual-diff console + 3 sample
- * mode. Test count is higher because an untagged scenario is listed once per
+ * mode + 14 report + 7 accessibility + 4 baseline acceptance. Test count is
+ * higher because an untagged scenario is listed once per
  * project; one legitimate `@desktop` lowers that number without removing a
  * requirement, which would train everyone to edit this constant for a
  * non-event. Scenario count moves only when a requirement is added or removed.
@@ -43,7 +44,7 @@ const workspace = resolve(dirname(fileURLToPath(import.meta.url)), '..');
  * scenario is a two-line diff; LOWERING it is a product decision and belongs in
  * its own hand-authored PR with the reason written down.
  */
-const EXPECTED_SCENARIOS = 20;
+const EXPECTED_SCENARIOS = 45;
 
 /**
  * playwright-bdd's control vocabulary (dist/generate/specialTags.js). A denylist

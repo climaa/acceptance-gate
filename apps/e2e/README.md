@@ -58,10 +58,10 @@ suite still exits 0 while claiming less than it did — a scenario deleted, `@sk
 `playwright test --list`, which skips global setup, so it needs no browser and no web
 server and costs about a second.
 
-`EXPECTED_SCENARIOS` in that file is an exact count, **20** today: 9 blog + 8 visual-diff
-console + 3 sample mode. Adding a scenario raises it in the same PR. Lowering it is a
-product decision — a hand-authored PR with the reason written down, never a step on the
-way to green.
+`EXPECTED_SCENARIOS` in that file is an exact count, **45** today: 9 blog + 8 visual-diff
+console + 3 sample mode + 14 report + 7 accessibility + 4 baseline acceptance. Adding a
+scenario raises it in the same PR. Lowering it is a product decision — a hand-authored PR
+with the reason written down, never a step on the way to green.
 
 ## Tags select projects
 
@@ -110,6 +110,14 @@ run, which is a real regression and fabricates nothing — and applies the fabri
 overlay in `seed/visual-diff/` on top of the copy. The fixture itself is never touched.
 The overlay is what the fixture cannot honestly show: a set captured from a dirty tree,
 a worktree hold, all four outcome words, a removed variant and an accessibility failure.
+
+Two reports, deliberately. `main-2026-08-17__main-2026-08-13` is the one carrying the
+fabricated accessibility failure — what the report and a11y suites read — and
+`main-2026-08-17__main-2026-08-16` is a clean comparison of the two newest sets, which is
+the only kind an accept can promote from: the gate refuses an accessibility failure before
+it asks anything else, so on a world holding only the first report the review gate and the
+host warning are answers no scenario could ever reach. An accept scenario names the report
+it means; nothing rides on which one the picker opens with.
 
 The `sample` world seeds nothing at all. An empty data directory is exactly what a
 deployed instance that has captured nothing looks like, so the app falls back to its
