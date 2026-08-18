@@ -36,6 +36,10 @@ export interface TierSectionProps {
   /** Rendered under the heading. The accessibility section explains why it is
    *  not folded into a pixel bucket; a tier has nothing to explain. */
   note?: string;
+  /** A viewport this whole tier is never captured at, said once here rather
+   *  than repeated verbatim under every card in the section. Muted, not warned:
+   *  it explains an absence rather than reporting a failure. */
+  viewportNote?: string;
   collapsed: boolean;
   onCollapse: (collapsed: boolean) => void;
   onToggleSection: (section: ReportSection, reviewed: boolean) => void;
@@ -50,6 +54,7 @@ export function TierSection({
   sides,
   reviewed,
   note,
+  viewportNote,
   collapsed,
   onCollapse,
   onToggleSection,
@@ -95,6 +100,8 @@ export function TierSection({
         </Stack>
 
         {note && <p className="vd-section__note">{note}</p>}
+
+        {viewportNote && <p className="vd-section__viewports">{viewportNote}</p>}
 
         {/* Collapsed removes the cards rather than hiding them, the same
             semantics the filters carry: what is not in the DOM is not something

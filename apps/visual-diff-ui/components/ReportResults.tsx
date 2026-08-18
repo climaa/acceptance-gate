@@ -23,6 +23,7 @@ import {
   filterByBucket,
   type ReportCard,
   type ReportSection,
+  sectionViewportNote,
   type ReportSides,
 } from '@/lib/report-view';
 import { BUCKETS, type Bucket, type Summary, type Variant } from '@/lib/summary';
@@ -168,7 +169,10 @@ export function ReportResults({ reportId, report, sides }: ReportResultsProps) {
   const [collapsed, setCollapsed] = useState<Readonly<Record<string, boolean>>>({});
 
   const sections = useMemo(
-    () => buildSections(filterByBucket(report.variants, view.bucket)),
+    // The whole run goes in as well as the filtered view: a card explains an
+    // absent viewport against everything the run recorded, never against what
+    // the chip row is currently showing.
+    () => buildSections(filterByBucket(report.variants, view.bucket), report.variants),
     [report.variants, view.bucket],
   );
 
@@ -266,6 +270,7 @@ export function ReportResults({ reportId, report, sides }: ReportResultsProps) {
             sides={sides}
             reviewed={marks}
             note={section.name === A11Y_SECTION ? A11Y_NOTE : undefined}
+            viewportNote={sectionViewportNote(section)}
             collapsed={collapsed[section.key] ?? false}
             onCollapse={(next) =>
               setCollapsed((current) => ({ ...current, [section.key]: next }))

@@ -269,7 +269,9 @@ describe('the review accelerators', () => {
   it('leaves space to the link the reviewer is pressing', () => {
     renderReport();
     fireEvent.keyDown(document, { key: 'j' });
-    const link = within(firstCard()).getByRole('link', { name: 'dev Storybook' });
+    // The published Storybook, which every deployment offers — the dev one is
+    // there only where something is running on localhost.
+    const link = within(firstCard()).getByRole('link', { name: 'baseline Storybook' });
 
     fireEvent.keyDown(link, { key: ' ' });
 

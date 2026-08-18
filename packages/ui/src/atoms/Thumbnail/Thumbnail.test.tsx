@@ -1,12 +1,27 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { hydrateRoot } from 'react-dom/client';
+import { renderToString } from 'react-dom/server';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { Thumbnail } from './Thumbnail';
 
 // `globals` is off in vitest.config.ts, so Testing Library registers no automatic
 // cleanup — without this every render stacks in the same document and the queries
 // below match the previous test's DOM.
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  vi.restoreAllMocks();
+});
+
+/** jsdom never fetches, so an image is never `complete` there. Staging the two
+ *  properties the atom reads is how the cached case — the bytes already in hand
+ *  before React could attach a listener — is reproduced at all. */
+function alreadyLoaded(naturalWidth: number) {
+  vi.spyOn(HTMLImageElement.prototype, 'complete', 'get').mockReturnValue(true);
+  vi.spyOn(HTMLImageElement.prototype, 'naturalWidth', 'get').mockReturnValue(
+    naturalWidth,
+  );
+}
 
 // A 1×1 transparent GIF. Inline, so no test — and no captured story — waits on a
 // network the differ's container does not have.
@@ -78,6 +93,74 @@ describe('Thumbnail', () => {
     // The previous image's `load` says nothing about the new one; treating it as
     // loaded would show an empty frame until the browser caught up.
     expect(container.querySelector('.ds-skeleton')).not.toBeNull();
+  });
+
+  // The regression: an `immutable` route makes a warm cache the ordinary case
+  // on a revisit, and a `load` that fired before its handler existed is a load
+  // that never arrives — leaving the placeholder up for an image already in
+  // hand. The element is asked, not only listened to.
+  // This also pins the identity-preserving update inside the ref: an inline ref
+  // is re-invoked on every render, so recording a fresh object each time would
+  // re-render forever and fail this test with "Too many re-renders".
+  it('reveals an image that finished loading before React could listen', () => {
+    alreadyLoaded(1);
+
+    const { container } = render(<Thumbnail src={SRC} alt="baseline" />);
+
+    expect(container.querySelector('.ds-skeleton')).toBeNull();
+    expect(container.querySelector('.ds-thumbnail__img--pending')).toBeNull();
+  });
+
+  // A soft navigation swaps the `src` on a mounted frame, and the new image can
+  // be cached too. This is also the one test that fails if the observation is
+  // recorded against the element's resolved URL rather than the `src` prop —
+  // they never compare equal for a relative src, and the frame would sit on its
+  // placeholder forever.
+  it('reveals a cached image that arrives as a new src on a mounted frame', () => {
+    const { container, rerender } = render(<Thumbnail src={SRC} alt="baseline" />);
+    fireEvent.load(screen.getByRole('img', { name: 'baseline' }));
+    alreadyLoaded(1);
+
+    rerender(<Thumbnail src={`${SRC}#next`} alt="baseline" />);
+
+    expect(container.querySelector('.ds-skeleton')).toBeNull();
+    expect(container.querySelector('.ds-thumbnail__img--pending')).toBeNull();
+  });
+
+  // `complete` with no natural width is ambiguous — a failed fetch and an SVG
+  // with no intrinsic size look identical from here. Concluding "broken" would
+  // remove an image that renders perfectly, and nothing would put it back, so
+  // the frame waits for `onError` to say so instead.
+  it('does not call an image broken merely for having no intrinsic size', () => {
+    alreadyLoaded(0);
+
+    const { container } = render(
+      <Thumbnail src={SRC} alt="candidate" fallback={<span>not on this side</span>} />,
+    );
+
+    expect(screen.queryByText('not on this side')).toBeNull();
+    expect(container.querySelector('img')).not.toBeNull();
+  });
+
+  // The path the fix actually exists for, driven end to end rather than
+  // approximated: server markup, an image the browser finished before any React
+  // ran, then hydration. On a client render React attaches `load` before it sets
+  // `src`, so the event cannot be missed there — it is hydration where the
+  // `<img>` is already in the document and already done. A `useEffect` would run
+  // too late to keep the placeholder from painting; this test is what stops one
+  // being substituted later.
+  it('reveals an image that finished before hydration', () => {
+    const host = document.createElement('div');
+    host.innerHTML = renderToString(<Thumbnail src={SRC} alt="baseline" />);
+    document.body.append(host);
+    alreadyLoaded(1);
+
+    act(() => {
+      hydrateRoot(host, <Thumbnail src={SRC} alt="baseline" />);
+    });
+
+    expect(host.querySelector('.ds-skeleton')).toBeNull();
+    expect(host.querySelector('.ds-thumbnail__img--pending')).toBeNull();
   });
 
   it('appends a caller-supplied className to the frame', () => {

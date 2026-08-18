@@ -77,17 +77,28 @@ export const useCurrentJob = (): CurrentJobState => useContext(CurrentJobContext
  * tried again on the next tick. `no-store` because every field is about right
  * now — a cached answer is a finished job reported as running.
  */
-async function readCurrent(): Promise<CurrentJobState | null> {
+async function readCurrent(): Promise<{
+  state: CurrentJobState;
+  /** Whether this instance is serving the committed fixture. Carried out of the
+   *  response rather than dropped, because it is the answer to "can this console
+   *  ever have anything to poll for?" — see the provider. */
+  isSample: boolean;
+} | null> {
   try {
     const response = await fetch(CURRENT_ENDPOINT, { cache: 'no-store' });
     if (!response.ok) return null;
 
-    const body = (await response.json()) as Partial<CurrentJobState>;
+    const body = (await response.json()) as Partial<CurrentJobState> & {
+      isSample?: boolean;
+    };
 
     return {
-      running: body.running === true,
-      job: body.job ?? null,
-      log: Array.isArray(body.log) ? body.log : [],
+      state: {
+        running: body.running === true,
+        job: body.job ?? null,
+        log: Array.isArray(body.log) ? body.log : [],
+      },
+      isSample: body.isSample === true,
     };
   } catch {
     return null;
@@ -112,22 +123,57 @@ export function CurrentJobProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let live = true;
+    let timer: ReturnType<typeof setInterval> | undefined;
+    // Set once the console has learned no job can ever start here. A sample
+    // instance is serving a committed fixture with no CLI behind it, so
+    // `running` is false forever and the history cannot grow — every poll after
+    // the first asks a question whose answer is incapable of changing. Left
+    // ticking on a deployment that is one open tab away from 86,400 requests a
+    // day, all of them for the same answer.
+    let frozen = false;
 
-    const poll = async () => {
-      const next = await readCurrent();
-      if (!live || !next) return;
-
-      setState(next);
-      if (wasRunning.current && !next.running) latestRouter.current.refresh();
-      wasRunning.current = next.running;
+    const stop = () => {
+      if (timer !== undefined) clearInterval(timer);
+      timer = undefined;
     };
 
-    void poll();
-    const timer = setInterval(() => void poll(), POLL_MS);
+    const poll = async () => {
+      const answer = await readCurrent();
+      if (!live || !answer) return;
+
+      setState(answer.state);
+      if (wasRunning.current && !answer.state.running) latestRouter.current.refresh();
+      wasRunning.current = answer.state.running;
+
+      if (answer.isSample) {
+        frozen = true;
+        stop();
+      }
+    };
+
+    /* Whether the interval should be running right now, and the one place that
+       decides. A hidden tab is not watching a log — the panel it feeds is not
+       painted, and the answer is re-read on the way back — so a console left
+       open in a background window costs nothing until someone looks at it. */
+    const sync = () => {
+      if (frozen || document.visibilityState !== 'visible') {
+        stop();
+        return;
+      }
+
+      if (timer === undefined) {
+        void poll();
+        timer = setInterval(() => void poll(), POLL_MS);
+      }
+    };
+
+    sync();
+    document.addEventListener('visibilitychange', sync);
 
     return () => {
       live = false;
-      clearInterval(timer);
+      stop();
+      document.removeEventListener('visibilitychange', sync);
     };
   }, []);
 

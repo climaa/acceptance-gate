@@ -70,7 +70,12 @@ const card = () => screen.getByRole('article');
 /** One of the viewer's three frames, by the side it shows. */
 const frame = (name: string) => within(card()).getByRole('figure', { name });
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  // `showsDevStorybook` reads the mode per call, so a stub left standing would
+  // decide the next test's markup.
+  vi.unstubAllEnvs();
+});
 
 describe('a pixel card', () => {
   it('titles itself from the story slug', () => {
@@ -110,10 +115,21 @@ describe('a pixel card', () => {
     expect(within(card()).getByText('worst 12,216 px')).toBeTruthy();
   });
 
-  // The `colorScheme:` colon must survive verbatim. Percent-encoded, Storybook
-  // accepts the URL and silently ignores the global, so every dark link opens a
-  // light story — a failure that looks exactly like a passing one.
+  // Three things this asserts, each a way the link has already been wrong:
+  //
+  //  - `?path=`, not `/iframe.html`: the bare preview document has no sidebar
+  //    and no toolbar, and a reviewer following one of these came to look around.
+  //  - `/index.html`, not the bare origin. `apps/storybook/vercel.json`
+  //    redirects `/` to the Welcome page, and Vercel resolves that by keeping
+  //    the destination's `path` and appending the request's — so a link through
+  //    `/` opens Welcome instead of the story. Do not "simplify" this away.
+  //  - the `colorScheme:` colon verbatim. Percent-encoded, Storybook accepts the
+  //    URL and silently ignores the global, so every dark link opens a light
+  //    story — a failure that looks exactly like a passing one. (That same
+  //    redirect encodes the colon on the way, which is how it broke both at once.)
   it('deep-links the story into both Storybooks with the globals colon literal', () => {
+    vi.stubEnv('NODE_ENV', 'development');
+
     renderCard(
       cardOf(
         variant({
@@ -128,11 +144,67 @@ describe('a pixel card', () => {
     const published = within(card()).getByRole('link', { name: 'baseline Storybook' });
 
     expect(dev.getAttribute('href')).toBe(
-      'http://localhost:6006/iframe.html?id=atoms-badge--tones&globals=colorScheme:dark',
+      'http://localhost:6006/index.html?path=/story/atoms-badge--tones&globals=colorScheme:dark',
     );
     expect(published.getAttribute('href')).toBe(
-      'https://acceptance-gate-storybook.vercel.app/iframe.html?id=atoms-badge--tones&globals=colorScheme:dark',
+      'https://acceptance-gate-storybook.vercel.app/index.html?path=/story/atoms-badge--tones&globals=colorScheme:dark',
     );
+  });
+
+  // A deployed console has no Storybook on localhost, and a dead link beside a
+  // live one is worse than no link — the published build still answers.
+  it('offers only the published Storybook when nothing is running locally', () => {
+    vi.stubEnv('NODE_ENV', 'production');
+
+    renderCard(
+      cardOf(
+        variant({
+          key: 'atoms__desktop__dark__atoms-badge--tones',
+          id: 'atoms-badge--tones',
+          theme: 'dark',
+        }),
+      ),
+    );
+
+    expect(within(card()).queryByRole('link', { name: 'dev Storybook' })).toBeNull();
+    expect(within(card()).getByRole('link', { name: 'baseline Storybook' })).toBeTruthy();
+  });
+
+  // The card explains only what varies per card: a viewport its tier *is* shot
+  // at, whose every variant matched. The tier-scoped half — "atoms are captured
+  // at desktop only" — is identical for every card in the section and is said
+  // once by the section instead.
+  it('names a viewport whose rows all matched their baseline', () => {
+    renderCard(
+      cardOf(
+        variant({
+          key: 'templates__desktop__light__templates-posttemplate--default',
+          id: 'templates-posttemplate--default',
+          tier: 'templates',
+        }),
+      ),
+    );
+
+    const gaps = within(card()).getByRole('list', {
+      name: 'viewports not shown for PostTemplate — Default',
+    });
+
+    expect(gaps.textContent).toContain('matched its baseline');
+  });
+
+  it('does not repeat its tier\u2019s capture policy under the card', () => {
+    renderCard(
+      cardOf(
+        variant({
+          key: 'atoms__desktop__light__atoms-prose--default',
+          id: 'atoms-prose--default',
+        }),
+      ),
+    );
+
+    expect(
+      within(card()).queryByRole('list', { name: /viewports not shown/ }),
+    ).toBeNull();
   });
 
   it('marks itself as some, rather than all, when one variant is reviewed', () => {

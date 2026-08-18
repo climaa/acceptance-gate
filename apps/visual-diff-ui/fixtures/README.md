@@ -36,7 +36,7 @@ the corpus has no accessibility violations — the fixture doesn't fabricate one
 
 ## Layout
 
-```
+```bash
 fixtures/
 ├── sets.json                     # the two capture sets the console lists
 └── reports/

@@ -25,6 +25,10 @@ import { ReportResults } from './ReportResults';
  */
 const HEADER_LABEL = 'report';
 
+/** The disclosure's own name — what a reviewer clicks to get the screenful
+ *  back, and what a scenario finds it by. */
+const DETAILS_LABEL = 'report details';
+
 /** One capture set, as the header identifies it. A label the registry has never
  *  heard of still renders — a report can outlive the set it was built from, and
  *  a header that dropped the side would be hiding half the comparison. */
@@ -62,12 +66,12 @@ function SetLine({
   );
 }
 
-/** The run's own parameters, folded away: a reviewer needs them when a verdict
- *  surprises them and never before. */
+/** The run's own parameters. Inside the disclosure below rather than behind one
+ *  of its own: nested folds are two clicks to reach one fact, and a reviewer who
+ *  has opened the details wants everything about the run at once. */
 function RunInfo({ report }: { report: Summary }) {
   return (
-    <details className="vd-report__run-info">
-      <summary>run info</summary>
+    <div className="vd-report__run-info">
       <dl className="vd-fingerprints">
         <dt>thresholds</dt>
         <dd className="vd-mono">
@@ -80,7 +84,7 @@ function RunInfo({ report }: { report: Summary }) {
           </Fragment>
         ))}
       </dl>
-    </details>
+    </div>
   );
 }
 
@@ -117,14 +121,24 @@ export function ReportTemplate({ id, report, sets }: ReportTemplateProps) {
             {report.counts.a11y > 0 && (
               <Badge tone="danger">a11y {report.counts.a11y}</Badge>
             )}
-
-            <RunInfo report={report} />
           </Stack>
 
-          <dl className="vd-report__sets">
-            <SetLine side="A" label={sides.a} set={byLabel.get(sides.a)} />
-            <SetLine side="B" label={sides.b} set={byLabel.get(sides.b)} />
-          </dl>
+          {/* Open, and foldable: the identity row above says which report this
+              is, and everything under it is provenance a reviewer reads once.
+              The rows stay inside this landmark either way — a fold changes
+              what is on screen, never what the report says it compared. */}
+          <details className="vd-report__more" open>
+            <summary>{DETAILS_LABEL}</summary>
+
+            <Stack gap={3}>
+              <dl className="vd-report__sets">
+                <SetLine side="A" label={sides.a} set={byLabel.get(sides.a)} />
+                <SetLine side="B" label={sides.b} set={byLabel.get(sides.b)} />
+              </dl>
+
+              <RunInfo report={report} />
+            </Stack>
+          </details>
         </Stack>
       </header>
 

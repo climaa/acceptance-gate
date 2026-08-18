@@ -27,3 +27,13 @@
   margin-inline: auto;
   padding-inline: var(--space-6);
 }
+
+/* The same gutters with no measure: for a screen that is a workspace rather than
+   something to read, where the content wants every pixel of a wide window. A
+   modifier rather than a consumer overriding `.ds-container` from its own
+   stylesheet — that only ever won on source order, and would have failed
+   silently the day this rule gained a layer, a media query or a second
+   selector. */
+.ds-container--full {
+  max-width: none;
+}

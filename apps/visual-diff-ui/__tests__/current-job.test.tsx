@@ -21,7 +21,14 @@ import { refreshCalls } from './stubs/next-navigation';
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
+  // Restored here, never at the end of a test body: a case that fails before
+  // its last line would otherwise leave fake timers installed and every test
+  // after it would time out on a clock nobody is advancing.
+  vi.useRealTimers();
   refreshCalls.length = 0;
+  // The visibility getter is redefined on `document` itself, which outlives a
+  // render — a test that left it hidden would silence every poll after it.
+  setVisibility('visible');
 });
 
 const RUNNING: HistoryRecord = {
@@ -60,6 +67,19 @@ function stubCurrent(payload: CurrentPayload) {
   return fetchMock;
 }
 
+/** jsdom reports `visible` and never changes it, so both halves of the
+ *  visibility contract have to be driven by hand. */
+function setVisibility(value: 'visible' | 'hidden') {
+  Object.defineProperty(document, 'visibilityState', {
+    configurable: true,
+    get: () => value,
+  });
+  document.dispatchEvent(new Event('visibilitychange'));
+}
+
+const hide = () => setVisibility('hidden');
+const show = () => setVisibility('visible');
+
 const renderCurrentJob = () =>
   render(
     <CurrentJobProvider>
@@ -95,6 +115,55 @@ describe('the current-job region', () => {
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalled());
     expect(fetchMock.mock.calls[0]).toEqual(['/api/jobs/current', { cache: 'no-store' }]);
+  });
+
+  /**
+   * A sample instance serves a committed fixture with no CLI behind it, so
+   * `running` is false forever and the history cannot grow. Every poll after
+   * the first asks a question whose answer cannot change — and left ticking on
+   * the deployed console, one open tab is 86,400 requests a day for it.
+   */
+  it('stops polling once it learns the instance can never run a job', async () => {
+    vi.useFakeTimers();
+    const fetchMock = stubCurrent({ isSample: true, running: false, job: null });
+
+    renderCurrentJob();
+
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    await vi.advanceTimersByTimeAsync(10_000);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps polling an instance that has a runner behind it', async () => {
+    vi.useFakeTimers();
+    const fetchMock = stubCurrent({ isSample: false, running: false, job: null });
+
+    renderCurrentJob();
+
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    await vi.advanceTimersByTimeAsync(3_000);
+    expect(fetchMock.mock.calls.length).toBeGreaterThan(1);
+  });
+
+  // A hidden tab is not watching a log: the panel it feeds is not painted, and
+  // the answer is re-read on the way back. A console left open in a background
+  // window should cost nothing until someone looks at it.
+  it('pauses while the tab is hidden and resumes when it comes back', async () => {
+    vi.useFakeTimers();
+    const fetchMock = stubCurrent({ isSample: false, running: false, job: null });
+    renderCurrentJob();
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalled());
+
+    hide();
+    const whileHidden = fetchMock.mock.calls.length;
+    await vi.advanceTimersByTimeAsync(5_000);
+
+    expect(fetchMock).toHaveBeenCalledTimes(whileHidden);
+
+    show();
+    await vi.waitFor(() =>
+      expect(fetchMock.mock.calls.length).toBeGreaterThan(whileHidden),
+    );
   });
 
   it('names the running job by mode and label', async () => {

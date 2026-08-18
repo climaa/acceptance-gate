@@ -35,9 +35,40 @@ interface Observed {
  * conditionally rendered: it is the element that fetches, and the element whose
  * `load` retires the placeholder. Nothing swaps in afterwards, so the frame does
  * not reflow at the moment the image appears.
+ *
+ * The element is also *asked* on mount, not only listened to. An image whose
+ * bytes are already cached can finish before React attaches `onLoad` — a
+ * revisit, a soft navigation, anything served `immutable` — and an event fired
+ * before its handler existed is an event that never arrives, leaving the frame
+ * showing its placeholder for an image that is sitting right there.
  */
 export function Thumbnail({ src, alt, fallback, className }: ThumbnailProps) {
   const [observed, setObserved] = useState<Observed | null>(null);
+
+  /** What the element already knows, for the load that beat the listener.
+   *
+   *  Positive evidence only. A decoded image reports a natural width, so
+   *  `complete` with one is conclusive; `complete` *without* one is not — a
+   *  broken fetch and an SVG carrying no intrinsic size are indistinguishable
+   *  here, and calling the second broken would take an image that renders
+   *  perfectly out of the DOM (below) with nothing to put it back. Every
+   *  negative is left to `onError`, which knows the difference.
+   *
+   *  The observation is recorded against the `src` prop this render passed
+   *  rather than the element's resolved URL — a relative `src` comes back off
+   *  the DOM absolute, and the two would never compare equal. The previous
+   *  object is returned unchanged when it already says this, because an inline
+   *  ref is re-invoked on every render and a fresh object each time would be a
+   *  render loop. */
+  const readOnMount = (node: HTMLImageElement | null) => {
+    if (src === undefined || !node?.complete || node.naturalWidth === 0) return;
+
+    setObserved((current) =>
+      current?.src === src && current.status === 'loaded'
+        ? current
+        : { src, status: 'loaded' },
+    );
+  };
 
   const status = src !== undefined && observed?.src === src ? observed.status : 'loading';
   const frameClass = ['ds-thumbnail', className].filter(Boolean).join(' ');
@@ -59,6 +90,7 @@ export function Thumbnail({ src, alt, fallback, className }: ThumbnailProps) {
         className={['ds-thumbnail__img', pending && 'ds-thumbnail__img--pending']
           .filter(Boolean)
           .join(' ')}
+        ref={readOnMount}
         src={src}
         alt={alt}
         onLoad={() => setObserved({ src, status: 'loaded' })}
