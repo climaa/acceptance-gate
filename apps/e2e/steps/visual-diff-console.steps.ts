@@ -26,7 +26,7 @@ const BASELINE_SET = { label: 'main-2026-08-17', branch: 'main' } as const;
 const SPARE_SET = { label: 'main-2026-08-16', branch: 'main' } as const;
 
 /** Captured from a working tree with uncommitted changes. Also the B side. */
-const DIRTY_SET = { label: 'main-2026-08-13', branch: 'main' } as const;
+const DIRTY_SET = { label: 'main-2026-08-13', branch: 'main', dirty: true } as const;
 
 /** Nothing holds it, so the delete scenario can retire it. */
 const UNHELD_SET = { label: 'main-2026-08-12', branch: 'main' } as const;
@@ -34,7 +34,11 @@ const UNHELD_SET = { label: 'main-2026-08-12', branch: 'main' } as const;
 /** The oldest set. A registered worktree holds it in the SEEDED world, which is
  *  where the refused delete runs; the mutating world registers no worktree, or
  *  the prune it owns would skip this row instead of retiring it. */
-const HELD_SET = { label: 'main-2026-08-11', branch: 'main' } as const;
+const HELD_SET = {
+  label: 'main-2026-08-11',
+  branch: 'main',
+  heldByWorktree: true,
+} as const;
 
 /** Every set the worlds hold, newest first — the order `sets.json` is written
  *  in and the console shows. */
@@ -218,10 +222,15 @@ Then(
   'the history lists each run with its outcome, exit code and duration',
   async ({ console: consolePage }) => {
     // Status vocabulary verbatim from the CLI — the contract's history row.
-    const withDiffs = consolePage.historyRow(/succeeded \(diffs\)/);
+    const withDiffs = consolePage.historyRow(/succeeded \(diffs\)/).first();
 
     await expect(withDiffs).toBeVisible();
-    await expect(withDiffs.first()).toContainText(/exit 1|\b1\b/);
-    await expect(withDiffs.first()).toContainText(/\d+m \d+s|\d+s/);
+    // Per column, not against the row's text: the cells concatenate, and an
+    // exit code of 1 next to a duration of 1m 35s has no boundary to anchor on.
+    // `succeeded (diffs)` is the CLI's word for exit 1, so that is the number.
+    await expect(consolePage.historyCell(withDiffs, 'exit')).toHaveText('1');
+    await expect(consolePage.historyCell(withDiffs, 'took')).toHaveText(
+      /^\d+m \d+s$|^\d+s$/,
+    );
   },
 );

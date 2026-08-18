@@ -374,7 +374,17 @@ export function ComparisonModal({
           differ in the shared area
         </p>
 
-        <div className="vd-compare__stage">
+        {/*
+          `tabIndex={0}` for the same reason LogTail carries one: the stage
+          scrolls by construction (`max-height: 60vh` with `overflow: auto`, so
+          any shot taller than the viewport pans inside it), and a region that
+          scrolls but cannot be focused is unreachable from the keyboard —
+          WCAG 2.1.1, and axe's `scrollable-region-focusable`. Unconditional,
+          because whether a given screenshot overflows is a runtime measurement
+          this component cannot make. The `Stage`'s own controls are pointer
+          affordances on the image, not tab stops that would carry the scroll.
+        */}
+        <div className="vd-compare__stage" tabIndex={0}>
           <Stage
             mode={active}
             split={split}

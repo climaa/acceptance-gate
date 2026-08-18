@@ -27,14 +27,14 @@ export class ConsolePage {
   readonly liveLog: Locator;
   readonly historyRows: Locator;
   readonly refusalAlert: Locator;
+  readonly sampleBadge: Locator;
+  readonly sampleModeNote: Locator;
+  readonly sampleReportLink: Locator;
   readonly acceptReport: Locator;
   readonly acceptGateNote: Locator;
   readonly acceptHostAlert: Locator;
   readonly acceptDockerCommand: Locator;
   readonly copyCommandButton: Locator;
-  readonly sampleBadge: Locator;
-  readonly sampleModeNote: Locator;
-  readonly sampleReportLink: Locator;
 
   constructor(private readonly page: Page) {
     this.setsTable = page.getByRole('table', { name: 'Snapshot sets' });
@@ -56,11 +56,15 @@ export class ConsolePage {
     this.liveLog = page.getByTestId('log-tail');
     this.historyRows = page.getByRole('table', { name: 'History' }).getByRole('row');
     // Scoped to `main`, because Next's app router keeps a permanent
-    // `<div role="alert" id="__next-route-announcer__">` appended to
-    // `document.body` for route changes: a page-wide `role=alert` lookup
-    // resolves to two elements the moment the console refuses anything, and
-    // every refusal this suite reads is inside the page's own landmark.
+    // `<div role="alert" id="__next-route-announcer__">` outside the page's own
+    // tree for route changes: a page-wide `role=alert` lookup resolves to two
+    // elements the moment the console refuses anything, and every refusal this
+    // suite reads is inside the page's own landmark. The confirm dialogs count
+    // as inside — `Dialog` renders in place rather than through a portal.
     this.refusalAlert = page.getByRole('main').getByRole('alert');
+    this.sampleBadge = page.getByRole('status', { name: 'sample data' });
+    this.sampleModeNote = page.getByRole('note', { name: 'sample mode' });
+    this.sampleReportLink = page.getByRole('link', { name: /__/ }).first();
     this.acceptReport = page.getByRole('combobox', { name: 'report' });
     this.acceptGateNote = page.getByRole('note', { name: 'accept gate' });
     // The same `role=alert` `refusalAlert` finds, under the name the accept
@@ -70,9 +74,6 @@ export class ConsolePage {
     // Command text is a code block, not interactive — testid, like log-tail.
     this.acceptDockerCommand = page.getByTestId('accept-docker-command');
     this.copyCommandButton = page.getByRole('button', { name: 'copy command' });
-    this.sampleBadge = page.getByRole('status', { name: 'sample data' });
-    this.sampleModeNote = page.getByRole('note', { name: 'sample mode' });
-    this.sampleReportLink = page.getByRole('link', { name: /__/ }).first();
   }
 
   async open(world: VdWorld = 'seeded') {
@@ -91,18 +92,18 @@ export class ConsolePage {
     await this.jobTab(mode).click();
   }
 
+  async chooseCompare(a: string, b: string) {
+    await this.pickerA.selectOption({ label: a });
+    await this.pickerB.selectOption({ label: b });
+    await this.compareButton.click();
+  }
+
   /** Which report an accept would promote from. Named rather than left to the
    *  picker's default: the gate asks every one of its questions about this
    *  report, so a scenario about one of its answers has to say which report it
    *  means. */
   async chooseAcceptReport(reportId: string) {
     await this.acceptReport.selectOption({ label: reportId });
-  }
-
-  async chooseCompare(a: string, b: string) {
-    await this.pickerA.selectOption({ label: a });
-    await this.pickerB.selectOption({ label: b });
-    await this.compareButton.click();
   }
 
   /** The label text of a picker's selected option — asserting selection without
@@ -132,5 +133,23 @@ export class ConsolePage {
 
   historyRow(outcome: RegExp): Locator {
     return this.historyRows.filter({ hasText: outcome });
+  }
+
+  /**
+   * One cell of a history row, addressed by the column it sits under.
+   *
+   * A row's own text is its cells run together with no separator — a compare
+   * that exited 1 after 1m 35s reads as `…09:41:02Z11m 35sview`, where the exit
+   * code has a digit on one side and a timestamp on the other and so has no
+   * word boundary left to match on. Asserting a single column against that
+   * string is a coin toss, so per-column assertions address the cell.
+   *
+   * `data-label` is the column's own header, set by `Table` for the sub-768px
+   * card reflow (it is what the cell's `::before` prints) — a rendered property
+   * of the column, not a hook added for this suite. The generated content is
+   * not part of `textContent`, so it never lands in the assertion.
+   */
+  historyCell(row: Locator, column: string): Locator {
+    return row.locator(`[data-label="${column}"]`);
   }
 }
