@@ -26,10 +26,18 @@ import type { Bucket } from './summary';
  *  it read the same value from the same import. */
 export const ACCEPT_IMAGE = HOST.image;
 
-/** The container command the accept mode degrades to off the pinned host.
- *  Transcribed from `packages/visual-diff/README.md`'s "Running the pinned
- *  container locally" — a reviewer copies this and it has to be the recipe that
- *  package documents, down to the browser path the image bakes in. */
+/**
+ * The container command the accept mode degrades to off the pinned host.
+ *
+ * Transcribed from `packages/visual-diff/README.md`'s "Running the pinned
+ * container locally" — a reviewer copies this and it has to be the recipe that
+ * package documents, down to the browser path the image bakes in.
+ *
+ * Accept is the only mode that still hands over a command. The capture modes
+ * used to as well; they now start that container themselves (lib/docker.ts),
+ * which is what this console is for. Accept has not followed because promoting
+ * baselines is a decision rather than a job — see the gate below.
+ */
 export const ACCEPT_COMMAND = [
   'docker run --rm --ipc=host -v "$(pwd)":/repo -w /repo \\',
   '  -e PLAYWRIGHT_BROWSERS_PATH=/ms-playwright \\',

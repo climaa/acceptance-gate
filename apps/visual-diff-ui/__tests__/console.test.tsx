@@ -74,11 +74,23 @@ const INTERRUPTED: HistoryRecord = {
   reportId: null,
 };
 
+/** The committed corpus, as a checkout with one would report it. */
+const CORPUS = {
+  label: 'baselines',
+  sha: '8b95e14',
+  acceptedAt: '2026-08-18',
+  stories: 130,
+  bytes: 1_700_000,
+};
+
 interface ConsoleContents {
   sets?: CaptureSet[];
   sizes?: Record<string, number>;
   reports?: ReportListEntry[];
   history?: HistoryRecord[];
+  /** Null by default: most of this suite is about the captured sets, and a
+   *  checkout is not something a template case should have to have. */
+  corpus?: typeof CORPUS | null;
 }
 
 /** The console with everything populated, unless a case says otherwise.
@@ -93,6 +105,7 @@ function consoleWith({
   sizes = { [CLEAN.label]: 95_500_000, [DIRTY.label]: 1000 },
   reports = [REPORT],
   history = [RUN, INTERRUPTED],
+  corpus = null,
 }: ConsoleContents = {}) {
   return (
     <DashboardTemplate
@@ -101,6 +114,8 @@ function consoleWith({
       reports={reports}
       history={history}
       isSample={false}
+      isLocal
+      corpus={corpus}
     />
   );
 }
@@ -504,5 +519,75 @@ describe('the numeric cells', () => {
     const cell = within(table(name)).getByText(text);
 
     expect(cell.className).toContain('vd-table__cell--numeric');
+  });
+});
+
+/**
+ * The committed corpus, drawn above the sets this instance captured.
+ *
+ * Above and outside the table: the table's empty state says this instance has
+ * captured nothing yet, and the corpus is exactly a thing it did not capture. The
+ * count in the panel title means captured sets, and only those.
+ */
+describe('the canonical corpus', () => {
+  it('is absent when there is no checkout to read one from', () => {
+    render(consoleWith());
+
+    expect(screen.queryByRole('note', { name: 'canonical corpus' })).toBeNull();
+  });
+
+  it('names the commit that accepted it, and what it holds', () => {
+    render(consoleWith({ corpus: CORPUS }));
+
+    const region = screen.getByRole('note', { name: 'canonical corpus' }).parentElement
+      ?.parentElement;
+
+    expect(region?.textContent).toContain('8b95e14');
+    expect(region?.textContent).toContain('2026-08-18');
+    expect(region?.textContent).toContain('130');
+    expect(region?.textContent).toContain('1.7 MB');
+  });
+
+  // Present and disabled rather than absent: the console can never remove this —
+  // `DELETE /api/sets/baselines` refuses with the reason — and every capture set
+  // below carries the button, so no button at all would read as an omission.
+  it('offers a delete that cannot be pressed', () => {
+    render(consoleWith({ corpus: CORPUS }));
+
+    const [first] = screen.getAllByRole('button', { name: 'delete' });
+
+    expect(first).toHaveProperty('disabled', true);
+  });
+
+  // What it is there for. A reviewer who has just captured is asking what their
+  // shots did to the corpus, so it heads both pickers.
+  it('is the first thing either compare picker offers', () => {
+    render(consoleWith({ corpus: CORPUS }));
+
+    for (const name of ['A', 'B']) {
+      const options = [...screen.getByRole('combobox', { name }).children];
+      expect(options[0]?.textContent).toBe('baselines');
+    }
+  });
+
+  // The retention control prunes what this instance accumulated. The corpus is
+  // not prunable — the delete route refuses it by name — so it is not offered.
+  it('is not something retention can prune', () => {
+    render(consoleWith({ corpus: CORPUS }));
+
+    expect(screen.getByRole('table', { name: 'Snapshot sets' })).toBeDefined();
+    expect(screen.getByRole('spinbutton', { name: 'keep latest' })).toBeDefined();
+  });
+
+  // The count in the panel title, and the rows under it, are captured sets — the
+  // corpus adding to either would make one number mean two things.
+  it('does not become a row in the snapshot sets table', () => {
+    render(consoleWith({ corpus: CORPUS }));
+
+    const rows = screen
+      .getByRole('table', { name: 'Snapshot sets' })
+      .querySelectorAll('tbody tr');
+
+    expect(rows).toHaveLength(2);
   });
 });

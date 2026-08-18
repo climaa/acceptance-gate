@@ -5,10 +5,15 @@ import { HOST } from '@gate/visual-diff/policy';
 // `**/*.tsx` include means tsc typechecks this file.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CurrentJobProvider } from '../components/CurrentJob';
-import { RUNNING_REFUSAL, RunPanel } from '../components/RunPanel';
+import {
+  DOCKER_REFUSAL,
+  REMOTE_REFUSAL,
+  RUNNING_REFUSAL,
+  RunPanel,
+} from '../components/RunPanel';
 import type { ReportListEntry } from '../lib/data';
 import type { HistoryRecord } from '../lib/jobs';
-import { JOB_RUNNING } from '../lib/refusals';
+import { DOCKER_DOWN, JOB_RUNNING, NOT_LOCAL } from '../lib/refusals';
 import { reviewStorageKey } from '../lib/review-state';
 import { refreshCalls, setSearchParams } from './stubs/next-navigation';
 
@@ -44,9 +49,26 @@ const RUNNING: HistoryRecord = {
   reportId: null,
 };
 
+/** The corpus `GET /api/stories` answers with. Two tiers and three components is
+ *  enough to drive a group's none/some/all without restating the real build. */
+const CORPUS = [
+  {
+    tier: 'atoms',
+    components: [
+      { filter: 'atoms-button', name: 'Button' },
+      { filter: 'atoms-badge', name: 'Badge' },
+    ],
+  },
+  { tier: 'molecules', components: [{ filter: 'molecules-card', name: 'Card' }] },
+];
+
 interface ApiStub {
   /** What `GET /api/env` says this runner is. */
   image?: string | null;
+  /** Whether `GET /api/env` says a container could be started. */
+  docker?: boolean;
+  /** What `GET /api/stories` says there is to capture. */
+  tiers?: typeof CORPUS;
   /** What `GET /api/jobs/current` says is happening. */
   current?: { running: boolean; job: HistoryRecord | null };
   /** What `POST /api/jobs` answers. */
@@ -59,7 +81,13 @@ const answered = (ok: boolean, status: number, body: unknown) =>
 /** The three endpoints this panel talks to, answered per case. An unstubbed URL
  *  throws rather than resolving: a screen quietly reading something this suite
  *  never arranged is exactly what the fingerprint seam must not do. */
-function stubApi({ image = HOST.image, current, jobs }: ApiStub = {}) {
+function stubApi({
+  image = HOST.image,
+  docker = true,
+  tiers = CORPUS,
+  current,
+  jobs,
+}: ApiStub = {}) {
   const fetchMock = vi.fn((url: string) => {
     if (url === '/api/env') {
       return answered(true, 200, {
@@ -67,8 +95,10 @@ function stubApi({ image = HOST.image, current, jobs }: ApiStub = {}) {
         arch: 'x64',
         image,
         playwright: null,
+        docker,
       });
     }
+    if (url === '/api/stories') return answered(true, 200, { tiers });
     if (url === '/api/jobs/current') {
       return answered(true, 200, { running: false, job: null, log: [], ...current });
     }
@@ -89,6 +119,9 @@ function stubApi({ image = HOST.image, current, jobs }: ApiStub = {}) {
 
 interface PanelCase extends ApiStub {
   isSample?: boolean;
+  /** Defaults to a local console: every case that is not about the deployed
+   *  refusal is about a panel a reviewer can actually press. */
+  isLocal?: boolean;
   reports?: ReportListEntry[];
   /** The query string the pickers would have written. */
   query?: string;
@@ -96,6 +129,7 @@ interface PanelCase extends ApiStub {
 
 function renderPanel({
   isSample = false,
+  isLocal = true,
   reports = [REPORT],
   query = '',
   ...api
@@ -105,7 +139,7 @@ function renderPanel({
 
   render(
     <CurrentJobProvider>
-      <RunPanel isSample={isSample} reports={reports} />
+      <RunPanel isSample={isSample} isLocal={isLocal} reports={reports} />
     </CurrentJobProvider>,
   );
 
@@ -231,14 +265,15 @@ describe('starting a job', () => {
 
   // `--filter` is the CLI's own flag, and the only one of the three the composed
   // `check` takes: an empty box must not become a filter matching nothing.
-  it('carries the story filter only when one was typed', async () => {
+  // Ticked, not typed: `--filter` used to be a text box over a vocabulary that
+  // only exists inside a Storybook build.
+  it('carries the components that were ticked', async () => {
     const fetchMock = renderPanel();
     fireEvent.change(screen.getByRole('textbox', { name: 'label' }), {
       target: { value: 'main-2026-08-17' },
     });
-    fireEvent.change(screen.getByRole('textbox', { name: '--filter' }), {
-      target: { value: 'atoms-button' },
-    });
+    fireEvent.click(await screen.findByRole('button', { name: /2$/ }));
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Button' }));
 
     fireEvent.click(screen.getByRole('button', { name: 'start capture' }));
 
@@ -249,7 +284,7 @@ describe('starting a job', () => {
           body: JSON.stringify({
             mode: 'capture',
             label: 'main-2026-08-17',
-            filter: 'atoms-button',
+            filter: ['atoms-button'],
           }),
         }),
       ),
@@ -382,12 +417,123 @@ describe('sample mode', () => {
     expect(start).toHaveProperty('disabled', true);
   });
 
-  it('says why, in the one word that explains it', () => {
+  // The variable is the whole of the fix, so it is the whole of the sentence.
+  // It deliberately says nothing about deployments: a local console with no data
+  // directory is in sample mode too, and that is the reader this note is for.
+  it('names the one thing that would take it out of sample mode', () => {
     renderPanel({ isSample: true });
 
     const note = screen.getByRole('note', { name: 'sample mode' });
 
-    expect(note.textContent).toMatch(/no CLI/);
+    expect(note.textContent).toMatch(/VISUAL_DIFF_DATA_DIR/);
+  });
+});
+
+/**
+ * The capture modes off the pinned container.
+ *
+ * `check` guards its own host before it takes a shot, so the runner borrows the
+ * pinned image and captures inside it. Which turns the host question into a
+ * Docker question — and that is the one this panel answers before the button is
+ * pressed, because a daemon that is down is a start button whose only outcome is
+ * a failed job.
+ */
+describe('capture on a host that is not the pinned container', () => {
+  it.each(['capture', 'run'])('says the %s will run in the container', async (mode) => {
+    renderPanel({ image: null, docker: true });
+    selectTab(mode);
+
+    const note = await screen.findByRole('note', { name: 'runs in the container' });
+
+    expect(note.textContent).toContain(HOST.image);
+    expect(startButtons(mode)).toHaveLength(1);
+  });
+
+  // The reminder, and the whole reason the panel asks: pressing a button that
+  // can only fail is what this replaces.
+  it.each(['capture', 'run'])('disables %s while docker is down', async (mode) => {
+    renderPanel({ image: null, docker: false });
+    selectTab(mode);
+
+    await screen.findByRole('note', { name: 'docker required' });
+    const [start] = startButtons(mode);
+
+    expect(start).toHaveProperty('disabled', true);
+  });
+
+  it('says what to start, in the words the server would have used', () => {
+    expect(DOCKER_REFUSAL).toBe(DOCKER_DOWN);
+  });
+
+  // compare reads two shot trees off disk and moves no pixels, so neither the
+  // host nor the daemon is a question it has to ask.
+  it('leaves compare alone', async () => {
+    renderPanel({ image: null, docker: false });
+    selectTab('compare');
+
+    await waitFor(() => expect(startButtons('compare')).toHaveLength(1));
+    expect(screen.queryByRole('note', { name: 'docker required' })).toBeNull();
+  });
+
+  // A console already on the pinned image has no container to borrow, so there
+  // is nothing to say and nothing to wait for.
+  it('says nothing on the pinned image itself', async () => {
+    renderPanel({ image: HOST.image, docker: false });
+
+    await waitFor(() => expect(startButtons('capture')).toHaveLength(1));
+    expect(screen.queryByRole('note', { name: 'runs in the container' })).toBeNull();
+    expect(screen.queryByRole('note', { name: 'docker required' })).toBeNull();
+  });
+
+  // Sample mode is the nearer answer: an instance serving the committed fixtures
+  // has no runner to borrow a container for, and its own note already says what
+  // would change that. The e2e sample world asserts a DISABLED button here.
+  it('leaves sample mode saying what sample mode says', async () => {
+    renderPanel({ isSample: true, image: null, docker: false });
+
+    await waitFor(() => expect(startButtons('capture')).toHaveLength(1));
+    expect(screen.getByRole('note', { name: 'sample mode' })).toBeDefined();
+    expect(screen.queryByRole('note', { name: 'docker required' })).toBeNull();
+  });
+
+  // Capture is the tab the panel opens on, so an alert here would be a second
+  // `role="alert"` inside the console's `main` on every page load — which is
+  // what the e2e page object's refusal lookup cannot survive.
+  it('is a note, so it does not become a second alert on the page', async () => {
+    renderPanel({ image: null, docker: false });
+
+    await screen.findByRole('note', { name: 'docker required' });
+
+    expect(screen.queryAllByRole('alert')).toHaveLength(0);
+  });
+});
+
+/**
+ * The local gate. A deployment has no checkout to compare, no Storybook build to
+ * serve and no browser to drive, so there is nothing a reviewer could do in this
+ * tab to make the button work — which is the rule `isRefused` states for the
+ * host gate, applied one level up: absent, not disabled.
+ */
+describe('a deployed console', () => {
+  it('offers no start button at all', () => {
+    renderPanel({ isLocal: false });
+
+    expect(startButtons('capture')).toHaveLength(0);
+  });
+
+  it('names the console that can run the job instead', () => {
+    renderPanel({ isLocal: false });
+
+    const note = screen.getByRole('note', { name: 'remote console' });
+
+    expect(note.textContent).toBe(REMOTE_REFUSAL);
+  });
+
+  // The panel spells the sentence rather than importing it — `lib/refusals`
+  // reaches the filesystem and this is a client bundle — so the duplication is
+  // held here rather than by a convention. Same bargain as RUNNING_REFUSAL.
+  it('says what the server would have answered', () => {
+    expect(REMOTE_REFUSAL).toBe(NOT_LOCAL);
   });
 });
 
@@ -454,7 +600,7 @@ describe('the accept gate', () => {
   it('picks up a report list that arrived after it mounted', async () => {
     const panel = (reports: readonly ReportListEntry[]) => (
       <CurrentJobProvider>
-        <RunPanel isSample={false} reports={reports} />
+        <RunPanel isSample={false} isLocal reports={reports} />
       </CurrentJobProvider>
     );
     stubApi();

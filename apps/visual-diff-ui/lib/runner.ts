@@ -1,25 +1,33 @@
+import { spawn } from 'node:child_process';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
+import * as readline from 'node:readline';
+import type { Readable } from 'node:stream';
 import { buildSummary } from '@gate/visual-diff/artifacts';
 import { pngSize } from '@gate/visual-diff/capture';
 import { type CaptureShot, type Comparison, compareAll } from '@gate/visual-diff/compare';
 import {
   BASELINE_BUDGET_BYTES,
+  HOST,
   BASELINE_PNG_BUDGET_BYTES,
   EXIT,
   parseVariantKey,
 } from '@gate/visual-diff/policy';
+import { BASELINE_ENV, CANONICAL_LABEL, baselinesPath } from './baselines';
+import { DATA_MOUNT, REPO_MOUNT, containerArgv } from './docker';
+import { type Checkout, describeCheckout, repoRoot } from './git';
 import { type HostEnv, hostFingerprint, hostMatches } from './host';
 import {
   BASELINE_ENV_FILE,
   type JobOutcome,
   type JobRequest,
   baselinesDir,
+  freeLabel,
   reportDir,
   setDir,
   within,
 } from './jobs';
-import { hostMismatch, noReportAt } from './refusals';
+import { NO_CHECKOUT, STORYBOOK_FAILED, hostMismatch, noReportAt } from './refusals';
 import { type Summary, SummarySchema } from './summary';
 
 /**
@@ -36,6 +44,10 @@ import { type Summary, SummarySchema } from './summary';
 
 const PNG = '.png';
 
+/** What a set records for a checkout git could not describe. Not a blank and not
+ *  a guess: the column says outright that this set's provenance is unknown. */
+const UNKNOWN = 'unknown';
+
 const shotPath = (dir: string, key: string, kind: string) =>
   path.join(dir, `${key}.${kind}${PNG}`);
 
@@ -47,12 +59,32 @@ const shotPath = (dir: string, key: string, kind: string) =>
  * schema — which is the differ's — has no cell for that. Naming it in the log is
  * what keeps a typo'd filename from reading as a missing story.
  */
+/**
+ * Where one label's shots are.
+ *
+ * Every label but one resolves under the data directory, through `within()`. The
+ * canonical corpus is the exception and the only one: it lives in the CHECKOUT,
+ * because it is committed rather than captured. This is a READ path — nothing in
+ * this app writes there, `accept` promotes into `<dataDir>/__baselines__`, and the
+ * delete route refuses the label outright — so the confinement `within()` exists
+ * to enforce is not being widened, only the set of directories a compare may read
+ * two shot trees from.
+ */
+function shotsDir(dataDir: string, label: string): string {
+  if (label !== CANONICAL_LABEL) return setDir(dataDir, label);
+
+  const root = repoRoot();
+  if (!root) throw new Error(NO_CHECKOUT);
+
+  return baselinesPath(root);
+}
+
 function readSet(
   dataDir: string,
   label: string,
   log: (message: string) => void,
 ): Map<string, Uint8Array> {
-  const dir = setDir(dataDir, label);
+  const dir = shotsDir(dataDir, label);
 
   let names: string[];
   try {
@@ -65,6 +97,11 @@ function readSet(
   const ignored: string[] = [];
 
   for (const name of names) {
+    // The corpus carries its host stamp beside its shots. Naming it as ignored
+    // every time the canonical set is compared would report a file that is
+    // supposed to be there.
+    if (name === BASELINE_ENV) continue;
+
     const key = name.endsWith(PNG) ? name.slice(0, -PNG.length) : null;
     if (!key || !parseVariantKey(key)) {
       ignored.push(name);
@@ -346,48 +383,193 @@ export async function promoteBaselines(
   return { exitCode: EXIT.ok, reportId };
 }
 
+/** The script that does the capture, relative to the checkout — the same path
+ *  inside the container, because the checkout is mounted at its root. */
+const CAPTURE_SET = 'apps/visual-diff-ui/scripts/capture-set.mjs';
+
+/** The Storybook build `check` serves. Built on the host before the container
+ *  starts: static output is not platform-dependent, and building it inside a
+ *  container with no package manager would be a second problem. */
+const STORYBOOK_BUILD = ['--filter', '@gate/storybook', 'build'];
+
+/** How much of a quiet process's output a failure is worth. A Vite build that
+ *  went wrong says so near the end; the two thousand asset lines above it are
+ *  what made the build quiet in the first place. */
+const TAIL_LINES = 40;
+
 /**
- * Capture the corpus under the data directory, and compare it — the differ's
- * own `check`, composed rather than spawned, with `rootDir` derived from
- * `VISUAL_DIFF_DATA_DIR`.
+ * One child process, with what it writes going to the job log.
  *
- * `capture` and `run` compose the SAME command on purpose: the CLI's surface is
- * `check | accept`, there is no capture-only subcommand, and this issue may not
- * add one. The two modes differ in what the console calls them, not in what the
- * differ does.
+ * `spawn` without a shell, so a repo path with a space in it is an argument
+ * rather than a quoting bug. Resolves with the exit code; a process that could
+ * not be started at all resolves too, with its reason logged — a job that ends
+ * is a history row, and a promise that rejected here would be a lock nobody
+ * released.
  *
- * `check` resolves every `policy.PATHS` entry under `rootDir`, so a real run
- * needs a repo-shaped tree there — `apps/storybook/storybook-static` above all —
- * and a browser, which means the pinned container. **The e2e worlds never run
- * this**: their jobs are compare-only over pre-seeded shot trees. Nothing here
- * fakes a capture; without a Storybook build the composed `check` reports the
- * missing build and the job exits 2, which is the honest answer.
+ * `quiet` holds the output back instead of streaming it, and releases the tail
+ * only if the process fails. The Storybook build is the reason: it writes a line
+ * per built asset, some two thousand of them, and a live log that has to be
+ * scrolled past them is a live log nobody reads the capture in. A build that
+ * failed is the one time those lines are what the reviewer needs.
+ */
+function run(
+  command: string,
+  args: readonly string[],
+  cwd: string,
+  log: (message: string) => void,
+  quiet = false,
+): Promise<number> {
+  return new Promise((resolve) => {
+    const child = spawn(command, [...args], { cwd, stdio: ['ignore', 'pipe', 'pipe'] });
+    const held: string[] = [];
+
+    const take = (line: string) => {
+      if (!quiet) {
+        log(line);
+        return;
+      }
+
+      held.push(line);
+      if (held.length > TAIL_LINES) held.shift();
+    };
+
+    // Line-buffered on purpose: the panel renders the log as lines, and a chunk
+    // boundary is not a line boundary.
+    const forward = (stream: Readable) => {
+      const lines = readline.createInterface({ input: stream });
+      lines.on('line', take);
+    };
+
+    forward(child.stdout);
+    forward(child.stderr);
+
+    const done = (code: number) => {
+      if (code !== 0) for (const line of held) log(line);
+      resolve(code);
+    };
+
+    child.on('error', (cause) => {
+      log(`${command} could not be started: ${cause.message}`);
+      resolve(EXIT.broken);
+    });
+    child.on('close', (code) => done(code ?? EXIT.broken));
+  });
+}
+
+/**
+ * How this console runs a capture: as itself, or as the pinned container.
+ *
+ * `check` guards its host before it takes a shot, so off the pinned image a
+ * capture is refused — and the differ's README answers that with a `docker run`
+ * to paste. Pasting is what this console exists to avoid, so it runs the
+ * container itself and the reviewer watches the log. On the pinned image there
+ * is nothing to wrap: the capture runs directly.
+ */
+function captureArgv(
+  rootDir: string,
+  dataDir: string,
+  label: string,
+  filter: readonly string[] | undefined,
+  root: Checkout | null,
+): { command: string; args: string[]; inContainer: boolean } {
+  const inContainer = !hostMatches();
+  const at = (dir: string) => (inContainer ? dir : undefined);
+
+  const script = [
+    inContainer ? `${REPO_MOUNT}/${CAPTURE_SET}` : path.join(rootDir, CAPTURE_SET),
+    '--root',
+    at(REPO_MOUNT) ?? rootDir,
+    '--data-dir',
+    at(DATA_MOUNT) ?? dataDir,
+    '--label',
+    label,
+    // One `--filter` per ticked component, which `capture-set.mjs` collects back
+    // into the list `matchesFilter` reads as a union. An empty list passes none:
+    // the differ reads no filter as the whole corpus, and a `--filter` with
+    // nothing after it would be a flag with no value.
+    ...(filter ?? []).flatMap((value) => ['--filter', value]),
+    // Git is the host's answer: the container has no `.git` worth reading and
+    // may have no `git` at all, and a set's provenance is not a thing to guess.
+    '--sha',
+    root?.sha ?? UNKNOWN,
+    '--branch',
+    root?.branch ?? UNKNOWN,
+    ...(root ? ['--dirty', String(root.dirty)] : []),
+  ];
+
+  return inContainer
+    ? {
+        command: 'docker',
+        args: containerArgv(rootDir, dataDir, ['node', ...script]),
+        inContainer,
+      }
+    : { command: process.execPath, args: script, inContainer };
+}
+
+/**
+ * Capture the corpus into a set, and compare it against the committed
+ * baselines.
+ *
+ * `capture` and `run` compose the SAME command on purpose: the differ's surface
+ * is `check | accept` and there is no capture-only subcommand. The two modes
+ * differ in what the console calls them, not in what the differ does.
+ *
+ * TWO DIRECTORIES, and the split is the thing to keep straight. The CHECKOUT is
+ * where `check` resolves every `policy.PATHS` entry — the Storybook build it
+ * serves, the committed baselines it compares against, and its own artifacts
+ * under `packages/visual-diff/.visual-diff/`. The DATA directory receives the
+ * capture set and nothing else. Both are mounted into the container separately,
+ * because `VISUAL_DIFF_DATA_DIR` may point anywhere and a path that only works
+ * when it happens to sit inside the checkout is a trap.
+ *
+ * SPAWNED, not composed. Every other mode in this file runs the differ in
+ * process; this one cannot, because the work has to happen inside the pinned
+ * image and what crosses that boundary is argv. `scripts/capture-set.mjs` is the
+ * one implementation, run through `docker` from a developer's machine and
+ * directly when the console is already on the pinned image — so there is no
+ * second code path that only the container takes.
+ *
+ * **The e2e worlds never run this** — their jobs are compare-only over
+ * pre-seeded shot trees.
  */
 export async function runCheck(
   dataDir: string,
   request: Extract<JobRequest, { mode: 'capture' | 'run' }>,
   log: (message: string) => void,
+  cwd: string = process.cwd(),
 ): Promise<JobOutcome> {
-  const rootDir = within(dataDir);
-  const { label, filter } = request;
-  log(`running check against ${label} under the data directory`);
+  const rootDir = repoRoot(cwd);
+  if (!rootDir) return refuse(log, NO_CHECKOUT);
 
-  // Resolved by Node at the moment it is needed, never bundled: `commands.mjs`
-  // derives its repo root from `new URL('../../..', import.meta.url)`, which a
-  // bundler reads as an asset import of a directory and refuses to build, and it
-  // reaches through `capture.mjs` for `playwright` — a dependency of that
-  // package, not of this app. Both are only ever true of a console running on a
-  // real checkout, which is the only place this mode can work at all.
-  const { check } = await import(
-    /* turbopackIgnore: true */ '@gate/visual-diff/commands'
+  const label = freeLabel(dataDir, request.label);
+  if (label !== request.label) {
+    log(`${request.label} is already captured — this run is ${label}`);
+  }
+
+  // Built every run rather than when it looks stale: "looks stale" is a mtime
+  // comparison against every story file, and a capture of a build that is one
+  // commit behind is a report about code nobody is looking at. Turborepo makes a
+  // no-op build cheap.
+  log('building storybook');
+  const built = await run('pnpm', STORYBOOK_BUILD, rootDir, log, true);
+  if (built !== 0) return refuse(log, STORYBOOK_FAILED);
+
+  const { command, args, inContainer } = captureArgv(
+    rootDir,
+    dataDir,
+    label,
+    request.filter,
+    describeCheckout(rootDir),
   );
-  // Spread rather than passed as `filter: undefined`: `check` reads any filter
-  // as "only stories matching this", and an empty box from the console must not
-  // arrive as a filter that matches nothing.
-  const result = await check(undefined, { rootDir, ...(filter ? { filter } : {}) });
-  log(result.message);
+  log(
+    inContainer
+      ? `capturing into sets/${label} inside ${HOST.image}`
+      : `capturing into sets/${label}`,
+  );
 
-  return { exitCode: result.exitCode, reportId: null };
+  const exitCode = await run(command, args, rootDir, log);
+
+  return { exitCode, reportId: null };
 }
 
 /** One job, by mode. The only dispatcher; `POST /api/jobs` hands this to the

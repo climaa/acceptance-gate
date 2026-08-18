@@ -15,12 +15,13 @@ export default defineConfig({
     // alias, and vitest doesn't read tsconfig paths on its own.
     alias: {
       '@': path.resolve(__dirname),
-      // Both stubs stand in for a compiled Next build that does not exist under
-      // vitest. See each file for which exports it provides and why the rest
-      // are deliberately absent.
+      // Every stub here stands in for a compiled Next build that does not exist
+      // under vitest. See each file for which exports it provides and why the
+      // rest are deliberately absent.
       'next/cache': path.resolve(__dirname, '__tests__/stubs/next-cache.ts'),
       'next/server': path.resolve(__dirname, '__tests__/stubs/next-server.ts'),
       'next/navigation': path.resolve(__dirname, '__tests__/stubs/next-navigation.ts'),
+      'next/headers': path.resolve(__dirname, '__tests__/stubs/next-headers.ts'),
     },
   },
   test: {

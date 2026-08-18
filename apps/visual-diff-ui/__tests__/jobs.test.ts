@@ -12,13 +12,19 @@ import {
   JobRequestSchema,
   WorktreesFileSchema,
   currentJob,
+  freeLabel,
   jobLog,
+  listSets,
   readHistory,
   readLock,
+  recordSet,
   startJob,
   within,
 } from '../lib/jobs';
+import { CANONICAL_LABEL } from '../lib/baselines';
+import { NOT_LOCAL } from '../lib/refusals';
 import { revalidateTagCalls } from './stubs/next-cache';
+import { resetRequestHost, setRequestHost } from './stubs/next-headers';
 
 /**
  * The job system: one job at a time (D1), a log whose last line is the exit
@@ -93,6 +99,7 @@ async function waitForIdle(dir: string): Promise<void> {
 
 afterEach(() => {
   revalidateTagCalls.length = 0;
+  resetRequestHost();
   delete process.env.VISUAL_DIFF_DATA_DIR;
   delete process.env.VISUAL_DIFF_FAKE_HOST_FINGERPRINT;
 });
@@ -347,6 +354,82 @@ describe('POST /api/jobs', () => {
     expect(response.status).toBe(409);
     const body = (await response.json()) as { error: string };
     expect(body.error).toMatch(/sample data/);
+  });
+
+  // The panel offers no start button off-localhost, but a POST that skips the UI
+  // has to meet the same wall — and it has to meet it before the lock, or a
+  // deployment could stop a local console from ever starting a job again.
+  it('refuses a job asked for by anything but the machine running it', async () => {
+    const dir = configuredDataDir();
+    setRequestHost('acceptance-gate-visual-diff-ui.vercel.app');
+
+    const response = await postJob(
+      jobRequest({ mode: 'compare', baseline: 'set-a', candidate: 'set-b' }),
+    );
+
+    expect(response.status).toBe(409);
+    expect(((await response.json()) as { error: string }).error).toBe(NOT_LOCAL);
+    expect(readLock(dir)).toBeNull();
+  });
+});
+
+describe('the set registry', () => {
+  it('lists a recorded set', () => {
+    const dir = makeDataDir();
+
+    recordSet(dir, {
+      label: 'main-2026-08-17',
+      sha: 'f2570e1',
+      branch: 'main',
+      capturedAt: '2026-08-17',
+      stories: 106,
+    });
+
+    expect(listSets(dir).map((set) => set.label)).toEqual(['main-2026-08-17']);
+  });
+
+  // `listSets` has no way to choose between two rows claiming one label, so a
+  // re-registered label replaces its entry rather than appearing twice.
+  it('replaces the row a label already had', () => {
+    const dir = makeDataDir();
+    const set = {
+      label: 'main-2026-08-17',
+      sha: 'f2570e1',
+      branch: 'main',
+      capturedAt: '2026-08-17',
+      stories: 106,
+    };
+
+    recordSet(dir, set);
+    recordSet(dir, { ...set, stories: 12 });
+
+    expect(listSets(dir)).toHaveLength(1);
+    expect(listSets(dir)[0]?.stories).toBe(12);
+  });
+
+  // The corpus is not in `sets.json` — nothing in this app put it there — so
+  // `hasSet` cannot see it, and a capture called `baselines` would otherwise
+  // shadow it in the compare pickers.
+  it('treats the canonical corpus label as taken', () => {
+    const dir = makeDataDir();
+
+    expect(freeLabel(dir, CANONICAL_LABEL)).toBe(`${CANONICAL_LABEL}-2`);
+  });
+
+  it('hands back the label asked for when nothing holds it', () => {
+    const dir = makeDataDir();
+
+    expect(freeLabel(dir, 'main-2026-08-17')).toBe('main-2026-08-17');
+  });
+
+  // Counting from 2, and past every suffix already taken: capturing three times
+  // in one day is three sets, not one set and two refusals.
+  it('counts past every suffix a label has already taken', () => {
+    const dir = makeDataDir();
+    fs.mkdirSync(path.join(dir, 'sets', 'main-2026-08-17'), { recursive: true });
+    fs.mkdirSync(path.join(dir, 'sets', 'main-2026-08-17-2'), { recursive: true });
+
+    expect(freeLabel(dir, 'main-2026-08-17')).toBe('main-2026-08-17-3');
   });
 });
 

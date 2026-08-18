@@ -2,10 +2,16 @@ import * as crypto from 'node:crypto';
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
-import { HOST } from '@gate/visual-diff/policy';
+import { EventEmitter } from 'node:events';
+import { Readable } from 'node:stream';
+import { EXIT, HOST } from '@gate/visual-diff/policy';
 // Imported explicitly rather than relying on `globals: true` — tsconfig's
 // `**/*.ts` include means tsc typechecks this file.
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { DATA_MOUNT, REPO_MOUNT } from '../lib/docker';
+import { BASELINE_ENV, CANONICAL_LABEL } from '../lib/baselines';
+import { describeCheckout } from '../lib/git';
+import { NO_CHECKOUT, STORYBOOK_FAILED } from '../lib/refusals';
 import { SummarySchema } from '../lib/summary';
 import { compareSets, promoteBaselines, runJob } from '../lib/runner';
 
@@ -205,6 +211,55 @@ describe('compareSets', () => {
   });
 });
 
+describe('compareSets against the committed corpus', () => {
+  // The point of offering the corpus at all: a reviewer who has just captured
+  // wants to know what their shots did to the corpus CI compares against, not
+  // what they did to yesterday's capture.
+  //
+  // The corpus lives in the CHECKOUT, so this is the one label that resolves
+  // outside the data directory. Read-only: the assertions below, and the
+  // suite-wide digest around this whole file, are what hold that.
+  it('reads the corpus as the baseline side of a compare', async () => {
+    const dir = makeDataDir();
+    seedSet(dir, 'candidate-set', fixtureShots('candidate'));
+
+    const outcome = await compareSets(
+      dir,
+      { mode: 'compare', baseline: CANONICAL_LABEL, candidate: 'candidate-set' },
+      silent,
+    );
+
+    expect(outcome.reportId).toBe(`${CANONICAL_LABEL}__candidate-set`);
+    const summary = SummarySchema.parse(
+      JSON.parse(
+        fs.readFileSync(
+          path.join(dir, 'reports', `${CANONICAL_LABEL}__candidate-set`, 'summary.json'),
+          'utf8',
+        ),
+      ),
+    );
+    // Every fixture shot has a baseline in the real corpus, so nothing is `added`
+    // — which is what proves the corpus was the tree that was read.
+    expect(summary.counts.added).toBe(0);
+  });
+
+  // `BASELINE_ENV.json` sits beside the shots. Reporting it as an ignored file
+  // every time the corpus is compared would name a file that belongs there.
+  it('says nothing about the host stamp beside the shots', async () => {
+    const dir = makeDataDir();
+    const lines: string[] = [];
+    seedSet(dir, 'candidate-set', fixtureShots('candidate'));
+
+    await compareSets(
+      dir,
+      { mode: 'compare', baseline: CANONICAL_LABEL, candidate: 'candidate-set' },
+      (line) => lines.push(line),
+    );
+
+    expect(lines.join('\n')).not.toContain(BASELINE_ENV);
+  });
+});
+
 describe('promoteBaselines', () => {
   it('rewrites the baselines and restamps BASELINE_ENV.json under the data dir', async () => {
     const dir = makeDataDir();
@@ -340,77 +395,224 @@ describe('runJob', () => {
 });
 
 /**
- * The one mode that reaches for a browser, so the one that is mocked: a real
- * `check` needs a repo-shaped tree under the data directory and the pinned
- * container. What is asserted here is the invocation this app composes — the
- * options it passes are the whole of its side of that contract.
+ * The one mode that reaches for a browser, so the one that is spawned rather
+ * than composed: the work has to happen inside the pinned image, and what
+ * crosses that boundary is argv. What is asserted here is the argv this app
+ * composes — the two processes it starts, in order, and the mounts it hands the
+ * container. What those processes then do is `scripts/capture-set.mjs` and the
+ * differ's own, exercised by a real container run rather than by a mock of one.
  */
 describe('runCheck', () => {
-  /** `check`, replaced for the length of one case. Modules are reset around it so
-   *  every other suite in this file keeps the real one. */
-  async function withMockedCheck(
-    run: (
-      runCheck: typeof import('../lib/runner').runCheck,
-      check: ReturnType<typeof vi.fn>,
-    ) => Promise<void>,
+  /** Every process `runCheck` started, in order. */
+  let started: { command: string; args: string[] }[] = [];
+  /** What the next spawn should exit with, shifted per call. */
+  let exits: number[] = [];
+
+  beforeEach(() => {
+    started = [];
+    exits = [];
+  });
+
+  /** `child_process.spawn`, replaced for the length of one case: a child that
+   *  writes nothing and closes with the code the case queued. */
+  async function withSpawn(
+    run: (runCheck: typeof import('../lib/runner').runCheck) => Promise<void>,
   ) {
-    const check = vi.fn(() => Promise.resolve({ exitCode: 0, message: 'nothing moved' }));
     vi.resetModules();
-    vi.doMock('@gate/visual-diff/commands', () => ({ check }));
+    // Only `spawn` is faked. `execFileSync` is what `describeCheckout` reads git
+    // with, and a stub for it would hand the container a provenance this repo
+    // never claimed — which is one of the things these cases assert.
+    const real =
+      await vi.importActual<typeof import('node:child_process')>('node:child_process');
+    vi.doMock('node:child_process', () => ({
+      ...real,
+      spawn: (command: string, args: string[]) => {
+        started.push({ command, args });
+        const child = new EventEmitter() as EventEmitter & {
+          stdout: Readable;
+          stderr: Readable;
+        };
+        child.stdout = Readable.from([]);
+        child.stderr = Readable.from([]);
+        queueMicrotask(() => child.emit('close', exits.shift() ?? 0));
+
+        return child;
+      },
+    }));
 
     try {
       const { runCheck } = await import('../lib/runner');
-      await run(runCheck, check);
+      await run(runCheck);
     } finally {
-      vi.doUnmock('@gate/visual-diff/commands');
+      vi.doUnmock('node:child_process');
       vi.resetModules();
     }
   }
 
-  it('runs the differ against the data directory, and nothing outside it', async () => {
+  const capture = () => started[1];
+
+  // The build first, and every run: "looks stale" is an mtime comparison against
+  // every story file, and a capture of a build one commit behind is a report
+  // about code nobody is looking at.
+  it('builds storybook before it captures', async () => {
     const dir = makeDataDir();
 
-    await withMockedCheck(async (runCheck, check) => {
+    await withSpawn(async (runCheck) => {
       await runCheck(dir, { mode: 'capture', label: 'main-2026-08-17' }, silent);
+    });
 
-      expect(check).toHaveBeenCalledWith(undefined, { rootDir: dir });
+    expect(started).toHaveLength(2);
+    expect(started[0]).toMatchObject({
+      command: 'pnpm',
+      args: ['--filter', '@gate/storybook', 'build'],
     });
   });
 
-  // `--filter` is the CLI's own flag and the run panel spells it verbatim; a
+  // The build writes a line per asset, some two thousand of them, so its output
+  // is held back — and released only when it is the thing the reviewer needs.
+  it('keeps the build quiet when it succeeds', async () => {
+    const dir = makeDataDir();
+    const lines: string[] = [];
+
+    await withSpawn(async (runCheck) => {
+      await runCheck(dir, { mode: 'capture', label: 'main-2026-08-17' }, (line) =>
+        lines.push(line),
+      );
+    });
+
+    expect(lines).toContain('building storybook');
+    expect(lines.join('\n')).not.toContain('storybook-static/assets');
+  });
+
+  // A build that failed leaves nothing to capture against, and the capture never
+  // starts — rather than starting and reporting the missing build itself.
+  it('does not capture when the build failed', async () => {
+    const dir = makeDataDir();
+    const lines: string[] = [];
+    exits = [1];
+
+    await withSpawn(async (runCheck) => {
+      const outcome = await runCheck(
+        dir,
+        { mode: 'capture', label: 'main-2026-08-17' },
+        (line) => lines.push(line),
+      );
+
+      expect(outcome.exitCode).toBe(EXIT.broken);
+    });
+
+    expect(started).toHaveLength(1);
+    expect(lines).toContain(STORYBOOK_FAILED);
+  });
+
+  // The whole point of the mode on a developer's machine: `check` guards its
+  // host, so the console borrows the image the baselines came from instead of
+  // handing over a command to paste.
+  it('runs the capture inside the pinned container', async () => {
+    const dir = makeDataDir();
+
+    await withSpawn(async (runCheck) => {
+      await runCheck(dir, { mode: 'capture', label: 'main-2026-08-17' }, silent);
+    });
+
+    expect(capture()?.command).toBe('docker');
+    expect(capture()?.args).toContain(HOST.image);
+    expect(capture()?.args.join(' ')).toContain(`${REPO_ROOT}:${REPO_MOUNT}`);
+    expect(capture()?.args.join(' ')).toContain(`${dir}:${DATA_MOUNT}`);
+  });
+
+  // Two mounts, not one: `VISUAL_DIFF_DATA_DIR` may point anywhere, and a path
+  // that only works when it happens to sit inside the checkout is a trap that
+  // springs the first time it does not.
+  it('addresses both directories by their mount, never by their host path', async () => {
+    const dir = makeDataDir();
+
+    await withSpawn(async (runCheck) => {
+      await runCheck(dir, { mode: 'capture', label: 'main-2026-08-17' }, silent);
+    });
+
+    const args = capture()?.args ?? [];
+    expect(args[args.indexOf('--root') + 1]).toBe(REPO_MOUNT);
+    expect(args[args.indexOf('--data-dir') + 1]).toBe(DATA_MOUNT);
+  });
+
+  // `--filter` is the differ's own flag and the run panel spells it verbatim; a
   // field the console shows and the runner drops would be a lie about what it
-  // just ran.
-  it('passes the story filter the console was given', async () => {
+  // just ran. An empty box is not a filter — `check` reads any filter as "only
+  // stories matching this", and the empty string would match nothing.
+  // One `--filter` per component the reviewer ticked, which is what the panel now
+  // composes and `matchesFilter` reads as a union. Nothing ticked passes no flag:
+  // the differ reads an absent filter as the whole corpus.
+  it.each([
+    [['atoms-button'], ['atoms-button']],
+    [
+      ['atoms-button', 'molecules-card'],
+      ['atoms-button', 'molecules-card'],
+    ],
+    [[], []],
+    [undefined, []],
+  ])('passes --filter %j as %j', async (filter, expected) => {
     const dir = makeDataDir();
 
-    await withMockedCheck(async (runCheck, check) => {
-      await runCheck(
-        dir,
-        { mode: 'run', label: 'main-2026-08-17', filter: 'atoms-button' },
-        silent,
-      );
-
-      expect(check).toHaveBeenCalledWith(undefined, {
-        rootDir: dir,
-        filter: 'atoms-button',
-      });
+    await withSpawn(async (runCheck) => {
+      await runCheck(dir, { mode: 'run', label: 'main-2026-08-17', filter }, silent);
     });
+
+    const args = capture()?.args ?? [];
+    const passed = args.filter((_, index) => args[index - 1] === '--filter');
+    expect(passed).toEqual(expected);
   });
 
-  // An empty box is not a filter: `check` reads any filter as "only stories
-  // matching this", and the empty string would match nothing at all.
-  it('passes no filter when none was typed', async () => {
+  // Git is the host's answer: the container has no `.git` worth reading and may
+  // have no `git` at all, and a set's provenance is not a thing to guess.
+  it('hands the container the checkout git described', async () => {
     const dir = makeDataDir();
+    const checkout = describeCheckout(REPO_ROOT);
 
-    await withMockedCheck(async (runCheck, check) => {
-      await runCheck(
+    await withSpawn(async (runCheck) => {
+      await runCheck(dir, { mode: 'capture', label: 'main-2026-08-17' }, silent);
+    });
+
+    const args = capture()?.args ?? [];
+    expect(args[args.indexOf('--sha') + 1]).toBe(checkout?.sha);
+    expect(args[args.indexOf('--branch') + 1]).toBe(checkout?.branch);
+  });
+
+  // Labels are date-shaped, so a second capture on one day asks for a name that
+  // is taken. Neither set is lost and neither is overwritten.
+  it('suffixes a label this instance has already captured', async () => {
+    const dir = makeDataDir();
+    seedSet(dir, 'main-2026-08-17', fixtureShots('baseline'));
+
+    await withSpawn(async (runCheck) => {
+      await runCheck(dir, { mode: 'capture', label: 'main-2026-08-17' }, silent);
+    });
+
+    const args = capture()?.args ?? [];
+    expect(args[args.indexOf('--label') + 1]).toBe('main-2026-08-17-2');
+  });
+
+  // The belt to the local gate's braces: a console started from outside a
+  // checkout has no Storybook to build and no baselines to compare against, and
+  // says which is missing rather than starting a build in someone's home
+  // directory.
+  it('refuses outright when it is not running inside a checkout', async () => {
+    const dir = makeDataDir();
+    const lines: string[] = [];
+
+    await withSpawn(async (runCheck) => {
+      const outcome = await runCheck(
         dir,
-        { mode: 'capture', label: 'main-2026-08-17', filter: '' },
-        silent,
+        { mode: 'capture', label: 'main-2026-08-17' },
+        (line) => lines.push(line),
+        os.tmpdir(),
       );
 
-      expect(check).toHaveBeenCalledWith(undefined, { rootDir: dir });
+      expect(outcome.exitCode).toBe(EXIT.broken);
     });
+
+    expect(started).toHaveLength(0);
+    expect(lines).toContain(NO_CHECKOUT);
   });
 });
 

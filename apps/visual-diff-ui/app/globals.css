@@ -608,6 +608,58 @@ main {
   color: var(--color-text-muted);
 }
 
+/* The committed corpus, above the sets this instance captured. Bordered rather
+   than merely spaced: it is a different kind of thing from the rows below it, and
+   the border is what says so without a heading competing with the panel's own. */
+.vd-canonical {
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+/* Wraps to as many lines as the panel's width needs — four facts on one line at
+   desktop, stacked in the mobile column. */
+.vd-canonical__facts {
+  row-gap: var(--space-2);
+}
+
+/* The filter picker. A fieldset rather than a div, so one `disabled` reaches every
+   box inside it — which is why the border and padding a fieldset brings are reset
+   here rather than fought elsewhere. */
+.vd-filter {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.vd-filter__tier {
+  min-width: 0;
+}
+
+/* The disclosure beside a tier's box. Monospace and muted like a field label: it
+   carries a count and a sign, and neither is prose. */
+.vd-filter__toggle {
+  padding: 0 var(--space-1);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.vd-filter__toggle:hover {
+  color: var(--color-text);
+}
+
+/* Indented under the tier that owns them, on the same rhythm the report's tier
+   sections use. */
+.vd-filter__components {
+  padding-left: var(--space-5);
+}
+
 /* Decorative and aria-hidden: the number beside it is what is announced, and a
    bar that was also read out would say the same thing twice. */
 .vd-review__bar {

@@ -69,7 +69,14 @@ declare module '@gate/visual-diff/policy' {
   export const BASELINE_BUDGET_BYTES: number;
   export const BASELINE_PNG_BUDGET_BYTES: number;
 
+  /** Applied to a story that cannot be captured deterministically. */
+  export const SKIP_TAG: string;
+
   /** `${tier}__${viewport}__${theme}__${storyId}` parsed back, or `null` for a
    *  key naming a cell outside the matrix. */
   export function parseVariantKey(key: string): Variant | null;
+
+  /** The tier a story belongs to, derived from its `importPath`. Anything outside
+   *  `packages/ui/src/<tier>/` is `null` rather than a guess. */
+  export function tierOf(storyPath: string): Tier | null;
 }

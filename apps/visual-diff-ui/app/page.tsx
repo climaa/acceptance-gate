@@ -1,8 +1,11 @@
+import { headers } from 'next/headers';
 import { Suspense } from 'react';
 import { Skeleton, Stack } from '@gate/ui';
 import { DashboardTemplate } from '@/components/DashboardTemplate';
+import { readCanonicalSet } from '@/lib/baselines';
 import { readReports, readSetSizes, readSets, resolveDataDir } from '@/lib/data';
 import { readHistory } from '@/lib/jobs';
+import { isLocalHost } from '@/lib/local';
 
 /**
  * The console: what this instance has captured, compared and run.
@@ -26,6 +29,11 @@ export default function ConsolePage() {
 
 async function ConsoleContents() {
   const { dir, isSample } = await resolveDataDir();
+  // Request-time, like the resolution above it — `headers()` is what makes this
+  // subtree dynamic, and `resolveDataDir`'s `connection()` has already done that
+  // by the time this runs. Read here rather than in the client bundle so there is
+  // no frame in which the start button exists and then vanishes.
+  const isLocal = isLocalHost((await headers()).get('host'));
   const [{ sets }, sizes, reports] = await Promise.all([
     readSets(dir),
     readSetSizes(dir),
@@ -38,6 +46,10 @@ async function ConsoleContents() {
   // synchronously — see lib/jobs.ts, which owns the record and its writers.
   const history = readHistory(dir);
 
+  // Read uncached for the same reason: the corpus is a directory in the checkout,
+  // and a `git pull` between two page loads changes what it holds.
+  const corpus = readCanonicalSet();
+
   return (
     <DashboardTemplate
       sets={sets}
@@ -45,6 +57,8 @@ async function ConsoleContents() {
       reports={reports}
       history={history}
       isSample={isSample}
+      isLocal={isLocal}
+      corpus={corpus}
     />
   );
 }

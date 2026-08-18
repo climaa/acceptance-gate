@@ -23,12 +23,43 @@ export const JOB_RUNNING = 'a job is already running';
 export const SAMPLE_DATA =
   'this console is showing sample data — there is nothing here to change';
 
+/** The deployed case. A job needs the checkout it compares, a Storybook build to
+ *  serve and a browser to drive it, and a deployment has none of the three — so
+ *  this names the console that does rather than only refusing the one that
+ *  cannot. Said twice over: `POST /api/jobs` answers with it, and the run panel
+ *  spells it out client-side (see RunPanel's `REMOTE_REFUSAL`). */
+export const NOT_LOCAL =
+  'this console is deployed, and a job needs the checkout it compares — start one from the console on your own machine (`pnpm --filter @gate/visual-diff-ui dev`)';
+
+/** The belt to that braces: a console that passed the local gate but is not in a
+ *  checkout after all. Reached only by a runner started from outside the repo,
+ *  and it says what is missing rather than reporting an empty Storybook build. */
+export const NO_CHECKOUT =
+  'this console is not running inside a repository checkout, so there is nothing to capture';
+
+/** A capture serves a Storybook build, so it builds one first. Its own output is
+ *  already in the log above this line; what this adds is that the capture never
+ *  started, rather than leaving a reader to infer it from silence. */
+export const STORYBOOK_FAILED =
+  'the storybook build failed, so there was nothing to capture against';
+
+/** The reminder, not a refusal after the fact: a capture runs inside the pinned
+ *  container, and a machine whose Docker is not up cannot start one. Named by
+ *  the panel before the button is pressed, and by the server if one is anyway. */
+export const DOCKER_DOWN = `this capture runs inside ${HOST.image}, and Docker is not running — start Docker and this comes back`;
+
 /** D3. Shown after any refused or aborted accept: the two commands that put a
  *  half-written corpus back, in the order they have to run. */
 export const ACCEPT_RECOVERY = [
   'git checkout -- __baselines__/',
   'git clean -fd __baselines__/',
 ];
+
+/** The canonical corpus is committed, not captured: it is changed by a commit and
+ *  by `accept` inside the pinned container, and no console owns it. Refused rather
+ *  than hidden, because a POST that skips the UI asks the same thing. */
+export const CANONICAL_IS_COMMITTED =
+  'the baseline corpus is committed to this repository — it is changed by a commit, never by this console';
 
 /** D2. Names both halves — what is held, and what holds it — because "cannot
  *  delete" is not something a reviewer can act on and a worktree path is. */

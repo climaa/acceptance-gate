@@ -4,6 +4,7 @@ import { EXIT } from '@gate/visual-diff/policy';
 import { revalidateTag } from 'next/cache';
 import { z } from 'zod';
 import { PURGE, REPORTS_TAG, SETS_TAG, reportTag } from './data';
+import { CANONICAL_LABEL } from './baselines';
 import { type CaptureSet, SetsFileSchema } from './summary';
 
 /**
@@ -48,10 +49,12 @@ const REPORT_ID = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
 export const SetLabelSchema = z.string().regex(SET_LABEL, 'not a snapshot-set label');
 const ReportIdSchema = z.string().regex(REPORT_ID, 'not a report id');
 
-/** The CLI's `--filter`: a substring matched against story ids and titles, so
- *  anything is a legal value and only its absence is a shape. Optional, because
- *  a run without one is the whole corpus — which is what the gate runs. */
-const FilterSchema = z.string().optional();
+/** The `--filter` values: substrings matched against story ids and titles, so
+ *  anything is a legal value and only the shape is a contract. A LIST, because
+ *  the panel offers the corpus as checkboxes and a reviewer ticks as many as they
+ *  mean — `matchesFilter` reads several as a union. Optional, and an empty list is
+ *  the same thing as absent: the whole corpus, which is what the gate runs. */
+const FilterSchema = z.array(z.string()).optional();
 
 /**
  * What `POST /api/jobs` accepts, per mode. A discriminated union rather than one
@@ -252,6 +255,51 @@ export function hasSet(dataDir: string, label: string): boolean {
     fs.existsSync(setDir(dataDir, label)) ||
     listSets(dataDir).some((set) => set.label === label)
   );
+}
+
+/**
+ * A label this instance does not have yet: the one asked for, or it with a
+ * counter appended.
+ *
+ * The canonical corpus counts as taken. It is not in `sets.json` — nothing in
+ * this app put it there — so `hasSet` cannot see it, and a capture called
+ * `baselines` would otherwise shadow it in the compare pickers.
+ *
+ * Labels are date-shaped, so capturing twice in one day asks for a name that is
+ * already taken. Neither of the other answers is right — overwriting changes a
+ * set under any report already built from it, and refusing throws away a run
+ * whose only fault is happening on a Tuesday that already had one. The suffix
+ * keeps both sets and keeps `capturedAt` honest about them.
+ */
+export function freeLabel(dataDir: string, label: string): string {
+  const taken = (candidate: string) =>
+    candidate === CANONICAL_LABEL || hasSet(dataDir, candidate);
+
+  if (!taken(label)) return label;
+
+  for (let counter = 2; ; counter += 1) {
+    const candidate = `${label}-${counter}`;
+    if (!taken(candidate)) return candidate;
+  }
+}
+
+/**
+ * Register one capture set — the mirror of {@link removeSet}.
+ *
+ * The runner writes the shot tree; this is the row that makes it a set the
+ * console can see. Newest first, and a label claims one row: a re-registered
+ * label replaces its entry rather than appearing twice, which `listSets` has no
+ * way to choose between. Spreading the registry keeps a fixture's `isSample`
+ * provenance, exactly as `removeSet` does.
+ */
+export function recordSet(dataDir: string, set: CaptureSet): void {
+  const file = setsFilePath(dataDir);
+  const registry = readJson(file, SetsFileSchema, { sets: [] });
+
+  writeJson(file, {
+    ...registry,
+    sets: [set, ...registry.sets.filter((entry) => entry.label !== set.label)],
+  });
 }
 
 /** Every run, newest first. */

@@ -14,6 +14,7 @@ import {
   fontsLoadCheckExpression,
   isLoopbackUrl,
   isZeroSizeError,
+  filterNeedles,
   matchesFilter,
   pngSize,
   stableWaitMs,
@@ -125,6 +126,54 @@ describe('matchesFilter', () => {
     const kept = matchesFilter('', story());
 
     expect(kept).toBe(true);
+  });
+
+  // Several filters are a union, not an intersection: a reviewer who ticked Button and
+  // Badge means both, and no story is ever both at once — an intersection would capture
+  // nothing every time.
+  it('keeps a story matching any one of several filters', () => {
+    const kept = matchesFilter(['molecules-card', 'atoms-button'], story());
+
+    expect(kept).toBe(true);
+  });
+
+  it('rejects a story matching none of several filters', () => {
+    const kept = matchesFilter(['molecules-card', 'organisms-table'], story());
+
+    expect(kept).toBe(false);
+  });
+
+  it('keeps every story for an empty list — nothing ticked is not "capture nothing"', () => {
+    const kept = matchesFilter([], story());
+
+    expect(kept).toBe(true);
+  });
+
+  it('ignores the blanks in a list', () => {
+    const kept = matchesFilter(['', '   ', 'button'], story());
+
+    expect(kept).toBe(true);
+  });
+
+  // The seam between the two fields is not a place a match may span: `--primaryAtoms`
+  // exists in neither the id nor the title, and only in the two glued together.
+  it('never matches across the join between id and title', () => {
+    const kept = matchesFilter('primaryatoms', story());
+
+    expect(kept).toBe(false);
+  });
+});
+
+describe('filterNeedles', () => {
+  it.each([
+    [undefined, []],
+    ['', []],
+    ['   ', []],
+    ['Button', ['button']],
+    [['Button', 'Badge'], ['button', 'badge']],
+    [[], []],
+  ])('reads %j as %j', (filter, needles) => {
+    expect(filterNeedles(filter)).toEqual(needles);
   });
 });
 

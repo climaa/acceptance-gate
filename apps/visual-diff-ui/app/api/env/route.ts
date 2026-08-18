@@ -1,8 +1,10 @@
 import { connection } from 'next/server';
-import { hostFingerprint } from '@/lib/host';
+import { runnerEnv } from '@/lib/host';
 
 /**
- * The host this console runs on, as the accept gate will compare it.
+ * The host this console runs on, as the accept gate will compare it — plus
+ * whether it could borrow the pinned container, which is what the capture modes
+ * need and the accept gate does not.
  *
  * `connection()` first: every field is read from the running process, all of it
  * synchronously, so without it the answer resolves during `next build` and the
@@ -15,7 +17,7 @@ import { hostFingerprint } from '@/lib/host';
 export async function GET(): Promise<Response> {
   await connection();
 
-  return Response.json(hostFingerprint(), {
+  return Response.json(runnerEnv(), {
     headers: { 'Cache-Control': 'no-store' },
   });
 }

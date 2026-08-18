@@ -278,6 +278,58 @@ describe('the console around it', () => {
     await screen.findByRole('link', { name: 'view report' });
     expect(refreshCalls).toEqual([]);
   });
+
+  // A capture the host guard refuses exits in a few hundred milliseconds — well
+  // inside one poll — so the running state is never observed. Keying on the
+  // transition left the history table rendering the row as it looked mid-flight:
+  // `interrupted`, no exit code, no duration, beside a region reading `failed
+  // exit 2` about the same run.
+  it('re-reads the server for a job that began and ended between two polls', async () => {
+    const responses = [
+      { isSample: false, running: false, job: null, log: [] },
+      { isSample: false, running: false, job: FINISHED, log: ['exit 2'] },
+    ];
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        () =>
+          Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve(responses.shift() ?? responses[0]),
+          }) as never,
+      ),
+    );
+
+    renderCurrentJob();
+
+    await waitFor(() => expect(refreshCalls).toEqual(['refresh']), { timeout: 5000 });
+  });
+
+  // One row, one re-read. The poll keeps seeing the same finished job for as
+  // long as the console is open, and a refresh per tick would re-render every
+  // table beside it once a second.
+  it('re-reads once for a job, not once per poll', async () => {
+    const responses = [
+      { isSample: false, running: true, job: RUNNING, log: [] },
+      { isSample: false, running: false, job: FINISHED, log: ['exit 1'] },
+    ];
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        () =>
+          Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve(responses.shift() ?? responses.at(-1)),
+          }) as never,
+      ),
+    );
+
+    renderCurrentJob();
+
+    await waitFor(() => expect(refreshCalls).toEqual(['refresh']), { timeout: 5000 });
+    await new Promise((resolve) => setTimeout(resolve, 2500));
+    expect(refreshCalls).toEqual(['refresh']);
+  });
 });
 
 describe('the elapsed counter', () => {

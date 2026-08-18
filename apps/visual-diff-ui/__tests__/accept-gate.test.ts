@@ -133,4 +133,12 @@ describe('the container command', () => {
   it('runs the CLI accept from the repo root', () => {
     expect(ACCEPT_COMMAND).toContain('node packages/visual-diff/src/cli.mjs accept');
   });
+
+  // The two flags a reviewer would never guess: the browser baked into the
+  // image, and Docker's 64MB /dev/shm.
+  it('carries the flags the recipe depends on', () => {
+    expect(ACCEPT_COMMAND).toContain('--ipc=host');
+    expect(ACCEPT_COMMAND).toContain('PLAYWRIGHT_BROWSERS_PATH=/ms-playwright');
+    expect(ACCEPT_COMMAND).toContain('-v "$(pwd)":/repo -w /repo');
+  });
 });

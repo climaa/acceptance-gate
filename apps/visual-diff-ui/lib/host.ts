@@ -9,6 +9,7 @@
  */
 
 import { HOST } from '@gate/visual-diff/policy';
+import { dockerAvailable } from './docker';
 
 /** The one variable this endpoint reads, named as a type for the same reason
  *  `DataDirEnv` is: the env surface of this app is two variables, both declared. */
@@ -16,6 +17,12 @@ export interface HostEnv {
   VISUAL_DIFF_FAKE_HOST_FINGERPRINT?: string;
   /** See `DataDirEnv`: the index signature is what admits `process.env` itself. */
   [variable: string]: string | undefined;
+}
+
+export interface RunnerEnv extends HostFingerprint {
+  /** Whether a container could be started right now — the panel disables its
+   *  start button on this, and `POST /api/jobs` refuses on it. */
+  docker: boolean;
 }
 
 export interface HostFingerprint {
@@ -54,6 +61,29 @@ export function hostFingerprint(env: HostEnv = process.env): HostFingerprint {
     arch: process.arch,
     image,
     playwright: playwrightFrom(image),
+  };
+}
+
+/**
+ * What `GET /api/env` answers with: the fingerprint, and whether a container
+ * could be started right now.
+ *
+ * `docker` is deliberately NOT a fingerprint field. {@link HostFingerprint} is
+ * the four keys `HOST.comparedKeys` names, and `summaryEnv` writes every one of
+ * them into a report's `env` record as a string — a fifth, boolean field there
+ * is a report that fails its own schema. It rides alongside instead.
+ *
+ * Only asked when this host is not already the pinned image: a console running
+ * inside the container has none to start, and the probe is a subprocess this
+ * endpoint would otherwise pay for on every poll to answer a question nothing
+ * reads.
+ */
+export function runnerEnv(env: HostEnv = process.env): RunnerEnv {
+  const fingerprint = hostFingerprint(env);
+
+  return {
+    ...fingerprint,
+    docker: hostMatches(fingerprint) ? false : dockerAvailable(),
   };
 }
 
