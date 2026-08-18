@@ -33,7 +33,7 @@ export type ComparisonMode = (typeof COMPARISON_MODES)[number];
  * gesture for exactly this, and a control that duplicates a gesture the
  * platform already owns is a control that will disagree with it.
  */
-export const ACTUAL_SIZE: ComparisonMode = 'actual size';
+const ACTUAL_SIZE: ComparisonMode = 'actual size';
 
 /** What a link carrying a story but no mode opens in: the picture the run
  *  itself produced as its verdict. */

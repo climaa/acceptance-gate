@@ -208,6 +208,25 @@ describe('the slider', () => {
     expect(divider()?.getAttribute('style')).not.toContain('50%');
   });
 
+  // The two answers a reviewer reaches for once they have found the difference:
+  // all of one shot, or all of the other — and neither runs past its end.
+  it('shows all of the baseline at one end', () => {
+    renderModal('slider');
+
+    fireEvent.keyDown(scrubber(), { key: 'End' });
+
+    expect(scrubber().getAttribute('aria-valuenow')).toBe('100');
+  });
+
+  it('shows all of the candidate at the other, and stops there', () => {
+    renderModal('slider');
+
+    fireEvent.keyDown(scrubber(), { key: 'Home' });
+    fireEvent.keyDown(scrubber(), { key: 'ArrowLeft' });
+
+    expect(scrubber().getAttribute('aria-valuenow')).toBe('0');
+  });
+
   it('draws no divider in a mode that shows one shot', () => {
     renderModal('candidate');
 

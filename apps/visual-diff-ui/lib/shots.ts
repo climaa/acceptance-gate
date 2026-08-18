@@ -60,6 +60,14 @@ export function shotSources(reportId: string, variant: Variant): ShotSources {
   };
 }
 
+/**
+ * Whether the run wrote both sides — the precondition for anything that puts
+ * one against the other. A blink with one shot has nothing to alternate, and a
+ * split with one shot is a divider over an empty half.
+ */
+export const hasPair = (shots: ShotSources) =>
+  shots.baseline !== undefined && shots.candidate !== undefined;
+
 /** The frame copy for a side the comparison never had. Pinned: the story is not
  *  in that capture set, which is a corpus fact rather than a pixel one. */
 const NOT_ON_THIS_SIDE = 'not on this side';

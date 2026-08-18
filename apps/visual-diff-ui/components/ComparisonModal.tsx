@@ -20,6 +20,7 @@ import {
 import { formatPixels, type ReportSides } from '@/lib/report-view';
 import {
   absentShotCopy,
+  hasPair,
   type ShotKind,
   type ShotSources,
   shotSources,
@@ -64,6 +65,11 @@ const BLINK_MS = 400;
 const DESKTOP_HINT = 'esc close · ← → previous/next variant · drag the divider';
 const SHEET_HINT = 'swipe down to close · pinch to zoom';
 
+/** The side a variant has, for the modes that want the candidate: a `removed`
+ *  or `errored` variant has only the baseline left to show. */
+const presentSide = (shots: ShotSources): ShotKind =>
+  shots.candidate === undefined ? 'baseline' : 'candidate';
+
 /** Which shot a single-image mode shows. `actual size` is not a fourth picture
  *  — it is the candidate at 1:1, since that is the shot under judgement and the
  *  diff's magenta band means nothing magnified. */
@@ -71,7 +77,7 @@ function shotFor(mode: ComparisonMode, shots: ShotSources): ShotKind {
   if (mode === 'baseline') return 'baseline';
   if (mode === 'diff') return 'diff';
 
-  return shots.candidate === undefined ? 'baseline' : 'candidate';
+  return presentSide(shots);
 }
 
 interface ShotProps {
@@ -107,7 +113,7 @@ function Shot({ kind, shots, variant, className }: ShotProps) {
  *  the timer never starts: both frames are acceptable statically, and a blink
  *  is the one thing a reader who asked for stillness must not be given. */
 function BlinkStage({ shots, variant }: { shots: ShotSources; variant: Variant }) {
-  const pair = shots.baseline !== undefined && shots.candidate !== undefined;
+  const pair = hasPair(shots);
   const still = useMediaQuery(REDUCED_MOTION, false);
   const [side, setSide] = useState<ShotKind>('baseline');
 
@@ -122,7 +128,7 @@ function BlinkStage({ shots, variant }: { shots: ShotSources; variant: Variant }
     return () => clearInterval(timer);
   }, [pair, still]);
 
-  const shown = pair ? side : shotFor('candidate', shots);
+  const shown = pair ? side : presentSide(shots);
 
   return <Shot kind={shown} shots={shots} variant={variant} />;
 }
@@ -270,6 +276,37 @@ function useVariantKeys(walk: Walk): void {
   }, []);
 }
 
+interface StageProps extends SplitStageProps {
+  mode: ComparisonMode;
+  /** Whether slider mode has two shots to split. One side missing is not a
+   *  split with an empty half — it is a single shot. */
+  split: boolean;
+}
+
+function Stage({ mode, split, shots, variant, position, onPosition }: StageProps) {
+  if (split) {
+    return (
+      <SplitStage
+        shots={shots}
+        variant={variant}
+        position={position}
+        onPosition={onPosition}
+      />
+    );
+  }
+
+  if (mode === 'blink') return <BlinkStage shots={shots} variant={variant} />;
+
+  return (
+    <Shot
+      kind={shotFor(mode, shots)}
+      shots={shots}
+      variant={variant}
+      className={mode === 'actual size' ? 'vd-compare__shot--actual' : undefined}
+    />
+  );
+}
+
 export interface ComparisonModalProps {
   reportId: string;
   /** The variant on screen. Rendering this component at all is what "open"
@@ -306,8 +343,7 @@ export function ComparisonModal({
   const active = modes.includes(mode) ? mode : DEFAULT_MODE;
 
   const shots = shotSources(reportId, variant);
-  const split =
-    active === 'slider' && shots.baseline !== undefined && shots.candidate !== undefined;
+  const split = active === 'slider' && hasPair(shots);
 
   const title = `${storyTitle(variant.id)} · ${variant.viewport}/${variant.theme}`;
 
@@ -357,36 +393,5 @@ export function ComparisonModal({
         <p className="vd-compare__hint vd-mono">{wide ? DESKTOP_HINT : SHEET_HINT}</p>
       </Stack>
     </Dialog>
-  );
-}
-
-interface StageProps extends SplitStageProps {
-  mode: ComparisonMode;
-  /** Whether slider mode has two shots to split. One side missing is not a
-   *  split with an empty half — it is a single shot. */
-  split: boolean;
-}
-
-function Stage({ mode, split, shots, variant, position, onPosition }: StageProps) {
-  if (split) {
-    return (
-      <SplitStage
-        shots={shots}
-        variant={variant}
-        position={position}
-        onPosition={onPosition}
-      />
-    );
-  }
-
-  if (mode === 'blink') return <BlinkStage shots={shots} variant={variant} />;
-
-  return (
-    <Shot
-      kind={shotFor(mode, shots)}
-      shots={shots}
-      variant={variant}
-      className={mode === 'actual size' ? 'vd-compare__shot--actual' : undefined}
-    />
   );
 }
