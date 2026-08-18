@@ -399,6 +399,60 @@ describe('sample mode', () => {
 });
 
 /**
+ * The capture modes off the pinned container.
+ *
+ * `check` guards its own host before it takes a shot, so on a developer's own
+ * machine a start button here has exactly one outcome: a job that exits 2 a
+ * moment later, reported as a failure. The tab says so up front instead, and
+ * hands over the command that works — the treatment the accept tab already had.
+ */
+describe('capture on a host that is not the pinned container', () => {
+  it.each(['capture', 'run'])('offers no start button on the %s tab', async (mode) => {
+    renderPanel({ image: null });
+    selectTab(mode);
+
+    await waitFor(() => expect(screen.getAllByRole('alert')).toHaveLength(1));
+    expect(startButtons(mode)).toHaveLength(0);
+  });
+
+  it('hands over the container command instead', async () => {
+    renderPanel({ image: 'ubuntu:24.04' });
+
+    const command = await screen.findByTestId('accept-docker-command');
+
+    expect(command.textContent).toContain('node packages/visual-diff/src/cli.mjs check');
+  });
+
+  it('names what this runner is and what the baselines need', async () => {
+    renderPanel({ image: 'ubuntu:24.04' });
+
+    const alert = await screen.findByRole('alert');
+
+    expect(alert.textContent).toContain('ubuntu:24.04');
+    expect(alert.textContent).toContain(HOST.image);
+  });
+
+  // compare moves no pixels — it reads two shot trees off disk — so the host it
+  // runs on is not a question, and the button stays.
+  it('leaves compare alone', async () => {
+    renderPanel({ image: null });
+    selectTab('compare');
+
+    await waitFor(() => expect(startButtons('compare')).toHaveLength(1));
+  });
+
+  // Sample mode is the nearer answer: an instance serving the committed fixtures
+  // has no runner to be on the wrong host, and its own note already says what
+  // would change that. The e2e sample world asserts a DISABLED button here.
+  it('leaves sample mode saying what sample mode says', async () => {
+    renderPanel({ isSample: true, image: null });
+
+    await waitFor(() => expect(startButtons('capture')).toHaveLength(1));
+    expect(screen.getByRole('note', { name: 'sample mode' })).toBeDefined();
+  });
+});
+
+/**
  * The local gate. A deployment has no checkout to compare, no Storybook build to
  * serve and no browser to drive, so there is nothing a reviewer could do in this
  * tab to make the button work — which is the rule `isRefused` states for the

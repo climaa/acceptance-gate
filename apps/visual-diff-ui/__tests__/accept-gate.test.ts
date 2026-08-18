@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 import {
   ACCEPT_COMMAND,
   ACCEPT_IMAGE,
+  CHECK_COMMAND,
   acceptGate,
   reviewableCount,
 } from '../lib/accept-gate';
@@ -132,5 +133,33 @@ describe('the container command', () => {
   // command a reviewer copies has to be the one packages/visual-diff documents.
   it('runs the CLI accept from the repo root', () => {
     expect(ACCEPT_COMMAND).toContain('node packages/visual-diff/src/cli.mjs accept');
+  });
+
+  // capture and run compose `check`, and off the pinned image they degrade the
+  // same way accept does — to the same recipe, one subcommand over.
+  it('runs the CLI check for the capture modes', () => {
+    expect(CHECK_COMMAND).toContain('node packages/visual-diff/src/cli.mjs check');
+    expect(CHECK_COMMAND).toContain(ACCEPT_IMAGE);
+  });
+
+  // `check` serves a Storybook build and cannot run without one. It is built on
+  // the host, where static output is not platform-dependent, so it is a line
+  // before the container rather than a step inside it.
+  it('builds Storybook before entering the container', () => {
+    const [first] = CHECK_COMMAND.split('\n');
+
+    expect(first).toBe('pnpm --filter @gate/storybook build');
+    expect(CHECK_COMMAND.indexOf('docker run')).toBeGreaterThan(0);
+  });
+
+  // Both are transcriptions of one README recipe, and the two flags that make it
+  // work are the ones a reviewer would never guess: the browser baked into the
+  // image, and Docker's 64MB /dev/shm.
+  it('carries the same container flags in both commands', () => {
+    for (const command of [ACCEPT_COMMAND, CHECK_COMMAND]) {
+      expect(command).toContain('--ipc=host');
+      expect(command).toContain('PLAYWRIGHT_BROWSERS_PATH=/ms-playwright');
+      expect(command).toContain('-v "$(pwd)":/repo -w /repo');
+    }
   });
 });

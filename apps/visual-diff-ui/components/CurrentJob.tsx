@@ -108,10 +108,24 @@ async function readCurrent(): Promise<{
 export function CurrentJobProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<CurrentJobState>(IDLE);
   const router = useRouter();
-  // Whether the previous poll saw a job. The transition — and only the
-  // transition — is what the server-rendered tables around this need to hear
-  // about: a job that ended wrote a history row, and maybe a report and a set.
-  const wasRunning = useRef(false);
+  /**
+   * The last job this poller told the tables around it about.
+   *
+   * Keyed on the job's id rather than on a running→idle transition, because a
+   * job can begin and end inside one poll interval and never be seen running at
+   * all — a capture the host guard refuses exits in a few hundred milliseconds,
+   * and the transition it never made left the history table showing the row as
+   * it looked mid-flight: `interrupted`, with no exit code and no duration,
+   * beside a CURRENT JOB region that said `failed exit 2`.
+   *
+   * An id that has finished and has not been reported yet is the whole
+   * condition, so it also catches a job this tab did not start.
+   */
+  const reported = useRef<string | null>(null);
+  // The first poll establishes that baseline rather than acting on it: the job
+  // it finds finished is the one the page it is mounted inside was just
+  // rendered with, and re-reading the server for it would refresh every load.
+  const primed = useRef(false);
   // The router held through a ref rather than named as a dependency below: the
   // interval must be established once, and an effect that lists the router
   // restarts its poll on every state change the poll itself caused.
@@ -142,8 +156,17 @@ export function CurrentJobProvider({ children }: { children: ReactNode }) {
       if (!live || !answer) return;
 
       setState(answer.state);
-      if (wasRunning.current && !answer.state.running) latestRouter.current.refresh();
-      wasRunning.current = answer.state.running;
+
+      // A finished job the tables have not been told about: it wrote a history
+      // row, and maybe a report and a set. `running` is checked as well as the
+      // id, so a job still in flight is not reported as done the first time it
+      // is seen.
+      const { job, running } = answer.state;
+      if (job && !running && reported.current !== job.id) {
+        if (primed.current) latestRouter.current.refresh();
+        reported.current = job.id;
+      }
+      primed.current = true;
 
       if (answer.isSample) {
         frozen = true;

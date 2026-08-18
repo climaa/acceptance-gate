@@ -14,6 +14,7 @@ import {
   ACCEPT_COMMAND,
   ACCEPT_IMAGE,
   type AcceptGate,
+  CHECK_COMMAND,
   acceptGate,
 } from '@/lib/accept-gate';
 import type { ReportListEntry } from '@/lib/data';
@@ -216,12 +217,12 @@ function Fingerprints({ runner }: { runner: HostFingerprint }) {
   );
 }
 
-function CopyableCommand() {
+function CopyableCommand({ command }: { command: string }) {
   const [copied, setCopied] = useState(false);
 
   const copy = async () => {
     try {
-      await navigator.clipboard?.writeText(ACCEPT_COMMAND);
+      await navigator.clipboard?.writeText(command);
       setCopied(true);
     } catch {
       // A browser that refused the clipboard still shows the command; the
@@ -233,7 +234,7 @@ function CopyableCommand() {
   return (
     <Stack gap={2}>
       <div data-testid="accept-docker-command" className="vd-accept__command">
-        <CodeBlock language="bash">{ACCEPT_COMMAND}</CodeBlock>
+        <CodeBlock language="bash">{command}</CodeBlock>
       </div>
       <Stack direction="row" gap={3} align="center" wrap>
         <Button variant="secondary" size="sm" onClick={() => void copy()}>
@@ -266,7 +267,7 @@ function GateNotice({ gate }: { gate: AcceptGate }) {
           — a bare-metal accept silently writes wrong baselines and stamps them as
           container output, so there is no run button here
         </Alert>
-        <CopyableCommand />
+        <CopyableCommand command={ACCEPT_COMMAND} />
       </Stack>
     );
   }
@@ -472,6 +473,26 @@ function isRefused(form: JobForm, gate: AcceptGate | null, hasReport: boolean): 
   return gate?.state === 'host' || gate?.state === 'accessibility';
 }
 
+/**
+ * Whether a capture is one this host could take — and the reason the two modes
+ * that reach for a browser are refused here rather than at exit 2.
+ *
+ * `check` guards its own host before it takes a single shot: the committed
+ * baselines record the platform they were captured on, and a run from anywhere
+ * else is not comparable to them. Off the pinned image that guard is certain, so
+ * a start button here is a button whose only outcome is a failed job three
+ * seconds later — the same argument the accept tab already makes, one mode over.
+ *
+ * `undefined` while the fingerprint is in flight is deliberately NOT a refusal:
+ * the answer is a moment away, and hiding the button until it lands would make
+ * the panel flicker on every load.
+ */
+function needsContainer(mode: Mode, runner: HostFingerprint | undefined): boolean {
+  if (mode !== 'capture' && mode !== 'run') return false;
+
+  return runner !== undefined && runner.image !== ACCEPT_IMAGE;
+}
+
 interface FieldsProps {
   form: JobForm;
   patch: Patch;
@@ -583,13 +604,15 @@ function ModeFields(props: FieldsProps) {
 }
 
 /** What stands where the start button would: the deployed refusal, D1's link
- *  while the lock is held, nothing at all where accept is refused, the button
- *  otherwise. */
+ *  while the lock is held, the container command where this host cannot capture,
+ *  nothing at all where accept is refused, the button otherwise. */
 function StartAction({
   form,
   gate,
   hasReport,
   isLocal,
+  isSample,
+  runner,
   disabled,
   starting,
   onStart,
@@ -598,6 +621,8 @@ function StartAction({
   gate: AcceptGate | null;
   hasReport: boolean;
   isLocal: boolean;
+  isSample: boolean;
+  runner: HostFingerprint | undefined;
   disabled: boolean;
   starting: boolean;
   onStart: () => void;
@@ -622,6 +647,22 @@ function StartAction({
           follow the running job below
         </a>
       </div>
+    );
+  }
+
+  // After sample mode, which is the nearer answer: an instance serving the
+  // committed fixtures has no runner to be on the wrong host, and its own note
+  // already says what would change that.
+  if (!isSample && needsContainer(form.mode, runner)) {
+    return (
+      <Stack gap={3}>
+        <Alert>
+          this runner is {runner?.image ?? 'not in a declared container'}, not{' '}
+          {ACCEPT_IMAGE} — `check` guards its host before it takes a shot, so a{' '}
+          {form.mode} started here would refuse rather than capture
+        </Alert>
+        <CopyableCommand command={CHECK_COMMAND} />
+      </Stack>
     );
   }
 
@@ -698,6 +739,8 @@ export function RunPanel({ isSample, isLocal, reports }: RunPanelProps) {
             gate={gate}
             hasReport={report !== null}
             isLocal={isLocal}
+            isSample={isSample}
+            runner={runner}
             disabled={frozen}
             starting={starting}
             onStart={() => void start(jobRequest(form))}
