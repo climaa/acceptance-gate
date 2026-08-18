@@ -608,6 +608,21 @@ main {
   color: var(--color-text-muted);
 }
 
+/* The committed corpus, above the sets this instance captured. Bordered rather
+   than merely spaced: it is a different kind of thing from the rows below it, and
+   the border is what says so without a heading competing with the panel's own. */
+.vd-canonical {
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+/* Wraps to as many lines as the panel's width needs — four facts on one line at
+   desktop, stacked in the mobile column. */
+.vd-canonical__facts {
+  row-gap: var(--space-2);
+}
+
 /* The filter picker. A fieldset rather than a div, so one `disabled` reaches every
    box inside it — which is why the border and padding a fieldset brings are reset
    here rather than fought elsewhere. */

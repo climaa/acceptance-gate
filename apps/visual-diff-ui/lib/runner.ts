@@ -13,6 +13,7 @@ import {
   EXIT,
   parseVariantKey,
 } from '@gate/visual-diff/policy';
+import { BASELINE_ENV, CANONICAL_LABEL, baselinesPath } from './baselines';
 import { DATA_MOUNT, REPO_MOUNT, containerArgv } from './docker';
 import { type Checkout, describeCheckout, repoRoot } from './git';
 import { type HostEnv, hostFingerprint, hostMatches } from './host';
@@ -58,12 +59,32 @@ const shotPath = (dir: string, key: string, kind: string) =>
  * schema — which is the differ's — has no cell for that. Naming it in the log is
  * what keeps a typo'd filename from reading as a missing story.
  */
+/**
+ * Where one label's shots are.
+ *
+ * Every label but one resolves under the data directory, through `within()`. The
+ * canonical corpus is the exception and the only one: it lives in the CHECKOUT,
+ * because it is committed rather than captured. This is a READ path — nothing in
+ * this app writes there, `accept` promotes into `<dataDir>/__baselines__`, and the
+ * delete route refuses the label outright — so the confinement `within()` exists
+ * to enforce is not being widened, only the set of directories a compare may read
+ * two shot trees from.
+ */
+function shotsDir(dataDir: string, label: string): string {
+  if (label !== CANONICAL_LABEL) return setDir(dataDir, label);
+
+  const root = repoRoot();
+  if (!root) throw new Error(NO_CHECKOUT);
+
+  return baselinesPath(root);
+}
+
 function readSet(
   dataDir: string,
   label: string,
   log: (message: string) => void,
 ): Map<string, Uint8Array> {
-  const dir = setDir(dataDir, label);
+  const dir = shotsDir(dataDir, label);
 
   let names: string[];
   try {
@@ -76,6 +97,11 @@ function readSet(
   const ignored: string[] = [];
 
   for (const name of names) {
+    // The corpus carries its host stamp beside its shots. Naming it as ignored
+    // every time the canonical set is compared would report a file that is
+    // supposed to be there.
+    if (name === BASELINE_ENV) continue;
+
     const key = name.endsWith(PNG) ? name.slice(0, -PNG.length) : null;
     if (!key || !parseVariantKey(key)) {
       ignored.push(name);

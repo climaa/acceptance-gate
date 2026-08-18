@@ -4,6 +4,7 @@ import { EXIT } from '@gate/visual-diff/policy';
 import { revalidateTag } from 'next/cache';
 import { z } from 'zod';
 import { PURGE, REPORTS_TAG, SETS_TAG, reportTag } from './data';
+import { CANONICAL_LABEL } from './baselines';
 import { type CaptureSet, SetsFileSchema } from './summary';
 
 /**
@@ -260,6 +261,10 @@ export function hasSet(dataDir: string, label: string): boolean {
  * A label this instance does not have yet: the one asked for, or it with a
  * counter appended.
  *
+ * The canonical corpus counts as taken. It is not in `sets.json` — nothing in
+ * this app put it there — so `hasSet` cannot see it, and a capture called
+ * `baselines` would otherwise shadow it in the compare pickers.
+ *
  * Labels are date-shaped, so capturing twice in one day asks for a name that is
  * already taken. Neither of the other answers is right — overwriting changes a
  * set under any report already built from it, and refusing throws away a run
@@ -267,11 +272,14 @@ export function hasSet(dataDir: string, label: string): boolean {
  * keeps both sets and keeps `capturedAt` honest about them.
  */
 export function freeLabel(dataDir: string, label: string): string {
-  if (!hasSet(dataDir, label)) return label;
+  const taken = (candidate: string) =>
+    candidate === CANONICAL_LABEL || hasSet(dataDir, candidate);
+
+  if (!taken(label)) return label;
 
   for (let counter = 2; ; counter += 1) {
     const candidate = `${label}-${counter}`;
-    if (!hasSet(dataDir, candidate)) return candidate;
+    if (!taken(candidate)) return candidate;
   }
 }
 

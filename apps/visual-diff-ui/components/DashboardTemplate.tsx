@@ -1,8 +1,10 @@
 import type { ReactNode } from 'react';
 import { EmptyState, Stack } from '@gate/ui';
+import type { CanonicalSet as Corpus } from '@/lib/baselines';
 import type { ReportListEntry } from '@/lib/data';
 import type { HistoryRecord } from '@/lib/jobs';
 import type { CaptureSet } from '@/lib/summary';
+import { CanonicalSet } from './CanonicalSet';
 import { ComparePickers } from './ComparePickers';
 import { CurrentJob, CurrentJobProvider } from './CurrentJob';
 import { HistoryTable } from './HistoryTable';
@@ -38,6 +40,10 @@ export interface DashboardTemplateProps {
    *  a deployment, where the run panel offers no start control at all — a job
    *  needs the checkout it compares. */
   isLocal: boolean;
+  /** The committed baseline corpus, when there is a checkout to read one from.
+   *  Drawn above the captured sets and offered to the compare pickers — it is not
+   *  one of them (lib/baselines.ts says why). */
+  corpus: Corpus | null;
 }
 
 interface PanelProps {
@@ -98,20 +104,34 @@ export function DashboardTemplate({
   history,
   isSample,
   isLocal,
+  corpus,
 }: DashboardTemplateProps) {
+  // Newest first, with the corpus at the head: a compare is nearly always "what
+  // did my capture do to the corpus", so it is the first thing either picker
+  // offers.
+  const compareLabels = [
+    ...(corpus ? [corpus.label] : []),
+    ...sets.map((set) => set.label),
+  ];
+
   return (
     <div className="vd-console">
       <Stack gap={6} className="vd-console__column">
         <Panel id="vd-sets" title="snapshot sets" count={sets.length}>
+          {corpus && <CanonicalSet corpus={corpus} />}
+
           {sets.length === 0 ? (
             <EmptyState message="This instance has captured nothing yet — run a capture and the set appears here." />
           ) : (
-            <>
-              <SetsTable sets={sets} sizes={sizes} />
-              <ComparePickers labels={sets.map((set) => set.label)} />
-              <RetentionControl labels={sets.map((set) => set.label)} />
-            </>
+            <SetsTable sets={sets} sizes={sizes} />
           )}
+
+          {/* The pickers list the corpus alongside the captured sets, which is what
+              it is there for. `RetentionControl` does not: pruning is about what
+              this instance accumulated, and the corpus is not prunable — the
+              delete route refuses it by name. */}
+          {compareLabels.length > 1 && <ComparePickers labels={compareLabels} />}
+          {sets.length > 0 && <RetentionControl labels={sets.map((set) => set.label)} />}
         </Panel>
 
         <Panel id="vd-reports" title="reports" count={reports.length}>

@@ -1,6 +1,8 @@
+import { CANONICAL_LABEL } from '@/lib/baselines';
 import { PURGE, SETS_TAG, resolveDataDir } from '@/lib/data';
 import { SetLabelSchema, hasSet, holderOf, removeSet } from '@/lib/jobs';
 import {
+  CANONICAL_IS_COMMITTED,
   SAMPLE_DATA,
   conflict,
   heldByWorktree,
@@ -33,6 +35,11 @@ export async function DELETE(_request: Request, { params }: Context): Promise<Re
 
   const busy = refuseWhileRunning(dir);
   if (busy) return busy;
+
+  // Ahead of the miss below, and deliberately a refusal rather than a 404: the
+  // corpus IS there, it just is not this console's to remove. Answering "no
+  // capture set named baselines" would be false about a set the pickers offer.
+  if (label === CANONICAL_LABEL) return conflict(CANONICAL_IS_COMMITTED);
 
   // A label that is not a label is a miss, not a refusal: answering anything
   // else would confirm what the shape of a real one is.

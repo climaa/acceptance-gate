@@ -21,6 +21,7 @@ import {
   startJob,
   within,
 } from '../lib/jobs';
+import { CANONICAL_LABEL } from '../lib/baselines';
 import { NOT_LOCAL } from '../lib/refusals';
 import { revalidateTagCalls } from './stubs/next-cache';
 import { resetRequestHost, setRequestHost } from './stubs/next-headers';
@@ -404,6 +405,15 @@ describe('the set registry', () => {
 
     expect(listSets(dir)).toHaveLength(1);
     expect(listSets(dir)[0]?.stories).toBe(12);
+  });
+
+  // The corpus is not in `sets.json` — nothing in this app put it there — so
+  // `hasSet` cannot see it, and a capture called `baselines` would otherwise
+  // shadow it in the compare pickers.
+  it('treats the canonical corpus label as taken', () => {
+    const dir = makeDataDir();
+
+    expect(freeLabel(dir, CANONICAL_LABEL)).toBe(`${CANONICAL_LABEL}-2`);
   });
 
   it('hands back the label asked for when nothing holds it', () => {

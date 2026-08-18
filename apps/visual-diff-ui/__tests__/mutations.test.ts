@@ -7,6 +7,8 @@ import * as path from 'node:path';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { POST as postPrune } from '../app/api/prune/route';
 import { DELETE as deleteSet } from '../app/api/sets/[label]/route';
+import { CANONICAL_LABEL } from '../lib/baselines';
+import { CANONICAL_IS_COMMITTED } from '../lib/refusals';
 import { JobRequestSchema, startJob } from '../lib/jobs';
 import { revalidateTagCalls } from './stubs/next-cache';
 
@@ -189,6 +191,23 @@ describe('DELETE /api/sets/[label]', () => {
     expect(response.status).toBe(409);
     expect(fs.existsSync(path.join(dir, 'sets', 'main-2026-08-15'))).toBe(true);
     expect(running.ok).toBe(true);
+  });
+
+  // A refusal, not a 404. The corpus IS there — the pickers offer it — it just is
+  // not this console's to remove: a commit changes it, and `accept` inside the
+  // pinned container is what writes one.
+  it('refuses to delete the committed corpus, naming why', async () => {
+    seedDataDir();
+
+    const response = await deleteSet(
+      new Request('http://localhost:3300/'),
+      context(CANONICAL_LABEL),
+    );
+
+    expect(response.status).toBe(409);
+    expect(((await response.json()) as { error: string }).error).toBe(
+      CANONICAL_IS_COMMITTED,
+    );
   });
 
   it('answers 404 for a set that is not there', async () => {

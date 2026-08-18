@@ -55,6 +55,12 @@ export const ACCEPT_RECOVERY = [
   'git clean -fd __baselines__/',
 ];
 
+/** The canonical corpus is committed, not captured: it is changed by a commit and
+ *  by `accept` inside the pinned container, and no console owns it. Refused rather
+ *  than hidden, because a POST that skips the UI asks the same thing. */
+export const CANONICAL_IS_COMMITTED =
+  'the baseline corpus is committed to this repository — it is changed by a commit, never by this console';
+
 /** D2. Names both halves — what is held, and what holds it — because "cannot
  *  delete" is not something a reviewer can act on and a worktree path is. */
 export const heldByWorktree = (label: string, worktreePath: string) =>

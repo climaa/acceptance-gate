@@ -9,6 +9,7 @@ import { EXIT, HOST } from '@gate/visual-diff/policy';
 // `**/*.ts` include means tsc typechecks this file.
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DATA_MOUNT, REPO_MOUNT } from '../lib/docker';
+import { BASELINE_ENV, CANONICAL_LABEL } from '../lib/baselines';
 import { describeCheckout } from '../lib/git';
 import { NO_CHECKOUT, STORYBOOK_FAILED } from '../lib/refusals';
 import { SummarySchema } from '../lib/summary';
@@ -207,6 +208,55 @@ describe('compareSets', () => {
     );
 
     expect(lines.join('\n')).toContain('notes.txt');
+  });
+});
+
+describe('compareSets against the committed corpus', () => {
+  // The point of offering the corpus at all: a reviewer who has just captured
+  // wants to know what their shots did to the corpus CI compares against, not
+  // what they did to yesterday's capture.
+  //
+  // The corpus lives in the CHECKOUT, so this is the one label that resolves
+  // outside the data directory. Read-only: the assertions below, and the
+  // suite-wide digest around this whole file, are what hold that.
+  it('reads the corpus as the baseline side of a compare', async () => {
+    const dir = makeDataDir();
+    seedSet(dir, 'candidate-set', fixtureShots('candidate'));
+
+    const outcome = await compareSets(
+      dir,
+      { mode: 'compare', baseline: CANONICAL_LABEL, candidate: 'candidate-set' },
+      silent,
+    );
+
+    expect(outcome.reportId).toBe(`${CANONICAL_LABEL}__candidate-set`);
+    const summary = SummarySchema.parse(
+      JSON.parse(
+        fs.readFileSync(
+          path.join(dir, 'reports', `${CANONICAL_LABEL}__candidate-set`, 'summary.json'),
+          'utf8',
+        ),
+      ),
+    );
+    // Every fixture shot has a baseline in the real corpus, so nothing is `added`
+    // — which is what proves the corpus was the tree that was read.
+    expect(summary.counts.added).toBe(0);
+  });
+
+  // `BASELINE_ENV.json` sits beside the shots. Reporting it as an ignored file
+  // every time the corpus is compared would name a file that belongs there.
+  it('says nothing about the host stamp beside the shots', async () => {
+    const dir = makeDataDir();
+    const lines: string[] = [];
+    seedSet(dir, 'candidate-set', fixtureShots('candidate'));
+
+    await compareSets(
+      dir,
+      { mode: 'compare', baseline: CANONICAL_LABEL, candidate: 'candidate-set' },
+      (line) => lines.push(line),
+    );
+
+    expect(lines.join('\n')).not.toContain(BASELINE_ENV);
   });
 });
 

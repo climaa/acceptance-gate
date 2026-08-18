@@ -2,6 +2,7 @@ import { headers } from 'next/headers';
 import { Suspense } from 'react';
 import { Skeleton, Stack } from '@gate/ui';
 import { DashboardTemplate } from '@/components/DashboardTemplate';
+import { readCanonicalSet } from '@/lib/baselines';
 import { readReports, readSetSizes, readSets, resolveDataDir } from '@/lib/data';
 import { readHistory } from '@/lib/jobs';
 import { isLocalHost } from '@/lib/local';
@@ -45,6 +46,10 @@ async function ConsoleContents() {
   // synchronously — see lib/jobs.ts, which owns the record and its writers.
   const history = readHistory(dir);
 
+  // Read uncached for the same reason: the corpus is a directory in the checkout,
+  // and a `git pull` between two page loads changes what it holds.
+  const corpus = readCanonicalSet();
+
   return (
     <DashboardTemplate
       sets={sets}
@@ -53,6 +58,7 @@ async function ConsoleContents() {
       history={history}
       isSample={isSample}
       isLocal={isLocal}
+      corpus={corpus}
     />
   );
 }

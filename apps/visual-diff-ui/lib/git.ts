@@ -78,6 +78,38 @@ function git(root: string, ...args: string[]): string {
  * `*.stories.tsx` is a story this run will capture, so it is a difference the
  * set has to own up to. `.gitignore` already keeps build output out of it.
  */
+/**
+ * The commit that last touched `pathspec`, or null when git cannot say.
+ *
+ * The provenance of something this console did not capture: the committed
+ * baseline corpus is CI's work, and the only honest answer to "where did these
+ * come from" is the commit that accepted them. The BRANCH is deliberately not
+ * part of it — a commit does not record the branch it was made on, and naming the
+ * one currently checked out would attribute the corpus to whoever happens to be
+ * looking at it.
+ */
+export function lastCommit(
+  root: string,
+  pathspec: string,
+): { sha: string; date: string } | null {
+  try {
+    const [sha, date] = git(
+      root,
+      'log',
+      '-1',
+      '--format=%h%n%ad',
+      '--date=short',
+      '--',
+      pathspec,
+    ).split('\n');
+
+    // A path git knows nothing about answers with nothing at all, not an error.
+    return sha && date ? { sha, date } : null;
+  } catch {
+    return null;
+  }
+}
+
 export function describeCheckout(root: string): Checkout | null {
   try {
     const branch = git(root, 'rev-parse', '--abbrev-ref', 'HEAD');
