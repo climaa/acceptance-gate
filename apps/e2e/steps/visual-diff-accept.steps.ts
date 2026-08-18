@@ -3,8 +3,8 @@ import { createBdd } from 'playwright-bdd';
 
 import type { ConsolePage } from '../pages/console';
 import type { ReportPage } from '../pages/report';
-import { VD_HOSTS } from '../pages/visual-diff-hosts';
-import { test } from './fixtures';
+import { VD_HOSTS, VD_PINNED_IMAGE } from '../pages/visual-diff-hosts';
+import { type ScenarioState, test } from './fixtures';
 import { SEEDED_REPORT } from './visual-diff-report.steps';
 
 const { Given, When, Then } = createBdd(test);
@@ -13,10 +13,6 @@ const { Given, When, Then } = createBdd(test);
 //   "a finished comparison report exists" → visual-diff-report.steps.ts
 //   "I visit the console" / "I visit the mutating console"
 //                                         → visual-diff-console.steps.ts
-
-/** What packages/visual-diff/src/policy.mjs HOST pins — the fingerprint the
- *  accept gate compares against (D3). */
-const PINNED_IMAGE = 'mcr.microsoft.com/playwright:v1.62.1-noble';
 
 /**
  * The report an accept promotes from: the seeded world's clean comparison of
@@ -67,16 +63,13 @@ Given('the runner matches the pinned container', async ({ page }) => {
   const env = await page.request
     .get(`${VD_HOSTS.mutating}/api/env`)
     .then((response) => response.json());
-  expect(env.image).toBe(PINNED_IMAGE);
+  expect(env.image).toBe(VD_PINNED_IMAGE);
 });
 
 /** The accept tab, on the report this scenario is about. Every question the
  *  gate asks below is about that report, so naming it is part of opening the
  *  tab rather than something a Then is left to assume. */
-async function openAcceptTab(
-  consolePage: ConsolePage,
-  scenarioState: { acceptReport?: string },
-) {
+async function openAcceptTab(consolePage: ConsolePage, scenarioState: ScenarioState) {
   await consolePage.selectJobMode('accept');
   await consolePage.chooseAcceptReport(scenarioState.acceptReport ?? ACCEPT_REPORT);
 }
@@ -120,7 +113,7 @@ Then(
 Then(
   'I can copy the container command instead of running it',
   async ({ console: consolePage }) => {
-    await expect(consolePage.acceptDockerCommand).toContainText(PINNED_IMAGE);
+    await expect(consolePage.acceptDockerCommand).toContainText(VD_PINNED_IMAGE);
     await expect(consolePage.acceptDockerCommand).toContainText('cli.mjs accept');
     await expect(consolePage.copyCommandButton).toBeVisible();
   },

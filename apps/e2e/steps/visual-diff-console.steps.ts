@@ -26,7 +26,7 @@ const BASELINE_SET = { label: 'main-2026-08-17', branch: 'main' } as const;
 const SPARE_SET = { label: 'main-2026-08-16', branch: 'main' } as const;
 
 /** Captured from a working tree with uncommitted changes. Also the B side. */
-const DIRTY_SET = { label: 'main-2026-08-13', branch: 'main', dirty: true } as const;
+const DIRTY_SET = { label: 'main-2026-08-13', branch: 'main' } as const;
 
 /** Nothing holds it, so the delete scenario can retire it. */
 const UNHELD_SET = { label: 'main-2026-08-12', branch: 'main' } as const;
@@ -34,11 +34,7 @@ const UNHELD_SET = { label: 'main-2026-08-12', branch: 'main' } as const;
 /** The oldest set. A registered worktree holds it in the SEEDED world, which is
  *  where the refused delete runs; the mutating world registers no worktree, or
  *  the prune it owns would skip this row instead of retiring it. */
-const HELD_SET = {
-  label: 'main-2026-08-11',
-  branch: 'main',
-  heldByWorktree: true,
-} as const;
+const HELD_SET = { label: 'main-2026-08-11', branch: 'main' } as const;
 
 /** Every set the worlds hold, newest first — the order `sets.json` is written
  *  in and the console shows. */

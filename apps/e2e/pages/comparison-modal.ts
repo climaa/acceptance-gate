@@ -30,8 +30,4 @@ export class ComparisonModal {
   ): Locator {
     return this.toolbar.getByRole('button', { name, exact: true });
   }
-
-  async close() {
-    await this.root.getByRole('button', { name: 'close' }).click();
-  }
 }

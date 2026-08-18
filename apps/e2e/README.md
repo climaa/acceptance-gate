@@ -99,8 +99,9 @@ build of `@gate/visual-diff-ui` is booted three times against three data directo
 | `sample`   | `3201` | `.worlds/sample` (empty) | nobody — there is nothing to      |
 | `mutating` | `3202` | `.worlds/mutating`       | the `@mutating` project, serially |
 
-`pages/visual-diff-hosts.ts` is the one place a world's URL and its directory are
-written; `playwright.config.ts` and the steps both read them from there.
+`pages/visual-diff-hosts.ts` is the one place a world's URL, its directory and the
+pinned image its server claims are written; `playwright.config.ts` and the steps both
+read them from there.
 
 **Seeding is the webServer's job, never a test's.** Each entry runs
 `scripts/seed-visual-diff.mjs <dir>` before `next start`, so a scenario that needs the
@@ -143,6 +144,7 @@ run.
 `@playwright/test` is pinned **exactly**, no caret. That same version is transcribed into
 the visual-diff capture container tag (`mcr.microsoft.com/playwright:v1.62.1-noble`, named
 in `packages/visual-diff/src/policy.mjs` and again in this workspace's
-`playwright.config.ts`, which declares it to the mutating world) — so a Playwright bump
-moves the image tag, the baselines and this pin together, a hand-authored change and
-never a bot PR. Dependabot ignores `@playwright/*` for that reason.
+`pages/visual-diff-hosts.ts`, where the mutating world's server and the accept scenarios
+both read it from) — so a Playwright bump moves the image tag, the baselines and this pin
+together, a hand-authored change and never a bot PR. Dependabot ignores `@playwright/*`
+for that reason.

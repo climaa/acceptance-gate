@@ -34,13 +34,13 @@ const workspace = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 /**
  * Scenarios, not Playwright tests: 9 blog + 8 visual-diff console + 3 sample
  * mode + 14 report + 7 accessibility + 4 baseline acceptance. Test count is
- * higher because an untagged scenario is listed once per
- * project; one legitimate `@desktop` lowers that number without removing a
- * requirement, which would train everyone to edit this constant for a
- * non-event. Scenario count moves only when a requirement is added or removed.
+ * higher, because an untagged scenario is listed once per project; one
+ * legitimate `@desktop` lowers that number without removing a requirement,
+ * which would train everyone to edit this constant for a non-event. Scenario
+ * count moves only when a requirement is added or removed.
  *
  * Exact equality, not a floor: a floor decays, and after ten more scenarios a
- * floor of 8 would permit deleting nine of them. Raising this alongside a new
+ * floor of 45 would permit deleting ten of them. Raising this alongside a new
  * scenario is a two-line diff; LOWERING it is a product decision and belongs in
  * its own hand-authored PR with the reason written down.
  */

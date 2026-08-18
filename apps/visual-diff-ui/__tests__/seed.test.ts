@@ -172,8 +172,8 @@ describe('the seeded world', () => {
 });
 
 describe('the accept report', () => {
-  const summaryOf = (world: string): unknown =>
-    readJson(path.join(world, 'reports', ACCEPT_REPORT, 'summary.json'));
+  const summaryOf = (dir: string): unknown =>
+    readJson(path.join(dir, 'reports', ACCEPT_REPORT, 'summary.json'));
 
   // `acceptGate` asks accessibility first and refuses outright, so a world
   // whose only report carries a violation can never show the review gate or

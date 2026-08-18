@@ -8,7 +8,8 @@ const { Given, When, Then } = createBdd(test);
 /** The report the seed tree ships — the #242 prose-rhythm regression trimmed to
  *  its telling variants. Exported: the a11y and accept steps files reuse it. */
 export const SEEDED_REPORT = 'main-2026-08-17__main-2026-08-13';
-export const REPORT_SETS = ['main-2026-08-17', 'main-2026-08-13'] as const;
+/** Its two sides, which its id already names — a report is `<setA>__<setB>`. */
+const REPORT_SETS = SEEDED_REPORT.split('__');
 const CHANGED_STORY = 'PostTemplate — Long Prose';
 const REMOVED_STORY = 'TagList — Empty';
 

@@ -412,15 +412,23 @@ function verifyHistory(target) {
   }
 }
 
-function verifyReport(target, graft) {
-  const summary = readJson(join(target, 'reports', graft.report, 'summary.json'));
-  const counted = summary.variants.length + summary.counts.unchanged;
-  const total = Object.values(summary.counts).reduce((sum, count) => sum + count, 0);
+/** A report's chips have to add up to the cards under them: every bucket but
+ *  `unchanged` is one variant in the array, and `unchanged` is only ever the
+ *  count the differ left behind. */
+function verifyCounts(reportId, { counts, variants }) {
+  const present = variants.length + counts.unchanged;
+  const counted = Object.values(counts).reduce((sum, count) => sum + count, 0);
 
   check(
-    counted === total,
-    `${graft.report}: ${total} counted, ${counted} variants + unchanged`,
+    present === counted,
+    `${reportId}: ${counted} counted, ${present} variants + unchanged`,
   );
+}
+
+function verifyReport(target, graft) {
+  const summary = readJson(join(target, 'reports', graft.report, 'summary.json'));
+
+  verifyCounts(graft.report, summary);
   check(summary.counts.a11y > 0, `${graft.report} carries no accessibility failure`);
   check(summary.counts.removed > 0, `${graft.report} carries no removed variant`);
   check(
@@ -453,12 +461,7 @@ function verifyAcceptReport(target, accept, sets, shots) {
     `${accept.report} does not name two registered capture sets`,
   );
 
-  const counted = accept.variants.length + accept.counts.unchanged;
-  const total = Object.values(accept.counts).reduce((sum, count) => sum + count, 0);
-  check(
-    counted === total,
-    `${accept.report}: ${total} counted, ${counted} variants + unchanged`,
-  );
+  verifyCounts(accept.report, accept);
   check(
     accept.counts.a11y === 0,
     `${accept.report} carries an accessibility failure — the accept gate refuses that before it asks anything else, so the review and host scenarios could never reach their answers`,

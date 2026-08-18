@@ -1,7 +1,12 @@
 import { defineConfig, devices } from '@playwright/test';
 import { defineBddConfig } from 'playwright-bdd';
 
-import { VD_HOSTS, type VdWorld, vdWorldDir } from './pages/visual-diff-hosts';
+import {
+  VD_HOSTS,
+  VD_PINNED_IMAGE,
+  type VdWorld,
+  vdWorldDir,
+} from './pages/visual-diff-hosts';
 
 // Generate Playwright specs from Gherkin .feature files + step definitions.
 // The returned path is where `bddgen` writes the generated specs.
@@ -30,19 +35,6 @@ if (isCI && process.env.E2E_BASE_URL) {
 
 const baseURL = process.env.E2E_BASE_URL ?? `http://localhost:${PORT}`;
 
-/**
- * The pinned capture container, transcribed from
- * `packages/visual-diff/src/policy.mjs`'s `HOST.image` — the same value the
- * `@playwright/test` pin above the README's version table is bumped with.
- *
- * The mutating world's server declares it, which is the whole D3 seam: the app
- * reads it server-side and reports it from `GET /api/env`, so a scenario drives
- * the accept gate's decision from one variable and the client cannot disagree
- * with the server about what host it is on. Inert for every scenario except the
- * matched-host accept (#285).
- */
-const PINNED_IMAGE = 'mcr.microsoft.com/playwright:v1.62.1-noble';
-
 interface World {
   /** Handed to `scripts/seed-visual-diff.mjs` after the target directory. */
   seedFlags: readonly string[];
@@ -63,7 +55,7 @@ const WORLDS: Record<VdWorld, World> = {
   sample: { seedFlags: ['--empty'], env: {} },
   mutating: {
     seedFlags: ['--mutating'],
-    env: { VISUAL_DIFF_FAKE_HOST_FINGERPRINT: PINNED_IMAGE },
+    env: { VISUAL_DIFF_FAKE_HOST_FINGERPRINT: VD_PINNED_IMAGE },
   },
 };
 

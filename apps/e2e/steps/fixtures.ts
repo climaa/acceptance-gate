@@ -10,7 +10,7 @@ import { ReportPage } from '../pages/report';
 /** What one scenario's steps hand each other — e.g. the title read off the index
  *  before the click that navigates away from it. A plain object, not a return
  *  value: playwright-bdd steps take fixtures, not each other's results. */
-interface ScenarioState {
+export interface ScenarioState {
   articleTitle?: string;
   /** How many variants were marked reviewed before the step that marks one. */
   reviewedBefore?: number;
