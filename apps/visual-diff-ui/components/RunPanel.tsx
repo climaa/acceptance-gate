@@ -14,11 +14,10 @@ import {
   ACCEPT_COMMAND,
   ACCEPT_IMAGE,
   type AcceptGate,
-  CHECK_COMMAND,
   acceptGate,
 } from '@/lib/accept-gate';
 import type { ReportListEntry } from '@/lib/data';
-import type { HostFingerprint } from '@/lib/host';
+import type { RunnerEnv } from '@/lib/host';
 import { readReviewed } from '@/lib/review-state';
 import { CURRENT_JOB_ANCHOR, useCurrentJob } from './CurrentJob';
 
@@ -84,6 +83,11 @@ const NO_REPORT = 'No report to accept from — compare two capture sets first.'
  * than under a convention.
  */
 export const RUNNING_REFUSAL = 'a job is already running';
+
+/** The Docker reminder, spelled here for the same reason and pinned against
+ *  `DOCKER_DOWN` by the same test. Not a refusal after the fact: the button it
+ *  sits above is disabled, so the reviewer starts Docker instead of a job. */
+export const DOCKER_REFUSAL = `this capture runs inside ${ACCEPT_IMAGE}, and Docker is not running — start Docker and this comes back`;
 
 /** The deployed refusal, spelled here for the same reason and pinned against
  *  `NOT_LOCAL` by the same test. */
@@ -204,7 +208,7 @@ function ModeTabs({ mode, onSelect }: { mode: Mode; onSelect: (mode: Mode) => vo
 /** What the runner is, beside what the baselines require. Two rows rather than a
  *  verdict, because a reviewer looking at a refused accept needs to see which of
  *  the two is not what they expected. */
-function Fingerprints({ runner }: { runner: HostFingerprint }) {
+function Fingerprints({ runner }: { runner: RunnerEnv }) {
   return (
     <dl className="vd-fingerprints">
       <dt>baselines require</dt>
@@ -217,12 +221,12 @@ function Fingerprints({ runner }: { runner: HostFingerprint }) {
   );
 }
 
-function CopyableCommand({ command, name }: { command: string; name: string }) {
+function CopyableCommand() {
   const [copied, setCopied] = useState(false);
 
   const copy = async () => {
     try {
-      await navigator.clipboard?.writeText(command);
+      await navigator.clipboard?.writeText(ACCEPT_COMMAND);
       setCopied(true);
     } catch {
       // A browser that refused the clipboard still shows the command; the
@@ -233,8 +237,8 @@ function CopyableCommand({ command, name }: { command: string; name: string }) {
 
   return (
     <Stack gap={2}>
-      <div data-testid={`${name}-docker-command`} className="vd-accept__command">
-        <CodeBlock language="bash">{command}</CodeBlock>
+      <div data-testid="accept-docker-command" className="vd-accept__command">
+        <CodeBlock language="bash">{ACCEPT_COMMAND}</CodeBlock>
       </div>
       <Stack direction="row" gap={3} align="center" wrap>
         <Button variant="secondary" size="sm" onClick={() => void copy()}>
@@ -267,7 +271,7 @@ function GateNotice({ gate }: { gate: AcceptGate }) {
           — a bare-metal accept silently writes wrong baselines and stamps them as
           container output, so there is no run button here
         </Alert>
-        <CopyableCommand command={ACCEPT_COMMAND} name="accept" />
+        <CopyableCommand />
       </Stack>
     );
   }
@@ -365,8 +369,8 @@ function useJobForm(
 /** What this host is, as the server sees it. `undefined` while the answer is in
  *  flight — distinct from a host that declares no image, which is a refusal
  *  rather than a wait. */
-function useRunnerFingerprint(): HostFingerprint | undefined {
-  const [runner, setRunner] = useState<HostFingerprint | undefined>(undefined);
+function useRunnerFingerprint(): RunnerEnv | undefined {
+  const [runner, setRunner] = useState<RunnerEnv | undefined>(undefined);
 
   useEffect(() => {
     let live = true;
@@ -374,12 +378,20 @@ function useRunnerFingerprint(): HostFingerprint | undefined {
     void (async () => {
       try {
         const response = await fetch('/api/env', { cache: 'no-store' });
-        const fingerprint = (await response.json()) as HostFingerprint;
+        const fingerprint = (await response.json()) as RunnerEnv;
         if (live) setRunner(fingerprint);
       } catch {
         // Unreachable is not a match: the gate reads a null image as the refusal
         // it is, which is the fail-closed answer.
-        if (live) setRunner({ platform: '?', arch: '?', image: null, playwright: null });
+        if (live) {
+          setRunner({
+            platform: '?',
+            arch: '?',
+            image: null,
+            playwright: null,
+            docker: false,
+          });
+        }
       }
     })();
 
@@ -474,23 +486,26 @@ function isRefused(form: JobForm, gate: AcceptGate | null, hasReport: boolean): 
 }
 
 /**
- * Whether a capture is one this host could take — and the reason the two modes
- * that reach for a browser are refused here rather than at exit 2.
+ * What a capture needs from the machine, and whether it has it.
  *
- * `check` guards its own host before it takes a single shot: the committed
- * baselines record the platform they were captured on, and a run from anywhere
- * else is not comparable to them. Off the pinned image that guard is certain, so
- * a start button here is a button whose only outcome is a failed job three
- * seconds later — the same argument the accept tab already makes, one mode over.
+ * `check` guards its own host before it takes a shot — the committed baselines
+ * record the platform they were captured on — so off the pinned image the runner
+ * borrows that image and captures inside it. Which turns the host question into
+ * a Docker question, and that is the one the panel answers up front: a daemon
+ * that is down is a start button whose only outcome is a failed job.
  *
  * `undefined` while the fingerprint is in flight is deliberately NOT a refusal:
- * the answer is a moment away, and hiding the button until it lands would make
+ * the answer is a moment away, and blocking the button until it lands would make
  * the panel flicker on every load.
  */
-function needsContainer(mode: Mode, runner: HostFingerprint | undefined): boolean {
-  if (mode !== 'capture' && mode !== 'run') return false;
+function containerState(
+  mode: Mode,
+  runner: RunnerEnv | undefined,
+): 'native' | 'container' | 'no-docker' {
+  if (mode !== 'capture' && mode !== 'run') return 'native';
+  if (runner === undefined || runner.image === ACCEPT_IMAGE) return 'native';
 
-  return runner !== undefined && runner.image !== ACCEPT_IMAGE;
+  return runner.docker ? 'container' : 'no-docker';
 }
 
 interface FieldsProps {
@@ -500,7 +515,7 @@ interface FieldsProps {
    *  than offering a form whose button is not there. */
   disabled: boolean;
   reports: readonly ReportListEntry[];
-  runner: HostFingerprint | undefined;
+  runner: RunnerEnv | undefined;
   gate: AcceptGate | null;
 }
 
@@ -622,7 +637,7 @@ function StartAction({
   hasReport: boolean;
   isLocal: boolean;
   isSample: boolean;
-  runner: HostFingerprint | undefined;
+  runner: RunnerEnv | undefined;
   disabled: boolean;
   starting: boolean;
   onStart: () => void;
@@ -650,39 +665,39 @@ function StartAction({
     );
   }
 
-  // After sample mode, which is the nearer answer: an instance serving the
-  // committed fixtures has no runner to be on the wrong host, and its own note
-  // already says what would change that.
-  if (!isSample && needsContainer(form.mode, runner)) {
-    return (
-      <Stack gap={3}>
-        {/* A note rather than an alert, unlike the accept tab's host refusal one
-            mode over. Two reasons, and they agree: this is true on arrival
-            rather than in answer to anything the reviewer did, so announcing it
-            assertively on every load is not what `role="alert"` is for — and
-            capture is the tab this panel opens on, so an alert here would be a
-            second one inside `main` on every page, which is what the console
-            page object warns a bare `role=alert` lookup cannot survive. */}
-        <Note name="container required">
-          this runner is {runner?.image ?? 'not in a declared container'}, not{' '}
-          {ACCEPT_IMAGE} — `check` guards its host before it takes a shot, so a{' '}
-          {form.mode} started here would refuse rather than capture
-        </Note>
-        <CopyableCommand command={CHECK_COMMAND} name="check" />
-      </Stack>
-    );
-  }
-
   if (isRefused(form, gate, hasReport)) return null;
 
+  // Sample mode is checked first because it is the nearer answer: an instance
+  // serving the committed fixtures has no runner to borrow a container for, and
+  // its own note already says what would change that.
+  const container = isSample ? 'native' : containerState(form.mode, runner);
+
   return (
-    <Button
-      variant="primary"
-      onClick={onStart}
-      disabled={disabled || starting || !isRunnable(form, gate)}
-    >
-      start {form.mode}
-    </Button>
+    <Stack gap={3}>
+      {/* Notes rather than alerts. Both are true on arrival rather than in
+          answer to anything the reviewer did, so announcing them assertively on
+          every load is not what `role="alert"` is for — and capture is the tab
+          this panel opens on, so an alert here would be a second one inside
+          `main` on every page, which is what the console page object warns a
+          bare `role=alert` lookup cannot survive. */}
+      {container === 'container' && (
+        <Note name="runs in the container">
+          this {form.mode} runs inside {ACCEPT_IMAGE} — the baselines were captured there,
+          and shots taken anywhere else are not comparable to them
+        </Note>
+      )}
+      {container === 'no-docker' && <Note name="docker required">{DOCKER_REFUSAL}</Note>}
+
+      <Button
+        variant="primary"
+        onClick={onStart}
+        disabled={
+          disabled || starting || container === 'no-docker' || !isRunnable(form, gate)
+        }
+      >
+        start {form.mode}
+      </Button>
+    </Stack>
   );
 }
 

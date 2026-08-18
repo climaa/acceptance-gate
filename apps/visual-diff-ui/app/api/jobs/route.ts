@@ -1,11 +1,13 @@
 import { HOST } from '@gate/visual-diff/policy';
 import { headers } from 'next/headers';
 import { resolveDataDir } from '@/lib/data';
+import { dockerAvailable } from '@/lib/docker';
 import { hostFingerprint, hostMatches } from '@/lib/host';
 import { JobRequestSchema, startJob } from '@/lib/jobs';
 import { isLocalHost } from '@/lib/local';
 import {
   ACCEPT_RECOVERY,
+  DOCKER_DOWN,
   JOB_RUNNING,
   NOT_LOCAL,
   SAMPLE_DATA,
@@ -57,6 +59,13 @@ export async function POST(request: Request): Promise<Response> {
   if (job.mode === 'accept') {
     const refusal = refuseAccept(dir, job.reportId);
     if (refusal) return refusal;
+  }
+
+  // The panel disables its button on the same answer, so this is the POST that
+  // skipped the UI — and the reason it is worth answering twice is that the
+  // daemon can go down between the poll that enabled the button and the click.
+  if (job.mode !== 'compare' && !hostMatches() && !dockerAvailable()) {
+    return conflict(DOCKER_DOWN);
   }
 
   const outcome = startJob(dir, job, runJob);

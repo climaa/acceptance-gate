@@ -5,10 +5,15 @@ import { HOST } from '@gate/visual-diff/policy';
 // `**/*.tsx` include means tsc typechecks this file.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CurrentJobProvider } from '../components/CurrentJob';
-import { REMOTE_REFUSAL, RUNNING_REFUSAL, RunPanel } from '../components/RunPanel';
+import {
+  DOCKER_REFUSAL,
+  REMOTE_REFUSAL,
+  RUNNING_REFUSAL,
+  RunPanel,
+} from '../components/RunPanel';
 import type { ReportListEntry } from '../lib/data';
 import type { HistoryRecord } from '../lib/jobs';
-import { JOB_RUNNING, NOT_LOCAL } from '../lib/refusals';
+import { DOCKER_DOWN, JOB_RUNNING, NOT_LOCAL } from '../lib/refusals';
 import { reviewStorageKey } from '../lib/review-state';
 import { refreshCalls, setSearchParams } from './stubs/next-navigation';
 
@@ -47,6 +52,8 @@ const RUNNING: HistoryRecord = {
 interface ApiStub {
   /** What `GET /api/env` says this runner is. */
   image?: string | null;
+  /** Whether `GET /api/env` says a container could be started. */
+  docker?: boolean;
   /** What `GET /api/jobs/current` says is happening. */
   current?: { running: boolean; job: HistoryRecord | null };
   /** What `POST /api/jobs` answers. */
@@ -59,7 +66,7 @@ const answered = (ok: boolean, status: number, body: unknown) =>
 /** The three endpoints this panel talks to, answered per case. An unstubbed URL
  *  throws rather than resolving: a screen quietly reading something this suite
  *  never arranged is exactly what the fingerprint seam must not do. */
-function stubApi({ image = HOST.image, current, jobs }: ApiStub = {}) {
+function stubApi({ image = HOST.image, docker = true, current, jobs }: ApiStub = {}) {
   const fetchMock = vi.fn((url: string) => {
     if (url === '/api/env') {
       return answered(true, 200, {
@@ -67,6 +74,7 @@ function stubApi({ image = HOST.image, current, jobs }: ApiStub = {}) {
         arch: 'x64',
         image,
         playwright: null,
+        docker,
       });
     }
     if (url === '/api/jobs/current') {
@@ -401,70 +409,79 @@ describe('sample mode', () => {
 /**
  * The capture modes off the pinned container.
  *
- * `check` guards its own host before it takes a shot, so on a developer's own
- * machine a start button here has exactly one outcome: a job that exits 2 a
- * moment later, reported as a failure. The tab says so up front instead, and
- * hands over the command that works — the treatment the accept tab already had.
+ * `check` guards its own host before it takes a shot, so the runner borrows the
+ * pinned image and captures inside it. Which turns the host question into a
+ * Docker question — and that is the one this panel answers before the button is
+ * pressed, because a daemon that is down is a start button whose only outcome is
+ * a failed job.
  */
 describe('capture on a host that is not the pinned container', () => {
-  it.each(['capture', 'run'])('offers no start button on the %s tab', async (mode) => {
-    renderPanel({ image: null });
+  it.each(['capture', 'run'])('says the %s will run in the container', async (mode) => {
+    renderPanel({ image: null, docker: true });
     selectTab(mode);
 
-    await waitFor(() =>
-      expect(screen.getByRole('note', { name: 'container required' })).toBeDefined(),
-    );
-    expect(startButtons(mode)).toHaveLength(0);
-  });
+    const note = await screen.findByRole('note', { name: 'runs in the container' });
 
-  it('hands over the container command instead', async () => {
-    renderPanel({ image: 'ubuntu:24.04' });
-
-    const command = await screen.findByTestId('check-docker-command');
-
-    expect(command.textContent).toContain('node packages/visual-diff/src/cli.mjs check');
-    // Not the accept testid: the e2e accept scenario finds its command by that
-    // name, and two blocks answering to it would be one trap deeper.
-    expect(screen.queryByTestId('accept-docker-command')).toBeNull();
-  });
-
-  it('names what this runner is and what the baselines need', async () => {
-    renderPanel({ image: 'ubuntu:24.04' });
-
-    const note = await screen.findByRole('note', { name: 'container required' });
-
-    expect(note.textContent).toContain('ubuntu:24.04');
     expect(note.textContent).toContain(HOST.image);
+    expect(startButtons(mode)).toHaveLength(1);
+  });
+
+  // The reminder, and the whole reason the panel asks: pressing a button that
+  // can only fail is what this replaces.
+  it.each(['capture', 'run'])('disables %s while docker is down', async (mode) => {
+    renderPanel({ image: null, docker: false });
+    selectTab(mode);
+
+    await screen.findByRole('note', { name: 'docker required' });
+    const [start] = startButtons(mode);
+
+    expect(start).toHaveProperty('disabled', true);
+  });
+
+  it('says what to start, in the words the server would have used', () => {
+    expect(DOCKER_REFUSAL).toBe(DOCKER_DOWN);
+  });
+
+  // compare reads two shot trees off disk and moves no pixels, so neither the
+  // host nor the daemon is a question it has to ask.
+  it('leaves compare alone', async () => {
+    renderPanel({ image: null, docker: false });
+    selectTab('compare');
+
+    await waitFor(() => expect(startButtons('compare')).toHaveLength(1));
+    expect(screen.queryByRole('note', { name: 'docker required' })).toBeNull();
+  });
+
+  // A console already on the pinned image has no container to borrow, so there
+  // is nothing to say and nothing to wait for.
+  it('says nothing on the pinned image itself', async () => {
+    renderPanel({ image: HOST.image, docker: false });
+
+    await waitFor(() => expect(startButtons('capture')).toHaveLength(1));
+    expect(screen.queryByRole('note', { name: 'runs in the container' })).toBeNull();
+    expect(screen.queryByRole('note', { name: 'docker required' })).toBeNull();
+  });
+
+  // Sample mode is the nearer answer: an instance serving the committed fixtures
+  // has no runner to borrow a container for, and its own note already says what
+  // would change that. The e2e sample world asserts a DISABLED button here.
+  it('leaves sample mode saying what sample mode says', async () => {
+    renderPanel({ isSample: true, image: null, docker: false });
+
+    await waitFor(() => expect(startButtons('capture')).toHaveLength(1));
+    expect(screen.getByRole('note', { name: 'sample mode' })).toBeDefined();
+    expect(screen.queryByRole('note', { name: 'docker required' })).toBeNull();
   });
 
   // Capture is the tab the panel opens on, so an alert here would be a second
   // `role="alert"` inside the console's `main` on every page load — which is
   // what the e2e page object's refusal lookup cannot survive.
   it('is a note, so it does not become a second alert on the page', async () => {
-    renderPanel({ image: null });
+    renderPanel({ image: null, docker: false });
 
-    await screen.findByRole('note', { name: 'container required' });
+    await screen.findByRole('note', { name: 'docker required' });
 
     expect(screen.queryAllByRole('alert')).toHaveLength(0);
-  });
-
-  // compare moves no pixels — it reads two shot trees off disk — so the host it
-  // runs on is not a question, and the button stays.
-  it('leaves compare alone', async () => {
-    renderPanel({ image: null });
-    selectTab('compare');
-
-    await waitFor(() => expect(startButtons('compare')).toHaveLength(1));
-  });
-
-  // Sample mode is the nearer answer: an instance serving the committed fixtures
-  // has no runner to be on the wrong host, and its own note already says what
-  // would change that. The e2e sample world asserts a DISABLED button here.
-  it('leaves sample mode saying what sample mode says', async () => {
-    renderPanel({ isSample: true, image: null });
-
-    await waitFor(() => expect(startButtons('capture')).toHaveLength(1));
-    expect(screen.getByRole('note', { name: 'sample mode' })).toBeDefined();
   });
 });
 

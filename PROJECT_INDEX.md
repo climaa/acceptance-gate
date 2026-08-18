@@ -48,7 +48,7 @@ scripts/               complexity-gate.mjs (the health gate) · apply-ruleset.mj
 - Pipeline: `pnpm sandcastle` → `.sandcastle/main.mts` (dispatch: open issues by repo owner)
 - Blog: `pnpm dev` → `apps/blog` on :3000
 - Storybook: `pnpm --filter @gate/storybook dev` on :6006
-- Visual-diff console: `pnpm --filter @gate/visual-diff-ui dev` on :3300 — points `VISUAL_DIFF_DATA_DIR` at a gitignored `.visual-diff/` at the repo root and seeds it, so a local console is live rather than in sample mode. Jobs are refused off localhost (`lib/local.ts`, and again in `POST /api/jobs`); `next start` sets no variable, so an instance without one serves the committed sample data
+- Visual-diff console: `pnpm --filter @gate/visual-diff-ui dev` on :3300 — points `VISUAL_DIFF_DATA_DIR` at a gitignored `.visual-diff/` at the repo root and seeds it, so a local console is live rather than in sample mode. `capture`/`run` build Storybook on the host, then run the differ inside the pinned container (`lib/docker.ts` + `scripts/capture-set.mjs`), so **Docker must be running** — the panel says so and disables the button when it is not. Jobs are refused off localhost (`lib/local.ts`, and again in `POST /api/jobs`); `next start` sets no variable, so an instance without one serves the committed sample data
 - Acceptance suite: `pnpm turbo run e2e` (builds the blog and the visual-diff console first, seeds the three worlds, then runs the scenarios)
 - Visual diff: `pnpm visual-diff` / `pnpm visual-diff:accept`
 - CI: `.github/workflows/pr.yml` → `gate` aggregator (only required check)
@@ -87,7 +87,7 @@ scripts/               complexity-gate.mjs (the health gate) · apply-ruleset.mj
 ## 🧪 Tests
 
 - Orchestrator hermetic suite: 39 files / 654 tests (prompt contracts, merge flow, override grammar, worktree safety, provenance guard)
-- Workspace suites, all in the `test` gate job: `packages/ui` 28 files / 432 tests (70% coverage floor), `apps/blog` 12 / 287, `packages/visual-diff` 10 / 291, `apps/storybook` 4 / 99, `apps/visual-diff-ui` 27 / 467
+- Workspace suites, all in the `test` gate job: `packages/ui` 28 files / 432 tests (70% coverage floor), `apps/blog` 12 / 287, `packages/visual-diff` 10 / 291, `apps/storybook` 4 / 99, `apps/visual-diff-ui` 28 / 490
 - `apps/e2e`: 45 Gherkin scenarios across smoke, blog, axe a11y, the visual-diff console, sample mode, the report, its accessibility treatment and baseline acceptance — in `gate.needs`, blocking. `@mutating` scenarios run alone in their own project against their own server
 - `packages/visual-diff`: 106 committed baselines; the capture/compare job runs on every PR but is deliberately never in `gate.needs` (see `packages/visual-diff/README.md#ci-status`)
 

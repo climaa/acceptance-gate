@@ -2,14 +2,16 @@ import * as crypto from 'node:crypto';
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
+import { EventEmitter } from 'node:events';
+import { Readable } from 'node:stream';
 import { EXIT, HOST } from '@gate/visual-diff/policy';
 // Imported explicitly rather than relying on `globals: true` — tsconfig's
 // `**/*.ts` include means tsc typechecks this file.
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { DATA_MOUNT, REPO_MOUNT } from '../lib/docker';
 import { describeCheckout } from '../lib/git';
-import { listSets } from '../lib/jobs';
-import { NO_CHECKOUT } from '../lib/refusals';
-import { SetSchema, SummarySchema } from '../lib/summary';
+import { NO_CHECKOUT, STORYBOOK_FAILED } from '../lib/refusals';
+import { SummarySchema } from '../lib/summary';
 import { compareSets, promoteBaselines, runJob } from '../lib/runner';
 
 /**
@@ -342,177 +344,178 @@ describe('runJob', () => {
   });
 });
 
-/** A capture the differ would have handed back, built from the fixture's real
- *  PNGs under its real variant keys — no browser, no Storybook build. */
-function capturedShots(
-  shots: ReadonlyMap<string, Buffer>,
-  bucket: 'captured' | 'errored' = 'captured',
-) {
-  return [...shots].map(([key, bytes]) => ({ key, bucket, bytes }));
-}
-
 /**
- * The one mode that reaches for a browser, so the one that is mocked: a real
- * `check` needs a repo checkout, a Storybook build and the pinned container.
- * What is asserted here is the invocation this app composes, and what it does
- * with the shots on their way past.
+ * The one mode that reaches for a browser, so the one that is spawned rather
+ * than composed: the work has to happen inside the pinned image, and what
+ * crosses that boundary is argv. What is asserted here is the argv this app
+ * composes — the two processes it starts, in order, and the mounts it hands the
+ * container. What those processes then do is `scripts/capture-set.mjs` and the
+ * differ's own, exercised by a real container run rather than by a mock of one.
  */
 describe('runCheck', () => {
-  /** `check` and `defaultDeps`, replaced for the length of one case. Modules are
-   *  reset around it so every other suite in this file keeps the real ones.
-   *
-   *  `capture` is the seam under test: `capturing` is whatever `check` was handed,
-   *  so a case can drive it exactly as `runCapture` would. */
-  async function withMockedCheck(
-    run: (
-      runCheck: typeof import('../lib/runner').runCheck,
-      check: ReturnType<typeof vi.fn>,
-    ) => Promise<void>,
-    captures: unknown[] = [],
-  ) {
-    const capture = vi.fn(() => Promise.resolve({ captures, chromium: '141.0.0' }));
-    const check = vi.fn((deps: { capture: typeof capture }) => {
-      capturing = deps.capture;
+  /** Every process `runCheck` started, in order. */
+  let started: { command: string; args: string[] }[] = [];
+  /** What the next spawn should exit with, shifted per call. */
+  let exits: number[] = [];
 
-      return Promise.resolve({ exitCode: 0, message: 'nothing moved' });
-    });
+  beforeEach(() => {
+    started = [];
+    exits = [];
+  });
+
+  /** `child_process.spawn`, replaced for the length of one case: a child that
+   *  writes nothing and closes with the code the case queued. */
+  async function withSpawn(
+    run: (runCheck: typeof import('../lib/runner').runCheck) => Promise<void>,
+  ) {
     vi.resetModules();
-    vi.doMock('@gate/visual-diff/commands', () => ({
-      check,
-      defaultDeps: () => ({ capture }),
+    // Only `spawn` is faked. `execFileSync` is what `describeCheckout` reads git
+    // with, and a stub for it would hand the container a provenance this repo
+    // never claimed — which is one of the things these cases assert.
+    const real =
+      await vi.importActual<typeof import('node:child_process')>('node:child_process');
+    vi.doMock('node:child_process', () => ({
+      ...real,
+      spawn: (command: string, args: string[]) => {
+        started.push({ command, args });
+        const child = new EventEmitter() as EventEmitter & {
+          stdout: Readable;
+          stderr: Readable;
+        };
+        child.stdout = Readable.from([]);
+        child.stderr = Readable.from([]);
+        queueMicrotask(() => child.emit('close', exits.shift() ?? 0));
+
+        return child;
+      },
     }));
 
     try {
       const { runCheck } = await import('../lib/runner');
-      await run(runCheck, check);
+      await run(runCheck);
     } finally {
-      capturing = null;
-      vi.doUnmock('@gate/visual-diff/commands');
+      vi.doUnmock('node:child_process');
       vi.resetModules();
     }
   }
 
-  /** The wrapped capture step `check` received, once one has run. */
-  let capturing: ((run: { variants: []; baseUrl: string }) => Promise<unknown>) | null =
-    null;
+  const capture = () => started[1];
 
-  /** Take the shots, the way `runCapture` does — once, with the served build. */
-  const takeShots = () => capturing?.({ variants: [], baseUrl: 'http://127.0.0.1:6006' });
-
-  it('runs the differ against the checkout, not against the data directory', async () => {
+  // The build first, and every run: "looks stale" is an mtime comparison against
+  // every story file, and a capture of a build one commit behind is a report
+  // about code nobody is looking at.
+  it('builds storybook before it captures', async () => {
     const dir = makeDataDir();
 
-    await withMockedCheck(async (runCheck, check) => {
+    await withSpawn(async (runCheck) => {
       await runCheck(dir, { mode: 'capture', label: 'main-2026-08-17' }, silent);
+    });
 
-      expect(check).toHaveBeenCalledWith(
-        expect.objectContaining({ capture: expect.any(Function) }),
-        { rootDir: REPO_ROOT },
-      );
+    expect(started).toHaveLength(2);
+    expect(started[0]).toMatchObject({
+      command: 'pnpm',
+      args: ['--filter', '@gate/storybook', 'build'],
     });
   });
 
-  // `--filter` is the CLI's own flag and the run panel spells it verbatim; a
+  // The build writes a line per asset, some two thousand of them, so its output
+  // is held back — and released only when it is the thing the reviewer needs.
+  it('keeps the build quiet when it succeeds', async () => {
+    const dir = makeDataDir();
+    const lines: string[] = [];
+
+    await withSpawn(async (runCheck) => {
+      await runCheck(dir, { mode: 'capture', label: 'main-2026-08-17' }, (line) =>
+        lines.push(line),
+      );
+    });
+
+    expect(lines).toContain('building storybook');
+    expect(lines.join('\n')).not.toContain('storybook-static/assets');
+  });
+
+  // A build that failed leaves nothing to capture against, and the capture never
+  // starts — rather than starting and reporting the missing build itself.
+  it('does not capture when the build failed', async () => {
+    const dir = makeDataDir();
+    const lines: string[] = [];
+    exits = [1];
+
+    await withSpawn(async (runCheck) => {
+      const outcome = await runCheck(
+        dir,
+        { mode: 'capture', label: 'main-2026-08-17' },
+        (line) => lines.push(line),
+      );
+
+      expect(outcome.exitCode).toBe(EXIT.broken);
+    });
+
+    expect(started).toHaveLength(1);
+    expect(lines).toContain(STORYBOOK_FAILED);
+  });
+
+  // The whole point of the mode on a developer's machine: `check` guards its
+  // host, so the console borrows the image the baselines came from instead of
+  // handing over a command to paste.
+  it('runs the capture inside the pinned container', async () => {
+    const dir = makeDataDir();
+
+    await withSpawn(async (runCheck) => {
+      await runCheck(dir, { mode: 'capture', label: 'main-2026-08-17' }, silent);
+    });
+
+    expect(capture()?.command).toBe('docker');
+    expect(capture()?.args).toContain(HOST.image);
+    expect(capture()?.args.join(' ')).toContain(`${REPO_ROOT}:${REPO_MOUNT}`);
+    expect(capture()?.args.join(' ')).toContain(`${dir}:${DATA_MOUNT}`);
+  });
+
+  // Two mounts, not one: `VISUAL_DIFF_DATA_DIR` may point anywhere, and a path
+  // that only works when it happens to sit inside the checkout is a trap that
+  // springs the first time it does not.
+  it('addresses both directories by their mount, never by their host path', async () => {
+    const dir = makeDataDir();
+
+    await withSpawn(async (runCheck) => {
+      await runCheck(dir, { mode: 'capture', label: 'main-2026-08-17' }, silent);
+    });
+
+    const args = capture()?.args ?? [];
+    expect(args[args.indexOf('--root') + 1]).toBe(REPO_MOUNT);
+    expect(args[args.indexOf('--data-dir') + 1]).toBe(DATA_MOUNT);
+  });
+
+  // `--filter` is the differ's own flag and the run panel spells it verbatim; a
   // field the console shows and the runner drops would be a lie about what it
-  // just ran.
-  it('passes the story filter the console was given', async () => {
+  // just ran. An empty box is not a filter — `check` reads any filter as "only
+  // stories matching this", and the empty string would match nothing.
+  it.each([
+    ['atoms-button', true],
+    ['', false],
+  ])('passes --filter %j: %s', async (filter, passed) => {
     const dir = makeDataDir();
 
-    await withMockedCheck(async (runCheck, check) => {
-      await runCheck(
-        dir,
-        { mode: 'run', label: 'main-2026-08-17', filter: 'atoms-button' },
-        silent,
-      );
-
-      expect(check).toHaveBeenCalledWith(expect.anything(), {
-        rootDir: REPO_ROOT,
-        filter: 'atoms-button',
-      });
+    await withSpawn(async (runCheck) => {
+      await runCheck(dir, { mode: 'run', label: 'main-2026-08-17', filter }, silent);
     });
+
+    expect(capture()?.args.includes('--filter')).toBe(passed);
   });
 
-  // An empty box is not a filter: `check` reads any filter as "only stories
-  // matching this", and the empty string would match nothing at all.
-  it('passes no filter when none was typed', async () => {
+  // Git is the host's answer: the container has no `.git` worth reading and may
+  // have no `git` at all, and a set's provenance is not a thing to guess.
+  it('hands the container the checkout git described', async () => {
     const dir = makeDataDir();
+    const checkout = describeCheckout(REPO_ROOT);
 
-    await withMockedCheck(async (runCheck, check) => {
-      await runCheck(
-        dir,
-        { mode: 'capture', label: 'main-2026-08-17', filter: '' },
-        silent,
-      );
-
-      expect(check).toHaveBeenCalledWith(expect.anything(), { rootDir: REPO_ROOT });
-    });
-  });
-
-  // What the mode is FOR. The differ keeps candidate bytes in memory and writes
-  // only its own artifacts, so a capture that did not do this would leave the
-  // console with nothing to compare later — which is what `label` used to mean.
-  it('writes the shots it took into a set, and registers it', async () => {
-    const dir = makeDataDir();
-    const shots = fixtureShots('candidate');
-
-    await withMockedCheck(async (runCheck) => {
+    await withSpawn(async (runCheck) => {
       await runCheck(dir, { mode: 'capture', label: 'main-2026-08-17' }, silent);
-      await takeShots();
-    }, capturedShots(shots));
-
-    for (const [key, bytes] of shots) {
-      expect(
-        fs.readFileSync(path.join(dir, 'sets', 'main-2026-08-17', `${key}.png`)),
-      ).toEqual(bytes);
-    }
-    const [set] = listSets(dir);
-    expect(SetSchema.parse(set)).toMatchObject({
-      label: 'main-2026-08-17',
-      stories: shots.size,
-      capturedAt: new Date().toISOString().slice(0, 10),
     });
-  });
 
-  // The set claims which commit produced the shots, and this console is running
-  // inside the checkout that answers.
-  it('stamps the set with the checkout it captured from', async () => {
-    const dir = makeDataDir();
-
-    await withMockedCheck(
-      async (runCheck) => {
-        await runCheck(dir, { mode: 'capture', label: 'main-2026-08-17' }, silent);
-        await takeShots();
-      },
-      capturedShots(fixtureShots('candidate')),
-    );
-
-    const [set] = listSets(dir);
-    expect(set?.sha).toBe(describeCheckout(REPO_ROOT)?.sha);
-    expect(set?.branch).toBe(describeCheckout(REPO_ROOT)?.branch);
-  });
-
-  // An errored variant still carries whatever the page looked like when it
-  // failed, and `check`'s own report uses those bytes as the candidate image. A
-  // set that dropped them would make the next compare call the story `removed`
-  // with nothing to explain it. A variant with no bytes has nothing to write.
-  it('keeps an errored shot that has bytes and skips one that has none', async () => {
-    const dir = makeDataDir();
-    const [kept] = capturedShots(fixtureShots('candidate'), 'errored');
-    if (!kept) throw new Error('the committed fixture has no candidate shots');
-
-    await withMockedCheck(
-      async (runCheck) => {
-        await runCheck(dir, { mode: 'capture', label: 'mixed' }, silent);
-        await takeShots();
-      },
-      [
-        kept,
-        { key: 'atoms-button--primary.desktop.dark', bucket: 'errored', bytes: null },
-      ],
-    );
-
-    expect(fs.readdirSync(path.join(dir, 'sets', 'mixed'))).toEqual([`${kept.key}.png`]);
-    expect(listSets(dir)[0]?.stories).toBe(1);
+    const args = capture()?.args ?? [];
+    expect(args[args.indexOf('--sha') + 1]).toBe(checkout?.sha);
+    expect(args[args.indexOf('--branch') + 1]).toBe(checkout?.branch);
   });
 
   // Labels are date-shaped, so a second capture on one day asks for a name that
@@ -521,26 +524,23 @@ describe('runCheck', () => {
     const dir = makeDataDir();
     seedSet(dir, 'main-2026-08-17', fixtureShots('baseline'));
 
-    await withMockedCheck(
-      async (runCheck) => {
-        await runCheck(dir, { mode: 'capture', label: 'main-2026-08-17' }, silent);
-        await takeShots();
-      },
-      capturedShots(fixtureShots('candidate')),
-    );
+    await withSpawn(async (runCheck) => {
+      await runCheck(dir, { mode: 'capture', label: 'main-2026-08-17' }, silent);
+    });
 
-    expect(listSets(dir).map((set) => set.label)).toEqual(['main-2026-08-17-2']);
-    expect(fs.existsSync(path.join(dir, 'sets', 'main-2026-08-17-2'))).toBe(true);
+    const args = capture()?.args ?? [];
+    expect(args[args.indexOf('--label') + 1]).toBe('main-2026-08-17-2');
   });
 
   // The belt to the local gate's braces: a console started from outside a
-  // checkout has no Storybook build to serve and no baselines to compare, and
-  // says which of those is missing rather than reporting an empty build.
+  // checkout has no Storybook to build and no baselines to compare against, and
+  // says which is missing rather than starting a build in someone's home
+  // directory.
   it('refuses outright when it is not running inside a checkout', async () => {
     const dir = makeDataDir();
     const lines: string[] = [];
 
-    await withMockedCheck(async (runCheck, check) => {
+    await withSpawn(async (runCheck) => {
       const outcome = await runCheck(
         dir,
         { mode: 'capture', label: 'main-2026-08-17' },
@@ -549,9 +549,10 @@ describe('runCheck', () => {
       );
 
       expect(outcome.exitCode).toBe(EXIT.broken);
-      expect(lines).toContain(NO_CHECKOUT);
-      expect(check).not.toHaveBeenCalled();
     });
+
+    expect(started).toHaveLength(0);
+    expect(lines).toContain(NO_CHECKOUT);
   });
 });
 

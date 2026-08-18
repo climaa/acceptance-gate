@@ -27,47 +27,23 @@ import type { Bucket } from './summary';
 export const ACCEPT_IMAGE = HOST.image;
 
 /**
- * One CLI subcommand, run inside the pinned container.
+ * The container command the accept mode degrades to off the pinned host.
  *
  * Transcribed from `packages/visual-diff/README.md`'s "Running the pinned
  * container locally" — a reviewer copies this and it has to be the recipe that
- * package documents, down to the browser path the image bakes in
- * (`PLAYWRIGHT_BROWSERS_PATH` points at the browser baked into the image rather
- * than a host cache that is the wrong OS's build, and `--ipc=host` keeps
- * Chromium off Docker's 64MB `/dev/shm`).
+ * package documents, down to the browser path the image bakes in.
  *
- * One builder for the two subcommands: they differ by a single word, and two
- * transcriptions of one recipe drift.
+ * Accept is the only mode that still hands over a command. The capture modes
+ * used to as well; they now start that container themselves (lib/docker.ts),
+ * which is what this console is for. Accept has not followed because promoting
+ * baselines is a decision rather than a job — see the gate below.
  */
-const containerCommand = (cli: 'check' | 'accept', ...before: string[]) =>
-  [
-    ...before,
-    'docker run --rm --ipc=host -v "$(pwd)":/repo -w /repo \\',
-    '  -e PLAYWRIGHT_BROWSERS_PATH=/ms-playwright \\',
-    `  ${ACCEPT_IMAGE} \\`,
-    `  node packages/visual-diff/src/cli.mjs ${cli}`,
-  ].join('\n');
-
-/** The container command the accept mode degrades to off the pinned host. */
-export const ACCEPT_COMMAND = containerCommand('accept');
-
-/**
- * The container command capture and run degrade to off the pinned host.
- *
- * Carries the Storybook build the differ serves, which `accept` does not need
- * and `check` cannot run without — the README puts it first for the same reason,
- * and it stays on the host because static output is not platform-dependent.
- *
- * Note what this does NOT do: it runs the CLI, so its artifacts land in
- * `packages/visual-diff/.visual-diff/` rather than becoming a capture set in
- * this console. A console whose captures write sets has to be a console running
- * inside that container.
- */
-export const CHECK_COMMAND = containerCommand(
-  'check',
-  'pnpm --filter @gate/storybook build',
-  '',
-);
+export const ACCEPT_COMMAND = [
+  'docker run --rm --ipc=host -v "$(pwd)":/repo -w /repo \\',
+  '  -e PLAYWRIGHT_BROWSERS_PATH=/ms-playwright \\',
+  `  ${ACCEPT_IMAGE} \\`,
+  '  node packages/visual-diff/src/cli.mjs accept',
+].join('\n');
 
 /**
  * How many variants of a report a reviewer is shown.

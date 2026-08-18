@@ -1,15 +1,19 @@
+import { spawn } from 'node:child_process';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
+import * as readline from 'node:readline';
+import type { Readable } from 'node:stream';
 import { buildSummary } from '@gate/visual-diff/artifacts';
 import { pngSize } from '@gate/visual-diff/capture';
-import type { Deps } from '@gate/visual-diff/commands';
 import { type CaptureShot, type Comparison, compareAll } from '@gate/visual-diff/compare';
 import {
   BASELINE_BUDGET_BYTES,
+  HOST,
   BASELINE_PNG_BUDGET_BYTES,
   EXIT,
   parseVariantKey,
 } from '@gate/visual-diff/policy';
+import { DATA_MOUNT, REPO_MOUNT, containerArgv } from './docker';
 import { type Checkout, describeCheckout, repoRoot } from './git';
 import { type HostEnv, hostFingerprint, hostMatches } from './host';
 import {
@@ -18,12 +22,11 @@ import {
   type JobRequest,
   baselinesDir,
   freeLabel,
-  recordSet,
   reportDir,
   setDir,
   within,
 } from './jobs';
-import { NO_CHECKOUT, hostMismatch, noReportAt } from './refusals';
+import { NO_CHECKOUT, STORYBOOK_FAILED, hostMismatch, noReportAt } from './refusals';
 import { type Summary, SummarySchema } from './summary';
 
 /**
@@ -354,107 +357,150 @@ export async function promoteBaselines(
   return { exitCode: EXIT.ok, reportId };
 }
 
+/** The script that does the capture, relative to the checkout — the same path
+ *  inside the container, because the checkout is mounted at its root. */
+const CAPTURE_SET = 'apps/visual-diff-ui/scripts/capture-set.mjs';
+
+/** The Storybook build `check` serves. Built on the host before the container
+ *  starts: static output is not platform-dependent, and building it inside a
+ *  container with no package manager would be a second problem. */
+const STORYBOOK_BUILD = ['--filter', '@gate/storybook', 'build'];
+
+/** How much of a quiet process's output a failure is worth. A Vite build that
+ *  went wrong says so near the end; the two thousand asset lines above it are
+ *  what made the build quiet in the first place. */
+const TAIL_LINES = 40;
+
 /**
- * One capture run's shots, on disk as `sets/<label>/<variantKey>.png` — the
- * layout `readSet` above reads back. Returns how many landed.
+ * One child process, with what it writes going to the job log.
  *
- * An `errored` variant is written like any other as long as it has bytes.
- * `captureVariant` still shoots the page on its way out, `check`'s own report
- * uses those bytes as the candidate image, and a set that quietly dropped them
- * would make the next compare report the story as `removed` with nothing to
- * explain it. Only a variant with no bytes at all has nothing to write.
+ * `spawn` without a shell, so a repo path with a space in it is an argument
+ * rather than a quoting bug. Resolves with the exit code; a process that could
+ * not be started at all resolves too, with its reason logged — a job that ends
+ * is a history row, and a promise that rejected here would be a lock nobody
+ * released.
+ *
+ * `quiet` holds the output back instead of streaming it, and releases the tail
+ * only if the process fails. The Storybook build is the reason: it writes a line
+ * per built asset, some two thousand of them, and a live log that has to be
+ * scrolled past them is a live log nobody reads the capture in. A build that
+ * failed is the one time those lines are what the reviewer needs.
  */
-function writeSet(
-  dataDir: string,
-  label: string,
-  captures: readonly CaptureShot[],
-): number {
-  const dir = setDir(dataDir, label);
-  fs.mkdirSync(dir, { recursive: true });
+function run(
+  command: string,
+  args: readonly string[],
+  cwd: string,
+  log: (message: string) => void,
+  quiet = false,
+): Promise<number> {
+  return new Promise((resolve) => {
+    const child = spawn(command, [...args], { cwd, stdio: ['ignore', 'pipe', 'pipe'] });
+    const held: string[] = [];
 
-  let written = 0;
-  for (const shot of captures) {
-    if (!shot.bytes) continue;
+    const take = (line: string) => {
+      if (!quiet) {
+        log(line);
+        return;
+      }
 
-    fs.writeFileSync(within(dir, `${shot.key}${PNG}`), shot.bytes);
-    written += 1;
-  }
+      held.push(line);
+      if (held.length > TAIL_LINES) held.shift();
+    };
 
-  return written;
+    // Line-buffered on purpose: the panel renders the log as lines, and a chunk
+    // boundary is not a line boundary.
+    const forward = (stream: Readable) => {
+      const lines = readline.createInterface({ input: stream });
+      lines.on('line', take);
+    };
+
+    forward(child.stdout);
+    forward(child.stderr);
+
+    const done = (code: number) => {
+      if (code !== 0) for (const line of held) log(line);
+      resolve(code);
+    };
+
+    child.on('error', (cause) => {
+      log(`${command} could not be started: ${cause.message}`);
+      resolve(EXIT.broken);
+    });
+    child.on('close', (code) => done(code ?? EXIT.broken));
+  });
 }
 
 /**
- * `deps.capture`, wrapped so the run's shots land in this console's data
- * directory on the way past.
+ * How this console runs a capture: as itself, or as the pinned container.
  *
- * The differ keeps candidate bytes in memory and writes only diffs and its own
- * artifacts, so without this a capture would leave the console with nothing to
- * compare later — which is what `label` used to mean here, and why it was only
- * ever logged.
- *
- * The set is written INSIDE the capture step, before `check` runs its sanity
- * gates. That is deliberate: the shots were taken, and whether the run passes is
- * the exit code's verdict rather than a reason to throw the pixels away.
+ * `check` guards its host before it takes a shot, so off the pinned image a
+ * capture is refused — and the differ's README answers that with a `docker run`
+ * to paste. Pasting is what this console exists to avoid, so it runs the
+ * container itself and the reviewer watches the log. On the pinned image there
+ * is nothing to wrap: the capture runs directly.
  */
-function capturingInto(
-  deps: Deps,
+function captureArgv(
+  rootDir: string,
   dataDir: string,
   label: string,
+  filter: string | undefined,
   root: Checkout | null,
-  log: (message: string) => void,
-): Deps['capture'] {
-  return async (run) => {
-    const result = await deps.capture(run);
-    const { captures } = result;
+): { command: string; args: string[]; inContainer: boolean } {
+  const inContainer = !hostMatches();
+  const at = (dir: string) => (inContainer ? dir : undefined);
 
-    const written = writeSet(dataDir, label, captures);
-    const errored = captures.filter((shot) => shot.bucket === 'errored').length;
+  const script = [
+    inContainer ? `${REPO_MOUNT}/${CAPTURE_SET}` : path.join(rootDir, CAPTURE_SET),
+    '--root',
+    at(REPO_MOUNT) ?? rootDir,
+    '--data-dir',
+    at(DATA_MOUNT) ?? dataDir,
+    '--label',
+    label,
+    ...(filter ? ['--filter', filter] : []),
+    // Git is the host's answer: the container has no `.git` worth reading and
+    // may have no `git` at all, and a set's provenance is not a thing to guess.
+    '--sha',
+    root?.sha ?? UNKNOWN,
+    '--branch',
+    root?.branch ?? UNKNOWN,
+    ...(root ? ['--dirty', String(root.dirty)] : []),
+  ];
 
-    recordSet(dataDir, {
-      label,
-      sha: root?.sha ?? UNKNOWN,
-      branch: root?.branch ?? UNKNOWN,
-      capturedAt: new Date().toISOString().slice(0, 10),
-      stories: written,
-      // Absent rather than false when git could not be read: the field claims the
-      // tree was clean, and this run has no grounds to claim it.
-      ...(root ? { dirty: root.dirty } : {}),
-    });
-
-    log(
-      `wrote sets/${label} — ${written} shot(s)${errored ? `, ${errored} errored` : ''}`,
-    );
-
-    return result;
-  };
+  return inContainer
+    ? {
+        command: 'docker',
+        args: containerArgv(rootDir, dataDir, ['node', ...script]),
+        inContainer,
+      }
+    : { command: process.execPath, args: script, inContainer };
 }
 
 /**
  * Capture the corpus into a set, and compare it against the committed
- * baselines — the differ's own `check`, composed rather than spawned.
+ * baselines.
  *
- * `capture` and `run` compose the SAME command on purpose: the CLI's surface is
- * `check | accept` and there is no capture-only subcommand. The two modes differ
- * in what the console calls them, not in what the differ does.
+ * `capture` and `run` compose the SAME command on purpose: the differ's surface
+ * is `check | accept` and there is no capture-only subcommand. The two modes
+ * differ in what the console calls them, not in what the differ does.
  *
- * TWO DIRECTORIES, and the split is the thing to keep straight. `rootDir` is the
- * repo CHECKOUT: `check` resolves every `policy.PATHS` entry under it, so that is
- * where `apps/storybook/storybook-static` is served from, where
- * `packages/visual-diff/__baselines__` is compared against, and where the
- * differ's own artifacts land (`packages/visual-diff/.visual-diff/`, gitignored).
- * The DATA directory receives the capture set, and nothing else — every write to
- * it still goes through `within()`.
+ * TWO DIRECTORIES, and the split is the thing to keep straight. The CHECKOUT is
+ * where `check` resolves every `policy.PATHS` entry — the Storybook build it
+ * serves, the committed baselines it compares against, and its own artifacts
+ * under `packages/visual-diff/.visual-diff/`. The DATA directory receives the
+ * capture set and nothing else. Both are mounted into the container separately,
+ * because `VISUAL_DIFF_DATA_DIR` may point anywhere and a path that only works
+ * when it happens to sit inside the checkout is a trap.
  *
- * So this mode only works on a console running inside a checkout, which is what
- * the local gate on `POST /api/jobs` already establishes; `repoRoot` returning
- * null is the belt to that braces. It also needs a browser and a Storybook
- * build: without one, the composed `check` reports the missing build and the job
- * exits 2, which is the honest answer. **The e2e worlds never run this** — their
- * jobs are compare-only over pre-seeded shot trees.
+ * SPAWNED, not composed. Every other mode in this file runs the differ in
+ * process; this one cannot, because the work has to happen inside the pinned
+ * image and what crosses that boundary is argv. `scripts/capture-set.mjs` is the
+ * one implementation, run through `docker` from a developer's machine and
+ * directly when the console is already on the pinned image — so there is no
+ * second code path that only the container takes.
  *
- * Note that `check` compares against the checkout's committed corpus while the
- * console's `accept` promotes into `<dataDir>/__baselines__`. Two corpora, and
- * this function is not the place that reconciles them.
+ * **The e2e worlds never run this** — their jobs are compare-only over
+ * pre-seeded shot trees.
  */
 export async function runCheck(
   dataDir: string,
@@ -465,40 +511,35 @@ export async function runCheck(
   const rootDir = repoRoot(cwd);
   if (!rootDir) return refuse(log, NO_CHECKOUT);
 
-  const { filter } = request;
   const label = freeLabel(dataDir, request.label);
   if (label !== request.label) {
     log(`${request.label} is already captured — this run is ${label}`);
   }
-  log(`running check against ${rootDir}, capturing into sets/${label}`);
 
-  // Resolved by Node at the moment it is needed, never bundled: `commands.mjs`
-  // derives its repo root from `new URL('../../..', import.meta.url)`, which a
-  // bundler reads as an asset import of a directory and refuses to build, and it
-  // reaches through `capture.mjs` for `playwright` — a dependency of that
-  // package, not of this app. Both are only ever true of a console running on a
-  // real checkout, which is the only place this mode can work at all.
-  const { check, defaultDeps } = await import(
-    /* turbopackIgnore: true */ '@gate/visual-diff/commands'
+  // Built every run rather than when it looks stale: "looks stale" is a mtime
+  // comparison against every story file, and a capture of a build that is one
+  // commit behind is a report about code nobody is looking at. Turborepo makes a
+  // no-op build cheap.
+  log('building storybook');
+  const built = await run('pnpm', STORYBOOK_BUILD, rootDir, log, true);
+  if (built !== 0) return refuse(log, STORYBOOK_FAILED);
+
+  const { command, args, inContainer } = captureArgv(
+    rootDir,
+    dataDir,
+    label,
+    request.filter,
+    describeCheckout(rootDir),
+  );
+  log(
+    inContainer
+      ? `capturing into sets/${label} inside ${HOST.image}`
+      : `capturing into sets/${label}`,
   );
 
-  // Spread rather than mutated: every edge `defaultDeps()` built rides through,
-  // and only the capture step is this app's. Nothing in the package writes back
-  // to the object it was handed.
-  const deps = defaultDeps();
-  const result = await check(
-    {
-      ...deps,
-      capture: capturingInto(deps, dataDir, label, describeCheckout(rootDir), log),
-    },
-    // Spread rather than passed as `filter: undefined`: `check` reads any filter
-    // as "only stories matching this", and an empty box from the console must not
-    // arrive as a filter that matches nothing.
-    { rootDir, ...(filter ? { filter } : {}) },
-  );
-  log(result.message);
+  const exitCode = await run(command, args, rootDir, log);
 
-  return { exitCode: result.exitCode, reportId: null };
+  return { exitCode, reportId: null };
 }
 
 /** One job, by mode. The only dispatcher; `POST /api/jobs` hands this to the

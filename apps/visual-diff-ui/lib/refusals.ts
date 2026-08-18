@@ -37,6 +37,17 @@ export const NOT_LOCAL =
 export const NO_CHECKOUT =
   'this console is not running inside a repository checkout, so there is nothing to capture';
 
+/** A capture serves a Storybook build, so it builds one first. Its own output is
+ *  already in the log above this line; what this adds is that the capture never
+ *  started, rather than leaving a reader to infer it from silence. */
+export const STORYBOOK_FAILED =
+  'the storybook build failed, so there was nothing to capture against';
+
+/** The reminder, not a refusal after the fact: a capture runs inside the pinned
+ *  container, and a machine whose Docker is not up cannot start one. Named by
+ *  the panel before the button is pressed, and by the server if one is anyway. */
+export const DOCKER_DOWN = `this capture runs inside ${HOST.image}, and Docker is not running — start Docker and this comes back`;
+
 /** D3. Shown after any refused or aborted accept: the two commands that put a
  *  half-written corpus back, in the order they have to run. */
 export const ACCEPT_RECOVERY = [
