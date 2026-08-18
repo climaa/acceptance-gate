@@ -1,12 +1,25 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { Thumbnail } from './Thumbnail';
 
 // `globals` is off in vitest.config.ts, so Testing Library registers no automatic
 // cleanup — without this every render stacks in the same document and the queries
 // below match the previous test's DOM.
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  vi.restoreAllMocks();
+});
+
+/** jsdom never fetches, so an image is never `complete` there. Staging the two
+ *  properties the atom reads is how the cached case — the bytes already in hand
+ *  before React could attach a listener — is reproduced at all. */
+function alreadyLoaded(naturalWidth: number) {
+  vi.spyOn(HTMLImageElement.prototype, 'complete', 'get').mockReturnValue(true);
+  vi.spyOn(HTMLImageElement.prototype, 'naturalWidth', 'get').mockReturnValue(
+    naturalWidth,
+  );
+}
 
 // A 1×1 transparent GIF. Inline, so no test — and no captured story — waits on a
 // network the differ's container does not have.
@@ -78,6 +91,32 @@ describe('Thumbnail', () => {
     // The previous image's `load` says nothing about the new one; treating it as
     // loaded would show an empty frame until the browser caught up.
     expect(container.querySelector('.ds-skeleton')).not.toBeNull();
+  });
+
+  // The regression: an `immutable` route makes a warm cache the ordinary case
+  // on a revisit, and a `load` that fired before its handler existed is a load
+  // that never arrives — leaving the placeholder up for an image already in
+  // hand. The element is asked, not only listened to.
+  it('reveals an image that finished loading before React could listen', () => {
+    alreadyLoaded(1);
+
+    const { container } = render(<Thumbnail src={SRC} alt="baseline" />);
+
+    expect(container.querySelector('.ds-skeleton')).toBeNull();
+    expect(container.querySelector('.ds-thumbnail__img--pending')).toBeNull();
+  });
+
+  it('falls back for a broken image that finished before React could listen', () => {
+    // `complete` is also true for a fetch that failed; a decoded image is the
+    // one that reports a natural width.
+    alreadyLoaded(0);
+
+    const { container } = render(
+      <Thumbnail src={SRC} alt="candidate" fallback={<span>not on this side</span>} />,
+    );
+
+    expect(screen.getByText('not on this side')).toBeDefined();
+    expect(container.querySelector('img')).toBeNull();
   });
 
   it('appends a caller-supplied className to the frame', () => {
