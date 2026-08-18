@@ -256,6 +256,20 @@ describe('the report header', () => {
     expect(header.textContent).toContain('e0427b4');
   });
 
+  // The provenance folds so a reviewer can have the screenful back for image
+  // comparisons — but it folds inside the landmark, so what the report says it
+  // compared is the same either way.
+  it('folds its provenance behind one disclosure, open by default', () => {
+    renderReport();
+
+    const header = screen.getByRole('banner', { name: 'report' });
+    const details = within(header).getByText('report details').closest('details');
+
+    expect(details?.hasAttribute('open')).toBe(true);
+    expect(details?.textContent).toContain('main-2026-08-17');
+    expect(details?.textContent).toContain('thresholds');
+  });
+
   it('carries the report id as the page heading', () => {
     renderReport();
 

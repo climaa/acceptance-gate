@@ -45,6 +45,11 @@ declare module '@gate/visual-diff/policy' {
     Record<ViewportName, { width: number; height: number }>
   >;
 
+  /** Tier → the viewports that tier is captured at. Atoms and molecules do not
+   *  change shape between viewports, so they are shot at desktop only — which is
+   *  why a card in either tier has no mobile rows and never could. */
+  export const TIER_VIEWPORTS: Readonly<Record<Tier, readonly ViewportName[]>>;
+
   /** The one host baselines may be captured on, and the `BASELINE_ENV.json`
    *  fields a run has to match before its shots are comparable to them. */
   export const HOST: {

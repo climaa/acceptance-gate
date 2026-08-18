@@ -7,6 +7,7 @@ import {
   formatPixels,
   type ReportCard,
   type ReportSides,
+  viewportGaps,
 } from '@/lib/report-view';
 import type { Variant } from '@/lib/summary';
 import { BUCKET_TONES } from './BucketChipRow';
@@ -31,6 +32,10 @@ import { VariantRow } from './VariantRow';
  *  (lib/accept-gate.ts) and this is the card's half of that same refusal. */
 export const A11Y_VERDICT = 'reviewing does not clear this — fixing does';
 
+/** The gap list's accessible name. Pinned: it is what says the list explains
+ *  absences rather than reporting further findings. */
+const GAPS_LABEL = 'viewports not shown';
+
 export interface StoryCardProps {
   reportId: string;
   card: ReportCard;
@@ -52,6 +57,7 @@ export function StoryCard({
   const titleId = useId();
   const all = cardReviewed(card, reviewed);
   const some = card.variants.some((variant) => reviewed.has(variant.key));
+  const gaps = viewportGaps(card);
 
   return (
     <article
@@ -105,6 +111,17 @@ export function StoryCard({
           />
         ))}
       </Stack>
+
+      {/* A viewport with no rows under it reads as a missing screenshot. It is
+          two different reports — never captured, or captured and unchanged —
+          and the card says which. */}
+      {gaps.length > 0 && (
+        <ul className="vd-card__gaps" aria-label={GAPS_LABEL}>
+          {gaps.map((gap) => (
+            <li key={gap}>{gap}</li>
+          ))}
+        </ul>
+      )}
 
       {card.bucket === 'a11y' && (
         <p className="vd-card__verdict">

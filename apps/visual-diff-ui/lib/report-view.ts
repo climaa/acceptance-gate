@@ -1,4 +1,4 @@
-import { TIERS } from '@gate/visual-diff/policy';
+import { TIER_VIEWPORTS, TIERS, VIEWPORTS } from '@gate/visual-diff/policy';
 import { type Bucket, type Variant } from './summary';
 import { storyTitle } from './title';
 
@@ -65,6 +65,9 @@ export interface ReportCard {
   key: string;
   storyId: string;
   title: string;
+  /** The design-system tier the story belongs to — which is also what decides
+   *  the viewports it is captured at. See {@link viewportGaps}. */
+  tier: Variant['tier'];
   bucket: Bucket;
   /** The biggest shared-area difference any of this card's variants recorded. */
   worst: number;
@@ -111,6 +114,7 @@ function cardsOf(sectionKey: string, variants: readonly Variant[]): ReportCard[]
       key,
       storyId: variant.id,
       title: storyTitle(variant.id),
+      tier: variant.tier,
       bucket: variant.bucket,
       worst: variant.overlapDiffPixels,
       variants: [variant],
@@ -180,6 +184,50 @@ export function cardReviewed(card: ReportCard, reviewed: ReadonlySet<string>): b
   );
 }
 
+type ViewportName = keyof typeof VIEWPORTS;
+
+const VIEWPORT_NAMES = Object.keys(VIEWPORTS) as readonly ViewportName[];
+
+/** A viewport this tier is never shot at. The absence is a capture-matrix fact,
+ *  not a verdict: there is no evidence to look at and there never was. */
+const notCaptured = (viewport: ViewportName, tier: Variant['tier']) =>
+  `no ${viewport} shot — ${tier} are captured at ${TIER_VIEWPORTS[tier].join(' and ')} only`;
+
+/** …and one that is shot, whose every variant matched. Same reasoning as
+ *  {@link EMPTY_UNCHANGED}: the count is real, the rows never existed. */
+const allMatched = (viewport: ViewportName) =>
+  `no ${viewport} rows — every ${viewport} variant matched its baseline, and unchanged variants are counted, never written`;
+
+/**
+ * Why a viewport has no rows under this card — the two answers, kept apart.
+ *
+ * A card showing only `desktop/*` is two very different reports depending on its
+ * tier. `TIER_VIEWPORTS` captures atoms and molecules at desktop only, so an
+ * atoms card *cannot* have a mobile row and no shot was ever taken; a templates
+ * card with the same rows was shot at mobile and matched. Saying "unchanged" for
+ * the first, or "not captured" for the second, would both be false.
+ *
+ * Reported per viewport, never per cell: a viewport with any row visible is not
+ * missing, which holds this to at most one sentence per viewport rather than one
+ * per variant that happened to match.
+ *
+ * The one case it cannot see: a story tagged `visual-diff:all-viewports` whose
+ * every extra-viewport variant matched. `summary.json` records no story tags, so
+ * that card is indistinguishable from an untagged one — it is read as its tier.
+ */
+export function viewportGaps(card: ReportCard): readonly string[] {
+  // An a11y card renders the violation list instead of a viewer, so no frame is
+  // missing from it — its finding was never in the pixels.
+  if (card.bucket === 'a11y') return [];
+
+  const shown = new Set<string>(card.variants.map((variant) => variant.viewport));
+  const matrix: readonly string[] = TIER_VIEWPORTS[card.tier];
+
+  return VIEWPORT_NAMES.filter((viewport) => !shown.has(viewport)).map((viewport) =>
+    matrix.includes(viewport) ? allMatched(viewport) : notCaptured(viewport, card.tier),
+  );
+}
+
 /** How many of `keys` are marked. The denominator lives elsewhere: a section
  *  counts its own variants, the bar counts the whole report's. */
 export function countReviewed(
@@ -207,7 +255,22 @@ export const PUBLISHED_STORYBOOK = 'https://acceptance-gate-storybook.vercel.app
 export const DEV_STORYBOOK = 'http://localhost:6006';
 
 /**
+ * Whether to offer the link to {@link DEV_STORYBOOK}.
+ *
+ * It names `localhost:6006`, which exists only while someone is running the
+ * design system beside this console — on the deployed report it is a link to
+ * nothing, and a dead link beside a live one is worse than no link. The mode is
+ * an argument rather than a read at module scope so both answers are reachable
+ * from a test without stubbing the module.
+ */
+export const showsDevStorybook = (mode = process.env.NODE_ENV) => mode === 'development';
+
+/**
  * A deep link to one story, in one theme.
+ *
+ * The manager URL, not `iframe.html`: the bare preview document renders the
+ * story with no sidebar, no toolbar and no way to reach the one beside it, and a
+ * reviewer following this link has come to look around.
  *
  * The `colorScheme:` colon stays literal. Percent-encoding it produces a URL
  * Storybook accepts and silently ignores, which renders every dark link light —
@@ -215,7 +278,7 @@ export const DEV_STORYBOOK = 'http://localhost:6006';
  * The id is encoded; the globals expression is not.
  */
 export function storybookLink(base: string, storyId: string, theme: string): string {
-  return `${base}/iframe.html?id=${encodeURIComponent(storyId)}&globals=colorScheme:${theme}`;
+  return `${base}/?path=/story/${encodeURIComponent(storyId)}&globals=colorScheme:${theme}`;
 }
 
 /** axe's own rule documentation, keyed by rule id. The version is the one

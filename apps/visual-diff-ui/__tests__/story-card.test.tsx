@@ -70,7 +70,12 @@ const card = () => screen.getByRole('article');
 /** One of the viewer's three frames, by the side it shows. */
 const frame = (name: string) => within(card()).getByRole('figure', { name });
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  // `showsDevStorybook` reads the mode per call, so a stub left standing would
+  // decide the next test's markup.
+  vi.unstubAllEnvs();
+});
 
 describe('a pixel card', () => {
   it('titles itself from the story slug', () => {
@@ -112,8 +117,11 @@ describe('a pixel card', () => {
 
   // The `colorScheme:` colon must survive verbatim. Percent-encoded, Storybook
   // accepts the URL and silently ignores the global, so every dark link opens a
-  // light story — a failure that looks exactly like a passing one.
+  // light story — a failure that looks exactly like a passing one. `?path=` and
+  // not `/iframe.html`: the bare preview document has no sidebar and no toolbar,
+  // and a reviewer following one of these has come to look around.
   it('deep-links the story into both Storybooks with the globals colon literal', () => {
+    vi.stubEnv('NODE_ENV', 'development');
     renderCard(
       cardOf(
         variant({
@@ -128,11 +136,48 @@ describe('a pixel card', () => {
     const published = within(card()).getByRole('link', { name: 'baseline Storybook' });
 
     expect(dev.getAttribute('href')).toBe(
-      'http://localhost:6006/iframe.html?id=atoms-badge--tones&globals=colorScheme:dark',
+      'http://localhost:6006/?path=/story/atoms-badge--tones&globals=colorScheme:dark',
     );
     expect(published.getAttribute('href')).toBe(
-      'https://acceptance-gate-storybook.vercel.app/iframe.html?id=atoms-badge--tones&globals=colorScheme:dark',
+      'https://acceptance-gate-storybook.vercel.app/?path=/story/atoms-badge--tones&globals=colorScheme:dark',
     );
+  });
+
+  // A deployed console has no Storybook on localhost, and a dead link beside a
+  // live one is worse than no link — the published build still answers.
+  it('offers only the published Storybook when nothing is running locally', () => {
+    vi.stubEnv('NODE_ENV', 'production');
+    renderCard(
+      cardOf(
+        variant({
+          key: 'atoms__desktop__dark__atoms-badge--tones',
+          id: 'atoms-badge--tones',
+          theme: 'dark',
+        }),
+      ),
+    );
+
+    expect(within(card()).queryByRole('link', { name: 'dev Storybook' })).toBeNull();
+    expect(within(card()).getByRole('link', { name: 'baseline Storybook' })).toBeTruthy();
+  });
+
+  // An atoms story is captured at desktop only, so its card has no mobile rows
+  // and never could. An empty space where a viewport should be reads as a
+  // screenshot that failed to arrive, which is a different report entirely.
+  it('says why a viewport it was never captured at has no rows', () => {
+    renderCard(
+      cardOf(
+        variant({
+          key: 'atoms__desktop__light__atoms-prose--default',
+          id: 'atoms-prose--default',
+        }),
+      ),
+    );
+
+    const gaps = within(card()).getByRole('list', { name: 'viewports not shown' });
+
+    expect(gaps.textContent).toContain('no mobile shot');
+    expect(gaps.textContent).toContain('atoms are captured at desktop only');
   });
 
   it('marks itself as some, rather than all, when one variant is reviewed', () => {

@@ -39,6 +39,10 @@ function ShotFrame({ kind, name, src, absent, onOpen }: ShotFrameProps) {
       // The kind of shot and nothing else, so the modal's `img "baseline"` and
       // this frame's are the same name for the same thing.
       alt={kind}
+      // The tile the three frames share, whatever each of them holds — a mobile
+      // capture is two and a half times taller than its column is wide, and a
+      // row sized by it would dwarf every desktop row on the page.
+      className="vd-shot__frame"
       fallback={<span className="vd-shot__absent">{absent}</span>}
     />
   );

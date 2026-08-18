@@ -6,6 +6,7 @@ import {
   PUBLISHED_STORYBOOK,
   type ReportSides,
   ruleDocsLink,
+  showsDevStorybook,
   storybookLink,
 } from '@/lib/report-view';
 import type { Variant } from '@/lib/summary';
@@ -80,15 +81,18 @@ export function VariantRow({ reportId, variant, sides, onCompare }: VariantRowPr
         </span>
 
         {/* Both Storybooks: the one a developer has running beside the console,
-            and the published build the baselines were taken from. */}
-        <a
-          className="vd-variant__link"
-          href={storybookLink(DEV_STORYBOOK, variant.id, variant.theme)}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          dev Storybook
-        </a>
+            and the published build the baselines were taken from. The first is
+            offered only where it can answer — see `showsDevStorybook`. */}
+        {showsDevStorybook() && (
+          <a
+            className="vd-variant__link"
+            href={storybookLink(DEV_STORYBOOK, variant.id, variant.theme)}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            dev Storybook
+          </a>
+        )}
         <a
           className="vd-variant__link"
           href={storybookLink(PUBLISHED_STORYBOOK, variant.id, variant.theme)}

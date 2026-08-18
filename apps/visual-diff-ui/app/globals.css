@@ -19,6 +19,21 @@ main {
   min-height: 60vh;
 }
 
+/* The console is a workspace, not a reading column: three screenshots side by
+   side want every pixel the window has, and `--width-container` leaves a third
+   of a wide monitor empty. The gutters stay — only the cap goes, and with it the
+   centring, since `width: 100%` then has nothing left to distribute.
+
+   The shell's header row is capped by that same class, so it is released here
+   too or the wordmark would sit centred above content that is not. This is the
+   one place this app styles a `ds-` class it does not own; it reaches no further
+   than this stylesheet, and Storybook — which loads `@gate/ui` alone — never
+   sees it, so the design system's own baselines are untouched. */
+main.ds-container,
+.ds-site-header__inner {
+  max-width: none;
+}
+
 /* The header's brand line, which is also the console's heading — the board
    draws the wordmark and its tagline as one row, not as a title above the
    panels. */
@@ -483,14 +498,28 @@ main {
   overflow-wrap: anywhere;
 }
 
-.vd-report__run-info {
+/* Everything about the run that is not its identity, behind one disclosure: the
+   report's first screenful is otherwise five lines of provenance above the work,
+   and a reviewer scrolling image comparisons wants that height back. Open by
+   default — folding it is a deliberate click, and the two capture sets are what
+   a reader arriving at a shared link needs first. */
+.vd-report__more {
   font-size: var(--text-sm);
+}
+
+.vd-report__more summary {
+  cursor: pointer;
+  touch-action: manipulation;
   color: var(--color-text-muted);
 }
 
-.vd-report__run-info summary {
-  cursor: pointer;
-  touch-action: manipulation;
+.vd-report__more[open] summary {
+  margin-block-end: var(--space-3);
+}
+
+.vd-report__run-info {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
 }
 
 /* One row per side, label above value below 768 px and paired across from it
@@ -682,6 +711,16 @@ main {
   color: var(--color-danger-text);
 }
 
+/* Why a viewport has no rows under this card. Muted: it explains an absence
+   rather than reporting a failure, and colouring it would rank it against the
+   verdicts above it. */
+.vd-card__gaps {
+  margin: 0;
+  padding-inline-start: var(--space-5);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
 /* ---- The variant row ---------------------------------------------------- */
 
 .vd-variant {
@@ -757,6 +796,44 @@ main {
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
+}
+
+/* Every frame is the same box whatever it holds, so a row of three is one
+   comparison rather than three ragged columns, and every row on the page is the
+   same height.
+
+   5 / 2 is the shape a desktop shot actually has: not the capture viewport, but
+   `#storybook-root` inside it — as wide as the viewport allows and only as tall
+   as the story, which lands around 1248×470 in practice. Sizing the tile to the
+   viewport instead would letterbox a third of every desktop row away to make
+   room for height no shot uses. A mobile shot is taller than it is wide and
+   letterboxes the other way into the same box, which is the whole point: its row
+   is now the height of a desktop row instead of three times it.
+
+   It also gives the frame its final size before any pixels arrive, so nothing
+   reflows as the shots resolve one after another. */
+.vd-shot__frame {
+  aspect-ratio: 5 / 2;
+}
+
+/* Whatever is standing in the frame right now — the shot, the placeholder while
+   it arrives, or the sentence explaining that it never will — fills it, so the
+   three states are one box and the row never reflows between them. The frame
+   stays `display: block`: a grid row is auto-sized by its content, and a
+   percentage height against it resolves to the image's own, which is exactly
+   the height being normalised away. */
+.vd-shot__frame > * {
+  block-size: 100%;
+}
+
+/* The atom sizes its image to the frame's width; here the frame is what is
+   fixed and the image fits inside it. `contain`, never `cover`: this is
+   evidence, and a cropped thumbnail hides exactly the band a reviewer came to
+   look at. Nothing is being judged at this size — the modal is where the pixels
+   are read 1:1, and it still resamples nothing. */
+.vd-shot__frame .ds-thumbnail__img {
+  inline-size: 100%;
+  object-fit: contain;
 }
 
 /* The caption names the capture set, which is a label a reviewer copies out —
@@ -896,26 +973,38 @@ main {
 /* The stage scrolls and the scroll stops here: a flick that reaches the end of
    a screenshot must not carry on into the report behind the modal. The
    checkerboard is what makes a transparent pixel visible as one — a shot on a
-   flat ground would read as opaque wherever the ground shows through. */
+   flat ground would read as opaque wherever the ground shows through.
+
+   A fixed height rather than a cap: the six modes show images of three
+   different intrinsic sizes — a variant records a size delta, and the diff is
+   the union of both sides — so a stage sized by its contents resizes the whole
+   dialog on every mode change, and once a second in `blink`. Holding the frame
+   still is the whole fix; the shot inside is never scaled, because a viewer for
+   one-pixel differences cannot resample the evidence to make it fit. */
 .vd-compare__stage {
   position: relative;
-  max-height: 60vh;
+  block-size: 60vh;
   overflow: auto;
   overscroll-behavior: contain;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   background-color: var(--color-bg-subtle);
+}
+
+/* The checkerboard is what makes a transparent pixel visible as one — a shot on
+   a flat ground would read as opaque wherever the ground shows through. Behind
+   the shot rather than across the stage: the stage is now taller than most
+   shots, and a checkerboard filling the space under one would be claiming
+   transparency for pixels that are not in the image at all. */
+.vd-compare__shot {
+  display: block;
+  width: 100%;
+  height: auto;
   background-image: repeating-conic-gradient(
     var(--color-bg-muted) 0% 25%,
     transparent 0% 50%
   );
   background-size: var(--space-4) var(--space-4);
-}
-
-.vd-compare__shot {
-  display: block;
-  width: 100%;
-  height: auto;
 }
 
 /* 1:1 CSS pixels, and every pixel drawn as itself: a scaled screenshot
@@ -1109,6 +1198,39 @@ main {
     min-width: 16rem;
   }
 
+  /* The tier a reviewer is in and the story they are judging both have to stay
+     on screen: a card can be four variant rows of full-height screenshots tall,
+     and the checkbox that marks it reviewed is in the second of these rows —
+     scrolling back up to find it is the whole friction. Stacked rather than
+     both at zero, so neither pins over the other.
+
+     Only from this width. Below it both rows wrap to several lines, and a
+     multi-line bar pinned to the top of a phone is most of the viewport. */
+  .vd-section__head {
+    position: sticky;
+    inset-block-start: 0;
+    z-index: 2;
+    /* The offset the card head below is pinned at. Stated as a minimum rather
+       than measured: the row's own content is shorter than this, so the two
+       values are the same number by construction and cannot drift apart. */
+    min-block-size: var(--space-10);
+    padding-block-start: var(--space-2);
+    background: var(--color-bg);
+  }
+
+  /* Opaque, and bled over the card's own padding: the card is transparent on
+     the page background, so an unbacked row would have screenshots scrolling
+     through it, and one inset by the padding would leave the card's border
+     showing down either side of it. */
+  .vd-card__head {
+    position: sticky;
+    inset-block-start: var(--space-10);
+    z-index: 1;
+    margin: calc(var(--space-4) * -1) calc(var(--space-4) * -1) 0;
+    padding: var(--space-4) var(--space-4) var(--space-2);
+    background: var(--color-bg);
+  }
+
   /* The three shots side by side, which is the comparison the viewer is named
      after — `minmax(0, 1fr)` so a wide screenshot cannot widen its column past
      the two beside it. */
@@ -1128,6 +1250,6 @@ main {
   }
 
   .vd-compare__stage {
-    max-height: 70vh;
+    block-size: 70vh;
   }
 }
