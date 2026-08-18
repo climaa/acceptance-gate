@@ -1,0 +1,208 @@
+// @vitest-environment jsdom
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+// Imported explicitly rather than relying on `globals: true` — tsconfig's
+// `**/*.tsx` include means tsc typechecks this file.
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { DeleteSetButton, PruneButton } from '../components/ConfirmDialogs';
+import { refreshCalls } from './stubs/next-navigation';
+
+/**
+ * D2 as a screen: nothing is deleted implicitly, and every refusal comes back in
+ * the words the server refused with.
+ *
+ * The two dialogs carry the whole of that decision. A delete names the one set it
+ * is about to remove; a prune names both halves — what goes and what stays —
+ * because "prune the rest" is the only bulk path in this console and the rest is
+ * exactly what a reviewer cannot see from the button. What comes back from a
+ * refused mutation is prose: `a job is already running`, or the path of the
+ * worktree still holding the set. A screen showing `409` instead is a review
+ * failure, so these cases assert the sentence.
+ */
+
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+  refreshCalls.length = 0;
+});
+
+const SET = 'main-2026-08-17';
+
+const HELD =
+  'main-2026-08-17 is checked out in the worktree at /repo/../wt-a — retire that worktree before deleting the set';
+
+const JOB_RUNNING = 'a job is already running';
+
+const SETS = ['main-2026-08-17', 'main-2026-08-16', 'main-2026-08-15', 'wip-2026-08-14'];
+
+/** The mutating endpoints, answered with whatever the case is about. */
+function stubFetch(response: { ok?: boolean; status?: number; body?: unknown }) {
+  const fetchMock = vi.fn(
+    () =>
+      Promise.resolve({
+        ok: response.ok ?? true,
+        status: response.status ?? 200,
+        json: () => Promise.resolve(response.body ?? {}),
+      }) as never,
+  );
+  vi.stubGlobal('fetch', fetchMock);
+
+  return fetchMock;
+}
+
+const openDelete = () => fireEvent.click(screen.getByRole('button', { name: 'delete' }));
+
+const openPrune = () =>
+  fireEvent.click(screen.getByRole('button', { name: 'prune the rest' }));
+
+const dialog = (name: string) => screen.getByRole('dialog', { name });
+
+describe('the delete confirmation', () => {
+  it('does not delete on the button alone', () => {
+    const fetchMock = stubFetch({});
+    render(<DeleteSetButton label={SET} />);
+
+    openDelete();
+
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('names the set it is about to remove', () => {
+    stubFetch({});
+    render(<DeleteSetButton label={SET} />);
+
+    openDelete();
+
+    expect(within(dialog('Confirm deletion')).getAllByText(SET).length).toBeGreaterThan(
+      0,
+    );
+  });
+
+  it('deletes the one set the dialog named', async () => {
+    const fetchMock = stubFetch({ body: { removed: SET } });
+    render(<DeleteSetButton label={SET} />);
+    openDelete();
+
+    fireEvent.click(screen.getByRole('button', { name: `delete ${SET}` }));
+
+    expect(fetchMock).toHaveBeenCalledWith(`/api/sets/${SET}`, {
+      method: 'DELETE',
+      cache: 'no-store',
+    });
+    // The sets table beside this is server-rendered, so the row only goes once
+    // the page is re-read.
+    await vi.waitFor(() => expect(refreshCalls).toEqual(['refresh']));
+  });
+
+  it('closes without a request when the reviewer backs out', () => {
+    const fetchMock = stubFetch({});
+    render(<DeleteSetButton label={SET} />);
+    openDelete();
+
+    fireEvent.click(screen.getByRole('button', { name: 'cancel' }));
+
+    expect(screen.queryByRole('dialog', { name: 'Confirm deletion' })).toBeNull();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  // The acceptance scenario: "the deletion is refused naming what holds it".
+  it('surfaces a held set as the sentence the server refused with', async () => {
+    stubFetch({ ok: false, status: 409, body: { error: HELD } });
+    render(<DeleteSetButton label={SET} />);
+    openDelete();
+
+    fireEvent.click(screen.getByRole('button', { name: `delete ${SET}` }));
+
+    const alert = await screen.findByRole('alert');
+    expect(alert.textContent).toBe(HELD);
+  });
+
+  it('keeps the dialog open on a refusal, so the reason sits beside the action', async () => {
+    stubFetch({ ok: false, status: 409, body: { error: JOB_RUNNING } });
+    render(<DeleteSetButton label={SET} />);
+    openDelete();
+
+    fireEvent.click(screen.getByRole('button', { name: `delete ${SET}` }));
+
+    expect(await screen.findByText(JOB_RUNNING)).toBeDefined();
+    expect(dialog('Confirm deletion')).toBeDefined();
+  });
+
+  // A refusal a JSON body never explained is still a refusal, and the screen has
+  // to say something a reviewer can act on rather than nothing at all.
+  it('says something a reviewer can read when the API answers no prose', async () => {
+    stubFetch({ ok: false, status: 500, body: {} });
+    render(<DeleteSetButton label={SET} />);
+    openDelete();
+
+    fireEvent.click(screen.getByRole('button', { name: `delete ${SET}` }));
+
+    const alert = await screen.findByRole('alert');
+    expect(alert.textContent).toMatch(/could not delete/i);
+  });
+});
+
+describe('the prune confirmation', () => {
+  it('names what it will remove and what it will keep', () => {
+    stubFetch({});
+    render(<PruneButton keep={3} labels={SETS} />);
+
+    openPrune();
+
+    const confirm = within(dialog('Confirm prune'));
+    expect(confirm.getByText('main-2026-08-15')).toBeDefined();
+    expect(confirm.getByText('wip-2026-08-14')).toBeDefined();
+  });
+
+  it('prunes to the count the control was set to', async () => {
+    const fetchMock = stubFetch({
+      body: { kept: SETS.slice(0, 3), removed: [], refused: [] },
+    });
+    render(<PruneButton keep={3} labels={SETS} />);
+    openPrune();
+
+    fireEvent.click(screen.getByRole('button', { name: 'remove 1 set' }));
+
+    expect(fetchMock).toHaveBeenCalledWith('/api/prune', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      cache: 'no-store',
+      body: JSON.stringify({ keep: 3 }),
+    });
+    await vi.waitFor(() => expect(refreshCalls).toEqual(['refresh']));
+  });
+
+  // Prune is a bulk action: one held set must not strand the other nine, so the
+  // server skips it and says so per set. The dialog stays open on those words.
+  it('lists every set the prune skipped, in the server’s words', async () => {
+    stubFetch({ body: { kept: SETS.slice(0, 3), removed: [], refused: [HELD] } });
+    render(<PruneButton keep={3} labels={SETS} />);
+    openPrune();
+
+    fireEvent.click(screen.getByRole('button', { name: 'remove 1 set' }));
+
+    const alert = await screen.findByRole('alert');
+    expect(alert.textContent).toContain(HELD);
+  });
+
+  it('surfaces a prune refused outright as its sentence', async () => {
+    stubFetch({ ok: false, status: 409, body: { error: JOB_RUNNING } });
+    render(<PruneButton keep={3} labels={SETS} />);
+    openPrune();
+
+    fireEvent.click(screen.getByRole('button', { name: 'remove 1 set' }));
+
+    const alert = await screen.findByRole('alert');
+    expect(alert.textContent).toBe(JOB_RUNNING);
+  });
+
+  it('has nothing to confirm when the instance holds fewer sets than it keeps', () => {
+    stubFetch({});
+    render(<PruneButton keep={5} labels={SETS} />);
+
+    openPrune();
+
+    expect(
+      within(dialog('Confirm prune')).getByRole('button', { name: 'remove 0 sets' }),
+    ).toHaveProperty('disabled', true);
+  });
+});

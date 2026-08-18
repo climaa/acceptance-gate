@@ -1,5 +1,9 @@
 {
   "extends": "@gate/tsconfig/react-library.json",
+  // Dialog.test.tsx reads FULLPAGE_TAG from `@gate/visual-diff/policy`, which is a
+  // JSDoc-typed .mjs — the same reason apps/storybook's tsconfig carries this.
+  // `checkJs` stays off: policy.mjs is typechecked by its own workspace, not here.
+  "compilerOptions": { "allowJs": true },
   "include": ["src"],
   "exclude": ["node_modules"]
 }
