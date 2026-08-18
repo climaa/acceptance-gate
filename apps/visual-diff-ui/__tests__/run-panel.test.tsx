@@ -5,10 +5,10 @@ import { HOST } from '@gate/visual-diff/policy';
 // `**/*.tsx` include means tsc typechecks this file.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CurrentJobProvider } from '../components/CurrentJob';
-import { RUNNING_REFUSAL, RunPanel } from '../components/RunPanel';
+import { REMOTE_REFUSAL, RUNNING_REFUSAL, RunPanel } from '../components/RunPanel';
 import type { ReportListEntry } from '../lib/data';
 import type { HistoryRecord } from '../lib/jobs';
-import { JOB_RUNNING } from '../lib/refusals';
+import { JOB_RUNNING, NOT_LOCAL } from '../lib/refusals';
 import { reviewStorageKey } from '../lib/review-state';
 import { refreshCalls, setSearchParams } from './stubs/next-navigation';
 
@@ -89,6 +89,9 @@ function stubApi({ image = HOST.image, current, jobs }: ApiStub = {}) {
 
 interface PanelCase extends ApiStub {
   isSample?: boolean;
+  /** Defaults to a local console: every case that is not about the deployed
+   *  refusal is about a panel a reviewer can actually press. */
+  isLocal?: boolean;
   reports?: ReportListEntry[];
   /** The query string the pickers would have written. */
   query?: string;
@@ -96,6 +99,7 @@ interface PanelCase extends ApiStub {
 
 function renderPanel({
   isSample = false,
+  isLocal = true,
   reports = [REPORT],
   query = '',
   ...api
@@ -105,7 +109,7 @@ function renderPanel({
 
   render(
     <CurrentJobProvider>
-      <RunPanel isSample={isSample} reports={reports} />
+      <RunPanel isSample={isSample} isLocal={isLocal} reports={reports} />
     </CurrentJobProvider>,
   );
 
@@ -382,12 +386,44 @@ describe('sample mode', () => {
     expect(start).toHaveProperty('disabled', true);
   });
 
-  it('says why, in the one word that explains it', () => {
+  // The variable is the whole of the fix, so it is the whole of the sentence.
+  // It deliberately says nothing about deployments: a local console with no data
+  // directory is in sample mode too, and that is the reader this note is for.
+  it('names the one thing that would take it out of sample mode', () => {
     renderPanel({ isSample: true });
 
     const note = screen.getByRole('note', { name: 'sample mode' });
 
-    expect(note.textContent).toMatch(/no CLI/);
+    expect(note.textContent).toMatch(/VISUAL_DIFF_DATA_DIR/);
+  });
+});
+
+/**
+ * The local gate. A deployment has no checkout to compare, no Storybook build to
+ * serve and no browser to drive, so there is nothing a reviewer could do in this
+ * tab to make the button work — which is the rule `isRefused` states for the
+ * host gate, applied one level up: absent, not disabled.
+ */
+describe('a deployed console', () => {
+  it('offers no start button at all', () => {
+    renderPanel({ isLocal: false });
+
+    expect(startButtons('capture')).toHaveLength(0);
+  });
+
+  it('names the console that can run the job instead', () => {
+    renderPanel({ isLocal: false });
+
+    const note = screen.getByRole('note', { name: 'remote console' });
+
+    expect(note.textContent).toBe(REMOTE_REFUSAL);
+  });
+
+  // The panel spells the sentence rather than importing it — `lib/refusals`
+  // reaches the filesystem and this is a client bundle — so the duplication is
+  // held here rather than by a convention. Same bargain as RUNNING_REFUSAL.
+  it('says what the server would have answered', () => {
+    expect(REMOTE_REFUSAL).toBe(NOT_LOCAL);
   });
 });
 
@@ -454,7 +490,7 @@ describe('the accept gate', () => {
   it('picks up a report list that arrived after it mounted', async () => {
     const panel = (reports: readonly ReportListEntry[]) => (
       <CurrentJobProvider>
-        <RunPanel isSample={false} reports={reports} />
+        <RunPanel isSample={false} isLocal reports={reports} />
       </CurrentJobProvider>
     );
     stubApi();

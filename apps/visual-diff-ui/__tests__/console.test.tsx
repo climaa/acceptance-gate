@@ -101,6 +101,7 @@ function consoleWith({
       reports={reports}
       history={history}
       isSample={false}
+      isLocal
     />
   );
 }

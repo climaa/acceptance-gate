@@ -254,6 +254,44 @@ export function hasSet(dataDir: string, label: string): boolean {
   );
 }
 
+/**
+ * A label this instance does not have yet: the one asked for, or it with a
+ * counter appended.
+ *
+ * Labels are date-shaped, so capturing twice in one day asks for a name that is
+ * already taken. Neither of the other answers is right — overwriting changes a
+ * set under any report already built from it, and refusing throws away a run
+ * whose only fault is happening on a Tuesday that already had one. The suffix
+ * keeps both sets and keeps `capturedAt` honest about them.
+ */
+export function freeLabel(dataDir: string, label: string): string {
+  if (!hasSet(dataDir, label)) return label;
+
+  for (let counter = 2; ; counter += 1) {
+    const candidate = `${label}-${counter}`;
+    if (!hasSet(dataDir, candidate)) return candidate;
+  }
+}
+
+/**
+ * Register one capture set — the mirror of {@link removeSet}.
+ *
+ * The runner writes the shot tree; this is the row that makes it a set the
+ * console can see. Newest first, and a label claims one row: a re-registered
+ * label replaces its entry rather than appearing twice, which `listSets` has no
+ * way to choose between. Spreading the registry keeps a fixture's `isSample`
+ * provenance, exactly as `removeSet` does.
+ */
+export function recordSet(dataDir: string, set: CaptureSet): void {
+  const file = setsFilePath(dataDir);
+  const registry = readJson(file, SetsFileSchema, { sets: [] });
+
+  writeJson(file, {
+    ...registry,
+    sets: [set, ...registry.sets.filter((entry) => entry.label !== set.label)],
+  });
+}
+
 /** Every run, newest first. */
 export function readHistory(dataDir: string): HistoryRecord[] {
   return readJson(historyPath(dataDir), HistorySchema, []);

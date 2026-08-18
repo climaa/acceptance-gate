@@ -2,6 +2,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { buildSummary } from '@gate/visual-diff/artifacts';
 import { pngSize } from '@gate/visual-diff/capture';
+import type { Deps } from '@gate/visual-diff/commands';
 import { type CaptureShot, type Comparison, compareAll } from '@gate/visual-diff/compare';
 import {
   BASELINE_BUDGET_BYTES,
@@ -9,17 +10,20 @@ import {
   EXIT,
   parseVariantKey,
 } from '@gate/visual-diff/policy';
+import { type Checkout, describeCheckout, repoRoot } from './git';
 import { type HostEnv, hostFingerprint, hostMatches } from './host';
 import {
   BASELINE_ENV_FILE,
   type JobOutcome,
   type JobRequest,
   baselinesDir,
+  freeLabel,
+  recordSet,
   reportDir,
   setDir,
   within,
 } from './jobs';
-import { hostMismatch, noReportAt } from './refusals';
+import { NO_CHECKOUT, hostMismatch, noReportAt } from './refusals';
 import { type Summary, SummarySchema } from './summary';
 
 /**
@@ -35,6 +39,10 @@ import { type Summary, SummarySchema } from './summary';
  */
 
 const PNG = '.png';
+
+/** What a set records for a checkout git could not describe. Not a blank and not
+ *  a guess: the column says outright that this set's provenance is unknown. */
+const UNKNOWN = 'unknown';
 
 const shotPath = (dir: string, key: string, kind: string) =>
   path.join(dir, `${key}.${kind}${PNG}`);
@@ -347,30 +355,122 @@ export async function promoteBaselines(
 }
 
 /**
- * Capture the corpus under the data directory, and compare it — the differ's
- * own `check`, composed rather than spawned, with `rootDir` derived from
- * `VISUAL_DIFF_DATA_DIR`.
+ * One capture run's shots, on disk as `sets/<label>/<variantKey>.png` — the
+ * layout `readSet` above reads back. Returns how many landed.
+ *
+ * An `errored` variant is written like any other as long as it has bytes.
+ * `captureVariant` still shoots the page on its way out, `check`'s own report
+ * uses those bytes as the candidate image, and a set that quietly dropped them
+ * would make the next compare report the story as `removed` with nothing to
+ * explain it. Only a variant with no bytes at all has nothing to write.
+ */
+function writeSet(
+  dataDir: string,
+  label: string,
+  captures: readonly CaptureShot[],
+): number {
+  const dir = setDir(dataDir, label);
+  fs.mkdirSync(dir, { recursive: true });
+
+  let written = 0;
+  for (const shot of captures) {
+    if (!shot.bytes) continue;
+
+    fs.writeFileSync(within(dir, `${shot.key}${PNG}`), shot.bytes);
+    written += 1;
+  }
+
+  return written;
+}
+
+/**
+ * `deps.capture`, wrapped so the run's shots land in this console's data
+ * directory on the way past.
+ *
+ * The differ keeps candidate bytes in memory and writes only diffs and its own
+ * artifacts, so without this a capture would leave the console with nothing to
+ * compare later — which is what `label` used to mean here, and why it was only
+ * ever logged.
+ *
+ * The set is written INSIDE the capture step, before `check` runs its sanity
+ * gates. That is deliberate: the shots were taken, and whether the run passes is
+ * the exit code's verdict rather than a reason to throw the pixels away.
+ */
+function capturingInto(
+  deps: Deps,
+  dataDir: string,
+  label: string,
+  root: Checkout | null,
+  log: (message: string) => void,
+): Deps['capture'] {
+  return async (run) => {
+    const result = await deps.capture(run);
+    const { captures } = result;
+
+    const written = writeSet(dataDir, label, captures);
+    const errored = captures.filter((shot) => shot.bucket === 'errored').length;
+
+    recordSet(dataDir, {
+      label,
+      sha: root?.sha ?? UNKNOWN,
+      branch: root?.branch ?? UNKNOWN,
+      capturedAt: new Date().toISOString().slice(0, 10),
+      stories: written,
+      // Absent rather than false when git could not be read: the field claims the
+      // tree was clean, and this run has no grounds to claim it.
+      ...(root ? { dirty: root.dirty } : {}),
+    });
+
+    log(
+      `wrote sets/${label} — ${written} shot(s)${errored ? `, ${errored} errored` : ''}`,
+    );
+
+    return result;
+  };
+}
+
+/**
+ * Capture the corpus into a set, and compare it against the committed
+ * baselines — the differ's own `check`, composed rather than spawned.
  *
  * `capture` and `run` compose the SAME command on purpose: the CLI's surface is
- * `check | accept`, there is no capture-only subcommand, and this issue may not
- * add one. The two modes differ in what the console calls them, not in what the
- * differ does.
+ * `check | accept` and there is no capture-only subcommand. The two modes differ
+ * in what the console calls them, not in what the differ does.
  *
- * `check` resolves every `policy.PATHS` entry under `rootDir`, so a real run
- * needs a repo-shaped tree there — `apps/storybook/storybook-static` above all —
- * and a browser, which means the pinned container. **The e2e worlds never run
- * this**: their jobs are compare-only over pre-seeded shot trees. Nothing here
- * fakes a capture; without a Storybook build the composed `check` reports the
- * missing build and the job exits 2, which is the honest answer.
+ * TWO DIRECTORIES, and the split is the thing to keep straight. `rootDir` is the
+ * repo CHECKOUT: `check` resolves every `policy.PATHS` entry under it, so that is
+ * where `apps/storybook/storybook-static` is served from, where
+ * `packages/visual-diff/__baselines__` is compared against, and where the
+ * differ's own artifacts land (`packages/visual-diff/.visual-diff/`, gitignored).
+ * The DATA directory receives the capture set, and nothing else — every write to
+ * it still goes through `within()`.
+ *
+ * So this mode only works on a console running inside a checkout, which is what
+ * the local gate on `POST /api/jobs` already establishes; `repoRoot` returning
+ * null is the belt to that braces. It also needs a browser and a Storybook
+ * build: without one, the composed `check` reports the missing build and the job
+ * exits 2, which is the honest answer. **The e2e worlds never run this** — their
+ * jobs are compare-only over pre-seeded shot trees.
+ *
+ * Note that `check` compares against the checkout's committed corpus while the
+ * console's `accept` promotes into `<dataDir>/__baselines__`. Two corpora, and
+ * this function is not the place that reconciles them.
  */
 export async function runCheck(
   dataDir: string,
   request: Extract<JobRequest, { mode: 'capture' | 'run' }>,
   log: (message: string) => void,
+  cwd: string = process.cwd(),
 ): Promise<JobOutcome> {
-  const rootDir = within(dataDir);
-  const { label, filter } = request;
-  log(`running check against ${label} under the data directory`);
+  const rootDir = repoRoot(cwd);
+  if (!rootDir) return refuse(log, NO_CHECKOUT);
+
+  const { filter } = request;
+  const label = freeLabel(dataDir, request.label);
+  if (label !== request.label) {
+    log(`${request.label} is already captured — this run is ${label}`);
+  }
+  log(`running check against ${rootDir}, capturing into sets/${label}`);
 
   // Resolved by Node at the moment it is needed, never bundled: `commands.mjs`
   // derives its repo root from `new URL('../../..', import.meta.url)`, which a
@@ -378,13 +478,24 @@ export async function runCheck(
   // reaches through `capture.mjs` for `playwright` — a dependency of that
   // package, not of this app. Both are only ever true of a console running on a
   // real checkout, which is the only place this mode can work at all.
-  const { check } = await import(
+  const { check, defaultDeps } = await import(
     /* turbopackIgnore: true */ '@gate/visual-diff/commands'
   );
-  // Spread rather than passed as `filter: undefined`: `check` reads any filter
-  // as "only stories matching this", and an empty box from the console must not
-  // arrive as a filter that matches nothing.
-  const result = await check(undefined, { rootDir, ...(filter ? { filter } : {}) });
+
+  // Spread rather than mutated: every edge `defaultDeps()` built rides through,
+  // and only the capture step is this app's. Nothing in the package writes back
+  // to the object it was handed.
+  const deps = defaultDeps();
+  const result = await check(
+    {
+      ...deps,
+      capture: capturingInto(deps, dataDir, label, describeCheckout(rootDir), log),
+    },
+    // Spread rather than passed as `filter: undefined`: `check` reads any filter
+    // as "only stories matching this", and an empty box from the console must not
+    // arrive as a filter that matches nothing.
+    { rootDir, ...(filter ? { filter } : {}) },
+  );
   log(result.message);
 
   return { exitCode: result.exitCode, reportId: null };

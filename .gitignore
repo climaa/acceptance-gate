@@ -25,6 +25,10 @@ CLAUDE.local.md
 coverage/
 packages/ui/.visual-diff/
 packages/visual-diff/.visual-diff/
+# What `pnpm --filter @gate/visual-diff-ui dev` captures into. Rooted, because
+# the two above are the differ's own artifact directories and this is a console
+# instance's whole corpus.
+/.visual-diff/
 
 # Claude Code local state (.claude/skills/ IS committed — vendored skills are the
 # only channel that reaches a Sandcastle agent, which never sees ~/.claude)

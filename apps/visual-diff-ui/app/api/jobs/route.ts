@@ -1,10 +1,13 @@
 import { HOST } from '@gate/visual-diff/policy';
+import { headers } from 'next/headers';
 import { resolveDataDir } from '@/lib/data';
 import { hostFingerprint, hostMatches } from '@/lib/host';
 import { JobRequestSchema, startJob } from '@/lib/jobs';
+import { isLocalHost } from '@/lib/local';
 import {
   ACCEPT_RECOVERY,
   JOB_RUNNING,
+  NOT_LOCAL,
   SAMPLE_DATA,
   badRequest,
   conflict,
@@ -21,9 +24,13 @@ import { readSummary, runJob } from '@/lib/runner';
  *
  * It answers as soon as the lock is held (202), never when the job is done: a
  * capture takes minutes, and the log at `GET /api/jobs/current` is how progress
- * is watched. Two things can refuse it before anything starts, and both are
- * decisions rather than validation:
+ * is watched. Three things can refuse it before anything starts, and all three
+ * are decisions rather than validation:
  *
+ *  - The console is deployed. A job needs the checkout it compares; the panel
+ *    shows no start button off-localhost, and this is the same wall for a POST
+ *    that skips the UI. Read from the request's own `Host`, so one instance can
+ *    answer both a loopback caller and a proxied one correctly.
  *  - D1, one job at a time. A second request is refused, not queued, so the
  *    console shows what is running instead of promising something later.
  *  - D3, accept is container-bound. The client gate would be a review failure
@@ -33,6 +40,8 @@ import { readSummary, runJob } from '@/lib/runner';
 export async function POST(request: Request): Promise<Response> {
   const { dir, isSample } = await resolveDataDir();
   if (isSample) return conflict(SAMPLE_DATA);
+
+  if (!isLocalHost((await headers()).get('host'))) return conflict(NOT_LOCAL);
 
   const busy = refuseWhileRunning(dir);
   if (busy) return busy;

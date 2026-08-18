@@ -25,6 +25,9 @@ Then(
   'starting a job is disabled with an explanation',
   async ({ console: consolePage }) => {
     await expect(consolePage.startButton).toBeDisabled();
-    await expect(consolePage.sampleModeNote).toContainText(/no CLI/);
+    // Disabled rather than absent, and the note names the way out: this world is
+    // served from localhost like the other two, so what stops it is the empty
+    // data directory and not the machine it is on.
+    await expect(consolePage.sampleModeNote).toContainText(/VISUAL_DIFF_DATA_DIR/);
   },
 );

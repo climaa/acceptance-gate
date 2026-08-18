@@ -64,8 +64,12 @@ const PLACEHOLDER = {
   filter: 'atoms-button…',
 };
 
+/** Sample mode explains itself, and the deployed case does not appear here: an
+ *  instance can be both, and "there is no CLI behind this" is the sentence that
+ *  belongs to the deployment (REMOTE_REFUSAL below), not to a local console that
+ *  simply has not been pointed at any data yet. */
 const SAMPLE_NOTE =
-  'sample mode — this instance is serving the committed sample run, and there is no CLI behind a static deployment to start a job with';
+  'sample mode — this instance is serving the committed sample run, which belongs to this repo rather than to anything captured here; point VISUAL_DIFF_DATA_DIR at a real tree to start a job';
 
 const NO_REPORT = 'No report to accept from — compare two capture sets first.';
 
@@ -79,6 +83,11 @@ const NO_REPORT = 'No report to accept from — compare two capture sets first.'
  * than under a convention.
  */
 export const RUNNING_REFUSAL = 'a job is already running';
+
+/** The deployed refusal, spelled here for the same reason and pinned against
+ *  `NOT_LOCAL` by the same test. */
+export const REMOTE_REFUSAL =
+  'this console is deployed, and a job needs the checkout it compares — start one from the console on your own machine (`pnpm --filter @gate/visual-diff-ui dev`)';
 
 const UNREACHABLE = 'the console could not reach the job API — is the server still up?';
 
@@ -466,7 +475,9 @@ function isRefused(form: JobForm, gate: AcceptGate | null, hasReport: boolean): 
 interface FieldsProps {
   form: JobForm;
   patch: Patch;
-  isSample: boolean;
+  /** Sample mode or a deployed console: the composer freezes as a whole rather
+   *  than offering a form whose button is not there. */
+  disabled: boolean;
   reports: readonly ReportListEntry[];
   runner: HostFingerprint | undefined;
   gate: AcceptGate | null;
@@ -477,7 +488,7 @@ interface FieldsProps {
  *  `--skip-build` checkbox beside them; neither exists in `visual-diff`'s CLI —
  *  its whole surface is `check | accept` with `--filter` — and the console never
  *  builds Storybook, so both would be controls for something that cannot happen. */
-function CaptureFields({ form, patch, isSample }: FieldsProps) {
+function CaptureFields({ form, patch, disabled }: FieldsProps) {
   return (
     <>
       <Field
@@ -486,7 +497,7 @@ function CaptureFields({ form, patch, isSample }: FieldsProps) {
         value={form.label}
         placeholder={PLACEHOLDER.label}
         onChange={(label) => patch({ label })}
-        disabled={isSample}
+        disabled={disabled}
       />
       <Field
         name="filter"
@@ -494,13 +505,13 @@ function CaptureFields({ form, patch, isSample }: FieldsProps) {
         value={form.filter}
         placeholder={PLACEHOLDER.filter}
         onChange={(filter) => patch({ filter })}
-        disabled={isSample}
+        disabled={disabled}
       />
     </>
   );
 }
 
-function CompareFields({ form, patch, isSample }: FieldsProps) {
+function CompareFields({ form, patch, disabled }: FieldsProps) {
   return (
     <>
       <Field
@@ -509,7 +520,7 @@ function CompareFields({ form, patch, isSample }: FieldsProps) {
         value={form.baseline}
         placeholder={PLACEHOLDER.label}
         onChange={(baseline) => patch({ baseline })}
-        disabled={isSample}
+        disabled={disabled}
       />
       <Field
         name="candidate"
@@ -517,7 +528,7 @@ function CompareFields({ form, patch, isSample }: FieldsProps) {
         value={form.candidate}
         placeholder={PLACEHOLDER.label}
         onChange={(candidate) => patch({ candidate })}
-        disabled={isSample}
+        disabled={disabled}
       />
     </>
   );
@@ -525,7 +536,7 @@ function CompareFields({ form, patch, isSample }: FieldsProps) {
 
 /** The accept tab's own fields: which report, what this host is, and what the
  *  gate makes of the pair. */
-function AcceptFields({ form, patch, isSample, reports, runner, gate }: FieldsProps) {
+function AcceptFields({ form, patch, disabled, reports, runner, gate }: FieldsProps) {
   if (reports.length === 0) return <p className="vd-accept__empty">{NO_REPORT}</p>;
 
   return (
@@ -539,7 +550,7 @@ function AcceptFields({ form, patch, isSample, reports, runner, gate }: FieldsPr
           name="report"
           className="vd-field__select"
           value={form.reportId}
-          disabled={isSample}
+          disabled={disabled}
           onChange={(event) => patch({ reportId: event.target.value })}
         >
           {reports.map((report) => (
@@ -571,24 +582,33 @@ function ModeFields(props: FieldsProps) {
   return <CaptureFields {...props} />;
 }
 
-/** What stands where the start button would: D1's link while the lock is held,
- *  nothing at all where accept is refused, the button otherwise. */
+/** What stands where the start button would: the deployed refusal, D1's link
+ *  while the lock is held, nothing at all where accept is refused, the button
+ *  otherwise. */
 function StartAction({
   form,
   gate,
   hasReport,
-  isSample,
+  isLocal,
+  disabled,
   starting,
   onStart,
 }: {
   form: JobForm;
   gate: AcceptGate | null;
   hasReport: boolean;
-  isSample: boolean;
+  isLocal: boolean;
+  disabled: boolean;
   starting: boolean;
   onStart: () => void;
 }) {
   const { running } = useCurrentJob();
+
+  // Ahead of D1, because a deployed console never holds a lock and asking about
+  // one first would read as if it might. Absent rather than disabled, on the same
+  // rule as the host gate below: nothing a reviewer can do in this tab makes a
+  // deployment be their own machine, so the note names the console that works.
+  if (!isLocal) return <Note name="remote console">{REMOTE_REFUSAL}</Note>;
 
   if (running) {
     // Announced, not merely absent: a control that vanishes without a word is a
@@ -611,7 +631,7 @@ function StartAction({
     <Button
       variant="primary"
       onClick={onStart}
-      disabled={isSample || starting || !isRunnable(form, gate)}
+      disabled={disabled || starting || !isRunnable(form, gate)}
     >
       start {form.mode}
     </Button>
@@ -622,11 +642,15 @@ export interface RunPanelProps {
   /** Sample instances have no data directory, so every mutation is refused
    *  server-side; the controls say so rather than failing on the click. */
   isSample: boolean;
+  /** Whether the request came from the machine running this console (lib/local).
+   *  A deployment gets no start control at all — `POST /api/jobs` refuses the
+   *  same request independently, so this is the copy rather than the guard. */
+  isLocal: boolean;
   /** Newest first — what accept can be run against. */
   reports: readonly ReportListEntry[];
 }
 
-export function RunPanel({ isSample, reports }: RunPanelProps) {
+export function RunPanel({ isSample, isLocal, reports }: RunPanelProps) {
   const prefill = readPrefill(useSearchParams());
   const [form, patch] = useJobForm(
     prefill,
@@ -635,6 +659,10 @@ export function RunPanel({ isSample, reports }: RunPanelProps) {
   const runner = useRunnerFingerprint();
   const { start, refusal, starting } = useStartJob();
 
+  // One word for the two reasons a composer is inert. They are different
+  // refusals — one is answered above the button, the other instead of it — but a
+  // field does not care which of them froze it.
+  const frozen = isSample || !isLocal;
   const report = reports.find((entry) => entry.id === form.reportId) ?? null;
   const gate =
     report && runner
@@ -656,7 +684,7 @@ export function RunPanel({ isSample, reports }: RunPanelProps) {
           <ModeFields
             form={form}
             patch={patch}
-            isSample={isSample}
+            disabled={frozen}
             reports={reports}
             runner={runner}
             gate={gate}
@@ -669,7 +697,8 @@ export function RunPanel({ isSample, reports }: RunPanelProps) {
             form={form}
             gate={gate}
             hasReport={report !== null}
-            isSample={isSample}
+            isLocal={isLocal}
+            disabled={frozen}
             starting={starting}
             onStart={() => void start(jobRequest(form))}
           />

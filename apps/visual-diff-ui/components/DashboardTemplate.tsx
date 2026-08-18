@@ -34,6 +34,10 @@ export interface DashboardTemplateProps {
    *  control under it: an instance with no data directory is serving this
    *  repo's committed fixtures, and every mutation is refused there. */
   isSample: boolean;
+  /** Resolved server-side from the request's own host (lib/local.ts). False on
+   *  a deployment, where the run panel offers no start control at all — a job
+   *  needs the checkout it compares. */
+  isLocal: boolean;
 }
 
 interface PanelProps {
@@ -93,6 +97,7 @@ export function DashboardTemplate({
   reports,
   history,
   isSample,
+  isLocal,
 }: DashboardTemplateProps) {
   return (
     <div className="vd-console">
@@ -124,7 +129,7 @@ export function DashboardTemplate({
       <CurrentJobProvider>
         <Stack gap={6} className="vd-console__column">
           <Panel id="vd-run" title="start a job">
-            <RunPanel isSample={isSample} reports={reports} />
+            <RunPanel isSample={isSample} isLocal={isLocal} reports={reports} />
           </Panel>
 
           {/* Not wrapped in `Panel`: this region owns a live region and an
