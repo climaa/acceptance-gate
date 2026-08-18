@@ -9,3 +9,11 @@ export {
   type SiteHeaderProps,
   type SiteNavItem,
 } from './SiteHeader/SiteHeader';
+export {
+  Table,
+  type TableCell,
+  type TableColumn,
+  type TableProps,
+  type TableRow,
+  type TitledCell,
+} from './Table/Table';
