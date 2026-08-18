@@ -168,7 +168,10 @@ export function ReportResults({ reportId, report, sides }: ReportResultsProps) {
   const [collapsed, setCollapsed] = useState<Readonly<Record<string, boolean>>>({});
 
   const sections = useMemo(
-    () => buildSections(filterByBucket(report.variants, view.bucket)),
+    // The whole run goes in as well as the filtered view: a card explains an
+    // absent viewport against everything the run recorded, never against what
+    // the chip row is currently showing.
+    () => buildSections(filterByBucket(report.variants, view.bucket), report.variants),
     [report.variants, view.bucket],
   );
 

@@ -5,6 +5,7 @@ import * as path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   buildSections,
+  filterByBucket,
   showsDevStorybook,
   storybookLink,
   viewportGaps,
@@ -170,6 +171,27 @@ describe('the viewports a card has no rows for', () => {
       .find((c) => c.bucket === 'changed');
 
     const gaps = viewportGaps(pixelCard!);
+
+    expect(gaps).toEqual([]);
+  });
+
+  // The bucket chip filters before the sections are built, so a filtered view
+  // hands `buildSections` a corpus with rows missing that are still part of the
+  // run. Reading the denominator off that would let a chip a reviewer pressed
+  // turn "you hid this row" into "this shot was never taken".
+  it('says nothing about a viewport whose row the bucket filter is hiding', () => {
+    const corpus = [
+      cell('templates', POST),
+      cell('templates', POST, {
+        viewport: 'mobile',
+        bucket: 'errored',
+        error: 'timeout',
+      }),
+    ];
+
+    const gaps = buildSections(filterByBucket(corpus, 'changed'), corpus)
+      .flatMap((section) => section.cards)
+      .flatMap((card) => viewportGaps(card));
 
     expect(gaps).toEqual([]);
   });

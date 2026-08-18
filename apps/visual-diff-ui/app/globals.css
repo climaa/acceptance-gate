@@ -197,6 +197,12 @@ main.ds-container,
 .vd-table__cell {
   padding-block: var(--space-1);
   text-align: start;
+  /* A grid item's automatic minimum is its min-content, and `minmax(11rem, 1fr)`
+     contributes nothing from content — so a long sha or capture label in an
+     11rem track would push out of it with nothing to clip it. Before the card
+     became a grid it always had the full width to run into. */
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 /* The column's own header, in front of its value. Generated content, so it
@@ -821,44 +827,6 @@ main.ds-container,
   gap: var(--space-1);
 }
 
-/* Every frame is the same box whatever it holds, so a row of three is one
-   comparison rather than three ragged columns, and every row on the page is the
-   same height.
-
-   5 / 2 is the shape a desktop shot actually has: not the capture viewport, but
-   `#storybook-root` inside it — as wide as the viewport allows and only as tall
-   as the story, which lands around 1248×470 in practice. Sizing the tile to the
-   viewport instead would letterbox a third of every desktop row away to make
-   room for height no shot uses. A mobile shot is taller than it is wide and
-   letterboxes the other way into the same box, which is the whole point: its row
-   is now the height of a desktop row instead of three times it.
-
-   It also gives the frame its final size before any pixels arrive, so nothing
-   reflows as the shots resolve one after another. */
-.vd-shot__frame {
-  aspect-ratio: 5 / 2;
-}
-
-/* Whatever is standing in the frame right now — the shot, the placeholder while
-   it arrives, or the sentence explaining that it never will — fills it, so the
-   three states are one box and the row never reflows between them. The frame
-   stays `display: block`: a grid row is auto-sized by its content, and a
-   percentage height against it resolves to the image's own, which is exactly
-   the height being normalised away. */
-.vd-shot__frame > * {
-  block-size: 100%;
-}
-
-/* The atom sizes its image to the frame's width; here the frame is what is
-   fixed and the image fits inside it. `contain`, never `cover`: this is
-   evidence, and a cropped thumbnail hides exactly the band a reviewer came to
-   look at. Nothing is being judged at this size — the modal is where the pixels
-   are read 1:1, and it still resamples nothing. */
-.vd-shot__frame .ds-thumbnail__img {
-  inline-size: 100%;
-  object-fit: contain;
-}
-
 /* The caption names the capture set, which is a label a reviewer copies out —
    so it truncates and carries the whole value on `title`, as every other
    truncating cell in this app does. */
@@ -1003,10 +971,15 @@ main.ds-container,
    the union of both sides — so a stage sized by its contents resizes the whole
    dialog on every mode change, and once a second in `blink`. Holding the frame
    still is the whole fix; the shot inside is never scaled, because a viewer for
-   one-pixel differences cannot resample the evidence to make it fit. */
+   one-pixel differences cannot resample the evidence to make it fit.
+
+   `dvh`, not `vh`: `vh` measures the viewport with the mobile URL bar retracted,
+   which is space the reader does not have while it is showing — a stage sized
+   from it pushes the scrubber and the hint off a phone, and the stage contains
+   its own overscroll, so there is little left to grab to scroll them back. */
 .vd-compare__stage {
   position: relative;
-  block-size: 60vh;
+  block-size: 60dvh;
   overflow: auto;
   overscroll-behavior: contain;
   border: 1px solid var(--color-border);
@@ -1229,14 +1202,21 @@ main.ds-container,
 
      Only from this width. Below it both rows wrap to several lines, and a
      multi-line bar pinned to the top of a phone is most of the viewport. */
+  .vd-section {
+    /* The pinned height of the tier row, written once and read by both rules
+       below — the offset the card head hangs at has to be the height the row
+       above it actually occupies, and two literals agreeing today is not the
+       same as one value. `min-block-size` floors it here; a tier row that grew
+       past this (a very long section name wrapping, a fourth control) would
+       still slide the card head under it, so keep the row to one line. */
+    --vd-section-head: var(--space-10);
+  }
+
   .vd-section__head {
     position: sticky;
     inset-block-start: 0;
     z-index: 2;
-    /* The offset the card head below is pinned at. Stated as a minimum rather
-       than measured: the row's own content is shorter than this, so the two
-       values are the same number by construction and cannot drift apart. */
-    min-block-size: var(--space-10);
+    min-block-size: var(--vd-section-head);
     padding-block-start: var(--space-2);
     background: var(--color-bg);
   }
@@ -1244,14 +1224,67 @@ main.ds-container,
   /* Opaque, and bled over the card's own padding: the card is transparent on
      the page background, so an unbacked row would have screenshots scrolling
      through it, and one inset by the padding would leave the card's border
-     showing down either side of it. */
+     showing down either side of it. The rule underneath says where the pinned
+     row ends — without it, screenshots scroll up and vanish at an invisible
+     line. */
   .vd-card__head {
     position: sticky;
-    inset-block-start: var(--space-10);
+    inset-block-start: var(--vd-section-head);
     z-index: 1;
     margin: calc(var(--space-4) * -1) calc(var(--space-4) * -1) 0;
     padding: var(--space-4) var(--space-4) var(--space-2);
+    border-block-end: 1px solid var(--color-border);
     background: var(--color-bg);
+  }
+
+  /* Two opaque bars now hang over the top of the scroll port, and the browser's
+     own scrolling knows nothing about them: Tab, Shift+Tab, find-in-page and a
+     `#vd-card-…` fragment all use a minimal scroll that parks the target
+     underneath one of them. A focus ring nobody can see is not a focus
+     indicator — WCAG 2.4.11 Focus Not Obscured, and 2.4.7 in practice. Stated
+     once, for every one of those mechanisms at once. `useReportKeys` centres
+     the card it focuses, so `j`/`k`/`n` never needed this; everything else did. */
+  html {
+    scroll-padding-block-start: calc(var(--space-10) + var(--space-12));
+  }
+
+  /* Every frame the same box, so a row of three is one comparison rather than
+     three ragged columns and every row on the page is the same height.
+
+     5 / 2 is the shape a desktop shot actually has: not the capture viewport,
+     but `#storybook-root` inside it — as wide as the viewport allows and only
+     as tall as the story, which lands around 1248×470 in practice. Sizing the
+     tile to the viewport would letterbox a third of every desktop row away to
+     make room for height no shot uses. A mobile shot letterboxes the other way
+     into the same box, which is the point: its row is the height of a desktop
+     row instead of three times it.
+
+     Only from this width, because only from this width is there a row of three
+     to make uniform. Below it the frames are already one per line, so there is
+     nothing to line up and a ratio would do nothing but shrink a phone
+     screenshot — the one place the full column width is all the reader has. */
+  .vd-shot__frame {
+    aspect-ratio: 5 / 2;
+  }
+
+  /* Whatever is standing in the frame right now — the shot, the placeholder
+     while it arrives, or the sentence explaining that it never will — fills it,
+     so the three states are one box and the row never reflows between them. The
+     frame stays `display: block`: a grid row is auto-sized by its content, and
+     a percentage height against it resolves to the image's own, which is
+     exactly the height being normalised away. */
+  .vd-shot__frame > * {
+    block-size: 100%;
+  }
+
+  /* The atom sizes its image to the frame's width; here the frame is what is
+     fixed and the image fits inside it. `contain`, never `cover`: this is
+     evidence, and a cropped thumbnail hides exactly the band a reviewer came to
+     look at. Nothing is judged at this size — the modal is where the pixels are
+     read 1:1, and it still resamples nothing. */
+  .vd-shot__frame .ds-thumbnail__img {
+    inline-size: 100%;
+    object-fit: contain;
   }
 
   /* The three shots side by side, which is the comparison the viewer is named
@@ -1273,6 +1306,6 @@ main.ds-container,
   }
 
   .vd-compare__stage {
-    block-size: 70vh;
+    block-size: 70dvh;
   }
 }

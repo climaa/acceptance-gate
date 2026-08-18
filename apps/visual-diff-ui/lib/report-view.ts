@@ -184,13 +184,26 @@ function section(
  * so a reviewer walks the report the way the library is built. A tier with
  * nothing in it is absent rather than empty.
  */
-export function buildSections(variants: readonly Variant[]): ReportSection[] {
+export function buildSections(
+  variants: readonly Variant[],
+  /**
+   * Every variant the run recorded, before any bucket filter — the denominator
+   * {@link viewportGaps} subtracts from, and the one thing here that must not be
+   * read off `variants`.
+   *
+   * The chip row filters before this is called, so a filtered view arrives with
+   * rows missing that are still part of the run. Answering "is mobile missing?"
+   * from that would let a chip the reviewer pressed turn "you hid this row" into
+   * "this shot was never taken". Defaults to `variants` for the unfiltered call.
+   */
+  corpus: readonly Variant[] = variants,
+): ReportSection[] {
   const a11y = variants.filter((variant) => variant.bucket === 'a11y');
   const pixels = variants.filter((variant) => variant.bucket !== 'a11y');
 
-  // Off every variant the report holds, before the split below — a card asked
-  // "is mobile missing?" has to answer for the page, not for its own bucket.
-  const shown = shownViewports(variants);
+  // Off the whole run, before the split below — a card asked "is mobile
+  // missing?" has to answer for the report, not for its own bucket.
+  const shown = shownViewports(corpus);
 
   const tiers = TIERS.map((tier) =>
     section(
