@@ -159,11 +159,12 @@ jobs:
     if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     runs-on: ubuntu-24.04-arm
     # Same ceiling as `checks`, and for the same reason: the worst case is a cold
-    # Turbo cache paying for @gate/blog#build and @gate/visual-diff-ui#build before a
-    # single scenario starts, which is every Dependabot run by design. Not visual-diff's 30 — most of that budget
-    # is the container image pull this job deliberately does not do. Must stay
-    # strictly ABOVE playwright.config.ts's globalTimeout (15m, set by #226), or a
-    # wedged run is killed by the job before it can flush its report.
+    # Turbo cache paying for @gate/blog#build and @gate/visual-diff-ui#build before
+    # a single scenario starts, which is every Dependabot run by design. Not
+    # visual-diff's 30 — most of that budget is the container image pull this job
+    # deliberately does not do. Must stay strictly ABOVE playwright.config.ts's
+    # globalTimeout (15m, set by #226), or a wedged run is killed by the job
+    # before it can flush its report.
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
@@ -204,11 +205,11 @@ jobs:
       - run: pnpm --filter @gate/e2e exec playwright install --with-deps chromium
       # `turbo run e2e`, not `pnpm --filter @gate/e2e test:e2e`: the task dependsOn
       # @gate/blog#build and @gate/visual-diff-ui#build, so what the suite boots is
-      # what the build produced rather than whatever .next was lying around. Same convention as every other job here
-      # — build what you need yourself, hit the shared remote cache if `build` already
-      # primed it. CI=true is set by Actions, which is what turns on the config's
-      # retries, failOnFlakyTests, forbidOnly and list reporter (#226) and disables
-      # reuseExistingServer.
+      # what the build produced rather than whatever .next was lying around. Same
+      # convention as every other job here — build what you need yourself, hit the
+      # shared remote cache if `build` already primed it. CI=true is set by
+      # Actions, which is what turns on the config's retries, failOnFlakyTests,
+      # forbidOnly and list reporter (#226) and disables reuseExistingServer.
       - run: pnpm turbo run e2e
       # always(), not failure(): failure() would already cover the flake case, since
       # failOnFlakyTests reds a run that passed only on a retry and the failed

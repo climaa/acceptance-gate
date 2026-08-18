@@ -8,7 +8,7 @@ import { CurrentJobProvider } from '../components/CurrentJob';
 import { RUNNING_REFUSAL, RunPanel } from '../components/RunPanel';
 import type { ReportListEntry } from '../lib/data';
 import type { HistoryRecord } from '../lib/jobs';
-import { JOB_RUNNING as REFUSED_BY_SERVER } from '../lib/refusals';
+import { JOB_RUNNING } from '../lib/refusals';
 import { reviewStorageKey } from '../lib/review-state';
 import { refreshCalls, setSearchParams } from './stubs/next-navigation';
 
@@ -43,8 +43,6 @@ const RUNNING: HistoryRecord = {
   exitCode: null,
   reportId: null,
 };
-
-const JOB_RUNNING = 'a job is already running';
 
 interface ApiStub {
   /** What `GET /api/env` says this runner is. */
@@ -319,7 +317,7 @@ describe('starting a job', () => {
   // so the sentence is spelled twice. This is the drift under a test rather
   // than under a convention.
   it('spells that sentence the way lib/refusals.ts does', () => {
-    expect(RUNNING_REFUSAL).toBe(REFUSED_BY_SERVER);
+    expect(RUNNING_REFUSAL).toBe(JOB_RUNNING);
   });
 });
 

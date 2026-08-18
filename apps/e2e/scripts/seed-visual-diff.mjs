@@ -44,7 +44,7 @@ const FIXTURES = resolve(workspace, '..', 'visual-diff-ui', 'fixtures');
 const OVERLAY = join(workspace, 'seed', 'visual-diff');
 
 /**
- * The four labels apps/e2e/steps/visual-diff-console.steps.ts pins as
+ * The five labels apps/e2e/steps/visual-diff-console.steps.ts pins as
  * `SEEDED_SETS`, restated rather than imported: this is a `.mjs` script and
  * that is a TypeScript module compiled by Playwright's own loader. A drift
  * between the two lists is visible immediately — the console scenarios assert

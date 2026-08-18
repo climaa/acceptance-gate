@@ -27,10 +27,6 @@ export class ConsolePage {
   readonly liveLog: Locator;
   readonly historyRows: Locator;
   readonly refusalAlert: Locator;
-  readonly acceptGateNote: Locator;
-  readonly acceptHostAlert: Locator;
-  readonly acceptDockerCommand: Locator;
-  readonly copyCommandButton: Locator;
   readonly sampleBadge: Locator;
   readonly sampleModeNote: Locator;
   readonly sampleReportLink: Locator;
@@ -55,11 +51,6 @@ export class ConsolePage {
     this.liveLog = page.getByTestId('log-tail');
     this.historyRows = page.getByRole('table', { name: 'History' }).getByRole('row');
     this.refusalAlert = page.getByRole('alert');
-    this.acceptGateNote = page.getByRole('note', { name: 'accept gate' });
-    this.acceptHostAlert = page.getByRole('alert');
-    // Command text is a code block, not interactive — testid, like log-tail.
-    this.acceptDockerCommand = page.getByTestId('accept-docker-command');
-    this.copyCommandButton = page.getByRole('button', { name: 'copy command' });
     this.sampleBadge = page.getByRole('status', { name: 'sample data' });
     this.sampleModeNote = page.getByRole('note', { name: 'sample mode' });
     this.sampleReportLink = page.getByRole('link', { name: /__/ }).first();

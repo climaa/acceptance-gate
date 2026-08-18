@@ -10,10 +10,6 @@ import { PostPage } from '../pages/post';
  *  value: playwright-bdd steps take fixtures, not each other's results. */
 interface ScenarioState {
   articleTitle?: string;
-  /** How many variants of a report this browser had already marked reviewed
-   *  when the scenario started. Review marks are per browser context (a #275
-   *  contract), so this is the only place a "before" reading can live. */
-  reviewedBefore?: number;
 }
 
 /** Page objects reach the steps as fixtures, never as `new` inside a step: two steps

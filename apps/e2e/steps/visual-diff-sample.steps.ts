@@ -23,8 +23,8 @@ Then('the sample badge is visible', async ({ console: consolePage }) => {
 
 Then(
   'starting a job is disabled with an explanation',
-  async ({ console: consolePage, page }) => {
+  async ({ console: consolePage }) => {
     await expect(consolePage.startButton).toBeDisabled();
-    await expect(page.getByRole('note', { name: 'sample mode' })).toContainText(/no CLI/);
+    await expect(consolePage.sampleModeNote).toContainText(/no CLI/);
   },
 );

@@ -2,9 +2,9 @@
 
 The acceptance suite: Gherkin `.feature` files compiled to Playwright specs by
 [playwright-bdd](https://vitalets.github.io/playwright-bdd/), run against the **built**
-blog and the **built** visual-diff console. It sits at the top of the testing pyramid — a
-handful of user journeys, never a second home for what a unit test can catch. Adding a scenario for something a unit test
-could assert is a review finding.
+blog and the **built** visual-diff console. It sits at the top of the testing pyramid —
+a handful of user journeys, never a second home for what a unit test can catch. Adding
+a scenario for something a unit test could assert is a review finding.
 
 ## `.feature` files are product requirements
 

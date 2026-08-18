@@ -42,15 +42,10 @@ const HELD_SET = {
 
 /** Every set the worlds hold, newest first — the order `sets.json` is written
  *  in and the console shows. */
-export const SEEDED_SETS = [
-  BASELINE_SET,
-  SPARE_SET,
-  DIRTY_SET,
-  UNHELD_SET,
-  HELD_SET,
-] as const;
+const SEEDED_SETS = [BASELINE_SET, SPARE_SET, DIRTY_SET, UNHELD_SET, HELD_SET] as const;
 
-const [COMPARE_A, COMPARE_B] = [BASELINE_SET.label, DIRTY_SET.label];
+const COMPARE_A = BASELINE_SET.label;
+const COMPARE_B = DIRTY_SET.label;
 
 /** The one-job-at-a-time lock, as `apps/visual-diff-ui/lib/jobs.ts` publishes
  *  it: one file under the data directory, whose `pid` is the whole staleness
@@ -227,9 +222,10 @@ Then(
   'the history lists each run with its outcome, exit code and duration',
   async ({ console: consolePage }) => {
     // Status vocabulary verbatim from the CLI — the contract's history row.
-    await expect(consolePage.historyRow(/succeeded \(diffs\)/)).toBeVisible();
-    const row = consolePage.historyRow(/succeeded \(diffs\)/).first();
-    await expect(row).toContainText(/exit 1|\b1\b/);
-    await expect(row).toContainText(/\d+m \d+s|\d+s/);
+    const withDiffs = consolePage.historyRow(/succeeded \(diffs\)/);
+
+    await expect(withDiffs).toBeVisible();
+    await expect(withDiffs.first()).toContainText(/exit 1|\b1\b/);
+    await expect(withDiffs.first()).toContainText(/\d+m \d+s|\d+s/);
   },
 );

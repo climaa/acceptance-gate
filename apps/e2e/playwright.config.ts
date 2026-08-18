@@ -43,19 +43,28 @@ const baseURL = process.env.E2E_BASE_URL ?? `http://localhost:${PORT}`;
  */
 const PINNED_IMAGE = 'mcr.microsoft.com/playwright:v1.62.1-noble';
 
-/** How each world's tree is built before its server boots. Seeding is the
- *  server's job, never a test's — a scenario that seeds is a scenario every
- *  other scenario has to run after. */
-const SEED_FLAGS: Record<VdWorld, readonly string[]> = {
-  seeded: [],
-  sample: ['--empty'],
-  mutating: ['--mutating'],
-};
+interface World {
+  /** Handed to `scripts/seed-visual-diff.mjs` after the target directory. */
+  seedFlags: readonly string[];
+  /** Whatever the server needs beyond `VISUAL_DIFF_DATA_DIR`, which all three get. */
+  env: Record<string, string>;
+}
 
-const WORLD_ENV: Record<VdWorld, Record<string, string>> = {
-  seeded: {},
-  sample: {},
-  mutating: { VISUAL_DIFF_FAKE_HOST_FINGERPRINT: PINNED_IMAGE },
+/**
+ * What makes each world itself: how its tree is seeded, and what its server is
+ * told. One entry per world rather than one table per field, so a world is read
+ * in one place.
+ *
+ * Seeding is the server's job, never a test's — a scenario that seeds is a
+ * scenario every other scenario has to run after.
+ */
+const WORLDS: Record<VdWorld, World> = {
+  seeded: { seedFlags: [], env: {} },
+  sample: { seedFlags: ['--empty'], env: {} },
+  mutating: {
+    seedFlags: ['--mutating'],
+    env: { VISUAL_DIFF_FAKE_HOST_FINGERPRINT: PINNED_IMAGE },
+  },
 };
 
 /**
@@ -72,15 +81,17 @@ const WORLD_ENV: Record<VdWorld, Record<string, string>> = {
  * order-independent of the last run.
  */
 function visualDiffServer(world: VdWorld) {
+  const { seedFlags, env } = WORLDS[world];
   const url = VD_HOSTS[world];
   const port = new URL(url).port;
-  const seed = ['scripts/seed-visual-diff.mjs', vdWorldDir(world), ...SEED_FLAGS[world]];
+  const dataDir = vdWorldDir(world);
+  const seed = ['scripts/seed-visual-diff.mjs', dataDir, ...seedFlags];
 
   return {
     command: `node ${seed.join(' ')} && pnpm --filter @gate/visual-diff-ui exec next start --port ${port}`,
     url,
-    env: { VISUAL_DIFF_DATA_DIR: vdWorldDir(world), ...WORLD_ENV[world] },
-    reuseExistingServer: world === 'mutating' ? false : !isCI,
+    env: { VISUAL_DIFF_DATA_DIR: dataDir, ...env },
+    reuseExistingServer: world !== 'mutating' && !isCI,
     timeout: 120_000,
   };
 }
