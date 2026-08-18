@@ -2,6 +2,7 @@ import { test as base } from 'playwright-bdd';
 
 import { BlogIndexPage } from '../pages/blog-index';
 import { Chrome } from '../pages/chrome';
+import { ConsolePage } from '../pages/console';
 import { PostPage } from '../pages/post';
 
 /** What one scenario's steps hand each other — e.g. the title read off the index
@@ -9,6 +10,10 @@ import { PostPage } from '../pages/post';
  *  value: playwright-bdd steps take fixtures, not each other's results. */
 interface ScenarioState {
   articleTitle?: string;
+  /** How many variants of a report this browser had already marked reviewed
+   *  when the scenario started. Review marks are per browser context (a #275
+   *  contract), so this is the only place a "before" reading can live. */
+  reviewedBefore?: number;
 }
 
 /** Page objects reach the steps as fixtures, never as `new` inside a step: two steps
@@ -22,6 +27,7 @@ export const test = base.extend<{
   blogIndex: BlogIndexPage;
   post: PostPage;
   chrome: Chrome;
+  console: ConsolePage;
   scenarioState: ScenarioState;
 }>({
   blogIndex: async ({ page }, use) => {
@@ -32,6 +38,9 @@ export const test = base.extend<{
   },
   chrome: async ({ page }, use) => {
     await use(new Chrome(page));
+  },
+  console: async ({ page }, use) => {
+    await use(new ConsolePage(page));
   },
   scenarioState: async ({}, use) => {
     await use({});

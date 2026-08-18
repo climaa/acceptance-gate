@@ -1,6 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
 import { defineBddConfig } from 'playwright-bdd';
 
+import { VD_HOSTS, type VdWorld, vdWorldDir } from './pages/visual-diff-hosts';
+
 // Generate Playwright specs from Gherkin .feature files + step definitions.
 // The returned path is where `bddgen` writes the generated specs.
 const testDir = defineBddConfig({
@@ -27,6 +29,61 @@ if (isCI && process.env.E2E_BASE_URL) {
 }
 
 const baseURL = process.env.E2E_BASE_URL ?? `http://localhost:${PORT}`;
+
+/**
+ * The pinned capture container, transcribed from
+ * `packages/visual-diff/src/policy.mjs`'s `HOST.image` — the same value the
+ * `@playwright/test` pin above the README's version table is bumped with.
+ *
+ * The mutating world's server declares it, which is the whole D3 seam: the app
+ * reads it server-side and reports it from `GET /api/env`, so a scenario drives
+ * the accept gate's decision from one variable and the client cannot disagree
+ * with the server about what host it is on. Inert for every scenario except the
+ * matched-host accept (#285).
+ */
+const PINNED_IMAGE = 'mcr.microsoft.com/playwright:v1.62.1-noble';
+
+/** How each world's tree is built before its server boots. Seeding is the
+ *  server's job, never a test's — a scenario that seeds is a scenario every
+ *  other scenario has to run after. */
+const SEED_FLAGS: Record<VdWorld, readonly string[]> = {
+  seeded: [],
+  sample: ['--empty'],
+  mutating: ['--mutating'],
+};
+
+const WORLD_ENV: Record<VdWorld, Record<string, string>> = {
+  seeded: {},
+  sample: {},
+  mutating: { VISUAL_DIFF_FAKE_HOST_FINGERPRINT: PINNED_IMAGE },
+};
+
+/**
+ * One visual-diff world: seed its tree, then boot the built console on it.
+ *
+ * The port comes out of `VD_HOSTS` rather than sitting beside it — the blog's
+ * one-constant rule, so a server and the tests aimed at it cannot drift apart.
+ * `VISUAL_DIFF_DATA_DIR` is absolute because `next start` runs with the app's
+ * own workspace as its working directory, and a relative value would resolve
+ * there, find nothing, and be reported as sample mode rather than as an error.
+ *
+ * The mutating world never reuses a running server: its tree is the one a
+ * previous run wrecked, and re-seeding it is exactly what makes its scenarios
+ * order-independent of the last run.
+ */
+function visualDiffServer(world: VdWorld) {
+  const url = VD_HOSTS[world];
+  const port = new URL(url).port;
+  const seed = ['scripts/seed-visual-diff.mjs', vdWorldDir(world), ...SEED_FLAGS[world]];
+
+  return {
+    command: `node ${seed.join(' ')} && pnpm --filter @gate/visual-diff-ui exec next start --port ${port}`,
+    url,
+    env: { VISUAL_DIFF_DATA_DIR: vdWorldDir(world), ...WORLD_ENV[world] },
+    reuseExistingServer: world === 'mutating' ? false : !isCI,
+    timeout: 120_000,
+  };
+}
 
 export default defineConfig({
   testDir,
@@ -64,20 +121,46 @@ export default defineConfig({
     // Trace the actual failing attempt, not only a retried run.
     trace: 'retain-on-failure',
   },
-  // Two projects select on tags: @desktop → desktop only, @mobile → mobile only,
-  // untagged → both. Pixel 5 is Android Chrome, so both projects run on the one
-  // Chromium install.
+  // Three projects select on tags: @desktop → desktop only, @mobile → mobile
+  // only, untagged → both. Pixel 5 is Android Chrome, so both share the one
+  // Chromium install. `@mutating` is a world, not a form factor: those
+  // scenarios wreck a server's data directory, so they leave both base projects
+  // and run alone in the third.
   projects: [
-    { name: 'desktop', use: { ...devices['Desktop Chrome'] }, grepInvert: /@mobile/ },
-    { name: 'mobile', use: { ...devices['Pixel 5'] }, grepInvert: /@desktop/ },
+    {
+      name: 'desktop',
+      use: { ...devices['Desktop Chrome'] },
+      grepInvert: /@mobile|@mutating/,
+    },
+    {
+      name: 'mobile',
+      use: { ...devices['Pixel 5'] },
+      grepInvert: /@desktop|@mutating/,
+    },
+    {
+      name: 'mutating',
+      use: { ...devices['Desktop Chrome'] },
+      grep: /@mutating/,
+      // One worker and no intra-file parallelism: these scenarios share one
+      // data directory and one job lock, so they run one after another in the
+      // order the .feature declares them.
+      workers: 1,
+      fullyParallel: false,
+    },
   ],
-  // Boots the BUILT blog — production behavior (draft filtering, prerendered
-  // routes), not a dev server's. `turbo run e2e` builds it first via the task
-  // dependency in the root turbo.json.
-  webServer: {
-    command: `pnpm --filter @gate/blog exec next start --port ${PORT}`,
-    url: baseURL,
-    reuseExistingServer: !isCI,
-    timeout: 120_000,
-  },
+  // Four servers, all BUILT — production behavior (draft filtering, prerendered
+  // routes, the real cache-tag invalidation), not a dev server's. `turbo run
+  // e2e` builds both apps first, via the task dependencies in the root
+  // turbo.json.
+  webServer: [
+    {
+      command: `pnpm --filter @gate/blog exec next start --port ${PORT}`,
+      url: baseURL,
+      reuseExistingServer: !isCI,
+      timeout: 120_000,
+    },
+    visualDiffServer('seeded'),
+    visualDiffServer('sample'),
+    visualDiffServer('mutating'),
+  ],
 });

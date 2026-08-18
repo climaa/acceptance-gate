@@ -271,7 +271,7 @@ export function PruneButton({ keep, labels }: PruneButtonProps) {
           {refusals.length > 0 && <Refusals sentences={refusals} />}
 
           <ConfirmActions
-            confirm={`remove ${doomed.length} ${doomed.length === 1 ? 'set' : 'sets'}`}
+            confirm={`prune ${doomed.length} ${doomed.length === 1 ? 'set' : 'sets'}`}
             onConfirm={() => void confirm()}
             onCancel={close}
             busy={busy}

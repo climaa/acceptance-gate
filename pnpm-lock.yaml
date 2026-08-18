@@ -114,6 +114,9 @@ importers:
       '@gate/tsconfig':
         specifier: workspace:*
         version: link:../../packages/tsconfig
+      '@gate/visual-diff':
+        specifier: workspace:*
+        version: link:../../packages/visual-diff
       '@playwright/test':
         specifier: 1.62.1
         version: 1.62.1

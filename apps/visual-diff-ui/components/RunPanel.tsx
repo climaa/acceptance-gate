@@ -29,9 +29,11 @@ import { CURRENT_JOB_ANCHOR, useCurrentJob } from './CurrentJob';
  * Four modes, and exactly the four the runner has. Two decisions live here:
  *
  *  - D1, one job at a time. While the lock is held there is no start button at
- *    all, only a link to the region that shows what is running. A second start
- *    would be refused anyway (`POST /api/jobs` answers 409); offering it would
- *    be offering a click whose only outcome is a refusal.
+ *    all — in its place stands the refusal the server would have answered a
+ *    second start with, announced, with a link to the region that shows what is
+ *    running. A second start would be refused anyway (`POST /api/jobs` answers
+ *    409), so offering the click would be offering a refusal; saying nothing at
+ *    all would be a console that has silently stopped working.
  *  - D3, accept is container-bound. The CLI's `accept` has no host guard — run
  *    bare-metal it silently writes host-rendered baselines and stamps them as
  *    pinned-container output. This panel is that guard: off the pinned image the
@@ -66,6 +68,17 @@ const SAMPLE_NOTE =
   'sample mode — this instance is serving the committed sample run, and there is no CLI behind a static deployment to start a job with';
 
 const NO_REPORT = 'No report to accept from — compare two capture sets first.';
+
+/**
+ * D1's refusal, in the words the server would have used.
+ *
+ * Spelled here rather than imported: `lib/refusals.ts` — where this sentence
+ * belongs and where `POST /api/jobs` reads it from — reaches the filesystem
+ * through `lib/jobs.ts`, and this is a client component. `__tests__/run-panel`
+ * pins the two against each other, so the duplication is under a test rather
+ * than under a convention.
+ */
+export const RUNNING_REFUSAL = 'a job is already running';
 
 const UNREACHABLE = 'the console could not reach the job API — is the server still up?';
 
@@ -578,10 +591,17 @@ function StartAction({
   const { running } = useCurrentJob();
 
   if (running) {
+    // Announced, not merely absent: a control that vanishes without a word is a
+    // console that has silently stopped working, and this is the same refusal
+    // `POST /api/jobs` would answer a second start with. `role="alert"` is what
+    // the acceptance contract pins as D1's surface, here and on the server.
     return (
-      <a className="vd-run__running" href={`#${CURRENT_JOB_ANCHOR}`}>
-        a job is already running — follow it below
-      </a>
+      <div role="alert" className="vd-run__running">
+        {RUNNING_REFUSAL} —{' '}
+        <a className="vd-run__anchor" href={`#${CURRENT_JOB_ANCHOR}`}>
+          follow the running job below
+        </a>
+      </div>
     );
   }
 

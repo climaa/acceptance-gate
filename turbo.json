@@ -25,7 +25,7 @@
       "dependsOn": ["^build"]
     },
     "e2e": {
-      "dependsOn": ["@gate/blog#build"],
+      "dependsOn": ["@gate/blog#build", "@gate/visual-diff-ui#build"],
       "cache": false
     },
     "health": {
