@@ -210,15 +210,15 @@ main {
 }
 
 .vd-outcome--success {
-  color: var(--color-success-fg);
+  color: var(--color-success-text);
 }
 
 .vd-outcome--warning {
-  color: var(--color-warning-fg);
+  color: var(--color-warning-text);
 }
 
 .vd-outcome--danger {
-  color: var(--color-danger-fg);
+  color: var(--color-danger-text);
 }
 
 .vd-outcome--muted {
@@ -419,7 +419,7 @@ main {
 
 .vd-accept__copied {
   font-size: var(--text-xs);
-  color: var(--color-success-fg);
+  color: var(--color-success-text);
 }
 
 .vd-accept__pending,
@@ -634,7 +634,7 @@ main {
 .vd-section__note {
   margin: 0;
   font-size: var(--text-sm);
-  color: var(--color-warning-fg);
+  color: var(--color-warning-text);
 }
 
 /* ---- The story card ----------------------------------------------------- */
@@ -679,7 +679,7 @@ main {
 .vd-card__verdict {
   margin: 0;
   font-size: var(--text-sm);
-  color: var(--color-danger-fg);
+  color: var(--color-danger-text);
 }
 
 /* ---- The variant row ---------------------------------------------------- */
@@ -706,7 +706,7 @@ main {
 .vd-variant__error {
   margin: 0;
   font-size: var(--text-sm);
-  color: var(--color-danger-fg);
+  color: var(--color-danger-text);
   overflow-wrap: anywhere;
 }
 
