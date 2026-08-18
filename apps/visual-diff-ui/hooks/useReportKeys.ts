@@ -13,8 +13,10 @@ import { cardElementId, type ReportCard } from '@/lib/report-view';
  * reviewer in the same place — which a second, parallel notion of "current card"
  * could not promise.
  *
- * `b` and `esc` are deliberately unbound: they belong to the comparison modal
- * (#283), and a handler here would swallow the keys before that seam exists.
+ * `b` opens the comparison modal on the focused card; `esc` closes it, which is
+ * `Dialog`'s own. While that modal is open every key here is inert — the dialog
+ * traps focus, and a `j` that moved focus to a card behind it would take the
+ * reviewer out of a surface they never left.
  */
 
 /** Keys typed into a control are that control's, never the report's. */
@@ -55,6 +57,10 @@ export interface ReportKeysOptions {
   cards: readonly ReportCard[];
   isReviewed: (card: ReportCard) => boolean;
   onToggle: (card: ReportCard, reviewed: boolean) => void;
+  /** `b`: opens the comparison on the card under the cursor. */
+  onCompare: (card: ReportCard) => void;
+  /** False while the comparison modal owns the keyboard. */
+  enabled: boolean;
 }
 
 export interface ReportKeys {
@@ -85,7 +91,9 @@ export function useReportKeys(options: ReportKeysOptions): ReportKeys {
       if (event.metaKey || event.ctrlKey || event.altKey) return;
       if (isTyping(event.target)) return;
 
-      const { cards, isReviewed, onToggle } = latest.current;
+      const { cards, isReviewed, onToggle, onCompare, enabled } = latest.current;
+      if (!enabled) return;
+
       const index = focusedIndex(cards);
 
       switch (event.key) {
@@ -98,6 +106,15 @@ export function useReportKeys(options: ReportKeysOptions): ReportKeys {
         case 'n':
           nextUnreviewed();
           break;
+        case 'b': {
+          // With no card under the cursor there is nothing to compare — the
+          // key reaches whatever is next, exactly as an unbound one does.
+          const card = cards[index];
+          if (!card) return;
+
+          onCompare(card);
+          break;
+        }
         case ' ': {
           // Space over a button, a link or a `summary` presses it; and with no
           // card under the cursor there is nothing to mark. Both leave the key

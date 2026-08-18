@@ -1,5 +1,6 @@
 import { useId } from 'react';
 import { BucketChip, Stack } from '@gate/ui';
+import type { ComparisonMode } from '@/lib/comparison';
 import {
   cardElementId,
   cardReviewed,
@@ -7,6 +8,7 @@ import {
   type ReportCard,
   type ReportSides,
 } from '@/lib/report-view';
+import type { Variant } from '@/lib/summary';
 import { BUCKET_TONES } from './BucketChipRow';
 import { TriStateCheckbox } from './TriStateCheckbox';
 import { VariantRow } from './VariantRow';
@@ -30,14 +32,23 @@ import { VariantRow } from './VariantRow';
 export const A11Y_VERDICT = 'reviewing does not clear this — fixing does';
 
 export interface StoryCardProps {
+  reportId: string;
   card: ReportCard;
   sides: ReportSides;
   /** Every variant key marked reviewed in this report, in this browser. */
   reviewed: ReadonlySet<string>;
   onToggle: (card: ReportCard, reviewed: boolean) => void;
+  onCompare: (variant: Variant, mode: ComparisonMode) => void;
 }
 
-export function StoryCard({ card, sides, reviewed, onToggle }: StoryCardProps) {
+export function StoryCard({
+  reportId,
+  card,
+  sides,
+  reviewed,
+  onToggle,
+  onCompare,
+}: StoryCardProps) {
   const titleId = useId();
   const all = cardReviewed(card, reviewed);
   const some = card.variants.some((variant) => reviewed.has(variant.key));
@@ -85,7 +96,13 @@ export function StoryCard({ card, sides, reviewed, onToggle }: StoryCardProps) {
 
       <Stack gap={3}>
         {card.variants.map((variant) => (
-          <VariantRow key={variant.key} variant={variant} sides={sides} />
+          <VariantRow
+            key={variant.key}
+            reportId={reportId}
+            variant={variant}
+            sides={sides}
+            onCompare={onCompare}
+          />
         ))}
       </Stack>
 

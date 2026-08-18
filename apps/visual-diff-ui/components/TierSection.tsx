@@ -1,11 +1,13 @@
 import { useId } from 'react';
 import { Stack } from '@gate/ui';
+import type { ComparisonMode } from '@/lib/comparison';
 import {
   countReviewed,
   type ReportCard,
   type ReportSection,
   type ReportSides,
 } from '@/lib/report-view';
+import type { Variant } from '@/lib/summary';
 import { StoryCard } from './StoryCard';
 import { TriStateCheckbox } from './TriStateCheckbox';
 
@@ -24,6 +26,7 @@ import { TriStateCheckbox } from './TriStateCheckbox';
  */
 
 export interface TierSectionProps {
+  reportId: string;
   section: ReportSection;
   /** The cards that survived the filters — the section still reports on all of
    *  its own variants above them. */
@@ -37,9 +40,11 @@ export interface TierSectionProps {
   onCollapse: (collapsed: boolean) => void;
   onToggleSection: (section: ReportSection, reviewed: boolean) => void;
   onToggleCard: (card: ReportCard, reviewed: boolean) => void;
+  onCompare: (variant: Variant, mode: ComparisonMode) => void;
 }
 
 export function TierSection({
+  reportId,
   section,
   cards,
   sides,
@@ -49,6 +54,7 @@ export function TierSection({
   onCollapse,
   onToggleSection,
   onToggleCard,
+  onCompare,
 }: TierSectionProps) {
   const bodyId = useId();
 
@@ -99,10 +105,12 @@ export function TierSection({
               {cards.map((card) => (
                 <StoryCard
                   key={card.key}
+                  reportId={reportId}
                   card={card}
                   sides={sides}
                   reviewed={reviewed}
                   onToggle={onToggleCard}
+                  onCompare={onCompare}
                 />
               ))}
             </Stack>
