@@ -115,11 +115,18 @@ describe('a pixel card', () => {
     expect(within(card()).getByText('worst 12,216 px')).toBeTruthy();
   });
 
-  // The `colorScheme:` colon must survive verbatim. Percent-encoded, Storybook
-  // accepts the URL and silently ignores the global, so every dark link opens a
-  // light story — a failure that looks exactly like a passing one. `?path=` and
-  // not `/iframe.html`: the bare preview document has no sidebar and no toolbar,
-  // and a reviewer following one of these has come to look around.
+  // Three things this asserts, each a way the link has already been wrong:
+  //
+  //  - `?path=`, not `/iframe.html`: the bare preview document has no sidebar
+  //    and no toolbar, and a reviewer following one of these came to look around.
+  //  - `/index.html`, not the bare origin. `apps/storybook/vercel.json`
+  //    redirects `/` to the Welcome page, and Vercel resolves that by keeping
+  //    the destination's `path` and appending the request's — so a link through
+  //    `/` opens Welcome instead of the story. Do not "simplify" this away.
+  //  - the `colorScheme:` colon verbatim. Percent-encoded, Storybook accepts the
+  //    URL and silently ignores the global, so every dark link opens a light
+  //    story — a failure that looks exactly like a passing one. (That same
+  //    redirect encodes the colon on the way, which is how it broke both at once.)
   it('deep-links the story into both Storybooks with the globals colon literal', () => {
     vi.stubEnv('NODE_ENV', 'development');
     renderCard(
@@ -136,10 +143,10 @@ describe('a pixel card', () => {
     const published = within(card()).getByRole('link', { name: 'baseline Storybook' });
 
     expect(dev.getAttribute('href')).toBe(
-      'http://localhost:6006/?path=/story/atoms-badge--tones&globals=colorScheme:dark',
+      'http://localhost:6006/index.html?path=/story/atoms-badge--tones&globals=colorScheme:dark',
     );
     expect(published.getAttribute('href')).toBe(
-      'https://acceptance-gate-storybook.vercel.app/?path=/story/atoms-badge--tones&globals=colorScheme:dark',
+      'https://acceptance-gate-storybook.vercel.app/index.html?path=/story/atoms-badge--tones&globals=colorScheme:dark',
     );
   });
 

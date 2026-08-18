@@ -268,9 +268,18 @@ export const showsDevStorybook = (mode = process.env.NODE_ENV) => mode === 'deve
 /**
  * A deep link to one story, in one theme.
  *
- * The manager URL, not `iframe.html`: the bare preview document renders the
- * story with no sidebar, no toolbar and no way to reach the one beside it, and a
+ * The manager, not `iframe.html`: the bare preview document renders the story
+ * with no sidebar, no toolbar and no way to reach the one beside it, and a
  * reviewer following this link has come to look around.
+ *
+ * `/index.html` explicitly, never the bare origin. The published Storybook
+ * redirects `/` to the Welcome page (`apps/storybook/vercel.json`), and Vercel
+ * resolves that redirect by taking the destination's own query and appending
+ * the request's — so `/?path=/story/x` arrives as
+ * `path=/docs/docs-welcome--docs`, with the story silently replaced by the front
+ * door and the `colorScheme` colon percent-encoded on the way. Both halves of
+ * that are the failure below. `/index.html` matches no redirect and is served
+ * by the dev server too, so one shape works against both Storybooks.
  *
  * The `colorScheme:` colon stays literal. Percent-encoding it produces a URL
  * Storybook accepts and silently ignores, which renders every dark link light —
@@ -278,7 +287,7 @@ export const showsDevStorybook = (mode = process.env.NODE_ENV) => mode === 'deve
  * The id is encoded; the globals expression is not.
  */
 export function storybookLink(base: string, storyId: string, theme: string): string {
-  return `${base}/?path=/story/${encodeURIComponent(storyId)}&globals=colorScheme:${theme}`;
+  return `${base}/index.html?path=/story/${encodeURIComponent(storyId)}&globals=colorScheme:${theme}`;
 }
 
 /** axe's own rule documentation, keyed by rule id. The version is the one
