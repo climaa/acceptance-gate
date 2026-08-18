@@ -50,7 +50,13 @@ export class ConsolePage {
     // so it carries a testid instead.
     this.liveLog = page.getByTestId('log-tail');
     this.historyRows = page.getByRole('table', { name: 'History' }).getByRole('row');
-    this.refusalAlert = page.getByRole('alert');
+    // Scoped to `main`, because Next's app router keeps a permanent
+    // `<div role="alert" id="__next-route-announcer__">` outside the page's own
+    // tree for route changes: a page-wide `role=alert` lookup resolves to two
+    // elements the moment the console refuses anything, and every refusal this
+    // suite reads is inside the page's own landmark. The confirm dialogs count
+    // as inside — `Dialog` renders in place rather than through a portal.
+    this.refusalAlert = page.getByRole('main').getByRole('alert');
     this.sampleBadge = page.getByRole('status', { name: 'sample data' });
     this.sampleModeNote = page.getByRole('note', { name: 'sample mode' });
     this.sampleReportLink = page.getByRole('link', { name: /__/ }).first();
@@ -105,5 +111,23 @@ export class ConsolePage {
 
   historyRow(outcome: RegExp): Locator {
     return this.historyRows.filter({ hasText: outcome });
+  }
+
+  /**
+   * One cell of a history row, addressed by the column it sits under.
+   *
+   * A row's own text is its cells run together with no separator — a compare
+   * that exited 1 after 1m 35s reads as `…09:41:02Z11m 35sview`, where the exit
+   * code has a digit on one side and a timestamp on the other and so has no
+   * word boundary left to match on. Asserting a single column against that
+   * string is a coin toss, so per-column assertions address the cell.
+   *
+   * `data-label` is the column's own header, set by `Table` for the sub-768px
+   * card reflow (it is what the cell's `::before` prints) — a rendered property
+   * of the column, not a hook added for this suite. The generated content is
+   * not part of `textContent`, so it never lands in the assertion.
+   */
+  historyCell(row: Locator, column: string): Locator {
+    return row.locator(`[data-label="${column}"]`);
   }
 }

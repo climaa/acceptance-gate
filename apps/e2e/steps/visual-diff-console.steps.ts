@@ -222,10 +222,15 @@ Then(
   'the history lists each run with its outcome, exit code and duration',
   async ({ console: consolePage }) => {
     // Status vocabulary verbatim from the CLI — the contract's history row.
-    const withDiffs = consolePage.historyRow(/succeeded \(diffs\)/);
+    const withDiffs = consolePage.historyRow(/succeeded \(diffs\)/).first();
 
     await expect(withDiffs).toBeVisible();
-    await expect(withDiffs.first()).toContainText(/exit 1|\b1\b/);
-    await expect(withDiffs.first()).toContainText(/\d+m \d+s|\d+s/);
+    // Per column, not against the row's text: the cells concatenate, and an
+    // exit code of 1 next to a duration of 1m 35s has no boundary to anchor on.
+    // `succeeded (diffs)` is the CLI's word for exit 1, so that is the number.
+    await expect(consolePage.historyCell(withDiffs, 'exit')).toHaveText('1');
+    await expect(consolePage.historyCell(withDiffs, 'took')).toHaveText(
+      /^\d+m \d+s$|^\d+s$/,
+    );
   },
 );
