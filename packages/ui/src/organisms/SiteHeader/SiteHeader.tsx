@@ -29,6 +29,13 @@ export interface SiteHeaderProps {
   as?: ElementType;
   /** Id (without the leading `#`) the skip link jumps to. Defaults to `main`. */
   skipTargetId?: string;
+  /**
+   * How wide the inner row runs. `measure` caps it at `--width-container`, which
+   * is right for a page meant to be read; `full` lets it span the window, for an
+   * app whose own content does the same — a header centred above edge-to-edge
+   * content reads as a different page from the one under it.
+   */
+  container?: 'measure' | 'full';
   className?: string;
 }
 
@@ -45,13 +52,22 @@ export function SiteHeader({
   nav = [],
   as,
   skipTargetId,
+  container = 'measure',
   className,
 }: SiteHeaderProps) {
   return (
     <header className={['ds-site-header', className].filter(Boolean).join(' ')}>
       <SkipLink targetId={skipTargetId} />
 
-      <div className="ds-container ds-site-header__inner">
+      <div
+        className={[
+          'ds-container',
+          container === 'full' && 'ds-container--full',
+          'ds-site-header__inner',
+        ]
+          .filter(Boolean)
+          .join(' ')}
+      >
         <Link as={as} href={brandHref} className="ds-site-header__brand">
           {brand}
         </Link>

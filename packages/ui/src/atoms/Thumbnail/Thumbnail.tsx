@@ -45,8 +45,14 @@ interface Observed {
 export function Thumbnail({ src, alt, fallback, className }: ThumbnailProps) {
   const [observed, setObserved] = useState<Observed | null>(null);
 
-  /** What the element already knows, for the load that beat the listener. A
-   *  decoded image reports a natural width; a broken one reports zero.
+  /** What the element already knows, for the load that beat the listener.
+   *
+   *  Positive evidence only. A decoded image reports a natural width, so
+   *  `complete` with one is conclusive; `complete` *without* one is not — a
+   *  broken fetch and an SVG carrying no intrinsic size are indistinguishable
+   *  here, and calling the second broken would take an image that renders
+   *  perfectly out of the DOM (below) with nothing to put it back. Every
+   *  negative is left to `onError`, which knows the difference.
    *
    *  The observation is recorded against the `src` prop this render passed
    *  rather than the element's resolved URL — a relative `src` comes back off
@@ -55,12 +61,12 @@ export function Thumbnail({ src, alt, fallback, className }: ThumbnailProps) {
    *  ref is re-invoked on every render and a fresh object each time would be a
    *  render loop. */
   const readOnMount = (node: HTMLImageElement | null) => {
-    if (!node?.complete || src === undefined) return;
-
-    const status: Observed['status'] = node.naturalWidth > 0 ? 'loaded' : 'error';
+    if (src === undefined || !node?.complete || node.naturalWidth === 0) return;
 
     setObserved((current) =>
-      current?.src === src && current.status === status ? current : { src, status },
+      current?.src === src && current.status === 'loaded'
+        ? current
+        : { src, status: 'loaded' },
     );
   };
 

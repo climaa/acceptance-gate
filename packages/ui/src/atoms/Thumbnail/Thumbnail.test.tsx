@@ -1,4 +1,6 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { hydrateRoot } from 'react-dom/client';
+import { renderToString } from 'react-dom/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { Thumbnail } from './Thumbnail';
@@ -125,17 +127,40 @@ describe('Thumbnail', () => {
     expect(container.querySelector('.ds-thumbnail__img--pending')).toBeNull();
   });
 
-  it('falls back for a broken image that finished before React could listen', () => {
-    // `complete` is also true for a fetch that failed; a decoded image is the
-    // one that reports a natural width.
+  // `complete` with no natural width is ambiguous — a failed fetch and an SVG
+  // with no intrinsic size look identical from here. Concluding "broken" would
+  // remove an image that renders perfectly, and nothing would put it back, so
+  // the frame waits for `onError` to say so instead.
+  it('does not call an image broken merely for having no intrinsic size', () => {
     alreadyLoaded(0);
 
     const { container } = render(
       <Thumbnail src={SRC} alt="candidate" fallback={<span>not on this side</span>} />,
     );
 
-    expect(screen.getByText('not on this side')).toBeDefined();
-    expect(container.querySelector('img')).toBeNull();
+    expect(screen.queryByText('not on this side')).toBeNull();
+    expect(container.querySelector('img')).not.toBeNull();
+  });
+
+  // The path the fix actually exists for, driven end to end rather than
+  // approximated: server markup, an image the browser finished before any React
+  // ran, then hydration. On a client render React attaches `load` before it sets
+  // `src`, so the event cannot be missed there — it is hydration where the
+  // `<img>` is already in the document and already done. A `useEffect` would run
+  // too late to keep the placeholder from painting; this test is what stops one
+  // being substituted later.
+  it('reveals an image that finished before hydration', () => {
+    const host = document.createElement('div');
+    host.innerHTML = renderToString(<Thumbnail src={SRC} alt="baseline" />);
+    document.body.append(host);
+    alreadyLoaded(1);
+
+    act(() => {
+      hydrateRoot(host, <Thumbnail src={SRC} alt="baseline" />);
+    });
+
+    expect(host.querySelector('.ds-skeleton')).toBeNull();
+    expect(host.querySelector('.ds-thumbnail__img--pending')).toBeNull();
   });
 
   it('appends a caller-supplied className to the frame', () => {
