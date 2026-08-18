@@ -411,25 +411,41 @@ describe('capture on a host that is not the pinned container', () => {
     renderPanel({ image: null });
     selectTab(mode);
 
-    await waitFor(() => expect(screen.getAllByRole('alert')).toHaveLength(1));
+    await waitFor(() =>
+      expect(screen.getByRole('note', { name: 'container required' })).toBeDefined(),
+    );
     expect(startButtons(mode)).toHaveLength(0);
   });
 
   it('hands over the container command instead', async () => {
     renderPanel({ image: 'ubuntu:24.04' });
 
-    const command = await screen.findByTestId('accept-docker-command');
+    const command = await screen.findByTestId('check-docker-command');
 
     expect(command.textContent).toContain('node packages/visual-diff/src/cli.mjs check');
+    // Not the accept testid: the e2e accept scenario finds its command by that
+    // name, and two blocks answering to it would be one trap deeper.
+    expect(screen.queryByTestId('accept-docker-command')).toBeNull();
   });
 
   it('names what this runner is and what the baselines need', async () => {
     renderPanel({ image: 'ubuntu:24.04' });
 
-    const alert = await screen.findByRole('alert');
+    const note = await screen.findByRole('note', { name: 'container required' });
 
-    expect(alert.textContent).toContain('ubuntu:24.04');
-    expect(alert.textContent).toContain(HOST.image);
+    expect(note.textContent).toContain('ubuntu:24.04');
+    expect(note.textContent).toContain(HOST.image);
+  });
+
+  // Capture is the tab the panel opens on, so an alert here would be a second
+  // `role="alert"` inside the console's `main` on every page load — which is
+  // what the e2e page object's refusal lookup cannot survive.
+  it('is a note, so it does not become a second alert on the page', async () => {
+    renderPanel({ image: null });
+
+    await screen.findByRole('note', { name: 'container required' });
+
+    expect(screen.queryAllByRole('alert')).toHaveLength(0);
   });
 
   // compare moves no pixels — it reads two shot trees off disk — so the host it

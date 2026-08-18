@@ -217,7 +217,7 @@ function Fingerprints({ runner }: { runner: HostFingerprint }) {
   );
 }
 
-function CopyableCommand({ command }: { command: string }) {
+function CopyableCommand({ command, name }: { command: string; name: string }) {
   const [copied, setCopied] = useState(false);
 
   const copy = async () => {
@@ -233,7 +233,7 @@ function CopyableCommand({ command }: { command: string }) {
 
   return (
     <Stack gap={2}>
-      <div data-testid="accept-docker-command" className="vd-accept__command">
+      <div data-testid={`${name}-docker-command`} className="vd-accept__command">
         <CodeBlock language="bash">{command}</CodeBlock>
       </div>
       <Stack direction="row" gap={3} align="center" wrap>
@@ -267,7 +267,7 @@ function GateNotice({ gate }: { gate: AcceptGate }) {
           — a bare-metal accept silently writes wrong baselines and stamps them as
           container output, so there is no run button here
         </Alert>
-        <CopyableCommand command={ACCEPT_COMMAND} />
+        <CopyableCommand command={ACCEPT_COMMAND} name="accept" />
       </Stack>
     );
   }
@@ -656,12 +656,19 @@ function StartAction({
   if (!isSample && needsContainer(form.mode, runner)) {
     return (
       <Stack gap={3}>
-        <Alert>
+        {/* A note rather than an alert, unlike the accept tab's host refusal one
+            mode over. Two reasons, and they agree: this is true on arrival
+            rather than in answer to anything the reviewer did, so announcing it
+            assertively on every load is not what `role="alert"` is for — and
+            capture is the tab this panel opens on, so an alert here would be a
+            second one inside `main` on every page, which is what the console
+            page object warns a bare `role=alert` lookup cannot survive. */}
+        <Note name="container required">
           this runner is {runner?.image ?? 'not in a declared container'}, not{' '}
           {ACCEPT_IMAGE} — `check` guards its host before it takes a shot, so a{' '}
           {form.mode} started here would refuse rather than capture
-        </Alert>
-        <CopyableCommand command={CHECK_COMMAND} />
+        </Note>
+        <CopyableCommand command={CHECK_COMMAND} name="check" />
       </Stack>
     );
   }
