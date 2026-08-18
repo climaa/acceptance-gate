@@ -97,10 +97,29 @@ describe('Thumbnail', () => {
   // on a revisit, and a `load` that fired before its handler existed is a load
   // that never arrives — leaving the placeholder up for an image already in
   // hand. The element is asked, not only listened to.
+  // This also pins the identity-preserving update inside the ref: an inline ref
+  // is re-invoked on every render, so recording a fresh object each time would
+  // re-render forever and fail this test with "Too many re-renders".
   it('reveals an image that finished loading before React could listen', () => {
     alreadyLoaded(1);
 
     const { container } = render(<Thumbnail src={SRC} alt="baseline" />);
+
+    expect(container.querySelector('.ds-skeleton')).toBeNull();
+    expect(container.querySelector('.ds-thumbnail__img--pending')).toBeNull();
+  });
+
+  // A soft navigation swaps the `src` on a mounted frame, and the new image can
+  // be cached too. This is also the one test that fails if the observation is
+  // recorded against the element's resolved URL rather than the `src` prop —
+  // they never compare equal for a relative src, and the frame would sit on its
+  // placeholder forever.
+  it('reveals a cached image that arrives as a new src on a mounted frame', () => {
+    const { container, rerender } = render(<Thumbnail src={SRC} alt="baseline" />);
+    fireEvent.load(screen.getByRole('img', { name: 'baseline' }));
+    alreadyLoaded(1);
+
+    rerender(<Thumbnail src={`${SRC}#next`} alt="baseline" />);
 
     expect(container.querySelector('.ds-skeleton')).toBeNull();
     expect(container.querySelector('.ds-thumbnail__img--pending')).toBeNull();

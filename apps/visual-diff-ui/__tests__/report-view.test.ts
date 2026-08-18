@@ -1,7 +1,14 @@
 // Imported explicitly rather than relying on `globals: true` — tsconfig's
 // `**/*.ts` include means tsc typechecks this file.
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { buildSections, showsDevStorybook, viewportGaps } from '../lib/report-view';
+import {
+  buildSections,
+  showsDevStorybook,
+  storybookLink,
+  viewportGaps,
+} from '../lib/report-view';
 import type { Variant } from '../lib/summary';
 
 /**
@@ -126,6 +133,56 @@ describe('the viewports a card has no rows for', () => {
     expect(gaps).toEqual([]);
   });
 
+  // The regression: a story is a card per bucket, so one that changed at desktop
+  // and errored at mobile is two cards in the same tier. Reading only its own
+  // variants, each card announced the other's viewport as matched — while the
+  // row for it was on screen, a few hundred pixels away, under the other bucket.
+  it('says nothing about a viewport whose row is on the page under another bucket', () => {
+    const sections = buildSections([
+      cell('templates', POST),
+      cell('templates', POST, {
+        viewport: 'mobile',
+        bucket: 'errored',
+        error: 'capture timed out',
+      }),
+    ]);
+    const cards = sections.flatMap((section) => section.cards);
+
+    const gaps = cards.map((card) => viewportGaps(card));
+
+    expect(cards).toHaveLength(2);
+    expect(gaps).toEqual([[], []]);
+  });
+
+  // Same story, but the other row is in the Accessibility section rather than
+  // another bucket of the same tier — the split this one has to see across.
+  it('says nothing about a viewport whose row is in the accessibility section', () => {
+    const sections = buildSections([
+      cell('templates', POST),
+      cell('templates', POST, {
+        viewport: 'mobile',
+        bucket: 'a11y',
+        violations: [{ id: 'color-contrast', nodes: 2 }],
+      }),
+    ]);
+    const pixelCard = sections
+      .flatMap((section) => section.cards)
+      .find((c) => c.bucket === 'changed');
+
+    const gaps = viewportGaps(pixelCard!);
+
+    expect(gaps).toEqual([]);
+  });
+
+  it('names the desktop gap on a story that only has mobile rows', () => {
+    const card = cardOf(cell('templates', POST, { viewport: 'mobile' }));
+
+    const gaps = viewportGaps(card);
+
+    expect(gaps).toHaveLength(1);
+    expect(gaps[0]).toContain('no desktop rows');
+  });
+
   it('says nothing on an accessibility card, which renders no shots at all', () => {
     const card = cardOf(
       cell('atoms', PROSE, {
@@ -143,10 +200,66 @@ describe('the viewports a card has no rows for', () => {
 
 describe('the dev Storybook link', () => {
   it('is offered while someone is running the design system beside the console', () => {
-    expect(showsDevStorybook('development')).toBe(true);
+    const offered = showsDevStorybook('development');
+
+    expect(offered).toBe(true);
   });
 
   it('is withheld from a deployed console, where localhost:6006 is nothing', () => {
-    expect(showsDevStorybook('production')).toBe(false);
+    const offered = showsDevStorybook('production');
+
+    expect(offered).toBe(false);
+  });
+});
+
+describe('a Storybook deep link', () => {
+  const BASE = 'https://acceptance-gate-storybook.vercel.app';
+
+  // Asserted here rather than only through a rendered `href`, which is three
+  // layers above the string being built.
+  it('opens the manager on the story, in the theme, with the colon literal', () => {
+    const href = storybookLink(BASE, 'atoms-prose--default', 'dark');
+
+    expect(href).toBe(
+      `${BASE}/index.html?path=/story/atoms-prose--default&globals=colorScheme:dark`,
+    );
+  });
+
+  // The colon is what selects the global. Percent-encoded, Storybook accepts the
+  // URL and silently ignores it, so every dark link opens a light story.
+  it('leaves the globals colon unencoded', () => {
+    const href = storybookLink(BASE, 'atoms-prose--default', 'dark');
+
+    expect(href).toContain('globals=colorScheme:dark');
+    expect(href).not.toContain('%3A');
+  });
+
+  it('encodes a story id that carries a character a query would eat', () => {
+    const href = storybookLink(BASE, 'atoms-prose--a&b', 'light');
+
+    expect(href).toContain('path=/story/atoms-prose--a%26b');
+  });
+
+  /**
+   * The bug this guards: `apps/storybook/vercel.json` redirects `/` to the
+   * Welcome page, and Vercel resolves a redirect by keeping the destination's
+   * query and appending the request's — so a link built on the bare origin
+   * arrived with its story replaced and its colon percent-encoded. A string
+   * assertion cannot see a redirect, but the redirect is committed in this repo,
+   * so the collision can be checked statically. `apps/storybook`'s own
+   * `docs-links.test.ts` reads the same file for the same kind of reason.
+   */
+  it('targets a path the published Storybook does not redirect', () => {
+    const config = JSON.parse(
+      fs.readFileSync(
+        path.join(import.meta.dirname, '..', '..', 'storybook', 'vercel.json'),
+        'utf8',
+      ),
+    ) as { redirects?: readonly { source: string }[] };
+    const sources = (config.redirects ?? []).map((redirect) => redirect.source);
+
+    const { pathname } = new URL(storybookLink(BASE, 'atoms-prose--default', 'dark'));
+
+    expect(sources).not.toContain(pathname);
   });
 });

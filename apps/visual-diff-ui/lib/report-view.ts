@@ -72,6 +72,18 @@ export interface ReportCard {
   /** The biggest shared-area difference any of this card's variants recorded. */
   worst: number;
   variants: readonly Variant[];
+  /**
+   * Every viewport this story has a row for *anywhere in the report*, which is
+   * not the same as anywhere on this card.
+   *
+   * A story is split into a card per bucket and per section, so one that changed
+   * at desktop and errored at mobile is two cards, and one with an
+   * accessibility failure has a row in a section of its own. Each of those cards
+   * can see only its own variants — and a card that decided "mobile is missing"
+   * from that view would be saying it about evidence sitting a few hundred
+   * pixels below it. See {@link viewportGaps}.
+   */
+  viewportsShown: readonly string[];
 }
 
 /** A named `region` of the results: the accessibility section, or one tier. */
@@ -95,9 +107,30 @@ export function filterByBucket(
   return variants.filter((variant) => variant.bucket === bucket);
 }
 
+/** Which viewports each story has a row for, across the whole report — the
+ *  denominator {@link viewportGaps} subtracts from, built once above the split
+ *  into sections and buckets that would otherwise hide half of it. */
+type ShownViewports = ReadonlyMap<string, ReadonlySet<string>>;
+
+function shownViewports(variants: readonly Variant[]): ShownViewports {
+  const shown = new Map<string, Set<string>>();
+
+  for (const variant of variants) {
+    const seen = shown.get(variant.id) ?? new Set<string>();
+    seen.add(variant.viewport);
+    shown.set(variant.id, seen);
+  }
+
+  return shown;
+}
+
 /** Cards, in the order their first variant appears — which the producer already
  *  sorted worst-first, so the biggest difference in a section leads it. */
-function cardsOf(sectionKey: string, variants: readonly Variant[]): ReportCard[] {
+function cardsOf(
+  sectionKey: string,
+  variants: readonly Variant[],
+  shown: ShownViewports,
+): ReportCard[] {
   const cards = new Map<string, ReportCard & { variants: Variant[] }>();
 
   for (const variant of variants) {
@@ -118,17 +151,23 @@ function cardsOf(sectionKey: string, variants: readonly Variant[]): ReportCard[]
       bucket: variant.bucket,
       worst: variant.overlapDiffPixels,
       variants: [variant],
+      viewportsShown: [...(shown.get(variant.id) ?? [])],
     });
   }
 
   return [...cards.values()];
 }
 
-function section(key: string, name: string, variants: readonly Variant[]): ReportSection {
+function section(
+  key: string,
+  name: string,
+  variants: readonly Variant[],
+  shown: ShownViewports,
+): ReportSection {
   return {
     key,
     name,
-    cards: cardsOf(key, variants),
+    cards: cardsOf(key, variants, shown),
     variantKeys: variants.map((variant) => variant.key),
   };
 }
@@ -149,16 +188,21 @@ export function buildSections(variants: readonly Variant[]): ReportSection[] {
   const a11y = variants.filter((variant) => variant.bucket === 'a11y');
   const pixels = variants.filter((variant) => variant.bucket !== 'a11y');
 
+  // Off every variant the report holds, before the split below — a card asked
+  // "is mobile missing?" has to answer for the page, not for its own bucket.
+  const shown = shownViewports(variants);
+
   const tiers = TIERS.map((tier) =>
     section(
       tier,
       tier,
       pixels.filter((variant) => variant.tier === tier),
+      shown,
     ),
   );
 
   return [
-    ...(a11y.length > 0 ? [section('a11y', A11Y_SECTION, a11y)] : []),
+    ...(a11y.length > 0 ? [section('a11y', A11Y_SECTION, a11y, shown)] : []),
     ...tiers,
   ].filter((entry) => entry.cards.length > 0);
 }
@@ -211,6 +255,13 @@ const allMatched = (viewport: ViewportName) =>
  * missing, which holds this to at most one sentence per viewport rather than one
  * per variant that happened to match.
  *
+ * "Visible" means anywhere on the page, which is why the denominator is
+ * {@link ReportCard.viewportsShown} rather than this card's own variants. A
+ * story is split into a card per bucket and per section, so one that changed at
+ * desktop and errored at mobile is two cards — and reading only this card's
+ * variants, each would announce the other's viewport as missing while the row
+ * for it sits further down the same report.
+ *
  * The one case it cannot see: a story tagged `visual-diff:all-viewports` whose
  * every extra-viewport variant matched. `summary.json` records no story tags, so
  * that card is indistinguishable from an untagged one — it is read as its tier.
@@ -220,7 +271,12 @@ export function viewportGaps(card: ReportCard): readonly string[] {
   // missing from it — its finding was never in the pixels.
   if (card.bucket === 'a11y') return [];
 
-  const shown = new Set<string>(card.variants.map((variant) => variant.viewport));
+  // Nothing to reason from: a card with no variants has no tier evidence and no
+  // absence worth explaining. `cardsOf` cannot build one, and `cardReviewed`
+  // guards the same shape for the same reason.
+  if (card.variants.length === 0) return [];
+
+  const shown = new Set<string>(card.viewportsShown);
   const matrix: readonly string[] = TIER_VIEWPORTS[card.tier];
 
   return VIEWPORT_NAMES.filter((viewport) => !shown.has(viewport)).map((viewport) =>

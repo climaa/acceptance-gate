@@ -129,6 +129,7 @@ describe('a pixel card', () => {
   //    redirect encodes the colon on the way, which is how it broke both at once.)
   it('deep-links the story into both Storybooks with the globals colon literal', () => {
     vi.stubEnv('NODE_ENV', 'development');
+
     renderCard(
       cardOf(
         variant({
@@ -154,6 +155,7 @@ describe('a pixel card', () => {
   // live one is worse than no link — the published build still answers.
   it('offers only the published Storybook when nothing is running locally', () => {
     vi.stubEnv('NODE_ENV', 'production');
+
     renderCard(
       cardOf(
         variant({
