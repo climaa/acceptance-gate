@@ -161,10 +161,33 @@ main.ds-container,
   font-size: var(--text-sm);
 }
 
+/* A card, and its fields flow across whatever width the card has. One field per
+   line is right on a phone and wasteful by 600 px — the console is often a
+   half-width window beside an editor, where a set's seven fields left two
+   thirds of the card empty and made the panel three times taller than it needed
+   to be.
+
+   `auto-fit` rather than a second breakpoint: the column count follows the space
+   the card actually got, which is not knowable from the viewport once this panel
+   is one of two. 11rem is the widest field's own measure — a `label` column plus
+   a capture label — so a column never has to truncate to fit. Below ~26rem it
+   resolves to the single column a phone wants, with no query to state it. */
 .vd-table__row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  /* Column gap only: the cells carry their own `padding-block`, and a row gap
+     on top of it would space a phone's stacked fields twice. */
+  gap: 0 var(--space-4);
+  align-items: baseline;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   padding: var(--space-3);
+}
+
+/* The label names the row, so it gets its own line above the fields it
+   identifies rather than a column equal to `size`. */
+.vd-table__row .vd-table__cell:first-child {
+  grid-column: 1 / -1;
 }
 
 .vd-table__row + .vd-table__row {
