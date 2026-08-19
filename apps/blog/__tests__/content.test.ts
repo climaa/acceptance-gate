@@ -226,13 +226,39 @@ describe('rehype pipeline', () => {
     expect(lightValue).not.toBe(darkValue);
   });
 
+  // A ```mermaid fence is a diagram on the client and a highlighted code block
+  // everywhere else. These cases pin the "everywhere else" half — the server
+  // half of components/MermaidDiagram.tsx's graceful-degradation contract.
+  const MERMAID_FENCE = '```mermaid\nflowchart LR\n  a --> b\n```\n';
+
+  it('renders a mermaid fence as the highlighted code block on the server', async () => {
+    const html = await renderMdx(MERMAID_FENCE);
+
+    expect(html).toContain('class="ds-code"');
+    expect(html).toContain('data-language="mermaid"');
+  });
+
+  // Effects never run under renderToStaticMarkup, so mermaid itself must never
+  // be reached on the server: an <svg> here means the dynamic import moved to
+  // module scope, which is exactly the regression that would break this suite's
+  // node environment.
+  it('never renders a mermaid SVG on the server', async () => {
+    const html = await renderMdx(MERMAID_FENCE);
+
+    expect(html).not.toContain('<svg');
+  });
+
   // Named here rather than imported from lib/mdx.tsx: an expectation that reads
   // the list it guards cannot catch a package leaving it.
+  // `mermaid` is not a pipeline package, but its SVG output shifts across
+  // minors, and rendered diagrams sit on pages the e2e suite and the differ
+  // look at — the same mass-rebaseline argument as the highlighter.
   const PINNED_PIPELINE_PACKAGES = [
     'rehype-pretty-code',
     'rehype-slug',
     'rehype-autolink-headings',
     'shiki',
+    'mermaid',
   ] as const;
 
   const EXACT_VERSION = /^\d+\.\d+\.\d+$/;

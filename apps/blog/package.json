@@ -15,6 +15,7 @@
   "dependencies": {
     "@gate/ui": "workspace:*",
     "gray-matter": "^4.0.3",
+    "mermaid": "11.16.1",
     "next": "^16.3.0",
     "next-mdx-remote": "^6.0.0",
     "react": "^19.2.8",

@@ -64,3 +64,17 @@ h3:hover > .heading-anchor,
 .heading-anchor:focus-visible {
   opacity: 1;
 }
+
+/* MermaidDiagram's client-rendered SVG (components/MermaidDiagram.tsx). Sized
+   here rather than inline because the SVG string comes out of mermaid: it
+   carries its own width, which would overflow the prose column on a phone.
+   No transition on the code-block-to-SVG swap — no-animate-on-mount. */
+.mermaid-diagram {
+  margin-block: var(--space-8);
+  text-align: center;
+}
+
+.mermaid-diagram svg {
+  max-width: 100%;
+  height: auto;
+}
