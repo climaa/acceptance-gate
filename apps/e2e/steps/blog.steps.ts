@@ -31,6 +31,11 @@ Then('I see the list of articles', async ({ blogIndex }) => {
 });
 
 Then('each article shows its date and reading time', async ({ blogIndex }) => {
+  // Waited for before it is counted: `.count()` does not retry, so on an index
+  // that has not rendered it answers 0 and both assertions below hold at 0 ===
+  // 0 — a pass that means "there are no articles", not "every article is
+  // stamped".
+  await expect(blogIndex.articleTitles.first()).toBeVisible();
   const articleCount = await blogIndex.articleTitles.count();
 
   await expect(blogIndex.articleDates).toHaveCount(articleCount);
