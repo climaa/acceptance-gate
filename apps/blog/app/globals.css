@@ -64,3 +64,22 @@ h3:hover > .heading-anchor,
 .heading-anchor:focus-visible {
   opacity: 1;
 }
+
+/* MermaidDiagram's client-rendered SVG (components/MermaidDiagram.tsx). The
+   diagram is drawn at natural size (useMaxWidth: false in the component) so
+   its labels stay legible; when it is wider than the prose column the
+   container scrolls sideways rather than the text shrinking to fit — the
+   page itself never scrolls horizontally. Narrower diagrams sit centered.
+   No transition on the code-block-to-SVG swap — no-animate-on-mount. */
+.mermaid-diagram {
+  margin-block: var(--space-8);
+  overflow-x: auto;
+}
+
+.mermaid-diagram svg {
+  display: block;
+  margin-inline: auto;
+  /* Something in the cascade caps svg at max-width: 100%, which re-shrinks
+     the diagram to the column and defeats the natural sizing above. */
+  max-width: none;
+}

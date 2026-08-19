@@ -10,13 +10,16 @@ import remarkGfm from 'remark-gfm';
 import githubDarkDimmed from 'shiki/themes/github-dark-dimmed.mjs';
 import rosePineDawn from 'shiki/themes/rose-pine-dawn.mjs';
 import { CodeBlock } from '@gate/ui';
+import { MermaidDiagram } from '../components/MermaidDiagram';
 import { CODE_GROUND, withAccessibleTokens } from './shiki-contrast';
 
 /**
  * The build-time MDX pipeline: highlighting, heading ids, heading anchors.
  *
- * Every plugin here runs once, at build time. Nothing in this file reaches the
- * browser, and no client-side highlighter exists to disagree with it.
+ * Every plugin here runs once, at build time, and no client-side highlighter
+ * exists to disagree with it. The one component that does reach the browser is
+ * `MermaidDiagram` — deliberately, because a diagram themed from computed
+ * design tokens cannot be baked at build time.
  */
 
 /**
@@ -119,6 +122,25 @@ export const rehypePlugins: NonNullable<MdxCompileOptions['rehypePlugins']> = [
 type PreProps = ComponentPropsWithoutRef<'pre'> & { 'data-language'?: string };
 
 /**
+ * Concatenated text of an already-highlighted fence, over React nodes — the
+ * sibling of `textOf` above, which walks hast. Lossless for every line that
+ * carries content: shiki wraps each line's text in spans without rewriting a
+ * character and leaves a `\n` text node between lines, so joining the text
+ * nodes back up reproduces the fence body. The one exception is a blank line,
+ * which rehype-pretty-code pads with whitespace to keep its height — harmless
+ * to Mermaid, which ignores whitespace-only lines. `mermaid-extraction.test.ts`
+ * pins both halves against any future bump of the exact-pinned highlighter.
+ */
+export function textOfNode(node: ReactNode): string {
+  if (typeof node === 'string') return node;
+  if (Array.isArray(node)) return node.map(textOfNode).join('');
+  if (isValidElement<{ children?: ReactNode }>(node)) {
+    return textOfNode(node.props.children);
+  }
+  return '';
+}
+
+/**
  * Every fenced block renders as the design system's slab.
  *
  * rehype-pretty-code nests its token spans in its own `<code>`; `CodeBlock`
@@ -126,13 +148,25 @@ type PreProps = ComponentPropsWithoutRef<'pre'> & { 'data-language'?: string };
  * `<code>` inside `<code>` would take the inline-chip styling twice. The line
  * breaks survive the unwrap: the highlighter leaves a `\n` text node between
  * every `<span data-line>`, and `<pre>` preserves it.
+ *
+ * A ```mermaid fence goes one step further: the raw source is recovered from
+ * the highlighted tokens and handed to `MermaidDiagram`, with the highlighted
+ * slab as its fallback. Intercepting here — after the highlighter, not with a
+ * pipeline plugin — is deliberate: rehype-pretty-code has no language-exclusion
+ * option, and the tokenized fence doubles as the graceful-degradation code
+ * block for SSR, no-JS readers and diagrams that fail to parse.
  */
 function Pre({ children, 'data-language': language }: PreProps) {
   const tokens = isValidElement<{ children?: ReactNode }>(children)
     ? children.props.children
     : children;
+  const fallback = <CodeBlock language={language}>{tokens}</CodeBlock>;
 
-  return <CodeBlock language={language}>{tokens}</CodeBlock>;
+  if (language === 'mermaid') {
+    return <MermaidDiagram chart={textOfNode(tokens)}>{fallback}</MermaidDiagram>;
+  }
+
+  return fallback;
 }
 
 /**

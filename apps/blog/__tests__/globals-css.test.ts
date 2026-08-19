@@ -40,7 +40,7 @@ function walk(dir: string): string[] {
 }
 
 /** Everything that can name a class: the app's own sources and the stylesheet. */
-const sources = ['app', 'lib']
+const sources = ['app', 'lib', 'components']
   .flatMap((dir) => walk(path.join(BLOG_DIR, dir)))
   .filter((file) => /\.(tsx?|css)$/.test(file))
   .map((file) => ({
