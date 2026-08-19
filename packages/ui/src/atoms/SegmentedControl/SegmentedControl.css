@@ -5,6 +5,16 @@
    .ds-theme-toggle follows. */
 .ds-segmented {
   display: inline-flex;
+  /* Wraps rather than scrolls. The segments state `white-space: nowrap`, so
+     without this the strip is its max-content width at every viewport — five
+     modes measure 368px, which is 80px past a 320px screen's content box and
+     still 7px past a 393px one, and the modes past the edge are reachable only
+     by scrolling a container sideways. A row that scrolled sideways would hide
+     the mode nobody scrolled to; two rows in the thumb's reach is the trade this
+     control wants. Costs desktop nothing: shrink-to-fit gives an inline-flex box
+     its max-content width whenever there is room, so above the breakpoint this
+     is one row of 368px either way. */
+  flex-wrap: wrap;
   align-items: stretch;
   padding: var(--space-1);
   gap: var(--space-1);
