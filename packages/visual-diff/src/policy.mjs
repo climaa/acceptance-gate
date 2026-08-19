@@ -232,3 +232,36 @@ export const BASELINE_BUDGET_BYTES = 5_000_000;
  *  a photograph inlined into a fixture — and the corpus budget would not catch it until
  *  ten more had landed beside it. */
 export const BASELINE_PNG_BUDGET_BYTES = 512_000;
+
+/** Both budgets, over the set a caller is about to commit. Baselines live in git
+ *  forever, so the ceilings are checked before a byte is written and a corpus that
+ *  would blow either one is refused whole rather than left half-promoted.
+ *
+ *  A refusal names the stories: "the corpus is too big" is not something a reviewer
+ *  can act on, and the offending story usually is.
+ *
+ *  Here rather than in either caller because there are two of them, committing the
+ *  same directory by different routes — the CLI's `accept`, which promotes what it
+ *  just captured, and the console's, which promotes what a reviewer accepted out of
+ *  a report. One ceiling enforced in two places is one ceiling that can drift.
+ *  @param {ReadonlyMap<string, Uint8Array>} shots The set about to be written.
+ *  @param {number} retainedBytes Committed bytes this write does not replace.
+ *  @throws {Error} */
+export function assertWithinBudget(shots, retainedBytes) {
+  const oversized = [...shots]
+    .filter(([, bytes]) => bytes.length > BASELINE_PNG_BUDGET_BYTES)
+    .map(([key]) => key);
+  if (oversized.length > 0) {
+    throw new Error(
+      `${oversized.length} baseline(s) over the ${BASELINE_PNG_BUDGET_BYTES}-byte per-file budget (${oversized.join(', ')}) — nothing was written`,
+    );
+  }
+
+  const total =
+    retainedBytes + [...shots.values()].reduce((sum, bytes) => sum + bytes.length, 0);
+  if (total > BASELINE_BUDGET_BYTES) {
+    throw new Error(
+      `the baseline set would be ${total} bytes, over the ${BASELINE_BUDGET_BYTES}-byte budget — nothing was written`,
+    );
+  }
+}

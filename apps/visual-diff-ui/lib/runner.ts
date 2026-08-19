@@ -7,10 +7,9 @@ import { buildSummary } from '@gate/visual-diff/artifacts';
 import { pngSize } from '@gate/visual-diff/capture';
 import { type CaptureShot, type Comparison, compareAll } from '@gate/visual-diff/compare';
 import {
-  BASELINE_BUDGET_BYTES,
-  HOST,
-  BASELINE_PNG_BUDGET_BYTES,
   EXIT,
+  HOST,
+  assertWithinBudget,
   parseVariantKey,
 } from '@gate/visual-diff/policy';
 import { BASELINE_ENV, CANONICAL_LABEL, baselinesPath } from './baselines';
@@ -277,31 +276,6 @@ function candidateShots(
         }
       }),
   );
-}
-
-/** The budgets, checked before the first write. Baselines live in git forever,
- *  so a corpus that would blow the ceiling is refused whole rather than left
- *  half-promoted. */
-function assertWithinBudget(
-  shots: ReadonlyMap<string, Uint8Array>,
-  retained: number,
-): void {
-  const oversized = [...shots]
-    .filter(([, bytes]) => bytes.length > BASELINE_PNG_BUDGET_BYTES)
-    .map(([key]) => key);
-  if (oversized.length > 0) {
-    throw new Error(
-      `${oversized.length} baseline(s) over the ${BASELINE_PNG_BUDGET_BYTES}-byte per-file budget (${oversized.join(', ')}) — nothing was written`,
-    );
-  }
-
-  const total =
-    retained + [...shots.values()].reduce((sum, bytes) => sum + bytes.length, 0);
-  if (total > BASELINE_BUDGET_BYTES) {
-    throw new Error(
-      `the baseline set would be ${total} bytes, over the ${BASELINE_BUDGET_BYTES}-byte budget — nothing was written`,
-    );
-  }
 }
 
 /** The bytes already committed that this promotion does not replace. */
