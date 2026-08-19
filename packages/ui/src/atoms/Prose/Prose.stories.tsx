@@ -5,6 +5,13 @@ import { Prose } from './Prose';
 const meta: Meta<typeof Prose> = {
   title: 'Atoms/Prose',
   component: Prose,
+  // `.ds-prose` gives its tables `overflow-x: auto`, which is a rule about what
+  // happens when the content is wider than the box — and at the desktop-only
+  // viewport its tier captures, it never is. The narrow width is the only one
+  // where this atom's scroll container is doing anything, so it is the only one
+  // where a regression in it would show. See the note on SegmentedControl for
+  // why the tag is a literal.
+  tags: ['visual-diff:all-viewports'],
 };
 
 export default meta;

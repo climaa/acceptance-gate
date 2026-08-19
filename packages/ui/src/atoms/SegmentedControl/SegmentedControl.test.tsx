@@ -1,9 +1,11 @@
+import { ALL_VIEWPORTS_TAG } from '@gate/visual-diff/policy';
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import axe from 'axe-core';
 import { useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { SegmentedControl } from './SegmentedControl';
+import meta from './SegmentedControl.stories';
 
 // `globals` is off in vitest.config.ts, so Testing Library never sees a global
 // `afterEach` to hook its automatic cleanup onto — without this every render
@@ -161,5 +163,26 @@ describe('SegmentedControl', () => {
     const { container } = render(<SegmentedControl {...baseProps} role="toolbar" />);
 
     await expectNoAxeViolations(container);
+  });
+});
+
+/**
+ * The capture contract, the mirror of the `visual-diff:skip` blocks on
+ * SkipLink and TagList: this component reflows with width, so its stories are
+ * captured at every viewport rather than at the one its tier promises.
+ *
+ * Asserted on the meta, not on a story. Storybook merges a meta's tags into
+ * every story it holds, which is the point — every story of this atom has a mobile branch to photograph, the wrap and the
+ * thumb-target floor both being below the breakpoint.
+ *
+ * Equality against the imported constant, because the story file must write the
+ * literal (CSF is indexed statically and rejects a non-literal tag), and a
+ * literal is exactly what goes stale. `src/__tests__/viewport-contract.test.ts`
+ * is the other half: it is what notices a component that grows a breakpoint and
+ * never gets a tag at all.
+ */
+describe('the capture contract', () => {
+  it('is captured at every viewport, with the string policy.mjs declares', () => {
+    expect(meta.tags).toEqual([ALL_VIEWPORTS_TAG]);
   });
 });
