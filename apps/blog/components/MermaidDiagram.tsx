@@ -139,11 +139,15 @@ export function MermaidDiagram({ chart, children }: MermaidDiagramProps) {
 
   // role="img" with a label: the SVG mermaid emits is presentational soup to
   // assistive tech, and the blog's pages run under axe in the e2e suite.
+  // tabIndex 0 because the container scrolls sideways when a diagram is wider
+  // than the column, and a scrollable region a keyboard cannot reach is an axe
+  // violation (scrollable-region-focusable) — focus it, arrow keys scroll it.
   return (
     <div
       className="mermaid-diagram"
       role="img"
       aria-label="Diagram"
+      tabIndex={0}
       dangerouslySetInnerHTML={{ __html: svg }}
     />
   );
