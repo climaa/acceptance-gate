@@ -32,21 +32,39 @@ const ACCEPT_REPORT = 'main-2026-08-17__main-2026-08-16';
  *  Checking .first() unchecked each time is immune to the list re-sorting or
  *  collapsing as boxes are ticked — a .all() snapshot would go stale. */
 async function reviewEverything(report: ReportPage) {
+  // `.count()` is a one-shot query. Unlike an `expect` locator assertion it does
+  // not retry, so on a report whose cards have not rendered yet it answers 0 —
+  // the loop below never runs, and the `toHaveCount(0)` each caller makes after
+  // it passes for the wrong reason: nothing is unreviewed because nothing is
+  // there. The accept gate two steps later then correctly reports every variant
+  // still unread, and the start button it disables never enables.
+  //
+  // Waiting for the first card is what makes the count a question about the
+  // report rather than about the render.
+  await expect(report.storyCards.first()).toBeVisible();
+
   while ((await report.uncheckedCards().count()) > 0) {
     await report.uncheckedCards().first().getByRole('checkbox').first().check();
   }
 }
 
+/** Reviewed, and provably so: `uncheckedCards` alone is 0 on a report with no
+ *  cards at all, which is the state this helper exists to rule out. */
+async function expectEverythingReviewed(report: ReportPage) {
+  await expect(report.uncheckedCards()).toHaveCount(0);
+  await expect(report.checkedCards()).not.toHaveCount(0);
+}
+
 Given('every variant of the report is reviewed', async ({ report }) => {
   await report.open(ACCEPT_REPORT);
   await reviewEverything(report);
-  await expect(report.uncheckedCards()).toHaveCount(0);
+  await expectEverythingReviewed(report);
 });
 
 Given('every variant of the mutating report is reviewed', async ({ report }) => {
   await report.open(ACCEPT_REPORT, 'mutating');
   await reviewEverything(report);
-  await expect(report.uncheckedCards()).toHaveCount(0);
+  await expectEverythingReviewed(report);
 });
 
 /** The D3 seam is SERVER-side: the mutating webServer boots with

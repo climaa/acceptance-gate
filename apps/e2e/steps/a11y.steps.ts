@@ -26,6 +26,11 @@ const { When, Then } = createBdd(test);
 When(
   'I open the first article carrying a code block',
   async ({ page, blogIndex, post }) => {
+    // Same reason as the walk itself throwing: a `.count()` taken before the
+    // index renders is 0, the loop never runs, and the error below reports
+    // "walked all 0" — which reads as a catalogue with no code blocks rather
+    // than as a scan that never started.
+    await expect(blogIndex.articleTitles.first()).toBeVisible();
     const listed = await blogIndex.articleTitles.count();
 
     for (let index = 0; index < listed; index += 1) {
