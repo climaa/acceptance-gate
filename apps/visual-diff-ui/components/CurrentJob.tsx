@@ -271,7 +271,22 @@ function JobView({ job, running, log }: JobViewProps) {
         <span className="vd-job__label" title={job.label}>
           {job.label}
         </span>
-        {elapsed && <span className="vd-job__figure">{elapsed}</span>}
+        {/* `aria-live="off"`, the same opt-out `LogTail` takes one line below
+            and for the same reason. This span sits inside the panel's polite
+            region, `useElapsed` re-renders it once a second, and
+            `formatDuration` floors to seconds — so the text genuinely changes on
+            every tick, and a screen reader reads the whole region out again each
+            time: "running capture main 42s", "…43s", "…44s", for the length of a
+            capture. The region exists to announce the state word, the job and
+            its outcome; the timer is a figure to read on demand, not an event.
+            `off` rather than `aria-hidden`, deliberately: hidden would take the
+            elapsed time out of the accessibility tree altogether, which is a
+            worse answer than not announcing it. */}
+        {elapsed && (
+          <span aria-live="off" className="vd-job__figure">
+            {elapsed}
+          </span>
+        )}
         {job.exitCode !== null && (
           <span className="vd-job__figure">exit {job.exitCode}</span>
         )}

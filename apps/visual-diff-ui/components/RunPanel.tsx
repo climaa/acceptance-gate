@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import {
   type Dispatch,
   type KeyboardEvent,
@@ -10,6 +10,8 @@ import {
   useState,
 } from 'react';
 import { Button, CodeBlock, Stack } from '@gate/ui';
+import { useMutation } from '@/hooks/useMutation';
+import { Note } from './Note';
 import {
   ACCEPT_COMMAND,
   ACCEPT_IMAGE,
@@ -96,8 +98,6 @@ export const DOCKER_REFUSAL = `this capture runs inside ${ACCEPT_IMAGE}, and Doc
 export const REMOTE_REFUSAL =
   'this console is deployed, and a job needs the checkout it compares — start one from the console on your own machine (`pnpm --filter @gate/visual-diff-ui dev`)';
 
-const UNREACHABLE = 'the console could not reach the job API — is the server still up?';
-
 /** One text field. `spellcheck` off on all of them: every value here is an id, a
  *  label or a substring of a story name, and none of them is prose. */
 function Field({
@@ -135,16 +135,6 @@ function Field({
         onChange={(event) => onChange(event.target.value)}
       />
     </Stack>
-  );
-}
-
-/** A note the panel explains itself with — never a refusal, which is what
- *  `role="alert"` is for. The name is what a scenario finds it by. */
-function Note({ name, children }: { name: string; children: ReactNode }) {
-  return (
-    <p role="note" aria-label={name} className="vd-note">
-      {children}
-    </p>
   );
 }
 
@@ -458,45 +448,22 @@ function jobRequest(form: JobForm): Record<string, unknown> {
     : { mode, label: form.label };
 }
 
-/** Starting a job, and whatever the server refused it with. */
+/** Starting a job, and whatever the server refused it with. The lifecycle is
+ *  `useMutation`'s; this names the endpoint and keeps the panel's vocabulary —
+ *  one refusal rather than a list, and `starting` rather than `busy`. */
 function useStartJob() {
-  const router = useRouter();
-  const [refusal, setRefusal] = useState<string | null>(null);
-  const [starting, setStarting] = useState(false);
+  const { run, refusals, busy } = useMutation();
 
   const start = async (request: Record<string, unknown>) => {
-    setStarting(true);
-    setRefusal(null);
-
-    try {
-      const response = await fetch('/api/jobs', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        cache: 'no-store',
-        body: JSON.stringify(request),
-      });
-
-      if (!response.ok) {
-        const body = (await response.json()) as { error?: unknown };
-        setRefusal(
-          typeof body.error === 'string'
-            ? body.error
-            : 'the console could not start that job',
-        );
-        return;
-      }
-
-      // The history table beside this is server-rendered, so the row this job
-      // just wrote only appears once the page is read again.
-      router.refresh();
-    } catch {
-      setRefusal(UNREACHABLE);
-    } finally {
-      setStarting(false);
-    }
+    await run({
+      url: '/api/jobs',
+      method: 'POST',
+      body: request,
+      fallback: 'the console could not start that job',
+    });
   };
 
-  return { start, refusal, starting };
+  return { start, refusal: refusals[0] ?? null, starting: busy };
 }
 
 /** Whether the form names a job the runner could take. */
@@ -690,6 +657,26 @@ function StartAction({
   // deployment be their own machine, so the note names the console that works.
   if (!isLocal) return <Note name="remote console">{REMOTE_REFUSAL}</Note>;
 
+  // Checked before `running`, and the order is load-bearing rather than tidy.
+  //
+  // `AcceptFields` renders `GateNotice` whatever the runner is doing, and the
+  // host and accessibility refusals are drawn as `role="alert"`. This branch
+  // draws one too. With `running` first, accept mode on a bare-metal host with a
+  // job in flight put both inside `main` at once — and both are pinned by the
+  // same strict locator: `console.ts:64` is `getByRole('main').getByRole('alert')`,
+  // read by D1 as `refusalAlert` and by the accept scenarios as
+  // `acceptHostAlert`. Two matches fail every one of them on strict mode.
+  //
+  // It is also the better message. `isRefused` is the outright refusals — there
+  // is no button, and waiting will not produce one — so telling a reviewer to
+  // follow the running job implies a start that finishing the job would unlock.
+  // It would not.
+  //
+  // D1 is untouched: `isRefused` is false for every mode but accept, and false
+  // in accept once the gate is `ready`, so the running refusal still renders
+  // wherever a start could otherwise have happened.
+  if (isRefused(form, gate, hasReport)) return null;
+
   if (running) {
     // Announced, not merely absent: a control that vanishes without a word is a
     // console that has silently stopped working, and this is the same refusal
@@ -704,8 +691,6 @@ function StartAction({
       </div>
     );
   }
-
-  if (isRefused(form, gate, hasReport)) return null;
 
   // Sample mode is checked first because it is the nearer answer: an instance
   // serving the committed fixtures has no runner to borrow a container for, and

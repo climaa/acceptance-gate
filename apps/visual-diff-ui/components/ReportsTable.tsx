@@ -8,6 +8,14 @@ import type { ReportListEntry } from '@/lib/data';
  * A row is the id, when the run that produced it finished, and a delete this
  * issue names but does not wire. Built as data rather than as a component — see
  * SetsTable.tsx for why.
+ *
+ * Present and disabled, which is the answer `CanonicalSet` already gives one
+ * panel over — and the reason it gives is the same one: the sets table below
+ * carries a live delete on every row, so a report row without a button would
+ * read as an omission rather than as a rule. Enabled was the one answer that
+ * could not be right. A red destructive control that takes the click and does
+ * nothing is indistinguishable, from the reviewer's side, from a delete that
+ * silently failed.
  */
 
 const REPORTS_TABLE_LABEL = 'Reports';
@@ -38,7 +46,7 @@ function reportRow(report: ReportListEntry, date: string | null): TableRow {
         title: report.id,
       },
       date ?? UNDATED,
-      <Button variant="danger" size="sm" key="delete">
+      <Button variant="danger" size="sm" key="delete" disabled>
         delete
       </Button>,
     ],

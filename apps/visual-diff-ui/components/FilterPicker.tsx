@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Stack, TriStateCheckbox } from '@gate/ui';
+import { Note } from './Note';
 import type { StoryTier } from '@/lib/stories';
 
 /**
@@ -104,10 +105,10 @@ export function FilterPicker({ tiers, value, onChange, disabled }: FilterPickerP
     return (
       <Stack gap={1} className="vd-filter">
         <span className="vd-field__label">--filter</span>
-        <p role="note" aria-label="no corpus yet" className="vd-note">
+        <Note name="no corpus yet">
           no Storybook build to read yet — this run captures the whole corpus, and the
           components appear here once it has built one
-        </p>
+        </Note>
       </Stack>
     );
   }
@@ -119,11 +120,11 @@ export function FilterPicker({ tiers, value, onChange, disabled }: FilterPickerP
         {tiers.map((tier) => (
           <TierGroup key={tier.tier} tier={tier} value={value} onChange={onChange} />
         ))}
-        <p role="note" aria-label="filter scope" className="vd-note">
+        <Note name="filter scope">
           {value.length === 0
             ? 'nothing ticked — this run captures the whole corpus'
             : `${value.length} component(s) ticked — this run captures only those`}
-        </p>
+        </Note>
       </Stack>
     </fieldset>
   );

@@ -3,13 +3,26 @@ import remarkGfm from 'remark-gfm';
 
 const config: StorybookConfig = {
   // Resolved against this directory, not the workspace root: three levels up is
-  // the repo. The design system first, then the compositions that belong to the
-  // app rather than to the package, then this app's own docs pages.
-  stories: [
-    '../../../packages/ui/src/**/*.stories.tsx',
-    '../src/**/*.stories.tsx',
-    '../src/**/*.mdx',
-  ],
+  // the repo. The design system's stories, then this app's own docs pages.
+  //
+  // There is deliberately no glob for app-composition stories, and the reason is
+  // not taste. A story outside the design system does not merely go uncaptured —
+  // it takes the whole gate down. The differ places a baseline by `importPath`:
+  // `tierOf` (@gate/visual-diff/policy) reads the tier out of
+  // `packages/ui/src/<tier>/` and returns `null` for anything else, and
+  // `variantsOf` (storybook-index.mjs) throws `IndexError` rather than file a
+  // shot under a layer it is not in. `commands.mjs` maps that to `EXIT.broken`,
+  // so one `.stories.tsx` under `apps/` reports every committed variant as
+  // unverified, for a reason unrelated to whoever added it.
+  //
+  // This glob used to read `../src/**/*.stories.tsx`, inviting exactly that. The
+  // directory was empty, so the invitation had never been accepted.
+  //
+  // The `.mdx` glob is safe where a `.stories.tsx` one is not: docs entries are
+  // indexed as `type: 'docs'` and `planCaptures` drops them before any tier is
+  // asked for. `corpus-globs.test.mjs` is the tripwire, and it fails in `test`
+  // rather than leaving this to a bare exit 2 in the differ.
+  stories: ['../../../packages/ui/src/**/*.stories.tsx', '../src/**/*.mdx'],
   framework: '@storybook/nextjs-vite',
   // The design boards System Design embeds. A plain <img src="/designs/..."> in
   // an MDX doc, not a JS import: an ES import of a .png inside an MDX-compiled

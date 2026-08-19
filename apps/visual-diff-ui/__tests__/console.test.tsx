@@ -421,6 +421,20 @@ describe('the reports panel', () => {
     expect(deletes).toHaveLength(1);
   });
 
+  // The button is not wired to anything. Disabled is what says so: enabled, it
+  // took the click and did nothing, which a reviewer cannot tell apart from a
+  // delete that failed silently — on a red, destructive control. The sets table
+  // one panel over carries a live delete, so absent would read as an omission
+  // rather than as a rule; `CanonicalSet` answers the same question the same
+  // way. Delete this case with the wiring, never before it.
+  it('disables that button, because nothing is behind it yet', () => {
+    render(consoleWith());
+
+    const [remove] = within(table('Reports')).getAllByRole('button', { name: 'delete' });
+
+    expect(remove).toHaveProperty('disabled', true);
+  });
+
   it('shows an empty state instead of a table when nothing has been compared', () => {
     render(consoleWith({ reports: [] }));
 

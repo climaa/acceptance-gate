@@ -5,6 +5,13 @@ import { CodeBlock } from './CodeBlock';
 const meta: Meta<typeof CodeBlock> = {
   title: 'Molecules/CodeBlock',
   component: CodeBlock,
+  // `overflow-x: auto`, and `LongLine` exists to prove the block scrolls its own
+  // overflow rather than the page. Below the breakpoint is where that claim is
+  // load-bearing and where it was never photographed. Tagged on the meta rather
+  // than on `LongLine` alone: Storybook merges meta tags into every story, and
+  // the two short stories are what say the mobile box is right when nothing
+  // overflows. See the note on SegmentedControl for why the tag is a literal.
+  tags: ['visual-diff:all-viewports'],
 };
 
 export default meta;

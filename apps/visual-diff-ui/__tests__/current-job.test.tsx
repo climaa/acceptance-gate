@@ -354,6 +354,23 @@ describe('the elapsed counter', () => {
     expect(await within(region()).findByText('3m 12s')).toBeDefined();
   });
 
+  // The panel's section is `aria-live="polite"` and this text changes once a
+  // second — `formatDuration` floors to seconds, so every tick is a new string.
+  // Without the opt-out a screen reader re-reads the whole region on each one:
+  // "running capture main 42s", "…43s", "…44s", for the length of a capture. Both
+  // halves are asserted here, because the case is only meaningful while the
+  // region stays polite.
+  it('does not announce the tick, so the region is not re-read every second', async () => {
+    stubCurrent({ running: true, job: RUNNING });
+
+    renderCurrentJob();
+
+    const figure = await within(region()).findByText('3m 12s');
+
+    expect(figure.getAttribute('aria-live')).toBe('off');
+    expect(region().getAttribute('aria-live')).toBe('polite');
+  });
+
   it('reports what a finished run took, not what has passed since', async () => {
     stubCurrent({ running: false, job: FINISHED });
 
