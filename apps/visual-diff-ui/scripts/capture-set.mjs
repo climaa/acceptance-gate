@@ -1,7 +1,7 @@
 // Capture the corpus into one snapshot set.
 //
 //   node scripts/capture-set.mjs --root <dir> --data-dir <dir> --label <label> \
-//     [--filter <substring>] [--sha <sha>] [--branch <name>] [--dirty]
+//     [--filter <substring>] [--sha <sha>] [--branch <name>] [--dirty true|false]
 //
 // The console's `capture` and `run` modes, as a process. It exists as a script
 // rather than as another function in lib/runner.ts because the work has to
@@ -19,8 +19,22 @@
 //   <dataDir>/sets/<label>/<variantKey>.png   the shots
 //   <dataDir>/sets.json                       the row that makes them a set
 //
-// `__tests__/capture-set.test.ts` parses what this writes with those schemas —
-// the same bargain apps/e2e/scripts/seed-visual-diff.mjs takes.
+// NOTHING EXECUTES THIS FILE UNDER TEST. `check` runs at module scope against
+// real `defaultDeps()` — a Storybook build, a browser, the pinned image — so it
+// cannot be imported without running a capture, and runner.test.ts mocks
+// `spawn`, which stops at the argv this script is handed. What guards the seam
+// today is that argv, asserted from the other side in
+// `__tests__/runner.test.ts` ("hands the container the checkout git described"):
+// every flag lib/runner.ts emits is pinned there in the exact string form
+// `parseArgs` below has to read. That is a contract test, not a run of this
+// file, and the difference is not academic — `--dirty` disagreed with its own
+// parser here for as long as neither side was written down.
+//
+// Closing the rest of the gap means the registry write below has to leave this
+// file, into a module with no `next/*` import that a plain node process — and a
+// test — can load without running a capture. lib/jobs.ts already holds that
+// logic as `recordSet`; what keeps it out of reach here is its `next/cache`
+// import, not the container.
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
@@ -40,7 +54,9 @@ function parseArgs(argv) {
     if (!flag.startsWith('--')) continue;
 
     const name = flag.slice(2);
-    // `--dirty` is a switch; everything else takes the value after it.
+    // A flag with nothing after it — or with another flag after it — is a
+    // switch; everything else takes the value that follows. `--dirty` arrives
+    // in the second form (`--dirty true`), so it lands here as a STRING.
     const next = argv[i + 1];
     if (next === undefined || next.startsWith('--')) {
       args[name] = true;
@@ -56,6 +72,23 @@ function parseArgs(argv) {
 
   return args;
 }
+
+/**
+ * Whether the capture came from a working tree with uncommitted changes.
+ *
+ * Two spellings, because there are two callers. lib/runner.ts sends the answer
+ * git gave — `--dirty true` or `--dirty false` — so that a set records that the
+ * tree WAS checked and found clean, rather than leaving a reader to wonder
+ * whether anyone looked. A hand-run `--dirty` with nothing after it is the
+ * switch this script's usage line used to describe, and `parseArgs` reads that
+ * as the boolean `true`.
+ *
+ * Spelled out rather than left as `=== true`: that comparison against the
+ * string lib/runner.ts actually sends is `false`, which is how every real
+ * capture came to record `dirty: false` while the dirty badge only ever fired
+ * for seeded fixtures.
+ */
+const isDirty = (value) => value === true || value === 'true';
 
 const args = parseArgs(process.argv.slice(2));
 const rootDir = args.root && resolve(args.root);
@@ -107,7 +140,7 @@ function writeSet(captures) {
     branch: args.branch || 'unknown',
     capturedAt: new Date().toISOString().slice(0, 10),
     stories: written,
-    ...(args.dirty === undefined ? {} : { dirty: args.dirty === true }),
+    ...(args.dirty === undefined ? {} : { dirty: isDirty(args.dirty) }),
   };
 
   writeFileSync(
