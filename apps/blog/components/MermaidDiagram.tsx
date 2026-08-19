@@ -5,7 +5,7 @@ import { useEffect, useId, useState, type ReactNode } from 'react';
 /**
  * Mermaid's `base` theme derives its whole palette from a handful of seed
  * variables, so seeding them from the design tokens is what keeps a diagram on
- * theme without a single hardcoded colour. Read via `getComputedStyle` at draw
+ * theme without a single hardcoded color. Read via `getComputedStyle` at draw
  * time — not module time — because the same tokens resolve to different values
  * under `[data-theme='dark']`, and a diagram drawn once would keep the palette
  * of whichever theme happened to be active at mount.
@@ -48,7 +48,7 @@ function themeVariablesFromTokens(): Record<string, string> {
 async function drawChart(id: string, chart: string): Promise<string> {
   const { default: mermaid } = await import('mermaid');
 
-  // Re-initialised on every draw, not once per module: the themeVariables are
+  // Re-initialized on every draw, not once per module: the themeVariables are
   // a snapshot of the tokens, and each theme flip needs a fresh one.
   mermaid.initialize({
     startOnLoad: false,
