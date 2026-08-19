@@ -33,5 +33,40 @@ export default defineConfig({
     environment: 'node',
     // No `globals` — the suite imports from 'vitest' explicitly, because
     // tsconfig's `**/*.ts` include means tsc typechecks it.
+    // A FLOOR, measured rather than aspired to. The four numbers below are what
+    // this suite actually covers today, less about two points of slack — they
+    // exist to stop coverage falling out of the app unnoticed, not to describe
+    // a target. Raise them when the real number moves up; never lower them to
+    // make a red run green.
+    coverage: {
+      // On for the plain `vitest run`, not just `--coverage`: thresholds are
+      // only evaluated when coverage is enabled, so without this the floor
+      // would never run in CI's `test` job and would be a comment rather than a
+      // gate. The same reason packages/ui states for its own.
+      enabled: true,
+      // Read from the filesystem, not from what the suite imports. v8
+      // instruments only the modules a test pulls in, so without this the
+      // denominator is "files that already have a test" and a module shipped
+      // with none is invisible rather than zero — which is how
+      // app/api/stories/route.ts sat untested without moving any number.
+      include: [
+        'app/**/*.{ts,tsx}',
+        'components/**/*.tsx',
+        'hooks/**/*.ts',
+        'lib/**/*.ts',
+      ],
+      // `scripts/` is deliberately absent, and it is the one omission here that
+      // is not bookkeeping. capture-set.mjs runs `check` at module scope against
+      // real deps — a Storybook build, a browser, the pinned image — so no suite
+      // can import it and its coverage would be a fixed 0 that only ever drags
+      // the floor down. The gap is named where it lives, in that file's header,
+      // rather than encoded as a number nobody can move.
+      exclude: ['**/*.test.{ts,tsx}'],
+      // Explicit, so a run writes no `coverage/` directory: `text` is what names
+      // the files when the floor breaks, and the default reporter set would add
+      // html/clover/json artifacts nothing here reads.
+      reporter: ['text', 'text-summary'],
+      thresholds: { statements: 92, branches: 86, functions: 91, lines: 93 },
+    },
   },
 });
