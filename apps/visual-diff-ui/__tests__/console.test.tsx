@@ -518,7 +518,7 @@ describe('the numeric cells', () => {
 
     const cell = within(table(name)).getByText(text);
 
-    expect(cell.className).toContain('vd-table__cell--numeric');
+    expect(cell.className).toContain('ds-table__cell--numeric');
   });
 });
 

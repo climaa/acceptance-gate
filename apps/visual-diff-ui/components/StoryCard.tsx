@@ -1,5 +1,5 @@
 import { useId } from 'react';
-import { BucketChip, Stack } from '@gate/ui';
+import { BucketChip, Stack, TriStateCheckbox } from '@gate/ui';
 import type { ComparisonMode } from '@/lib/comparison';
 import {
   cardElementId,
@@ -11,7 +11,6 @@ import {
 } from '@/lib/report-view';
 import type { Variant } from '@/lib/summary';
 import { BUCKET_TONES } from './BucketChipRow';
-import { TriStateCheckbox } from './TriStateCheckbox';
 import { VariantRow } from './VariantRow';
 
 /**

@@ -3,10 +3,16 @@
    nothing about what any particular column contains. */
 
 /* `table-layout: fixed` is what makes `--truncate` able to truncate at all: under
-   the automatic algorithm a cell's `text-overflow` never fires, because the
-   column is sized by its own longest line and the table simply grows. Fixed also
-   means the columns hold still as rows arrive, which is the behaviour a list that
-   loads incrementally wants anyway. */
+   the automatic algorithm a cell's `text-overflow` never fires, because the column
+   is sized by its own longest line and the table simply grows. Fixed also means
+   the columns hold still as rows arrive, which is the behaviour a list that loads
+   incrementally wants anyway — and, measured, it is the only one of the two that
+   keeps the table inside its container: the console's seven-column set list wants
+   751px of content in a 562px panel, which auto layout resolves by overflowing
+   the panel by 189px and fixed resolves by clipping the columns that asked to be
+   clipped.
+   What fixed cannot do is grow a cell for a control, which is what
+   `TableColumn.width` and the `<colgroup>` exist for. */
 .ds-table {
   width: 100%;
   table-layout: fixed;
@@ -18,8 +24,22 @@
 .ds-table__cell {
   padding: var(--space-3) var(--space-4);
   text-align: left;
-  vertical-align: top;
+  /* Centred, not top-aligned: a row's tallest cell is usually prose that wrapped,
+     and the badges and buttons beside it read as belonging to that row rather
+     than hanging off the top of it. */
+  vertical-align: middle;
   border-bottom: 1px solid var(--color-border);
+}
+
+/* Flush with whatever holds the table. The cell padding is the rhythm *between*
+   columns; spending it on the outer edges too would inset the first column from
+   the panel heading above it, which is the one alignment a reader checks. */
+.ds-table__row > .ds-table__cell:first-child {
+  padding-inline-start: 0;
+}
+
+.ds-table__row > .ds-table__cell:last-child {
+  padding-inline-end: 0;
 }
 
 /* The heading band sits on the stronger hairline: it separates two kinds of
@@ -57,6 +77,13 @@ td.ds-table__cell--numeric {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+}
+
+/* The rows are ruled off from one another, not boxed: the last row's rule would
+   be a line along the bottom of whatever contains the table, which is either a
+   second border beside the panel's own or a stray edge with nothing under it. */
+.ds-table__body .ds-table__row:last-child .ds-table__cell {
+  border-bottom: 0;
 }
 
 /* ---------------------------------------------------------------------------

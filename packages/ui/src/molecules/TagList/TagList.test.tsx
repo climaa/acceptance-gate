@@ -1,8 +1,11 @@
+import { SKIP_TAG } from '@gate/visual-diff/policy';
 import { cleanup, render, screen } from '@testing-library/react';
 import type { AnchorHTMLAttributes } from 'react';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { TagList } from './TagList';
+import * as tagListStories from './TagList.stories';
+import { Empty } from './TagList.stories';
 
 // `globals` is off in vitest.config.ts, so Testing Library registers no automatic
 // cleanup — without this every render stacks in the same document and the queries
@@ -74,5 +77,37 @@ describe('TagList', () => {
     const list = screen.getByRole('list');
 
     expect(list.className).toBe('ds-stack ds-tag-list u-mt-2');
+  });
+});
+
+/**
+ * Every export in a story module that opts out of capture, by name.
+ *
+ * `default` is included deliberately: Storybook merges a meta's tags into every
+ * story it holds, so a skip written there would take the whole file out of the
+ * gate while each named export still reported none of its own.
+ */
+const skippingStories = (module: Record<string, { tags?: readonly string[] }>) =>
+  Object.entries(module)
+    .filter(([, story]) => story?.tags?.includes(SKIP_TAG))
+    .map(([name]) => name)
+    .sort();
+
+describe('the capture contract', () => {
+  it('skips the empty story, with the string policy.mjs declares', () => {
+    // Storybook indexes CSF statically and rejects a non-literal tag, so the
+    // story file has to write the string out; this is where that literal is
+    // checked against the policy that reads it. An empty tag array renders
+    // `null`, so there is no `#storybook-root` box to shoot — and unlike
+    // SkipLink's unfocused Default, no other state of this story renders either.
+    expect(Empty.tags).toEqual([SKIP_TAG]);
+  });
+
+  it('skips that story and no other in the file', () => {
+    // Exact, over every export rather than a named sibling: the corpus-wide pin
+    // in src/__tests__ keys on the file, so it cannot see a *second* skip added
+    // here. `ThreeTags` and `OneTag` are what baseline the component at all, and
+    // the skip above is only free while they stay captured.
+    expect(skippingStories(tagListStories)).toEqual(['Empty']);
   });
 });

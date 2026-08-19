@@ -1,8 +1,7 @@
-import { Badge } from '@gate/ui';
+import { Badge, Table, type TableColumn, type TableRow } from '@gate/ui';
 import { formatBytes } from '@/lib/outcome';
 import type { CaptureSet } from '@/lib/summary';
 import { DeleteSetButton } from './ConfirmDialogs';
-import { type TableColumn, type TableRow, Table } from './Table';
 
 /**
  * The capture sets this instance holds, newest first — the order `sets.json` is
@@ -32,7 +31,10 @@ const SET_COLUMNS: readonly TableColumn[] = [
   { header: 'date' },
   { header: 'stories', numeric: true },
   { header: 'size', numeric: true },
-  { header: '' },
+  // The delete button's own width, not a share of the table: `table-layout: fixed`
+  // allots every undeclared column an equal slice, and at this panel's width that
+  // slice is narrower than the button standing in it.
+  { header: '', width: '6rem' },
 ];
 
 function setRow(set: CaptureSet, bytes: number | undefined): TableRow {

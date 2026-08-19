@@ -268,6 +268,52 @@ describe('Table', () => {
     });
   });
 
+  describe('column widths', () => {
+    it('emits a col per column, carrying the width the column asked for', () => {
+      const { container } = renderTable({
+        columns: [
+          { header: 'Story' },
+          { header: 'Branch' },
+          { header: '', width: '6rem' },
+        ],
+      });
+
+      const cols = [...container.querySelectorAll('colgroup > col')];
+
+      // One `col` per column, not one per width: a `colgroup` shorter than the row
+      // it sizes would apply the width to the wrong column.
+      expect(cols).toHaveLength(3);
+      expect(cols.map((col) => (col as HTMLElement).style.width)).toEqual([
+        '',
+        '',
+        '6rem',
+      ]);
+    });
+
+    it('emits no colgroup when no column asked for a width', () => {
+      const { container } = renderTable();
+
+      expect(container.querySelector('colgroup')).toBeNull();
+    });
+
+    it('leaves the roles the reflow depends on untouched', () => {
+      // `col` renders no box and carries no role, so adding one must not change what
+      // the table reports — the mobile card layout is held together by these roles.
+      const { container } = renderTable({
+        columns: [
+          { header: 'Story' },
+          { header: 'Branch' },
+          { header: '', width: '6rem' },
+        ],
+      });
+
+      expect(screen.getByRole('table', { name: 'Snapshot sets' })).toBe(
+        container.firstElementChild,
+      );
+      expect(screen.getAllByRole('columnheader')).toHaveLength(3);
+    });
+  });
+
   // color-contrast is off: it measures rendered pixels, and jsdom paints none, so
   // the rule reports every node as "incomplete" rather than passing or failing.
   // Contrast is asserted for real against the palette in src/__tests__/tokens.test.ts.

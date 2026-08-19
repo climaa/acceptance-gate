@@ -38,7 +38,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { deflateSync } from 'node:zlib';
 
-import { THRESHOLDS, parseVariantKey } from '@gate/visual-diff/policy';
+import { SKIP_TAG, THRESHOLDS, parseVariantKey } from '@gate/visual-diff/policy';
 
 const workspace = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const FIXTURES = resolve(workspace, '..', 'visual-diff-ui', 'fixtures');
@@ -434,6 +434,19 @@ function verifyReport(target, graft) {
   check(
     summary.warnings.some((warning) => warning.includes('unstable')),
     `${graft.report} carries no warning about an unstable story`,
+  );
+  // The skipped-story line the report scenario asserts a reviewer is shown. This
+  // one is NOT fabricated: the committed fixture is a real report, and a real run
+  // emits the skip line, so the warning arrives through the copy rather than the
+  // overlay. That is exactly why it needs asserting here — a warning nothing owns
+  // is a warning a future fixture refresh can drop without anything noticing, and
+  // the scenario downstream would then pass or fail on data no one chose.
+  //
+  // Matched on SKIP_TAG rather than on the sentence, so renaming the tag fails the
+  // seed instead of quietly leaving the fixture describing a tag that is gone.
+  check(
+    summary.warnings.some((warning) => warning.includes(`skipped by ${SKIP_TAG}`)),
+    `${graft.report} carries no warning about a skipped story`,
   );
 }
 

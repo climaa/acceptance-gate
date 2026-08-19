@@ -16,5 +16,32 @@
     "@fontsource/atkinson-hyperlegible",
     "@fontsource/fraunces",
     "@fontsource/jetbrains-mono"
+  ],
+
+  // Scripts another process spawns. Each one is the top of its own module
+  // graph, reached by argv rather than by `import`, so fallow's static graph
+  // sees a file nothing imports and reports `unused-file`. It is not a
+  // near-miss: every unused-file finding this repo has ever produced has been
+  // one of these three, so the signal is worth nothing until they are declared.
+  //
+  //   scripts/capture-set.mjs       spawned by apps/visual-diff-ui/lib/runner.ts,
+  //                                 through `docker run` from a developer's
+  //                                 machine and directly on the pinned image
+  //   scripts/seed-visual-diff.mjs  spawned by apps/e2e/playwright.config.ts
+  //   scripts/apply-ruleset.mjs     run by hand; see .github/rulesets/README.md
+  //
+  // `entry` and not `ignorePatterns`: these files are not exceptions to the
+  // analysis, they are roots of it. Declaring them keeps what they import
+  // (`@gate/visual-diff/commands`, and so on) reachable, which an ignore would
+  // instead hide. They export nothing, so nothing is lost to the rule that an
+  // entry file's exports are assumed to be consumed externally.
+  //
+  // Listed individually rather than as `**/scripts/*.mjs`: a glob would also
+  // adopt every future script, which is how a real dead file gets to look
+  // spawned. A new spawned script should have to say so here.
+  "entry": [
+    "apps/visual-diff-ui/scripts/capture-set.mjs",
+    "apps/e2e/scripts/seed-visual-diff.mjs",
+    "scripts/apply-ruleset.mjs"
   ]
 }

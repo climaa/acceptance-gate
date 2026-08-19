@@ -12,6 +12,10 @@ Feature: Visual-diff report
     When I open the report
     Then the corpus warning names the unstable stories
 
+  Scenario: The skipped-story warning names what was never captured
+    When I open the report
+    Then the corpus warning names the skipped stories
+
   Scenario: Marking a variant reviewed advances the progress
     When I open the report
     And I mark the first changed story as reviewed

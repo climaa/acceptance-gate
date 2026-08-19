@@ -39,7 +39,7 @@ function renderPicker(value: string[] = []) {
 const expand = (count: number) =>
   fireEvent.click(screen.getByRole('button', { name: new RegExp(`${count}$`) }));
 
-const box = (name: string) => screen.getByRole('checkbox', { name });
+const box = (name: string) => screen.getByRole<HTMLInputElement>('checkbox', { name });
 
 afterEach(cleanup);
 
@@ -85,13 +85,21 @@ describe('the tiers', () => {
     renderPicker(['atoms-button']);
 
     expect(box('atoms').getAttribute('aria-checked')).toBe('mixed');
-    expect(box('molecules').getAttribute('aria-checked')).toBe('false');
+    // No `aria-checked` on the settled states: the atom states it for `mixed`
+    // alone and leaves the native checkbox to report the other two, so these
+    // assert the properties rather than an attribute meant to be absent. Both
+    // properties, not just `checked`: with the attribute gone, `checked` alone no
+    // longer says a box is *not* also mixed, and `indeterminate` is the half of
+    // the arithmetic this suite exists to pin.
+    expect(box('molecules').checked).toBe(false);
+    expect(box('molecules').indeterminate).toBe(false);
   });
 
   it('reads as checked when all of a tier is ticked', () => {
     renderPicker(['atoms-button', 'atoms-badge']);
 
-    expect(box('atoms').getAttribute('aria-checked')).toBe('true');
+    expect(box('atoms').checked).toBe(true);
+    expect(box('atoms').indeterminate).toBe(false);
   });
 });
 

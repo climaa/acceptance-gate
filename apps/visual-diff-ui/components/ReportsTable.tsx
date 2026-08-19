@@ -1,7 +1,6 @@
 import NextLink from 'next/link';
-import { Button, Link } from '@gate/ui';
+import { Button, Link, Table, type TableColumn, type TableRow } from '@gate/ui';
 import type { ReportListEntry } from '@/lib/data';
-import { type TableColumn, type TableRow, Table } from './Table';
 
 /**
  * The comparisons this instance has written, newest first.
@@ -21,7 +20,9 @@ const UNDATED = '—';
 const REPORT_COLUMNS: readonly TableColumn[] = [
   { header: 'report', truncate: true },
   { header: 'date' },
-  { header: '' },
+  // Sized to the button it holds; see SetsTable for why a share of the table is
+  // not enough.
+  { header: '', width: '6rem' },
 ];
 
 function reportRow(report: ReportListEntry, date: string | null): TableRow {

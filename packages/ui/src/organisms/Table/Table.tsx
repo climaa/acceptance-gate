@@ -10,6 +10,16 @@ export interface TableColumn {
   /** One line, ellipsized. Pair with the object cell form: the ellipsis hides the
    *  end of the value, and `title` is what gives it back. */
   truncate?: boolean;
+  /**
+   * A CSS length for this column, landing on a `<col>`.
+   *
+   * `table-layout: fixed` divides the width evenly and then refuses to grow a
+   * cell for its content, so a column holding a control rather than text needs to
+   * say how much room that control takes — otherwise it is allotted a share of
+   * the table and the control breaks out of its own cell. Columns that do not
+   * declare one share whatever is left, which is the behaviour text columns want.
+   */
+  width?: string;
 }
 
 /** The object form of a cell. Any cell may use it; a truncating column's should. */
@@ -88,6 +98,18 @@ export function Table({ label, columns, rows, className }: TableProps) {
       aria-label={label}
       className={['ds-table', className].filter(Boolean).join(' ')}
     >
+      {/* Only when a column asked for a width: an all-`<col>`-no-width colgroup
+          would be markup that changes nothing. `<col>` carries no ARIA role and
+          renders no box, so it is invisible to both the accessibility tree and
+          the card layout below the breakpoint. */}
+      {columns.some((column) => column.width) && (
+        <colgroup>
+          {columns.map((column, index) => (
+            <col key={index} style={column.width ? { width: column.width } : undefined} />
+          ))}
+        </colgroup>
+      )}
+
       <thead role="rowgroup" className="ds-table__head">
         <tr role="row" className="ds-table__row">
           {columns.map((column, index) => (

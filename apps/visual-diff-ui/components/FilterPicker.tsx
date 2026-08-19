@@ -1,9 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Stack } from '@gate/ui';
+import { Stack, TriStateCheckbox } from '@gate/ui';
 import type { StoryTier } from '@/lib/stories';
-import { TriStateCheckbox } from './TriStateCheckbox';
 
 /**
  * What to capture, ticked rather than typed.

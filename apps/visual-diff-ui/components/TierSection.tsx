@@ -1,5 +1,5 @@
 import { useId } from 'react';
-import { Stack } from '@gate/ui';
+import { Stack, TriStateCheckbox } from '@gate/ui';
 import type { ComparisonMode } from '@/lib/comparison';
 import {
   countReviewed,
@@ -9,7 +9,6 @@ import {
 } from '@/lib/report-view';
 import type { Variant } from '@/lib/summary';
 import { StoryCard } from './StoryCard';
-import { TriStateCheckbox } from './TriStateCheckbox';
 
 /**
  * One named region of the results: the accessibility section, or one tier of
