@@ -1,5 +1,12 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react';
 import { HOST } from '@gate/visual-diff/policy';
 // Imported explicitly rather than relying on `globals: true` — tsconfig's
 // `**/*.tsx` include means tsc typechecks this file.
@@ -321,6 +328,62 @@ describe('starting a job', () => {
 
     const alert = await screen.findByRole('alert');
     expect(alert.textContent).toBe(JOB_RUNNING);
+  });
+
+  /**
+   * The two halves of D1's surface, on screen at once.
+   *
+   * The ordinary sequence, not a contrived one: a start is refused with
+   * `JOB_RUNNING` because something else took the lock, and the poller catches
+   * up within `POLL_MS` of the same click. The refusal alert above the button
+   * and D1's link where the button was are both `role="alert"` inside `main`,
+   * and `apps/e2e/pages/console.ts` reads that with a strict locator — so two
+   * matches fail every refusal scenario on ambiguity rather than on its subject.
+   *
+   * The two cases beside this one each render one half and would both stay green
+   * with the other alert restored; this is the one that holds them together.
+   */
+  it('answers a refused start and a running job with one alert, not two', async () => {
+    renderPanel({
+      jobs: { ok: false, status: 409, body: { error: JOB_RUNNING } },
+      current: { running: true, job: RUNNING },
+    });
+    fireEvent.change(screen.getByRole('textbox', { name: 'label' }), {
+      target: { value: 'main-2026-08-17' },
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'start capture' }));
+
+    await waitFor(() => expect(startButtons('capture')).toHaveLength(0));
+
+    const alerts = screen.getAllByRole('alert');
+
+    expect(alerts).toHaveLength(1);
+    // D1's link survives, not the bare sentence: it says the same thing and
+    // where to watch it.
+    expect(alerts[0]?.textContent).toContain(JOB_RUNNING);
+    expect(
+      within(alerts[0] as HTMLElement)
+        .getByRole('link')
+        .getAttribute('href'),
+    ).toBe('#vd-current-job');
+  });
+
+  // A refusal answers the request that earned it. Carrying it into another mode
+  // makes the panel say no to a question nobody asked — and in `accept`, where
+  // `GateNotice` draws its own alert, it is the two-alert failure again.
+  it('clears a refusal when the reviewer changes mode', async () => {
+    renderPanel({ jobs: { ok: false, status: 409, body: { error: JOB_RUNNING } } });
+    fireEvent.change(screen.getByRole('textbox', { name: 'label' }), {
+      target: { value: 'main-2026-08-17' },
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'start capture' }));
+    expect((await screen.findByRole('alert')).textContent).toBe(JOB_RUNNING);
+
+    selectTab('compare');
+
+    expect(screen.queryByRole('alert')).toBeNull();
   });
 
   // D1: one job at a time, so while one holds the lock there is nothing to press

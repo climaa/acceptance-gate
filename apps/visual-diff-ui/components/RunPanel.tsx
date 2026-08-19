@@ -452,7 +452,7 @@ function jobRequest(form: JobForm): Record<string, unknown> {
  *  `useMutation`'s; this names the endpoint and keeps the panel's vocabulary —
  *  one refusal rather than a list, and `starting` rather than `busy`. */
 function useStartJob() {
-  const { run, refusals, busy } = useMutation();
+  const { run, refusals, busy, clear } = useMutation();
 
   const start = async (request: Record<string, unknown>) => {
     await run({
@@ -463,7 +463,12 @@ function useStartJob() {
     });
   };
 
-  return { start, refusal: refusals[0] ?? null, starting: busy };
+  // `clear` is handed back for the same reason both `ConfirmDialogs` call sites
+  // take it: a refusal answers the request that earned it, and carrying it into
+  // another mode makes the panel say no to a question nobody asked. Accept is
+  // the mode where that matters — `GateNotice` draws its own alert there, and a
+  // stale one beside it is the two-alert failure below by a second route.
+  return { start, refusal: refusals[0] ?? null, starting: busy, clear };
 }
 
 /** Whether the form names a job the runner could take. */
@@ -746,7 +751,10 @@ export function RunPanel({ isSample, isLocal, reports }: RunPanelProps) {
   );
   const runner = useRunnerFingerprint();
   const stories = useStories();
-  const { start, refusal, starting } = useStartJob();
+  const { start, refusal, starting, clear } = useStartJob();
+  // Read here as well as in `StartAction`, because the two alerts this panel
+  // can draw are decided in two different places and only one of them knew.
+  const { running } = useCurrentJob();
 
   // One word for the two reasons a composer is inert. They are different
   // refusals — one is answered above the button, the other instead of it — but a
@@ -766,7 +774,13 @@ export function RunPanel({ isSample, isLocal, reports }: RunPanelProps) {
 
   return (
     <Stack gap={4}>
-      <ModeTabs mode={form.mode} onSelect={(mode) => patch({ mode })} />
+      <ModeTabs
+        mode={form.mode}
+        onSelect={(mode) => {
+          clear();
+          patch({ mode });
+        }}
+      />
 
       <div role="tabpanel" id={PANEL_ID} aria-labelledby={tabId(form.mode)}>
         <Stack gap={4}>
@@ -781,7 +795,18 @@ export function RunPanel({ isSample, isLocal, reports }: RunPanelProps) {
           />
 
           {isSample && <Note name="sample mode">{SAMPLE_NOTE}</Note>}
-          {refusal && <Alert>{refusal}</Alert>}
+          {/* Not `{refusal && ...}`. `StartAction` draws `role="alert"` of its
+              own while the lock is held, and both land inside `main` — which
+              `apps/e2e/pages/console.ts` reads with the strict locator
+              `getByRole('main').getByRole('alert')`, so two matches fail every
+              refusal scenario on ambiguity rather than on the thing they test.
+
+              Reached by the ordinary path, not a contrived one: a start
+              refused with `JOB_RUNNING` sets this, and the poller below sets
+              `running` within `POLL_MS` of the same click. D1's link is the
+              better of the two — it says the same sentence AND where to watch
+              it — so this one yields. */}
+          {refusal && !running && <Alert>{refusal}</Alert>}
 
           <StartAction
             form={form}

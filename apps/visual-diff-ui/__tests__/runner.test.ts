@@ -576,6 +576,11 @@ describe('runCheck', () => {
     const args = capture()?.args ?? [];
     expect(args[args.indexOf('--sha') + 1]).toBe(checkout?.sha);
     expect(args[args.indexOf('--branch') + 1]).toBe(checkout?.branch);
+    // The third fact git answers, and the one that went unasserted while
+    // `capture-set.mjs` read it as a switch and recorded every real capture
+    // clean. Asserted as the string the script has to parse, not as a boolean:
+    // argv carries no types, and that gap is where the defect lived.
+    expect(args[args.indexOf('--dirty') + 1]).toBe(String(checkout?.dirty));
   });
 
   // Labels are date-shaped, so a second capture on one day asks for a name that
