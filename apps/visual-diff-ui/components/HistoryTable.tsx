@@ -1,8 +1,7 @@
 import NextLink from 'next/link';
-import { Link } from '@gate/ui';
+import { Link, Table, type TableColumn, type TableRow } from '@gate/ui';
 import type { HistoryRecord } from '@/lib/jobs';
 import { durationOf, formatDuration, outcomeOf, outcomeTone } from '@/lib/outcome';
-import { type TableColumn, type TableRow, Table } from './Table';
 
 /**
  * The past runs, newest first — the order `history.json` is written in.

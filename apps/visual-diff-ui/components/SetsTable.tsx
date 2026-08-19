@@ -1,8 +1,7 @@
-import { Badge } from '@gate/ui';
+import { Badge, Table, type TableColumn, type TableRow } from '@gate/ui';
 import { formatBytes } from '@/lib/outcome';
 import type { CaptureSet } from '@/lib/summary';
 import { DeleteSetButton } from './ConfirmDialogs';
-import { type TableColumn, type TableRow, Table } from './Table';
 
 /**
  * The capture sets this instance holds, newest first — the order `sets.json` is

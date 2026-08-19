@@ -6,7 +6,7 @@
    cannot show a re-encoded copy of the evidence. */
 
 import { useEffect, useRef, useState } from 'react';
-import { Dialog, Stack } from '@gate/ui';
+import { Dialog, SegmentedControl, Stack } from '@gate/ui';
 import { REDUCED_MOTION, useMediaQuery, WIDE_VIEWPORT } from '@/hooks/useMediaQuery';
 import {
   clampPosition,
@@ -27,7 +27,6 @@ import {
 } from '@/lib/shots';
 import type { Variant } from '@/lib/summary';
 import { storyTitle } from '@/lib/title';
-import { SegmentedControl } from './SegmentedControl';
 
 /**
  * Where a reviewer looks at the pixels: one variant, full-bleed, in whichever

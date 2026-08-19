@@ -113,107 +113,6 @@ main {
   background: var(--color-accent);
 }
 
-/* ---- Tables: cards at this width ---------------------------------------- */
-
-/* The header row stays in the document — `display: none` would take the column
-   names out of the accessibility tree along with the explicit roles every cell
-   depends on at this width. Clipped with the same rect pattern packages/ui uses
-   for its own visually-hidden content, and restored below 768 px. */
-.vd-table__head {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-}
-
-/* Every element here keeps its role and loses its table display: that is the
-   whole reason the component states each role explicitly rather than leaning on
-   the implicit ones, which a browser strips the moment a `<table>` stops being
-   `display: table`. */
-.vd-table,
-.vd-table__head,
-.vd-table__body,
-.vd-table__row,
-.vd-table__cell {
-  display: block;
-}
-
-.vd-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: var(--text-sm);
-}
-
-/* A card, and its fields flow across whatever width the card has. One field per
-   line is right on a phone and wasteful by 600 px — the console is often a
-   half-width window beside an editor, where a set's seven fields left two
-   thirds of the card empty and made the panel three times taller than it needed
-   to be.
-
-   `auto-fit` rather than a second breakpoint: the column count follows the space
-   the card actually got, which is not knowable from the viewport once this panel
-   is one of two. 11rem is the widest field's own measure — a `label` column plus
-   a capture label — so a column never has to truncate to fit. Below ~26rem it
-   resolves to the single column a phone wants, with no query to state it. */
-.vd-table__row {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
-  /* Column gap only: the cells carry their own `padding-block`, and a row gap
-     on top of it would space a phone's stacked fields twice. */
-  gap: 0 var(--space-4);
-  align-items: baseline;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  padding: var(--space-3);
-}
-
-/* The label names the row, so it gets its own line above the fields it
-   identifies rather than a column equal to `size`. */
-.vd-table__row .vd-table__cell:first-child {
-  grid-column: 1 / -1;
-}
-
-.vd-table__row + .vd-table__row {
-  margin-block-start: var(--space-3);
-}
-
-.vd-table__cell {
-  padding-block: var(--space-1);
-  text-align: start;
-  /* A grid item's automatic minimum is its min-content, and `minmax(11rem, 1fr)`
-     contributes nothing from content — so a long sha or capture label in an
-     11rem track would push out of it with nothing to clip it. Before the card
-     became a grid it always had the full width to run into. */
-  min-width: 0;
-  overflow-wrap: anywhere;
-}
-
-/* The column's own header, in front of its value. Generated content, so it
-   never carries the accessible name — the roles do that. */
-.vd-table__cell::before {
-  content: attr(data-label);
-  display: inline-block;
-  min-width: 5rem;
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  color: var(--color-text-muted);
-}
-
-.vd-table__head .vd-table__cell {
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  font-weight: var(--weight-normal);
-  color: var(--color-text-muted);
-}
-
-/* Figures that are read down a column, so they line up digit for digit. */
-.vd-table__cell--numeric {
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
-}
-
 /* The label and its dirty badge share a cell: the label gives up its width, the
    badge never does — a set captured from a dirty tree must not lose the mark
    that says so to a long name. */
@@ -592,20 +491,13 @@ main {
   min-width: 12rem;
 }
 
-.vd-review__hide,
-.vd-tri {
+.vd-review__hide {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
   font-size: var(--text-sm);
   cursor: pointer;
   touch-action: manipulation;
-}
-
-.vd-tri__label {
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  color: var(--color-text-muted);
 }
 
 /* The committed corpus, above the sets this instance captured. Bordered rather
@@ -935,57 +827,6 @@ main {
   background: var(--color-bg-muted);
 }
 
-/* ---- The segmented control ---------------------------------------------- */
-
-/* Wraps rather than scrolls: six modes at 390 px are two rows in the thumb's
-   reach, and a row that scrolled sideways would hide the mode nobody scrolled
-   to. */
-.vd-seg {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-1);
-  padding: var(--space-1);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-bg-subtle);
-}
-
-.vd-seg__option {
-  appearance: none;
-  flex: 1 1 auto;
-  /* A thumb target below the breakpoint; the desktop query relaxes it. */
-  min-height: var(--space-10);
-  padding: var(--space-1) var(--space-3);
-  border: 0;
-  border-radius: var(--radius-sm);
-  background: none;
-  color: var(--color-text-muted);
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  cursor: pointer;
-  touch-action: manipulation;
-  transition:
-    background-color var(--duration-fast) var(--ease-out),
-    color var(--duration-fast) var(--ease-out);
-}
-
-.vd-seg__option:hover {
-  color: var(--color-text);
-}
-
-/* Drawn off the attribute rather than a class: the state a reader hears and the
-   state a reviewer sees are then the same value. */
-.vd-seg__option[aria-pressed='true'] {
-  background: var(--color-bg);
-  color: var(--color-text);
-  box-shadow: var(--shadow-sm);
-}
-
-.vd-seg__option:focus-visible {
-  outline: 2px solid var(--color-focus-ring);
-  outline-offset: 2px;
-}
-
 /* ---- The comparison modal ----------------------------------------------- */
 
 .vd-compare__head {
@@ -1145,7 +986,7 @@ main {
   transform: translate(-50%, -50%);
 }
 
-/* ---- From 768 px: two columns, and the tables become tables -------------- */
+/* ---- From 768 px: two columns ------------------------------------------- */
 
 @media (min-width: 768px) {
   /* The board's desktop layout: sets and reports left, jobs and history right.
@@ -1154,67 +995,6 @@ main {
      instead of letting the cell that owns the truncation do its job. */
   .vd-console {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  }
-
-  .vd-table {
-    display: table;
-  }
-
-  .vd-table__head {
-    display: table-header-group;
-    position: static;
-    width: auto;
-    height: auto;
-    overflow: visible;
-    clip: auto;
-    white-space: normal;
-  }
-
-  .vd-table__body {
-    display: table-row-group;
-  }
-
-  .vd-table__row {
-    display: table-row;
-    border: 0;
-    border-radius: 0;
-    padding: 0;
-  }
-
-  .vd-table__row + .vd-table__row {
-    margin-block-start: 0;
-  }
-
-  .vd-table__cell {
-    display: table-cell;
-    padding-block: var(--space-2);
-    padding-inline-end: var(--space-3);
-    vertical-align: middle;
-    border-block-end: 1px solid var(--color-border);
-  }
-
-  /* The rows are ruled off from one another, not boxed: the last one's rule
-     would be a line along the bottom of the panel. */
-  .vd-table__body .vd-table__row:last-child .vd-table__cell {
-    border-block-end: 0;
-  }
-
-  /* The card labels were the header row's job at this width. */
-  .vd-table__cell::before {
-    content: none;
-  }
-
-  .vd-table__cell--numeric {
-    text-align: end;
-  }
-
-  /* Truncation always pairs with the full value on `title` — the cell form that
-     carries one is what the truncating columns are built from. */
-  .vd-table__cell--truncate {
-    max-width: 12rem;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
   }
 
   /* A field is a labelled row once there is width for one; stacked below, where
@@ -1347,12 +1127,6 @@ main {
      the two beside it. */
   .vd-three-up__frames {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  /* A mode is a pointer target rather than a thumb target at this width, and a
-     toolbar of thumb-sized buttons would be the tallest thing in the header. */
-  .vd-seg__option {
-    min-height: auto;
   }
 
   /* A row of pointer targets in the header, sized by its own contents. */
