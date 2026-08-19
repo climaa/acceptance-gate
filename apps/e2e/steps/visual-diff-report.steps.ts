@@ -115,6 +115,15 @@ Then('the corpus warning names the unstable stories', async ({ report }) => {
   await expect(report.warningStrip).toContainText(/unstable/);
 });
 
+// Matched on the tag rather than on the story names: which stories are skipped is
+// a corpus decision that moves (packages/ui's own suite pins the set), while "the
+// reviewer is told some were never captured" is the requirement this scenario is
+// here for. `visual-diff:skip` is spelled out because `.feature` steps read as
+// prose and the tag is the thing a reader would grep for.
+Then('the corpus warning names the skipped stories', async ({ report }) => {
+  await expect(report.warningStrip).toContainText(/skipped by visual-diff:skip/);
+});
+
 Then('the review progress increases by one', async ({ report, scenarioState }) => {
   if (scenarioState.reviewedBefore === undefined) {
     throw new Error('reviewedBefore was never captured — the When step did not run');
