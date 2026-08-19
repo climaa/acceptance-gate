@@ -3,7 +3,8 @@ import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { SkipLink } from './SkipLink';
-import { Default, Revealed } from './SkipLink.stories';
+import * as skipLinkStories from './SkipLink.stories';
+import { Default } from './SkipLink.stories';
 
 // `globals` is off in vitest.config.ts, so Testing Library registers no automatic
 // cleanup — without this every render stacks in the same document and the queries
@@ -66,6 +67,19 @@ describe('SkipLink', () => {
   });
 });
 
+/**
+ * Every export in a story module that opts out of capture, by name.
+ *
+ * `default` is included deliberately: Storybook merges a meta's tags into every
+ * story it holds, so a skip written there would take the whole file out of the
+ * gate while each named export still reported none of its own.
+ */
+const skippingStories = (module: Record<string, { tags?: readonly string[] }>) =>
+  Object.entries(module)
+    .filter(([, story]) => story?.tags?.includes(SKIP_TAG))
+    .map(([name]) => name)
+    .sort();
+
 describe('the capture contract', () => {
   it('skips the unfocused story, with the string policy.mjs declares', () => {
     // Storybook indexes CSF statically and rejects a non-literal tag, so the
@@ -76,10 +90,13 @@ describe('the capture contract', () => {
     expect(Default.tags).toEqual([SKIP_TAG]);
   });
 
-  it('keeps the revealed story in the corpus', () => {
-    // What makes the skip above free: `Revealed` is the story that baselines
-    // this link on screen. Skipping it too would leave the component with no
-    // shot at all, which is the failure the skip is one edit away from.
-    expect(Revealed.tags ?? []).not.toContain(SKIP_TAG);
+  it('skips that story and no other in the file', () => {
+    // Exact, over every export rather than a named sibling: the corpus-wide pin
+    // in src/__tests__ keys on the file, so it cannot see a *second* skip added
+    // here — and this is the file where a reader has already been shown that
+    // skipping is normal. `Revealed` is what makes the skip above free, being the
+    // story that baselines this link on screen; skipping it too would leave the
+    // component with no shot at all.
+    expect(skippingStories(skipLinkStories)).toEqual(['Default']);
   });
 });

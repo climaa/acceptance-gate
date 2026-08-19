@@ -86,15 +86,20 @@ describe('the tiers', () => {
 
     expect(box('atoms').getAttribute('aria-checked')).toBe('mixed');
     // No `aria-checked` on the settled states: the atom states it for `mixed`
-    // alone and leaves the native checkbox to report the other two, so this
-    // asserts the property rather than an attribute that is meant to be absent.
+    // alone and leaves the native checkbox to report the other two, so these
+    // assert the properties rather than an attribute meant to be absent. Both
+    // properties, not just `checked`: with the attribute gone, `checked` alone no
+    // longer says a box is *not* also mixed, and `indeterminate` is the half of
+    // the arithmetic this suite exists to pin.
     expect(box('molecules').checked).toBe(false);
+    expect(box('molecules').indeterminate).toBe(false);
   });
 
   it('reads as checked when all of a tier is ticked', () => {
     renderPicker(['atoms-button', 'atoms-badge']);
 
     expect(box('atoms').checked).toBe(true);
+    expect(box('atoms').indeterminate).toBe(false);
   });
 });
 

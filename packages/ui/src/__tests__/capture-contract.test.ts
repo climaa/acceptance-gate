@@ -23,6 +23,19 @@
  * Dialog.stories.tsx names `visual-diff:fullpage` in prose and must not read as
  * carrying it.
  *
+ * Two things this deliberately does not reach, both covered where they belong.
+ * It keys on the FILE, so a second skip added inside a file already listed here
+ * is invisible to it — each component's own `capture contract` block pins the
+ * exact set of skipping exports for that reason, and those blocks are
+ * load-bearing rather than decorative. And the match is a substring, so a
+ * typo'd `visual-diff:skipped` inside a listed file still reads as skipping;
+ * the same blocks assert the tag equals SKIP_TAG exactly. The substring is the
+ * safe direction here: for "has a new skip appeared", over-matching costs a
+ * look and under-matching costs the guard.
+ *
+ * An empty scan cannot pass it: `EXPECTED_SKIPS` is non-empty, so a glob that
+ * stopped matching fails on the comparison below rather than approving silence.
+ *
  * Structural, never appearance: which stories the gate shoots, never what any of
  * them looks like.
  */
@@ -70,12 +83,5 @@ describe('the corpus-wide skip contract', () => {
     const skipping = storyFilesOnDisk().filter((file) => codeOf(file).includes(SKIP_TAG));
 
     expect(skipping).toEqual(Object.keys(EXPECTED_SKIPS).sort());
-  });
-
-  it('reads the corpus it is meant to be pinning', () => {
-    // The guard above passes vacuously if the scan finds no stories at all — a
-    // renamed suffix, a moved directory, a glob that stopped matching. This is
-    // the assertion that fails instead of quietly approving an empty corpus.
-    expect(storyFilesOnDisk().length).toBeGreaterThan(Object.keys(EXPECTED_SKIPS).length);
   });
 });

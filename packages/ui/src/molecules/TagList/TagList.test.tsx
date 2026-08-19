@@ -4,7 +4,8 @@ import type { AnchorHTMLAttributes } from 'react';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { TagList } from './TagList';
-import { Empty, OneTag, ThreeTags } from './TagList.stories';
+import * as tagListStories from './TagList.stories';
+import { Empty } from './TagList.stories';
 
 // `globals` is off in vitest.config.ts, so Testing Library registers no automatic
 // cleanup — without this every render stacks in the same document and the queries
@@ -79,6 +80,19 @@ describe('TagList', () => {
   });
 });
 
+/**
+ * Every export in a story module that opts out of capture, by name.
+ *
+ * `default` is included deliberately: Storybook merges a meta's tags into every
+ * story it holds, so a skip written there would take the whole file out of the
+ * gate while each named export still reported none of its own.
+ */
+const skippingStories = (module: Record<string, { tags?: readonly string[] }>) =>
+  Object.entries(module)
+    .filter(([, story]) => story?.tags?.includes(SKIP_TAG))
+    .map(([name]) => name)
+    .sort();
+
 describe('the capture contract', () => {
   it('skips the empty story, with the string policy.mjs declares', () => {
     // Storybook indexes CSF statically and rejects a non-literal tag, so the
@@ -89,11 +103,11 @@ describe('the capture contract', () => {
     expect(Empty.tags).toEqual([SKIP_TAG]);
   });
 
-  it('keeps the stories that do render in the corpus', () => {
-    // The skip above is only free while these two are still captured: they are
-    // what baselines the component at all.
-    expect([ThreeTags, OneTag].flatMap((story) => story.tags ?? [])).not.toContain(
-      SKIP_TAG,
-    );
+  it('skips that story and no other in the file', () => {
+    // Exact, over every export rather than a named sibling: the corpus-wide pin
+    // in src/__tests__ keys on the file, so it cannot see a *second* skip added
+    // here. `ThreeTags` and `OneTag` are what baseline the component at all, and
+    // the skip above is only free while they stay captured.
+    expect(skippingStories(tagListStories)).toEqual(['Empty']);
   });
 });
