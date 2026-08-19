@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Stack } from '@gate/ui';
+import { Button, Stack, TriStateCheckbox } from '@gate/ui';
 
 /**
  * Where the reviewer stands, and the four controls that move them.
@@ -87,14 +87,16 @@ export function ReviewBar({
 
       <Progress reviewed={reviewed} total={total} />
 
-      <label className="vd-review__hide">
-        <input
-          type="checkbox"
-          checked={hideReviewed}
-          onChange={(event) => onHideReviewed(event.target.checked)}
-        />
-        <span>hide reviewed</span>
-      </label>
+      {/* The design system's checkbox, not a hand-rolled one: the cards' own
+          "reviewed" boxes are this atom, this control sits on the same screen as
+          twenty of them, and two differently-drawn checkboxes in one view read as
+          two different kinds of control. Binary here — `indeterminate` is a state
+          "hide reviewed" has no meaning for. */}
+      <TriStateCheckbox
+        label="hide reviewed"
+        checked={hideReviewed}
+        onChange={onHideReviewed}
+      />
 
       {/* The F1 accelerator, and the same code path `n` runs. */}
       <Button variant="secondary" size="sm" onClick={onNextUnreviewed}>

@@ -20,7 +20,9 @@ const UNDATED = '—';
 const REPORT_COLUMNS: readonly TableColumn[] = [
   { header: 'report', truncate: true },
   { header: 'date' },
-  { header: '' },
+  // Sized to the button it holds; see SetsTable for why a share of the table is
+  // not enough.
+  { header: '', width: '6rem' },
 ];
 
 function reportRow(report: ReportListEntry, date: string | null): TableRow {

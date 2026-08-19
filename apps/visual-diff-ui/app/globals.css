@@ -491,15 +491,6 @@ main {
   min-width: 12rem;
 }
 
-.vd-review__hide {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--text-sm);
-  cursor: pointer;
-  touch-action: manipulation;
-}
-
 /* The committed corpus, above the sets this instance captured. Bordered rather
    than merely spaced: it is a different kind of thing from the rows below it, and
    the border is what says so without a heading competing with the panel's own. */

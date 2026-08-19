@@ -26,7 +26,9 @@ const HISTORY_COLUMNS: readonly TableColumn[] = [
   { header: 'started' },
   { header: 'exit', numeric: true },
   { header: 'took', numeric: true },
-  { header: '' },
+  // Sized to the control it holds; see SetsTable for why a share of the table is
+  // not enough.
+  { header: '', width: '6rem' },
 ];
 
 function historyRow(run: HistoryRecord): TableRow {
