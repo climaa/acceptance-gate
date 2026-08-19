@@ -1,8 +1,8 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Button, Dialog, Stack } from '@gate/ui';
+import { useMutation } from '@/hooks/useMutation';
 
 /**
  * D2, as the two dialogs that stand in front of every destructive control on the
@@ -18,30 +18,6 @@ import { Button, Dialog, Stack } from '@gate/ui';
  * `409 worktree_registered` has learned nothing, and the path of the worktree
  * still holding the set is the one thing they can act on.
  */
-
-/** What a mutation this console could not reach at all comes back as. Not the
- *  server's words, because there were none — and saying so is better than an
- *  empty dialog that looks like it worked. */
-const UNREACHABLE = 'the console could not reach the job API — is the server still up?';
-
-/**
- * The sentence a refused mutation answered with.
- *
- * Every refusal in this app carries prose in `error` (lib/refusals.ts owns the
- * copy). A response that carries none is a failure nobody wrote a sentence for,
- * and the fallback names the action rather than the status, since "500" is not
- * something a reviewer can do anything with either.
- */
-async function refusalOf(response: Response, fallback: string): Promise<string> {
-  try {
-    const body = (await response.json()) as { error?: unknown };
-    if (typeof body.error === 'string') return body.error;
-  } catch {
-    // A refusal that is not JSON is still a refusal.
-  }
-
-  return fallback;
-}
 
 /** Refusals, in the server's words. `role="alert"` because it answers something
  *  the reviewer just did, and it appears inside the dialog they did it in. */
@@ -103,40 +79,22 @@ export interface DeleteSetButtonProps {
  * but it must reach the route as one segment rather than as a path.
  */
 export function DeleteSetButton({ label }: DeleteSetButtonProps) {
-  const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [refusal, setRefusal] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
+  const { run, refusals, busy, clear } = useMutation();
 
   const close = () => {
     setOpen(false);
-    setRefusal(null);
+    clear();
   };
 
   const confirm = async () => {
-    setBusy(true);
-    setRefusal(null);
+    const result = await run({
+      url: `/api/sets/${encodeURIComponent(label)}`,
+      method: 'DELETE',
+      fallback: `could not delete ${label}`,
+    });
 
-    try {
-      const response = await fetch(`/api/sets/${encodeURIComponent(label)}`, {
-        method: 'DELETE',
-        cache: 'no-store',
-      });
-
-      if (!response.ok) {
-        setRefusal(await refusalOf(response, `could not delete ${label}`));
-        return;
-      }
-
-      close();
-      // The table around this is server-rendered: the row survives the deletion
-      // until the page is read again.
-      router.refresh();
-    } catch {
-      setRefusal(UNREACHABLE);
-    } finally {
-      setBusy(false);
-    }
+    if (result.ok) close();
   };
 
   return (
@@ -155,7 +113,7 @@ export function DeleteSetButton({ label }: DeleteSetButtonProps) {
             report is a record of a decision, not part of the set it read.
           </p>
 
-          {refusal && <Refusals sentences={[refusal]} />}
+          {refusals.length > 0 && <Refusals sentences={refusals} />}
 
           <ConfirmActions
             confirm={`delete ${label}`}
@@ -207,49 +165,35 @@ function SetList({ title, labels }: { title: string; labels: readonly string[] }
  * closing on a promise the prune did not keep.
  */
 export function PruneButton({ keep, labels }: PruneButtonProps) {
-  const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [refusals, setRefusals] = useState<readonly string[]>([]);
-  const [busy, setBusy] = useState(false);
+  const { run, refusals, busy, clear, refuse } = useMutation();
 
   const kept = labels.slice(0, keep);
   const doomed = labels.slice(keep);
 
   const close = () => {
     setOpen(false);
-    setRefusals([]);
+    clear();
   };
 
   const confirm = async () => {
-    setBusy(true);
-    setRefusals([]);
+    const result = await run({
+      url: '/api/prune',
+      method: 'POST',
+      body: { keep },
+      fallback: 'could not prune the snapshot sets',
+    });
 
-    try {
-      const response = await fetch('/api/prune', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        cache: 'no-store',
-        body: JSON.stringify({ keep }),
-      });
+    if (!result.ok) return;
 
-      if (!response.ok) {
-        setRefusals([await refusalOf(response, 'could not prune the snapshot sets')]);
-        return;
-      }
+    // A prune can succeed and still have something to say: the server keeps the
+    // sets a worktree holds and names them back. Something moved either way, so
+    // the hook has already re-read the page; only the dialog's fate differs.
+    const { refused } = result.body as { refused?: unknown };
+    const skipped = Array.isArray(refused) ? (refused as string[]) : [];
 
-      const body = (await response.json()) as { refused?: unknown };
-      const skipped = Array.isArray(body.refused) ? (body.refused as string[]) : [];
-
-      // Something moved either way, so the tables are re-read either way; only
-      // the dialog's fate differs.
-      router.refresh();
-      if (skipped.length === 0) close();
-      else setRefusals(skipped);
-    } catch {
-      setRefusals([UNREACHABLE]);
-    } finally {
-      setBusy(false);
-    }
+    if (skipped.length === 0) close();
+    else refuse(skipped);
   };
 
   return (

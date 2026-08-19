@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import {
   type Dispatch,
   type KeyboardEvent,
@@ -10,6 +10,7 @@ import {
   useState,
 } from 'react';
 import { Button, CodeBlock, Stack } from '@gate/ui';
+import { useMutation } from '@/hooks/useMutation';
 import {
   ACCEPT_COMMAND,
   ACCEPT_IMAGE,
@@ -95,8 +96,6 @@ export const DOCKER_REFUSAL = `this capture runs inside ${ACCEPT_IMAGE}, and Doc
  *  `NOT_LOCAL` by the same test. */
 export const REMOTE_REFUSAL =
   'this console is deployed, and a job needs the checkout it compares — start one from the console on your own machine (`pnpm --filter @gate/visual-diff-ui dev`)';
-
-const UNREACHABLE = 'the console could not reach the job API — is the server still up?';
 
 /** One text field. `spellcheck` off on all of them: every value here is an id, a
  *  label or a substring of a story name, and none of them is prose. */
@@ -458,45 +457,22 @@ function jobRequest(form: JobForm): Record<string, unknown> {
     : { mode, label: form.label };
 }
 
-/** Starting a job, and whatever the server refused it with. */
+/** Starting a job, and whatever the server refused it with. The lifecycle is
+ *  `useMutation`'s; this names the endpoint and keeps the panel's vocabulary —
+ *  one refusal rather than a list, and `starting` rather than `busy`. */
 function useStartJob() {
-  const router = useRouter();
-  const [refusal, setRefusal] = useState<string | null>(null);
-  const [starting, setStarting] = useState(false);
+  const { run, refusals, busy } = useMutation();
 
   const start = async (request: Record<string, unknown>) => {
-    setStarting(true);
-    setRefusal(null);
-
-    try {
-      const response = await fetch('/api/jobs', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        cache: 'no-store',
-        body: JSON.stringify(request),
-      });
-
-      if (!response.ok) {
-        const body = (await response.json()) as { error?: unknown };
-        setRefusal(
-          typeof body.error === 'string'
-            ? body.error
-            : 'the console could not start that job',
-        );
-        return;
-      }
-
-      // The history table beside this is server-rendered, so the row this job
-      // just wrote only appears once the page is read again.
-      router.refresh();
-    } catch {
-      setRefusal(UNREACHABLE);
-    } finally {
-      setStarting(false);
-    }
+    await run({
+      url: '/api/jobs',
+      method: 'POST',
+      body: request,
+      fallback: 'the console could not start that job',
+    });
   };
 
-  return { start, refusal, starting };
+  return { start, refusal: refusals[0] ?? null, starting: busy };
 }
 
 /** Whether the form names a job the runner could take. */
