@@ -58,6 +58,13 @@ async function drawChart(id: string, chart: string): Promise<string> {
     fontFamily: getComputedStyle(document.documentElement)
       .getPropertyValue('--font-sans')
       .trim(),
+    // Mermaid's default fits the SVG to its container, which SHRINKS a wide
+    // flowchart — text and all — until it fits the prose column: illegible on
+    // desktop, worse on a phone. Drawn at natural size instead, the labels
+    // stay at their designed size and `.mermaid-diagram`'s overflow-x takes
+    // over when the column is narrower than the diagram.
+    flowchart: { useMaxWidth: false },
+    sequence: { useMaxWidth: false },
   });
 
   const { svg } = await mermaid.render(id, chart);

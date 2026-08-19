@@ -65,16 +65,21 @@ h3:hover > .heading-anchor,
   opacity: 1;
 }
 
-/* MermaidDiagram's client-rendered SVG (components/MermaidDiagram.tsx). Sized
-   here rather than inline because the SVG string comes out of mermaid: it
-   carries its own width, which would overflow the prose column on a phone.
+/* MermaidDiagram's client-rendered SVG (components/MermaidDiagram.tsx). The
+   diagram is drawn at natural size (useMaxWidth: false in the component) so
+   its labels stay legible; when it is wider than the prose column the
+   container scrolls sideways rather than the text shrinking to fit — the
+   page itself never scrolls horizontally. Narrower diagrams sit centered.
    No transition on the code-block-to-SVG swap — no-animate-on-mount. */
 .mermaid-diagram {
   margin-block: var(--space-8);
-  text-align: center;
+  overflow-x: auto;
 }
 
 .mermaid-diagram svg {
-  max-width: 100%;
-  height: auto;
+  display: block;
+  margin-inline: auto;
+  /* Something in the cascade caps svg at max-width: 100%, which re-shrinks
+     the diagram to the column and defeats the natural sizing above. */
+  max-width: none;
 }
