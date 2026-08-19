@@ -44,13 +44,16 @@ const config: StorybookConfig = {
       },
     },
   },
-  // ThemeToggle.tsx's `'use client'` is for Next.js/webpack's RSC pipeline (the
-  // blog is what needs the boundary); this plain Rollup build has no RSC concept,
-  // drops the directive, and renders the component as a client component either
-  // way — the drop is correct, not a bug. Rollup still emits two warnings for it
-  // (the directive itself, and a sourcemap warning from trying to locate it), so
-  // both are silenced by module id rather than by message text, which would also
-  // catch an unrelated future warning that happens to mention the same words.
+  // @gate/ui's client components carry `'use client'` for the Next.js/webpack
+  // RSC pipeline the consuming apps need (apps/blog, apps/visual-diff-ui); this
+  // plain Rollup build has no RSC concept, drops the directive, and renders them
+  // as client components either way — the drop is correct, not a bug. Rollup
+  // still emits two warnings per module (the directive itself, and a sourcemap
+  // warning from trying to locate it), so both are silenced by module id rather
+  // than by message text, which would also catch an unrelated future warning
+  // that happens to mention the same words. Scoped to the package and not to a
+  // filename deliberately: the predicate this replaced named ThemeToggle.tsx
+  // outright, and went silently stale the day a second client atom landed.
   viteFinal: async (viteConfig) => {
     const previousOnwarn = viteConfig.build?.rollupOptions?.onwarn;
 
@@ -61,12 +64,12 @@ const config: StorybookConfig = {
         rollupOptions: {
           ...viteConfig.build?.rollupOptions,
           onwarn(warning, warn) {
-            const fromThemeToggleDirective =
-              warning.id?.endsWith('ThemeToggle.tsx') &&
+            const fromDesignSystemDirective =
+              warning.id?.includes('/packages/ui/src/') &&
               (warning.code === 'MODULE_LEVEL_DIRECTIVE' ||
                 warning.code === 'SOURCEMAP_ERROR');
 
-            if (fromThemeToggleDirective) return;
+            if (fromDesignSystemDirective) return;
 
             (previousOnwarn ?? warn)(warning, warn);
           },
