@@ -2,6 +2,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 // Imported explicitly rather than relying on `globals: true` — the same reason the
 // blog's suites give: tsconfig includes this file, so tsc typechecks it.
+import { tierOf } from '@gate/visual-diff/policy';
 import { describe, expect, it } from 'vitest';
 import config from '../.storybook/main';
 
@@ -47,11 +48,57 @@ describe('story globs', () => {
 
     expect(roots).toContain(path.join(REPO_ROOT, 'packages', 'ui', 'src'));
   });
+});
 
-  it('collects the app’s own compositions from src', () => {
-    const roots = storyGlobs.map(globRoot);
+/**
+ * Where a story is allowed to live, and why the answer is not "anywhere
+ * Storybook indexes it".
+ *
+ * The differ files a baseline under the tier it reads out of the story's
+ * `importPath`. `tierOf` returns `null` for a path outside
+ * `packages/ui/src/<tier>/`, and `variantsOf` throws `IndexError` rather than
+ * shoot it under a layer it is not in — which `commands.mjs` maps to
+ * `EXIT.broken`. So a single `.stories.tsx` glob pointing anywhere else does not
+ * cost that story its baseline; it costs the run its verdict, and every
+ * committed variant reports unverified.
+ *
+ * That failure is real but it lands in the wrong place: in the visual-diff job,
+ * as exit 2, with a message about `index.json`. These cases move it into `test`,
+ * where it names the offending glob and fails in a required check.
+ *
+ * The `.mdx` glob is deliberately exempt and not an oversight: docs are indexed
+ * as `type: 'docs'` and `planCaptures` drops them before any tier is asked for.
+ */
+describe('the corpus boundary', () => {
+  const CORPUS = path.join(REPO_ROOT, 'packages', 'ui', 'src');
+  const storyModuleGlobs = storyGlobs.filter((glob) => glob.endsWith('.stories.tsx'));
 
-    expect(roots).toContain(path.join(STORYBOOK_DIR, 'src'));
+  // Without this, every `it.each` below passes on an empty list the day the
+  // suffix changes — approving silence instead of checking anything.
+  it('finds story globs at all', () => {
+    expect(storyModuleGlobs.length).toBeGreaterThan(0);
+  });
+
+  it.each(storyModuleGlobs)('%s resolves inside the tiered corpus', (glob) => {
+    expect(globRoot(glob).startsWith(CORPUS)).toBe(true);
+  });
+
+  // Asserted against the differ rather than restated here. The rule belongs to
+  // `tierOf`; if it ever stops refusing a path outside the corpus, this case
+  // says so, instead of guarding a hazard that no longer exists.
+  it('is the boundary tierOf enforces', () => {
+    expect(tierOf('packages/ui/src/atoms/Badge/Badge.stories.tsx')).toBe('atoms');
+    expect(tierOf('apps/storybook/src/RunPanel.stories.tsx')).toBeNull();
+  });
+
+  // Exact equality, not a `toContain`: the point is that nothing but docs comes
+  // from this directory, which a containment check would not notice.
+  it('collects docs, and only docs, from this app’s own src', () => {
+    const own = storyGlobs.filter(
+      (glob) => globRoot(glob) === path.join(STORYBOOK_DIR, 'src'),
+    );
+
+    expect(own).toEqual(['../src/**/*.mdx']);
   });
 });
 
