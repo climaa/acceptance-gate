@@ -15,7 +15,12 @@
 
 .ds-segmented__segment {
   padding: var(--space-1) var(--space-3);
-  min-height: 2rem;
+  /* A thumb target below the breakpoint. A segmented control is a real control
+     on a phone — often the only one in reach in a header — and 2rem is a
+     pointer target that a thumb misses. In rem rather than a spacing step for
+     the reason .ds-tristate-checkbox__input gives: a control's geometry is not a
+     step the theme retunes. */
+  min-height: 2.5rem;
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
   background: transparent;
@@ -39,6 +44,15 @@
   border-color: var(--color-border);
   color: var(--color-text);
   box-shadow: var(--shadow-sm);
+}
+
+/* 768px, the one breakpoint in the system. A mode is a pointer target at this
+   width, and a strip of thumb-sized segments would be the tallest thing in a
+   toolbar that holds one. */
+@media (min-width: 768px) {
+  .ds-segmented__segment {
+    min-height: 2rem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
