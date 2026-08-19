@@ -1,6 +1,6 @@
 /**
  * `@gate/visual-diff/compare`, declared for this app rather than inferred from
- * its source. The three files beside this one do the same for the package's
+ * its source. The four files beside this one do the same for the package's
  * other modules.
  *
  * AMBIENT, never a `paths` entry. A `paths` mapping onto these files is what the
@@ -29,9 +29,11 @@
  * than passing quietly. It is the same bargain lib/summary.ts already takes with
  * `summary.json`, one layer down.
  *
- * `@gate/visual-diff/policy` is deliberately NOT declared here: it is
- * zero-import, side-effect free and clean under these flags, so its real types
- * are the ones this app reads.
+ * `@gate/visual-diff/policy` was the one exception — zero-import, side-effect
+ * free and clean under these flags, so this app read its real types. It no
+ * longer does: `allowJs: false` keeps the package's `.mjs` out of this app's
+ * program wholesale, which closes the door on all five modules at once. See
+ * ./policy.d.ts for that reversal and what holds the transcription honest.
  */
 
 declare module '@gate/visual-diff/compare' {

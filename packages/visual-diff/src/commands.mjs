@@ -24,14 +24,7 @@ import {
   viewportSanity,
 } from './capture.mjs';
 import { compareAll } from './compare.mjs';
-import {
-  BASELINE_BUDGET_BYTES,
-  BASELINE_PNG_BUDGET_BYTES,
-  EXIT,
-  HOST,
-  PATHS,
-  SKIP_TAG,
-} from './policy.mjs';
+import { EXIT, HOST, PATHS, SKIP_TAG, assertWithinBudget } from './policy.mjs';
 import { renderReport } from './report-html.mjs';
 import { LOOPBACK_HOST, createStaticServer } from './static-server.mjs';
 import { planCaptures, readIndex } from './storybook-index.mjs';
@@ -450,29 +443,6 @@ function acceptableShots(captures) {
 /** @param {Iterable<Uint8Array | undefined>} shots @returns {number} */
 const sumBytes = (shots) =>
   [...shots].reduce((total, shot) => total + (shot?.length ?? 0), 0);
-
-/** Baselines live in git forever, so the budgets are checked before a byte is written.
- *  A refusal names the stories: "the corpus is too big" is not something a reviewer can
- *  act on, and the offending story usually is.
- *  @param {ReadonlyMap<string, Uint8Array>} shots @param {number} retainedBytes
- *  @throws {Error} */
-function assertWithinBudget(shots, retainedBytes) {
-  const oversized = [...shots]
-    .filter(([, bytes]) => bytes.length > BASELINE_PNG_BUDGET_BYTES)
-    .map(([key]) => key);
-  if (oversized.length > 0) {
-    throw new Error(
-      `${oversized.length} baseline(s) over the ${BASELINE_PNG_BUDGET_BYTES}-byte per-file budget (${oversized.join(', ')}) — nothing was written`,
-    );
-  }
-
-  const total = retainedBytes + sumBytes(shots.values());
-  if (total > BASELINE_BUDGET_BYTES) {
-    throw new Error(
-      `the baseline set would be ${total} bytes, over the ${BASELINE_BUDGET_BYTES}-byte budget — nothing was written`,
-    );
-  }
-}
 
 /** @param {GateFs} fs @param {string} dir @param {ReadonlyMap<string, Uint8Array>} shots
  *  @param {readonly string[]} pruned @returns {Promise<void>} */
