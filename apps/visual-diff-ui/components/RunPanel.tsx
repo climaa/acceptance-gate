@@ -690,6 +690,26 @@ function StartAction({
   // deployment be their own machine, so the note names the console that works.
   if (!isLocal) return <Note name="remote console">{REMOTE_REFUSAL}</Note>;
 
+  // Checked before `running`, and the order is load-bearing rather than tidy.
+  //
+  // `AcceptFields` renders `GateNotice` whatever the runner is doing, and the
+  // host and accessibility refusals are drawn as `role="alert"`. This branch
+  // draws one too. With `running` first, accept mode on a bare-metal host with a
+  // job in flight put both inside `main` at once — and both are pinned by the
+  // same strict locator: `console.ts:64` is `getByRole('main').getByRole('alert')`,
+  // read by D1 as `refusalAlert` and by the accept scenarios as
+  // `acceptHostAlert`. Two matches fail every one of them on strict mode.
+  //
+  // It is also the better message. `isRefused` is the outright refusals — there
+  // is no button, and waiting will not produce one — so telling a reviewer to
+  // follow the running job implies a start that finishing the job would unlock.
+  // It would not.
+  //
+  // D1 is untouched: `isRefused` is false for every mode but accept, and false
+  // in accept once the gate is `ready`, so the running refusal still renders
+  // wherever a start could otherwise have happened.
+  if (isRefused(form, gate, hasReport)) return null;
+
   if (running) {
     // Announced, not merely absent: a control that vanishes without a word is a
     // console that has silently stopped working, and this is the same refusal
@@ -704,8 +724,6 @@ function StartAction({
       </div>
     );
   }
-
-  if (isRefused(form, gate, hasReport)) return null;
 
   // Sample mode is checked first because it is the nearer answer: an instance
   // serving the committed fixtures has no runner to borrow a container for, and

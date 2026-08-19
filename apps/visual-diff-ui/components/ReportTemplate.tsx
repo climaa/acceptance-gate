@@ -18,10 +18,22 @@ import { ReportResults } from './ReportResults';
  * The header is the report's own landmark, so a scenario can scope "both sets
  * are identified" to it rather than to the whole page.
  *
- * It is labelled, deliberately: the app shell's `SiteHeader` is already a
- * `banner` at body scope, and this route therefore has two. The label is what
- * keeps them apart for a reader and for a query (`banner "report"`) — the shell
- * is packages/ui's and cannot be de-landmarked from here.
+ * `region`, not `banner`. A `<header>` nested inside `<main>` carries no
+ * implicit landmark role at all, so `role="banner"` here was not this element's
+ * own semantics being preserved — it was a second top-level banner being
+ * manufactured beside the shell's `SiteHeader`, which is `packages/ui`'s and
+ * cannot be de-landmarked from here. Labelling the two apart makes each of them
+ * findable; it does not make two banners legal.
+ *
+ * Nothing in the repo would have said so. axe tags
+ * `landmark-no-duplicate-banner` `best-practice`, and `a11y.steps.ts` filters to
+ * `wcag2a/wcag2aa/wcag21a/wcag21aa` — correctly, since a best-practice rule is
+ * not a conformance failure — so the four axe scenarios pass either way, and
+ * this app has no visual baseline at all.
+ *
+ * A labelled `region` is still a landmark, so the query only changes noun:
+ * `banner "report"` becomes `region "report"`, and everything that scoped to it
+ * scopes to it unchanged.
  */
 const HEADER_LABEL = 'report';
 
@@ -101,7 +113,7 @@ export function ReportTemplate({ id, report, sets }: ReportTemplateProps) {
 
   return (
     <Stack gap={6}>
-      <header role="banner" aria-label={HEADER_LABEL} className="vd-report__header">
+      <header role="region" aria-label={HEADER_LABEL} className="vd-report__header">
         <Stack gap={3}>
           <Stack direction="row" gap={3} align="baseline" wrap>
             <NextLink className="vd-report__back" href="/">

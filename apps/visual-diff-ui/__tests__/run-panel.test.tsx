@@ -676,6 +676,25 @@ describe('the accept gate off the pinned container', () => {
     expect(writeText.mock.calls[0]?.[0]).toContain(HOST.image);
   });
 
+  // The bug the branch order exists to prevent. `AcceptFields` draws
+  // `GateNotice` whatever the runner is doing, so the host refusal is on screen;
+  // a job in flight used to add the running refusal beside it, and both are
+  // `role="alert"` inside `main`. One strict locator reads them both —
+  // `getByRole('main').getByRole('alert')` (apps/e2e/pages/console.ts:64) — as
+  // `acceptHostAlert` here and as `refusalAlert` for D1, so two matches fail
+  // every scenario on either side.
+  //
+  // The host refusal is the one that survives, and not only because it is
+  // first: waiting for the running job would not produce a start button here.
+  it('answers with one alert, not two, when a job is running as well', async () => {
+    await openAcceptTab({ ...CASE, current: { running: true, job: RUNNING } });
+
+    const alerts = await screen.findAllByRole('alert');
+
+    expect(alerts).toHaveLength(1);
+    expect(alerts[0]?.textContent).toContain('bare-metal accept');
+  });
+
   // The reading comes first: on the machine a report is actually read — which
   // is never the pinned image — a host-first gate would be the only answer this
   // panel ever gave, and it would never once ask for the pass it exists to

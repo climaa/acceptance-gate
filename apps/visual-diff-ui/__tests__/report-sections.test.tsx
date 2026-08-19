@@ -115,6 +115,20 @@ function renderReport(report: Summary = REPORT, id = REPORT_ID) {
 }
 
 const main = () => screen.getByRole('main');
+/**
+ * The tier sections, which are every region inside `main` except the report's
+ * own header.
+ *
+ * The header is a labelled `region` rather than a second `banner` — see
+ * ReportTemplate.tsx for why — so a bare region sweep of `main` now collects it
+ * alongside the sections. Filtering it out by name keeps these cases saying what
+ * they mean: one region per tier, in tier order. Folding `'report'` into each
+ * expected list would have passed just as well and asserted something else.
+ */
+const tierRegions = () =>
+  within(main())
+    .getAllByRole('region')
+    .filter((region) => region.getAttribute('aria-label') !== 'report');
 const buckets = () => screen.getByRole('group', { name: 'Buckets' });
 
 const namesOf = (elements: readonly HTMLElement[]) =>
@@ -131,7 +145,7 @@ describe('the result sections', () => {
   it('leads with the accessibility region', () => {
     renderReport();
 
-    const regions = within(main()).getAllByRole('region');
+    const regions = tierRegions();
 
     expect(namesOf(regions)[0]).toBe('Accessibility');
   });
@@ -139,7 +153,7 @@ describe('the result sections', () => {
   it('names one region per tier that has variants', () => {
     renderReport();
 
-    const regions = within(main()).getAllByRole('region');
+    const regions = tierRegions();
 
     expect(namesOf(regions)).toEqual([
       'Accessibility',
@@ -219,7 +233,7 @@ describe('the bucket chip row', () => {
 
     fireEvent.click(within(buckets()).getByRole('button', { name: 'removed' }));
 
-    expect(namesOf(within(main()).getAllByRole('region'))).toEqual(['molecules']);
+    expect(namesOf(tierRegions())).toEqual(['molecules']);
   });
 
   // A clean run writes no variants at all — every one of them matched. The
@@ -248,7 +262,7 @@ describe('the report header', () => {
   it('identifies both capture sets', () => {
     renderReport();
 
-    const header = screen.getByRole('banner', { name: 'report' });
+    const header = screen.getByRole('region', { name: 'report' });
 
     expect(header.textContent).toContain('main-2026-08-17');
     expect(header.textContent).toContain('f2570e1');
@@ -262,7 +276,7 @@ describe('the report header', () => {
   it('folds its provenance behind one disclosure, open by default', () => {
     renderReport();
 
-    const header = screen.getByRole('banner', { name: 'report' });
+    const header = screen.getByRole('region', { name: 'report' });
     const details = within(header).getByText('report details').closest('details');
 
     expect(details?.hasAttribute('open')).toBe(true);
@@ -283,7 +297,7 @@ describe('the report header', () => {
   it('keeps a side whose label the registry no longer holds', () => {
     renderReport(REPORT, 'main-2026-08-17__pruned-2026-08-01');
 
-    const header = screen.getByRole('banner', { name: 'report' });
+    const header = screen.getByRole('region', { name: 'report' });
 
     expect(header.textContent).toContain('pruned-2026-08-01');
     expect(within(header).getByText(/no capture set recorded/)).toBeTruthy();

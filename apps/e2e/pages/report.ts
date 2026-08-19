@@ -25,11 +25,14 @@ export class ReportPage {
   readonly a11ySection: Locator;
 
   constructor(private readonly page: Page) {
-    // Named, not bare: the app shell renders `SiteHeader` as a body-scope
-    // `banner` on every route, so this page has two of them and the report's
-    // own is the one labelled `report` (#281 pinned that name for exactly this
-    // query). An unnamed lookup matches both and resolves to neither.
-    this.header = page.getByRole('banner', { name: 'report' });
+    // `region`, not `banner`: the shell renders `SiteHeader` as the page's one
+    // body-scope `banner`, and the report's own header is a labelled region
+    // beneath it. It used to claim `banner` too, which made two of them on this
+    // route — the name (#281 pinned it for exactly this query) kept them apart
+    // for a reader and for this locator, but never made the duplicate legal.
+    // Still named, for the same reason it always was: `region` is a role the
+    // page has more than one of.
+    this.header = page.getByRole('region', { name: 'report' });
     this.bucketChips = page.getByRole('group', { name: 'Buckets' }).getByRole('button');
     // The progress figure is text ("reviewed 12/65", no inner spaces — pinned
     // format); the bar next to it is decorative, so the text is the assertion
@@ -40,7 +43,14 @@ export class ReportPage {
     this.filter = page.getByRole('searchbox', { name: 'title or story id' });
     this.warningStrip = page.getByRole('note', { name: 'corpus warnings' });
     this.results = page.getByRole('main');
-    this.resultSections = this.results.getByRole('region');
+    // Every result section is a labelled `<section>`, which is where its
+    // `region` role comes from. The report's own header is a region inside
+    // `main` as well — explicitly, and see ReportTemplate.tsx for why it is that
+    // rather than a second `banner` — and it precedes them all in DOM order, so
+    // a bare region sweep of `main` leads with the header and "the accessibility
+    // section comes first" reds on a landmark that is not a result at all.
+    // Narrowing to the element keeps the ordering claim about the sections.
+    this.resultSections = this.results.getByRole('region').and(page.locator('section'));
     this.storyCards = this.results
       .getByRole('article')
       .filter({ has: page.getByRole('checkbox') });
