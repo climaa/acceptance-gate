@@ -1,4 +1,5 @@
 import { Badge, Button, Stack } from '@gate/ui';
+import { Note } from './Note';
 import type { CanonicalSet as Corpus } from '@/lib/baselines';
 import { formatBytes } from '@/lib/outcome';
 
@@ -64,10 +65,10 @@ export function CanonicalSet({ corpus }: CanonicalSetProps) {
       </Stack>
 
       <Stack direction="row" gap={3} align="center" wrap>
-        <p role="note" aria-label="canonical corpus" className="vd-note">
+        <Note name="canonical corpus">
           what CI compares every pull request against — compare a capture with this to see
           what a change did to the corpus
-        </p>
+        </Note>
         <Button variant="danger" size="sm" disabled>
           delete
         </Button>

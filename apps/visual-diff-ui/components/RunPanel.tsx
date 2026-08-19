@@ -11,6 +11,7 @@ import {
 } from 'react';
 import { Button, CodeBlock, Stack } from '@gate/ui';
 import { useMutation } from '@/hooks/useMutation';
+import { Note } from './Note';
 import {
   ACCEPT_COMMAND,
   ACCEPT_IMAGE,
@@ -134,16 +135,6 @@ function Field({
         onChange={(event) => onChange(event.target.value)}
       />
     </Stack>
-  );
-}
-
-/** A note the panel explains itself with — never a refusal, which is what
- *  `role="alert"` is for. The name is what a scenario finds it by. */
-function Note({ name, children }: { name: string; children: ReactNode }) {
-  return (
-    <p role="note" aria-label={name} className="vd-note">
-      {children}
-    </p>
   );
 }
 
