@@ -24,7 +24,7 @@
   },
   "devDependencies": {
     "@ai-hero/sandcastle": "0.12.0",
-    "@types/node": "^22.20.1",
+    "@types/node": "^26.2.0",
     "dotenv": "^17.4.2",
     "dotenv-cli": "^11.0.0",
     "fallow": "3.17.0",
