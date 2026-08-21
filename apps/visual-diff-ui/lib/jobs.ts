@@ -82,6 +82,22 @@ export type JobRequest = z.infer<typeof JobRequestSchema>;
  * `endedAt`, `exitCode` and `reportId` are null while the job runs — and stay
  * null for a job that was interrupted, which is exactly what a reader needs to
  * tell "still going" and "never finished" from "finished, code 2".
+ *
+ * `reportId` is the one field that degrades instead of failing, and it is the
+ * only one that can afford to. Everywhere else an id enters this app it is
+ * checked — `JobRequestSchema` will not accept an accept-mode request without a
+ * `ReportIdSchema` — but nothing checked one on the way BACK off disk, so a
+ * corrupt or hand-edited row could hand a reader a string that addresses
+ * something outside the data directory. Checking it here is where that stops.
+ *
+ * `.catch(null)` rather than a hard failure, because `readJson` throws the
+ * whole file away on a schema miss and `readHistory` is read uncached by the
+ * console page: one bad row would otherwise take down the entire console rather
+ * than one link. Null is also the honest answer — a report this app cannot
+ * address is a report it cannot offer, which is exactly what every reader
+ * already does with a run that produced none. The rest of the record keeps the
+ * strict all-or-nothing reading, so a genuinely malformed history still says so
+ * and names the file.
  */
 export const HistoryRecordSchema = z
   .object({
@@ -91,7 +107,7 @@ export const HistoryRecordSchema = z
     startedAt: z.string(),
     endedAt: z.string().nullable(),
     exitCode: z.number().nullable(),
-    reportId: z.string().nullable(),
+    reportId: ReportIdSchema.nullable().catch(null),
   })
   .strict();
 

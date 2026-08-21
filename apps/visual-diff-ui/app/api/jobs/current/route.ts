@@ -46,13 +46,20 @@ const TAIL_LINES = 24;
  * way to check.
  *
  * The id's SHAPE is checked before the disk is touched, the same order the
- * delete route checks it in and for a sharper reason. `HistoryRecordSchema`
- * types `reportId` as a plain string, so a corrupt or hand-edited history can
- * carry one that climbs out of the data directory — and `hasReport` refuses a
- * climb by THROWING, which here would be a 500 rather than an answer. This is
- * the one route in the console deliberately not gated on localhost, because a
- * deployed console has to poll it, so that throw would take the poll down for
- * everyone looking at it. An id that is not an id simply has no report.
+ * delete route checks it in. `hasReport` refuses an id that climbs out of the
+ * data directory by THROWING, which here would be a 500 rather than an answer —
+ * on the one route in the console deliberately not gated on localhost, because
+ * a deployed console has to poll it, so that throw would take the poll down for
+ * everyone looking at it.
+ *
+ * Second of two lines now, and knowingly so. `HistoryRecordSchema` reads a
+ * report id that is not one back as null, so an id that could reach the check
+ * below no longer exists — both of this handler's sources of a job pass through
+ * that schema or hardcode null. Kept anyway: it costs one `safeParse`, and it
+ * is the only thing standing between a future caller and a throw on a poll
+ * endpoint. Worth knowing when reading its test, which passes now whether or
+ * not this guard is here — what pins it is the schema's own case in
+ * `__tests__/jobs.test.ts`.
  *
  * It also carries the console's cache purge, which looks out of place here and
  * is not. A job's writes happen in a detached tail with no request on the stack,

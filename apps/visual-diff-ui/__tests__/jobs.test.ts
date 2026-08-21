@@ -733,7 +733,57 @@ describe('readHistory', () => {
 
     expect(() => readHistory(dir)).toThrow(/history\.json/);
   });
+
+  /**
+   * The id that is not an id.
+   *
+   * Every id entering this app is checked — `JobRequestSchema` refuses an
+   * accept without a `ReportIdSchema` — but nothing checked one read back off
+   * disk, so a corrupt or hand-edited row could hand a reader a string naming
+   * something outside the data directory. It reads back as null now: a report
+   * this app cannot address is one it cannot offer, which is what every reader
+   * already does with a run that produced none.
+   */
+  it('reads a report id that is not one back as no report at all', () => {
+    const dir = makeDataDir();
+    seedHistory(dir, [{ ...historyRow, reportId: '../../../../etc/passwd' }]);
+
+    const [record] = readHistory(dir);
+
+    expect(record?.reportId).toBeNull();
+  });
+
+  // Degraded, not dropped: what ran is still what ran, and only the way to
+  // address its output is withheld.
+  it('keeps the rest of a row whose report id it refused', () => {
+    const dir = makeDataDir();
+    seedHistory(dir, [{ ...historyRow, reportId: 'not a report id' }]);
+
+    const [record] = readHistory(dir);
+
+    expect(record).toMatchObject({ id: historyRow.id, mode: 'compare', exitCode: 1 });
+  });
+
+  // The narrowness of the concession: `reportId` degrades because a whole file
+  // thrown away over one link is the worse failure, and nothing else does.
+  it('still refuses the whole file when any other field is malformed', () => {
+    const dir = makeDataDir();
+    seedHistory(dir, [{ ...historyRow, exitCode: 'not a number' }]);
+
+    expect(() => readHistory(dir)).toThrow(/history\.json/);
+  });
 });
+
+/** One well-formed row, for the cases that damage exactly one field of it. */
+const historyRow = {
+  id: '2026-08-17T08-00-00Z-compare',
+  mode: 'compare',
+  label: 'a__b',
+  startedAt: '2026-08-17T08:00:00Z',
+  endedAt: '2026-08-17T08:01:35Z',
+  exitCode: 1,
+  reportId: 'a__b',
+};
 
 /**
  * The tail read, which is what makes a poll cost the same on minute sixty as on
