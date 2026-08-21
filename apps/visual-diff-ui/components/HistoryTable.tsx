@@ -1,7 +1,7 @@
 import NextLink from 'next/link';
 import { Link, Table, type TableColumn, type TableRow } from '@gate/ui';
 import type { HistoryRecord } from '@/lib/jobs';
-import { durationOf, formatDuration, jobState } from '@/lib/outcome';
+import { durationOf, formatDuration, formatStamp, jobState } from '@/lib/outcome';
 
 /**
  * The past runs, newest first — the order `history.json` is written in.
@@ -47,7 +47,9 @@ function historyRow(run: HistoryRecord, runningId: string | null): TableRow {
         {word}
       </span>,
       run.mode,
-      { content: run.startedAt, title: run.startedAt },
+      // Shown short, kept whole: the title carries the stored stamp, including
+      // the `Z` that says which clock it is on.
+      { content: formatStamp(run.startedAt), title: run.startedAt },
       run.exitCode ?? NOTHING,
       took === null ? NOTHING : formatDuration(took),
       // A capture writes no report, and an interrupted run never got to. The

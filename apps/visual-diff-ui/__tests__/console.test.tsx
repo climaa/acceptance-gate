@@ -94,6 +94,9 @@ interface ConsoleContents {
   /** Null by default: nothing holds the lock, so every history row is a run
    *  that is over. The one case that sets it is the one about a live job. */
   runningId?: string | null;
+  /** True by default: this suite is about a console someone is looking at on
+   *  their own machine, which is the only kind that can mutate anything. */
+  isLocal?: boolean;
 }
 
 /** The console with everything populated, unless a case says otherwise.
@@ -110,6 +113,7 @@ function consoleWith({
   history = [RUN, INTERRUPTED],
   corpus = null,
   runningId = null,
+  isLocal = true,
 }: ConsoleContents = {}) {
   return (
     <DashboardTemplate
@@ -118,7 +122,7 @@ function consoleWith({
       reports={reports}
       history={history}
       isSample={false}
-      isLocal
+      isLocal={isLocal}
       corpus={corpus}
       runningId={runningId}
     />
@@ -382,7 +386,7 @@ describe('the history panel', () => {
     expect(cellsOf(row)).toEqual([
       'succeeded (diffs)',
       'compare',
-      RUN.startedAt,
+      '2026-08-17 08:00:00',
       '1',
       '1m 35s',
       'view',
@@ -399,7 +403,7 @@ describe('the history panel', () => {
     expect(cellsOf(row)).toEqual([
       'interrupted',
       'capture',
-      INTERRUPTED.startedAt,
+      '2026-08-11 08:15:04',
       '—',
       '—',
       '',
@@ -421,7 +425,7 @@ describe('the history panel', () => {
     expect(cellsOf(firstRowOf('History'))).toEqual([
       'running',
       'capture',
-      INTERRUPTED.startedAt,
+      '2026-08-11 08:15:04',
       '—',
       '—',
       '',
@@ -479,6 +483,23 @@ describe('the reports panel', () => {
     expect(cellsOf(row)).toEqual([REPORT.id, '2026-08-17', 'delete']);
   });
 
+  /**
+   * Absent, not disabled, off localhost.
+   *
+   * The route refuses the request anyway — a deployed console pointed at a real
+   * data directory must not let a visitor destroy the record of every
+   * comparison on it — so a button here would be a red control whose only
+   * outcome is a refusal, which invites a reviewer to look for the way to
+   * enable it. The run panel keeps the same rule one column over.
+   */
+  it('draws no delete on a console nobody is running locally', () => {
+    render(consoleWith({ isLocal: false }));
+
+    const row = firstRowOf('Reports');
+
+    expect(cellsOf(row)).toEqual([REPORT.id, '2026-08-17', '']);
+  });
+
   it('has no date for a report no run in this history claims', () => {
     render(consoleWith({ history: [] }));
 
@@ -495,18 +516,27 @@ describe('the reports panel', () => {
     expect(deletes).toHaveLength(1);
   });
 
-  // The button is not wired to anything. Disabled is what says so: enabled, it
-  // took the click and did nothing, which a reviewer cannot tell apart from a
-  // delete that failed silently — on a red, destructive control. The sets table
-  // one panel over carries a live delete, so absent would read as an omission
-  // rather than as a rule; `CanonicalSet` answers the same question the same
-  // way. Delete this case with the wiring, never before it.
-  it('disables that button, because nothing is behind it yet', () => {
+  /**
+   * Live, and never immediate.
+   *
+   * This button was drawn disabled for as long as there was no route behind it,
+   * on the argument that a red control which takes the click and does nothing is
+   * indistinguishable from a delete that failed silently. There is a route now,
+   * and D2's rule takes over: a destructive action names what it is about to
+   * destroy and waits to be told again.
+   */
+  it('opens a confirmation naming the report rather than deleting on the click', () => {
     render(consoleWith());
 
     const [remove] = within(table('Reports')).getAllByRole('button', { name: 'delete' });
+    expect(remove).toHaveProperty('disabled', false);
+    fireEvent.click(remove as HTMLElement);
 
-    expect(remove).toHaveProperty('disabled', true);
+    const dialog = screen.getByRole('dialog', { name: 'Confirm deletion' });
+    expect(dialog.textContent).toContain(REPORT.id);
+    // The other half of the promise the sets dialog makes in reverse: neither
+    // deletion cascades into the other.
+    expect(dialog.textContent).toMatch(/capture sets it compared stay/i);
   });
 
   it('shows an empty state instead of a table when nothing has been compared', () => {

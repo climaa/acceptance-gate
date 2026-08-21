@@ -6,11 +6,13 @@ import * as path from 'node:path';
 // `**/*.ts` include means tsc typechecks this file.
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { POST as postPrune } from '../app/api/prune/route';
+import { DELETE as deleteReport } from '../app/api/reports/[id]/route';
 import { DELETE as deleteSet } from '../app/api/sets/[label]/route';
 import { CANONICAL_LABEL } from '../lib/baselines';
-import { CANONICAL_IS_COMMITTED } from '../lib/refusals';
+import { CANONICAL_IS_COMMITTED, NOT_LOCAL } from '../lib/refusals';
 import { JobRequestSchema, startJob } from '../lib/jobs';
 import { revalidateTagCalls } from './stubs/next-cache';
+import { resetRequestHost, setRequestHost } from './stubs/next-headers';
 
 /**
  * The two guarded deletions (D2): nothing is deleted implicitly, a held set is
@@ -51,6 +53,19 @@ const WORKTREE = '../acceptance-gate-fix-owl';
 const temporaryDirs: string[] = [];
 
 const context = (label: string) => ({ params: Promise.resolve({ label }) });
+const reportContext = (id: string) => ({ params: Promise.resolve({ id }) });
+
+const REPORT = 'main-2026-08-17__main-2026-08-13';
+
+/** One report on disk, in the layout `hasReport` looks for. */
+function seedReport(dir: string, id = REPORT): string {
+  const at = path.join(dir, 'reports', id);
+  fs.mkdirSync(path.join(at, 'shots'), { recursive: true });
+  fs.writeFileSync(path.join(at, 'summary.json'), JSON.stringify({ counts: {} }));
+  fs.writeFileSync(path.join(at, 'shots', 'a__b__c__d--e.candidate.png'), '');
+
+  return at;
+}
 
 const pruneRequest = (body: unknown) =>
   new Request('http://localhost:3300/api/prune', {
@@ -128,6 +143,7 @@ beforeAll(() => {
 
 afterEach(() => {
   revalidateTagCalls.length = 0;
+  resetRequestHost();
   delete process.env.VISUAL_DIFF_DATA_DIR;
 });
 
@@ -136,6 +152,109 @@ afterAll(() => {
   for (const dir of temporaryDirs) fs.rmSync(dir, { recursive: true, force: true });
 
   expect(after).toBe(committed);
+});
+
+describe('DELETE /api/reports/[id]', () => {
+  it('removes the report tree and leaves the sets it compared alone', async () => {
+    const dir = seedDataDir();
+    seedReport(dir);
+
+    const response = await deleteReport(
+      new Request('http://localhost:3300/'),
+      reportContext(REPORT),
+    );
+
+    expect(response.status).toBe(200);
+    expect(fs.existsSync(path.join(dir, 'reports', REPORT))).toBe(false);
+    // Neither side of the comparison is part of the record of it.
+    expect(fs.existsSync(path.join(dir, 'sets', 'main-2026-08-17'))).toBe(true);
+    expect(fs.existsSync(path.join(dir, 'sets', 'main-2026-08-13'))).toBe(true);
+  });
+
+  it('refreshes the list and the report page, so neither serves what is gone', async () => {
+    const dir = seedDataDir();
+    seedReport(dir);
+
+    await deleteReport(new Request('http://localhost:3300/'), reportContext(REPORT));
+
+    expect(revalidateTagCalls).toContain('vd:reports');
+    expect(revalidateTagCalls).toContain(`vd:report:${REPORT}`);
+  });
+
+  /**
+   * The local gate, which the sets route does not have and this one does.
+   *
+   * A job is refused off localhost because it needs the checkout it compares.
+   * A delete needs no checkout, so the argument is a different one for the same
+   * rule: a console deployed against a real data directory would otherwise let
+   * anyone who can reach it destroy the record of every comparison on it.
+   */
+  it('refuses a delete that did not come from the machine running the console', async () => {
+    const dir = seedDataDir();
+    seedReport(dir);
+    setRequestHost('visual-diff.example.com');
+
+    const response = await deleteReport(
+      new Request('https://visual-diff.example.com/'),
+      reportContext(REPORT),
+    );
+
+    expect(response.status).toBe(409);
+    expect(((await response.json()) as { error: string }).error).toBe(NOT_LOCAL);
+    expect(fs.existsSync(path.join(dir, 'reports', REPORT))).toBe(true);
+  });
+
+  // `force: true` makes removing nothing look like removing something, so the
+  // miss is answered before anything is removed rather than after.
+  it('answers a report it does not have with a miss', async () => {
+    seedDataDir();
+
+    const response = await deleteReport(
+      new Request('http://localhost:3300/'),
+      reportContext('never-compared'),
+    );
+
+    expect(response.status).toBe(404);
+  });
+
+  /**
+   * An id that climbs out of the data directory is a miss, not a refusal —
+   * answering anything else would confirm the shape of a real one. It is also
+   * what keeps `reportDir`'s confinement check from being reached: `within`
+   * THROWS there, and a throw is a 500 where this wants a 404.
+   */
+  it('answers an id that climbs out of the data directory with the same miss', async () => {
+    const dir = seedDataDir();
+
+    const response = await deleteReport(
+      new Request('http://localhost:3300/'),
+      reportContext('../../sets'),
+    );
+
+    expect(response.status).toBe(404);
+    expect(fs.existsSync(path.join(dir, 'sets'))).toBe(true);
+  });
+
+  // D1: a run in flight holds the whole data directory, and a report it is
+  // writing into is not one to pull out from under it.
+  it('refuses while a job is running', async () => {
+    const dir = seedDataDir();
+    seedReport(dir);
+    const started = startJob(
+      dir,
+      JobRequestSchema.parse({ mode: 'capture', label: 'main-2026-08-18' }),
+      () => new Promise(() => {}),
+    );
+    expect(started.ok).toBe(true);
+
+    const response = await deleteReport(
+      new Request('http://localhost:3300/'),
+      reportContext(REPORT),
+    );
+
+    expect(response.status).toBe(409);
+    expect(fs.existsSync(path.join(dir, 'reports', REPORT))).toBe(true);
+  });
 });
 
 describe('DELETE /api/sets/[label]', () => {

@@ -67,6 +67,67 @@ function ConfirmActions({
   );
 }
 
+export interface DeleteReportButtonProps {
+  id: string;
+}
+
+/**
+ * The reports table's delete, with the confirmation D2 requires in front of it.
+ *
+ * The twin of {@link DeleteSetButton}, and the dialog says the opposite thing on
+ * purpose: deleting a set keeps the reports that compared it, and deleting a
+ * report keeps the sets it compared. Neither cascades, and a reviewer about to
+ * press one should be told which of the two they are doing.
+ */
+export function DeleteReportButton({ id }: DeleteReportButtonProps) {
+  const [open, setOpen] = useState(false);
+  const { run, refusals, busy, clear } = useMutation();
+
+  const close = () => {
+    setOpen(false);
+    clear();
+  };
+
+  const confirm = async () => {
+    const result = await run({
+      url: `/api/reports/${encodeURIComponent(id)}`,
+      method: 'DELETE',
+      fallback: `could not delete ${id}`,
+    });
+
+    if (result.ok) close();
+  };
+
+  return (
+    <>
+      <Button variant="danger" size="sm" onClick={() => setOpen(true)}>
+        delete
+      </Button>
+
+      <Dialog open={open} onClose={close} label="Confirm deletion">
+        <Stack gap={4}>
+          <p className="vd-confirm__question">
+            Delete the report <strong className="vd-mono">{id}</strong>?
+          </p>
+          <p className="vd-confirm__detail">
+            Its summary and its shots go, and the comparison is no longer on record. The
+            two capture sets it compared stay exactly where they are.
+          </p>
+
+          {refusals.length > 0 && <Refusals sentences={refusals} />}
+
+          <ConfirmActions
+            confirm={`delete ${id}`}
+            onConfirm={() => void confirm()}
+            onCancel={close}
+            busy={busy}
+          />
+        </Stack>
+      </Dialog>
+    </>
+  );
+}
+
 export interface DeleteSetButtonProps {
   label: string;
 }

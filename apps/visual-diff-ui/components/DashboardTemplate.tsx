@@ -143,7 +143,11 @@ export function DashboardTemplate({
           {reports.length === 0 ? (
             <EmptyState message="No reports yet — compare two capture sets and one appears here." />
           ) : (
-            <ReportsTable reports={reports} dates={reportDates(history)} />
+            <ReportsTable
+              reports={reports}
+              dates={reportDates(history)}
+              isLocal={isLocal}
+            />
           )}
         </Panel>
       </Stack>
