@@ -13,13 +13,7 @@ import {
 } from 'react';
 import { EmptyState, Link, Stack } from '@gate/ui';
 import type { HistoryRecord } from '@/lib/jobs';
-import {
-  type OutcomeTone,
-  durationOf,
-  formatDuration,
-  outcomeOf,
-  outcomeTone,
-} from '@/lib/outcome';
+import { durationOf, formatDuration, jobState } from '@/lib/outcome';
 import { LogTail } from './LogTail';
 
 /**
@@ -419,22 +413,6 @@ function useElapsed(job: HistoryRecord, running: boolean): string | null {
   return Number.isNaN(since) || since < 0 ? null : formatDuration(since);
 }
 
-/** The four outcome tones a finished run is drawn in, plus the one a live job
- *  needs: `running` is a state, not a verdict, so it takes the accent rather
- *  than borrowing success or warning. */
-type JobTone = OutcomeTone | 'accent';
-
-/** The state word beside the job: what it is doing, or what it came to. A
- *  running job has no exit code yet, and `outcomeOf(null)` reads `interrupted` —
- *  a verdict on a job that is very much alive. */
-function stateOf(job: HistoryRecord, running: boolean): { word: string; tone: JobTone } {
-  if (running) return { word: 'running', tone: 'accent' };
-
-  const outcome = outcomeOf(job.exitCode);
-
-  return { word: outcome, tone: outcomeTone(outcome) };
-}
-
 interface JobViewProps extends CurrentJobState {
   /** Narrowed: the empty state is the region's answer when there is no job. */
   job: HistoryRecord;
@@ -442,7 +420,7 @@ interface JobViewProps extends CurrentJobState {
 
 function JobView({ job, running, log }: JobViewProps) {
   const elapsed = useElapsed(job, running);
-  const { word, tone } = stateOf(job, running);
+  const { word, tone } = jobState(job.exitCode, running);
 
   return (
     <Stack gap={3}>

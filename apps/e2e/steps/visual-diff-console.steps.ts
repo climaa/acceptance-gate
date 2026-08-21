@@ -47,10 +47,57 @@ const SEEDED_SETS = [BASELINE_SET, SPARE_SET, DIRTY_SET, UNHELD_SET, HELD_SET] a
 const COMPARE_A = BASELINE_SET.label;
 const COMPARE_B = DIRTY_SET.label;
 
+/**
+ * The pair the mutating world LAUNCHES, which is deliberately not the pair the
+ * seeded world pre-fills.
+ *
+ * A compare's report is named `<A>__<B>`, and the seed already writes
+ * `main-2026-08-17__main-2026-08-13` (report-graft.json) and
+ * `main-2026-08-17__main-2026-08-16` (report-accept.json) into every world.
+ * Launching either of those overwrites a report the panel is ALREADY listing,
+ * so "the console lists it" would have been true before the job ran — a green
+ * that proves the seed rather than the run. This pair names a report no seed
+ * writes, which is the whole reason the assertion can fail.
+ *
+ * Both sets survive this world's delete and its prune-to-latest-three, so the
+ * scenario stays independent of the order the others run in.
+ */
+const LAUNCH_A = SPARE_SET.label;
+const LAUNCH_B = DIRTY_SET.label;
+const LAUNCH_REPORT = `${LAUNCH_A}__${LAUNCH_B}`;
+
 /** The one-job-at-a-time lock, as `apps/visual-diff-ui/lib/jobs.ts` publishes
  *  it: one file under the data directory, whose `pid` is the whole staleness
  *  test. */
 const LOCK_FILE = 'job.lock';
+
+interface SeededRun {
+  mode: JobMode;
+  label: string;
+  startedAt: string;
+}
+
+/**
+ * The seeded history row the fake lock impersonates: a capture that never
+ * reported, which `history.json` carries with `endedAt`, `exitCode` and
+ * `reportId` all null.
+ *
+ * Pointing the lock at a row the seed already holds is what lets the history
+ * assertion mean anything. Those three nulls are ALSO what a live job's row
+ * looks like — `startJob` writes them and only the end of the job patches them —
+ * so on disk this row and a running one are the same row, and only the lock
+ * says which it is. Take the lock and the console must read it as `running`;
+ * drop the lock and the same row is `interrupted` again, which is why the
+ * `After` hook below needs to restore nothing.
+ *
+ * `id` is not stored: lib/jobs.ts derives it from `startedAt` and `mode`, so
+ * these two fields are what tie the lock to the row.
+ */
+const INTERRUPTED_RUN: SeededRun = {
+  mode: 'capture',
+  label: 'main-2026-08-16',
+  startedAt: '2026-08-16T07:12:44Z',
+};
 
 /** The lock this suite is holding, or null. Module-scoped rather than carried
  *  through `scenarioState`, because the hook that releases it runs after the
@@ -71,9 +118,9 @@ let heldLock: string | null = null;
  * `wx`, so a lock a real job is holding is an error here rather than something
  * this quietly overwrites.
  */
-function holdJobLock(mode: JobMode, label: string): void {
+function holdJobLock(run: SeededRun): void {
   const file = path.join(vdWorldDir('mutating'), LOCK_FILE);
-  const lock = { pid: process.pid, mode, label, startedAt: new Date().toISOString() };
+  const lock = { pid: process.pid, ...run };
 
   fs.writeFileSync(file, `${JSON.stringify(lock)}\n`, { flag: 'wx' });
   heldLock = file;
@@ -99,7 +146,7 @@ Given('a job is already running', async ({ console: consolePage }) => {
   // The lock is not boot-seeded — a boot-time lock would deadlock every other
   // mutating scenario against the same server. This scenario owns its world
   // (serial project), so it creates the state it needs and asserts it.
-  holdJobLock('capture', BASELINE_SET.label);
+  holdJobLock(INTERRUPTED_RUN);
   await consolePage.open('mutating');
   await expect(consolePage.currentJob).not.toContainText('Nothing running');
 });
@@ -127,7 +174,7 @@ When('I choose two sets to compare', async ({ console: consolePage }) => {
 });
 
 When('I launch the prepared comparison', async ({ console: consolePage }) => {
-  await consolePage.chooseCompare(COMPARE_A, COMPARE_B);
+  await consolePage.chooseCompare(LAUNCH_A, LAUNCH_B);
   await consolePage.startButton.click();
 });
 
@@ -193,6 +240,27 @@ Then("the live log runs to the job's end", async ({ console: consolePage }) => {
 
 Then('the finished job links to its report', async ({ console: consolePage }) => {
   await expect(consolePage.viewReportLink).toBeVisible({ timeout: 60_000 });
+});
+
+Then(
+  'the console lists that report without a reload',
+  async ({ console: consolePage }) => {
+    // Never reloaded: this page has been open since before the job was launched,
+    // and the only thing that re-read the server since is the poller's own
+    // `router.refresh()`, fired once when it saw the job finish. The reports panel
+    // used to redraw from a `use cache` entry the job could not retire — it purged
+    // its tags from a detached tail, where `revalidateTag` does nothing and says
+    // nothing — so the report on disk was not the report on screen.
+    await expect(consolePage.reportRow(LAUNCH_REPORT)).toBeVisible();
+  },
+);
+
+Then('the history shows that job as running', async ({ console: consolePage }) => {
+  // Addressed by its start stamp: the label alone is a substring of the
+  // `main-2026-08-16__main-2026-08-11` compare two rows below it.
+  const row = consolePage.historyRows.filter({ hasText: INTERRUPTED_RUN.startedAt });
+
+  await expect(consolePage.historyCell(row, 'status')).toHaveText('running');
 });
 
 Then(

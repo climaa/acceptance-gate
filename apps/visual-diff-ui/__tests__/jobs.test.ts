@@ -19,11 +19,11 @@ import {
   readLock,
   recordSet,
   startJob,
+  takeConsoleRefresh,
   within,
 } from '../lib/jobs';
 import { CANONICAL_LABEL } from '../lib/baselines';
 import { NOT_LOCAL } from '../lib/refusals';
-import { revalidateTagCalls } from './stubs/next-cache';
 import { resetRequestHost, setRequestHost } from './stubs/next-headers';
 
 /**
@@ -56,6 +56,13 @@ const compareRequest = JobRequestSchema.parse({
   mode: 'compare',
   baseline: 'main-2026-08-17',
   candidate: 'main-2026-08-13',
+});
+
+/** A capture, which writes a set and no report — the other shape of finished
+ *  job the console has to be told about. */
+const captureRequest = JobRequestSchema.parse({
+  mode: 'capture',
+  label: 'main-2026-08-21',
 });
 
 /** The lock a dead process would have left behind. PID 1 is alive but not ours;
@@ -98,7 +105,6 @@ async function waitForIdle(dir: string): Promise<void> {
 }
 
 afterEach(() => {
-  revalidateTagCalls.length = 0;
   resetRequestHost();
   delete process.env.VISUAL_DIFF_DATA_DIR;
   delete process.env.VISUAL_DIFF_FAKE_HOST_FINGERPRINT;
@@ -242,14 +248,55 @@ describe('startJob', () => {
     expect(readHistory(dir)[0]).toMatchObject({ exitCode: 2 });
   });
 
-  it('refreshes both console lists and the report when the job ends', async () => {
+  /**
+   * The predecessor of this case asserted that `revalidateTag` had been CALLED,
+   * against a stub that records calls — so it was green for the whole time the
+   * console was refusing to show a finished capture. The call ran in the job's
+   * detached tail, where the tags land in a request store that was drained long
+   * before, and threw nothing while doing nothing. A test of a call is not a
+   * test of an effect; this one is about what the job leaves on disk for a real
+   * request to act on.
+   */
+  it('records what a finished compare made stale', async () => {
     const dir = makeDataDir();
     const outcome = startJob(dir, compareRequest, workEnding(1, 'a__b'));
     if (!outcome.ok) throw new Error('the first job must start');
 
     await outcome.started.done;
 
-    expect(revalidateTagCalls).toEqual(['vd:sets', 'vd:reports', 'vd:report:a__b']);
+    expect(takeConsoleRefresh(dir)).toEqual(['vd:sets', 'vd:reports', 'vd:report:a__b']);
+  });
+
+  // A capture writes no report, so there is no third tag to purge — naming one
+  // would retire a reader's cached reports to say nothing.
+  it('records only the two lists a capture moved', async () => {
+    const dir = makeDataDir();
+    const outcome = startJob(dir, captureRequest, workEnding(0, null));
+    if (!outcome.ok) throw new Error('the first job must start');
+
+    await outcome.started.done;
+
+    expect(takeConsoleRefresh(dir)).toEqual(['vd:sets', 'vd:reports']);
+  });
+
+  /* Cleared as it is handed over, so two tabs polling the console together
+     cannot both purge and a marker cannot be replayed on every poll forever. */
+  it('hands the stale tags over once', async () => {
+    const dir = makeDataDir();
+    const outcome = startJob(dir, compareRequest, workEnding(0, 'a__b'));
+    if (!outcome.ok) throw new Error('the first job must start');
+
+    await outcome.started.done;
+    takeConsoleRefresh(dir);
+
+    expect(takeConsoleRefresh(dir)).toEqual([]);
+  });
+
+  // An instance that has run nothing has no marker, and a poll must not be a
+  // 500 because of it — this is the answer on every poll but the first after a
+  // job ends.
+  it('says nothing is stale when no job has finished', () => {
+    expect(takeConsoleRefresh(makeDataDir())).toEqual([]);
   });
 });
 

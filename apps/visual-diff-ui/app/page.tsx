@@ -5,7 +5,7 @@ import { DashboardTemplate } from '@/components/DashboardTemplate';
 import { readCanonicalSet } from '@/lib/baselines';
 import { readReports, readSetSizes, readSets, resolveDataDir } from '@/lib/data';
 import { repoRoot } from '@/lib/git';
-import { readHistory } from '@/lib/jobs';
+import { currentJob, readHistory } from '@/lib/jobs';
 import { isLocalHost } from '@/lib/local';
 
 /**
@@ -54,6 +54,16 @@ async function ConsoleContents() {
   // watching a run that is already over. It is one small JSON file, read
   // synchronously — see lib/jobs.ts, which owns the record and its writers.
   const history = readHistory(dir);
+  // Which of those rows is alive. Read from the lock rather than from the row,
+  // because a running row and one the container went away under are the same
+  // row on disk — `currentJob` is the only reader that checks the pid.
+  //
+  // Read AFTER the history, so the pair can only disagree in the direction that
+  // reads harmlessly. A job finishing between the two reads leaves a row that
+  // already carries its exit code beside a lock still naming it, and
+  // `jobState` resolves that to the verdict; the other order would put a fresh
+  // lock beside a history that has never heard of the job.
+  const runningId = currentJob(dir)?.id ?? null;
 
   return (
     <DashboardTemplate
@@ -64,6 +74,7 @@ async function ConsoleContents() {
       isSample={isSample}
       isLocal={isLocal}
       corpus={corpus}
+      runningId={runningId}
     />
   );
 }

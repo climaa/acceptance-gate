@@ -1,5 +1,7 @@
 import { resolveDataDir } from '@/lib/data';
-import { currentJob, jobLog, readHistory } from '@/lib/jobs';
+import { currentJob, jobLog, readHistory, takeConsoleRefresh } from '@/lib/jobs';
+import { PURGE } from '@/lib/tags';
+import { revalidateTag } from 'next/cache';
 
 /**
  * How much of the log one poll carries, and the only place that number lives.
@@ -27,9 +29,24 @@ const TAIL_LINES = 24;
  * end of a job is the moment a reviewer most needs its log — `exit <code>` is
  * its final line — and a panel that empties the moment the job ends throws that
  * away.
+ *
+ * It also carries the console's cache purge, which looks out of place here and
+ * is not. A job's writes happen in a detached tail with no request on the stack,
+ * and `revalidateTag` outside a request appends to an array nobody will drain
+ * again (see `markConsoleStale` in lib/jobs.ts). This handler is the first real
+ * request after any job ends — the console polls it once a second — and it is
+ * the very response that tells the client to re-read the page, so the purge and
+ * the refresh it exists for cannot get out of order.
  */
 export async function GET(): Promise<Response> {
   const { dir, isSample } = await resolveDataDir();
+
+  // Ahead of the answer below, not after it: Next drains this request's tags
+  // through `pendingWaitUntil` once the handler returns, and the client's
+  // `router.refresh()` cannot arrive before then — it is a whole round trip
+  // behind the response this call is still assembling. The same ordering the
+  // delete and prune routes have always relied on.
+  for (const tag of takeConsoleRefresh(dir)) revalidateTag(tag, PURGE);
 
   const running = currentJob(dir);
   const job = running ?? readHistory(dir)[0] ?? null;

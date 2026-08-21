@@ -2,6 +2,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { cacheLife, cacheTag } from 'next/cache';
 import { connection } from 'next/server';
+import { REPORTS_TAG, SETS_TAG, reportTag } from './tags';
 import {
   type Bucket,
   type SetsFile,
@@ -31,23 +32,6 @@ const SETS_DIR = 'sets';
 const SETS_FILE = 'sets.json';
 const SUMMARY_FILE = 'summary.json';
 const SHOTS_DIR = 'shots';
-
-/** Revalidation handles for the readers below; every mutation purges the ones it
- *  moved (lib/jobs.ts and the two mutating routes). */
-export const SETS_TAG = 'vd:sets';
-export const REPORTS_TAG = 'vd:reports';
-export const reportTag = (id: string) => `vd:report:${id}`;
-
-/**
- * How long an entry a mutation invalidated may still be served: not at all.
- *
- * `revalidateTag` takes that window as its second argument, and this app's answer
- * is the same for every tag — a deleted set is not "a bit stale", it is gone, and
- * the list that still names it is wrong rather than old. (`updateTag`, which
- * expires immediately by definition, is Server-Action-only and throws in a route
- * handler — see `__tests__/config.test.ts`.)
- */
-export const PURGE = { expire: 0 };
 
 /** The one variable this app reads to find real data, named as a type so a
  *  caller — and every test — can hand over exactly what the resolution reads. */
@@ -264,8 +248,13 @@ async function dirBytes(dir: string): Promise<number> {
  * instance — the registry and the trees are two facts, and the table says
  * "unknown" rather than "0" when it only has one of them.
  *
- * Tagged `SETS_TAG`, which every mutation already refreshes (see lib/jobs.ts),
- * so a delete or a prune retires these sizes with the list they belong to.
+ * Tagged `SETS_TAG`, like the list these sizes belong to, so one purge retires
+ * both. Which mutation can issue that purge is the thing to know: a delete or a
+ * prune does it in its own request handler and it lands. A job cannot — it
+ * finishes in a detached tail with no request on the stack — so it records what
+ * it made stale and `GET /api/jobs/current` purges it on the next poll. See
+ * `markConsoleStale` in lib/jobs.ts; a tag purged from anywhere else is a call
+ * that silently does nothing.
  */
 export async function readSetSizes(dataDir: string): Promise<Record<string, number>> {
   'use cache';

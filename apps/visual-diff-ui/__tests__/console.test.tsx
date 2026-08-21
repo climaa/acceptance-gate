@@ -91,6 +91,9 @@ interface ConsoleContents {
   /** Null by default: most of this suite is about the captured sets, and a
    *  checkout is not something a template case should have to have. */
   corpus?: typeof CORPUS | null;
+  /** Null by default: nothing holds the lock, so every history row is a run
+   *  that is over. The one case that sets it is the one about a live job. */
+  runningId?: string | null;
 }
 
 /** The console with everything populated, unless a case says otherwise.
@@ -106,6 +109,7 @@ function consoleWith({
   reports = [REPORT],
   history = [RUN, INTERRUPTED],
   corpus = null,
+  runningId = null,
 }: ConsoleContents = {}) {
   return (
     <DashboardTemplate
@@ -116,6 +120,7 @@ function consoleWith({
       isSample={false}
       isLocal
       corpus={corpus}
+      runningId={runningId}
     />
   );
 }
@@ -303,6 +308,43 @@ describe('the compare pickers', () => {
     ]);
   });
 
+  /**
+   * `router.refresh()` re-renders this island without remounting it, so the
+   * `useState` initialisers run once and the list moves under them afterwards —
+   * a delete or a prune takes a label away. A `<select>` holding a value no
+   * option carries renders with nothing selected, and the button beside it would
+   * send the run panel a set this instance does not have.
+   */
+  it('follows the list when the set it had selected is gone', () => {
+    const { rerender } = render(consoleWith());
+    rerender(
+      consoleWith({ sets: [DIRTY], sizes: { [DIRTY.label]: 1000 }, corpus: CORPUS }),
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'compare A ⇄ B' }));
+
+    expect(replaceCalls.at(-1)?.url).toBe(
+      `/?a=${CORPUS.label}&b=${DIRTY.label}&mode=compare`,
+    );
+  });
+
+  // The other half of the same rule. A capture finishing puts a new label at the
+  // head of the list, and a selection that moves under the cursor is worse than
+  // a default that has aged — so a pair still on offer is left alone.
+  it('keeps a pair that is still on offer when a new set arrives', () => {
+    const { rerender } = render(consoleWith());
+    fireEvent.change(screen.getByRole('combobox', { name: 'B' }), {
+      target: { value: CLEAN.label },
+    });
+    rerender(consoleWith({ corpus: CORPUS }));
+
+    fireEvent.click(screen.getByRole('button', { name: 'compare A ⇄ B' }));
+
+    expect(replaceCalls.at(-1)?.url).toBe(
+      `/?a=${CLEAN.label}&b=${CLEAN.label}&mode=compare`,
+    );
+  });
+
   // A URL change that scrolled the page would move the table the reviewer just
   // picked from out from under them.
   it('replaces the URL without scrolling', () => {
@@ -362,6 +404,38 @@ describe('the history panel', () => {
       '—',
       '',
     ]);
+  });
+
+  /**
+   * The same record as INTERRUPTED, told apart by the lock and nothing else.
+   *
+   * That is the whole point: `startJob` writes the row with `endedAt`,
+   * `exitCode` and `reportId` all null and only the end of the job patches
+   * them, so on disk a live job and one the container went away under are the
+   * same three nulls. The table drew both as `interrupted` — beside a CURRENT
+   * JOB region reading `running`.
+   */
+  it('reports the row the lock is holding as running, with nothing to show yet', () => {
+    render(consoleWith({ history: [INTERRUPTED], runningId: INTERRUPTED.id }));
+
+    expect(cellsOf(firstRowOf('History'))).toEqual([
+      'running',
+      'capture',
+      INTERRUPTED.startedAt,
+      '—',
+      '—',
+      '',
+    ]);
+  });
+
+  // The lock naming a row that already carries a verdict: `currentJob` reads the
+  // lock and then the history, so a job that finishes between those two reads
+  // arrives here as both. The exit code wins — a row saying `running` beside
+  // `exit 1` is the disagreement lib/outcome.ts exists to prevent.
+  it('reports a row that already has its exit code as what it came to', () => {
+    render(consoleWith({ history: [RUN], runningId: RUN.id }));
+
+    expect(cellsOf(firstRowOf('History'))[0]).toBe('succeeded (diffs)');
   });
 
   it('links a run that produced a report into it', () => {

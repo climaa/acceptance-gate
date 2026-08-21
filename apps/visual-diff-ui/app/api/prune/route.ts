@@ -1,4 +1,5 @@
-import { PURGE, SETS_TAG, resolveDataDir } from '@/lib/data';
+import { resolveDataDir } from '@/lib/data';
+import { PURGE, SETS_TAG } from '@/lib/tags';
 import { SetLabelSchema, holderOf, listSets, removeSet } from '@/lib/jobs';
 import {
   SAMPLE_DATA,

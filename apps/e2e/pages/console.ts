@@ -26,6 +26,7 @@ export class ConsolePage {
   readonly viewReportLink: Locator;
   readonly liveLog: Locator;
   readonly historyRows: Locator;
+  readonly reportRows: Locator;
   readonly refusalAlert: Locator;
   readonly sampleBadge: Locator;
   readonly sampleModeNote: Locator;
@@ -55,6 +56,7 @@ export class ConsolePage {
     // so it carries a testid instead.
     this.liveLog = page.getByTestId('log-tail');
     this.historyRows = page.getByRole('table', { name: 'History' }).getByRole('row');
+    this.reportRows = page.getByRole('table', { name: 'Reports' }).getByRole('row');
     // Scoped to `main`, because Next's app router keeps a permanent
     // `<div role="alert" id="__next-route-announcer__">` outside the page's own
     // tree for route changes: a page-wide `role=alert` lookup resolves to two
@@ -129,6 +131,11 @@ export class ConsolePage {
       .getByRole('dialog', { name: 'Confirm prune' })
       .getByRole('button', { name: 'prune' })
       .click();
+  }
+
+  /** One row of the reports panel, by the report id its link carries. */
+  reportRow(id: string): Locator {
+    return this.reportRows.filter({ hasText: id });
   }
 
   historyRow(outcome: RegExp): Locator {
