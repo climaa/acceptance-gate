@@ -119,6 +119,12 @@ export function DashboardTemplate({
     ...sets.map((set) => set.label),
   ];
 
+  // The reports that exist right now, for the history panel. Built from the
+  // same list the reports panel draws rather than read again, so a `view` link
+  // in one column cannot promise something the other column says is gone —
+  // see HistoryTable.tsx for what the two disagreeing looked like.
+  const reportIds = new Set(reports.map((report) => report.id));
+
   return (
     <div className="vd-console">
       <Stack gap={6} className="vd-console__column">
@@ -170,7 +176,7 @@ export function DashboardTemplate({
             {history.length === 0 ? (
               <EmptyState message="Nothing has run yet — this instance keeps a row per job." />
             ) : (
-              <HistoryTable runs={history} runningId={runningId} />
+              <HistoryTable runs={history} runningId={runningId} reportIds={reportIds} />
             )}
           </Panel>
         </Stack>

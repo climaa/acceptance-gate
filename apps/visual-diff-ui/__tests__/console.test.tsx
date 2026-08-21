@@ -450,6 +450,24 @@ describe('the history panel', () => {
     expect(view.getAttribute('href')).toBe(`/report/${RUN.reportId}`);
   });
 
+  /**
+   * The row that outlived its report.
+   *
+   * History is append-only and `removeReport` deletes a tree without touching
+   * it, so deleting a report leaves every run that produced it still naming it.
+   * The cell used to link on the id alone, and this console shipped showing
+   * `reports (1)` beside a history column of `view` links into 404s — one per
+   * comparison ever deleted.
+   */
+  it('offers no link on a run whose report has since been deleted', () => {
+    render(consoleWith({ history: [RUN], reports: [] }));
+
+    expect(screen.queryByRole('link', { name: 'view' })).toBeNull();
+    // The row itself stays: what ran is still what ran, and only the way into
+    // a report that is gone is withdrawn.
+    expect(cellsOf(firstRowOf('History'))[0]).toBe('succeeded (diffs)');
+  });
+
   it('shows an empty state instead of a table when nothing has run', () => {
     render(consoleWith({ history: [] }));
 

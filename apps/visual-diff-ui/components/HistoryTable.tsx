@@ -16,6 +16,15 @@ import { durationOf, formatDuration, formatStamp, jobState } from '@/lib/outcome
  *
  * The row is built as data rather than as a component — see SetsTable.tsx for
  * why.
+ *
+ * The `view` cell is gated on the reports that exist RIGHT NOW, not on the id
+ * the row happens to carry. History is append-only and `removeReport` deletes a
+ * tree without touching it (lib/jobs.ts), so a reviewer who deletes a report
+ * leaves every row that produced it still naming it — and every one of those
+ * links lands on a 404. Reconciled here rather than by patching the row,
+ * because the directory is the source of truth everywhere else in this app
+ * (lib/data.ts's `listReportIds` walks it), and a report removed by hand,
+ * outside the console, has to disappear from this column too.
  */
 
 const HISTORY_TABLE_LABEL = 'History';
@@ -36,7 +45,11 @@ const HISTORY_COLUMNS: readonly TableColumn[] = [
   { header: '', width: '6rem' },
 ];
 
-function historyRow(run: HistoryRecord, runningId: string | null): TableRow {
+function historyRow(
+  run: HistoryRecord,
+  runningId: string | null,
+  reportIds: ReadonlySet<string>,
+): TableRow {
   const { word, tone } = jobState(run.exitCode, run.id === runningId);
   const took = durationOf(run.startedAt, run.endedAt);
 
@@ -52,9 +65,10 @@ function historyRow(run: HistoryRecord, runningId: string | null): TableRow {
       { content: formatStamp(run.startedAt), title: run.startedAt },
       run.exitCode ?? NOTHING,
       took === null ? NOTHING : formatDuration(took),
-      // A capture writes no report, and an interrupted run never got to. The
-      // cell stays empty rather than offering a link into a 404.
-      run.reportId ? (
+      // A capture writes no report, an interrupted run never got to, and a
+      // deleted one no longer has the tree its id names. The cell stays empty
+      // rather than offering a link into a 404.
+      run.reportId && reportIds.has(run.reportId) ? (
         <Link as={NextLink} href={`/report/${run.reportId}`} key="view">
           view
         </Link>
@@ -68,14 +82,19 @@ export interface HistoryTableProps {
   /** The job holding `job.lock` right now, or null. Read server-side by
    *  `currentJob()` — see app/page.tsx for why it is read there and not here. */
   runningId: string | null;
+  /** The ids of the reports this instance still has, which is what decides
+   *  whether a row gets a `view` link. Derived by the caller from the same list
+   *  the reports panel draws, so the two panels cannot disagree about which
+   *  reports exist. */
+  reportIds: ReadonlySet<string>;
 }
 
-export function HistoryTable({ runs, runningId }: HistoryTableProps) {
+export function HistoryTable({ runs, runningId, reportIds }: HistoryTableProps) {
   return (
     <Table
       label={HISTORY_TABLE_LABEL}
       columns={HISTORY_COLUMNS}
-      rows={runs.map((run) => historyRow(run, runningId))}
+      rows={runs.map((run) => historyRow(run, runningId, reportIds))}
     />
   );
 }

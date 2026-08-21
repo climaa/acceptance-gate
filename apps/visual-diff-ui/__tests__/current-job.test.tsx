@@ -58,13 +58,22 @@ interface CurrentPayload {
   isSample?: boolean;
   running: boolean;
   job: HistoryRecord | null;
+  /** Whether the report the job names is still on disk. Defaults to "yes, if it
+   *  named one at all" — the answer the route gives for a report nobody has
+   *  deleted, which is what every case but one here is about. */
+  reportExists?: boolean;
   log?: string[];
 }
 
 /** `GET /api/jobs/current`, answered with whatever the case is about. Returns
  *  the mock so a case can assert how it was called. */
 function stubCurrent(payload: CurrentPayload) {
-  const json = { isSample: false, log: [], ...payload };
+  const json = {
+    isSample: false,
+    log: [],
+    reportExists: payload.job?.reportId !== null && payload.job?.reportId !== undefined,
+    ...payload,
+  };
   const fetchMock = vi.fn(
     () => Promise.resolve({ ok: true, json: () => Promise.resolve(json) }) as never,
   );
@@ -200,6 +209,25 @@ describe('the current-job region', () => {
 
     await screen.findByText(/exit/);
     expect(screen.queryByRole('link', { name: 'view report' })).toBeNull();
+  });
+
+  /**
+   * The report deleted out from under the panel still showing its run.
+   *
+   * `job.reportId` says what the run produced, which is not the same claim as
+   * "that report is still there" — the row keeps the id after the reports panel
+   * beside it deletes the tree. Only the server can tell the difference, so it
+   * sends `reportExists` and this region believes it over the id.
+   */
+  it('withdraws the report link once the report is deleted', async () => {
+    stubCurrent({ running: false, job: FINISHED, reportExists: false });
+
+    renderCurrentJob();
+
+    await screen.findByText(/exit/);
+    expect(screen.queryByRole('link', { name: 'view report' })).toBeNull();
+    // The run is still reported — only the way into what is gone is withdrawn.
+    expect(within(region()).getByText(FINISHED.label)).toBeDefined();
   });
 
   // A console whose job API is unreachable is still a console: the tables beside
