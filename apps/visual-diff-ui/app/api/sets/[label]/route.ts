@@ -1,5 +1,6 @@
 import { CANONICAL_LABEL } from '@/lib/baselines';
-import { PURGE, SETS_TAG, resolveDataDir } from '@/lib/data';
+import { resolveDataDir } from '@/lib/data';
+import { PURGE, SETS_TAG } from '@/lib/tags';
 import { SetLabelSchema, hasSet, holderOf, removeSet } from '@/lib/jobs';
 import {
   CANONICAL_IS_COMMITTED,

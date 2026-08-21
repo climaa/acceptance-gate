@@ -71,6 +71,22 @@ export function ComparePickers({ labels }: ComparePickersProps) {
   const [baseline, setBaseline] = useState(labels[0] ?? '');
   const [candidate, setCandidate] = useState(labels[1] ?? labels[0] ?? '');
 
+  /* Both pickers follow the list they are handed, the way the run panel's report
+     picker does (RunPanel.tsx). `router.refresh()` re-renders this component
+     without remounting it, so a `useState` initialiser is read once and never
+     again — and the list DOES move under it: a delete or a prune takes a label
+     away, and a capture finishing puts a new one at the head.
+
+     Only a value that has left the list is corrected. A reviewer's chosen pair
+     survives a set arriving beside it — a selection moving under the cursor is
+     worse than a default that has aged — but a `<select>` whose value names no
+     option renders with nothing selected and would send `?a=<gone>` to the run
+     panel, which is a comparison this instance cannot make. */
+  if (labels.length > 0) {
+    if (!labels.includes(baseline)) setBaseline(labels[0] ?? '');
+    if (!labels.includes(candidate)) setCandidate(labels[1] ?? labels[0] ?? '');
+  }
+
   const compare = () => {
     const query = new URLSearchParams({ a: baseline, b: candidate, mode: COMPARE_MODE });
 

@@ -1,9 +1,8 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { EXIT } from '@gate/visual-diff/policy';
-import { revalidateTag } from 'next/cache';
 import { z } from 'zod';
-import { PURGE, REPORTS_TAG, SETS_TAG, reportTag } from './data';
+import { REPORTS_TAG, SETS_TAG, reportTag } from './tags';
 import { CANONICAL_LABEL } from './baselines';
 import { type CaptureSet, SetsFileSchema } from './summary';
 
@@ -20,6 +19,7 @@ import { type CaptureSet, SetsFileSchema } from './summary';
  *     <dataDir>/worktrees.json                  which sets are held (D2)
  *     <dataDir>/job.lock                        the one-job-at-a-time lock (D1)
  *     <dataDir>/jobs/<jobId>.log                one run's output stream
+ *     <dataDir>/refresh.json                    what a finished job made stale
  *     <dataDir>/__baselines__/                  what `accept` promotes into (D3)
  *
  * Nothing here knows how to run a job. `startJob` takes the work as an
@@ -110,6 +110,11 @@ const LockSchema = z.object({
 
 export type Lock = z.infer<typeof LockSchema>;
 
+/** What a finished job left for the next request to purge. A list, because a
+ *  compare makes three readers stale and a capture two — see `markConsoleStale`
+ *  for why the job cannot purge them itself. */
+const RefreshSchema = z.object({ tags: z.array(z.string()) });
+
 /** The D2 hold: a set checked out into a worktree is not the console's to delete. */
 const WorktreeSchema = z.object({
   path: z.string(),
@@ -155,6 +160,7 @@ export const setsFilePath = (dataDir: string) => within(dataDir, 'sets.json');
 export const BASELINE_ENV_FILE = 'BASELINE_ENV.json';
 
 const lockPath = (dataDir: string) => within(dataDir, 'job.lock');
+const refreshPath = (dataDir: string) => within(dataDir, 'refresh.json');
 const historyPath = (dataDir: string) => within(dataDir, 'history.json');
 const worktreesPath = (dataDir: string) => within(dataDir, 'worktrees.json');
 const logPath = (dataDir: string, id: string) => within(dataDir, 'jobs', `${id}.log`);
@@ -300,6 +306,37 @@ export function recordSet(dataDir: string, set: CaptureSet): void {
     ...registry,
     sets: [set, ...registry.sets.filter((entry) => entry.label !== set.label)],
   });
+}
+
+/**
+ * The tags a finished job made stale, cleared as they are handed over.
+ *
+ * Read-and-clear in one call, and the order matters: the file is removed BEFORE
+ * the tags are returned, so two tabs polling together cannot both purge and a
+ * caller that throws mid-purge cannot be handed the same list forever. Losing a
+ * purge to a crash between the two costs one console refresh; replaying one
+ * costs every reader on the instance, once per poll, for as long as the file
+ * survives.
+ *
+ * A marker left by a previous process is harmless: purging a tag nothing has
+ * cached yet is a no-op, so this needs no staleness test of the kind `job.lock`
+ * carries a pid for.
+ */
+export function takeConsoleRefresh(dataDir: string): string[] {
+  const file = refreshPath(dataDir);
+
+  let tags: string[];
+  try {
+    tags = readJson(file, RefreshSchema, { tags: [] }).tags;
+  } catch {
+    // A malformed marker is not worth failing a poll over — unlike history, it
+    // holds no record of anything, only a hint about what to re-read.
+    tags = [];
+  }
+
+  if (tags.length > 0) fs.rmSync(file, { force: true });
+
+  return tags;
 }
 
 /** Every run, newest first. */
@@ -565,20 +602,32 @@ const messageOf = (cause: unknown) =>
   cause instanceof Error ? cause.message : String(cause);
 
 /**
- * Refresh what the console is looking at.
+ * Record which of the console's cached readers a finished job made stale.
  *
- * Wrapped, because this runs in the job's detached tail rather than in the
- * request that started it: a cache refresh that cannot happen must not turn a
- * finished job into an unhandled rejection, and the log already carries the
- * job's real verdict by the time this runs.
+ * This does NOT purge anything, and that distinction is the whole of the bug it
+ * replaces. `revalidateTag` appends to the request store's
+ * `pendingRevalidatedTags`, and `executeRevalidates` drains that array at the
+ * END of the request. This runs in the job's detached tail — long after
+ * `POST /api/jobs` answered 202 — where the AsyncLocalStorage store is still
+ * reachable, so the call threw nothing and did nothing: the tags landed in an
+ * array drained before the job had even finished. A `try`/`catch` could never
+ * have caught it, because nothing was ever thrown.
+ *
+ * So the tail writes down what is stale and the next real request purges it:
+ * `GET /api/jobs/current`, which the console polls once a second and which is
+ * the same answer that tells it the job is over. One more file in the layout
+ * this module already owns, beside the lock.
  */
-function refreshConsole(reportId: string | null): void {
+function markConsoleStale(dataDir: string, reportId: string | null): void {
+  const tags = [SETS_TAG, REPORTS_TAG, ...(reportId ? [reportTag(reportId)] : [])];
+
   try {
-    revalidateTag(SETS_TAG, PURGE);
-    revalidateTag(REPORTS_TAG, PURGE);
-    if (reportId) revalidateTag(reportTag(reportId), PURGE);
+    writeJson(refreshPath(dataDir), { tags });
   } catch {
-    // Nothing to say here that the log has not already said.
+    // A marker that could not be written is a console that refreshes when the
+    // entry expires instead of when the job ends — which is what it did before
+    // this existed. The log already carries the job's real verdict, and failing
+    // a finished run over its housekeeping would be the worse answer.
   }
 }
 
@@ -608,7 +657,7 @@ async function runDetached(
       exitCode: outcome.exitCode,
       reportId: outcome.reportId ?? null,
     });
-    refreshConsole(outcome.reportId ?? null);
+    markConsoleStale(dataDir, outcome.reportId ?? null);
   } finally {
     releaseLock(dataDir);
   }

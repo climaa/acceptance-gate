@@ -44,6 +44,10 @@ export interface DashboardTemplateProps {
    *  Drawn above the captured sets and offered to the compare pickers — it is not
    *  one of them (lib/baselines.ts says why). */
   corpus: Corpus | null;
+  /** The job holding the lock as the page rendered, or null. The one fact that
+   *  separates a running history row from an interrupted one — see
+   *  HistoryTable.tsx. */
+  runningId: string | null;
 }
 
 interface PanelProps {
@@ -105,6 +109,7 @@ export function DashboardTemplate({
   isSample,
   isLocal,
   corpus,
+  runningId,
 }: DashboardTemplateProps) {
   // Newest first, with the corpus at the head: a compare is nearly always "what
   // did my capture do to the corpus", so it is the first thing either picker
@@ -161,7 +166,7 @@ export function DashboardTemplate({
             {history.length === 0 ? (
               <EmptyState message="Nothing has run yet — this instance keeps a row per job." />
             ) : (
-              <HistoryTable runs={history} />
+              <HistoryTable runs={history} runningId={runningId} />
             )}
           </Panel>
         </Stack>

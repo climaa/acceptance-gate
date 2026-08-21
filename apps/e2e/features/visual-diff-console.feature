@@ -19,12 +19,14 @@ Feature: Visual-diff console
     And I launch the prepared comparison
     Then the live log runs to the job's end
     And the finished job links to its report
+    And the console lists that report without a reload
 
   @mutating
   Scenario: A second job is refused while one is running
     Given a job is already running
     When I try to start another job
     Then the console shows the running job instead of queueing mine
+    And the history shows that job as running
 
   Scenario: Deleting a held snapshot set is refused with the reason
     Given a snapshot set is held by a registered worktree

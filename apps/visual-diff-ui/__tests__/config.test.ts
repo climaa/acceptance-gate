@@ -75,13 +75,41 @@ describe('cache invalidation', () => {
    * answers 500 — after the delete or the prune has already happened. A reviewer
    * then reads "could not delete" over a set that is gone.
    *
-   * `revalidateTag` is the one that works everywhere this app invalidates from:
-   * two route handlers, and the detached tail of a finished job.
+   * `revalidateTag` is the one that works from a route handler, which is where
+   * every invalidation in this app now happens — see the case below for where it
+   * emphatically does not work.
    */
   it('never invalidates a tag with the Server-Action-only API', () => {
     // The call, not the name: lib/data.ts names `updateTag` in prose, to say
     // why the window beside every `revalidateTag` here is zero.
     const callers = sourceFiles().filter((file) => /\bupdateTag\s*\(/.test(read(file)));
+
+    expect(callers).toEqual([]);
+  });
+
+  /**
+   * `revalidateTag` appends to the request store's `pendingRevalidatedTags`, and
+   * `executeRevalidates` drains that array at the END of the request. Called
+   * from anywhere with no request still in flight, it therefore does nothing —
+   * and, because AsyncLocalStorage keeps the finished request's store reachable
+   * from a detached continuation, it does nothing SILENTLY. No throw, nothing
+   * for a `catch` to see.
+   *
+   * That is not hypothetical. `lib/jobs.ts` purged three tags from the tail of a
+   * finished job for as long as this app has had one, so a capture that had
+   * already written its set left the console showing the list from before it,
+   * and `__tests__/jobs.test.ts` asserted the CALL and stayed green throughout.
+   * A job now records what it made stale and `GET /api/jobs/current` purges it
+   * on the next poll, inside a request.
+   *
+   * Stated as "only route handlers" rather than as a list of today's callers, so
+   * it goes on holding when one is added or removed. Server Actions would be
+   * legal too — this app has none.
+   */
+  it('invalidates no tag outside a request handler', () => {
+    const callers = sourceFiles()
+      .filter((file) => /\brevalidateTag\s*\(/.test(read(file)))
+      .filter((file) => !/^app\/.*\/route\.ts$/.test(file));
 
     expect(callers).toEqual([]);
   });
