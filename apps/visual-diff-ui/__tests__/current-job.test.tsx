@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import { useEffect } from 'react';
 // Imported explicitly rather than relying on `globals: true` — tsconfig's
 // `**/*.tsx` include means tsc typechecks this file.
@@ -572,6 +572,51 @@ describe('an out-of-band poll request', () => {
 
     return null;
   }
+
+  /**
+   * What the poke is FOR, as opposed to what it must not break.
+   *
+   * The backoff is the whole reason it exists: a console that has been idle for
+   * a few seconds is up to `MAX_IDLE_POLL_MS` away from its next question, and
+   * the moment a job starts is the moment that wait is most wrong. Asserted by
+   * advancing to a known point in the backoff and then poking — the answer has
+   * to arrive on the poke rather than on the timer that was already pending.
+   *
+   * Deliberately NOT an e2e scenario. The browser cannot be told where in the
+   * backoff it is, so a scenario would have to idle for real seconds and then
+   * assert against a window it could only guess at — flaky by construction, and
+   * `suite-integrity.mjs` pins the scenario count, so a flaky one is a recurring
+   * red. Fake timers can be exact about it; a browser cannot.
+   */
+  it('collapses a backed-off wait when asked to poll now', async () => {
+    vi.useFakeTimers();
+    const fetchMock = stubCurrent({ isSample: false, running: false, job: null });
+    let pollNow: () => void = () => {};
+
+    function Handle() {
+      pollNow = usePollNow();
+
+      return null;
+    }
+
+    render(
+      <CurrentJobProvider>
+        <Handle />
+      </CurrentJobProvider>,
+    );
+
+    // Far enough in for the idle backoff to have reached its ceiling, so the
+    // next scheduled poll is seconds away rather than one tick.
+    await vi.advanceTimersByTimeAsync(30_000);
+    const backedOff = fetchMock.mock.calls.length;
+
+    // A hundred milliseconds is nowhere near `MAX_IDLE_POLL_MS`, so a request
+    // inside it can only have come from the poke.
+    act(() => pollNow());
+    await vi.advanceTimersByTimeAsync(100);
+
+    expect(fetchMock.mock.calls.length).toBe(backedOff + 1);
+  });
 
   it('does not leave two poll chains running', async () => {
     vi.useFakeTimers();
