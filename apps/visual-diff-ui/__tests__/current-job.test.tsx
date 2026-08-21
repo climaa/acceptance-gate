@@ -3,7 +3,7 @@ import { cleanup, render, screen, waitFor, within } from '@testing-library/react
 // Imported explicitly rather than relying on `globals: true` — tsconfig's
 // `**/*.tsx` include means tsc typechecks this file.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { CurrentJob, CurrentJobProvider } from '../components/CurrentJob';
+import { CurrentJob, CurrentJobProvider, useCurrentJob } from '../components/CurrentJob';
 import type { HistoryRecord } from '../lib/jobs';
 import { refreshCalls } from './stubs/next-navigation';
 
@@ -371,11 +371,170 @@ describe('the elapsed counter', () => {
     expect(region().getAttribute('aria-live')).toBe('polite');
   });
 
+  // The same rule the poller keeps, for the same reason: a hidden tab is not
+  // reading a clock. The tick is re-run on the way back rather than merely
+  // resumed, so the number is right on the first painted frame.
+  it('stops ticking while the tab is hidden and is right again on return', async () => {
+    stubCurrent({ running: true, job: RUNNING });
+
+    renderCurrentJob();
+    expect(await within(region()).findByText('3m 12s')).toBeDefined();
+
+    hide();
+    // A minute passes with nobody looking. This block runs on REAL timers (see
+    // the note above — Testing Library's waiting is built on them), so the wait
+    // has to be real too: anything shorter than the one-second tick would pass
+    // whether or not the interval is still running, which is a test that cannot
+    // fail. It is the one slow assertion in this file, and it is what makes the
+    // hidden-tab guard observable at all.
+    vi.mocked(Date.now).mockReturnValue(Date.parse('2026-08-17T08:04:12Z'));
+    await new Promise((resume) => setTimeout(resume, 1_200));
+    expect(within(region()).getByText('3m 12s')).toBeDefined();
+
+    show();
+    expect(await within(region()).findByText('4m 12s')).toBeDefined();
+  });
+
   it('reports what a finished run took, not what has passed since', async () => {
     stubCurrent({ running: false, job: FINISHED });
 
     renderCurrentJob();
 
     expect(await within(region()).findByText('1m 35s')).toBeDefined();
+  });
+});
+
+/**
+ * What an idle console costs, which used to be one request a second forever.
+ *
+ * The poller stops for a hidden tab and freezes on a sample instance, and both
+ * are covered above — but a real console on a developer's machine is neither,
+ * so it polled indefinitely whether or not anything was running. Measured
+ * before this changed: 35 requests in 32 seconds with nothing in flight.
+ */
+describe('the poll cadence', () => {
+  // 1s, 2s, 4s, 8s, 8s… — four requests in the first ten seconds where the old
+  // fixed interval made eleven.
+  it('backs off while the console is idle', async () => {
+    vi.useFakeTimers();
+    const fetchMock = stubCurrent({ isSample: false, running: false, job: null });
+
+    renderCurrentJob();
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    await vi.advanceTimersByTimeAsync(10_000);
+
+    expect(fetchMock.mock.calls.length).toBeLessThan(6);
+  });
+
+  // The backoff must never reach the one case the panel exists for: a running
+  // job's log is being read as it is written, so it keeps the full cadence
+  // whether or not this particular second added a line.
+  it('keeps the full cadence while a job is running', async () => {
+    vi.useFakeTimers();
+    const fetchMock = stubCurrent({ isSample: false, running: true, job: RUNNING });
+
+    renderCurrentJob();
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    await vi.advanceTimersByTimeAsync(10_000);
+
+    expect(fetchMock.mock.calls.length).toBeGreaterThanOrEqual(10);
+  });
+
+  // Coming back to the tab is new information — the answer may have moved while
+  // nobody was asking — so the wait starts over rather than resuming wherever
+  // the backoff had got to.
+  it('resets the backoff when the tab comes back', async () => {
+    vi.useFakeTimers();
+    const fetchMock = stubCurrent({ isSample: false, running: false, job: null });
+
+    renderCurrentJob();
+    // Timers are advanced explicitly rather than through `vi.waitFor`, which
+    // advances them itself — the count is the assertion here, so nothing else
+    // may move the clock.
+    await vi.advanceTimersByTimeAsync(10_000);
+
+    hide();
+    await vi.advanceTimersByTimeAsync(5_000);
+    const backedOff = fetchMock.mock.calls.length;
+
+    show();
+    // Immediately, not on the eight-second timer the backoff had reached.
+    await vi.advanceTimersByTimeAsync(100);
+
+    expect(fetchMock.mock.calls.length).toBe(backedOff + 1);
+  });
+});
+
+/**
+ * The provider's value, and why its identity matters.
+ *
+ * Every poll used to hand the context a freshly built object whether or not it
+ * said anything new, so React could not bail out. `RunPanel` reads this context
+ * twice, which made its whole 800-line subtree re-render once a second for as
+ * long as a console was open — and that subtree read `localStorage` during
+ * render, so the cost was a synchronous storage parse per second, forever.
+ */
+describe('the provider value', () => {
+  function CountingConsumer({ onRender }: { onRender: () => void }) {
+    useCurrentJob();
+    onRender();
+
+    return null;
+  }
+
+  it('does not re-render its consumers while the answer is unchanged', async () => {
+    vi.useFakeTimers();
+    const fetchMock = stubCurrent({ isSample: false, running: true, job: RUNNING });
+    const onRender = vi.fn();
+
+    render(
+      <CurrentJobProvider>
+        <CountingConsumer onRender={onRender} />
+      </CurrentJobProvider>,
+    );
+
+    // Long enough for the first answer to arrive AND to be rendered — that one
+    // genuinely changes the state, from `IDLE` to a running job, and is not the
+    // re-render this is about.
+    await vi.advanceTimersByTimeAsync(1_500);
+    const settled = onRender.mock.calls.length;
+    const polled = fetchMock.mock.calls.length;
+
+    // Ten more polls at the running cadence, every one of them the same answer.
+    await vi.advanceTimersByTimeAsync(10_000);
+
+    expect(fetchMock.mock.calls.length).toBeGreaterThanOrEqual(polled + 9);
+    expect(onRender).toHaveBeenCalledTimes(settled);
+  });
+
+  it('does re-render them when the log grows', async () => {
+    vi.useFakeTimers();
+    const onRender = vi.fn();
+    let log = ['comparing 6 shot(s)'];
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        () =>
+          Promise.resolve({
+            ok: true,
+            json: () =>
+              Promise.resolve({ isSample: false, running: true, job: RUNNING, log }),
+          }) as never,
+      ),
+    );
+
+    render(
+      <CurrentJobProvider>
+        <CountingConsumer onRender={onRender} />
+      </CurrentJobProvider>,
+    );
+
+    await vi.waitFor(() => expect(onRender).toHaveBeenCalled());
+    const settled = onRender.mock.calls.length;
+
+    log = [...log, 'wrote report'];
+    await vi.advanceTimersByTimeAsync(2_000);
+
+    expect(onRender.mock.calls.length).toBeGreaterThan(settled);
   });
 });

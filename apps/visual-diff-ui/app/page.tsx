@@ -4,6 +4,7 @@ import { Skeleton, Stack } from '@gate/ui';
 import { DashboardTemplate } from '@/components/DashboardTemplate';
 import { readCanonicalSet } from '@/lib/baselines';
 import { readReports, readSetSizes, readSets, resolveDataDir } from '@/lib/data';
+import { repoRoot } from '@/lib/git';
 import { readHistory } from '@/lib/jobs';
 import { isLocalHost } from '@/lib/local';
 
@@ -34,21 +35,25 @@ async function ConsoleContents() {
   // by the time this runs. Read here rather than in the client bundle so there is
   // no frame in which the start button exists and then vanishes.
   const isLocal = isLocalHost((await headers()).get('host'));
-  const [{ sets }, sizes, reports] = await Promise.all([
+  // The corpus joins the three cached readers rather than being read after
+  // them: it is cached now (see lib/baselines.ts for why, and for what its
+  // `seconds` window costs), and awaiting it here means its filesystem work
+  // overlaps theirs instead of following them.
+  //
+  // `repoRoot()` is resolved by this caller, not inside the reader, so it joins
+  // that reader's cache key — the same rule the `dir` argument follows.
+  const [{ sets }, sizes, reports, corpus] = await Promise.all([
     readSets(dir),
     readSetSizes(dir),
     readReports(dir),
+    readCanonicalSet(repoRoot()),
   ]);
 
-  // Read uncached, unlike the three above: history is what a job that finished
+  // Read uncached, unlike the four above: history is what a job that finished
   // a second ago just wrote, and `cacheLife('seconds')` would leave a reviewer
   // watching a run that is already over. It is one small JSON file, read
   // synchronously — see lib/jobs.ts, which owns the record and its writers.
   const history = readHistory(dir);
-
-  // Read uncached for the same reason: the corpus is a directory in the checkout,
-  // and a `git pull` between two page loads changes what it holds.
-  const corpus = readCanonicalSet();
 
   return (
     <DashboardTemplate

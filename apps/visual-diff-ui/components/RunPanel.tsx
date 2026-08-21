@@ -11,6 +11,7 @@ import {
 } from 'react';
 import { Button, CodeBlock, Stack } from '@gate/ui';
 import { useMutation } from '@/hooks/useMutation';
+import { useReviewMarks } from '@/hooks/useReviewMarks';
 import { Note } from './Note';
 import {
   ACCEPT_COMMAND,
@@ -20,9 +21,8 @@ import {
 } from '@/lib/accept-gate';
 import type { ReportListEntry } from '@/lib/data';
 import type { RunnerEnv } from '@/lib/host';
-import { readReviewed } from '@/lib/review-state';
 import type { StoryTier } from '@/lib/stories';
-import { CURRENT_JOB_ANCHOR, useCurrentJob } from './CurrentJob';
+import { CURRENT_JOB_ANCHOR, useCurrentJob, usePollNow } from './CurrentJob';
 import { FilterPicker } from './FilterPicker';
 
 /**
@@ -453,14 +453,21 @@ function jobRequest(form: JobForm): Record<string, unknown> {
  *  one refusal rather than a list, and `starting` rather than `busy`. */
 function useStartJob() {
   const { run, refusals, busy, clear } = useMutation();
+  const pollNow = usePollNow();
 
   const start = async (request: Record<string, unknown>) => {
-    await run({
+    const result = await run({
       url: '/api/jobs',
       method: 'POST',
       body: request,
       fallback: 'the console could not start that job',
     });
+
+    // The panel below polls, and backs off while the console is idle — which is
+    // exactly what it was a moment ago. Without this poke the job just started
+    // would not appear until that backed-off timer came round, and the reviewer
+    // would be watching a region that says nothing is running.
+    if (result.ok) pollNow();
   };
 
   // `clear` is handed back for the same reason both `ConfirmDialogs` call sites
@@ -761,6 +768,22 @@ export function RunPanel({ isSample, isLocal, reports }: RunPanelProps) {
   // field does not care which of them froze it.
   const frozen = isSample || !isLocal;
   const report = reports.find((entry) => entry.id === form.reportId) ?? null;
+  // Read through the store rather than by calling `readReviewed` here, which is
+  // what this used to do. Two reasons, and the second is the one that bites:
+  //
+  //  - `localStorage.getItem` + `JSON.parse` during render is synchronous work
+  //    on the render path, and this panel re-renders on every poll.
+  //  - reading storage in render is not reactive and not safe for a component
+  //    the server renders. It only agreed with the server because `gate` is
+  //    null until `/api/env` lands, so nothing derived from the count reached
+  //    the first paint — true today, pinned by nothing, and one `runner` change
+  //    away from a hydration mismatch. `useSyncExternalStore` is what
+  //    `useReviewMarks` exists to provide (see its header).
+  //
+  // The empty string when there is no report selected asks the store for a
+  // report nobody has marked: an empty set, which is the right answer for a
+  // gate that is null anyway.
+  const { marks } = useReviewMarks(report?.id ?? '');
   const gate =
     report && runner
       ? acceptGate({
@@ -768,7 +791,7 @@ export function RunPanel({ isSample, isLocal, reports }: RunPanelProps) {
           image: runner.image,
           // Marks live in this browser and nowhere else — the server never sees
           // which variants a reader has opened, and never should.
-          reviewed: readReviewed(report.id).length,
+          reviewed: marks.size,
         })
       : null;
 

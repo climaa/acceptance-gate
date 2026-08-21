@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import {
   type ReactNode,
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useRef,
@@ -53,6 +54,52 @@ const CURRENT_ENDPOINT = '/api/jobs/current';
  *  and the clock beside it move together rather than a second apart. */
 const POLL_MS = 1000;
 
+/**
+ * The longest this backs off to, and the reason it backs off at all.
+ *
+ * A running job earns `POLL_MS` — its log is being read as it is written. An
+ * idle console earns nothing: `running: false` and the same finished job is an
+ * answer incapable of changing until somebody does something, and asking for it
+ * once a second is 86,400 requests a day for one sentence. Each unchanged idle
+ * answer doubles the wait; anything that moves resets it (see `poll` below), as
+ * does coming back to the tab and starting a job.
+ *
+ * Not `stop()`, the way sample mode may: an idle console is one CLI invocation
+ * in another terminal away from having something to say, and a panel that never
+ * asked again would not notice.
+ */
+const MAX_IDLE_POLL_MS = 8000;
+
+/** The tail is capped server-side, so once a long job passes that cap `length`
+ *  stops moving and only the newest line does. Both, therefore — and nothing
+ *  more: comparing every line of every poll is the kind of per-second work this
+ *  comparison exists to avoid. */
+const sameLog = (left: readonly string[], right: readonly string[]): boolean =>
+  left.length === right.length && left[left.length - 1] === right[right.length - 1];
+
+/**
+ * Whether two polls said the same thing.
+ *
+ * `id` stands in for `mode`, `label` and `startedAt` — those are fixed for the
+ * life of a job, so an id that matches cannot disagree about them. The three
+ * fields that DO move as a job ends are named individually.
+ *
+ * This is what makes the provider's value stable: without it every poll handed
+ * the context a new object, and `RunPanel` — which reads it twice — re-rendered
+ * its whole subtree once a second forever, `readReviewed`'s synchronous
+ * `localStorage` parse included.
+ */
+function sameAnswer(left: CurrentJobState, right: CurrentJobState): boolean {
+  return (
+    left.running === right.running &&
+    left.job?.id === right.job?.id &&
+    left.job?.endedAt === right.job?.endedAt &&
+    left.job?.exitCode === right.job?.exitCode &&
+    left.job?.reportId === right.job?.reportId &&
+    sameLog(left.log, right.log)
+  );
+}
+
 export interface CurrentJobState {
   running: boolean;
   /** The running job, or the last one to finish. Null on an instance that has
@@ -68,6 +115,23 @@ const CurrentJobContext = createContext<CurrentJobState>(IDLE);
 
 /** What the console's client islands know about the runner. */
 export const useCurrentJob = (): CurrentJobState => useContext(CurrentJobContext);
+
+/**
+ * Ask for a poll right now, resetting the idle backoff.
+ *
+ * A second context rather than a field on `CurrentJobState`, so the state stays
+ * a plain data value that `sameAnswer` can compare — a function on it would be
+ * a new identity every render and would undo the very thing this file just
+ * fixed. The value below is stable for the provider's whole life, so consuming
+ * this costs no re-renders at all.
+ *
+ * The caller that needs it is the run panel: it has just started a job, and
+ * without this the panel would sit on a backed-off timer for up to
+ * `MAX_IDLE_POLL_MS` before admitting the job exists.
+ */
+const PollNowContext = createContext<() => void>(() => {});
+
+export const usePollNow = (): (() => void) => useContext(PollNowContext);
 
 /**
  * One poll, or null when the console could not get an answer.
@@ -127,9 +191,19 @@ export function CurrentJobProvider({ children }: { children: ReactNode }) {
   // rendered with, and re-reading the server for it would refresh every load.
   const primed = useRef(false);
   // The router held through a ref rather than named as a dependency below: the
-  // interval must be established once, and an effect that lists the router
-  // restarts its poll on every state change the poll itself caused.
+  // poll chain must be established once, and an effect that lists the router
+  // restarts it on every state change the poll itself caused.
   const latestRouter = useRef(router);
+  // What the last poll was answered with, mirrored so the next one can tell
+  // whether anything moved without reading `state` through the effect's
+  // closure — which was captured on mount and is `IDLE` forever.
+  const latestState = useRef<CurrentJobState>(IDLE);
+  // Filled in by the effect below; empty before mount and after unmount, so a
+  // poke that arrives outside the chain's life does nothing rather than throws.
+  const poke = useRef<() => void>(() => {});
+  // Stable for the provider's whole life, which is what lets `PollNowContext`
+  // cost its consumers nothing.
+  const pollNow = useCallback(() => poke.current(), []);
 
   useEffect(() => {
     latestRouter.current = router;
@@ -137,7 +211,15 @@ export function CurrentJobProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let live = true;
-    let timer: ReturnType<typeof setInterval> | undefined;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    // Whether a poll chain is currently in flight or waiting. `timer` alone
+    // cannot answer that: between the await and the next `schedule` there is no
+    // timer, and a `visibilitychange` landing in that window would start a
+    // second chain running alongside the first.
+    let armed = false;
+    // How long the next wait is. Reset to `POLL_MS` by anything that moves;
+    // doubled by an idle answer that said what the last one did.
+    let delay = POLL_MS;
     // Set once the console has learned no job can ever start here. A sample
     // instance is serving a committed fixture with no CLI behind it, so
     // `running` is false forever and the history cannot grow — every poll after
@@ -147,15 +229,39 @@ export function CurrentJobProvider({ children }: { children: ReactNode }) {
     let frozen = false;
 
     const stop = () => {
-      if (timer !== undefined) clearInterval(timer);
+      armed = false;
+      if (timer !== undefined) clearTimeout(timer);
       timer = undefined;
+    };
+
+    const schedule = (next: number) => {
+      if (!armed) return;
+      delay = next;
+      timer = setTimeout(() => void poll(), next);
     };
 
     const poll = async () => {
       const answer = await readCurrent();
-      if (!live || !answer) return;
+      // `armed` as well as `live`: a poll that was in flight when the tab went
+      // hidden must not schedule the next one on its way out.
+      if (!live || !armed) return;
 
-      setState(answer.state);
+      // A failed poll is not evidence of an idle console, so it does not earn
+      // the backoff — it retries at the base cadence, as it always has.
+      if (!answer) {
+        schedule(POLL_MS);
+        return;
+      }
+
+      // Compared against a ref rather than against `state`, so this stays out
+      // of the setState updater: React may run an updater twice, and deciding
+      // the next poll's delay inside one would be a side effect in a place that
+      // must be pure.
+      const changed = !sameAnswer(latestState.current, answer.state);
+      if (changed) {
+        latestState.current = answer.state;
+        setState(answer.state);
+      }
 
       // A finished job the tables have not been told about: it wrote a history
       // row, and maybe a report and a set. `running` is checked as well as the
@@ -171,23 +277,39 @@ export function CurrentJobProvider({ children }: { children: ReactNode }) {
       if (answer.isSample) {
         frozen = true;
         stop();
+        return;
       }
+
+      // A live job's log is being read as it is written, so it keeps the full
+      // cadence whether or not this particular second added a line.
+      schedule(running || changed ? POLL_MS : Math.min(delay * 2, MAX_IDLE_POLL_MS));
     };
 
-    /* Whether the interval should be running right now, and the one place that
-       decides. A hidden tab is not watching a log — the panel it feeds is not
-       painted, and the answer is re-read on the way back — so a console left
-       open in a background window costs nothing until someone looks at it. */
+    /* Whether the poll chain should be running right now, and the one place
+       that decides. A hidden tab is not watching a log — the panel it feeds is
+       not painted, and the answer is re-read on the way back — so a console
+       left open in a background window costs nothing until someone looks at it.
+       Coming back also resets the backoff: the answer may have changed while
+       nobody was asking. */
     const sync = () => {
       if (frozen || document.visibilityState !== 'visible') {
         stop();
         return;
       }
 
-      if (timer === undefined) {
-        void poll();
-        timer = setInterval(() => void poll(), POLL_MS);
-      }
+      if (armed) return;
+
+      armed = true;
+      delay = POLL_MS;
+      void poll();
+    };
+
+    // What `usePollNow` reaches. Re-arming through `stop()` + `sync()` rather
+    // than polling directly, so a poke lands on the same single chain instead
+    // of racing a second one against it.
+    poke.current = () => {
+      stop();
+      sync();
     };
 
     sync();
@@ -195,13 +317,16 @@ export function CurrentJobProvider({ children }: { children: ReactNode }) {
 
     return () => {
       live = false;
+      poke.current = () => {};
       stop();
       document.removeEventListener('visibilitychange', sync);
     };
   }, []);
 
   return (
-    <CurrentJobContext.Provider value={state}>{children}</CurrentJobContext.Provider>
+    <PollNowContext.Provider value={pollNow}>
+      <CurrentJobContext.Provider value={state}>{children}</CurrentJobContext.Provider>
+    </PollNowContext.Provider>
   );
 }
 
@@ -218,11 +343,34 @@ function useElapsed(job: HistoryRecord, running: boolean): string | null {
   useEffect(() => {
     if (!running) return;
 
-    const tick = () => setNow(Date.now());
-    tick();
-    const timer = setInterval(tick, 1000);
+    let timer: ReturnType<typeof setInterval> | undefined;
 
-    return () => clearInterval(timer);
+    const tick = () => setNow(Date.now());
+
+    /* The same rule the poller keeps: a hidden tab is not reading a clock. The
+       tick is re-run on the way back rather than merely resumed, so the number
+       is right on the first painted frame instead of catching up a second
+       later. */
+    const sync = () => {
+      if (document.visibilityState !== 'visible') {
+        if (timer !== undefined) clearInterval(timer);
+        timer = undefined;
+        return;
+      }
+
+      if (timer !== undefined) return;
+
+      tick();
+      timer = setInterval(tick, 1000);
+    };
+
+    sync();
+    document.addEventListener('visibilitychange', sync);
+
+    return () => {
+      if (timer !== undefined) clearInterval(timer);
+      document.removeEventListener('visibilitychange', sync);
+    };
   }, [running, job.id]);
 
   if (!running) {

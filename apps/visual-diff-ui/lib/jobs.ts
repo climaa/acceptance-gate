@@ -426,19 +426,75 @@ export function currentJob(dataDir: string): HistoryRecord | null {
   );
 }
 
+/**
+ * How much of the end of a log file is read to satisfy a bounded tail.
+ *
+ * The poll endpoint asks for 200 lines once a second for as long as a job runs,
+ * and this used to answer by reading the WHOLE file and throwing away all but
+ * the end of it — so the cost of watching a job grew with the log it was
+ * writing, forever, because these files are appended to and never rotated.
+ *
+ * 128 KB holds 200 lines of anything a build or a capture emits by a wide
+ * margin (that is a 655-byte average). It is a floor, not a cap: if the window
+ * turns out to hold fewer lines than were asked for AND the file is bigger than
+ * the window, the read widens and tries again, so the answer is never short
+ * because the guess was.
+ */
+const TAIL_WINDOW = 128 * 1024;
+
+const splitLines = (raw: string): string[] =>
+  raw.split('\n').filter((line) => line.length > 0);
+
+/**
+ * The last `tail` lines of `file`, read from the end rather than from the start.
+ *
+ * The first line of the window is dropped when the window did not start at byte
+ * zero: a read that begins mid-file almost certainly begins mid-line, and half
+ * a line is not a line. That is also why the window has to hold `tail + 1`
+ * lines to be trusted — the extra one is the fragment being discarded.
+ */
+function readTail(file: string, tail: number): string[] {
+  const handle = fs.openSync(file, 'r');
+
+  try {
+    const size = fs.fstatSync(handle).size;
+    let window = TAIL_WINDOW;
+
+    for (;;) {
+      const from = Math.max(0, size - window);
+      const buffer = Buffer.alloc(size - from);
+      fs.readSync(handle, buffer, 0, buffer.length, from);
+
+      const lines = splitLines(buffer.toString('utf8'));
+      // A window that started mid-file opens on a fragment of a line.
+      const whole = from === 0 ? lines : lines.slice(1);
+
+      // Enough lines, or the whole file already read and there are no more to
+      // find. Either way this is the answer.
+      if (whole.length >= tail || from === 0) return whole.slice(-tail);
+
+      window *= 2;
+    }
+  } finally {
+    fs.closeSync(handle);
+  }
+}
+
 /** One job's log, oldest line first. Missing is empty: a job that has said
  *  nothing yet is not an error. */
 export function jobLog(dataDir: string, id: string, tail = Infinity): string[] {
-  let raw: string;
+  const file = logPath(dataDir, id);
+
   try {
-    raw = fs.readFileSync(logPath(dataDir, id), 'utf8');
+    // An unbounded ask is the whole file by definition, so there is no end to
+    // read from — `runDetached` uses it to attach a finished job's full log to
+    // its history row.
+    if (tail === Infinity) return splitLines(fs.readFileSync(file, 'utf8'));
+
+    return tail <= 0 ? [] : readTail(file, tail);
   } catch {
     return [];
   }
-
-  const lines = raw.split('\n').filter((line) => line.length > 0);
-
-  return tail === Infinity ? lines : lines.slice(-tail);
 }
 
 function appendLog(dataDir: string, id: string, message: string): void {

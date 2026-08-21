@@ -1,9 +1,21 @@
 import { resolveDataDir } from '@/lib/data';
 import { currentJob, jobLog, readHistory } from '@/lib/jobs';
 
-/** How much of the log one poll carries. The panel shows a tail, and a job that
- *  has been running for an hour must not be answered with an hour of it. */
-const TAIL_LINES = 200;
+/**
+ * How much of the log one poll carries, and the only place that number lives.
+ *
+ * The panel shows a tail, and a job that has been running for an hour must not
+ * be answered with an hour of it. It used to be 200 here while `LogTail` drew
+ * the last 24 of them — so seven lines in eight were fetched once a second, for
+ * as long as a job ran, and then dropped on arrival. The component now renders
+ * what it is given (see components/LogTail.tsx), which makes this figure the
+ * lines on the wire AND the lines in the DOM rather than a ceiling above a
+ * second, smaller ceiling nothing pinned to it.
+ *
+ * `jobLog` reads this many lines off the END of the file, so the cost of a poll
+ * no longer grows with the log it is watching (see lib/jobs.ts).
+ */
+const TAIL_LINES = 24;
 
 /**
  * What is running, and what it has said — the poll target.
