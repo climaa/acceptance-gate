@@ -134,7 +134,7 @@ const buckets = () => screen.getByRole('group', { name: 'Buckets' });
 const namesOf = (elements: readonly HTMLElement[]) =>
   elements.map((element) => element.getAttribute('aria-label'));
 
-// `globals` is off in vitest.config.ts, so Testing Library registers no automatic
+// `globals` is off in vitest.config.mts, so Testing Library registers no automatic
 // cleanup — without this every render stacks in the same document.
 afterEach(() => {
   cleanup();

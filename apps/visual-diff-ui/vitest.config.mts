@@ -5,23 +5,37 @@ import { defineConfig } from 'vitest/config';
 // schemas, the data directory resolves the way sample mode depends on, and the
 // shot route refuses a path outside it.
 // Run: pnpm --filter @gate/visual-diff-ui test  (or `turbo run test` from the root)
+//
+// `.mts`, not `.ts` — see apps/blog/vitest.config.mts for why the extension
+// and `import.meta.dirname` are one change rather than two.
 export default defineConfig({
-  // tsconfig says `jsx: preserve` because Next owns the JSX transform; esbuild
+  // tsconfig says `jsx: preserve` because Next owns the JSX transform; oxc
   // reads that as "classic" and every rendered element then throws
   // `React is not defined`. Name the runtime Next actually uses.
-  esbuild: { jsx: 'automatic' },
+  //
+  // `oxc` rather than `esbuild` — see apps/blog/vitest.config.mts for the
+  // mechanism. Short version: Vite 8 converts an `esbuild` block to oxc only
+  // when nothing else has set `oxc`, and Vitest always sets one, so `esbuild`
+  // here would be silently ignored rather than merely deprecated.
+  oxc: { jsx: { runtime: 'automatic' } },
   resolve: {
     // Mirrors tsconfig's "@/*": ["./*"] — app/** routes import lib/** via this
     // alias, and vitest doesn't read tsconfig paths on its own.
     alias: {
-      '@': path.resolve(__dirname),
+      '@': path.resolve(import.meta.dirname),
       // Every stub here stands in for a compiled Next build that does not exist
       // under vitest. See each file for which exports it provides and why the
       // rest are deliberately absent.
-      'next/cache': path.resolve(__dirname, '__tests__/stubs/next-cache.ts'),
-      'next/server': path.resolve(__dirname, '__tests__/stubs/next-server.ts'),
-      'next/navigation': path.resolve(__dirname, '__tests__/stubs/next-navigation.ts'),
-      'next/headers': path.resolve(__dirname, '__tests__/stubs/next-headers.ts'),
+      'next/cache': path.resolve(import.meta.dirname, '__tests__/stubs/next-cache.ts'),
+      'next/server': path.resolve(import.meta.dirname, '__tests__/stubs/next-server.ts'),
+      'next/navigation': path.resolve(
+        import.meta.dirname,
+        '__tests__/stubs/next-navigation.ts',
+      ),
+      'next/headers': path.resolve(
+        import.meta.dirname,
+        '__tests__/stubs/next-headers.ts',
+      ),
     },
   },
   test: {
