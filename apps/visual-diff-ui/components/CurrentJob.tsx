@@ -217,6 +217,19 @@ export function CurrentJobProvider({ children }: { children: ReactNode }) {
     // timer, and a `visibilitychange` landing in that window would start a
     // second chain running alongside the first.
     let armed = false;
+    /**
+     * Which chain is the live one. Bumped by every `stop()`, and captured by
+     * each poll before it awaits.
+     *
+     * `armed` alone is not enough, and the gap it leaves is not theoretical: a
+     * poke is `stop()` then `sync()` back to back, so an in-flight poll that
+     * was disowned by the `stop` finds `armed` true again by the time it
+     * resumes — because the `sync` re-armed for the NEW chain. It then
+     * schedules a timer of its own beside the new one, nothing ever clears the
+     * older handle, and the console polls at twice the rate. Measured at 16
+     * requests where one chain makes 8. Pinned by `__tests__/current-job.test.tsx`.
+     */
+    let generation = 0;
     // How long the next wait is. Reset to `POLL_MS` by anything that moves;
     // doubled by an idle answer that said what the last one did.
     let delay = POLL_MS;
@@ -230,6 +243,9 @@ export function CurrentJobProvider({ children }: { children: ReactNode }) {
 
     const stop = () => {
       armed = false;
+      // Disowns any poll already in flight, which `armed` cannot do on its own
+      // once a `sync()` re-arms behind it.
+      generation += 1;
       if (timer !== undefined) clearTimeout(timer);
       timer = undefined;
     };
@@ -241,10 +257,13 @@ export function CurrentJobProvider({ children }: { children: ReactNode }) {
     };
 
     const poll = async () => {
+      const mine = generation;
       const answer = await readCurrent();
-      // `armed` as well as `live`: a poll that was in flight when the tab went
-      // hidden must not schedule the next one on its way out.
-      if (!live || !armed) return;
+      // Three ways this poll may no longer be the one that matters: the effect
+      // is torn down, the chain is stopped, or the chain moved on without it.
+      // The last is the one a poke creates, and the only one that would
+      // otherwise end in two timers running side by side.
+      if (!live || !armed || mine !== generation) return;
 
       // A failed poll is not evidence of an idle console, so it does not earn
       // the backoff — it retries at the base cadence, as it always has.

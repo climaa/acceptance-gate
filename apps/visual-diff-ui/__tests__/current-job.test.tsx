@@ -1,9 +1,15 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
+import { useEffect } from 'react';
 // Imported explicitly rather than relying on `globals: true` — tsconfig's
 // `**/*.tsx` include means tsc typechecks this file.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { CurrentJob, CurrentJobProvider, useCurrentJob } from '../components/CurrentJob';
+import {
+  CurrentJob,
+  CurrentJobProvider,
+  useCurrentJob,
+  usePollNow,
+} from '../components/CurrentJob';
 import type { HistoryRecord } from '../lib/jobs';
 import { refreshCalls } from './stubs/next-navigation';
 
@@ -536,5 +542,75 @@ describe('the provider value', () => {
     await vi.advanceTimersByTimeAsync(2_000);
 
     expect(onRender.mock.calls.length).toBeGreaterThan(settled);
+  });
+});
+
+/**
+ * The poke, and the chain it must not fork.
+ *
+ * `usePollNow` re-arms by calling `stop()` then `sync()` back to back. An
+ * in-flight poll disowned by that `stop` finds `armed` true again by the time it
+ * resumes — `sync` set it, for the NEW chain — so without a generation token it
+ * carries on and schedules a timer beside the new one. Nothing holds the older
+ * handle, so nothing can clear it, and the console settles into polling at twice
+ * the rate: measured at 16 requests where one chain makes 9.
+ *
+ * Which is the exact failure this file exists to prevent, arriving by the door
+ * that was opened to fix it.
+ */
+describe('an out-of-band poll request', () => {
+  /** Calls `usePollNow` once, `at` milliseconds in — long enough to land while
+   *  the first poll is still waiting on the slow endpoint below. */
+  function Poker({ at }: { at: number }) {
+    const pollNow = usePollNow();
+
+    useEffect(() => {
+      const timer = setTimeout(() => pollNow(), at);
+
+      return () => clearTimeout(timer);
+    }, [pollNow, at]);
+
+    return null;
+  }
+
+  it('does not leave two poll chains running', async () => {
+    vi.useFakeTimers();
+    let calls = 0;
+    // 400ms per answer, so the poke at 200ms is guaranteed to land mid-flight.
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() => {
+        calls += 1;
+
+        return new Promise((resolve) =>
+          setTimeout(
+            () =>
+              resolve({
+                ok: true,
+                json: () =>
+                  Promise.resolve({
+                    isSample: false,
+                    running: true,
+                    job: RUNNING,
+                    log: [],
+                  }),
+              }),
+            400,
+          ),
+        ) as never;
+      }),
+    );
+
+    render(
+      <CurrentJobProvider>
+        <Poker at={200} />
+      </CurrentJobProvider>,
+    );
+
+    await vi.advanceTimersByTimeAsync(10_000);
+
+    // One chain at 400ms of work plus a 1s wait is 7-9 requests in ten seconds.
+    // Two chains were measured at 16.
+    expect(calls).toBeLessThan(12);
   });
 });
