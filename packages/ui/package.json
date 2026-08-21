@@ -31,7 +31,7 @@
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
     "@typescript-eslint/parser": "^8.67.0",
-    "@vitest/coverage-v8": "^4.1.10",
+    "@vitest/coverage-v8": "^4.1.11",
     "axe-core": "4.13.0",
     "eslint": "^9.39.5",
     "eslint-plugin-boundaries": "^7.2.0",
@@ -39,7 +39,7 @@
     "postcss": "^8.5.26",
     "storybook": "10.5.7",
     "typescript": "^5.9.3",
-    "vitest": "^4.1.10"
+    "vitest": "^4.1.11"
   },
   "peerDependencies": {
     "react": "^19.0.0",
