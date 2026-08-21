@@ -19,9 +19,9 @@ it covers the parts that are not visible in either file: why auto-merge needs a 
 the failure mode that took this pipeline out silently for its entire life until it was
 found. See also [The Gate](?path=/docs/docs-devops-the-gate--docs).
 
-## Two kinds of ignore, and why the difference matters
+## Three kinds of ignore, and why the difference matters
 
-`dependabot.yml` has two categories of ignore entry and the distinction is not cosmetic —
+`dependabot.yml` has three categories of ignore entry and the distinction is not cosmetic —
 it decides what has to be true before an entry can come out.
 
 **Blanket ignores** mean _a bump here is a hand-authored issue._ Landing one changes more
@@ -29,16 +29,26 @@ than a version number: a Playwright bump has to move the container image, the po
 test and a mass rebaseline together, in one PR. There is no version of that which arrives
 as a bot PR.
 
-**Major-scoped ignores** — carrying `update-types: ["version-update:semver-major"]` — mean
-something different: _the next major is blocked upstream, so there is no diff that makes it
-work._ Minor and patch updates still flow. These exist because a blocked major otherwise
-reopens every cycle, burning a full cold-cache run to rediscover a blocker that is already
-written up in an issue, and leaving a permanently red PR on the board.
+**Major-scoped ignores, blocked upstream** — carrying
+`update-types: ["version-update:semver-major"]` — mean something different: _the next major
+is blocked upstream, so there is no diff that makes it work._ Minor and patch updates still
+flow. These exist because a blocked major otherwise reopens every cycle, burning a full
+cold-cache run to rediscover a blocker that is already written up in an issue, and leaving a
+permanently red PR on the board.
+
+**Major-scoped ignores, pinned to this repo** carry that same `update-types` line and are
+the easy one to misread, because the syntax is identical to the category above. Here nothing
+upstream is broken — the version tracks something else in this repo, so the bump is not
+wrong, it is early. `@types/node` is pinned to the Node major in `engines` and `.nvmrc`, and
+what makes it worth an entry is that the gate cannot catch it: types describe a runtime, so
+`@types/node` 26 has `tsc` accept Node 26 APIs that throw on the Node 22 every CI job
+installs. A green typecheck is what that bump buys, not evidence it is safe.
 
 The removal criteria differ accordingly. A blanket entry comes out when someone decides to
-do the work. A major-scoped entry comes out only when the checks written into its issue
-start passing — and those issues carry the exact commands. Deleting one without running
-them puts the red PR straight back.
+do the work. A blocked-upstream entry comes out only when the checks written into its issue
+start passing — and those issues carry the exact commands; deleting one without running them
+puts the red PR straight back. A repo-pinned entry comes out in the same commit that moves
+the thing it tracks, and in no other commit.
 
 ## Why auto-merge runs on a PAT
 

@@ -36,6 +36,19 @@
 #
 # Both blocked entries stay until their issue's own re-check commands pass.
 # Deleting one without running them puts a permanently red PR back on the board.
+#
+# TRACKS THE RUNTIME — majors only, and not because anything upstream is
+# broken. The version is pinned to something else in this repo, so the bump is
+# not wrong, it is early:
+# - @types/node: engines pins node to >=22.14.0 <23.0.0 and .nvmrc is 22.14.0,
+#   which is what all four CI jobs install. Types must describe the runtime
+#   that actually runs the code; on @types/node 26 tsc green-lights Node 26
+#   APIs that throw on 22, and typecheck goes green precisely because it has
+#   been told to describe a different runtime — so a red gate is not what
+#   catches this one. 22.20.1 ends the 22 line (DefinitelyTyped last published
+#   it 2026-08-07), which makes this a stable pin rather than rot: there is no
+#   minor or patch left to miss. It comes out in the same commit that moves
+#   .nvmrc off 22 — never before it, and never on its own.
 version: 2
 updates:
   - package-ecosystem: npm
@@ -59,6 +72,10 @@ updates:
       - dependency-name: eslint
         update-types: ["version-update:semver-major"]
       - dependency-name: typescript
+        update-types: ["version-update:semver-major"]
+      # Pinned to .nvmrc/engines rather than to upstream — see the header.
+      # Moves with the Node major, in that commit, not by bot.
+      - dependency-name: "@types/node"
         update-types: ["version-update:semver-major"]
 
   - package-ecosystem: github-actions
