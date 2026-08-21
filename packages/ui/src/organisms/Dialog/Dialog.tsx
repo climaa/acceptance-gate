@@ -233,13 +233,11 @@ function DialogSurface({
   // Into <body>, not where the consumer mounted it. Two things this buys, and
   // the first is the one that was already broken:
   //
-  //  - The dialog's announcements are its own. `role="alert"` inside a
-  //    confirmation used to join the alerts of the page behind it, and the
-  //    console reads its refusals with a landmark-scoped, strict locator
-  //    (`getByRole('main').getByRole('alert')`, apps/e2e/pages/console.ts). A
-  //    delete refused *because a job is running*, with the run panel already
-  //    announcing the same sentence, resolved to two elements — the ordinary
-  //    path, not a contrived one, since both are drawn by the one condition.
+  //  - The dialog's announcements are its own. A `role="alert"` inside a
+  //    confirmation used to join the alerts of the page behind it, so a page
+  //    already announcing something and a dialog refusing for that same reason
+  //    were two alerts in one landmark — reachable by the ordinary path, since
+  //    one condition draws both.
   //  - `aria-modal="true"` stops being a claim about a tree this dialog is
   //    inside. Nothing here marks the page `inert`, and a portal is how a modal
   //    gets out of the content it is modal over.
@@ -249,12 +247,12 @@ function DialogSurface({
   // where it is drawn — the corpus's fullpage shots frame the same viewport.
   //
   // The guard is for the server, which has no `document` and no portal:
-  // `react-dom/server` cannot render one at all. Reachable — the report page
-  // restores an open comparison modal from the URL — so the dialog is client
-  // markup and the surface arrives on hydration. Safe as a hydration boundary
-  // precisely because a portal contributes nothing to the tree it is written in:
-  // there is no host node here for the server's HTML to disagree with.
-  return typeof document === 'undefined'
-    ? null
-    : createPortal(surfaceTree, document.body);
+  // `react-dom/server` cannot render one at all. Reachable — a consumer can
+  // restore an open dialog from the URL — so the dialog is client markup and the
+  // surface arrives on hydration. Safe as a hydration boundary precisely because
+  // a portal contributes nothing to the tree it is written in: there is no host
+  // node here for the server's HTML to disagree with.
+  if (typeof document === 'undefined') return null;
+
+  return createPortal(surfaceTree, document.body);
 }

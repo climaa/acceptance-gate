@@ -152,7 +152,7 @@ describe('the delete confirmation', () => {
     // Found first, so the empty list below cannot pass by the refusal simply
     // not having arrived yet.
     expect(await screen.findByRole('alert')).toBeDefined();
-    expect(within(screen.getByRole('main')).queryAllByRole('alert')).toEqual([]);
+    expect(within(screen.getByRole('main')).queryAllByRole('alert')).toHaveLength(0);
   });
 
   // A refusal a JSON body never explained is still a refusal, and the screen has

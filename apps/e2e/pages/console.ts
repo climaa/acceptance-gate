@@ -70,9 +70,10 @@ export class ConsolePage {
     // refused *because a job is running* — with the run panel already announcing
     // the same sentence — failed every scenario on this line's strict mode.
     this.refusalAlert = page.getByRole('main').getByRole('alert');
-    // The other half of that pair, and deliberately a separate locator rather
-    // than a loosening of the one above: a dialog's refusal answers what the
-    // reviewer just did inside the dialog, and is read where it is spoken.
+    // Every refusal a confirmation draws, read where it is spoken. Deliberately
+    // a second locator rather than a loosening of the one above: a dialog's
+    // refusal answers what the reviewer just did inside the dialog, and the
+    // page's own alerts stay something a strict lookup can count.
     this.dialogRefusal = page.getByRole('dialog').getByRole('alert');
     this.sampleBadge = page.getByRole('status', { name: 'sample data' });
     this.sampleModeNote = page.getByRole('note', { name: 'sample mode' });

@@ -88,11 +88,9 @@ describe('Dialog', () => {
  * `aria-modal="true"` is the claim the portal makes true. Nothing outside the
  * surface is `inert` or `aria-hidden`, so a dialog rendered inline sits *inside*
  * the tree it says is not content — and every announcement it makes joins that
- * tree's own. `apps/e2e/pages/console.ts` reads the console's refusal with
- * `getByRole('main').getByRole('alert')`, which is strict: a refusal drawn
- * inside a confirmation dialog was the second match the moment the page behind
- * it was already announcing something. Both of that pair are drawn for the same
- * reason — a job is running — so it was reachable by the ordinary path.
+ * tree's own. A landmark already announcing something and a confirmation
+ * refusing for that same reason then held two alerts between them, which is
+ * reachable by the ordinary path whenever one condition draws both (#319).
  */
 describe('the portal', () => {
   it('renders outside the tree the consumer mounted it in', () => {

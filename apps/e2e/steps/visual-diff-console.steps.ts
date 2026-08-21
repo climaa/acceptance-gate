@@ -308,8 +308,10 @@ Then(
 );
 
 Then('the deletion is refused naming what holds it', async ({ console: consolePage }) => {
-  await expect(consolePage.refusalAlert).toContainText(/worktree/i);
-  await expect(consolePage.refusalAlert).toContainText(HELD_SET.label);
+  // The dialog, like every refusal a confirmation draws: this one is spoken
+  // inside the delete dialog, which `Dialog` portals out of `main`.
+  await expect(consolePage.dialogRefusal).toContainText(/worktree/i);
+  await expect(consolePage.dialogRefusal).toContainText(HELD_SET.label);
 });
 
 Then('that set is no longer listed', async ({ console: consolePage }) => {
