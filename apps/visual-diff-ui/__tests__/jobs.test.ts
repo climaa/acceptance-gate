@@ -626,10 +626,20 @@ describe('jobLog reads the end of the file', () => {
     expect(tail).toEqual(lines.slice(-24));
   });
 
-  // 24 lines of 10 KB do not fit in the first window, so the read has to widen
-  // and try again. Without that loop the answer would be short — correct-looking
-  // and quietly missing the oldest half of what was asked for.
-  it('widens the window when the first one holds too few lines', () => {
+  /**
+   * 24 lines of 10 KB do not fit in the first window, so the tail read has to go
+   * back for the rest of the file. Without that second read the answer would be
+   * short — correct-looking, and quietly missing the oldest half of what was
+   * asked for.
+   *
+   * That second read is the WHOLE file rather than a doubled window, and the
+   * reason is written down in `readTail`: a log with fewer lines than the tail
+   * asks for makes doubling walk to the end anyway, one pass at a time. That
+   * property is a measurement, not an assertion here — counting reads would mean
+   * mocking `node:fs`, which no suite in this app does, and an ESM namespace
+   * cannot be spied on regardless.
+   */
+  it('goes back for the rest of the file when the window holds too few lines', () => {
     const dir = makeDataDir();
     const lines = writeLog(dir, 'job', 40, 10_000);
 
@@ -656,5 +666,24 @@ describe('jobLog reads the end of the file', () => {
 
   it('answers a missing log with nothing', () => {
     expect(jobLog(makeDataDir(), 'no-such-job', 24)).toEqual([]);
+  });
+
+  /**
+   * An id that would escape the data directory is corrupt state, not an attack:
+   * it can only come from a hand-edited or half-written `job.lock` or
+   * `history.json`, and `within` refuses the path before anything is read either
+   * way. So the answer is the same one this function gives for every log it
+   * cannot read.
+   *
+   * It threw for one commit, and `GET /api/jobs/current` has no handler — so a
+   * single bad record took the poll endpoint down once a second for as long as
+   * it sat there.
+   */
+  it('answers a confined id with nothing rather than throwing', () => {
+    const dir = makeDataDir();
+
+    expect(() => jobLog(dir, '../../../../etc/hosts', 24)).not.toThrow();
+    expect(jobLog(dir, '../../../../etc/hosts', 24)).toEqual([]);
+    expect(jobLog(dir, '../../../../etc/hosts')).toEqual([]);
   });
 });

@@ -434,11 +434,11 @@ export function currentJob(dataDir: string): HistoryRecord | null {
  * the end of it — so the cost of watching a job grew with the log it was
  * writing, forever, because these files are appended to and never rotated.
  *
- * 128 KB holds 200 lines of anything a build or a capture emits by a wide
- * margin (that is a 655-byte average). It is a floor, not a cap: if the window
- * turns out to hold fewer lines than were asked for AND the file is bigger than
- * the window, the read widens and tries again, so the answer is never short
- * because the guess was.
+ * 128 KB holds the tail the console asks for many times over for anything a
+ * build or a capture emits line by line. It is a guess, not a cap: a log whose
+ * last 128 KB holds too few lines is re-read in full rather than answered
+ * short — see `readTail`, which is also where the reason it does that in ONE
+ * further read rather than by doubling is written down.
  */
 const TAIL_WINDOW = 128 * 1024;
 
@@ -446,35 +446,55 @@ const splitLines = (raw: string): string[] =>
   raw.split('\n').filter((line) => line.length > 0);
 
 /**
+ * The whole lines in `file` between `from` and its end.
+ *
+ * The first line is dropped whenever the read did not start at byte zero: a
+ * read that begins mid-file almost certainly begins mid-line, and half a line
+ * is not a line. Dropping it also discards any partial UTF-8 sequence the
+ * offset landed inside, which is the only place one could appear.
+ */
+function linesFrom(handle: number, from: number, size: number): string[] {
+  const buffer = Buffer.alloc(size - from);
+  fs.readSync(handle, buffer, 0, buffer.length, from);
+
+  const lines = splitLines(buffer.toString('utf8'));
+
+  return from === 0 ? lines : lines.slice(1);
+}
+
+/**
  * The last `tail` lines of `file`, read from the end rather than from the start.
  *
- * The first line of the window is dropped when the window did not start at byte
- * zero: a read that begins mid-file almost certainly begins mid-line, and half
- * a line is not a line. That is also why the window has to hold `tail + 1`
- * lines to be trusted — the extra one is the fragment being discarded.
+ * Two reads at most, and the second one is the whole file.
+ *
+ * The first version of this doubled the window until it found enough lines,
+ * which is the obvious shape and the wrong one: a log holding FEWER lines than
+ * were asked for makes it walk all the way to the end anyway, one doubling at a
+ * time. Measured on a 63 MB log of three lines, that was ten passes reading
+ * 127 MB in total to answer with the same three lines a single read gives.
+ *
+ * Not a contrived shape, either. `appendLog` only breaks on `\n`, and plenty of
+ * tools draw progress with `\r` — `docker pull` and Playwright among them — so
+ * one multi-megabyte line is an ordinary way for a capture log to look, and this
+ * is re-read every second for as long as the job runs.
+ *
+ * So: try the tail window, and if that does not hold enough lines, stop
+ * guessing. A log whose last 128 KB holds fewer than `tail` lines has lines
+ * measured in kilobytes, and no amount of doubling is going to beat reading it.
  */
 function readTail(file: string, tail: number): string[] {
   const handle = fs.openSync(file, 'r');
 
   try {
     const size = fs.fstatSync(handle).size;
-    let window = TAIL_WINDOW;
+    const from = Math.max(0, size - TAIL_WINDOW);
+    const near = linesFrom(handle, from, size);
 
-    for (;;) {
-      const from = Math.max(0, size - window);
-      const buffer = Buffer.alloc(size - from);
-      fs.readSync(handle, buffer, 0, buffer.length, from);
+    // `from === 0` means the window already covered the file, so there is
+    // nothing older to go back for and this is the whole answer.
+    if (from === 0 || near.length >= tail) return near.slice(-tail);
 
-      const lines = splitLines(buffer.toString('utf8'));
-      // A window that started mid-file opens on a fragment of a line.
-      const whole = from === 0 ? lines : lines.slice(1);
-
-      // Enough lines, or the whole file already read and there are no more to
-      // find. Either way this is the answer.
-      if (whole.length >= tail || from === 0) return whole.slice(-tail);
-
-      window *= 2;
-    }
+    return linesFrom(handle, 0, size).slice(-tail);
   } finally {
     fs.closeSync(handle);
   }
@@ -483,9 +503,18 @@ function readTail(file: string, tail: number): string[] {
 /** One job's log, oldest line first. Missing is empty: a job that has said
  *  nothing yet is not an error. */
 export function jobLog(dataDir: string, id: string, tail = Infinity): string[] {
-  const file = logPath(dataDir, id);
-
   try {
+    // `logPath` inside the try, not above it: it throws `ConfinementError` for
+    // an id that would escape the data directory, and a history row or a lock
+    // carrying one is corrupt state rather than an attack — `within` has
+    // already refused the path either way, so nothing is read regardless.
+    //
+    // Outside the try, that throw reached `GET /api/jobs/current`, which has no
+    // handler, and took the poll endpoint down once a second for as long as the
+    // bad record sat there. An empty log is this function's documented answer
+    // for a log it cannot read, and a corrupt id is exactly that.
+    const file = logPath(dataDir, id);
+
     // An unbounded ask is the whole file by definition, so there is no end to
     // read from — `runDetached` uses it to attach a finished job's full log to
     // its history row.
