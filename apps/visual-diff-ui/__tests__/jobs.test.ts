@@ -574,3 +574,116 @@ describe('readHistory', () => {
     expect(() => readHistory(dir)).toThrow(/history\.json/);
   });
 });
+
+/**
+ * The tail read, which is what makes a poll cost the same on minute sixty as on
+ * minute one.
+ *
+ * `jobLog` used to read the whole file and throw away all but the end of it, on
+ * an endpoint answering once a second for as long as a job runs — against logs
+ * that are appended to and never rotated. It now reads backwards from the end,
+ * and these are the two things that can go wrong when you do that: a window
+ * that opens mid-line, and a window too small to hold what was asked for.
+ */
+describe('jobLog reads the end of the file', () => {
+  /** Writes `count` lines of `width` bytes each, straight to the log path the
+   *  module derives, so no job has to be run to produce a large one. */
+  function writeLog(dir: string, id: string, count: number, width: number): string[] {
+    const lines = Array.from({ length: count }, (_line, index) =>
+      `${index}`.padStart(width, 'x'),
+    );
+
+    fs.mkdirSync(path.join(dir, 'jobs'), { recursive: true });
+    fs.writeFileSync(path.join(dir, 'jobs', `${id}.log`), `${lines.join('\n')}\n`);
+
+    return lines;
+  }
+
+  it('answers a bounded ask with the last lines, whole', () => {
+    const dir = makeDataDir();
+    const lines = writeLog(dir, 'job', 500, 40);
+
+    expect(jobLog(dir, 'job', 24)).toEqual(lines.slice(-24));
+  });
+
+  // The read starts mid-file, so it starts mid-line. Half a line is not a line,
+  // and the fragment has to be dropped rather than returned as the oldest entry.
+  //
+  // The sizes are exact on purpose, and a wider log would NOT catch this. A
+  // fragment only reaches the answer when the window holds precisely `tail`
+  // entries counting it — any more and the final `slice(-tail)` drops it off the
+  // front by luck rather than by the guard, and the test passes with the guard
+  // deleted. 40 lines of 5,461 bytes puts the 128 KB window boundary 24 entries
+  // from the end, one of which is half a line.
+  it('never answers with a fragment of a line', () => {
+    const dir = makeDataDir();
+    const lines = writeLog(dir, 'job', 40, 5461);
+
+    const tail = jobLog(dir, 'job', 24);
+
+    expect(tail).toHaveLength(24);
+    expect(tail.every((line) => line.length === 5461)).toBe(true);
+    expect(tail).toEqual(lines.slice(-24));
+  });
+
+  /**
+   * 24 lines of 10 KB do not fit in the first window, so the tail read has to go
+   * back for the rest of the file. Without that second read the answer would be
+   * short — correct-looking, and quietly missing the oldest half of what was
+   * asked for.
+   *
+   * That second read is the WHOLE file rather than a doubled window, and the
+   * reason is written down in `readTail`: a log with fewer lines than the tail
+   * asks for makes doubling walk to the end anyway, one pass at a time. That
+   * property is a measurement, not an assertion here — counting reads would mean
+   * mocking `node:fs`, which no suite in this app does, and an ESM namespace
+   * cannot be spied on regardless.
+   */
+  it('goes back for the rest of the file when the window holds too few lines', () => {
+    const dir = makeDataDir();
+    const lines = writeLog(dir, 'job', 40, 10_000);
+
+    expect(jobLog(dir, 'job', 24)).toEqual(lines.slice(-24));
+  });
+
+  // Fewer lines than asked for is not a widening case, and must not loop: the
+  // file starts at byte zero and there is nothing older to find.
+  it('answers a short log with all of it', () => {
+    const dir = makeDataDir();
+    const lines = writeLog(dir, 'job', 3, 20);
+
+    expect(jobLog(dir, 'job', 24)).toEqual(lines);
+  });
+
+  // The unbounded ask is a different path — `runDetached` attaches a finished
+  // job's whole log to its history row, and there is no end to read from.
+  it('answers an unbounded ask with the whole file', () => {
+    const dir = makeDataDir();
+    const lines = writeLog(dir, 'job', 300, 30);
+
+    expect(jobLog(dir, 'job')).toEqual(lines);
+  });
+
+  it('answers a missing log with nothing', () => {
+    expect(jobLog(makeDataDir(), 'no-such-job', 24)).toEqual([]);
+  });
+
+  /**
+   * An id that would escape the data directory is corrupt state, not an attack:
+   * it can only come from a hand-edited or half-written `job.lock` or
+   * `history.json`, and `within` refuses the path before anything is read either
+   * way. So the answer is the same one this function gives for every log it
+   * cannot read.
+   *
+   * It threw for one commit, and `GET /api/jobs/current` has no handler — so a
+   * single bad record took the poll endpoint down once a second for as long as
+   * it sat there.
+   */
+  it('answers a confined id with nothing rather than throwing', () => {
+    const dir = makeDataDir();
+
+    expect(() => jobLog(dir, '../../../../etc/hosts', 24)).not.toThrow();
+    expect(jobLog(dir, '../../../../etc/hosts', 24)).toEqual([]);
+    expect(jobLog(dir, '../../../../etc/hosts')).toEqual([]);
+  });
+});

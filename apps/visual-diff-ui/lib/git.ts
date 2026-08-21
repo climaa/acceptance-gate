@@ -27,14 +27,48 @@ const WORKSPACE_MARKER = 'pnpm-workspace.yaml';
  * would be handed a directory that is not a checkout at all, and the differ
  * would report the missing Storybook build instead of the missing repo.
  */
+/**
+ * The memoised answer for the working directory, and the directory it is the
+ * answer FOR.
+ *
+ * Only the default is memoised. An explicit `from` is a caller probing a
+ * directory it may still be building — `git.test.ts` writes the marker between
+ * two asks — so caching those would report a checkout that did not exist yet.
+ * The default is the one on the request path: the dashboard reaches it on every
+ * render through `readCanonicalSet`, and an uncached walk is an `existsSync`
+ * per level of the path, every time.
+ *
+ * Keyed on the directory rather than merely set once, because "the working
+ * directory cannot change" is a claim about a server, not about a process —
+ * `process.chdir` exists, and a memo that ignored it would answer every later
+ * caller with the checkout of a directory nobody is in any more.
+ *
+ * `cwdRootFor` is the presence test; `cwdRoot` may legitimately be `null`,
+ * meaning "that directory is in no checkout", so the two cannot share a slot.
+ */
+let cwdRootFor: string | undefined;
+let cwdRoot: string | null = null;
+
 export function repoRoot(from: string = process.cwd()): string | null {
+  const cwd = process.cwd();
+  const memoised = from === cwd;
+  if (memoised && cwdRootFor === cwd) return cwdRoot;
+
   let dir = path.resolve(from);
 
   for (;;) {
-    if (fs.existsSync(path.join(dir, WORKSPACE_MARKER))) return dir;
-
+    const found = fs.existsSync(path.join(dir, WORKSPACE_MARKER));
     const parent = path.dirname(dir);
-    if (parent === dir) return null;
+
+    if (found || parent === dir) {
+      const answer = found ? dir : null;
+      if (memoised) {
+        cwdRootFor = cwd;
+        cwdRoot = answer;
+      }
+
+      return answer;
+    }
 
     dir = parent;
   }
@@ -62,11 +96,31 @@ const DETACHED = 'detached';
  * `gc`, and a detached HEAD holds a sha where a ref belongs. Four parsers to
  * avoid one subprocess, on a path that is about to launch a browser.
  */
+/**
+ * How long a `git` invocation may take before it is killed, and how much it may
+ * say before it is cut off.
+ *
+ * Both defaults were wrong for a request path. With no `timeout`, a repository
+ * whose index is locked by another process blocks this one — and because these
+ * are synchronous spawns, "this one" is the whole Node event loop, every other
+ * request on the server included. With the default 1 MB `maxBuffer`,
+ * `status --porcelain` on a very dirty tree throws, and the `catch` below reads
+ * that as "git could not say", which lands in a set's provenance as `unknown`.
+ *
+ * Two seconds is far above what any of these three commands takes on a healthy
+ * repository and far below anything a reviewer would sit through. 16 MB of
+ * porcelain is roughly 150,000 changed paths.
+ */
+const GIT_TIMEOUT_MS = 2000;
+const GIT_MAX_BUFFER = 16 * 1024 * 1024;
+
 function git(root: string, ...args: string[]): string {
   return execFileSync('git', args, {
     cwd: root,
     encoding: 'utf8',
     stdio: ['ignore', 'pipe', 'ignore'],
+    timeout: GIT_TIMEOUT_MS,
+    maxBuffer: GIT_MAX_BUFFER,
   }).trim();
 }
 

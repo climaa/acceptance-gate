@@ -47,6 +47,47 @@ describe('repoRoot', () => {
   it('answers with nothing outside every checkout', () => {
     expect(repoRoot(outsideAnyCheckout())).toBeNull();
   });
+
+  /**
+   * The walk is an `existsSync` per level of the path, and the dashboard reaches
+   * it on every render through `readCanonicalSet`, so the answer for the working
+   * directory is memoised.
+   *
+   * What is asserted here is that the memo is KEYED — the cheap version of it
+   * was set once and would go on answering with the checkout of a directory
+   * nobody is in any more. There is no way to observe the saved `existsSync`
+   * calls directly: this suite mocks nothing, and an ESM namespace cannot be
+   * spied on anyway. Moving the process is the observable consequence.
+   */
+  it('re-walks when the working directory moves', () => {
+    const original = process.cwd();
+    const outside = outsideAnyCheckout();
+
+    try {
+      expect(repoRoot()).toBe(REPO_ROOT);
+
+      process.chdir(outside);
+      expect(repoRoot()).toBeNull();
+
+      process.chdir(original);
+      expect(repoRoot()).toBe(REPO_ROOT);
+    } finally {
+      process.chdir(original);
+    }
+  });
+
+  // The memo is deliberately only for the default. An explicit `from` is a
+  // caller probing a directory it may still be building — the case below writes
+  // its marker after asking once — and a cached answer there would report a
+  // checkout that did not exist yet.
+  it('does not memoise a directory it was handed', () => {
+    const dir = outsideAnyCheckout();
+    expect(repoRoot(dir)).toBeNull();
+
+    fs.writeFileSync(path.join(dir, 'pnpm-workspace.yaml'), 'packages: []\n');
+
+    expect(repoRoot(dir)).toBe(path.resolve(dir));
+  });
 });
 
 describe('describeCheckout', () => {

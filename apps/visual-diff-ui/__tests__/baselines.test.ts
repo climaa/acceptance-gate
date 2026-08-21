@@ -43,8 +43,8 @@ describe('the canonical label', () => {
 });
 
 describe('readCanonicalSet', () => {
-  it('counts the shots and measures them', () => {
-    const corpus = readCanonicalSet(
+  it('counts the shots and measures them', async () => {
+    const corpus = await readCanonicalSet(
       checkoutWith(['a__b__c__d.png', 'e__f__g__h.png', 'BASELINE_ENV.json']),
     );
 
@@ -53,8 +53,8 @@ describe('readCanonicalSet', () => {
 
   // The stamp is not a shot. Counting it would report a corpus one story larger
   // than the matrix it covers.
-  it('does not count the host stamp as a shot', () => {
-    const corpus = readCanonicalSet(
+  it('does not count the host stamp as a shot', async () => {
+    const corpus = await readCanonicalSet(
       checkoutWith(['a__b__c__d.png', 'BASELINE_ENV.json']),
     );
 
@@ -64,26 +64,26 @@ describe('readCanonicalSet', () => {
   // Three cases, one answer, and deliberately not distinguished: no checkout, no
   // directory, or a directory with no shots is a console with nothing canonical
   // to compare against.
-  it('answers with nothing outside a checkout', () => {
-    expect(readCanonicalSet(null)).toBeNull();
+  it('answers with nothing outside a checkout', async () => {
+    expect(await readCanonicalSet(null)).toBeNull();
   });
 
-  it('answers with nothing when the corpus is not there', () => {
+  it('answers with nothing when the corpus is not there', async () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), 'vd-baselines-'));
     temporaryDirs.push(root);
 
-    expect(readCanonicalSet(root)).toBeNull();
+    expect(await readCanonicalSet(root)).toBeNull();
   });
 
-  it('answers with nothing for a corpus holding no shots', () => {
-    expect(readCanonicalSet(checkoutWith(['BASELINE_ENV.json']))).toBeNull();
+  it('answers with nothing for a corpus holding no shots', async () => {
+    expect(await readCanonicalSet(checkoutWith(['BASELINE_ENV.json']))).toBeNull();
   });
 
   // A written temp checkout is not a git repository, so there is no commit to
   // read. Null rather than a guess: the row draws a dash, and inventing a sha
   // would attribute the corpus to a commit that never touched it.
-  it('reports no commit where git cannot say', () => {
-    const corpus = readCanonicalSet(checkoutWith(['a__b__c__d.png']));
+  it('reports no commit where git cannot say', async () => {
+    const corpus = await readCanonicalSet(checkoutWith(['a__b__c__d.png']));
 
     expect(corpus?.sha).toBeNull();
     expect(corpus?.acceptedAt).toBeNull();
@@ -91,8 +91,8 @@ describe('readCanonicalSet', () => {
 
   // This repo's own corpus, which IS in git — so the commit that last accepted it
   // is readable, and that is the provenance the row shows.
-  it("reads this repo's corpus and the commit that accepted it", () => {
-    const corpus = readCanonicalSet(REPO_ROOT);
+  it("reads this repo's corpus and the commit that accepted it", async () => {
+    const corpus = await readCanonicalSet(REPO_ROOT);
 
     expect(corpus?.stories).toBeGreaterThan(0);
     expect(corpus?.sha).toMatch(/^[0-9a-f]{7,}$/);

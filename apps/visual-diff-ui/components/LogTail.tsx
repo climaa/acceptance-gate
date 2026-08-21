@@ -16,19 +16,17 @@ import { useEffect, useRef } from 'react';
  * when its own output says what it exited with.
  */
 
-/** How much of the tail is drawn. The endpoint already answers with the last 200
- *  lines; this is the panel's own frame — a right-hand column beside three
- *  tables, not a terminal. */
-const TAIL_LINES = 24;
-
 export interface LogTailProps {
-  /** Oldest line first, as `GET /api/jobs/current` returns them. */
+  /** Oldest line first, as `GET /api/jobs/current` returns them — and ALL of
+   *  them: the endpoint's `TAIL_LINES` is how long the tail is, and this frame
+   *  draws the tail it was handed. It used to keep a second, smaller cap of its
+   *  own, which meant the poll spent every second fetching lines this component
+   *  existed to throw away. One number, and it is the one on the wire. */
   lines: readonly string[];
 }
 
 export function LogTail({ lines }: LogTailProps) {
   const frame = useRef<HTMLPreElement>(null);
-  const tail = lines.slice(-TAIL_LINES);
 
   // Follow the newest line. Keyed on the line count rather than on the array,
   // which is a new object every poll and would scroll a log nobody is adding to.
@@ -49,7 +47,7 @@ export function LogTail({ lines }: LogTailProps) {
       tabIndex={0}
       className="vd-log"
     >
-      {tail.join('\n')}
+      {lines.join('\n')}
     </pre>
   );
 }

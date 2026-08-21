@@ -270,6 +270,58 @@ describe('starting a job', () => {
     );
   });
 
+  /**
+   * The start has to wake the poller, not merely succeed.
+   *
+   * The current-job region below this panel backs off while the console is idle,
+   * which is exactly what it was a moment before a reviewer pressed start. Left
+   * to its own timer it would go on saying nothing is running for up to
+   * `MAX_IDLE_POLL_MS` after the job began — so `useStartJob` pokes it, and this
+   * is the seam where that poke is wired.
+   *
+   * Counted as polls before and after the POST rather than by watching for the
+   * job to appear: what is being held here is that the start ASKED, which is the
+   * wiring. Whether a poke collapses a backed-off wait is the poller's own
+   * contract, and `current-job.test.tsx` holds that end of it.
+   */
+  it('asks the poller for a fresh answer once the job is accepted', async () => {
+    const fetchMock = renderPanel();
+    fireEvent.change(screen.getByRole('textbox', { name: 'label' }), {
+      target: { value: 'main-2026-08-17' },
+    });
+
+    const pollsBefore = () =>
+      fetchMock.mock.calls.filter(([url]) => url === '/api/jobs/current').length;
+    const before = pollsBefore();
+
+    fireEvent.click(screen.getByRole('button', { name: 'start capture' }));
+
+    await waitFor(() => expect(pollsBefore()).toBeGreaterThan(before));
+  });
+
+  // A start the server refused is not a job, so there is nothing to go and look
+  // at — poking the poller for it would spend a request to be told what the
+  // refusal already said.
+  it('does not ask when the start was refused', async () => {
+    const fetchMock = renderPanel({
+      jobs: { ok: false, status: 409, body: JOB_RUNNING },
+    });
+    fireEvent.change(screen.getByRole('textbox', { name: 'label' }), {
+      target: { value: 'main-2026-08-17' },
+    });
+
+    const polls = () =>
+      fetchMock.mock.calls.filter(([url]) => url === '/api/jobs/current').length;
+    const before = polls();
+
+    fireEvent.click(screen.getByRole('button', { name: 'start capture' }));
+    await waitFor(() =>
+      expect(fetchMock).toHaveBeenCalledWith('/api/jobs', expect.anything()),
+    );
+
+    expect(polls()).toBe(before);
+  });
+
   // `--filter` is the CLI's own flag, and the only one of the three the composed
   // `check` takes: an empty box must not become a filter matching nothing.
   // Ticked, not typed: `--filter` used to be a text box over a vocabulary that

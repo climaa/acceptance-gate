@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useSyncExternalStore } from 'react';
-import { readReviewed, setReviewed } from '@/lib/review-state';
+import { readReviewed, reviewStorageKey, setReviewed } from '@/lib/review-state';
 
 /**
  * The variant keys this browser has marked reviewed, as a React value.
@@ -43,16 +43,58 @@ function createStore(reportId: string) {
     for (const listener of listeners) listener();
   };
 
+  /**
+   * The same marks, changed in another tab.
+   *
+   * `storage` fires in every OTHER document on the origin, never in the one that
+   * wrote — which is exactly the gap: the report and the console are two routes,
+   * and a reviewer with both open marked variants in one while the accept gate
+   * in the other went on counting the old number.
+   *
+   * That gate used to self-heal, but only by accident: `RunPanel` called
+   * `readReviewed` during render, and it re-rendered on every poll, so it
+   * re-read storage once a second. Removing that read is what made this listener
+   * necessary — an accidental refresh is not a feature, but the freshness it
+   * happened to provide was.
+   *
+   * `event.key === null` is the whole store being cleared, which is this report
+   * too.
+   */
+  const onStorage = (event: StorageEvent) => {
+    if (event.key !== null && event.key !== reviewStorageKey(reportId)) return;
+
+    const next = new Set(readReviewed(reportId));
+    // Only when it actually moved. `useSyncExternalStore` compares snapshots by
+    // identity, so handing over an equal-but-new Set would re-render every
+    // consumer for a write that changed nothing of theirs.
+    if (snapshot && next.size === snapshot.size && [...next].every(has(snapshot))) {
+      return;
+    }
+
+    snapshot = next;
+    for (const listener of listeners) listener();
+  };
+
   const subscribe = (listener: () => void) => {
     listeners.add(listener);
+    // Bound once for the whole store rather than per consumer: two components
+    // reading the same report share one listener and one re-read.
+    if (listeners.size === 1) window.addEventListener('storage', onStorage);
 
     return () => {
       listeners.delete(listener);
+      if (listeners.size === 0) window.removeEventListener('storage', onStorage);
     };
   };
 
   return { getSnapshot, mark, subscribe };
 }
+
+/** `set.has`, as a predicate `every` can take. */
+const has =
+  (set: ReadonlySet<string>) =>
+  (key: string): boolean =>
+    set.has(key);
 
 /** What a server render sees, and the only honest answer it has: nobody has
  *  reviewed anything, because nobody's browser is here yet. */

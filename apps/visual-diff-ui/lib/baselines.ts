@@ -1,6 +1,7 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import { lastCommit, repoRoot } from './git';
+import { cacheLife } from 'next/cache';
+import { lastCommit } from './git';
 
 /**
  * The committed baseline corpus, offered as something to compare against.
@@ -66,8 +67,35 @@ const PNG = '.png';
  * the answer on screen is the same for all: no checkout (a deployment), no
  * `__baselines__` directory, or a directory holding no shots. Any of them is a
  * console with nothing canonical to compare against.
+ *
+ * Cached, because the uncached version ran on every dashboard render and spent
+ * ~54 ms of it inside a SYNCHRONOUS `git log` (measured against this repo's own
+ * 144-shot corpus; the directory walk beside it costs under 3 ms). Synchronous
+ * means the whole event loop, so that cost was paid by every request in flight
+ * alongside it — the job poller and every shot the report page was fetching.
+ *
+ * `cacheLife('seconds')` rather than anything longer: the corpus lives in the
+ * checkout, so a `git pull` between two page loads changes what it holds, and
+ * that freshness is the reason this was uncached to begin with. A second of
+ * staleness on a commit date buys back the other ~59 renders.
+ *
+ * No `cacheTag`, unlike every reader in lib/data.ts, and the absence is the
+ * point: those tags exist so a MUTATION can retire what it moved, and this
+ * console performs no mutation that reaches the committed corpus. `accept`
+ * promotes into `<dataDir>/__baselines__` (D3); this directory is changed by a
+ * commit. There is nothing to purge it from.
+ *
+ * `root` is an argument with no default for the reason lib/data.ts states for
+ * `dataDir`: `use cache` keys on the arguments it is passed, so a directory
+ * resolved INSIDE would not join the key and every caller would share one
+ * entry. The caller resolves it — `repoRoot()` is memoised for `process.cwd()`.
  */
-export function readCanonicalSet(root: string | null = repoRoot()): CanonicalSet | null {
+export async function readCanonicalSet(
+  root: string | null,
+): Promise<CanonicalSet | null> {
+  'use cache';
+  cacheLife('seconds');
+
   if (!root) return null;
 
   const dir = baselinesPath(root);

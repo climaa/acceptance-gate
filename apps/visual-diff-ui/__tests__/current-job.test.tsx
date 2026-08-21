@@ -1,9 +1,15 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
+import { useEffect } from 'react';
 // Imported explicitly rather than relying on `globals: true` — tsconfig's
 // `**/*.tsx` include means tsc typechecks this file.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { CurrentJob, CurrentJobProvider } from '../components/CurrentJob';
+import {
+  CurrentJob,
+  CurrentJobProvider,
+  useCurrentJob,
+  usePollNow,
+} from '../components/CurrentJob';
 import type { HistoryRecord } from '../lib/jobs';
 import { refreshCalls } from './stubs/next-navigation';
 
@@ -371,11 +377,285 @@ describe('the elapsed counter', () => {
     expect(region().getAttribute('aria-live')).toBe('polite');
   });
 
+  // The same rule the poller keeps, for the same reason: a hidden tab is not
+  // reading a clock. The tick is re-run on the way back rather than merely
+  // resumed, so the number is right on the first painted frame.
+  it('stops ticking while the tab is hidden and is right again on return', async () => {
+    stubCurrent({ running: true, job: RUNNING });
+
+    renderCurrentJob();
+    expect(await within(region()).findByText('3m 12s')).toBeDefined();
+
+    hide();
+    // A minute passes with nobody looking. This block runs on REAL timers (see
+    // the note above — Testing Library's waiting is built on them), so the wait
+    // has to be real too: anything shorter than the one-second tick would pass
+    // whether or not the interval is still running, which is a test that cannot
+    // fail. It is the one slow assertion in this file, and it is what makes the
+    // hidden-tab guard observable at all.
+    vi.mocked(Date.now).mockReturnValue(Date.parse('2026-08-17T08:04:12Z'));
+    await new Promise((resume) => setTimeout(resume, 1_200));
+    expect(within(region()).getByText('3m 12s')).toBeDefined();
+
+    show();
+    expect(await within(region()).findByText('4m 12s')).toBeDefined();
+  });
+
   it('reports what a finished run took, not what has passed since', async () => {
     stubCurrent({ running: false, job: FINISHED });
 
     renderCurrentJob();
 
     expect(await within(region()).findByText('1m 35s')).toBeDefined();
+  });
+});
+
+/**
+ * What an idle console costs, which used to be one request a second forever.
+ *
+ * The poller stops for a hidden tab and freezes on a sample instance, and both
+ * are covered above — but a real console on a developer's machine is neither,
+ * so it polled indefinitely whether or not anything was running. Measured
+ * before this changed: 35 requests in 32 seconds with nothing in flight.
+ */
+describe('the poll cadence', () => {
+  // 1s, 2s, 4s, 8s, 8s… — four requests in the first ten seconds where the old
+  // fixed interval made eleven.
+  it('backs off while the console is idle', async () => {
+    vi.useFakeTimers();
+    const fetchMock = stubCurrent({ isSample: false, running: false, job: null });
+
+    renderCurrentJob();
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    await vi.advanceTimersByTimeAsync(10_000);
+
+    expect(fetchMock.mock.calls.length).toBeLessThan(6);
+  });
+
+  // The backoff must never reach the one case the panel exists for: a running
+  // job's log is being read as it is written, so it keeps the full cadence
+  // whether or not this particular second added a line.
+  it('keeps the full cadence while a job is running', async () => {
+    vi.useFakeTimers();
+    const fetchMock = stubCurrent({ isSample: false, running: true, job: RUNNING });
+
+    renderCurrentJob();
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    await vi.advanceTimersByTimeAsync(10_000);
+
+    expect(fetchMock.mock.calls.length).toBeGreaterThanOrEqual(10);
+  });
+
+  // Coming back to the tab is new information — the answer may have moved while
+  // nobody was asking — so the wait starts over rather than resuming wherever
+  // the backoff had got to.
+  it('resets the backoff when the tab comes back', async () => {
+    vi.useFakeTimers();
+    const fetchMock = stubCurrent({ isSample: false, running: false, job: null });
+
+    renderCurrentJob();
+    // Timers are advanced explicitly rather than through `vi.waitFor`, which
+    // advances them itself — the count is the assertion here, so nothing else
+    // may move the clock.
+    await vi.advanceTimersByTimeAsync(10_000);
+
+    hide();
+    await vi.advanceTimersByTimeAsync(5_000);
+    const backedOff = fetchMock.mock.calls.length;
+
+    show();
+    // Immediately, not on the eight-second timer the backoff had reached.
+    await vi.advanceTimersByTimeAsync(100);
+
+    expect(fetchMock.mock.calls.length).toBe(backedOff + 1);
+  });
+});
+
+/**
+ * The provider's value, and why its identity matters.
+ *
+ * Every poll used to hand the context a freshly built object whether or not it
+ * said anything new, so React could not bail out. `RunPanel` reads this context
+ * twice, which made its whole 800-line subtree re-render once a second for as
+ * long as a console was open — and that subtree read `localStorage` during
+ * render, so the cost was a synchronous storage parse per second, forever.
+ */
+describe('the provider value', () => {
+  function CountingConsumer({ onRender }: { onRender: () => void }) {
+    useCurrentJob();
+    onRender();
+
+    return null;
+  }
+
+  it('does not re-render its consumers while the answer is unchanged', async () => {
+    vi.useFakeTimers();
+    const fetchMock = stubCurrent({ isSample: false, running: true, job: RUNNING });
+    const onRender = vi.fn();
+
+    render(
+      <CurrentJobProvider>
+        <CountingConsumer onRender={onRender} />
+      </CurrentJobProvider>,
+    );
+
+    // Long enough for the first answer to arrive AND to be rendered — that one
+    // genuinely changes the state, from `IDLE` to a running job, and is not the
+    // re-render this is about.
+    await vi.advanceTimersByTimeAsync(1_500);
+    const settled = onRender.mock.calls.length;
+    const polled = fetchMock.mock.calls.length;
+
+    // Ten more polls at the running cadence, every one of them the same answer.
+    await vi.advanceTimersByTimeAsync(10_000);
+
+    expect(fetchMock.mock.calls.length).toBeGreaterThanOrEqual(polled + 9);
+    expect(onRender).toHaveBeenCalledTimes(settled);
+  });
+
+  it('does re-render them when the log grows', async () => {
+    vi.useFakeTimers();
+    const onRender = vi.fn();
+    let log = ['comparing 6 shot(s)'];
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        () =>
+          Promise.resolve({
+            ok: true,
+            json: () =>
+              Promise.resolve({ isSample: false, running: true, job: RUNNING, log }),
+          }) as never,
+      ),
+    );
+
+    render(
+      <CurrentJobProvider>
+        <CountingConsumer onRender={onRender} />
+      </CurrentJobProvider>,
+    );
+
+    await vi.waitFor(() => expect(onRender).toHaveBeenCalled());
+    const settled = onRender.mock.calls.length;
+
+    log = [...log, 'wrote report'];
+    await vi.advanceTimersByTimeAsync(2_000);
+
+    expect(onRender.mock.calls.length).toBeGreaterThan(settled);
+  });
+});
+
+/**
+ * The poke, and the chain it must not fork.
+ *
+ * `usePollNow` re-arms by calling `stop()` then `sync()` back to back. An
+ * in-flight poll disowned by that `stop` finds `armed` true again by the time it
+ * resumes — `sync` set it, for the NEW chain — so without a generation token it
+ * carries on and schedules a timer beside the new one. Nothing holds the older
+ * handle, so nothing can clear it, and the console settles into polling at twice
+ * the rate: measured at 16 requests where one chain makes 9.
+ *
+ * Which is the exact failure this file exists to prevent, arriving by the door
+ * that was opened to fix it.
+ */
+describe('an out-of-band poll request', () => {
+  /** Calls `usePollNow` once, `at` milliseconds in — long enough to land while
+   *  the first poll is still waiting on the slow endpoint below. */
+  function Poker({ at }: { at: number }) {
+    const pollNow = usePollNow();
+
+    useEffect(() => {
+      const timer = setTimeout(() => pollNow(), at);
+
+      return () => clearTimeout(timer);
+    }, [pollNow, at]);
+
+    return null;
+  }
+
+  /**
+   * What the poke is FOR, as opposed to what it must not break.
+   *
+   * The backoff is the whole reason it exists: a console that has been idle for
+   * a few seconds is up to `MAX_IDLE_POLL_MS` away from its next question, and
+   * the moment a job starts is the moment that wait is most wrong. Asserted by
+   * advancing to a known point in the backoff and then poking — the answer has
+   * to arrive on the poke rather than on the timer that was already pending.
+   *
+   * Deliberately NOT an e2e scenario. The browser cannot be told where in the
+   * backoff it is, so a scenario would have to idle for real seconds and then
+   * assert against a window it could only guess at — flaky by construction, and
+   * `suite-integrity.mjs` pins the scenario count, so a flaky one is a recurring
+   * red. Fake timers can be exact about it; a browser cannot.
+   */
+  it('collapses a backed-off wait when asked to poll now', async () => {
+    vi.useFakeTimers();
+    const fetchMock = stubCurrent({ isSample: false, running: false, job: null });
+    let pollNow: () => void = () => {};
+
+    function Handle() {
+      pollNow = usePollNow();
+
+      return null;
+    }
+
+    render(
+      <CurrentJobProvider>
+        <Handle />
+      </CurrentJobProvider>,
+    );
+
+    // Far enough in for the idle backoff to have reached its ceiling, so the
+    // next scheduled poll is seconds away rather than one tick.
+    await vi.advanceTimersByTimeAsync(30_000);
+    const backedOff = fetchMock.mock.calls.length;
+
+    // A hundred milliseconds is nowhere near `MAX_IDLE_POLL_MS`, so a request
+    // inside it can only have come from the poke.
+    act(() => pollNow());
+    await vi.advanceTimersByTimeAsync(100);
+
+    expect(fetchMock.mock.calls.length).toBe(backedOff + 1);
+  });
+
+  it('does not leave two poll chains running', async () => {
+    vi.useFakeTimers();
+    let calls = 0;
+    // 400ms per answer, so the poke at 200ms is guaranteed to land mid-flight.
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() => {
+        calls += 1;
+
+        return new Promise((resolve) =>
+          setTimeout(
+            () =>
+              resolve({
+                ok: true,
+                json: () =>
+                  Promise.resolve({
+                    isSample: false,
+                    running: true,
+                    job: RUNNING,
+                    log: [],
+                  }),
+              }),
+            400,
+          ),
+        ) as never;
+      }),
+    );
+
+    render(
+      <CurrentJobProvider>
+        <Poker at={200} />
+      </CurrentJobProvider>,
+    );
+
+    await vi.advanceTimersByTimeAsync(10_000);
+
+    // One chain at 400ms of work plus a 1s wait is 7-9 requests in ten seconds.
+    // Two chains were measured at 16.
+    expect(calls).toBeLessThan(12);
   });
 });
