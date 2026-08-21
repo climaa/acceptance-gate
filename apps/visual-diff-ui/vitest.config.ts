@@ -6,10 +6,15 @@ import { defineConfig } from 'vitest/config';
 // shot route refuses a path outside it.
 // Run: pnpm --filter @gate/visual-diff-ui test  (or `turbo run test` from the root)
 export default defineConfig({
-  // tsconfig says `jsx: preserve` because Next owns the JSX transform; esbuild
+  // tsconfig says `jsx: preserve` because Next owns the JSX transform; oxc
   // reads that as "classic" and every rendered element then throws
   // `React is not defined`. Name the runtime Next actually uses.
-  esbuild: { jsx: 'automatic' },
+  //
+  // `oxc` rather than `esbuild` — see apps/blog/vitest.config.ts for the
+  // mechanism. Short version: Vite 8 converts an `esbuild` block to oxc only
+  // when nothing else has set `oxc`, and Vitest always sets one, so `esbuild`
+  // here would be silently ignored rather than merely deprecated.
+  oxc: { jsx: { runtime: 'automatic' } },
   resolve: {
     // Mirrors tsconfig's "@/*": ["./*"] — app/** routes import lib/** via this
     // alias, and vitest doesn't read tsconfig paths on its own.
