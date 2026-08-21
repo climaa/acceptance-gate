@@ -90,6 +90,7 @@ function sameAnswer(left: CurrentJobState, right: CurrentJobState): boolean {
     left.job?.endedAt === right.job?.endedAt &&
     left.job?.exitCode === right.job?.exitCode &&
     left.job?.reportId === right.job?.reportId &&
+    left.reportExists === right.reportExists &&
     sameLog(left.log, right.log)
   );
 }
@@ -99,11 +100,22 @@ export interface CurrentJobState {
   /** The running job, or the last one to finish. Null on an instance that has
    *  never run anything. */
   job: HistoryRecord | null;
+  /** Whether the report `job.reportId` names is still on disk, answered by the
+   *  server on every poll. Not derivable here: a history row keeps the id of the
+   *  report its run produced even after the report is deleted, so the id alone
+   *  would offer a link into a 404 — see the route for why this is its answer to
+   *  give. False whenever there is no report to begin with. */
+  reportExists: boolean;
   /** The tail of that job's log, oldest line first. */
   log: readonly string[];
 }
 
-const IDLE: CurrentJobState = { running: false, job: null, log: [] };
+const IDLE: CurrentJobState = {
+  running: false,
+  job: null,
+  reportExists: false,
+  log: [],
+};
 
 const CurrentJobContext = createContext<CurrentJobState>(IDLE);
 
@@ -154,6 +166,7 @@ async function readCurrent(): Promise<{
       state: {
         running: body.running === true,
         job: body.job ?? null,
+        reportExists: body.reportExists === true,
         log: Array.isArray(body.log) ? body.log : [],
       },
       isSample: body.isSample === true,
@@ -418,7 +431,7 @@ interface JobViewProps extends CurrentJobState {
   job: HistoryRecord;
 }
 
-function JobView({ job, running, log }: JobViewProps) {
+function JobView({ job, running, reportExists, log }: JobViewProps) {
   const elapsed = useElapsed(job, running);
   const { word, tone } = jobState(job.exitCode, running);
 
@@ -453,9 +466,11 @@ function JobView({ job, running, log }: JobViewProps) {
 
       {log.length > 0 && <LogTail lines={log} />}
 
-      {/* Only once the run is over, and only when it wrote one: a report
-          directory mid-run holds a summary nothing has finished writing. */}
-      {!running && job.reportId && (
+      {/* Only once the run is over, only when it wrote one, and only while that
+          report is still there: a report directory mid-run holds a summary
+          nothing has finished writing, and one deleted since the run ended is an
+          id this row will carry forever (see the route for who answers that). */}
+      {!running && job.reportId && reportExists && (
         <Link as={NextLink} href={`/report/${job.reportId}`}>
           view report
         </Link>
@@ -493,7 +508,12 @@ export function CurrentJob() {
         {state.job === null ? (
           <EmptyState message={NOTHING_RUNNING} />
         ) : (
-          <JobView job={state.job} running={state.running} log={state.log} />
+          <JobView
+            job={state.job}
+            running={state.running}
+            reportExists={state.reportExists}
+            log={state.log}
+          />
         )}
       </Stack>
     </section>

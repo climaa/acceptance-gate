@@ -1,5 +1,11 @@
 import { resolveDataDir } from '@/lib/data';
-import { currentJob, jobLog, readHistory, takeConsoleRefresh } from '@/lib/jobs';
+import {
+  currentJob,
+  hasReport,
+  jobLog,
+  readHistory,
+  takeConsoleRefresh,
+} from '@/lib/jobs';
 import { PURGE } from '@/lib/tags';
 import { revalidateTag } from 'next/cache';
 
@@ -30,6 +36,14 @@ const TAIL_LINES = 24;
  * its final line — and a panel that empties the moment the job ends throws that
  * away.
  *
+ * The answer carries `reportExists` beside the job rather than leaving the
+ * client to trust `job.reportId`. The id on a history row is what the run
+ * produced, which is not the same claim as "that report is still on disk" — a
+ * reviewer can delete it from the reports panel a second after the run ends,
+ * and the row keeps the id forever (see lib/jobs.ts's `removeReport`). Answered
+ * here because this is the side holding the data directory; the panel has no
+ * way to check.
+ *
  * It also carries the console's cache purge, which looks out of place here and
  * is not. A job's writes happen in a detached tail with no request on the stack,
  * and `revalidateTag` outside a request appends to an array nobody will drain
@@ -56,6 +70,7 @@ export async function GET(): Promise<Response> {
       isSample,
       running: running !== null,
       job,
+      reportExists: job?.reportId ? hasReport(dir, job.reportId) : false,
       log: job ? jobLog(dir, job.id, TAIL_LINES) : [],
     },
     { headers: { 'Cache-Control': 'no-store' } },

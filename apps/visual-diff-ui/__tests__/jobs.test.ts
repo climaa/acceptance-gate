@@ -18,6 +18,7 @@ import {
   readHistory,
   readLock,
   recordSet,
+  removeReport,
   startJob,
   takeConsoleRefresh,
   within,
@@ -599,6 +600,45 @@ describe('GET /api/jobs/current', () => {
     expect(body.running).toBe(false);
     expect(body.job.exitCode).toBe(1);
     expect(body.log.at(-1)).toBe('exit 1');
+  });
+
+  /**
+   * `reportId` is what the run produced; `reportExists` is whether it is still
+   * there. The two agree until a reviewer deletes the report, and only this side
+   * can tell them apart — the panel has no data directory to look in, so a
+   * console trusting the id alone drew a `view report` link into a 404.
+   */
+  it('says whether the report the last run produced is still on disk', async () => {
+    const dir = configuredDataDir();
+    seedSummary(dir, 'a__b');
+    const outcome = startJob(dir, compareRequest, workEnding(1, 'a__b'));
+    if (!outcome.ok) throw new Error('the job must start');
+    await outcome.started.done;
+
+    const present = (await (await getCurrent()).json()) as { reportExists: boolean };
+    expect(present.reportExists).toBe(true);
+
+    removeReport(dir, 'a__b');
+
+    const gone = (await (await getCurrent()).json()) as {
+      reportExists: boolean;
+      job: { reportId: string };
+    };
+    // The row is untouched by the delete — which is exactly why the flag has to
+    // be asked for separately.
+    expect(gone.job.reportId).toBe('a__b');
+    expect(gone.reportExists).toBe(false);
+  });
+
+  it('says no report exists for a run that produced none', async () => {
+    const dir = configuredDataDir();
+    const outcome = startJob(dir, compareRequest, workEnding(0));
+    if (!outcome.ok) throw new Error('the job must start');
+    await outcome.started.done;
+
+    const body = (await (await getCurrent()).json()) as { reportExists: boolean };
+
+    expect(body.reportExists).toBe(false);
   });
 });
 

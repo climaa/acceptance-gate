@@ -18,3 +18,16 @@ export const SAMPLE_LABEL = 'sample data';
 
 export const SAMPLE_NOTE =
   'a committed sample run — this instance has captured nothing of its own';
+
+/** The 404 page's heading and its `<title>`, and what it says under it. A
+ *  reviewer arrives here from a link the console itself drew — a report deleted
+ *  since the page was rendered is the ordinary way in — so the copy names that
+ *  cause rather than blaming the address. */
+export const NOT_FOUND_TITLE = 'Not found';
+
+export const NOT_FOUND_NOTE =
+  'Nothing here — a report or set that has been deleted since this link was drawn reads exactly like an address that never existed.';
+
+/** The way back, on a page whose whole point is that the reader took a wrong
+ *  turn. The shell's wordmark is not a link, so without this there is none. */
+export const NOT_FOUND_ACTION = 'Back to the console';
