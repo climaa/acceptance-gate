@@ -113,7 +113,7 @@ async function capture({ variants, baseUrl }) {
  *  read off the installed package rather than restated: the whole point of the stamp is
  *  that it describes what actually ran.
  *  @returns {Promise<Record<string, string>>} */
-async function probeHost() {
+export async function probeHost() {
   return {
     platform: process.platform,
     arch: process.arch,

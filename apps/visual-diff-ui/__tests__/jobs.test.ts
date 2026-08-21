@@ -108,6 +108,7 @@ afterEach(() => {
   resetRequestHost();
   delete process.env.VISUAL_DIFF_DATA_DIR;
   delete process.env.VISUAL_DIFF_FAKE_HOST_FINGERPRINT;
+  delete process.env.VISUAL_DIFF_FAKE_DOCKER;
 });
 
 afterAll(() => {
@@ -481,8 +482,32 @@ describe('the set registry', () => {
 });
 
 describe('POST /api/jobs — the accept gate', () => {
-  it('refuses an accept from a host that is not the pinned container', async () => {
+  /**
+   * The host is no longer a refusal here, and this is the case that says so.
+   *
+   * A promote off the pinned image used to be answered 409 with a `docker run`
+   * to paste, because the stamp it writes describes the machine that wrote it.
+   * The runner now starts that container itself, so an accept from a machine
+   * that HAS a daemon is a job like any other — and the lock proves it started.
+   */
+  it('accepts from a host that can start the pinned container', async () => {
     const dir = configuredDataDir();
+    process.env.VISUAL_DIFF_FAKE_DOCKER = '1';
+    seedSummary(dir, 'clean-report');
+
+    const response = await postJob(
+      jobRequest({ mode: 'accept', reportId: 'clean-report' }),
+    );
+
+    expect(response.status).toBe(202);
+    expect(readLock(dir)).not.toBeNull();
+  });
+
+  // The rule capture and run already answered to, now that accept answers to it
+  // too: no daemon is the one machine question a button cannot solve.
+  it('refuses an accept from a host with no container and no daemon', async () => {
+    const dir = configuredDataDir();
+    process.env.VISUAL_DIFF_FAKE_DOCKER = '0';
     seedSummary(dir, 'clean-report');
 
     const response = await postJob(
@@ -490,9 +515,6 @@ describe('POST /api/jobs — the accept gate', () => {
     );
 
     expect(response.status).toBe(409);
-    const body = (await response.json()) as { error: string; recovery: string[] };
-    expect(body.error).toContain(HOST.image);
-    expect(body.recovery.join(' ')).toContain('git checkout -- __baselines__/');
     expect(readLock(dir)).toBeNull();
   });
 

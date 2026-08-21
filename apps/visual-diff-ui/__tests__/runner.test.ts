@@ -304,23 +304,6 @@ describe('promoteBaselines', () => {
     );
   });
 
-  it('refuses a host that is not the pinned container, writing nothing', async () => {
-    const dir = makeDataDir();
-    const lines: string[] = [];
-    seedReport(dir);
-
-    const outcome = await promoteBaselines(
-      dir,
-      FIXTURE_REPORT,
-      (line) => lines.push(line),
-      {},
-    );
-
-    expect(outcome.exitCode).toBe(2);
-    expect(fs.existsSync(path.join(dir, '__baselines__'))).toBe(false);
-    expect(lines.join('\n')).toContain(HOST.image);
-  });
-
   it('refuses a report that still carries an accessibility failure', async () => {
     const dir = makeDataDir();
     const lines: string[] = [];
@@ -416,7 +399,7 @@ describe('runCheck', () => {
   /** `child_process.spawn`, replaced for the length of one case: a child that
    *  writes nothing and closes with the code the case queued. */
   async function withSpawn(
-    run: (runCheck: typeof import('../lib/runner').runCheck) => Promise<void>,
+    run: (runner: typeof import('../lib/runner')) => Promise<void>,
   ) {
     vi.resetModules();
     // Only `spawn` is faked. `execFileSync` is what `describeCheckout` reads git
@@ -441,8 +424,7 @@ describe('runCheck', () => {
     }));
 
     try {
-      const { runCheck } = await import('../lib/runner');
-      await run(runCheck);
+      await run(await import('../lib/runner'));
     } finally {
       vi.doUnmock('node:child_process');
       vi.resetModules();
@@ -457,7 +439,7 @@ describe('runCheck', () => {
   it('builds storybook before it captures', async () => {
     const dir = makeDataDir();
 
-    await withSpawn(async (runCheck) => {
+    await withSpawn(async ({ runCheck }) => {
       await runCheck(dir, { mode: 'capture', label: 'main-2026-08-17' }, silent);
     });
 
@@ -474,7 +456,7 @@ describe('runCheck', () => {
     const dir = makeDataDir();
     const lines: string[] = [];
 
-    await withSpawn(async (runCheck) => {
+    await withSpawn(async ({ runCheck }) => {
       await runCheck(dir, { mode: 'capture', label: 'main-2026-08-17' }, (line) =>
         lines.push(line),
       );
@@ -491,7 +473,7 @@ describe('runCheck', () => {
     const lines: string[] = [];
     exits = [1];
 
-    await withSpawn(async (runCheck) => {
+    await withSpawn(async ({ runCheck }) => {
       const outcome = await runCheck(
         dir,
         { mode: 'capture', label: 'main-2026-08-17' },
@@ -511,7 +493,7 @@ describe('runCheck', () => {
   it('runs the capture inside the pinned container', async () => {
     const dir = makeDataDir();
 
-    await withSpawn(async (runCheck) => {
+    await withSpawn(async ({ runCheck }) => {
       await runCheck(dir, { mode: 'capture', label: 'main-2026-08-17' }, silent);
     });
 
@@ -527,7 +509,7 @@ describe('runCheck', () => {
   it('addresses both directories by their mount, never by their host path', async () => {
     const dir = makeDataDir();
 
-    await withSpawn(async (runCheck) => {
+    await withSpawn(async ({ runCheck }) => {
       await runCheck(dir, { mode: 'capture', label: 'main-2026-08-17' }, silent);
     });
 
@@ -554,7 +536,7 @@ describe('runCheck', () => {
   ])('passes --filter %j as %j', async (filter, expected) => {
     const dir = makeDataDir();
 
-    await withSpawn(async (runCheck) => {
+    await withSpawn(async ({ runCheck }) => {
       await runCheck(dir, { mode: 'run', label: 'main-2026-08-17', filter }, silent);
     });
 
@@ -569,7 +551,7 @@ describe('runCheck', () => {
     const dir = makeDataDir();
     const checkout = describeCheckout(REPO_ROOT);
 
-    await withSpawn(async (runCheck) => {
+    await withSpawn(async ({ runCheck }) => {
       await runCheck(dir, { mode: 'capture', label: 'main-2026-08-17' }, silent);
     });
 
@@ -589,7 +571,7 @@ describe('runCheck', () => {
     const dir = makeDataDir();
     seedSet(dir, 'main-2026-08-17', fixtureShots('baseline'));
 
-    await withSpawn(async (runCheck) => {
+    await withSpawn(async ({ runCheck }) => {
       await runCheck(dir, { mode: 'capture', label: 'main-2026-08-17' }, silent);
     });
 
@@ -605,7 +587,7 @@ describe('runCheck', () => {
     const dir = makeDataDir();
     const lines: string[] = [];
 
-    await withSpawn(async (runCheck) => {
+    await withSpawn(async ({ runCheck }) => {
       const outcome = await runCheck(
         dir,
         { mode: 'capture', label: 'main-2026-08-17' },
@@ -618,6 +600,52 @@ describe('runCheck', () => {
 
     expect(started).toHaveLength(0);
     expect(lines).toContain(NO_CHECKOUT);
+  });
+
+  /**
+   * The promote's own container decision, asserted as argv rather than by
+   * running one.
+   *
+   * This is what replaced a refusal. Off the pinned image the console used to
+   * answer accept with a `docker run` printed for a human to paste, because a
+   * promote stamps the machine that wrote it; it now starts that container
+   * itself, exactly as a capture does. The case is here rather than beside the
+   * other `promoteBaselines` cases because it must NOT spawn a real daemon —
+   * a unit suite that pulls an image answers differently on every machine.
+   */
+  it('wraps the promote in the pinned container off the pinned image', async () => {
+    const dir = makeDataDir();
+    seedReport(dir);
+
+    await withSpawn(async ({ promoteBaselines }) => {
+      await promoteBaselines(dir, FIXTURE_REPORT, silent, {});
+    });
+
+    const { command, args } = started[0] ?? { command: '', args: [] };
+    expect(command).toBe('docker');
+    expect(args).toContain(HOST.image);
+    // The data directory is mounted, and the promote is told where it landed.
+    // Passing the host's own path would name a directory the container has not
+    // got, and omitting it entirely would let `cli.mjs` resolve the COMMITTED
+    // corpus from its own location — which is the one write this must never be.
+    expect(args[args.indexOf('--data-dir') + 1]).toBe(DATA_MOUNT);
+    expect(args[args.indexOf('--report') + 1]).toBe(FIXTURE_REPORT);
+    expect(args).toContain('promote');
+  });
+
+  // On the pinned image there is nothing to wrap: the same argv, run directly.
+  // One implementation, so there is no second code path only the container takes.
+  it('promotes directly when it is already on the pinned image', async () => {
+    const dir = makeDataDir();
+    seedReport(dir);
+
+    await withSpawn(async ({ promoteBaselines }) => {
+      await promoteBaselines(dir, FIXTURE_REPORT, silent, PINNED_ENV);
+    });
+
+    const { command, args } = started[0] ?? { command: '', args: [] };
+    expect(command).toBe(process.execPath);
+    expect(args[args.indexOf('--data-dir') + 1]).toBe(dir);
   });
 });
 

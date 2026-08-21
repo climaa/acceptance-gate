@@ -51,8 +51,13 @@ interface World {
  * scenario every other scenario has to run after.
  */
 const WORLDS: Record<VdWorld, World> = {
-  seeded: { seedFlags: [], env: {} },
-  sample: { seedFlags: ['--empty'], env: {} },
+  /* No declared container AND no daemon: the one machine answer accept still
+     degrades to a copyable command for. `VISUAL_DIFF_FAKE_DOCKER` is declared
+     rather than probed because `docker info` answers differently on a laptop
+     with Docker Desktop running and on CI, and a scenario about what the panel
+     says when there is no daemon must not depend on which ran it. */
+  seeded: { seedFlags: [], env: { VISUAL_DIFF_FAKE_DOCKER: '0' } },
+  sample: { seedFlags: ['--empty'], env: { VISUAL_DIFF_FAKE_DOCKER: '0' } },
   mutating: {
     seedFlags: ['--mutating'],
     env: { VISUAL_DIFF_FAKE_HOST_FINGERPRINT: VD_PINNED_IMAGE },

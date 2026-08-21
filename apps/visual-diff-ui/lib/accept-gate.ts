@@ -27,16 +27,18 @@ import type { Bucket } from './summary';
 export const ACCEPT_IMAGE = HOST.image;
 
 /**
- * The container command the accept mode degrades to off the pinned host.
+ * The container command accept falls back to when there is no daemon to start
+ * one with.
  *
  * Transcribed from `packages/visual-diff/README.md`'s "Running the pinned
  * container locally" — a reviewer copies this and it has to be the recipe that
  * package documents, down to the browser path the image bakes in.
  *
- * Accept is the only mode that still hands over a command. The capture modes
- * used to as well; they now start that container themselves (lib/docker.ts),
- * which is what this console is for. Accept has not followed because promoting
- * baselines is a decision rather than a job — see the gate below.
+ * It is the LAST resort now rather than the answer. Accept used to hand this
+ * over on any host but the pinned image, which made it the one mode that still
+ * asked for a paste; it now starts that container itself, exactly as the capture
+ * modes do (lib/docker.ts). What is left for this string is the case no button
+ * can help with — Docker installed and not running, or not installed at all.
  */
 export const ACCEPT_COMMAND = [
   'docker run --rm --ipc=host -v "$(pwd)":/repo -w /repo \\',
@@ -60,56 +62,61 @@ export function reviewableCount(counts: Record<Bucket, number>): number {
 }
 
 /**
- * The four answers, in the order they are asked.
+ * The three answers, in the order they are asked.
  *
- * `accessibility` and `host` are refusals — the panel renders no run button at
- * all under either. `unreviewed` is a gate: the button is there and disabled,
- * because the reviewer is one pass away from being allowed to press it.
+ * `accessibility` is a refusal — the panel renders no run button at all under
+ * it. `unreviewed` is a gate: the button is there and disabled, because the
+ * reviewer is one pass away from being allowed to press it.
+ *
+ * The HOST is no longer one of these. It used to be a fourth answer and a
+ * refusal, because a promote off the pinned image writes a corpus stamped with
+ * the wrong machine; the console now runs the pinned container itself, so the
+ * host decides HOW the job runs rather than whether there is one. What can still
+ * stop it is having no daemon to start that container with, and that is a
+ * property of the machine rather than of the report — `containerState` in the
+ * run panel answers it for accept exactly as it does for capture and run.
  */
 export type AcceptGate =
   | { state: 'accessibility'; failures: number }
-  | { state: 'host'; image: string | null }
   | { state: 'unreviewed'; reviewed: number; total: number }
   | { state: 'ready' };
 
 export interface AcceptGateInput {
   /** The report's own bucket counts, as `summary.json` recorded them. */
   counts: Record<Bucket, number>;
-  /** The image the runner declares, from `GET /api/env`. Null is a refusal. */
-  image: string | null;
   /** How many variant keys are marked reviewed for this report, in this browser. */
   reviewed: number;
 }
 
 /**
- * Accessibility first, then the review, then the host.
+ * Accessibility first, then the review.
  *
- * The order is the decision. An accessibility failure outranks both of the
- * others — a violation baselined away is hidden for good, reviewing never clears
- * one, and no container makes it acceptable — so it is asked first and answered
- * alone.
+ * The order is the decision. An accessibility failure outranks the other — a
+ * violation baselined away is hidden for good, reviewing never clears one, and
+ * no container makes it acceptable — so it is asked first and answered alone.
  *
- * The review comes before the host because that is the order the work happens
- * in, and the order `features/visual-diff-accept.feature` pins: accept is gated
- * until the review completes, and only a report that has been read through
- * degrades to the container command. Reports are read on the machine the
- * reviewer has, which is almost never the pinned image — asking the host first
- * would mean a console that never once asks for the reading it exists to
- * collect. Nothing is loosened by the swap: the button under `unreviewed` is
- * disabled either way, `POST /api/jobs` re-asks the host question with the
- * process in front of it, and `promoteBaselines` asks it again as the last thing
- * before a byte would land.
+ * Both questions here are about the REPORT, which is why the host is not among
+ * them: whether this machine can run the pinned container is a fact about the
+ * machine, it is the same fact for every mode, and `containerState` in the run
+ * panel already answers it for capture and run. Asking it twice in two
+ * vocabularies is how accept ended up the one mode that refused where the others
+ * offered a button.
+ *
+ * Nothing is loosened by dropping it. `POST /api/jobs` refuses a job it has no
+ * container for, on the same rule it always applied to capture; and `promote`
+ * stamps what actually ran, so a corpus written from the wrong machine says so
+ * and the next `check` refuses to compare against it.
  *
  * `reviewed >= total` rather than equality: marks are keyed by variant, and a
  * report rewritten under the same id can hold fewer variants than the reader
  * already marked. Having seen more than the report shows is not a reason to
  * refuse.
  */
-export function acceptGate({ counts, image, reviewed }: AcceptGateInput): AcceptGate {
+export function acceptGate({ counts, reviewed }: AcceptGateInput): AcceptGate {
   if (counts.a11y > 0) return { state: 'accessibility', failures: counts.a11y };
 
   const total = reviewableCount(counts);
   if (reviewed < total) return { state: 'unreviewed', reviewed, total };
 
-  return image === HOST.image ? { state: 'ready' } : { state: 'host', image };
+  return { state: 'ready' };
 }

@@ -739,11 +739,13 @@ describe('the accept gate', () => {
 });
 
 describe('the accept gate off the pinned container', () => {
-  const CASE: PanelCase = { image: null };
+  /** No declared image and no daemon: the one machine answer a button cannot
+   *  solve, and the only one accept still degrades to a command for. */
+  const CASE: PanelCase = { image: null, docker: false };
 
-  /** The host is the LAST question the gate asks, so every case below is a
-   *  report that has already been read through. An unreviewed one is held at
-   *  the review gate instead — the answer a reviewer can still act on. */
+  /** Every case below is a report that has already been read through. An
+   *  unreviewed one is held at the review gate instead — the answer a reviewer
+   *  can still act on. */
   beforeEach(() => {
     localStorage.setItem(
       reviewStorageKey(REPORT.id),
@@ -751,20 +753,34 @@ describe('the accept gate off the pinned container', () => {
     );
   });
 
-  it('offers no run button at all — the mismatch is a refusal, not a disabled control', async () => {
+  /**
+   * The button is there and disabled, not absent.
+   *
+   * Off the pinned image accept used to have no button at all, because a promote
+   * stamps the machine that wrote it and there was no way to run it anywhere
+   * else. The console now starts the pinned container itself — so what is left
+   * to refuse is having no daemon to start it with, and that is a disabled
+   * control with a note saying which switch to throw, exactly as capture has.
+   */
+  it('offers the button disabled rather than withholding it', async () => {
     await openAcceptTab(CASE);
 
-    expect(startButtons('accept')).toHaveLength(0);
+    await waitFor(() => expect(startButtons('accept')).toHaveLength(1));
+    expect(startButtons('accept')[0]).toHaveProperty('disabled', true);
+    expect(screen.getByRole('note', { name: 'docker required' })).toBeDefined();
   });
 
-  it('warns in the words the decision is written in', async () => {
-    await openAcceptTab(CASE);
+  // The whole point of the change, and the case that would have caught the old
+  // behaviour: a machine that CAN start the container gets a live button.
+  it('offers a live button on a host that has a daemon', async () => {
+    await openAcceptTab({ image: null, docker: true });
 
-    const alert = await screen.findByRole('alert');
-    expect(alert.textContent).toContain('bare-metal accept');
+    await waitFor(() => expect(startButtons('accept')).toHaveLength(1));
+    expect(startButtons('accept')[0]).toHaveProperty('disabled', false);
+    expect(screen.getByRole('note', { name: 'runs in the container' })).toBeDefined();
   });
 
-  it('degrades to the container command, copyable', async () => {
+  it('degrades to the container command, copyable, when there is no daemon', async () => {
     await openAcceptTab(CASE);
 
     const command = screen.getByTestId('accept-docker-command');
@@ -791,23 +807,26 @@ describe('the accept gate off the pinned container', () => {
     expect(writeText.mock.calls[0]?.[0]).toContain(HOST.image);
   });
 
-  // The bug the branch order exists to prevent. `AcceptFields` draws
-  // `GateNotice` whatever the runner is doing, so the host refusal is on screen;
-  // a job in flight used to add the running refusal beside it, and both are
-  // `role="alert"` inside `main`. One strict locator reads them both —
-  // `getByRole('main').getByRole('alert')` (apps/e2e/pages/console.ts:64) — as
-  // `acceptHostAlert` here and as `refusalAlert` for D1, so two matches fail
-  // every scenario on either side.
-  //
-  // The host refusal is the one that survives, and not only because it is
-  // first: waiting for the running job would not produce a start button here.
+  /**
+   * One `role="alert"` inside `main`, ever.
+   *
+   * Two would break every scenario on either side of it: the e2e suite reads
+   * this region with one strict locator, `getByRole('main').getByRole('alert')`
+   * (apps/e2e/pages/console.ts), as `acceptHostAlert` here and as `refusalAlert`
+   * for D1, and a locator that matches twice fails.
+   *
+   * The pressure is different now and the rule is not. The host refusal that
+   * used to sit here has become a `note` — no daemon is a disabled button with
+   * something to read, not a refusal — so the running job is the only alert
+   * left. That is what this pins: the count, and that the surviving one is D1's.
+   */
   it('answers with one alert, not two, when a job is running as well', async () => {
     await openAcceptTab({ ...CASE, current: { running: true, job: RUNNING } });
 
     const alerts = await screen.findAllByRole('alert');
 
     expect(alerts).toHaveLength(1);
-    expect(alerts[0]?.textContent).toContain('bare-metal accept');
+    expect(alerts[0]?.textContent).toContain(JOB_RUNNING);
   });
 
   // The reading comes first: on the machine a report is actually read — which

@@ -83,7 +83,7 @@ export function runnerEnv(env: HostEnv = process.env): RunnerEnv {
 
   return {
     ...fingerprint,
-    docker: hostMatches(fingerprint) ? false : dockerAvailable(),
+    docker: hostMatches(fingerprint) ? false : dockerAvailable(env),
   };
 }
 

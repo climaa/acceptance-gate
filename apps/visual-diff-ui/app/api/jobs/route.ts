@@ -1,8 +1,7 @@
-import { HOST } from '@gate/visual-diff/policy';
 import { headers } from 'next/headers';
 import { resolveDataDir } from '@/lib/data';
 import { dockerAvailable } from '@/lib/docker';
-import { hostFingerprint, hostMatches } from '@/lib/host';
+import { hostMatches } from '@/lib/host';
 import { JobRequestSchema, startJob } from '@/lib/jobs';
 import { isLocalHost } from '@/lib/local';
 import {
@@ -13,7 +12,6 @@ import {
   SAMPLE_DATA,
   badRequest,
   conflict,
-  hostMismatch,
   jsonBody,
   noReportAt,
   notFound,
@@ -84,9 +82,17 @@ const issuesOf = (error: { issues: { path: PropertyKey[]; message: string }[] })
  *
  * The report is read here rather than trusted from the request: `counts.a11y`
  * is a property of what was captured, and a client that has decided the run is
- * clean is exactly the client this refusal exists for. The runner refuses again
- * on its own — this is the copy a reviewer sees, that is the last gate before a
- * byte is written.
+ * clean is exactly the client this refusal exists for. `promote.mjs` refuses
+ * again on its own — this is the copy a reviewer sees, that is the last gate
+ * before a byte is written.
+ *
+ * The HOST is deliberately not asked about here any more. A promote off the
+ * pinned image used to be refused outright, because the stamp it writes
+ * describes the machine that wrote it; the console now runs the pinned
+ * container itself, exactly as a capture does, so the host decides which argv
+ * the runner builds rather than whether there is anything to run. What still
+ * refuses is the rule below that capture and run already answered to: no
+ * container, and no daemon to start one.
  */
 function refuseAccept(dataDir: string, reportId: string): Response | null {
   const summary = readSummary(dataDir, reportId);
@@ -97,14 +103,6 @@ function refuseAccept(dataDir: string, reportId: string): Response | null {
       `this report carries ${summary.counts.a11y} accessibility failure(s) — reviewing never clears one, and baselining it would hide it for good`,
       { recovery: ACCEPT_RECOVERY },
     );
-  }
-
-  const fingerprint = hostFingerprint();
-  if (!hostMatches(fingerprint)) {
-    return conflict(hostMismatch(fingerprint.image), {
-      recovery: ACCEPT_RECOVERY,
-      image: HOST.image,
-    });
   }
 
   return null;

@@ -91,7 +91,7 @@ export const RUNNING_REFUSAL = 'a job is already running';
 /** The Docker reminder, spelled here for the same reason and pinned against
  *  `DOCKER_DOWN` by the same test. Not a refusal after the fact: the button it
  *  sits above is disabled, so the reviewer starts Docker instead of a job. */
-export const DOCKER_REFUSAL = `this capture runs inside ${ACCEPT_IMAGE}, and Docker is not running — start Docker and this comes back`;
+export const DOCKER_REFUSAL = `this job runs inside ${ACCEPT_IMAGE}, and Docker is not running — start Docker and this comes back`;
 
 /** The deployed refusal, spelled here for the same reason and pinned against
  *  `NOT_LOCAL` by the same test. */
@@ -252,19 +252,6 @@ function GateNotice({ gate }: { gate: AcceptGate }) {
         clears one and baselining it would hide it for good, so there is nothing to accept
         here
       </Alert>
-    );
-  }
-
-  if (gate.state === 'host') {
-    return (
-      <Stack gap={3}>
-        <Alert>
-          this runner is {gate.image ?? 'not in a declared container'}, not {ACCEPT_IMAGE}{' '}
-          — a bare-metal accept silently writes wrong baselines and stamps them as
-          container output, so there is no run button here
-        </Alert>
-        <CopyableCommand />
-      </Stack>
     );
   }
 
@@ -491,17 +478,17 @@ function isRunnable(form: JobForm, gate: AcceptGate | null): boolean {
  * one.
  *
  * A greyed control invites the reviewer to look for the way to enable it, and
- * for these two there is none: an accessibility failure is fixed rather than
- * reviewed away, and the host is changed by moving to the container. An
- * unreviewed report is the third answer and deliberately not here — that button
- * exists and is disabled, because reading the report is exactly the way to
- * enable it.
+ * for these two there is none: there is no report to accept from, and an
+ * accessibility failure is fixed rather than reviewed away. Neither of the other
+ * two answers belongs here — an unreviewed report has a disabled button because
+ * reading it is exactly the way to enable it, and a machine with no Docker has
+ * one because starting Docker is.
  */
 function isRefused(form: JobForm, gate: AcceptGate | null, hasReport: boolean): boolean {
   if (form.mode !== 'accept') return false;
   if (!hasReport) return true;
 
-  return gate?.state === 'host' || gate?.state === 'accessibility';
+  return gate?.state === 'accessibility';
 }
 
 /**
@@ -513,6 +500,11 @@ function isRefused(form: JobForm, gate: AcceptGate | null, hasReport: boolean): 
  * a Docker question, and that is the one the panel answers up front: a daemon
  * that is down is a start button whose only outcome is a failed job.
  *
+ * ACCEPT answers to it too, and that is what makes it three modes rather than
+ * two. A promote stamps the machine that wrote it, so off the pinned image it
+ * belongs in the container for the same reason a capture does. Only `compare`
+ * is native everywhere — it reads PNGs and renders nothing.
+ *
  * `undefined` while the fingerprint is in flight is deliberately NOT a refusal:
  * the answer is a moment away, and blocking the button until it lands would make
  * the panel flicker on every load.
@@ -521,7 +513,7 @@ function containerState(
   mode: Mode,
   runner: RunnerEnv | undefined,
 ): 'native' | 'container' | 'no-docker' {
-  if (mode !== 'capture' && mode !== 'run') return 'native';
+  if (mode === 'compare') return 'native';
   if (runner === undefined || runner.image === ACCEPT_IMAGE) return 'native';
 
   return runner.docker ? 'container' : 'no-docker';
@@ -723,7 +715,15 @@ function StartAction({
           and shots taken anywhere else are not comparable to them
         </Note>
       )}
-      {container === 'no-docker' && <Note name="docker required">{DOCKER_REFUSAL}</Note>}
+      {container === 'no-docker' && (
+        <Stack gap={3}>
+          <Note name="docker required">{DOCKER_REFUSAL}</Note>
+          {/* Accept alone keeps a copyable command, because accept alone has a
+              hand-run equivalent worth offering: a capture with no daemon has
+              nothing to paste that this panel is not already trying to do. */}
+          {form.mode === 'accept' && <CopyableCommand />}
+        </Stack>
+      )}
 
       <Button
         variant="primary"
@@ -788,7 +788,6 @@ export function RunPanel({ isSample, isLocal, reports }: RunPanelProps) {
     report && runner
       ? acceptGate({
           counts: report.counts,
-          image: runner.image,
           // Marks live in this browser and nowhere else — the server never sees
           // which variants a reader has opened, and never should.
           reviewed: marks.size,

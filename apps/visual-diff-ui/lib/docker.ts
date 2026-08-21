@@ -19,6 +19,14 @@ import { HOST } from '@gate/visual-diff/policy';
  * pure JS and the host's `node_modules` rides in on the mount.
  */
 
+/** The one variable this module reads, named as a type for the same reason
+ *  `DataDirEnv` and `HostEnv` are: the env surface of this app is declared. */
+export interface DockerEnv {
+  VISUAL_DIFF_FAKE_DOCKER?: string;
+  /** See `DataDirEnv`: the index signature is what admits `process.env` itself. */
+  [variable: string]: string | undefined;
+}
+
 /** Where the two mounts land inside the container. The data directory gets its
  *  own rather than being addressed through the repo mount: `VISUAL_DIFF_DATA_DIR`
  *  may point anywhere, and a path that only works when it happens to sit inside
@@ -39,7 +47,14 @@ const PROBE_TIMEOUT_MS = 3_000;
  * is the entire question — a machine with Docker installed and Docker Desktop
  * quit is exactly the case the panel needs to name.
  */
-export function dockerAvailable(): boolean {
+export function dockerAvailable(env: DockerEnv = process.env): boolean {
+  // The same seam `VISUAL_DIFF_FAKE_HOST_FINGERPRINT` is for the host: a probe
+  // that shells out answers differently on a laptop with Docker Desktop running
+  // and on one without, and a scenario about what the panel says when there is
+  // no daemon must not depend on which machine ran it.
+  const declared = env.VISUAL_DIFF_FAKE_DOCKER?.trim();
+  if (declared) return declared === '1';
+
   try {
     execFileSync('docker', ['info', '--format', '{{.ServerVersion}}'], {
       stdio: ['ignore', 'ignore', 'ignore'],

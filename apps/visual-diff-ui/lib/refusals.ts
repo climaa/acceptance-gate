@@ -43,10 +43,12 @@ export const NO_CHECKOUT =
 export const STORYBOOK_FAILED =
   'the storybook build failed, so there was nothing to capture against';
 
-/** The reminder, not a refusal after the fact: a capture runs inside the pinned
- *  container, and a machine whose Docker is not up cannot start one. Named by
- *  the panel before the button is pressed, and by the server if one is anyway. */
-export const DOCKER_DOWN = `this capture runs inside ${HOST.image}, and Docker is not running — start Docker and this comes back`;
+/** The reminder, not a refusal after the fact: a capture, a run and an accept
+ *  all happen inside the pinned container, and a machine whose Docker is not up
+ *  cannot start one. Named by the panel before the button is pressed, and by the
+ *  server if one is anyway. It replaced D3's own host refusal, which said there
+ *  was no button rather than which switch to throw. */
+export const DOCKER_DOWN = `this job runs inside ${HOST.image}, and Docker is not running — start Docker and this comes back`;
 
 /** D3. Shown after any refused or aborted accept: the two commands that put a
  *  half-written corpus back, in the order they have to run. */
@@ -65,11 +67,6 @@ export const CANONICAL_IS_COMMITTED =
  *  delete" is not something a reviewer can act on and a worktree path is. */
 export const heldByWorktree = (label: string, worktreePath: string) =>
   `${label} is checked out in the worktree at ${worktreePath} — retire that worktree before deleting the set`;
-
-/** D3. Names the image this host declares, or says it declares none: a process
- *  cannot see its own container, and silence is a refusal rather than a pass. */
-export const hostMismatch = (declared: string | null) =>
-  `this runner is ${declared ?? 'not running in a declared container'}, not ${HOST.image} — baselines are only acceptable from the pinned container`;
 
 /** An accept naming a report this instance does not have. */
 export const noReportAt = (reportId: string) => `no report at reports/${reportId}`;
