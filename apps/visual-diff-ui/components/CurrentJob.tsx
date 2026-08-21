@@ -169,7 +169,15 @@ async function readCurrent(): Promise<{
   }
 }
 
-export function CurrentJobProvider({ children }: { children: ReactNode }) {
+/**
+ * The poll chain, and everything that only exists to serve it.
+ *
+ * Split out of `CurrentJobProvider` because that had become a 179-line function
+ * whose body was one 132-line effect — the provider's actual job is two lines of
+ * JSX, and every ref above it belongs to the poller rather than to the provider.
+ * Nothing is threaded in: the state that moved is state the poller owns.
+ */
+function useJobPoller(): { state: CurrentJobState; pollNow: () => void } {
   const [state, setState] = useState<CurrentJobState>(IDLE);
   const router = useRouter();
   /**
@@ -201,7 +209,7 @@ export function CurrentJobProvider({ children }: { children: ReactNode }) {
   // Filled in by the effect below; empty before mount and after unmount, so a
   // poke that arrives outside the chain's life does nothing rather than throws.
   const poke = useRef<() => void>(() => {});
-  // Stable for the provider's whole life, which is what lets `PollNowContext`
+  // Stable for the poller's whole life, which is what lets `PollNowContext`
   // cost its consumers nothing.
   const pollNow = useCallback(() => poke.current(), []);
 
@@ -341,6 +349,12 @@ export function CurrentJobProvider({ children }: { children: ReactNode }) {
       document.removeEventListener('visibilitychange', sync);
     };
   }, []);
+
+  return { state, pollNow };
+}
+
+export function CurrentJobProvider({ children }: { children: ReactNode }) {
+  const { state, pollNow } = useJobPoller();
 
   return (
     <PollNowContext.Provider value={pollNow}>
