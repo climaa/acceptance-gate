@@ -1,5 +1,6 @@
 import { resolveDataDir } from '@/lib/data';
 import {
+  ReportIdSchema,
   currentJob,
   hasReport,
   jobLog,
@@ -44,6 +45,15 @@ const TAIL_LINES = 24;
  * here because this is the side holding the data directory; the panel has no
  * way to check.
  *
+ * The id's SHAPE is checked before the disk is touched, the same order the
+ * delete route checks it in and for a sharper reason. `HistoryRecordSchema`
+ * types `reportId` as a plain string, so a corrupt or hand-edited history can
+ * carry one that climbs out of the data directory — and `hasReport` refuses a
+ * climb by THROWING, which here would be a 500 rather than an answer. This is
+ * the one route in the console deliberately not gated on localhost, because a
+ * deployed console has to poll it, so that throw would take the poll down for
+ * everyone looking at it. An id that is not an id simply has no report.
+ *
  * It also carries the console's cache purge, which looks out of place here and
  * is not. A job's writes happen in a detached tail with no request on the stack,
  * and `revalidateTag` outside a request appends to an array nobody will drain
@@ -70,9 +80,18 @@ export async function GET(): Promise<Response> {
       isSample,
       running: running !== null,
       job,
-      reportExists: job?.reportId ? hasReport(dir, job.reportId) : false,
+      reportExists: hasNamedReport(dir, job?.reportId ?? null),
       log: job ? jobLog(dir, job.id, TAIL_LINES) : [],
     },
     { headers: { 'Cache-Control': 'no-store' } },
   );
+}
+
+/** Whether that report is on disk, for an id that may be anything at all. A
+ *  shape this console could never have written names no report, rather than
+ *  reaching a confinement check that answers by throwing. */
+function hasNamedReport(dir: string, reportId: string | null): boolean {
+  if (reportId === null || !ReportIdSchema.safeParse(reportId).success) return false;
+
+  return hasReport(dir, reportId);
 }

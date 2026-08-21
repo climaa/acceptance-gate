@@ -321,6 +321,12 @@ function seedSummary(dir: string, id: string, a11y = 0): void {
   );
 }
 
+/** A history file written straight to disk, for the rows no writer in this app
+ *  would produce — `appendHistory` only ever writes what a job returned. */
+function seedHistory(dir: string, records: readonly unknown[]): void {
+  fs.writeFileSync(within(dir, 'history.json'), JSON.stringify(records));
+}
+
 /** A data directory this app is allowed to mutate — `resolveDataDir` reads the
  *  variable, and an empty directory falls back to the committed fixtures. */
 function configuredDataDir(): string {
@@ -630,6 +636,37 @@ describe('GET /api/jobs/current', () => {
     // be asked for separately.
     expect(body.job.reportId).toBe('a__b');
     expect(body.reportExists).toBe(false);
+  });
+
+  /**
+   * A history row naming an id that climbs out of the data directory.
+   *
+   * `HistoryRecordSchema` types `reportId` as a plain string, so a corrupt or
+   * hand-edited file can carry one, and `hasReport` refuses a climb by throwing
+   * rather than returning false. Unguarded, that throw is a 500 — on the one
+   * route here deliberately not gated on localhost, because a deployed console
+   * has to poll it. The whole console's poll would go down with it.
+   */
+  it('answers rather than throwing when a history row names an id that climbs', async () => {
+    const dir = configuredDataDir();
+    seedHistory(dir, [
+      {
+        id: '2026-08-17T08-00-00Z-compare',
+        mode: 'compare',
+        label: 'probe',
+        startedAt: '2026-08-17T08:00:00Z',
+        endedAt: '2026-08-17T08:01:35Z',
+        exitCode: 1,
+        reportId: '../../../../etc/passwd',
+      },
+    ]);
+
+    const response = await getCurrent();
+
+    expect(response.status).toBe(200);
+    expect(((await response.json()) as { reportExists: boolean }).reportExists).toBe(
+      false,
+    );
   });
 
   it('says no report exists for a run that produced none', async () => {
