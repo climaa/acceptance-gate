@@ -28,6 +28,13 @@ Feature: Visual-diff console
     Then the console shows the running job instead of queueing mine
     And the history shows that job as running
 
+  @mutating
+  Scenario: A refusal inside a confirmation dialog is announced on its own
+    Given a job is already running
+    When I delete an unheld set
+    Then the deletion is refused because a job is running
+    And the page behind the dialog announces only the running job
+
   Scenario: Deleting a held snapshot set is refused with the reason
     Given a snapshot set is held by a registered worktree
     When I delete the held set

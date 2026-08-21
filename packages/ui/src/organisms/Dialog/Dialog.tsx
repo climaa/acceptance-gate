@@ -1,6 +1,7 @@
 'use client';
 
 import { type PointerEvent, type ReactNode, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 export interface DialogProps {
   /** Closed renders nothing — there is no hidden copy of the dialog in the page. */
@@ -104,6 +105,9 @@ const useSwipeDismiss = (onDismiss: () => void) => {
  * announced; a click that lands anywhere outside is neither, and a confirm
  * dialog naming what it is about to delete is exactly the place a mis-click
  * must not resolve.
+ *
+ * It renders through a portal into `document.body` rather than where the caller
+ * mounted it — see {@link DialogSurface}, which is where that is done and why.
  */
 export function Dialog({ open, onClose, label, children, className }: DialogProps) {
   // Everything the dialog does while it exists — the trap, the key listener, the
@@ -173,13 +177,16 @@ function DialogSurface({
     };
   }, []);
 
-  return (
+  const surfaceTree = (
     <div className={['ds-dialog', className].filter(Boolean).join(' ')}>
       <div className="ds-dialog__backdrop" />
 
       <div
         ref={setSurface}
         role="dialog"
+        // True because of the portal below, and only because of it: nothing
+        // outside this surface is `inert` or `aria-hidden`, so a dialog rendered
+        // in place would be inside the very tree it declares is not content.
         aria-modal="true"
         aria-label={label}
         // Focusable only as a fallback: a dialog whose content has no tab stop
@@ -222,4 +229,30 @@ function DialogSurface({
       </div>
     </div>
   );
+
+  // Into <body>, not where the consumer mounted it. Two things this buys, and
+  // the first is the one that was already broken:
+  //
+  //  - The dialog's announcements are its own. A `role="alert"` inside a
+  //    confirmation used to join the alerts of the page behind it, so a page
+  //    already announcing something and a dialog refusing for that same reason
+  //    were two alerts in one landmark — reachable by the ordinary path, since
+  //    one condition draws both.
+  //  - `aria-modal="true"` stops being a claim about a tree this dialog is
+  //    inside. Nothing here marks the page `inert`, and a portal is how a modal
+  //    gets out of the content it is modal over.
+  //
+  // Nothing else moves with it. `.ds-dialog` is `position: fixed; inset: 0` with
+  // its own stacking context, so where in the document it hangs never decided
+  // where it is drawn — the corpus's fullpage shots frame the same viewport.
+  //
+  // The guard is for the server, which has no `document` and no portal:
+  // `react-dom/server` cannot render one at all. Reachable — a consumer can
+  // restore an open dialog from the URL — so the dialog is client markup and the
+  // surface arrives on hydration. Safe as a hydration boundary precisely because
+  // a portal contributes nothing to the tree it is written in: there is no host
+  // node here for the server's HTML to disagree with.
+  if (typeof document === 'undefined') return null;
+
+  return createPortal(surfaceTree, document.body);
 }

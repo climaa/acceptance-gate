@@ -1,5 +1,5 @@
 import { FULLPAGE_TAG } from '@gate/visual-diff/policy';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import axe from 'axe-core';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -43,6 +43,13 @@ const openDialog = (props: Partial<DialogProps> = {}) => render(dialogWith(props
 const dialog = () => screen.getByRole('dialog', { name: 'Comparison' });
 const closeButton = () => screen.getByRole('button', { name: 'close' });
 
+/**
+ * The dialog's outermost node, found from the document rather than from the
+ * render container — which is the whole point of the portal, and so cannot be
+ * assumed by the helper that looks for it.
+ */
+const dialogRoot = () => document.querySelector('.ds-dialog');
+
 describe('Dialog', () => {
   it('names itself for the accessibility tree with the label it was given', () => {
     openDialog();
@@ -53,7 +60,11 @@ describe('Dialog', () => {
   it('renders nothing at all when closed', () => {
     const { container } = render(dialogWith({ open: false }));
 
+    // Both halves, because the portal makes the first half true on its own: an
+    // open dialog also leaves the container empty, and only the document can
+    // say whether the surface exists at all.
     expect(container.innerHTML).toBe('');
+    expect(dialogRoot()).toBeNull();
   });
 
   it('marks the surface modal, so the tree behind it is not offered as content', () => {
@@ -63,10 +74,47 @@ describe('Dialog', () => {
   });
 
   it('appends a caller-supplied className to the block, never to the surface', () => {
-    const { container } = openDialog({ className: 'u-mt-2' });
+    openDialog({ className: 'u-mt-2' });
 
-    expect(container.firstElementChild?.className).toBe('ds-dialog u-mt-2');
+    expect(dialogRoot()?.className).toBe('ds-dialog u-mt-2');
     expect(dialog().className).toBe('ds-dialog__surface');
+  });
+});
+
+/**
+ * The dialog renders through `createPortal` into `document.body`, not where the
+ * consumer mounted it.
+ *
+ * `aria-modal="true"` is the claim the portal makes true. Nothing outside the
+ * surface is `inert` or `aria-hidden`, so a dialog rendered inline sits *inside*
+ * the tree it says is not content — and every announcement it makes joins that
+ * tree's own. A landmark already announcing something and a confirmation
+ * refusing for that same reason then held two alerts between them, which is
+ * reachable by the ordinary path whenever one condition draws both (#319).
+ */
+describe('the portal', () => {
+  it('renders outside the tree the consumer mounted it in', () => {
+    const { container } = openDialog();
+
+    expect(container.innerHTML).toBe('');
+    expect(dialogRoot()?.parentElement).toBe(document.body);
+  });
+
+  it('keeps an alert of its own out of the landmark it was opened from', () => {
+    render(
+      <main>
+        <p role="alert">a job is already running</p>
+        {dialogWith({ children: <p role="alert">a job is already running</p> })}
+      </main>,
+    );
+
+    const main = screen.getByRole('main');
+
+    // One, not two: the page's own alert. The dialog's is announced from
+    // outside it, which is what lets a strict landmark-scoped lookup survive
+    // both being on screen at once.
+    expect(within(main).getAllByRole('alert')).toHaveLength(1);
+    expect(screen.getAllByRole('alert')).toHaveLength(2);
   });
 });
 
@@ -251,9 +299,11 @@ const AXE_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'];
 
 describe('accessibility', () => {
   it('renders an open dialog with zero axe violations', async () => {
-    const { container } = openDialog();
+    openDialog();
 
-    const results = await axe.run(container, { runOnly: AXE_TAGS });
+    // `document.body`, not the render container: the surface is portalled out of
+    // it, so scanning the container would scan an empty div and pass on nothing.
+    const results = await axe.run(document.body, { runOnly: AXE_TAGS });
 
     // Rule ids, not a whole-object diff: a red CI job has to name what broke.
     const summary = results.violations

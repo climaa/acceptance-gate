@@ -127,6 +127,34 @@ describe('the delete confirmation', () => {
     expect(dialog('Confirm deletion')).toBeDefined();
   });
 
+  /**
+   * The cross-component half of a rule `RunPanel` already keeps inside itself.
+   *
+   * Both alerts are drawn by ONE condition — a job is running — so a refused
+   * delete and the run panel's own announcement are on screen together by the
+   * ordinary path rather than a contrived one. `apps/e2e/pages/console.ts` reads
+   * every console refusal with `getByRole('main').getByRole('alert')`, which is
+   * strict, so a dialog announcing from inside `main` failed each of those
+   * scenarios on ambiguity. `Dialog` portals to `document.body` (#319); this is
+   * that portal asserted where the pair actually meets.
+   */
+  it('announces its refusal from outside the landmark it was opened inside', async () => {
+    stubFetch({ ok: false, status: 409, body: { error: JOB_RUNNING } });
+    render(
+      <main>
+        <DeleteSetButton label={SET} />
+      </main>,
+    );
+    openDelete();
+
+    fireEvent.click(screen.getByRole('button', { name: `delete ${SET}` }));
+
+    // Found first, so the empty list below cannot pass by the refusal simply
+    // not having arrived yet.
+    expect(await screen.findByRole('alert')).toBeDefined();
+    expect(within(screen.getByRole('main')).queryAllByRole('alert')).toHaveLength(0);
+  });
+
   // A refusal a JSON body never explained is still a refusal, and the screen has
   // to say something a reviewer can act on rather than nothing at all.
   it('says something a reviewer can read when the API answers no prose', async () => {
