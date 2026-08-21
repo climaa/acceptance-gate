@@ -602,37 +602,38 @@ describe('GET /api/jobs/current', () => {
     expect(body.log.at(-1)).toBe('exit 1');
   });
 
-  /**
+  /*
    * `reportId` is what the run produced; `reportExists` is whether it is still
    * there. The two agree until a reviewer deletes the report, and only this side
    * can tell them apart — the panel has no data directory to look in, so a
    * console trusting the id alone drew a `view report` link into a 404.
    */
-  it('says whether the report the last run produced is still on disk', async () => {
-    const dir = configuredDataDir();
-    seedSummary(dir, 'a__b');
-    const outcome = startJob(dir, compareRequest, workEnding(1, 'a__b'));
-    if (!outcome.ok) throw new Error('the job must start');
-    await outcome.started.done;
 
-    const present = (await (await getCurrent()).json()) as { reportExists: boolean };
-    expect(present.reportExists).toBe(true);
+  it('reports the last run as still having the report it produced', async () => {
+    await runProducing('a__b');
 
+    const body = (await (await getCurrent()).json()) as { reportExists: boolean };
+
+    expect(body.reportExists).toBe(true);
+  });
+
+  it('reports the report as gone once it is deleted', async () => {
+    const dir = await runProducing('a__b');
     removeReport(dir, 'a__b');
 
-    const gone = (await (await getCurrent()).json()) as {
+    const body = (await (await getCurrent()).json()) as {
       reportExists: boolean;
       job: { reportId: string };
     };
+
     // The row is untouched by the delete — which is exactly why the flag has to
     // be asked for separately.
-    expect(gone.job.reportId).toBe('a__b');
-    expect(gone.reportExists).toBe(false);
+    expect(body.job.reportId).toBe('a__b');
+    expect(body.reportExists).toBe(false);
   });
 
   it('says no report exists for a run that produced none', async () => {
-    const dir = configuredDataDir();
-    const outcome = startJob(dir, compareRequest, workEnding(0));
+    const outcome = startJob(configuredDataDir(), compareRequest, workEnding(0));
     if (!outcome.ok) throw new Error('the job must start');
     await outcome.started.done;
 
@@ -641,6 +642,19 @@ describe('GET /api/jobs/current', () => {
     expect(body.reportExists).toBe(false);
   });
 });
+
+/** A finished compare whose report is on disk — the arrangement both
+ *  `reportExists` cases start from, and the only state in which the flag and the
+ *  id can be made to disagree. */
+async function runProducing(id: string): Promise<string> {
+  const dir = configuredDataDir();
+  seedSummary(dir, id);
+  const outcome = startJob(dir, compareRequest, workEnding(1, id));
+  if (!outcome.ok) throw new Error('the job must start');
+  await outcome.started.done;
+
+  return dir;
+}
 
 describe('a stale lock', () => {
   it('leaves the interrupted run in history with no exit code, and admits the next job', async () => {

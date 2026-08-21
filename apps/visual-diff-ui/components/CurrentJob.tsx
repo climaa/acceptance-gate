@@ -104,7 +104,9 @@ export interface CurrentJobState {
    *  server on every poll. Not derivable here: a history row keeps the id of the
    *  report its run produced even after the report is deleted, so the id alone
    *  would offer a link into a 404 — see the route for why this is its answer to
-   *  give. False whenever there is no report to begin with. */
+   *  give. False whenever there is no report to begin with, and false whenever
+   *  the answer did not carry the field at all: an absent flag withholds a link
+   *  that would have worked, which is the cheaper of the two ways to be wrong. */
   reportExists: boolean;
   /** The tail of that job's log, oldest line first. */
   log: readonly string[];

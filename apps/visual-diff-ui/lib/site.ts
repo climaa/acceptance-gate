@@ -22,11 +22,13 @@ export const SAMPLE_NOTE =
 /** The 404 page's heading and its `<title>`, and what it says under it. A
  *  reviewer arrives here from a link the console itself drew — a report deleted
  *  since the page was rendered is the ordinary way in — so the copy names that
- *  cause rather than blaming the address. */
+ *  cause rather than blaming the address. Only a report: it is the one thing in
+ *  this app with a URL, so it is the only thing a reader can arrive here
+ *  looking for. */
 export const NOT_FOUND_TITLE = 'Not found';
 
 export const NOT_FOUND_NOTE =
-  'Nothing here — a report or set that has been deleted since this link was drawn reads exactly like an address that never existed.';
+  'Nothing here — a report deleted since this link was drawn reads exactly like an address that never existed.';
 
 /** The way back, on a page whose whole point is that the reader took a wrong
  *  turn. The shell's wordmark is not a link, so without this there is none. */
