@@ -281,6 +281,32 @@ Then(
   },
 );
 
+Then(
+  'the deletion is refused because a job is running',
+  async ({ console: consolePage }) => {
+    // Read where it is spoken: the dialog. The server refuses every mutation
+    // while the lock is held, and the confirmation stays open on the sentence
+    // rather than closing on a delete that did not happen.
+    await expect(consolePage.dialogRefusal).toContainText('a job is already running');
+  },
+);
+
+Then(
+  'the page behind the dialog announces only the running job',
+  async ({ console: consolePage }) => {
+    // The rule this scenario exists for. Two alerts are on screen and both say
+    // the same sentence, because one condition draws both: the run panel
+    // announces the lock, and the dialog announces the refusal it caused. Only
+    // the first belongs to the page — `Dialog` portals out of `main` — so the
+    // landmark-scoped locator every refusal scenario reads stays unambiguous.
+    //
+    // Counted, not `.first()`ed. The count IS the requirement; taking the first
+    // match would make this line pass against exactly the DOM it forbids.
+    await expect(consolePage.refusalAlert).toHaveCount(1);
+    await expect(consolePage.refusalAlert).toContainText('a job is already running');
+  },
+);
+
 Then('the deletion is refused naming what holds it', async ({ console: consolePage }) => {
   await expect(consolePage.refusalAlert).toContainText(/worktree/i);
   await expect(consolePage.refusalAlert).toContainText(HELD_SET.label);

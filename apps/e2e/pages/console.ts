@@ -28,6 +28,7 @@ export class ConsolePage {
   readonly historyRows: Locator;
   readonly reportRows: Locator;
   readonly refusalAlert: Locator;
+  readonly dialogRefusal: Locator;
   readonly sampleBadge: Locator;
   readonly sampleModeNote: Locator;
   readonly sampleReportLink: Locator;
@@ -61,9 +62,18 @@ export class ConsolePage {
     // `<div role="alert" id="__next-route-announcer__">` outside the page's own
     // tree for route changes: a page-wide `role=alert` lookup resolves to two
     // elements the moment the console refuses anything, and every refusal this
-    // suite reads is inside the page's own landmark. The confirm dialogs count
-    // as inside — `Dialog` renders in place rather than through a portal.
+    // suite reads is inside the page's own landmark.
+    //
+    // The confirm dialogs are NOT inside it: `Dialog` portals to `document.body`
+    // (#319), so a refusal drawn inside one is `dialogRefusal` below and never a
+    // second match here. Before that portal both landed in `main`, and a delete
+    // refused *because a job is running* — with the run panel already announcing
+    // the same sentence — failed every scenario on this line's strict mode.
     this.refusalAlert = page.getByRole('main').getByRole('alert');
+    // The other half of that pair, and deliberately a separate locator rather
+    // than a loosening of the one above: a dialog's refusal answers what the
+    // reviewer just did inside the dialog, and is read where it is spoken.
+    this.dialogRefusal = page.getByRole('dialog').getByRole('alert');
     this.sampleBadge = page.getByRole('status', { name: 'sample data' });
     this.sampleModeNote = page.getByRole('note', { name: 'sample mode' });
     this.sampleReportLink = page.getByRole('link', { name: /__/ }).first();
