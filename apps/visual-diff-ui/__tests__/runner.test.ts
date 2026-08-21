@@ -33,7 +33,9 @@ import { compareSets, promoteBaselines, runJob } from '../lib/runner';
 const REPO_ROOT = path.resolve(process.cwd(), '..', '..');
 const VISUAL_DIFF = path.join(REPO_ROOT, 'packages', 'visual-diff');
 const REAL_BASELINES = path.join(VISUAL_DIFF, '__baselines__');
-/** The differ's per-run output tree. This app must never be why one appears. */
+/** The differ's per-run output tree. This app must never be why one appears —
+ *  nor why an existing one changes, which is the half a bare existence check
+ *  could not see. */
 const REAL_ARTIFACTS = path.join(VISUAL_DIFF, '.visual-diff');
 const COMMITTED_FIXTURES = path.join(process.cwd(), 'fixtures');
 const FIXTURE_REPORT = 'main-2026-08-17__main-2026-08-13';
@@ -117,19 +119,46 @@ function seedReport(dataDir: string, id = FIXTURE_REPORT): string {
 /** The two committed trees this app must never write into, as one digest. */
 const committedTrees = () => `${digest(REAL_BASELINES)}:${digest(COMMITTED_FIXTURES)}`;
 
+/** What a tree that is not there digests as. Distinct from any real digest, so
+ *  "there was none" and "there is one now" can never compare equal. */
+const ABSENT = 'absent';
+
+/**
+ * The differ's artifact tree, as a digest — or {@link ABSENT}.
+ *
+ * Unlike the two committed trees, this one legitimately may or may not be there
+ * before the suite starts: the CLI writes it on every real run, it is gitignored,
+ * and a reviewer who ran a capture an hour ago still has one. So it is compared
+ * BEFORE against AFTER rather than asserted absent, which is what this check
+ * always meant — this app must not be why one appears.
+ *
+ * Asserted absolutely, it failed on a tree the suite never opened, and reported
+ * that as this app writing into the repo. Four times in one session, each time
+ * costing a hunt for a defect that was not there; a check that cries wolf is one
+ * a reader learns to clear rather than to read.
+ */
+function artifactTree(): string {
+  return fs.existsSync(REAL_ARTIFACTS) ? digest(REAL_ARTIFACTS) : ABSENT;
+}
+
 let committed: string;
+let artifacts: string;
 
 beforeAll(() => {
   committed = committedTrees();
+  artifacts = artifactTree();
 });
 
 afterAll(() => {
   const after = committedTrees();
-  const artifacts = fs.existsSync(REAL_ARTIFACTS);
+  const artifactsAfter = artifactTree();
   for (const dir of temporaryDirs) fs.rmSync(dir, { recursive: true, force: true });
 
   expect(after).toBe(committed);
-  expect(artifacts).toBe(false);
+  // Unchanged, not absent: creating one moves this off `ABSENT`, and writing
+  // into one that was already there moves its digest. Both are this app having
+  // written where it must not.
+  expect(artifactsAfter).toBe(artifacts);
 });
 
 describe('compareSets', () => {
@@ -693,6 +722,7 @@ describe('confinement', () => {
     seedSet(dir, 'set-a', fixtureShots('baseline'));
     seedSet(dir, 'set-b', fixtureShots('candidate'));
     const before = committedTrees();
+    const artifactsBefore = artifactTree();
 
     await compareSets(
       dir,
@@ -710,7 +740,11 @@ describe('confinement', () => {
       'BASELINE_ENV.json',
     );
     expect(committedTrees()).toBe(before);
-    expect(fs.existsSync(REAL_ARTIFACTS)).toBe(false);
+    // Unchanged rather than absent, for the reason `artifactTree` gives: the
+    // differ's own artifacts are gitignored and a reviewer who ran a capture an
+    // hour ago still has some. What this case is about is whether THIS run put
+    // anything there.
+    expect(artifactTree()).toBe(artifactsBefore);
   });
 
   it('refuses a set label that climbs out of the data directory', async () => {
