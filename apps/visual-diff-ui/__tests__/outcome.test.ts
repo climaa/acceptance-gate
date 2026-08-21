@@ -2,6 +2,7 @@
 // `**/*.ts` include means tsc typechecks this file.
 import { describe, expect, it } from 'vitest';
 import {
+  formatStamp,
   type Outcome,
   durationOf,
   formatBytes,
@@ -98,6 +99,37 @@ describe('durationOf', () => {
   // "-3s" in the table is worse than admitting the pair says nothing.
   it('has nothing to measure when the run ended before it started', () => {
     expect(durationOf('2026-08-17T08:01:35Z', '2026-08-17T08:00:00Z')).toBe(null);
+  });
+});
+
+describe('formatStamp', () => {
+  it('splits the day from the time of day and drops the fraction', () => {
+    expect(formatStamp('2026-08-21T12:51:23.716Z')).toBe('2026-08-21 12:51:23');
+  });
+
+  // `jobId` writes ids from stamps with the fraction already stripped, so both
+  // spellings reach a history row.
+  it('reads a stamp that carries no fractional seconds', () => {
+    expect(formatStamp('2026-08-16T07:12:44Z')).toBe('2026-08-16 07:12:44');
+  });
+
+  /**
+   * Sliced rather than parsed, and this is the case that pins it.
+   *
+   * `new Date(...).toLocaleString()` would render this in the host's timezone,
+   * so a console in Madrid and one in Bogotá would disagree about when the same
+   * run started — the rule `formatBytes` keeps for the same reason. The hour
+   * shown here is the hour stored, whatever clock the reader is on.
+   */
+  it('shows the hour that was recorded, not the reader own clock', () => {
+    expect(formatStamp('2026-08-21T23:30:00.000Z')).toBe('2026-08-21 23:30:00');
+  });
+
+  // A `history.json` some other tool wrote. Showing it whole is more use to
+  // whoever has to explain it than showing the first nineteen characters.
+  it('passes through anything that is not an ISO instant', () => {
+    expect(formatStamp('yesterday')).toBe('yesterday');
+    expect(formatStamp('2026-08-21')).toBe('2026-08-21');
   });
 });
 

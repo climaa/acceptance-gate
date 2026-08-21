@@ -33,7 +33,7 @@ export class ConsolePage {
   readonly sampleReportLink: Locator;
   readonly acceptReport: Locator;
   readonly acceptGateNote: Locator;
-  readonly acceptHostAlert: Locator;
+  readonly dockerRequiredNote: Locator;
   readonly acceptDockerCommand: Locator;
   readonly copyCommandButton: Locator;
 
@@ -69,10 +69,7 @@ export class ConsolePage {
     this.sampleReportLink = page.getByRole('link', { name: /__/ }).first();
     this.acceptReport = page.getByRole('combobox', { name: 'report' });
     this.acceptGateNote = page.getByRole('note', { name: 'accept gate' });
-    // The same `role=alert` `refusalAlert` finds, under the name the accept
-    // scenarios read it by: on the accept tab, the refusal on screen is the
-    // gate's.
-    this.acceptHostAlert = this.refusalAlert;
+    this.dockerRequiredNote = page.getByRole('note', { name: 'docker required' });
     // Command text is a code block, not interactive — testid, like log-tail.
     this.acceptDockerCommand = page.getByTestId('accept-docker-command');
     this.copyCommandButton = page.getByRole('button', { name: 'copy command' });

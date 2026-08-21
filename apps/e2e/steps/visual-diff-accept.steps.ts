@@ -121,10 +121,15 @@ Then(
 );
 
 Then(
-  'I am warned that this host cannot accept baselines',
+  'I am told which switch to throw before accept can run',
   async ({ console: consolePage }) => {
-    await expect(consolePage.acceptHostAlert).toContainText(/bare-metal accept/);
-    await expect(consolePage.startButton).toHaveCount(0);
+    // The button is THERE and disabled, which is the change: accept off the
+    // pinned image used to have none at all, because a promote stamps the
+    // machine that wrote it. The console now starts that container itself, so
+    // what is left to refuse is having no daemon to start it with — and that is
+    // something a reviewer can act on rather than a dead end.
+    await expect(consolePage.dockerRequiredNote).toContainText(/Docker is not running/);
+    await expect(consolePage.startButton).toBeDisabled();
   },
 );
 

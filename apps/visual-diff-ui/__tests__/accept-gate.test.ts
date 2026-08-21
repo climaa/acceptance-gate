@@ -30,7 +30,7 @@ const CLEAN: Record<Bucket, number> = {
 };
 
 /** Everything reviewed, the pinned container, no accessibility failure. */
-const READY = { counts: CLEAN, image: HOST.image, reviewed: 6 };
+const READY = { counts: CLEAN, reviewed: 6 };
 
 describe('reviewableCount', () => {
   // `unchanged` variants never reach `summary.variants` — the differ drops them
@@ -57,45 +57,32 @@ describe('acceptGate', () => {
   });
 
   // Both wrong at once: the accessibility answer is the one that has to come
-  // back, because a container that matched would not make the violation
+  // back, because a review that finished would not make the violation
   // acceptable — reviewing never clears one, fixing does.
-  it('reports the accessibility failure ahead of a host that does not match', () => {
-    const gate = acceptGate({ counts: { ...CLEAN, a11y: 1 }, image: null, reviewed: 0 });
+  it('reports the accessibility failure ahead of the reading it would need', () => {
+    const gate = acceptGate({ counts: { ...CLEAN, a11y: 1 }, reviewed: 0 });
 
     expect(gate).toEqual({ state: 'accessibility', failures: 1 });
   });
 
-  it('refuses a host that is not the pinned container, naming what it declares', () => {
-    const gate = acceptGate({ ...READY, image: 'node:22-bookworm' });
+  /**
+   * The host is not this module's question any more, and this is the case that
+   * says so out loud.
+   *
+   * It used to be a fourth answer and a refusal: off the pinned image accept had
+   * no button, because a promote stamps the machine that wrote it. The console
+   * now runs the pinned container itself, so the host decides HOW the job runs
+   * rather than whether there is one — and `containerState` in the run panel
+   * answers that for accept the same way it does for capture.
+   */
+  it('opens a read-through report without asking what host it is on', () => {
+    const gate = acceptGate(READY);
 
-    expect(gate).toEqual({ state: 'host', image: 'node:22-bookworm' });
-  });
-
-  // A process cannot see the container it runs in, so silence is a refusal
-  // rather than a pass: an unfounded match is what would let baselines be
-  // accepted from a host that never captured them.
-  it('refuses a host that declares no container at all', () => {
-    const gate = acceptGate({ ...READY, image: null });
-
-    expect(gate).toEqual({ state: 'host', image: null });
+    expect(gate).toEqual({ state: 'ready' });
   });
 
   it('holds accept closed while variants remain unreviewed', () => {
     const gate = acceptGate({ ...READY, reviewed: 4 });
-
-    expect(gate).toEqual({ state: 'unreviewed', reviewed: 4, total: 6 });
-  });
-
-  // The review comes before the host, which is the order
-  // `features/visual-diff-accept.feature` reads: accept is gated until the
-  // review completes, and only then does a host that cannot write degrade it to
-  // a command. Off the pinned container — a reviewer's own machine, which is
-  // where reports are read — the host answer would otherwise be the only one
-  // that ever came back, and the reading a reviewer is there to do would never
-  // be asked for. Nothing is loosened: the button under `unreviewed` is
-  // disabled, and the server refuses the host independently.
-  it('asks for the reading before it names a host that could not write anyway', () => {
-    const gate = acceptGate({ counts: CLEAN, image: null, reviewed: 4 });
 
     expect(gate).toEqual({ state: 'unreviewed', reviewed: 4, total: 6 });
   });

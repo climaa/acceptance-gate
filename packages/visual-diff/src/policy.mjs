@@ -188,13 +188,18 @@ const ARTIFACTS = 'packages/visual-diff/.visual-diff';
  *  the name keeps it from reading as a source folder anyone edits by hand. */
 const BASELINES = 'packages/visual-diff/__baselines__';
 
+/** The stamp beside a corpus: which host captured it. Named on its own because two
+ *  corpora carry one — the committed baselines under {@link PATHS}, and the one a
+ *  console promotes into its data directory (see promote.mjs). */
+export const BASELINE_ENV = 'BASELINE_ENV.json';
+
 /** Repo-root-relative, so a path means the same thing whichever workspace the CLI
  *  was invoked from. */
 export const PATHS = {
   baselines: BASELINES,
 
   /** The host the committed baselines were captured on, restamped by every `accept`. */
-  baselineEnv: `${BASELINES}/BASELINE_ENV.json`,
+  baselineEnv: `${BASELINES}/${BASELINE_ENV}`,
 
   artifacts: ARTIFACTS,
   diffs: `${ARTIFACTS}/diffs`,

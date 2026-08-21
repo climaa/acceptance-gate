@@ -44,6 +44,23 @@ const PINNED_ENV = { VISUAL_DIFF_FAKE_HOST_FINGERPRINT: HOST.image };
 const temporaryDirs: string[] = [];
 const silent = () => {};
 
+/**
+ * The budget for a case that really compares pixels.
+ *
+ * Vitest's default is 5s, which is not a figure anyone here chose — and the four
+ * cases below spend 1.8–2.6s of it decoding the committed fixture shots and
+ * running pixelmatch over them, on an idle machine. That leaves no headroom, so
+ * they failed in CI the first time this app's suite ran beside a busier one: the
+ * `test` task builds every package in parallel, and the contention alone was
+ * enough. Measured identical on `main`, so the fragility is the default's rather
+ * than any one branch's.
+ *
+ * Raised only for the cases that do the work, never globally. A test that hangs
+ * should still fail fast, and the other 570-odd here have no business taking
+ * five seconds.
+ */
+const PIXEL_WORK_MS = 20_000;
+
 function makeDataDir(): string {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'vd-runner-'));
   temporaryDirs.push(dir);
@@ -116,46 +133,54 @@ afterAll(() => {
 });
 
 describe('compareSets', () => {
-  it('writes a report the console can read back', async () => {
-    const dir = makeDataDir();
-    seedSet(dir, 'set-a', fixtureShots('baseline'));
-    seedSet(dir, 'set-b', fixtureShots('candidate'));
+  it(
+    'writes a report the console can read back',
+    async () => {
+      const dir = makeDataDir();
+      seedSet(dir, 'set-a', fixtureShots('baseline'));
+      seedSet(dir, 'set-b', fixtureShots('candidate'));
 
-    const outcome = await compareSets(
-      dir,
-      { mode: 'compare', baseline: 'set-a', candidate: 'set-b' },
-      silent,
-    );
+      const outcome = await compareSets(
+        dir,
+        { mode: 'compare', baseline: 'set-a', candidate: 'set-b' },
+        silent,
+      );
 
-    expect(outcome).toEqual({ exitCode: 1, reportId: 'set-a__set-b' });
-    const summary = SummarySchema.parse(
-      JSON.parse(
-        fs.readFileSync(
-          path.join(dir, 'reports', 'set-a__set-b', 'summary.json'),
-          'utf8',
+      expect(outcome).toEqual({ exitCode: 1, reportId: 'set-a__set-b' });
+      const summary = SummarySchema.parse(
+        JSON.parse(
+          fs.readFileSync(
+            path.join(dir, 'reports', 'set-a__set-b', 'summary.json'),
+            'utf8',
+          ),
         ),
-      ),
-    );
-    expect(summary.counts.changed).toBe(6);
-  });
+      );
+      expect(summary.counts.changed).toBe(6);
+    },
+    PIXEL_WORK_MS,
+  );
 
-  it('writes the three shots a reviewer compares, per changed variant', async () => {
-    const dir = makeDataDir();
-    seedSet(dir, 'set-a', fixtureShots('baseline'));
-    seedSet(dir, 'set-b', fixtureShots('candidate'));
+  it(
+    'writes the three shots a reviewer compares, per changed variant',
+    async () => {
+      const dir = makeDataDir();
+      seedSet(dir, 'set-a', fixtureShots('baseline'));
+      seedSet(dir, 'set-b', fixtureShots('candidate'));
 
-    await compareSets(
-      dir,
-      { mode: 'compare', baseline: 'set-a', candidate: 'set-b' },
-      silent,
-    );
+      await compareSets(
+        dir,
+        { mode: 'compare', baseline: 'set-a', candidate: 'set-b' },
+        silent,
+      );
 
-    const shots = fs.readdirSync(path.join(dir, 'reports', 'set-a__set-b', 'shots'));
-    const key = 'atoms__desktop__light__atoms-prose--default';
-    expect(shots).toContain(`${key}.baseline.png`);
-    expect(shots).toContain(`${key}.candidate.png`);
-    expect(shots).toContain(`${key}.diff.png`);
-  });
+      const shots = fs.readdirSync(path.join(dir, 'reports', 'set-a__set-b', 'shots'));
+      const key = 'atoms__desktop__light__atoms-prose--default';
+      expect(shots).toContain(`${key}.baseline.png`);
+      expect(shots).toContain(`${key}.candidate.png`);
+      expect(shots).toContain(`${key}.diff.png`);
+    },
+    PIXEL_WORK_MS,
+  );
 
   it('reports a candidate with no baseline as added, and a baseline with no candidate as removed', async () => {
     const dir = makeDataDir();
@@ -194,21 +219,25 @@ describe('compareSets', () => {
     await expect(refusal).rejects.toThrow(/set-b/);
   });
 
-  it('ignores a file whose name is not a variant key, and says so', async () => {
-    const dir = makeDataDir();
-    const lines: string[] = [];
-    seedSet(dir, 'set-a', fixtureShots('baseline'));
-    seedSet(dir, 'set-b', fixtureShots('candidate'));
-    fs.writeFileSync(path.join(dir, 'sets', 'set-b', 'notes.txt'), 'not a shot');
+  it(
+    'ignores a file whose name is not a variant key, and says so',
+    async () => {
+      const dir = makeDataDir();
+      const lines: string[] = [];
+      seedSet(dir, 'set-a', fixtureShots('baseline'));
+      seedSet(dir, 'set-b', fixtureShots('candidate'));
+      fs.writeFileSync(path.join(dir, 'sets', 'set-b', 'notes.txt'), 'not a shot');
 
-    await compareSets(
-      dir,
-      { mode: 'compare', baseline: 'set-a', candidate: 'set-b' },
-      (line) => lines.push(line),
-    );
+      await compareSets(
+        dir,
+        { mode: 'compare', baseline: 'set-a', candidate: 'set-b' },
+        (line) => lines.push(line),
+      );
 
-    expect(lines.join('\n')).toContain('notes.txt');
-  });
+      expect(lines.join('\n')).toContain('notes.txt');
+    },
+    PIXEL_WORK_MS,
+  );
 });
 
 describe('compareSets against the committed corpus', () => {
@@ -219,29 +248,38 @@ describe('compareSets against the committed corpus', () => {
   // The corpus lives in the CHECKOUT, so this is the one label that resolves
   // outside the data directory. Read-only: the assertions below, and the
   // suite-wide digest around this whole file, are what hold that.
-  it('reads the corpus as the baseline side of a compare', async () => {
-    const dir = makeDataDir();
-    seedSet(dir, 'candidate-set', fixtureShots('candidate'));
+  it(
+    'reads the corpus as the baseline side of a compare',
+    async () => {
+      const dir = makeDataDir();
+      seedSet(dir, 'candidate-set', fixtureShots('candidate'));
 
-    const outcome = await compareSets(
-      dir,
-      { mode: 'compare', baseline: CANONICAL_LABEL, candidate: 'candidate-set' },
-      silent,
-    );
+      const outcome = await compareSets(
+        dir,
+        { mode: 'compare', baseline: CANONICAL_LABEL, candidate: 'candidate-set' },
+        silent,
+      );
 
-    expect(outcome.reportId).toBe(`${CANONICAL_LABEL}__candidate-set`);
-    const summary = SummarySchema.parse(
-      JSON.parse(
-        fs.readFileSync(
-          path.join(dir, 'reports', `${CANONICAL_LABEL}__candidate-set`, 'summary.json'),
-          'utf8',
+      expect(outcome.reportId).toBe(`${CANONICAL_LABEL}__candidate-set`);
+      const summary = SummarySchema.parse(
+        JSON.parse(
+          fs.readFileSync(
+            path.join(
+              dir,
+              'reports',
+              `${CANONICAL_LABEL}__candidate-set`,
+              'summary.json',
+            ),
+            'utf8',
+          ),
         ),
-      ),
-    );
-    // Every fixture shot has a baseline in the real corpus, so nothing is `added`
-    // — which is what proves the corpus was the tree that was read.
-    expect(summary.counts.added).toBe(0);
-  });
+      );
+      // Every fixture shot has a baseline in the real corpus, so nothing is `added`
+      // — which is what proves the corpus was the tree that was read.
+      expect(summary.counts.added).toBe(0);
+    },
+    PIXEL_WORK_MS,
+  );
 
   // `BASELINE_ENV.json` sits beside the shots. Reporting it as an ignored file
   // every time the corpus is compared would name a file that belongs there.
@@ -302,23 +340,6 @@ describe('promoteBaselines', () => {
     expect(fs.readFileSync(path.join(dir, '__baselines__', `${key}.png`))).toEqual(
       fs.readFileSync(path.join(FIXTURE_SHOTS, `${key}.candidate.png`)),
     );
-  });
-
-  it('refuses a host that is not the pinned container, writing nothing', async () => {
-    const dir = makeDataDir();
-    const lines: string[] = [];
-    seedReport(dir);
-
-    const outcome = await promoteBaselines(
-      dir,
-      FIXTURE_REPORT,
-      (line) => lines.push(line),
-      {},
-    );
-
-    expect(outcome.exitCode).toBe(2);
-    expect(fs.existsSync(path.join(dir, '__baselines__'))).toBe(false);
-    expect(lines.join('\n')).toContain(HOST.image);
   });
 
   it('refuses a report that still carries an accessibility failure', async () => {
@@ -416,7 +437,7 @@ describe('runCheck', () => {
   /** `child_process.spawn`, replaced for the length of one case: a child that
    *  writes nothing and closes with the code the case queued. */
   async function withSpawn(
-    run: (runCheck: typeof import('../lib/runner').runCheck) => Promise<void>,
+    run: (runner: typeof import('../lib/runner')) => Promise<void>,
   ) {
     vi.resetModules();
     // Only `spawn` is faked. `execFileSync` is what `describeCheckout` reads git
@@ -441,8 +462,7 @@ describe('runCheck', () => {
     }));
 
     try {
-      const { runCheck } = await import('../lib/runner');
-      await run(runCheck);
+      await run(await import('../lib/runner'));
     } finally {
       vi.doUnmock('node:child_process');
       vi.resetModules();
@@ -457,7 +477,7 @@ describe('runCheck', () => {
   it('builds storybook before it captures', async () => {
     const dir = makeDataDir();
 
-    await withSpawn(async (runCheck) => {
+    await withSpawn(async ({ runCheck }) => {
       await runCheck(dir, { mode: 'capture', label: 'main-2026-08-17' }, silent);
     });
 
@@ -474,7 +494,7 @@ describe('runCheck', () => {
     const dir = makeDataDir();
     const lines: string[] = [];
 
-    await withSpawn(async (runCheck) => {
+    await withSpawn(async ({ runCheck }) => {
       await runCheck(dir, { mode: 'capture', label: 'main-2026-08-17' }, (line) =>
         lines.push(line),
       );
@@ -491,7 +511,7 @@ describe('runCheck', () => {
     const lines: string[] = [];
     exits = [1];
 
-    await withSpawn(async (runCheck) => {
+    await withSpawn(async ({ runCheck }) => {
       const outcome = await runCheck(
         dir,
         { mode: 'capture', label: 'main-2026-08-17' },
@@ -511,7 +531,7 @@ describe('runCheck', () => {
   it('runs the capture inside the pinned container', async () => {
     const dir = makeDataDir();
 
-    await withSpawn(async (runCheck) => {
+    await withSpawn(async ({ runCheck }) => {
       await runCheck(dir, { mode: 'capture', label: 'main-2026-08-17' }, silent);
     });
 
@@ -527,7 +547,7 @@ describe('runCheck', () => {
   it('addresses both directories by their mount, never by their host path', async () => {
     const dir = makeDataDir();
 
-    await withSpawn(async (runCheck) => {
+    await withSpawn(async ({ runCheck }) => {
       await runCheck(dir, { mode: 'capture', label: 'main-2026-08-17' }, silent);
     });
 
@@ -554,7 +574,7 @@ describe('runCheck', () => {
   ])('passes --filter %j as %j', async (filter, expected) => {
     const dir = makeDataDir();
 
-    await withSpawn(async (runCheck) => {
+    await withSpawn(async ({ runCheck }) => {
       await runCheck(dir, { mode: 'run', label: 'main-2026-08-17', filter }, silent);
     });
 
@@ -569,7 +589,7 @@ describe('runCheck', () => {
     const dir = makeDataDir();
     const checkout = describeCheckout(REPO_ROOT);
 
-    await withSpawn(async (runCheck) => {
+    await withSpawn(async ({ runCheck }) => {
       await runCheck(dir, { mode: 'capture', label: 'main-2026-08-17' }, silent);
     });
 
@@ -589,7 +609,7 @@ describe('runCheck', () => {
     const dir = makeDataDir();
     seedSet(dir, 'main-2026-08-17', fixtureShots('baseline'));
 
-    await withSpawn(async (runCheck) => {
+    await withSpawn(async ({ runCheck }) => {
       await runCheck(dir, { mode: 'capture', label: 'main-2026-08-17' }, silent);
     });
 
@@ -605,7 +625,7 @@ describe('runCheck', () => {
     const dir = makeDataDir();
     const lines: string[] = [];
 
-    await withSpawn(async (runCheck) => {
+    await withSpawn(async ({ runCheck }) => {
       const outcome = await runCheck(
         dir,
         { mode: 'capture', label: 'main-2026-08-17' },
@@ -618,6 +638,52 @@ describe('runCheck', () => {
 
     expect(started).toHaveLength(0);
     expect(lines).toContain(NO_CHECKOUT);
+  });
+
+  /**
+   * The promote's own container decision, asserted as argv rather than by
+   * running one.
+   *
+   * This is what replaced a refusal. Off the pinned image the console used to
+   * answer accept with a `docker run` printed for a human to paste, because a
+   * promote stamps the machine that wrote it; it now starts that container
+   * itself, exactly as a capture does. The case is here rather than beside the
+   * other `promoteBaselines` cases because it must NOT spawn a real daemon —
+   * a unit suite that pulls an image answers differently on every machine.
+   */
+  it('wraps the promote in the pinned container off the pinned image', async () => {
+    const dir = makeDataDir();
+    seedReport(dir);
+
+    await withSpawn(async ({ promoteBaselines }) => {
+      await promoteBaselines(dir, FIXTURE_REPORT, silent, {});
+    });
+
+    const { command, args } = started[0] ?? { command: '', args: [] };
+    expect(command).toBe('docker');
+    expect(args).toContain(HOST.image);
+    // The data directory is mounted, and the promote is told where it landed.
+    // Passing the host's own path would name a directory the container has not
+    // got, and omitting it entirely would let `cli.mjs` resolve the COMMITTED
+    // corpus from its own location — which is the one write this must never be.
+    expect(args[args.indexOf('--data-dir') + 1]).toBe(DATA_MOUNT);
+    expect(args[args.indexOf('--report') + 1]).toBe(FIXTURE_REPORT);
+    expect(args).toContain('promote');
+  });
+
+  // On the pinned image there is nothing to wrap: the same argv, run directly.
+  // One implementation, so there is no second code path only the container takes.
+  it('promotes directly when it is already on the pinned image', async () => {
+    const dir = makeDataDir();
+    seedReport(dir);
+
+    await withSpawn(async ({ promoteBaselines }) => {
+      await promoteBaselines(dir, FIXTURE_REPORT, silent, PINNED_ENV);
+    });
+
+    const { command, args } = started[0] ?? { command: '', args: [] };
+    expect(command).toBe(process.execPath);
+    expect(args[args.indexOf('--data-dir') + 1]).toBe(dir);
   });
 });
 

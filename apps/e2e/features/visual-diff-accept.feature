@@ -6,11 +6,11 @@ Feature: Baseline acceptance
     And I select the accept job mode
     Then accept is unavailable while variants remain unreviewed
 
-  Scenario: A host mismatch degrades accept to a command
+  Scenario: A host with no daemon degrades accept to a command
     Given every variant of the report is reviewed
     When I visit the console
     And I select the accept job mode
-    Then I am warned that this host cannot accept baselines
+    Then I am told which switch to throw before accept can run
     And I can copy the container command instead of running it
 
   @mutating

@@ -258,7 +258,16 @@ Then(
 Then('the history shows that job as running', async ({ console: consolePage }) => {
   // Addressed by its start stamp: the label alone is a substring of the
   // `main-2026-08-16__main-2026-08-11` compare two rows below it.
-  const row = consolePage.historyRows.filter({ hasText: INTERRUPTED_RUN.startedAt });
+  //
+  // Matched against the DRAWN stamp, not the stored one. The table renders an
+  // ISO instant as `YYYY-MM-DD HH:MM:SS` (`formatStamp`, in
+  // apps/visual-diff-ui/lib/outcome.ts), keeping the whole value on the cell's
+  // `title` where `hasText` cannot see it. Derived from the constant above
+  // rather than written out again, so the seed and the locator cannot drift —
+  // this row's stamp carries no fractional seconds, which is why dropping the
+  // `T` and the `Z` is the whole of it.
+  const started = INTERRUPTED_RUN.startedAt.replace('T', ' ').replace('Z', '');
+  const row = consolePage.historyRows.filter({ hasText: started });
 
   await expect(consolePage.historyCell(row, 'status')).toHaveText('running');
 });

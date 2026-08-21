@@ -47,7 +47,7 @@ const SET_LABEL = /^[A-Za-z0-9][A-Za-z0-9.-]*$/;
 const REPORT_ID = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
 
 export const SetLabelSchema = z.string().regex(SET_LABEL, 'not a snapshot-set label');
-const ReportIdSchema = z.string().regex(REPORT_ID, 'not a report id');
+export const ReportIdSchema = z.string().regex(REPORT_ID, 'not a report id');
 
 /** The `--filter` values: substrings matched against story ids and titles, so
  *  anything is a legal value and only the shape is a contract. A LIST, because
@@ -252,6 +252,29 @@ export function removeSet(dataDir: string, label: string): void {
     ...registry,
     sets: registry.sets.filter((set) => set.label !== label),
   });
+}
+
+/**
+ * Delete one comparison report: its summary, its shots, and nothing else.
+ *
+ * The mirror of {@link removeSet}, and it does not cascade for the same reason
+ * that one does not — in the other direction. A report is a record of a
+ * decision; the sets it compared are not part of it and are left exactly where
+ * they are, still listed, still comparable.
+ *
+ * There is no registry to keep in step. Reports are enumerated by walking
+ * `reports/`, so the directory going away IS the delete (see lib/data.ts's
+ * `listReportIds`) — which is also why a half-removed tree cannot leave a row
+ * pointing at nothing.
+ */
+export function removeReport(dataDir: string, id: string): void {
+  fs.rmSync(reportDir(dataDir, id), { recursive: true, force: true });
+}
+
+/** Whether this instance has that report — the summary is what makes a
+ *  directory under `reports/` a report rather than something a human copied in. */
+export function hasReport(dataDir: string, id: string): boolean {
+  return fs.existsSync(path.join(reportDir(dataDir, id), 'summary.json'));
 }
 
 /** Whether this instance has that set at all — either as a shot tree or as a

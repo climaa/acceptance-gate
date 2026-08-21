@@ -112,6 +112,10 @@ export function durationOf(startedAt: string, endedAt: string | null): number | 
 
 const SECONDS_PER_MINUTE = 60;
 
+/** `2026-08-21T12:51:23.716Z`, with the fractional seconds optional — the shape
+ *  `new Date().toISOString()` writes and `jobId` parses back. */
+const ISO_INSTANT = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$/;
+
 /**
  * `1m 35s`, or `42s` under a minute. Seconds floor rather than round: a run's
  * duration is elapsed time, and `1m 0s` for 59.6 seconds reads as a minute that
@@ -122,6 +126,33 @@ export function formatDuration(ms: number): string {
   if (seconds < SECONDS_PER_MINUTE) return `${seconds}s`;
 
   return `${Math.floor(seconds / SECONDS_PER_MINUTE)}m ${seconds % SECONDS_PER_MINUTE}s`;
+}
+
+/**
+ * When a run started, as a reader reads it: `2026-08-21 12:51:23`.
+ *
+ * The stored value is an ISO stamp — `2026-08-21T12:51:23.716Z` — which is the
+ * right thing to RECORD and the wrong thing to put in a table cell. It is 24
+ * characters in a narrow column, so it wrapped onto three lines, and the two
+ * parts a reviewer actually compares between rows (the day, and the time of
+ * day) were the two the `T` ran together.
+ *
+ * Sliced, never parsed and reformatted. `new Date(...).toLocaleString()` would
+ * hand the answer to the host's locale and timezone, and two consoles must not
+ * disagree about when the same run started — the same rule `formatBytes` below
+ * keeps for the same reason. Slicing also cannot drift: what is shown is a
+ * substring of what is stored, so the full stamp stays in the cell's `title`
+ * and the `Z` it ends in is where the timezone is stated.
+ *
+ * Anything that is not the stamp this app writes is passed through untouched. A
+ * value that is not an ISO instant is a `history.json` some other tool wrote,
+ * and showing it whole is more use to whoever has to explain it than showing
+ * the first nineteen characters of it.
+ */
+export function formatStamp(startedAt: string): string {
+  return ISO_INSTANT.test(startedAt)
+    ? `${startedAt.slice(0, 10)} ${startedAt.slice(11, 19)}`
+    : startedAt;
 }
 
 /** Decimal units, in step with the byte budgets in `@gate/visual-diff/policy`,

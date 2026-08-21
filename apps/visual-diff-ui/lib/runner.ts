@@ -6,27 +6,13 @@ import type { Readable } from 'node:stream';
 import { buildSummary } from '@gate/visual-diff/artifacts';
 import { pngSize } from '@gate/visual-diff/capture';
 import { type CaptureShot, type Comparison, compareAll } from '@gate/visual-diff/compare';
-import {
-  EXIT,
-  HOST,
-  assertWithinBudget,
-  parseVariantKey,
-} from '@gate/visual-diff/policy';
+import { EXIT, HOST, parseVariantKey } from '@gate/visual-diff/policy';
 import { BASELINE_ENV, CANONICAL_LABEL, baselinesPath } from './baselines';
 import { DATA_MOUNT, REPO_MOUNT, containerArgv } from './docker';
 import { type Checkout, describeCheckout, repoRoot } from './git';
 import { type HostEnv, hostFingerprint, hostMatches } from './host';
-import {
-  BASELINE_ENV_FILE,
-  type JobOutcome,
-  type JobRequest,
-  baselinesDir,
-  freeLabel,
-  reportDir,
-  setDir,
-  within,
-} from './jobs';
-import { NO_CHECKOUT, STORYBOOK_FAILED, hostMismatch, noReportAt } from './refusals';
+import { type JobOutcome, type JobRequest, freeLabel, reportDir, setDir } from './jobs';
+import { NO_CHECKOUT, STORYBOOK_FAILED, noReportAt } from './refusals';
 import { type Summary, SummarySchema } from './summary';
 
 /**
@@ -243,118 +229,95 @@ export function readSummary(dataDir: string, reportId: string): Summary | null {
   }
 }
 
+/** The differ subcommand that promotes, relative to the checkout — the same
+ *  path inside the container, because the checkout is mounted at its root. */
+const PROMOTE_CLI = 'packages/visual-diff/src/cli.mjs';
+
 /**
- * Every candidate shot the report has to promote, read before a byte is written.
+ * The argv that promotes one report, on this host or inside the pinned image.
  *
- * A `removed` variant has no candidate by definition — it is a baseline this run
- * did not reproduce — and D2 forbids deleting it as a side effect of an accept,
- * so it is left exactly where it is.
+ * The mirror of {@link captureArgv}, and deliberately so: a promote is refused
+ * off the pinned image for the same reason a capture is, so it is answered the
+ * same way — by running the container rather than printing a `docker run` for
+ * someone to paste.
  *
- * An `errored` one does not have a candidate either, and that DOES take the
- * whole accept down: the alternative is a corpus silently one story short, whose
- * next comparison reports that story as `removed` with nothing to say why. The
- * package's own `accept` refuses on the same ground.
+ * `--data-dir` is always passed and never defaulted. `cli.mjs` resolves its own
+ * paths from `import.meta.url`, so a promote that omitted it would rewrite the
+ * COMMITTED `packages/visual-diff/__baselines__` instead of this instance's
+ * data directory. `promote.mjs` refuses rather than falling back, and this is
+ * the caller that makes sure it never has to.
  */
-function candidateShots(
+function promoteArgv(
+  rootDir: string,
   dataDir: string,
   reportId: string,
-  summary: Summary,
-): Map<string, Uint8Array> {
-  const shots = path.join(reportDir(dataDir, reportId), 'shots');
+  env: HostEnv,
+): { command: string; args: string[]; inContainer: boolean } {
+  const inContainer = !hostMatches(hostFingerprint(env));
+  const at = (dir: string) => (inContainer ? dir : undefined);
 
-  return new Map(
-    summary.variants
-      .filter((variant) => variant.bucket !== 'removed')
-      .map((variant) => {
-        const file = shotPath(shots, variant.key, 'candidate');
-        try {
-          return [variant.key, fs.readFileSync(file)] as const;
-        } catch {
-          throw new Error(
-            `${variant.key} has no candidate shot to promote — nothing was written`,
-          );
-        }
-      }),
-  );
-}
+  const script = [
+    inContainer ? `${REPO_MOUNT}/${PROMOTE_CLI}` : path.join(rootDir, PROMOTE_CLI),
+    'promote',
+    '--data-dir',
+    at(DATA_MOUNT) ?? dataDir,
+    '--report',
+    reportId,
+  ];
 
-/** The bytes already committed that this promotion does not replace. */
-function retainedBytes(dir: string, promoted: ReadonlySet<string>): number {
-  let names: string[];
-  try {
-    names = fs.readdirSync(dir);
-  } catch {
-    return 0;
-  }
-
-  return names
-    .filter((name) => name.endsWith(PNG) && !promoted.has(name.slice(0, -PNG.length)))
-    .reduce((sum, name) => sum + fs.statSync(path.join(dir, name)).size, 0);
+  return inContainer
+    ? {
+        command: 'docker',
+        args: containerArgv(rootDir, dataDir, ['node', ...script]),
+        inContainer,
+      }
+    : { command: process.execPath, args: script, inContainer };
 }
 
 /**
  * Promote a report's candidates into `<dataDir>/__baselines__` (D3).
  *
  * NOT the CLI's `accept`, which captures: the shots being promoted were taken
- * in the pinned container and live in the report already, so this copies them
- * and restamps the corpus. It is all-or-nothing — every refusal below happens
+ * in the pinned container and live in the report already, so `promote` copies
+ * them and restamps the corpus. It is all-or-nothing — every refusal happens
  * before the first write, and every byte is in memory before any of them lands.
  *
- * Three things can refuse it, and all three are the point of the gate:
- *  - the running host is not the pinned container (the CLI has NO host guard on
- *    `accept`, so this is the only place that question is ever asked);
- *  - the report still carries an accessibility failure, which no reviewer may
- *    baseline away;
- *  - a variant has no candidate shot, or the corpus would blow its budget.
+ * SPAWNED rather than composed, and that is what changed here. The stamp a
+ * promote writes describes the machine that wrote it, so promoting from a
+ * developer's laptop marks a linux corpus `darwin` — which the next `check`
+ * refuses, but only after a reviewer believed the accept had landed. This used
+ * to be answered by refusing and printing a `docker run` to paste; the console
+ * now runs that container itself, exactly as a capture does.
+ *
+ * The refusals that survive here are the two this side can answer before the
+ * job starts — no such report, and an accessibility failure — and they are
+ * answered again by `promote.mjs`, which is the last gate before a byte lands.
+ * The host question is no longer one of them: it decides which argv to build,
+ * not whether to refuse.
  */
 export async function promoteBaselines(
   dataDir: string,
   reportId: string,
   log: (message: string) => void,
   env: HostEnv = process.env,
+  cwd: string = process.cwd(),
 ): Promise<JobOutcome> {
+  const rootDir = repoRoot(cwd);
+  if (!rootDir) return refuse(log, NO_CHECKOUT);
+
   const summary = readSummary(dataDir, reportId);
   if (!summary) return refuse(log, noReportAt(reportId));
 
-  if (summary.counts.a11y > 0) {
-    return refuse(
-      log,
-      `this report carries ${summary.counts.a11y} accessibility failure(s) — an accessibility failure is never acceptable as a baseline, so nothing was written`,
-    );
-  }
-
-  const fingerprint = hostFingerprint(env);
-  if (!hostMatches(fingerprint)) {
-    // The same sentence the accept gate answered with, plus the half only this
-    // gate can promise: it is the last one before a byte would have landed.
-    return refuse(log, `${hostMismatch(fingerprint.image)}, so nothing was written`);
-  }
-
-  const dir = baselinesDir(dataDir);
-  let shots: ReadonlyMap<string, Uint8Array>;
-  try {
-    shots = candidateShots(dataDir, reportId, summary);
-    assertWithinBudget(shots, retainedBytes(dir, new Set(shots.keys())));
-  } catch (cause) {
-    // Every one of these is "nothing was written", and the message says which:
-    // a missing shot and a blown budget are both refusals a reviewer acts on,
-    // not crashes. Deliberately scoped to the reads and the budget — a failure
-    // once the writes have begun is not a refusal and must not read as one.
-    return refuse(log, cause instanceof Error ? cause.message : String(cause));
-  }
-
-  fs.mkdirSync(dir, { recursive: true });
-  for (const [key, bytes] of shots) {
-    fs.writeFileSync(within(dir, `${key}${PNG}`), bytes);
-  }
-  fs.writeFileSync(
-    within(dir, BASELINE_ENV_FILE),
-    `${JSON.stringify(fingerprint, null, 2)}\n`,
+  const { command, args, inContainer } = promoteArgv(rootDir, dataDir, reportId, env);
+  log(
+    inContainer
+      ? `promoting ${reportId} into __baselines__ inside ${HOST.image}`
+      : `promoting ${reportId} into __baselines__`,
   );
 
-  log(`promoted ${shots.size} baseline(s) and restamped ${BASELINE_ENV_FILE}`);
+  const exitCode = await run(command, args, rootDir, log);
 
-  return { exitCode: EXIT.ok, reportId };
+  return { exitCode, reportId };
 }
 
 /** The script that does the capture, relative to the checkout — the same path
