@@ -23,7 +23,7 @@ import { replaceCalls } from './stubs/next-navigation';
  * `title` a truncated cell carries — is what jsdom can see and pixels cannot.
  */
 
-// `globals` is off in vitest.config.ts, so Testing Library registers no automatic
+// `globals` is off in vitest.config.mts, so Testing Library registers no automatic
 // cleanup — without this every render stacks in the same document and the queries
 // below match the previous test's DOM.
 afterEach(() => {
