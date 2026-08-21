@@ -516,6 +516,24 @@ main {
   border: 0;
 }
 
+/* The four tiers, one column at a time until there is room for two.
+
+   `grid-auto-flow: column` over two explicit rows fills DOWN rather than across,
+   so the reading order of a column is the corpus's own order: atoms, molecules,
+   then organisms, templates. Four is not a guess — `TIERS` in
+   packages/visual-diff/src/policy.mjs is Atomic Design's four, so two rows is
+   exactly two columns.
+
+   `align-items: start` because a tier expands in place: opening `atoms` makes
+   its row as tall as thirteen components, and the tier beside it should stay at
+   the top of that row rather than centre itself against the gap. */
+.vd-filter__tiers {
+  display: grid;
+  gap: var(--space-2);
+  align-items: start;
+  min-width: 0;
+}
+
 .vd-filter__tier {
   min-width: 0;
 }
@@ -986,6 +1004,15 @@ main {
      instead of letting the cell that owns the truncation do its job. */
   .vd-console {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  /* Two rows, filled column-first — see `.vd-filter__tiers`. Below the
+     breakpoint the panel is one narrow column and the tiers stay stacked, which
+     is what the bare rule already does. */
+  .vd-filter__tiers {
+    grid-template-rows: repeat(2, auto);
+    grid-auto-flow: column;
+    column-gap: var(--space-4);
   }
 
   /* A field is a labelled row once there is width for one; stacked below, where

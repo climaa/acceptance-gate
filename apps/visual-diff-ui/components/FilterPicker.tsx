@@ -22,6 +22,13 @@ import type { StoryTier } from '@/lib/stories';
  * Tiers collapse, and start collapsed. Twenty-four components is a list longer
  * than the panel it sits in, and the tier is the choice a reviewer makes first —
  * the components under it are the refinement.
+ *
+ * Collapsed, the four tiers are four short lines down one side of a wide panel.
+ * They lay out two-by-two instead (globals.css), filled DOWN each column so that
+ * reading a column top to bottom is still atoms → molecules → organisms →
+ * templates. The DOM keeps that order, so the tab order and a screen reader's
+ * order are the column order too — the grid moves where the boxes are drawn, not
+ * what sequence they are in.
  */
 
 export interface FilterPickerProps {
@@ -117,9 +124,14 @@ export function FilterPicker({ tiers, value, onChange, disabled }: FilterPickerP
     <fieldset className="vd-filter" disabled={disabled}>
       <legend className="vd-field__label">--filter</legend>
       <Stack gap={2}>
-        {tiers.map((tier) => (
-          <TierGroup key={tier.tier} tier={tier} value={value} onChange={onChange} />
-        ))}
+        {/* A plain div, not a `Stack`: the tiers lay out as a grid (globals.css)
+            and a flex container would fight it. The note below stays outside, or
+            it would take a cell of its own. */}
+        <div className="vd-filter__tiers">
+          {tiers.map((tier) => (
+            <TierGroup key={tier.tier} tier={tier} value={value} onChange={onChange} />
+          ))}
+        </div>
         <Note name="filter scope">
           {value.length === 0
             ? 'nothing ticked — this run captures the whole corpus'
