@@ -2,6 +2,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { cacheLife, cacheTag } from 'next/cache';
 import { connection } from 'next/server';
+import { type DataDirEnv, type DataSource, FIXTURES_DIR, dataDirFrom } from './data-dir';
 import { REPORTS_TAG, SETS_TAG, reportTag } from './tags';
 import {
   type Bucket,
@@ -24,48 +25,20 @@ import type { z } from 'zod';
  *     <dir>/reports/<id>/shots/<variantKey>.{baseline,candidate,diff}.png
  */
 
-/** The committed sample tree, served when nothing else is configured. */
-export const FIXTURES_DIR = path.join(process.cwd(), 'fixtures');
-
 const REPORTS_DIR = 'reports';
 const SETS_DIR = 'sets';
 const SETS_FILE = 'sets.json';
 const SUMMARY_FILE = 'summary.json';
 const SHOTS_DIR = 'shots';
 
-/** The one variable this app reads to find real data, named as a type so a
- *  caller — and every test — can hand over exactly what the resolution reads. */
-export interface DataDirEnv {
-  VISUAL_DIFF_DATA_DIR?: string;
-  // `process.env` is the production argument; the index signature is what lets
-  // it be passed without a cast.
-  [variable: string]: string | undefined;
-}
-
-export interface DataSource {
-  dir: string;
-  /**
-   * The single authority on whether a screen is showing sample data: this
-   * resolution, never a file's own `isSample` field. The committed fixture
-   * carries that field as provenance and the schemas accept it, but deriving
-   * the badge from both would let a screen disagree with its own API response.
-   */
-  isSample: boolean;
-}
+// Re-exported rather than moved out of reach: these are the read path's public
+// names and every caller already imports them from here.
+export { FIXTURES_DIR, type DataDirEnv, type DataSource };
 
 export interface ReportListEntry {
   id: string;
   exitCode: number;
   counts: Record<Bucket, number>;
-}
-
-/** A directory that exists and holds something. Anything else is "no data here". */
-function isPopulated(dir: string): boolean {
-  try {
-    return fs.readdirSync(dir).length > 0;
-  } catch {
-    return false;
-  }
 }
 
 /**
@@ -84,12 +57,7 @@ function isPopulated(dir: string): boolean {
 export async function resolveDataDir(env: DataDirEnv = process.env): Promise<DataSource> {
   await connection();
 
-  const configured = env.VISUAL_DIFF_DATA_DIR?.trim();
-  if (!configured || !isPopulated(configured)) {
-    return { dir: FIXTURES_DIR, isSample: true };
-  }
-
-  return { dir: path.resolve(configured), isSample: false };
+  return dataDirFrom(env);
 }
 
 type JsonRead = { missing: true } | { missing: false; value: unknown };

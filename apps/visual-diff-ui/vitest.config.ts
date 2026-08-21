@@ -54,6 +54,9 @@ export default defineConfig({
         'components/**/*.tsx',
         'hooks/**/*.ts',
         'lib/**/*.ts',
+        // Named on its own because it is the one module that answers a request
+        // without living under `app/` — the proxy runs before the router does.
+        'proxy.ts',
       ],
       // `scripts/` is deliberately absent, and it is the one omission here that
       // is not bookkeeping. capture-set.mjs runs `check` at module scope against
