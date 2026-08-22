@@ -15,6 +15,8 @@
     "format": "prettier --write \"**/*.{ts,mts,tsx,md,mdx,json,css}\"",
     "format:check": "prettier --check \"**/*.{ts,mts,tsx,md,mdx,json,css}\"",
     "test": "dotenv -e .env -o -- turbo run test",
+    "e2e:ui": "dotenv -e .env -o -- turbo run build --filter=@gate/blog --filter=@gate/visual-diff-ui && pnpm --filter @gate/e2e e2e:ui",
+    "e2e:ui:local": "pnpm --filter @gate/e2e e2e:ui:local",
     "sandcastle": "tsx .sandcastle/main.mts",
     "visual-diff": "node packages/visual-diff/src/cli.mjs check",
     "visual-diff:accept": "node scripts/visual-diff-container.mjs accept",
