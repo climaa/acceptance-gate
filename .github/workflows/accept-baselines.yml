@@ -1,0 +1,155 @@
+# Container-run `accept`, for the maintainer without local Docker or arm64 hardware.
+#
+# This does NOT make accepting a bot's act — the philosophy in
+# packages/visual-diff/README.md ("approving a baseline has to cost the same as
+# reviewing a code diff") holds because both ends stay human: the workflow only ever
+# runs when a person dispatches it, and its output only lands through a commit that
+# person reviews — on their own PR branch, or in a PR this workflow opens against main
+# that a person must approve and merge. What it removes is the hardware requirement,
+# not the judgment.
+#
+# Two modes, decided by the ref it was dispatched on:
+#   - a feature branch: the accepted baselines are committed straight back to that
+#     branch, so they land in the same PR as the change they approve (the discipline
+#     apps/storybook's Visual Diff Workflow docs page insists on).
+#   - main: nothing can push to the protected default branch, so the baselines go to a
+#     fresh `chore/accept-baselines-*` branch and a PR is opened. For post-hoc drift
+#     only — the same docs page explains why same-PR acceptance is the normal path.
+#
+# Known limitation, by design of GitHub tokens: pushes made with the workflow's own
+# GITHUB_TOKEN never trigger other workflows, so the commit this creates does not start
+# the `pr` gate. The run summary (and the PR body, in main mode) says how to re-arm it.
+name: accept-baselines
+
+on:
+  workflow_dispatch:
+    inputs:
+      filter:
+        description: 'Only accept stories whose id/title contain this substring (empty = full corpus)'
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+# One accept per ref at a time — two concurrent accepts of the same branch would race
+# their pushes. No cancel-in-progress: killing a half-done accept helps nobody.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+
+env:
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  TURBO_TEAM: ${{ vars.TURBO_TEAM }}
+
+jobs:
+  accept:
+    # Same pinned container + arm64 runner as pr.yml's visual-diff job, and for the
+    # same reason: `__baselines__/BASELINE_ENV.json` records linux/arm64 and the exact
+    # image tag, and this job's whole purpose is restamping that file truthfully.
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 30
+    container: mcr.microsoft.com/playwright:v1.62.1-noble
+    permissions:
+      # Push the accepted corpus; open the PR in main mode.
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v7
+      - run: corepack enable
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm turbo run build --filter=@gate/storybook
+      - name: Run accept in the container this job already is
+        # cli.mjs directly, not `pnpm visual-diff:accept` — that script wraps the CLI
+        # in `docker run` for host use, and this job is already inside the container.
+        #
+        # The filter goes through env, never interpolated into the script: a dispatch
+        # input is user-controlled text and belongs in a variable, not in shell source.
+        env:
+          FILTER: ${{ inputs.filter }}
+        run: |
+          if [ -n "$FILTER" ]; then
+            node packages/visual-diff/src/cli.mjs accept --filter "$FILTER"
+          else
+            node packages/visual-diff/src/cli.mjs accept
+          fi
+      - name: See whether the corpus moved
+        id: delta
+        # BASELINE_ENV.json carries no timestamp, so an accept that changes nothing
+        # rewrites identical bytes and the tree stays clean — this step is what keeps
+        # a no-op dispatch from producing an empty commit or a noise PR.
+        #
+        # safe.directory: git inside the job container sees the runner-owned checkout
+        # as another user's repository and refuses to read it without this.
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          if [ -n "$(git status --porcelain -- packages/visual-diff/__baselines__)" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "The corpus is already current — nothing to commit." >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Commit the accepted corpus
+        if: steps.delta.outputs.changed == 'true'
+        env:
+          FILTER: ${{ inputs.filter }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A packages/visual-diff/__baselines__
+          scope="the full corpus"
+          if [ -n "$FILTER" ]; then scope="stories matching '$FILTER'"; fi
+          git commit -m "chore(visual-diff): accept baselines from the pinned container" \
+            -m "$scope, captured by the accept-baselines workflow (run ${{ github.run_id }}), dispatched by @${{ github.actor }}."
+      - name: Push to the dispatched branch
+        if: steps.delta.outputs.changed == 'true' && github.ref_name != github.event.repository.default_branch
+        run: |
+          git push origin "HEAD:${{ github.ref_name }}"
+          {
+            echo "Accepted baselines pushed to \`${{ github.ref_name }}\`."
+            echo ""
+            echo "A GITHUB_TOKEN push starts no workflows, so the PR's gate has not"
+            echo "re-run for this commit — push any commit (or close/reopen the PR)"
+            echo "to trigger it."
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Push a fresh branch (main mode)
+        if: steps.delta.outputs.changed == 'true' && github.ref_name == github.event.repository.default_branch
+        run: git push origin "HEAD:refs/heads/chore/accept-baselines-${{ github.run_id }}"
+      - name: Open the review PR (main mode)
+        if: steps.delta.outputs.changed == 'true' && github.ref_name == github.event.repository.default_branch
+        uses: actions/github-script@v9
+        # Same rule as the accept step: the dispatch input reaches the script through
+        # env, never interpolated into its source.
+        env:
+          FILTER: ${{ inputs.filter }}
+        with:
+          script: |
+            const branch = `chore/accept-baselines-${context.runId}`;
+            const filter = process.env.FILTER;
+            const scope = filter ? `stories matching \`${filter}\`` : 'the full corpus';
+            const { data: pr } = await github.rest.pulls.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              head: branch,
+              base: context.payload.repository.default_branch,
+              title: 'chore(visual-diff): accept baselines from the pinned container',
+              body: [
+                `Baselines for ${scope}, captured in the pinned container`,
+                `(\`mcr.microsoft.com/playwright:v1.62.1-noble\`, arm64) by the`,
+                `[accept-baselines run](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`,
+                `@${context.actor} dispatched.`,
+                '',
+                'Review every PNG in the Files tab — merging this is the human',
+                'approval the visual-diff design requires; nothing about this PR is',
+                'rubber-stamped. Baselines are normally accepted on the PR that moved',
+                'the pixels (see the Visual Diff Workflow docs page); a main-mode',
+                'accept like this one is for drift that already landed.',
+                '',
+                '> **Note**: this branch was pushed with the workflow token, which',
+                '> starts no workflows — close and reopen this PR to run the gate.',
+              ].join('\n'),
+            });
+            core.summary.addRaw(`Opened ${pr.html_url}`).write();

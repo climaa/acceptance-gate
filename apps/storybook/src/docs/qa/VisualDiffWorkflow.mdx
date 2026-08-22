@@ -93,15 +93,21 @@ change, before that branch merges — not on `main` afterward.** Two reasons:
    subsequent PR keeps reporting the same drift as noise — the report stops being useful for
    the change actually being reviewed, because it's still carrying the last unresolved one.
 
-It's a local step, not something CI runs for you — deliberately: `accept` is the human
-sign-off, not a bot's. It's also **all-or-nothing**: if any variant errored, `accept` writes
+It's a human-triggered step, never something CI runs on its own — deliberately: `accept`
+is the human sign-off, not a bot's. `pnpm visual-diff:accept` runs inside the pinned
+Playwright container (Docker required — see the package README's "Running the pinned
+container locally"), because a baseline is only comparable to captures from the same
+renderer. Without local Docker or arm64 hardware, dispatch the `accept-baselines`
+workflow on your branch instead: it runs the same container-run accept and commits the
+result back to the branch, so the sign-off still travels with the change.
+It's also **all-or-nothing**: if any variant errored, `accept` writes
 nothing at all. An error has to be fixed (or the story tagged `visual-diff:skip`, see the
 [Diff Policy](?path=/docs/docs-qa-diff-policy--docs) page) before the corpus can move forward,
 even if the rest of the change is fine.
 
 ```bash
 pnpm --filter @gate/storybook build   # accept captures fresh, same as check
-pnpm visual-diff:accept
+pnpm visual-diff:accept               # runs in the pinned container — Docker required
 git add packages/visual-diff/__baselines__/
 git commit -m "chore(visual-diff): accept baseline for <what changed>"
 ```
