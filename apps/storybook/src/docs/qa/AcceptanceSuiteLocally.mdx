@@ -88,7 +88,7 @@ check.) For a plain visible browser without the panel,
 `pnpm --filter @gate/e2e exec playwright test --headed` does that; add `--debug` to
 step through actions one at a time with the Playwright Inspector.
 
-Three things to know before trusting what you watch:
+Four things to know before trusting what you watch:
 
 1. **`bddgen` is not automatic.** UI Mode watches the _generated_ specs in
    `.features-gen/`, not your `.feature` files. After editing a feature or step file,
@@ -104,6 +104,11 @@ Three things to know before trusting what you watch:
    failure in UI Mode is the real failure, not one a retry would have absorbed. (CI
    allows one retry but reds the run on a pass-after-retry — see the config's
    `failOnFlakyTests` comment for why.)
+4. **One suite session at a time.** The mutating world's server is never reused, so a
+   second invocation — a headless `playwright test` in another terminal, a second UI
+   window — refuses to start with "localhost:3202 is already used" while one session
+   holds it. That refusal is the design working, not a broken port: close the other
+   session first.
 
 Note that this path skips `check:suite`, the scenario-count integrity guard the
 `test:e2e` script runs. That's fine for watching and debugging; the guarded entry
@@ -121,8 +126,10 @@ seeds and serves: a deployed instance cannot host them. The deployed console at
 `acceptance-gate-visual-diff-ui.vercel.app` has an empty data directory, no Docker and
 no capture host — which is precisely the state the **sample** world reproduces locally,
 on purpose. So "validate what's on `main`" means checking out `main` and running
-`turbo run e2e` against it: same commit, full 45-scenario coverage, including the
-worlds a deployment can never be in.
+`turbo run e2e` against it: same commit, every scenario, including the worlds a
+deployment can never be in. (The exact scenario count lives in one place —
+`EXPECTED_SCENARIOS` in `scripts/suite-integrity.mjs` — deliberately not restated
+here, where it would drift.)
 
 ## Reading a run after the fact
 
