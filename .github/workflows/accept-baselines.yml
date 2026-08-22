@@ -152,4 +152,4 @@ jobs:
                 '> starts no workflows — close and reopen this PR to run the gate.',
               ].join('\n'),
             });
-            core.summary.addRaw(`Opened ${pr.html_url}`).write();
+            await core.summary.addRaw(`Opened ${pr.html_url}`).write();

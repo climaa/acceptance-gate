@@ -38,23 +38,25 @@ const FORWARDED_ENV_PREFIX = 'VISUAL_DIFF_';
  *  URL rather than cwd, so the mount is right whichever directory pnpm ran this from. */
 const REPO_ROOT = fileURLToPath(new URL('..', import.meta.url));
 
-/** Commands that read `storybook-static`. `promote` (a data-directory operation) does
- *  not, so it is deliberately absent — requiring a build it never reads would block it.
- *  @type {readonly string[]} */
-const NEEDS_STORYBOOK = ['check', 'accept'];
-
-/** The command the CLI will run: the first non-flag argument, or cli.mjs's own default.
- *  @param {readonly string[]} argv @returns {string} */
-function commandOf(argv) {
-  return argv.find((argument) => !argument.startsWith('-')) ?? 'check';
+/** Whether the run needs `storybook-static` — true unless the command is known to be
+ *  `promote` (a data-directory operation that never reads it).
+ *
+ *  Only `argv[0]` is consulted, on purpose. cli.mjs's grammar allows a separated-value
+ *  flag before the command (`--filter button accept`), and telling that `button` is a
+ *  flag value rather than the command means re-implementing which flags take values — a
+ *  second grammar that can drift. Judging the first argument alone fails safe instead:
+ *  a flags-first `check`/`accept` still gets the guard (the direction that matters),
+ *  and the cost is that a flags-first `promote` would be wrongly asked for a build it
+ *  doesn't need — visible, rare, and fixed by naming the command first, which every
+ *  documented invocation does.
+ *  @param {readonly string[]} argv @returns {boolean} */
+function needsStorybook(argv) {
+  return argv[0] !== 'promote';
 }
 
 /** @param {readonly string[]} argv @returns {number} */
 export function run(argv) {
-  if (
-    NEEDS_STORYBOOK.includes(commandOf(argv)) &&
-    !existsSync(join(REPO_ROOT, PATHS.storybookStatic))
-  ) {
+  if (needsStorybook(argv) && !existsSync(join(REPO_ROOT, PATHS.storybookStatic))) {
     process.stderr.write(
       `${PATHS.storybookStatic} not found — build it on the host first:\n\n` +
         `  pnpm --filter @gate/storybook build\n`,
