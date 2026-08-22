@@ -1,10 +1,21 @@
 # @gate/e2e
 
-The acceptance suite: Gherkin `.feature` files compiled to Playwright specs by
-[playwright-bdd](https://vitalets.github.io/playwright-bdd/), run against the **built**
-blog and the **built** visual-diff console. It sits at the top of the testing pyramid —
-a handful of user journeys, never a second home for what a unit test can catch. Adding
-a scenario for something a unit test could assert is a review finding.
+Two Gherkin lanes, compiled to Playwright specs by
+[playwright-bdd](https://vitalets.github.io/playwright-bdd/). Both sit at the top of the
+testing pyramid — a handful of user journeys, never a second home for what a unit test can
+catch. Adding a scenario for something a unit test could assert is a review finding.
+
+| Lane                   | Runs against                                        | Gates merges               | Config                       |
+| ---------------------- | --------------------------------------------------- | -------------------------- | ---------------------------- |
+| `features/acceptance/` | the **built** blog and console, on seeded worlds    | yes                        | `playwright.config.ts`       |
+| `features/local/`      | the **dev** console on 3300 and YOUR `.visual-diff` | never — refuses under `CI` | `playwright.local.config.ts` |
+
+The acceptance lane names seed facts, because its worlds are built to hold them. The local
+lane cannot name anything — the data behind it is whatever your machine captured — so every
+one of its assertions is an invariant **between values on the page**: the buckets sum to the
+total, the outcome word agrees with the exit code, every listed set is offered to the
+pickers. It is also strictly read-only, and that is enforced rather than promised (see
+[The local lane](#the-local-lane)).
 
 ## `.feature` files are product requirements
 
@@ -21,8 +32,12 @@ assertion.
 | `steps/`    | Intent → action, one step per Gherkin line       | Locators                         |
 | `pages/`    | Locators and navigation — the markup coupling    | Assertions about the requirement |
 
-`pages/` is the only layer coupled to markup, so a rename in `packages/ui` is a
-one-file edit here. Prefer role-based locators (`getByRole`) over CSS: they hold
+`features/` and `steps/` each split by lane (`acceptance/`, `local/`); `pages/` does not.
+That asymmetry is the point: the two lanes ask different questions of the **same** markup,
+so they share one selector contract and a rename in `packages/ui` is still a one-file edit
+here. What they must not share is a `test` instance — each lane's `steps` glob reaches only
+its own `fixtures.ts`, so a local scenario can never bind to page objects that navigate to
+the acceptance worlds on 3200-3202. Prefer role-based locators (`getByRole`) over CSS: they hold
 through a restyle, and a locator that cannot find the role is usually a real
 accessibility defect rather than a broken test.
 
@@ -33,11 +48,14 @@ instance per scenario, shared across its steps. That file sits under `steps/` be
 ## Running
 
 ```bash
-pnpm --filter @gate/e2e test:e2e     # bddgen + check:suite + playwright test
-pnpm --filter @gate/e2e check:suite  # the integrity guard alone — no browser, no server
-turbo run e2e                        # the full run, after building both apps it boots
+pnpm --filter @gate/e2e test:e2e     # acceptance: bddgen + check:suite + playwright test
+pnpm --filter @gate/e2e check:suite  # the acceptance guard alone — no browser, no server
+turbo run e2e                        # the full acceptance run, after building both apps
 pnpm e2e:ui                          # repo root: build both apps, open UI Mode's live picker
-pnpm e2e:ui:local                    # repo root: read-only smoke checks vs YOUR data on 3300
+
+pnpm --filter @gate/e2e test:local   # local: bddgen + check:local + playwright test
+pnpm --filter @gate/e2e check:local  # the local guard alone
+pnpm e2e:ui:local                    # repo root: the local lane in UI Mode, vs YOUR data
 ```
 
 `turbo run e2e` is the entry point that matters: the task depends on `@gate/blog#build`
@@ -52,29 +70,84 @@ alone; the visual-diff worlds below are always the servers this config booted.
 Browsers are not installed by `pnpm install`; a first local run needs
 `pnpm --filter @gate/e2e exec playwright install chromium`.
 
-`pnpm e2e:ui` is the suite in Playwright UI Mode — a live picker over the same worlds,
-for watching a scenario's actions rather than reading its verdict. Two things the
-`test:e2e` chain does that this lane does not: re-run `bddgen` after a `.feature` edit,
-and run `check:suite` at all. `pnpm e2e:ui:local` is not the suite: it aims the plain
-specs in `local/` (own config, `playwright.local.config.ts`) at the dev server on 3300
-and whatever your real `.visual-diff` holds, which is why everything in that directory
-is data-agnostic and strictly read-only — the scenarios in `features/` assert seed
-facts and `@mutating` wrecks its world, so neither may ever touch real data. Like
-`E2E_BASE_URL`, the local config refuses to run under `CI`. The Storybook page
+`pnpm e2e:ui` is the acceptance suite in Playwright UI Mode — a live picker over the same
+worlds, for watching a scenario's actions rather than reading its verdict. One thing the
+`test:e2e` chain does that it does not: run `check:suite` at all.
+
+**`bddgen` is not optional after a `.feature` edit.** It compiles each lane's specs and
+freezes the fixtures each step asked for at generation time, so a step that grows a new
+fixture argument reads as `undefined` until the specs are regenerated. Every script above
+runs it first for that reason; a bare `playwright test` does not.
+
+## The local lane
+
+`features/local/` answers a different question from the acceptance suite: not _does this
+build meet its requirements_, but _does the console work against my data_. Three rules
+follow from what that data is.
+
+**Read-only, and enforced.** The tree behind 3300 is the one copy you have. Nothing here
+may delete, prune, accept or start a job — and `steps/local/fixtures.ts` blocks every
+non-`GET` request before it reaches the server, then fails the scenario naming what it
+tried. Prose would not have stopped a step that grew the wrong `.click()`.
+
+**Nothing can be named.** No set label, report id, story title or count is knowable, so an
+assertion compares page values with each other. A scenario that needs a named fact belongs
+in `features/acceptance/`, where the world is seeded to provide one.
+
+**Real data is usually boring.** A run where nothing moved counts every variant as
+`unchanged` and writes no rows at all, which is the commonest report there is. So no
+scenario may depend on a story card existing, and the ones that walk cards are written to
+hold — non-vacuously — when there are none. That is why the review loop, the comparison
+modal and the accept gate stay in the acceptance lane.
+
+A machine with nothing captured **fails** this lane on its `Background` rather than
+skipping it, with a message naming what to run. A runtime skip would report
+`expectedStatus: "passed"` to the guard below, leaving the lane silently asserting nothing
+on exactly the machine it can vouch for least.
+
+### Levels
+
+Every local scenario carries exactly one of `@regression` (a claim about the console) or
+`@edge-case` (a safe negative — an address or a filter that matches nothing). Select them
+with UI Mode's tag filter or `--grep`; there are deliberately no per-level scripts,
+configs or artifact directories. There is no `@smoke`: a smoke level exists to fail a
+pipeline fast, and this lane gates nothing.
+
+Both filters are denylist-free, so an untagged scenario is not refused — it is simply never
+chosen. `check:local` refuses that combination by name, which is what keeps a level from
+being dropped silently.
+
+Like `E2E_BASE_URL`, the local config refuses to run under `CI`. The Storybook page
 _Docs/QA/Acceptance Suite Locally_ is the long-form guide to both lanes.
 
 ## Suite integrity
 
-`scripts/suite-integrity.mjs` runs before `playwright test` and fails the run if the
-suite still exits 0 while claiming less than it did — a scenario deleted, `@skip`,
-`@fixme`, `@fail`, `@only`, `@retries:N`, or a project left running nothing. It drives
-`playwright test --list`, which skips global setup, so it needs no browser and no web
-server and costs about a second.
+Both lanes carry a guard, and both fail the run if their lane still exits 0 while claiming
+less than it did — a scenario deleted, `@skip`, `@fixme`, `@fail`, `@only`, `@retries:N`,
+or a project left running nothing. The checks live once in
+`scripts/lib/suite-integrity-core.mjs`; each guard supplies what differs. Both drive
+`playwright test --list`, which skips global setup, so neither needs a browser or a web
+server and each costs about a second.
 
-`EXPECTED_SCENARIOS` in that file is an exact count, **47** today: 9 blog + 9 visual-diff
-console + 3 sample mode + 15 report + 7 accessibility + 4 baseline acceptance. Adding a
-scenario raises it in the same PR. Lowering it is a product decision — a hand-authored PR
-with the reason written down, never a step on the way to green.
+| Guard                         | Lane                   | Exact count                       | Also checks                                                                   |
+| ----------------------------- | ---------------------- | --------------------------------- | ----------------------------------------------------------------------------- |
+| `scripts/suite-integrity.mjs` | `features/acceptance/` | `EXPECTED_SCENARIOS` **47**       | `@desktop`+`@mobile` at once; every `.feature` under `features/` is in a lane |
+| `scripts/local-integrity.mjs` | `features/local/`      | `EXPECTED_LOCAL_SCENARIOS` **20** | exactly one level tag per scenario                                            |
+
+47 is 9 blog + 9 visual-diff console + 3 sample mode + 15 report + 7 accessibility + 4
+baseline acceptance; 20 is 8 console + 6 report + 3 accessibility + 3 edge cases. Adding a
+scenario raises its count in the same PR. Lowering one is a product decision — a
+hand-authored PR with the reason written down, never a step on the way to green.
+
+The lane-coverage check exists because the two `features` globs are narrow: a file left at
+`features/whatever.feature` is compiled by neither config, so it is listed by no `--list`,
+counted by no total and scanned by no tag rule. It would be a requirement that runs nowhere
+and reads exactly like one that runs. The acceptance guard catches it, because that is the
+one that runs in CI.
+
+The local guard only ever runs on a developer's machine — its config refuses under `CI`.
+That is precisely why it exists: a lane with no gate behind it is the easiest one to
+narrow quietly, so `test:local` and `e2e:ui:local` both run it before opening a browser.
 
 ## Tags select projects
 

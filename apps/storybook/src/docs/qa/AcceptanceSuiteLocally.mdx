@@ -4,11 +4,13 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 # Running the acceptance suite locally
 
-`apps/e2e` is the acceptance suite: Gherkin `.feature` files compiled to Playwright
-specs, run against the **built** blog and the **built** visual-diff console. This page is
-the developer-facing guide to running it on your own machine — including watching it
-execute live, the way a Cypress runner shows every click as it happens. For the suite's
-design (the three-layer split, tags, worlds, the integrity guard) see
+`apps/e2e` holds two Gherkin lanes. The **acceptance** lane (`features/acceptance/`) runs
+against the **built** blog and the **built** visual-diff console on seeded worlds, and
+gates merges. The **local** lane (`features/local/`) runs against the **dev** console on
+3300 and whatever your own `.visual-diff` tree holds; it never runs in CI. This page is the
+developer-facing guide to running both on your own machine — including watching them
+execute live, the way a Cypress runner shows every click as it happens. For their design
+(the three-layer split, tags, worlds, the integrity guards) see
 [`apps/e2e/README.md`](https://github.com/climaa/acceptance-gate/blob/main/apps/e2e/README.md).
 
 ## The one command
@@ -109,6 +111,40 @@ Note that this path skips `check:suite`, the scenario-count integrity guard the
 `test:e2e` script runs. That's fine for watching and debugging; the guarded entry
 points are what CI and `turbo run e2e` use.
 
+## The local lane — your own captures
+
+```bash
+pnpm e2e:ui:local                    # from the repo root: UI Mode against YOUR data
+pnpm --filter @gate/e2e test:local   # or headless, for a verdict
+```
+
+Same Gherkin, same page objects, different question: not _does this build meet its
+requirements_ but _does the console work against the tree I actually captured_. It points
+at the dev server on **3300** (reusing one `pnpm dev` already has up) and reads
+`.visual-diff` at the repo root.
+
+Four things that make it a different lane, not a second copy of the first:
+
+1. **It is read-only, and that is enforced.** The data behind 3300 is the one copy you
+   have, so `steps/local/fixtures.ts` blocks every non-`GET` request before it reaches the
+   server and fails the scenario naming what it tried. Nothing here can delete, prune,
+   accept or start a job even by accident.
+2. **Nothing is named.** Your labels, report ids and counts are unknowable, so every
+   assertion compares values on the page with each other — the buckets sum to the total,
+   the outcome word agrees with the exit code, every listed set is offered to the pickers.
+3. **It expects a boring report.** A run where nothing moved counts every variant as
+   `unchanged` and writes no rows, which is the commonest report there is — so no scenario
+   depends on a story card existing. The review loop, the comparison modal and the accept
+   gate are the acceptance lane's, where a seeded world can supply them.
+4. **An empty machine fails it, deliberately.** With nothing captured, the `Background`
+   fails with a message naming what to run. A skip would have reported "passed" to the
+   guard and left the lane asserting nothing.
+
+Scenarios carry one level each — `@regression` or `@edge-case` — selectable in UI Mode's
+tag filter or with `--grep`. There is no `@smoke`: a smoke level exists to fail a pipeline
+fast, and this lane gates nothing. Both entry points run `check:local` first, because a
+lane with no CI behind it is the easiest one to hollow out unnoticed.
+
 ## Aiming at a deployment — what `E2E_BASE_URL` does and does not do
 
 `E2E_BASE_URL` aims **the blog suite only** at an already-running deployment, and only
@@ -121,8 +157,10 @@ seeds and serves: a deployed instance cannot host them. The deployed console at
 `acceptance-gate-visual-diff-ui.vercel.app` has an empty data directory, no Docker and
 no capture host — which is precisely the state the **sample** world reproduces locally,
 on purpose. So "validate what's on `main`" means checking out `main` and running
-`turbo run e2e` against it: same commit, full 45-scenario coverage, including the
-worlds a deployment can never be in.
+`turbo run e2e` against it: same commit, the acceptance lane's full coverage, including
+the worlds a deployment can never be in. (The exact scenario count lives in
+`scripts/suite-integrity.mjs`, which is the only place that number is stated — a count
+repeated in prose goes stale silently.)
 
 ## Reading a run after the fact
 
