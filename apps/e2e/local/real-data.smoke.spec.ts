@@ -26,13 +26,18 @@ test.describe('the console on real local data', () => {
     await expect(
       page.getByRole('heading', { level: 1, name: /visual-diff console/ }),
     ).toBeVisible();
-    // An empty data directory makes the app badge itself as sample mode. If
-    // this line fails, the finding is real: the server is not reading the
-    // data you meant to validate.
+    // The badge cannot appear via this lane's own webServer — the dev script
+    // pre-creates the data directory, so it never reads as empty. What this
+    // guards is the reused-server case: something else already on 3300 (a
+    // leftover `next start`, a misconfigured VISUAL_DIFF_DATA_DIR) resolving
+    // sample mode. The affirmative "real data is present" claim is the set
+    // listing below, not this badge check.
     await expect(console_.sampleBadge).toHaveCount(0);
   });
 
   test('lists at least one snapshot set', async () => {
+    // The real-data detector: a machine with nothing captured has a data
+    // directory (the dev script creates one) but no sets to list.
     await expect(console_.setsTable).toBeVisible();
     await expect(console_.setRows.first()).toBeVisible();
   });
@@ -46,6 +51,10 @@ test.describe('the console on real local data', () => {
   });
 
   test('announces no refusal on a plain load', async () => {
+    // Positive anchor first: `refusalAlert` is scoped under the main landmark,
+    // and a dead or erroring page renders no `main` at all — without this line
+    // the zero-count below would pass against a blank 500 page.
+    await expect(console_.setsTable).toBeVisible();
     await expect(console_.refusalAlert).toHaveCount(0);
   });
 });
