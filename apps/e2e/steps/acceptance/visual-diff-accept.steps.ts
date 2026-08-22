@@ -1,9 +1,9 @@
 import { expect } from '@playwright/test';
 import { createBdd } from 'playwright-bdd';
 
-import type { ConsolePage } from '../pages/console';
-import type { ReportPage } from '../pages/report';
-import { VD_HOSTS, VD_PINNED_IMAGE } from '../pages/visual-diff-hosts';
+import type { ConsolePage } from '../../pages/console';
+import type { ReportPage } from '../../pages/report';
+import { VD_HOSTS, VD_PINNED_IMAGE } from '../../pages/visual-diff-hosts';
 import { type ScenarioState, test } from './fixtures';
 import { SEEDED_REPORT } from './visual-diff-report.steps';
 

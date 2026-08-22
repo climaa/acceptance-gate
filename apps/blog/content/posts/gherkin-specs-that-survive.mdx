@@ -238,8 +238,8 @@ export default defineConfig({
 Everything above is Cypress, and it is what a suite of roughly three hundred feature files across two apps pushed me towards. The acceptance suite for this blog is nothing like that size — nine scenarios behind three page objects, Playwright with [`playwright-bdd`](https://github.com/vitalets/playwright-bdd) — and it does have a `pages/` layer:
 
 ```text
-apps/e2e/features/blog.feature   ← intent, no selectors
-apps/e2e/steps/blog.steps.ts     ← intent → action
+apps/e2e/features/acceptance/blog.feature   ← intent, no selectors
+apps/e2e/steps/acceptance/blog.steps.ts     ← intent → action
 apps/e2e/pages/blog-index.ts     ← the only layer that may know about markup
 ```
 
@@ -247,9 +247,9 @@ That is not a contradiction. It is the same rule answered at a different size, a
 
 The number to look at is not the feature count; it is how many different flows name the same field. While that is one, a map per screen is one name per field and costs nothing. Once it is a dozen, the map is a dozen names for one input — where a resolver keyed on the visible label has exactly one. That is a check you can run against your own suite this afternoon, and it is why these two suites landed where they did.
 
-`playwright-bdd` exports a `Step` too, but it is a step *constructor* that does not care which keyword you wrote, not a way to call one step from inside another; here the sharing happens through fixtures instead, and [`steps/fixtures.ts`](https://github.com/climaa/acceptance-gate/blob/main/apps/e2e/steps/fixtures.ts) hands every step of a scenario the same page-object instance. So the runner does not decide this either — the shape of the suite does.
+`playwright-bdd` exports a `Step` too, but it is a step *constructor* that does not care which keyword you wrote, not a way to call one step from inside another; here the sharing happens through fixtures instead, and [`steps/fixtures.ts`](https://github.com/climaa/acceptance-gate/blob/main/apps/e2e/steps/acceptance/fixtures.ts) hands every step of a scenario the same page-object instance. So the runner does not decide this either — the shape of the suite does.
 
-[The blog feature file](https://github.com/climaa/acceptance-gate/blob/main/apps/e2e/features/blog.feature) — three of the nine scenarios — is short enough to read in full:
+[The blog feature file](https://github.com/climaa/acceptance-gate/blob/main/apps/e2e/features/acceptance/blog.feature) — three of the nine scenarios — is short enough to read in full:
 
 ```gherkin
 Feature: Blog publication

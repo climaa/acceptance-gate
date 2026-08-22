@@ -4,8 +4,8 @@ import * as path from 'node:path';
 import { expect } from '@playwright/test';
 import { createBdd } from 'playwright-bdd';
 
-import type { JobMode } from '../pages/console';
-import { vdWorldDir } from '../pages/visual-diff-hosts';
+import type { JobMode } from '../../pages/console';
+import { vdWorldDir } from '../../pages/visual-diff-hosts';
 import { test } from './fixtures';
 
 const { Given, When, Then, After } = createBdd(test);

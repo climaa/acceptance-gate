@@ -1,4 +1,3 @@
-import AxeBuilder from '@axe-core/playwright';
 import { expect } from '@playwright/test';
 import { createBdd } from 'playwright-bdd';
 
@@ -59,15 +58,9 @@ When('I switch to the dark theme', async ({ chrome }) => {
   await chrome.switchToDarkTheme();
 });
 
-Then('the page has no accessibility violations', async ({ page }) => {
-  // Settle the initial render so axe evaluates a stable DOM.
-  await expect(page.getByRole('heading').first()).toBeVisible();
-
-  const results = await new AxeBuilder({ page })
-    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
-    .analyze();
-
-  // Readable CI failure: rule ids + node counts, not a giant object diff.
-  const summary = results.violations.map((v) => `${v.id} (${v.nodes.length})`).join(', ');
-  expect(results.violations, `accessibility violations: ${summary}`).toEqual([]);
+Then('the page has no accessibility violations', async ({ chrome }) => {
+  // The scan itself lives on `Chrome` so both lanes ask axe the same question;
+  // the claim that the answer is empty is this step's, and stays here.
+  const { violations, summary } = await chrome.axeViolations();
+  expect(violations, `accessibility violations: ${summary}`).toEqual([]);
 });
