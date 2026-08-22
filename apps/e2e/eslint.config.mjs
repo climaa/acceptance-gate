@@ -6,6 +6,7 @@ const config = [
   {
     ignores: [
       '.features-gen/**',
+      '.features-gen-local/**',
       'playwright-report*/**',
       'test-results*/**',
       '.turbo/**',

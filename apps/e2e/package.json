@@ -5,14 +5,16 @@
   "type": "module",
   "scripts": {
     "check:suite": "node scripts/suite-integrity.mjs",
+    "check:local": "node scripts/local-integrity.mjs",
     "test:e2e": "bddgen && pnpm run check:suite && playwright test",
     "e2e": "pnpm run test:e2e",
     "e2e:ui": "bddgen && playwright test --ui",
-    "e2e:ui:local": "playwright test --config playwright.local.config.ts --ui",
+    "test:local": "bddgen -c playwright.local.config.ts && pnpm run check:local && playwright test --config playwright.local.config.ts",
+    "e2e:ui:local": "bddgen -c playwright.local.config.ts && pnpm run check:local && playwright test --config playwright.local.config.ts --ui",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "health": "node ../../scripts/complexity-gate.mjs",
-    "clean": "rm -rf .features-gen playwright-report playwright-report-local test-results test-results-local .turbo node_modules"
+    "clean": "rm -rf .features-gen .features-gen-local playwright-report playwright-report-local test-results test-results-local .turbo node_modules"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.12.1",
