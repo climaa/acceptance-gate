@@ -36,6 +36,8 @@ instance per scenario, shared across its steps. That file sits under `steps/` be
 pnpm --filter @gate/e2e test:e2e     # bddgen + check:suite + playwright test
 pnpm --filter @gate/e2e check:suite  # the integrity guard alone — no browser, no server
 turbo run e2e                        # the full run, after building both apps it boots
+pnpm e2e:ui                          # repo root: build both apps, open UI Mode's live picker
+pnpm e2e:ui:local                    # repo root: read-only smoke checks vs YOUR data on 3300
 ```
 
 `turbo run e2e` is the entry point that matters: the task depends on `@gate/blog#build`
@@ -50,6 +52,17 @@ alone; the visual-diff worlds below are always the servers this config booted.
 Browsers are not installed by `pnpm install`; a first local run needs
 `pnpm --filter @gate/e2e exec playwright install chromium`.
 
+`pnpm e2e:ui` is the suite in Playwright UI Mode — a live picker over the same worlds,
+for watching a scenario's actions rather than reading its verdict. Two things the
+`test:e2e` chain does that this lane does not: re-run `bddgen` after a `.feature` edit,
+and run `check:suite` at all. `pnpm e2e:ui:local` is not the suite: it aims the plain
+specs in `local/` (own config, `playwright.local.config.ts`) at the dev server on 3300
+and whatever your real `.visual-diff` holds, which is why everything in that directory
+is data-agnostic and strictly read-only — the scenarios in `features/` assert seed
+facts and `@mutating` wrecks its world, so neither may ever touch real data. Like
+`E2E_BASE_URL`, the local config refuses to run under `CI`. The Storybook page
+_Docs/QA/Acceptance Suite Locally_ is the long-form guide to both lanes.
+
 ## Suite integrity
 
 `scripts/suite-integrity.mjs` runs before `playwright test` and fails the run if the
@@ -58,8 +71,8 @@ suite still exits 0 while claiming less than it did — a scenario deleted, `@sk
 `playwright test --list`, which skips global setup, so it needs no browser and no web
 server and costs about a second.
 
-`EXPECTED_SCENARIOS` in that file is an exact count, **45** today: 9 blog + 8 visual-diff
-console + 3 sample mode + 14 report + 7 accessibility + 4 baseline acceptance. Adding a
+`EXPECTED_SCENARIOS` in that file is an exact count, **47** today: 9 blog + 9 visual-diff
+console + 3 sample mode + 15 report + 7 accessibility + 4 baseline acceptance. Adding a
 scenario raises it in the same PR. Lowering it is a product decision — a hand-authored PR
 with the reason written down, never a step on the way to green.
 

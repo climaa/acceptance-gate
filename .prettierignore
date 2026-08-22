@@ -20,9 +20,12 @@ apps/blog/content/**/*.md
 # invalidate every checksum and break the "copied unmodified" claim they rest on.
 .claude/skills/
 
-# Playwright's run artifacts. Gitignored via apps/e2e/.gitignore, but Prettier
-# does not read .gitignore, so a local run leaves a file this glob would flag.
-apps/e2e/test-results/
+# Playwright's run artifacts, both the acceptance pair and the -local pair the
+# real-data lane writes. Gitignored via apps/e2e/.gitignore, but Prettier does
+# not read .gitignore, so a local run leaves files this glob would flag — the
+# report's own trace-viewer .css among them.
+apps/e2e/test-results*/
+apps/e2e/playwright-report*/
 
 # Committed font payload: the binaries, their OFL texts and the OG provenance
 # record. The only file here `format`'s glob reaches is `og/PROVENANCE.md`, whose
