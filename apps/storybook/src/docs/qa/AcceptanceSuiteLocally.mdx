@@ -131,6 +131,32 @@ deployment can never be in. (The exact scenario count lives in one place —
 `EXPECTED_SCENARIOS` in `scripts/suite-integrity.mjs` — deliberately not restated
 here, where it would drift.)
 
+## Validating your real data: `pnpm e2e:ui:local`
+
+The lanes above never touch your actual `.visual-diff` captures — and pointing the
+suite at them would only produce noise, since the scenarios assert seed facts and
+`@mutating` deletes sets. When the question is "does the console work on **my** data",
+there is a separate lane:
+
+```bash
+pnpm e2e:ui:local   # from the repo root
+```
+
+It runs the plain specs in `apps/e2e/local/` (own config,
+`playwright.local.config.ts`) against the dev server on **3300** — reusing the one
+`pnpm dev` already has up, booting one otherwise. Four read-only, data-agnostic smoke
+checks, built on the same page-object locators the suite trusts: the console renders
+and is not in sample mode, at least one snapshot set is listed (the affirmative
+"real data is present" claim), all four job modes are offered, and no refusal is
+announced on a plain load.
+
+The rules that keep it honest: nothing in `local/` may delete, prune, or start a job —
+the data behind 3300 is the one copy your machine has; the config throws under `CI`,
+where machine-local data has no meaning; and its artifact directories are its own, so
+an exploration never clobbers an acceptance run's report. What it is **not**: a second
+home for requirements. A journey belongs in `features/`, asserted against a world
+whose data the scenario can name.
+
 ## Reading a run after the fact
 
 Every run writes an HTML report, and failures retain a full trace
