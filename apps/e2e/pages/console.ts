@@ -90,6 +90,14 @@ export class ConsolePage {
     await this.page.goto(`${VD_HOSTS[world]}/`);
   }
 
+  /** The same console, reached through the running config's `baseURL` instead of
+   *  a named world — how the local lane finds the dev server on 3300. The worlds
+   *  above are absolute by design (one config boots four servers and a scenario
+   *  says which it means); a lane with one server must not name a port at all. */
+  async openHere() {
+    await this.page.goto('/');
+  }
+
   setRow(label: string): Locator {
     return this.setRows.filter({ hasText: label });
   }
@@ -165,6 +173,48 @@ export class ConsolePage {
    * not part of `textContent`, so it never lands in the assertion.
    */
   historyCell(row: Locator, column: string): Locator {
+    return this.cell(row, column);
+  }
+
+  /** The same addressing for the sets table, whose columns are `label`, `sha`,
+   *  `branch`, `date`, `stories` and `size`. Named separately from
+   *  `historyCell` so a step reads as the table it means. */
+  setCell(row: Locator, column: string): Locator {
+    return this.cell(row, column);
+  }
+
+  /** One cell of any `Table` row, by the column header it sits under. */
+  private cell(row: Locator, column: string): Locator {
     return row.locator(`[data-label="${column}"]`);
+  }
+
+  /** The committed corpus above the sets table: its label, its `canonical`
+   *  badge, and the delete it renders disabled rather than omitting. */
+  get canonicalCorpus(): Locator {
+    return this.page.locator('.vd-canonical');
+  }
+
+  /** A set row's label alone. The label cell also carries the `dirty` badge as a
+   *  second text node — deliberately, so a label is never "main-08-11dirty" —
+   *  which means the cell's own text is not the label. */
+  setLabel(row: Locator): Locator {
+    return row.locator('.vd-set__label');
+  }
+
+  /** Every option a picker offers, as text — the compare vocabulary the console
+   *  is willing to offer, which is the sets plus the committed corpus. */
+  pickerOptions(picker: Locator): Locator {
+    return picker.locator('option');
+  }
+
+  /** The report id a reports row links to. The link's own text is that id. */
+  reportLink(row: Locator): Locator {
+    return row.getByRole('link');
+  }
+
+  /** Where the run panel puts the label of a `capture`/`run`, or the two sides
+   *  of a `compare`. Addressed by the ids the panel pins on them. */
+  runField(name: 'label' | 'baseline' | 'candidate' | 'report'): Locator {
+    return this.page.locator(`#vd-run-${name}`);
   }
 }
