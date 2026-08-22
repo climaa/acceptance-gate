@@ -10,9 +10,16 @@ import {
 
 // Generate Playwright specs from Gherkin .feature files + step definitions.
 // The returned path is where `bddgen` writes the generated specs.
+//
+// Both globs name the lane, never the layer root. `features/**` would now also
+// match `features/local/`, whose scenarios assert against the dev server on 3300
+// and YOUR `.visual-diff` tree — compiling those into the merge-gating suite
+// would aim a required check at data no PR produced. `steps/**` is narrowed for
+// the same reason from the other side: two lanes now export a `test`, and this
+// glob is what decides which one the generated specs bind to.
 const testDir = defineBddConfig({
-  features: 'features/**/*.feature',
-  steps: 'steps/**/*.ts',
+  features: 'features/acceptance/**/*.feature',
+  steps: 'steps/acceptance/**/*.ts',
 });
 
 // Dedicated port so the run never collides with a dev server already on 3000.
