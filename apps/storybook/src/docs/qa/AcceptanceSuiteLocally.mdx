@@ -1,0 +1,147 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs/QA/Acceptance Suite Locally" />
+
+# Running the acceptance suite locally
+
+`apps/e2e` is the acceptance suite: Gherkin `.feature` files compiled to Playwright
+specs, run against the **built** blog and the **built** visual-diff console. This page is
+the developer-facing guide to running it on your own machine — including watching it
+execute live, the way a Cypress runner shows every click as it happens. For the suite's
+design (the three-layer split, tags, worlds, the integrity guard) see
+[`apps/e2e/README.md`](https://github.com/climaa/acceptance-gate/blob/main/apps/e2e/README.md).
+
+## The one command
+
+```bash
+pnpm --filter @gate/e2e exec playwright install chromium   # first run only
+turbo run e2e
+```
+
+`turbo run e2e` is the entry point that matters: the task depends on `@gate/blog#build`
+and `@gate/visual-diff-ui#build`, so what the suite boots is what the build produced —
+production behavior (draft filtering, prerendered routes, real cache invalidation), not
+a dev server's. Browsers are **not** installed by `pnpm install`; without the
+`playwright install chromium` step the first run fails asking for it.
+
+## What boots when you run it
+
+The config starts four servers, all from built output. None of them is the dev server:
+
+| Server                 | Port   | What it is                                                           |
+| ---------------------- | ------ | -------------------------------------------------------------------- |
+| blog                   | `3100` | `next start` of `@gate/blog` — not 3000, so a dev server can stay up |
+| visual-diff `seeded`   | `3200` | the console on a seeded, read-only data tree                         |
+| visual-diff `sample`   | `3201` | the console on an **empty** data tree — fixture-fallback mode        |
+| visual-diff `mutating` | `3202` | the console on a tree the `@mutating` scenarios are allowed to wreck |
+
+Port **3300** — `pnpm --filter @gate/visual-diff-ui dev`, reading your real
+`.visual-diff` captures — is deliberately not on that list. The suite never targets the
+dev server or your real data: each world's tree is wiped and re-seeded by
+`scripts/seed-visual-diff.mjs` every time its server boots, which is exactly what keeps
+scenarios independent of whatever the last run did.
+
+Locally, the seeded and sample servers are reused if already up
+(`reuseExistingServer`); the mutating one never is, because its tree is the one the
+last run wrecked.
+
+## The data you're watching is half real, half fabricated — on purpose
+
+When a scenario opens a report in the seeded world, what's on screen is a composite,
+and knowing which half is which saves you from chasing ghosts:
+
+- **The real half** is `apps/visual-diff-ui/fixtures/` — a genuine regression from
+  this repo's history (PR #242's prose-rhythm change, seen backwards through the
+  differ). The A/B commits in the report header, six of the `changed` variants and
+  the "skipped by visual-diff:skip" warning all really happened.
+- **The fabricated half** is `apps/e2e/seed/visual-diff/`, whose README opens with
+  "everything in this directory is fabricated, and deliberately so". The real run was
+  too clean to exercise the scenarios, so the seed grafts on what the fixture cannot
+  honestly show: the accessibility failure, the `removed` variant, one extra
+  `changed`, the unstable-story warning, the dirty capture set, the worktree hold.
+  The images behind the grafted variants are synthesized 16×16 PNGs hashed from the
+  variant key — identical bytes on every machine.
+
+So an a11y failure or a `removed` row you watch a scenario assert on is seed
+vocabulary, not a defect in your checkout — and none of it is your real `.visual-diff`
+data, which only the dev server on 3300 reads. It's also why the seeded world holds
+two reports: the grafted a11y failure makes the accept gate refuse the first report
+before asking anything else, so the accept scenarios run against the second, clean one
+— the only kind an accept can promote from.
+
+## Watching it live: Playwright UI Mode
+
+Playwright's UI Mode is the Cypress-runner equivalent: a window listing every feature
+and scenario, a live browser pane, a per-action log (each click, fill, and assertion as
+it executes), time-travel snapshots of every step, and one-click re-run of a single
+scenario.
+
+```bash
+pnpm e2e:ui   # from the repo root
+```
+
+That one command builds both apps if they're stale, regenerates the specs from the
+`.feature` files, and opens the picker; the four servers boot on the session's first
+run and stay up for the rest of it. (It's a wrapper around
+`bddgen && playwright test --ui` in `apps/e2e` — run those directly to skip the build
+check.) For a plain visible browser without the panel,
+`pnpm --filter @gate/e2e exec playwright test --headed` does that; add `--debug` to
+step through actions one at a time with the Playwright Inspector.
+
+Three things to know before trusting what you watch:
+
+1. **`bddgen` is not automatic.** UI Mode watches the _generated_ specs in
+   `.features-gen/`, not your `.feature` files. After editing a feature or step file,
+   re-run `pnpm exec bddgen` before re-running the scenario — otherwise you are
+   watching the previous version execute.
+2. **`@mutating` scenarios don't replay cleanly.** Their world is re-seeded only when
+   its server boots, and UI Mode boots servers once per session — so a second run of a
+   mutating scenario executes against the tree the first run already wrecked. Watch
+   those once per session, or restart UI Mode between runs. Seeded and sample
+   scenarios replay freely: nothing writes to their worlds, and review marks live in
+   `localStorage` with a fresh context per test.
+3. **What you watch is the single honest attempt.** Local runs have `retries: 0`, so a
+   failure in UI Mode is the real failure, not one a retry would have absorbed. (CI
+   allows one retry but reds the run on a pass-after-retry — see the config's
+   `failOnFlakyTests` comment for why.)
+
+Note that this path skips `check:suite`, the scenario-count integrity guard the
+`test:e2e` script runs. That's fine for watching and debugging; the guarded entry
+points are what CI and `turbo run e2e` use.
+
+## Aiming at a deployment — what `E2E_BASE_URL` does and does not do
+
+`E2E_BASE_URL` aims **the blog suite only** at an already-running deployment, and only
+locally — under `CI` the config throws rather than honour it, because a merge-gating
+check that is green against a live site says nothing about the commit under review.
+
+It never applies to the visual-diff console. The three world URLs are constants in
+`pages/visual-diff-hosts.ts`, and the worlds are trees on disk that the config itself
+seeds and serves: a deployed instance cannot host them. The deployed console at
+`acceptance-gate-visual-diff-ui.vercel.app` has an empty data directory, no Docker and
+no capture host — which is precisely the state the **sample** world reproduces locally,
+on purpose. So "validate what's on `main`" means checking out `main` and running
+`turbo run e2e` against it: same commit, full 45-scenario coverage, including the
+worlds a deployment can never be in.
+
+## Reading a run after the fact
+
+Every run writes an HTML report, and failures retain a full trace
+(`trace: 'retain-on-failure'`):
+
+```bash
+cd apps/e2e
+pnpm exec playwright show-report            # the last run's report
+pnpm exec playwright show-trace <trace.zip> # time-travel through one failure
+```
+
+The trace viewer gives the same time-travel view as UI Mode — DOM snapshots per
+action, console, network — for a run that already happened, which is usually the
+faster way to understand a red CI run: download the report artifact and open the
+failing scenario's trace.
+
+One more tool from the same family: `pnpm exec playwright codegen http://localhost:3300`
+opens a browser that records your clicks as `getByRole(...)` locator code — useful when
+authoring page objects against the dev server and your real captures. Generated
+locators are a starting point for `pages/`, never something to paste into `steps/` or
+`features/`.
