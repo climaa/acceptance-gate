@@ -113,8 +113,10 @@ const preview: Preview = {
             ['Layering Rule'],
             'QA',
             // Diff Policy first: it defines the capture matrix that Visual
-            // Diff Workflow then describes running.
-            ['Diff Policy', 'Visual Diff Workflow'],
+            // Diff Workflow then describes running. The acceptance suite sits
+            // last — the top of the testing pyramid, read after the layers
+            // beneath it.
+            ['Diff Policy', 'Visual Diff Workflow', 'Acceptance Suite Locally'],
             // DevOps sits after the design-system pages and before Skills: it
             // describes what happens to a change after you have made one, so it
             // only makes sense once the reader knows what the change is to.
