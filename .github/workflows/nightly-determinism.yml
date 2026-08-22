@@ -1,0 +1,106 @@
+# The strict double-capture flake check compare.mjs's STRICT_ENV was built for:
+# capture main's corpus twice in the pinned container with every allowance forced to
+# zero, so "any pixel that moves without the UI moving is reported instead of being
+# absorbed by an allowance nobody re-measures".
+#
+# Nightly rather than per-PR because this red means the *differ* drifted, not the UI —
+# a story whose render stopped being byte-stable (an animation the freeze CSS misses, a
+# font race, entropy the init script doesn't pin), or a container/runner change moving
+# pixels under the threshold. That is maintenance signal, and attaching it to PRs would
+# red innocent changes for a defect they didn't introduce.
+#
+# Reading a red run: the two captures fail independently, so the pair diagnoses itself.
+#   - one red, one green   → run-to-run instability: a nondeterministic story (flake).
+#   - both red, same story → deterministic drift from the committed corpus: something
+#                            rendered differently-but-stably, under the PR allowance.
+# Each capture's report is uploaded separately; compare the two before touching
+# anything.
+name: nightly-determinism
+
+on:
+  schedule:
+    # Scheduled workflows only run against the default branch, which is the point:
+    # main's corpus is the one whose stability is a standing claim. Off the hour —
+    # GitHub delays/drops on-the-hour cron under load.
+    - cron: '17 3 * * *'
+  # For re-running by hand after a fix, without waiting a day.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  TURBO_TEAM: ${{ vars.TURBO_TEAM }}
+  # '1' exactly — compare.mjs's isStrict refuses truthiness on purpose.
+  VISUAL_DIFF_STRICT: '1'
+
+jobs:
+  strict-double-capture:
+    # Pinned container + arm64 runner, same as every capture in this repo: strict mode
+    # is exactly the run that cannot tolerate a different renderer.
+    runs-on: ubuntu-24.04-arm
+    # Two full captures; pr.yml budgets 30 minutes for one (including the image pull
+    # this job also pays, and the same possibly-cold storybook build).
+    timeout-minutes: 45
+    container: mcr.microsoft.com/playwright:v1.62.1-noble
+    steps:
+      - uses: actions/checkout@v7
+      - run: corepack enable
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # Built once, captured twice: both captures must render the same static output,
+      # or a between-runs rebuild would be a fourth variable in the diagnosis table.
+      - run: pnpm turbo run build --filter=@gate/storybook
+      - name: First strict capture
+        id: first
+        run: pnpm visual-diff
+        continue-on-error: true
+      - name: Archive the first report
+        # tar, not a directory path — upload-artifact cannot see directory contents
+        # written inside this job's container (see pr.yml's visual-diff job).
+        #
+        # mkdir -p first: a capture that broke before writing anything (exit 2 early)
+        # leaves no .visual-diff at all, and a failing tar here would skip the second
+        # capture — losing the pair the flake-vs-drift diagnosis needs. An empty
+        # archive is the honest record of "this run produced nothing".
+        if: always()
+        run: |
+          mkdir -p packages/visual-diff/.visual-diff
+          tar -C packages/visual-diff/.visual-diff -czf /tmp/strict-first.tar.gz .
+      - name: Second strict capture
+        id: second
+        # The first capture's artifacts are cleared so the second report describes
+        # only its own run — a stale diff PNG riding along would poison the
+        # one-red-or-both diagnosis above.
+        run: |
+          rm -rf packages/visual-diff/.visual-diff
+          pnpm visual-diff
+        continue-on-error: true
+      - name: Archive the second report
+        if: always()
+        run: |
+          mkdir -p packages/visual-diff/.visual-diff
+          tar -C packages/visual-diff/.visual-diff -czf /tmp/strict-second.tar.gz .
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: strict-report-first
+          path: /tmp/strict-first.tar.gz
+          retention-days: 14
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: strict-report-second
+          path: /tmp/strict-second.tar.gz
+          retention-days: 14
+      - name: Fail if either strict capture went red
+        if: steps.first.outcome == 'failure' || steps.second.outcome == 'failure'
+        run: |
+          echo "strict captures: first=${{ steps.first.outcome }} second=${{ steps.second.outcome }}"
+          echo "red = a pixel moved (exit 1) OR the run itself broke (exit 2) — that capture's own log says which"
+          echo "for pixel reds: one red = run-to-run flake; both red = deterministic drift — compare the two uploaded reports"
+          exit 1

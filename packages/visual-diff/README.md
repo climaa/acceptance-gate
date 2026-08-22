@@ -89,7 +89,7 @@ nightly double-capture flake check; it is not meant for routine PR gating.
 ```bash
 pnpm --filter @gate/storybook build   # capture needs the built static output, not `dev`
 pnpm visual-diff                      # check: capture + compare against __baselines__
-pnpm visual-diff:accept               # write the current capture as the new baselines
+pnpm visual-diff:accept               # the new baselines — runs in the pinned container (Docker required)
 ```
 
 Equivalently, direct CLI invocation with a filter (only stories whose id/title contain
@@ -117,23 +117,26 @@ for a quick local sanity check, not for accepting baselines.
 
 `accept` carries no host guard (see below), so a bare-metal `accept` doesn't fail loud —
 it silently writes baselines rendered by whatever font/graphics stack the host has, then
-stamps `BASELINE_ENV.json` as if they came from the pinned container. The fix is running
-`check`/`accept` inside that container, from the repo root:
+stamps `BASELINE_ENV.json` as if they came from the pinned container. Which is why the
+container is the front door, not a recipe to remember: `pnpm visual-diff:accept` routes
+through `scripts/visual-diff-container.mjs`, and the same wrapper runs `check` in the
+container too:
 
 ```bash
 pnpm --filter @gate/storybook build   # host build first — static output, not platform-dependent
+pnpm visual-diff:container check      # review packages/visual-diff/.visual-diff/report.html
+pnpm visual-diff:accept               # the container-run accept
+```
 
-docker run --rm --ipc=host \
+What the wrapper composes (further arguments — `--filter`, say — pass to the CLI
+verbatim):
+
+```bash
+docker run --rm --ipc=host --platform=linux/arm64 \
   -v "$(pwd)":/repo -w /repo \
   -e PLAYWRIGHT_BROWSERS_PATH=/ms-playwright \
   mcr.microsoft.com/playwright:v1.62.1-noble \
-  node packages/visual-diff/src/cli.mjs check    # review packages/visual-diff/.visual-diff/report.html
-
-docker run --rm --ipc=host \
-  -v "$(pwd)":/repo -w /repo \
-  -e PLAYWRIGHT_BROWSERS_PATH=/ms-playwright \
-  mcr.microsoft.com/playwright:v1.62.1-noble \
-  node packages/visual-diff/src/cli.mjs accept
+  node packages/visual-diff/src/cli.mjs <check|accept> [options]
 ```
 
 No `pnpm install` inside the container — every dependency this package touches
@@ -142,7 +145,10 @@ binaries to rebuild per-OS, so the host-installed `node_modules` works as-is onc
 mounted. `PLAYWRIGHT_BROWSERS_PATH=/ms-playwright` points Playwright at the browser
 already baked into the image instead of the host's own Playwright cache (which won't
 exist, or won't be the right OS's build, inside the container). `--ipc=host` avoids
-Chromium crashing against Docker's default 64MB `/dev/shm`.
+Chromium crashing against Docker's default 64MB `/dev/shm`. `--platform=linux/arm64`
+pins the image to the architecture `BASELINE_ENV.json` records, so an amd64 host can't
+silently accept baselines CI's arm64 guard would then reject on every run — on amd64
+that means qemu emulation, slow and possibly crashy, but loud rather than corrupting.
 
 If bare-metal output has already landed in the working tree, discard it before rerunning
 in the container — both the committed baselines the `accept` touched and any newly
@@ -214,6 +220,22 @@ approving a baseline has to cost the same as reviewing a code diff — a person,
 the PR, not a required check nobody looks at before merging. `pnpm --filter
 @gate/visual-diff test` (the unit suite) still runs in CI as part of the generic `test`
 job, same as before, and — like every job in this file — is gated by `gate.needs`.
+
+Two more workflows close the accept loop:
+
+- **`accept-baselines.yml`** (manual `workflow_dispatch`) runs `accept` on the same
+  pinned container/runner pair, for a maintainer without local Docker or arm64
+  hardware. Dispatched on a feature branch, it commits the accepted corpus back to that
+  branch, so the baselines land in the PR that moved the pixels; dispatched on `main`,
+  it opens a `chore/accept-baselines-*` PR instead. Both ends stay human — a person
+  dispatches it, and a person reviews the PNGs before anything merges. One wrinkle: a
+  push made with the workflow's own token starts no workflows, so the gate needs a
+  close/reopen (or any human push) before the resulting PR can go green.
+- **`nightly-determinism.yml`** (03:17 UTC cron, dispatchable by hand) captures
+  `main`'s corpus twice under `VISUAL_DIFF_STRICT=1` — the zero-allowance mode named
+  above. One red capture is run-to-run flake; two red on the same story is
+  deterministic drift from the committed corpus. Each capture's report uploads as its
+  own artifact so the two can be compared.
 
 ## Version pins
 

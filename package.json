@@ -17,7 +17,8 @@
     "test": "dotenv -e .env -o -- turbo run test",
     "sandcastle": "tsx .sandcastle/main.mts",
     "visual-diff": "node packages/visual-diff/src/cli.mjs check",
-    "visual-diff:accept": "node packages/visual-diff/src/cli.mjs accept",
+    "visual-diff:accept": "node scripts/visual-diff-container.mjs accept",
+    "visual-diff:container": "node scripts/visual-diff-container.mjs",
     "typecheck:sandcastle": "tsc --noEmit -p .sandcastle/tsconfig.json",
     "test:sandcastle": "vitest run --config vitest.sandcastle.config.mts",
     "health:check": "turbo run health && node scripts/complexity-gate.mjs --scope .sandcastle/"

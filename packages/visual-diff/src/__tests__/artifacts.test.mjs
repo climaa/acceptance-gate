@@ -204,8 +204,10 @@ describe('renderSummaryMd', () => {
     const md = renderSummaryMd(summary);
 
     expect(md).toContain('### To fix');
-    // No bare `pnpm visual-diff` / `pnpm visual-diff:accept`: off the pinned platform the
-    // first fails on the host guard, and the second has none and corrupts the corpus.
+    // No CLI commands in the summary: off the pinned platform `pnpm visual-diff` fails
+    // on the host guard, and a bare `cli.mjs accept` has none and corrupts the corpus.
+    // (`pnpm visual-diff:accept` is container-bound now, but the README stays the one
+    // place the recipe lives — the summary links it rather than restating commands.)
     expect(md).not.toContain('pnpm visual-diff`');
     expect(md).not.toContain('pnpm visual-diff:accept`');
     expect(md).toContain('inside the pinned container');
