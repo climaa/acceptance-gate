@@ -12,9 +12,9 @@ catch. Adding a scenario for something a unit test could assert is a review find
 
 The acceptance lane names seed facts, because its worlds are built to hold them. The local
 lane cannot name anything — the data behind it is whatever your machine captured — so every
-one of its assertions is an invariant **between values on the page**: the buckets sum to the
-total, the review denominator is every bucket except unchanged, a bucket and a search term
-survive a reload. It is also strictly read-only, and that is enforced rather than promised (see
+one of its assertions is an invariant **between values on the page**, and every one of them
+writes: it compares the two sets your pickers offer, then deletes and prunes what it named
+by reading the table rather than by knowing it (see
 [The local lane](#the-local-lane)).
 
 ## `.feature` files are product requirements
@@ -82,59 +82,45 @@ runs it first for that reason; a bare `playwright test` does not.
 ## The local lane
 
 `features/local/` answers a different question from the acceptance suite: not _does this
-build meet its requirements_, but _does the console work against my data_. Three rules
-follow from what that data is.
+build meet its requirements_, but _does the console work against my data_.
 
-**Read-only, and enforced — unless a scenario says otherwise out loud.** The tree behind
-3300 is the one copy you have. No untagged scenario may delete, prune, accept or start a
-job. `steps/local/fixtures.ts` enforces that twice over: `readOnly` blocks every non-`GET`
-request before it reaches the server, and `mayWrite` refuses any step that reaches for
-`node:fs` — a `page.route` handler cannot see a filesystem write, and playwright-bdd
-resolves steps by text across the whole lane, so a writing step is callable by name from
-any scenario. Prose would not have stopped a step that grew the wrong `.click()`. The one
-way through either is `@mutating` on the scenario — see **The one flow that writes**
-below.
+**Everything in it writes.** The lane is one file — `visual-diff-flow.feature` — and a run
+launches a compare in your `.visual-diff`, takes its job lock, deletes your oldest capture
+set and prunes one more. Nothing re-seeds afterwards: a run costs you two sets, every
+time, on `pnpm test:local` and `pnpm e2e:ui:local` alike. This lane had a read-only half
+once, and it was withdrawn a file at a time; `report.feature` was the last of it.
 
 **Nothing can be named.** No set label, report id, story title or count is knowable, so an
-assertion compares page values with each other. A scenario that needs a named fact belongs
-in `features/acceptance/`, where the world is seeded to provide one.
+assertion compares page values with each other and each step reads what it needs off the
+page — the flow compares the two sets the pickers offer, and deletes _my oldest set_
+rather than a set anyone chose. A scenario that needs a named fact belongs in
+`features/acceptance/`, where the world is seeded to provide one.
 
-**Real data is usually boring.** A run where nothing moved counts every variant as
-`unchanged` and writes no rows at all, which is the commonest report there is. So no
-scenario may depend on a story card existing, and the ones that walk cards are written to
-hold — non-vacuously — when there are none. That is why the review loop, the comparison
-modal and the accept gate stay in the acceptance lane.
+**A machine with nothing captured fails, rather than skipping.** The `Background` fails
+with a message naming what to run. A runtime skip would report `expectedStatus: "passed"`
+to the guard below, leaving the lane silently asserting nothing on exactly the machine it
+can vouch for least.
 
-A machine with nothing captured **fails** this lane on its `Background` rather than
-skipping it, with a message naming what to run. A runtime skip would report
-`expectedStatus: "passed"` to the guard below, leaving the lane silently asserting nothing
-on exactly the machine it can vouch for least.
+### The write permission
 
-### Levels
+Both write guards in `steps/local/fixtures.ts` are still there, and neither refuses
+anything on a normal run — every scenario in the lane carries `@mutating`. They are kept
+for the scenario nobody has written yet, because a lane that lost its read-only half by
+attrition will get read-only scenarios back sooner than it will get deliberately
+destructive ones:
 
-The local lane carries no tags. `@regression` and `@edge-case` were its two levels while
-it held console, accessibility and edge-case requirements; with only `report.feature`
-left there was nothing to select between, and a vocabulary with one member selects
-nothing. Scenarios here are run as a lane or picked by name in UI Mode. There is still no
-`@smoke`: a smoke level exists to fail a pipeline fast, and this lane gates nothing.
+| Guard      | Refuses                                                   |
+| ---------- | --------------------------------------------------------- |
+| `readOnly` | every non-`GET` an untagged scenario's pages make         |
+| `mayWrite` | any step reaching for `node:fs` from an untagged scenario |
 
-`check:local` no longer carries a level rule, so nothing stops a tag being added back —
-but `features/acceptance/` is where tags are load-bearing today (its two projects grep
-on them), and a level returning here should bring its rule back with it.
+The second exists because a `page.route` handler cannot see a filesystem write, and
+because playwright-bdd resolves steps by text across the whole lane — a writing step is
+callable by name from any scenario in it.
 
-### The one flow that writes
-
-`features/local/visual-diff-flow.feature` is the exception to everything above, and it says
-so in its own first paragraph. Its five scenarios **write to your `.visual-diff`**: they
-launch a compare, take its job lock, delete your oldest capture set and prune one more.
-Nothing re-seeds afterwards — a run costs you two sets. It runs on every `pnpm test:local`
-and `pnpm e2e:ui:local`, because this lane has one project and no tag filter; short of
-`--grep-invert @mutating` there is no way to run the lane without it.
-
-`@mutating` means something different here than in the acceptance lane. There it selects a
-project. Here it is the **opt-out from both write guards** — the whole of its meaning,
-declared per scenario where a reader sees it. Everything untagged is still blocked from
-writing, which is why the tag keys the exemption rather than the config.
+`@mutating` means something different here than in the acceptance lane, which no longer
+has the tag at all. It is the **opt-out from both guards** — the whole of its meaning,
+declared per scenario where a reader sees it.
 
 And it is not self-granted. A permission anyone can hand themselves is not a permission:
 the quickest way past a tripwire failure would otherwise be to add the tag the error
@@ -144,19 +130,26 @@ would arm the next scenario anyone appends with no line of its own in the diff �
 refuses a listed file where no scenario carries it. Adding a writing scenario is a diff
 someone reviews.
 
-`@mode:serial` keeps the chain honest: the scenarios run in the order written and Playwright
-skips every one after a failure, so a compare that never finished cannot be followed by a
-lock that impersonates it. `SERIAL_FEATURES` in `scripts/local-integrity.mjs` names this
-file as the only one allowed to carry the tag, under the same four rules the acceptance
-guard applies.
+### Order, and repair
 
-Three consequences worth knowing. The lane runs `workers: 1`, because the flow rewrites the
-same tree `report.feature` reads — and with `fullyParallel` unset that makes the whole lane
-sequential. Nothing here is named, as everywhere in this lane: each step reads the labels
-off the page, so the flow deletes _my oldest set_ rather than a set anyone chose. And the
-flow repairs itself: the one step that edits `history.json` writes a sidecar backup first,
-which the `Background` restores if a previous run was killed before its hook could put the
-file back.
+`@mode:serial` keeps the chain honest: the scenarios run in the order written and
+Playwright skips every one after a failure, so a compare that never finished cannot be
+followed by a lock that impersonates it. `SERIAL_FEATURES` names this file as the only one
+allowed to carry the tag, under the same four rules the acceptance guard used to apply.
+
+The lane also runs `workers: 1`. With one serial file that changes nothing today; it is
+there for the second file, which Playwright would otherwise run in parallel with a flow
+that is deleting capture sets underneath it.
+
+And the flow repairs itself. The one step that edits `history.json` writes a sidecar
+backup first, which the `Background` restores if a previous run was killed before its hook
+could put the file back — otherwise your newest real run would read as `interrupted`
+forever, and nothing later would fix it.
+
+There are no level tags. `@regression` and `@edge-case` were a vocabulary for choosing
+between four files' worth of scenarios; with one file there is nothing to choose. There is
+still no `@smoke`: a smoke level exists to fail a pipeline fast, and this lane gates
+nothing.
 
 Like `E2E_BASE_URL`, the local config refuses to run under `CI`. The Storybook page
 _Docs/QA/Acceptance Suite Locally_ is the long-form guide to both lanes.
@@ -170,13 +163,13 @@ or a project left running nothing. The checks live once in
 `playwright test --list`, which skips global setup, so neither needs a browser or a web
 server and each costs about a second.
 
-| Guard                         | Lane                   | Exact count                       | Also checks                                                                                                                |
-| ----------------------------- | ---------------------- | --------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| `scripts/suite-integrity.mjs` | `features/acceptance/` | `EXPECTED_SCENARIOS` **47**       | `@desktop`+`@mobile` at once; every `.feature` under `features/` is in a lane; `@mode:serial` only on a declared flow file |
-| `scripts/local-integrity.mjs` | `features/local/`      | `EXPECTED_LOCAL_SCENARIOS` **11** | `@mode:serial` only on a declared flow file                                                                                |
+| Guard                         | Lane                   | Exact count                      | Also checks                                                                                                                |
+| ----------------------------- | ---------------------- | -------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `scripts/suite-integrity.mjs` | `features/acceptance/` | `EXPECTED_SCENARIOS` **47**      | `@desktop`+`@mobile` at once; every `.feature` under `features/` is in a lane; `@mode:serial` only on a declared flow file |
+| `scripts/local-integrity.mjs` | `features/local/`      | `EXPECTED_LOCAL_SCENARIOS` **5** | `@mode:serial` only on a declared flow file                                                                                |
 
 41 is 9 blog + 4 visual-diff console + 3 sample mode + 15 report + 7 accessibility + 3
-baseline acceptance; 11 is 6 report + 5 mutating flow. Adding a scenario raises its count in the same PR. Lowering one is a
+baseline acceptance; 5 is the mutating flow, which is the whole local lane. Adding a scenario raises its count in the same PR. Lowering one is a
 product decision — a hand-authored PR with the reason written down, never a step on the
 way to green. That is what took the local count from 20 to 6: the console, accessibility
 and edge-case requirements were withdrawn from the lane, not narrowed to pass.

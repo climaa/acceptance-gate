@@ -2,7 +2,6 @@ import type { Route } from '@playwright/test';
 import { test as base } from 'playwright-bdd';
 
 import { ConsolePage } from '../../pages/console';
-import { ReportPage } from '../../pages/report';
 
 /** The only two methods a lane pointed at the one copy of your data may use. */
 const READ_ONLY_METHODS = new Set(['GET', 'HEAD']);
@@ -56,16 +55,12 @@ export interface LocalState {
  */
 export const test = base.extend<{
   console: ConsolePage;
-  report: ReportPage;
   localState: LocalState;
   mayWrite: void;
   readOnly: void;
 }>({
   console: async ({ page }, use) => {
     await use(new ConsolePage(page));
-  },
-  report: async ({ page }, use) => {
-    await use(new ReportPage(page));
   },
   localState: async ({}, use) => {
     await use({});
@@ -116,6 +111,12 @@ export const test = base.extend<{
    * the files it names, and `features/local/visual-diff-flow.feature` is the
    * only one it names today. Writes that never reach the network are guarded by
    * `mayWrite` above.
+   *
+   * Every scenario in the lane carries the tag today, so neither guard refuses
+   * anything on a normal run. That is not a reason to drop them: what they
+   * protect is the scenario nobody has written yet. The read-only half of this
+   * lane was withdrawn one file at a time, and the next thing added here will
+   * be read-only again far more easily than it will be deliberately mutating.
    *
    * Aborting rather than failing inside the handler is deliberate: a throw from
    * a route callback is swallowed by Playwright and the request goes through.

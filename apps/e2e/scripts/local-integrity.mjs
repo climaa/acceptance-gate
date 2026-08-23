@@ -100,14 +100,18 @@ function checkMutatingTags(file, feature) {
 }
 
 /**
- * Scenarios, not Playwright tests: 6 report + 5 mutating flow. This lane has one
- * project, so the two numbers agree today — they would stop agreeing the moment
- * a second project is added, which is why the count is of scenarios either way.
+ * Scenarios, not Playwright tests: the five in the mutating flow, which is now
+ * the whole lane. This lane has one project, so the two numbers agree today —
+ * they would stop agreeing the moment a second project is added, which is why
+ * the count is of scenarios either way.
  *
- * It was 20 — 8 console, 6 report, 3 accessibility, 3 edge cases — until the
- * console, accessibility and edge-case requirements were withdrawn from this
- * lane in a hand-authored change, leaving 6. That is the only way this number
- * may fall; the flow then added 5.
+ * It was 20 — 8 console, 6 report, 3 accessibility, 3 edge cases. The console,
+ * accessibility and edge-case requirements were withdrawn first, leaving 6; the
+ * flow added 5; then `report.feature` was withdrawn too. Each fall was its own
+ * hand-authored change, which is the only way this number may drop.
+ *
+ * What that leaves is a lane where every scenario writes. Nothing here reads
+ * your console without changing it.
  *
  * Exact equality, not a floor, for the same reason the acceptance suite's is:
  * a floor decays into permission to delete. Raising this alongside a new
@@ -115,7 +119,7 @@ function checkMutatingTags(file, feature) {
  * claims, and belongs in its own hand-authored change with the reason written
  * down.
  */
-const EXPECTED_LOCAL_SCENARIOS = 11;
+const EXPECTED_LOCAL_SCENARIOS = 5;
 
 runIntegrityCheck({
   name: 'local-lane',

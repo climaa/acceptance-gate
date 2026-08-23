@@ -127,32 +127,35 @@ at the dev server on **3300** (reusing one `pnpm dev` already has up) and reads
 
 Four things that make it a different lane, not a second copy of the first:
 
-1. **It is read-only, and that is enforced — with one declared exception.** The data
-   behind 3300 is the one copy you have, so `steps/local/fixtures.ts` blocks every
-   non-`GET` request before it reaches the server and fails the scenario naming what it
-   tried. Nothing untagged can delete, prune, accept or start a job even by accident. The
-   exception is `features/local/visual-diff-flow.feature`, whose scenarios carry
-   `@mutating` — the tag is the opt-out, read from `testInfo.tags` at runtime — and which
-   **does** write: it launches a compare, deletes your oldest set and prunes one more,
-   every time the lane runs. It is `@mode:serial`, so a failure stops the rest of the
-   chain, and the lane runs `workers: 1` so it is not rewriting the tree the read-only
-   scenarios are reading.
-2. **Nothing is named.** Your labels, report ids and counts are unknowable, so every
-   assertion compares values on the page with each other — the buckets sum to the total,
-   the review denominator is every bucket except `unchanged`, a bucket and a search term
-   survive a reload.
-3. **It expects a boring report.** A run where nothing moved counts every variant as
-   `unchanged` and writes no rows, which is the commonest report there is — so no scenario
-   depends on a story card existing. The review loop, the comparison modal and the accept
-   gate are the acceptance lane's, where a seeded world can supply them.
+1. **⚠️ Every scenario in it writes to your captures.** The lane is one file,
+   `features/local/visual-diff-flow.feature`, and running it launches a compare in your
+   `.visual-diff`, takes its job lock, **deletes your oldest capture set and prunes one
+   more**. Nothing re-seeds afterwards, so a run costs you two sets — every run, both
+   entry points. There is no way to run the lane without it short of
+   `--grep-invert @mutating`. This lane had a read-only half once; it was withdrawn a
+   file at a time.
+2. **The write guards are still there, and still refuse nothing.** `steps/local/fixtures.ts`
+   blocks every non-`GET` an untagged scenario makes, and refuses any step reaching for
+   `node:fs` from one. Every scenario carries `@mutating` today, so neither fires — they
+   are kept for the scenario nobody has written yet. The tag is not self-grantable:
+   `scripts/local-integrity.mjs` names the only file whose scenarios may carry it, and
+   refuses it on a `Feature` node so an appended scenario cannot inherit the permission.
+3. **Nothing is named.** Your labels, report ids and counts are unknowable, so every step
+   reads what it needs off the page: the flow compares the two sets the pickers offer and
+   deletes _my oldest set_, never a set anyone chose.
 4. **An empty machine fails it, deliberately.** With nothing captured, the `Background`
    fails with a message naming what to run. A skip would have reported "passed" to the
    guard and left the lane asserting nothing.
 
-The lane carries no tags today. It held `@regression` and `@edge-case` while it had
-console, accessibility and edge-case requirements; those were withdrawn, leaving
-`report.feature` alone with nothing to select between. There is still no `@smoke`: a smoke
-level exists to fail a pipeline fast, and this lane gates nothing. Both entry points run
+It is `@mode:serial`, so a failure stops the rest of the chain — a compare that never
+finished cannot be followed by a lock that impersonates it. It runs `workers: 1`, which
+changes nothing for one serial file and is there for the second. And it repairs itself:
+the step that edits `history.json` writes a sidecar backup the `Background` restores, so a
+run killed mid-edit does not leave your newest real run reading as `interrupted` forever.
+
+There are no level tags — `@regression` and `@edge-case` were for choosing between four
+files' worth of scenarios, and there is one file. There is still no `@smoke`: a smoke level
+exists to fail a pipeline fast, and this lane gates nothing. Both entry points run
 `check:local` first, because a lane with no CI behind it is the easiest one to hollow out
 unnoticed.
 

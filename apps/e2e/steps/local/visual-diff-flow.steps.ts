@@ -9,11 +9,9 @@ import type { ConsolePage } from '../../pages/console';
 
 const { Given, When, Then, After } = createBdd(test);
 
-// Reused steps and their home:
-//   "I visit my console"  → report.steps.ts
-//
-// Everything else this flow needs is below, because nothing in the read-only
-// half of this lane has any reason to write.
+// Every step this lane has is in this file. There is no read-only half left to
+// borrow from: `report.feature` and its steps were withdrawn, so the flow is the
+// whole of `features/local/`.
 
 /**
  * The tree the dev server on 3300 reads, as `apps/visual-diff-ui`'s own `dev`
@@ -230,6 +228,14 @@ Given(
   },
 );
 
+/** The console, as the destination the flow's later scenarios start from. It was
+ *  `report.steps.ts`'s until the read-only half of this lane was withdrawn; the
+ *  flow is its only caller now. */
+When('I visit my console', async ({ console: vd }) => {
+  await vd.openHere();
+  await expect(vd.setsTable).toBeVisible();
+});
+
 When(
   'I launch a comparison of the two sets the pickers offer',
   async ({ console: vd, localState }) => {
@@ -241,10 +247,30 @@ When(
 
     await vd.chooseCompare(a, b);
     await vd.startButton.click();
+
+    // The console answers a refused start with an alert in the run panel and
+    // nothing else — no job, no new log. Read here, where it is about the click
+    // that just happened, rather than left for the assertions below to trip over
+    // three steps later.
+    await expect(
+      vd.refusalAlert,
+      'the console refused to start this compare — its own reason is in the run panel',
+    ).toHaveCount(0);
   },
 );
 
-Then("the live log runs to the job's end", async ({ console: vd }) => {
+Then("the live log runs to the job's end", async ({ console: vd, localState }) => {
+  // THIS job's log, not whatever the panel was already showing.
+  //
+  // The current-job region keeps the last finished run on screen forever, and a
+  // finished run's log ends in `exit 0` — so on a console that has ever run
+  // anything, asserting the log alone passes whether or not the job under test
+  // started. That is not hypothetical: a refused start leaves the previous
+  // capture's log sitting there, terminal line and all.
+  //
+  // The region names the job it is showing, so the compare this scenario
+  // launched is named before its ending is read.
+  await expect(vd.currentJob).toContainText(localState.reportId ?? '');
   await expect(vd.liveLog).toBeVisible();
   // Milestone, not growth: a fast job can finish between two reads, so the
   // assertion is the terminal line the contract pins, with time for a real run.

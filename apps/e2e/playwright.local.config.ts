@@ -8,17 +8,24 @@ import { defineBddConfig } from 'playwright-bdd';
  * seeded worlds, and every one of its assertions names a seed fact. This config
  * answers a different question: does the console work against YOUR data — the
  * real `.visual-diff` tree the dev server on 3300 reads. Its requirements live
- * in `features/local/`, in the same Gherkin the acceptance lane uses, and they
- * are strictly READ-ONLY: nothing here may delete, prune, accept or start a job,
- * because the data behind the server is the one copy you have. That rule is a
- * tripwire rather than a promise — see `steps/local/fixtures.ts`.
+ * in `features/local/`, in the same Gherkin the acceptance lane uses.
+ *
+ * ⚠️ Every scenario here WRITES. The lane is one file — the mutating flow — and
+ * a run of it launches a job in your tree, deletes your oldest capture set and
+ * prunes one more. Nothing re-seeds afterwards. There is no read-only half left:
+ * `report.feature` was the last of it and was withdrawn.
+ *
+ * The guards in `steps/local/fixtures.ts` stay anyway. `readOnly` aborts every
+ * non-GET an untagged scenario makes and `mayWrite` refuses an untagged step
+ * that reaches for the filesystem — neither refuses anything today, because
+ * every scenario carries `@mutating`, and both are here for the scenario nobody
+ * has written yet.
  *
  * Because real data cannot be named, no scenario here asserts a label, a report
- * id or a count. They assert invariants BETWEEN values on the page: the buckets
- * sum to the total, the review denominator is every bucket except unchanged, a
- * bucket and a search term survive a reload. The journeys that need named facts
- * — the review loop, the comparison modal, the accept gate — stay in the
- * acceptance lane.
+ * id or a count. Each step reads what it needs off the page: the flow compares
+ * the two sets the pickers offer and deletes "my oldest set", never a set anyone
+ * chose. The journeys that need named facts — the review loop, the comparison
+ * modal, the accept gate's refusals — stay in the acceptance lane.
  *
  * The dev server is reused if `pnpm dev` already has it up, and booted (and torn
  * down) here if not.
@@ -58,14 +65,13 @@ export default defineConfig({
   retries: 0,
   // One worker, and no retry above.
   //
-  // This lane now holds both kinds of scenario against ONE tree:
-  // `visual-diff-flow.feature` deletes a set, prunes another and writes a
-  // report, while `report.feature` reads the same console. Playwright runs
-  // separate files in parallel by default, so without this the read-only
-  // scenarios would be reading a tree the flow is rewriting underneath them —
-  // a race that passes most of the time, which is the worst kind. The
-  // acceptance lane answers the same problem by giving `@mutating` a project of
-  // its own; a lane with one project answers it here.
+  // The lane is one `@mode:serial` file today, so its scenarios would run in
+  // order regardless. This is about the second file: Playwright runs separate
+  // files in parallel by default, and anything added beside a flow that deletes
+  // capture sets would be reading a tree being rewritten underneath it — a race
+  // that passes most of the time, which is the worst kind. The acceptance lane
+  // answered the same problem by giving `@mutating` a project of its own; a lane
+  // with one project answers it here.
   //
   // A retry is worse here than useless: nothing re-seeds your `.visual-diff`, so
   // the second attempt would run against the tree the first one already pruned.
