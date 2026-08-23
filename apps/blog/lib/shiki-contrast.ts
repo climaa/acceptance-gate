@@ -19,7 +19,7 @@
  *
  * This module computes colours; it does not assert them. Whether the rendered
  * page is accessible is axe's claim, made on real DOM by the
- * `An article with code blocks…` scenario in `apps/e2e/features/a11y.feature`.
+ * `An article with code blocks…` scenario in `apps/e2e/features/acceptance/a11y.feature`.
  * CODING_STANDARDS: contrast is axe's, never the differ's and never a token-pair
  * test's.
  */

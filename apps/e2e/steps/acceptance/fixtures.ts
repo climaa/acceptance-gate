@@ -1,11 +1,11 @@
 import { test as base } from 'playwright-bdd';
 
-import { BlogIndexPage } from '../pages/blog-index';
-import { Chrome } from '../pages/chrome';
-import { ComparisonModal } from '../pages/comparison-modal';
-import { ConsolePage } from '../pages/console';
-import { PostPage } from '../pages/post';
-import { ReportPage } from '../pages/report';
+import { BlogIndexPage } from '../../pages/blog-index';
+import { Chrome } from '../../pages/chrome';
+import { ComparisonModal } from '../../pages/comparison-modal';
+import { ConsolePage } from '../../pages/console';
+import { PostPage } from '../../pages/post';
+import { ReportPage } from '../../pages/report';
 
 /** What one scenario's steps hand each other — e.g. the title read off the index
  *  before the click that navigates away from it. A plain object, not a return
@@ -24,8 +24,10 @@ export interface ScenarioState {
  *  file's imports stay the pages it actually drives. Every later scenario extends this
  *  one object.
  *
- *  It lives under `steps/` because that is where `bddgen` looks for the extended `test`
- *  instance — the `steps` glob in playwright.config.ts is the only place it scans. */
+ *  It lives under `steps/acceptance/` because that is where `bddgen` looks for the
+ *  extended `test` instance — the `steps` glob in playwright.config.ts is the only place
+ *  it scans, and it names the lane rather than the layer root so these specs can never
+ *  bind to the local lane's `test` (whose page objects point at the dev server on 3300). */
 export const test = base.extend<{
   blogIndex: BlogIndexPage;
   post: PostPage;

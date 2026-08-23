@@ -13,6 +13,13 @@ export type JobMode = 'capture' | 'compare' | 'run' | 'accept';
  * fits. A hook that cannot be found here is a bug report against the app, never
  * a locator worked around in this file.
  */
+/** A whole-string match for a `hasText` that would otherwise be a substring
+ *  test. Anchored and escaped: capture labels carry `-` and `.`, and a label
+ *  read off the page is data, never a pattern. */
+function exactly(text: string): RegExp {
+  return new RegExp(`^${text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`);
+}
+
 export class ConsolePage {
   readonly setsTable: Locator;
   readonly setRows: Locator;
@@ -90,8 +97,32 @@ export class ConsolePage {
     await this.page.goto(`${VD_HOSTS[world]}/`);
   }
 
+  /** The same console, reached through the running config's `baseURL` instead of
+   *  a named world — how the local lane finds the dev server on 3300. The worlds
+   *  above are absolute by design (one config boots four servers and a scenario
+   *  says which it means); a lane with one server must not name a port at all. */
+  async openHere() {
+    await this.page.goto('/');
+  }
+
+  /**
+   * One set row, by its label EXACTLY.
+   *
+   * Not `hasText`, which is a substring test over the whole row: real capture
+   * labels nest — a tree holding `2026-08-21` alongside `2026-08-21-2` and
+   * `main-2026-08-21` has one label that is a substring of six others, and the
+   * row lookup for the short one resolves to all seven. The seeded worlds' five
+   * labels do not overlap, so only the local lane can see this; the fix belongs
+   * here anyway, because "the row for this set" is a selector-contract question
+   * and not something a step should work around.
+   *
+   * Matched on the label element rather than the row so the `dirty` badge beside
+   * it, and the branch and hash cells after it, cannot join the comparison.
+   */
   setRow(label: string): Locator {
-    return this.setRows.filter({ hasText: label });
+    return this.setRows.filter({
+      has: this.page.locator('.vd-set__label', { hasText: exactly(label) }),
+    });
   }
 
   jobTab(mode: JobMode): Locator {
@@ -141,9 +172,21 @@ export class ConsolePage {
       .click();
   }
 
-  /** One row of the reports panel, by the report id its link carries. */
+  /**
+   * One row of the reports panel, by the report id its link carries — EXACTLY,
+   * for the reason `setRow` above is exact.
+   *
+   * A report id is `<A>__<B>`, so it inherits the nesting of the labels it is
+   * built from: `main-2026-08-22__main-2026-08-21` is a substring of
+   * `main-2026-08-22__main-2026-08-21-2`, which exists as soon as a second set is
+   * captured on the same day and compared. Matched on the link, whose own text is
+   * the id, rather than on the row, whose text is the id run together with the
+   * rest of the cells.
+   */
   reportRow(id: string): Locator {
-    return this.reportRows.filter({ hasText: id });
+    return this.reportRows.filter({
+      has: this.page.getByRole('link', { name: exactly(id) }),
+    });
   }
 
   historyRow(outcome: RegExp): Locator {
@@ -165,6 +208,48 @@ export class ConsolePage {
    * not part of `textContent`, so it never lands in the assertion.
    */
   historyCell(row: Locator, column: string): Locator {
+    return this.cell(row, column);
+  }
+
+  /** The same addressing for the sets table, whose columns are `label`, `sha`,
+   *  `branch`, `date`, `stories` and `size`. Named separately from
+   *  `historyCell` so a step reads as the table it means. */
+  setCell(row: Locator, column: string): Locator {
+    return this.cell(row, column);
+  }
+
+  /** One cell of any `Table` row, by the column header it sits under. */
+  private cell(row: Locator, column: string): Locator {
     return row.locator(`[data-label="${column}"]`);
+  }
+
+  /** The committed corpus above the sets table: its label, its `canonical`
+   *  badge, and the delete it renders disabled rather than omitting. */
+  get canonicalCorpus(): Locator {
+    return this.page.locator('.vd-canonical');
+  }
+
+  /** A set row's label alone. The label cell also carries the `dirty` badge as a
+   *  second text node — deliberately, so a label is never "main-08-11dirty" —
+   *  which means the cell's own text is not the label. */
+  setLabel(row: Locator): Locator {
+    return row.locator('.vd-set__label');
+  }
+
+  /** Every option a picker offers, as text — the compare vocabulary the console
+   *  is willing to offer, which is the sets plus the committed corpus. */
+  pickerOptions(picker: Locator): Locator {
+    return picker.locator('option');
+  }
+
+  /** The report id a reports row links to. The link's own text is that id. */
+  reportLink(row: Locator): Locator {
+    return row.getByRole('link');
+  }
+
+  /** Where the run panel puts the label of a `capture`/`run`, or the two sides
+   *  of a `compare`. Addressed by the ids the panel pins on them. */
+  runField(name: 'label' | 'baseline' | 'candidate' | 'report'): Locator {
+    return this.page.locator(`#vd-run-${name}`);
   }
 }

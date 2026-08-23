@@ -4,11 +4,13 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 # Running the acceptance suite locally
 
-`apps/e2e` is the acceptance suite: Gherkin `.feature` files compiled to Playwright
-specs, run against the **built** blog and the **built** visual-diff console. This page is
-the developer-facing guide to running it on your own machine — including watching it
-execute live, the way a Cypress runner shows every click as it happens. For the suite's
-design (the three-layer split, tags, worlds, the integrity guard) see
+`apps/e2e` holds two Gherkin lanes. The **acceptance** lane (`features/acceptance/`) runs
+against the **built** blog and the **built** visual-diff console on seeded worlds, and
+gates merges. The **local** lane (`features/local/`) runs against the **dev** console on
+3300 and whatever your own `.visual-diff` tree holds; it never runs in CI. This page is the
+developer-facing guide to running both on your own machine — including watching them
+execute live, the way a Cypress runner shows every click as it happens. For their design
+(the three-layer split, tags, worlds, the integrity guards) see
 [`apps/e2e/README.md`](https://github.com/climaa/acceptance-gate/blob/main/apps/e2e/README.md).
 
 ## The one command
@@ -26,14 +28,17 @@ a dev server's. Browsers are **not** installed by `pnpm install`; without the
 
 ## What boots when you run it
 
-The config starts four servers, all from built output. None of them is the dev server:
+The config starts three servers, all from built output. None of them is the dev server:
 
-| Server                 | Port   | What it is                                                           |
-| ---------------------- | ------ | -------------------------------------------------------------------- |
-| blog                   | `3100` | `next start` of `@gate/blog` — not 3000, so a dev server can stay up |
-| visual-diff `seeded`   | `3200` | the console on a seeded, read-only data tree                         |
-| visual-diff `sample`   | `3201` | the console on an **empty** data tree — fixture-fallback mode        |
-| visual-diff `mutating` | `3202` | the console on a tree the `@mutating` scenarios are allowed to wreck |
+| Server               | Port   | What it is                                                           |
+| -------------------- | ------ | -------------------------------------------------------------------- |
+| blog                 | `3100` | `next start` of `@gate/blog` — not 3000, so a dev server can stay up |
+| visual-diff `seeded` | `3200` | the console on a seeded, read-only data tree                         |
+| visual-diff `sample` | `3201` | the console on an **empty** data tree — fixture-fallback mode        |
+
+There used to be a fourth on `3202` — a tree the `@mutating` scenarios were allowed to
+wreck. Those requirements now live in the local lane, against your own captures, so this
+suite boots nothing that anything writes to.
 
 Port **3300** — `pnpm --filter @gate/visual-diff-ui dev`, reading your real
 `.visual-diff` captures — is deliberately not on that list. The suite never targets the
@@ -41,9 +46,8 @@ dev server or your real data: each world's tree is wiped and re-seeded by
 `scripts/seed-visual-diff.mjs` every time its server boots, which is exactly what keeps
 scenarios independent of whatever the last run did.
 
-Locally, the seeded and sample servers are reused if already up
-(`reuseExistingServer`); the mutating one never is, because its tree is the one the
-last run wrecked.
+Locally, both are reused if already up (`reuseExistingServer`) — safe, because neither
+tree is ever written to.
 
 ## The data you're watching is half real, half fabricated — on purpose
 
@@ -94,12 +98,12 @@ Three things to know before trusting what you watch:
    `.features-gen/`, not your `.feature` files. After editing a feature or step file,
    re-run `pnpm exec bddgen` before re-running the scenario — otherwise you are
    watching the previous version execute.
-2. **`@mutating` scenarios don't replay cleanly.** Their world is re-seeded only when
-   its server boots, and UI Mode boots servers once per session — so a second run of a
-   mutating scenario executes against the tree the first run already wrecked. Watch
-   those once per session, or restart UI Mode between runs. Seeded and sample
-   scenarios replay freely: nothing writes to their worlds, and review marks live in
-   `localStorage` with a fresh context per test.
+2. **Everything here replays freely.** Nothing in this suite writes to a world, and
+   review marks live in `localStorage` with a fresh context per test, so a scenario means
+   the same thing the fifth time you run it as the first. The scenarios that did not
+   replay cleanly — the ones that launched a job and deleted a set — are in the local
+   lane now, where the same caveat applies with much sharper teeth: there the tree is
+   yours, and it is not re-seeded at all.
 3. **What you watch is the single honest attempt.** Local runs have `retries: 0`, so a
    failure in UI Mode is the real failure, not one a retry would have absorbed. (CI
    allows one retry but reds the run on a pass-after-retry — see the config's
@@ -108,6 +112,52 @@ Three things to know before trusting what you watch:
 Note that this path skips `check:suite`, the scenario-count integrity guard the
 `test:e2e` script runs. That's fine for watching and debugging; the guarded entry
 points are what CI and `turbo run e2e` use.
+
+## The local lane — your own captures
+
+```bash
+pnpm e2e:ui:local                    # from the repo root: UI Mode against YOUR data
+pnpm --filter @gate/e2e test:local   # or headless, for a verdict
+```
+
+Same Gherkin, same page objects, different question: not _does this build meet its
+requirements_ but _does the console work against the tree I actually captured_. It points
+at the dev server on **3300** (reusing one `pnpm dev` already has up) and reads
+`.visual-diff` at the repo root.
+
+Four things that make it a different lane, not a second copy of the first:
+
+1. **⚠️ Every scenario in it writes to your captures.** The lane is one file,
+   `features/local/visual-diff-flow.feature`, and running it launches a compare in your
+   `.visual-diff`, takes its job lock, **deletes your oldest capture set and prunes one
+   more**. Nothing re-seeds afterwards, so a run costs you two sets — every run, both
+   entry points. There is no way to run the lane without it short of
+   `--grep-invert @mutating`. This lane had a read-only half once; it was withdrawn a
+   file at a time.
+2. **The write guards are still there, and still refuse nothing.** `steps/local/fixtures.ts`
+   blocks every non-`GET` an untagged scenario makes, and refuses any step reaching for
+   `node:fs` from one. Every scenario carries `@mutating` today, so neither fires — they
+   are kept for the scenario nobody has written yet. The tag is not self-grantable:
+   `scripts/local-integrity.mjs` names the only file whose scenarios may carry it, and
+   refuses it on a `Feature` node so an appended scenario cannot inherit the permission.
+3. **Nothing is named.** Your labels, report ids and counts are unknowable, so every step
+   reads what it needs off the page: the flow compares the two sets the pickers offer and
+   deletes _my oldest set_, never a set anyone chose.
+4. **An empty machine fails it, deliberately.** With nothing captured, the `Background`
+   fails with a message naming what to run. A skip would have reported "passed" to the
+   guard and left the lane asserting nothing.
+
+It is `@mode:serial`, so a failure stops the rest of the chain — a compare that never
+finished cannot be followed by a lock that impersonates it. It runs `workers: 1`, which
+changes nothing for one serial file and is there for the second. And it repairs itself:
+the step that edits `history.json` writes a sidecar backup the `Background` restores, so a
+run killed mid-edit does not leave your newest real run reading as `interrupted` forever.
+
+There are no level tags — `@regression` and `@edge-case` were for choosing between four
+files' worth of scenarios, and there is one file. There is still no `@smoke`: a smoke level
+exists to fail a pipeline fast, and this lane gates nothing. Both entry points run
+`check:local` first, because a lane with no CI behind it is the easiest one to hollow out
+unnoticed.
 
 ## Aiming at a deployment — what `E2E_BASE_URL` does and does not do
 
@@ -121,8 +171,10 @@ seeds and serves: a deployed instance cannot host them. The deployed console at
 `acceptance-gate-visual-diff-ui.vercel.app` has an empty data directory, no Docker and
 no capture host — which is precisely the state the **sample** world reproduces locally,
 on purpose. So "validate what's on `main`" means checking out `main` and running
-`turbo run e2e` against it: same commit, full 45-scenario coverage, including the
-worlds a deployment can never be in.
+`turbo run e2e` against it: same commit, the acceptance lane's full coverage, including
+the worlds a deployment can never be in. (The exact scenario count lives in
+`scripts/suite-integrity.mjs`, which is the only place that number is stated — a count
+repeated in prose goes stale silently.)
 
 ## Reading a run after the fact
 

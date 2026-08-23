@@ -68,6 +68,15 @@ export class ReportPage {
     await this.page.goto(`${VD_HOSTS.seeded}/report/${reportId}?${query}`);
   }
 
+  /** One report through the running config's `baseURL` — the local lane's route
+   *  to the dev server on 3300, deep link included. Takes the id as given, so an
+   *  address the console could never mint reaches the app unmangled and the
+   *  404 it answers with is the app's own. */
+  async openHere(reportId: string, params: Record<string, string> = {}) {
+    const query = new URLSearchParams(params).toString();
+    await this.page.goto(`/report/${reportId}${query ? `?${query}` : ''}`);
+  }
+
   bucketChip(bucket: string): Locator {
     // exact: 'changed' must not also match the 'unchanged' chip.
     return this.bucketChips.filter({
@@ -120,6 +129,29 @@ export class ReportPage {
     return this.storyCard(title).getByText('reviewing does not clear this', {
       exact: false,
     });
+  }
+
+  /** A chip's count, which `BucketChip` attaches as the description rather than
+   *  folding into the accessible name — so the name stays the bucket word and
+   *  `changed` never matches `unchanged`. The number is therefore read from the
+   *  element, not parsed out of the chip's text. */
+  bucketCount(bucket: string): Locator {
+    return this.bucketChip(bucket).locator('.ds-bucket-chip__count');
+  }
+
+  /** What the report says when there is nothing under the bar. `EmptyState`
+   *  carries no role of its own, so the pinned copy is the surface — which is
+   *  the right one anyway: reading the wrong one of the three answers as "your
+   *  filter is too narrow" is how a passing run is mistaken for a broken
+   *  screen. */
+  get emptyMessage(): Locator {
+    return this.results.locator('.ds-empty__message');
+  }
+
+  /** Every story card's own reporting chip — one per visible card, naming the
+   *  bucket that card is in. */
+  get cardBuckets(): Locator {
+    return this.storyCards.locator('.ds-bucket-chip__label');
   }
 
   compareTool(title: string, tool: 'blink' | 'slider overlay'): Locator {

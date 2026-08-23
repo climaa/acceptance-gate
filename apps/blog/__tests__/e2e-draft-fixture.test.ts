@@ -28,7 +28,15 @@ const FIXTURE = path.resolve(
   'e2e-draft-fixture.mdx',
 );
 
-const E2E_STEPS = path.resolve(__dirname, '..', '..', 'e2e', 'steps', 'blog.steps.ts');
+const E2E_STEPS = path.resolve(
+  __dirname,
+  '..',
+  '..',
+  'e2e',
+  'steps',
+  'acceptance',
+  'blog.steps.ts',
+);
 
 /**
  * Duplicated rather than imported: `blog.steps.ts` imports `@playwright/test`

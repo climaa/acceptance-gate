@@ -1,19 +1,47 @@
 import { defineConfig, devices } from '@playwright/test';
+import { defineBddConfig } from 'playwright-bdd';
 
 /**
- * The LOCAL exploration config — deliberately not the acceptance suite.
+ * The LOCAL lane — deliberately not the acceptance suite.
  *
- * `playwright.config.ts` runs the `.feature` requirements against built apps and
- * seeded worlds, and every one of its assertions names seed facts. This config
+ * `playwright.config.ts` runs `features/acceptance/` against built apps and
+ * seeded worlds, and every one of its assertions names a seed fact. This config
  * answers a different question: does the console work against YOUR data — the
- * real `.visual-diff` tree the dev server on 3300 reads. Its specs live in
- * `local/`, are plain Playwright (no bddgen, no integrity guard, no scenario
- * count), and are strictly READ-ONLY: nothing here may delete, prune, or start
- * a job, because the data behind the server is the one copy you have.
+ * real `.visual-diff` tree the dev server on 3300 reads. Its requirements live
+ * in `features/local/`, in the same Gherkin the acceptance lane uses.
  *
- * The dev server is reused if `pnpm dev` already has it up, and booted (and
- * torn down) here if not.
+ * ⚠️ Every scenario here WRITES. The lane is one file — the mutating flow — and
+ * a run of it launches a job in your tree, deletes your oldest capture set and
+ * prunes one more. Nothing re-seeds afterwards. There is no read-only half left:
+ * `report.feature` was the last of it and was withdrawn.
+ *
+ * The guards in `steps/local/fixtures.ts` stay anyway. `readOnly` aborts every
+ * non-GET an untagged scenario makes and `mayWrite` refuses an untagged step
+ * that reaches for the filesystem — neither refuses anything today, because
+ * every scenario carries `@mutating`, and both are here for the scenario nobody
+ * has written yet.
+ *
+ * Because real data cannot be named, no scenario here asserts a label, a report
+ * id or a count. Each step reads what it needs off the page: the flow compares
+ * the two sets the pickers offer and deletes "my oldest set", never a set anyone
+ * chose. The journeys that need named facts — the review loop, the comparison
+ * modal, the accept gate's refusals — stay in the acceptance lane.
+ *
+ * The dev server is reused if `pnpm dev` already has it up, and booted (and torn
+ * down) here if not.
  */
+
+// A second, isolated BDD config. `outputDir` is explicit because the default is
+// `.features-gen`, which belongs to the acceptance lane — two lanes generating
+// into one directory would have each `bddgen` delete the other's specs. The
+// `steps` glob is what binds these specs to THIS lane's `test`: it reaches
+// `steps/local/fixtures.ts` and never the acceptance lane's, whose page objects
+// navigate to absolute world URLs on 3200-3201.
+const testDir = defineBddConfig({
+  features: 'features/local/**/*.feature',
+  steps: 'steps/local/**/*.ts',
+  outputDir: '.features-gen-local',
+});
 
 const LOCAL_URL = 'http://localhost:3300';
 
@@ -27,7 +55,7 @@ if (process.env.CI) {
 }
 
 export default defineConfig({
-  testDir: './local',
+  testDir,
   // Separate artifact dirs so a local exploration never clobbers the last
   // acceptance run's report.
   outputDir: 'test-results-local',
@@ -35,10 +63,26 @@ export default defineConfig({
   timeout: 30_000,
   expect: { timeout: 10_000 },
   retries: 0,
+  // One worker, and no retry above.
+  //
+  // The lane is one `@mode:serial` file today, so its scenarios would run in
+  // order regardless. This is about the second file: Playwright runs separate
+  // files in parallel by default, and anything added beside a flow that deletes
+  // capture sets would be reading a tree being rewritten underneath it — a race
+  // that passes most of the time, which is the worst kind. The acceptance lane
+  // answered the same problem by giving `@mutating` a project of its own; a lane
+  // with one project answers it here.
+  //
+  // A retry is worse here than useless: nothing re-seeds your `.visual-diff`, so
+  // the second attempt would run against the tree the first one already pruned.
+  workers: 1,
   use: {
     baseURL: LOCAL_URL,
     trace: 'retain-on-failure',
   },
+  // One project. The console is a desktop surface, and the mobile presentations
+  // that do differ — the comparison sheet below 768px — belong to scenarios this
+  // lane deliberately does not carry.
   projects: [{ name: 'desktop', use: { ...devices['Desktop Chrome'] } }],
   webServer: {
     command: 'pnpm --filter @gate/visual-diff-ui dev',

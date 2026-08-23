@@ -4,6 +4,12 @@
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "noEmit": true
   },
-  "include": ["*.ts", "local", "pages", "steps"],
-  "exclude": ["node_modules", ".features-gen", "playwright-report", "test-results"]
+  "include": ["*.ts", "pages", "steps"],
+  "exclude": [
+    "node_modules",
+    ".features-gen",
+    ".features-gen-local",
+    "playwright-report",
+    "test-results"
+  ]
 }

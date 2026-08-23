@@ -60,7 +60,7 @@ narrates the pages they compose.
 Three entry-point flows, each with real coverage at a different layer today:
 
 - **F1 (Index → Post)** — click a card, land on the article. Covered end-to-end: the "Read a
-  full article" scenario in `apps/e2e/features/blog.feature` opens the first article from the
+  full article" scenario in `apps/e2e/features/acceptance/blog.feature` opens the first article from the
   index and asserts the body renders.
 - **F2 (Tag → Filtered index)** — any tag pill routes to `/tags/[tag]`, same index template,
   `EmptyState` when a tag has no posts. **No e2e scenario covers this yet** — it's asserted only
@@ -115,7 +115,7 @@ tag), each in all four variants the differ's own policy already names (desktop/m
 light/dark). That's a different matrix from the one on
 [Diff Policy](?path=/docs/docs-qa-diff-policy--docs): this one is routes, that one is Storybook
 stories. `packages/visual-diff` only ever captures stories today — there is no page-level
-pixel-diff in this repo yet. `apps/e2e/features/blog.feature` covers the same three page types
+pixel-diff in this repo yet. `apps/e2e/features/acceptance/blog.feature` covers the same three page types
 functionally (the index lists articles, an article opens and renders, drafts stay hidden), but
 none of that asserts appearance.
 
