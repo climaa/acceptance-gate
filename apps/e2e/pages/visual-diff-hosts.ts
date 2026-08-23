@@ -1,20 +1,23 @@
 import * as path from 'node:path';
 
 /**
- * The three visual-diff worlds, one constant per world — the blog's
- * one-constant port rule, three times over.
+ * The two visual-diff worlds, one constant per world — the blog's
+ * one-constant port rule, twice over.
  *
- * The suite boots one build of `@gate/visual-diff-ui` three times, each against
- * its own data directory, because the console's three interesting states are
- * three trees on disk and not three code paths:
+ * The suite boots one build of `@gate/visual-diff-ui` twice, each against its
+ * own data directory, because the console's interesting states are trees on disk
+ * and not code paths:
  *
  *   seeded    read-only. Nothing mutates it, so every read-only scenario can
  *             run against it in parallel, in both projects.
  *   sample    an EMPTY data directory, which is what a deployed instance with
  *             nothing captured looks like: the app falls back to its committed
  *             fixtures and badges itself.
- *   mutating  the `@mutating` project's own world, serial, and its to wreck —
- *             a job runs in it, a set is deleted from it, the rest are pruned.
+ *
+ * Both are read-only, and that is now the whole list: the world a job ran in —
+ * wrecked by a delete and a prune — belonged to the `@mutating` project, and
+ * those requirements moved to `features/local/`, where they run against your own
+ * `.visual-diff` instead of a seeded copy.
  *
  * `E2E_BASE_URL` never applies to any of them: that override aims the blog
  * suite at an already-running deployment, and these three servers are booted
@@ -23,7 +26,6 @@ import * as path from 'node:path';
 export const VD_HOSTS = {
   seeded: 'http://localhost:3200',
   sample: 'http://localhost:3201',
-  mutating: 'http://localhost:3202',
 } as const;
 
 export type VdWorld = keyof typeof VD_HOSTS;
@@ -40,13 +42,12 @@ export const VD_WORLDS_DIR = path.join(import.meta.dirname, '..', '.worlds');
  * module is a `.mjs` this workspace's `tsconfig` cannot type (`allowJs: false`,
  * no declarations), and the seed script — a `.mjs` itself — does import it.
  *
- * Written once for both readers of it. `playwright.config.ts` hands it to the
- * mutating world's server as `VISUAL_DIFF_FAKE_HOST_FINGERPRINT`, which is the
- * whole D3 seam: the app reads it server-side and reports it from
- * `GET /api/env`, so a scenario drives the accept gate's decision from one
- * variable and the client cannot disagree with the server about what host it is
- * on. The accept steps read the same constant back off the screen. Inert for
- * every scenario except the matched-host accept (#285).
+ * What reads it now is the accept scenario that cannot run: on a world with no
+ * daemon the console degrades accept to a copyable container command, and this
+ * is the image that command must name. The seed script still understands
+ * `--mutating`, and `VISUAL_DIFF_FAKE_HOST_FINGERPRINT` is still the server-side
+ * D3 seam, but no world this config boots declares it — the matched-host accept
+ * moved to `features/local/`, where the host is your actual machine.
  */
 export const VD_PINNED_IMAGE = 'mcr.microsoft.com/playwright:v1.62.1-noble';
 

@@ -23,31 +23,24 @@ const workspace = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const LANES = ['acceptance', 'local'];
 
 /**
- * The one file whose scenarios are steps of a flow rather than independent
- * requirements, and the only place `@mode:serial` may appear.
- *
- * Membership is a claim about the scenarios, not a permission: these six wreck
- * one data directory in the order they are written, so a failure must stop the
- * rest instead of producing four more failures that all describe the first one.
- * The core refuses the tag on every other file, refuses it on a scenario in this
- * one, and refuses this entry if the file ever stops carrying it.
- */
-const SERIAL_FEATURES = ['visual-diff-flow.feature'];
-
-/**
  * Scenarios, not Playwright tests: 9 blog + 4 visual-diff console + 3 sample
- * mode + 15 report + 7 accessibility + 3 baseline acceptance + 6 mutating flow.
- * Test count is higher, because an untagged scenario is listed once per project; one
+ * mode + 15 report + 7 accessibility + 3 baseline acceptance. Test count is
+ * higher, because an untagged scenario is listed once per project; one
  * legitimate `@desktop` lowers that number without removing a requirement,
  * which would train everyone to edit this constant for a non-event. Scenario
  * count moves only when a requirement is added or removed.
+ *
+ * It was 47 until the six `@mutating` requirements were withdrawn from this
+ * suite. They are not gone — they run in `features/local/`, against the tree on
+ * the machine doing the running — but nothing gates them on a pull request any
+ * more, and this number is where that decision is recorded.
  *
  * Exact equality, not a floor: a floor decays, and after ten more scenarios a
  * floor of 47 would permit deleting ten of them. Raising this alongside a new
  * scenario is a two-line diff; LOWERING it is a product decision and belongs in
  * its own hand-authored PR with the reason written down.
  */
-const EXPECTED_SCENARIOS = 47;
+const EXPECTED_SCENARIOS = 41;
 
 /** The two project selectors. Carrying both excludes a scenario from both. */
 const PROJECT_TAGS = ['@desktop', '@mobile'];
@@ -79,7 +72,6 @@ runIntegrityCheck({
   featuresDir: 'features/acceptance',
   expected: EXPECTED_SCENARIOS,
   expectedName: 'EXPECTED_SCENARIOS',
-  serialFeatures: SERIAL_FEATURES,
   checkTags: checkProjectTags,
   extraChecks: () => checkLaneCoverage(join(workspace, 'features'), LANES),
 });

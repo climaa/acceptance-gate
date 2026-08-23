@@ -1,12 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 import { defineBddConfig } from 'playwright-bdd';
 
-import {
-  VD_HOSTS,
-  VD_PINNED_IMAGE,
-  type VdWorld,
-  vdWorldDir,
-} from './pages/visual-diff-hosts';
+import { VD_HOSTS, type VdWorld, vdWorldDir } from './pages/visual-diff-hosts';
 
 // Generate Playwright specs from Gherkin .feature files + step definitions.
 // The returned path is where `bddgen` writes the generated specs.
@@ -65,10 +60,6 @@ const WORLDS: Record<VdWorld, World> = {
      says when there is no daemon must not depend on which ran it. */
   seeded: { seedFlags: [], env: { VISUAL_DIFF_FAKE_DOCKER: '0' } },
   sample: { seedFlags: ['--empty'], env: { VISUAL_DIFF_FAKE_DOCKER: '0' } },
-  mutating: {
-    seedFlags: ['--mutating'],
-    env: { VISUAL_DIFF_FAKE_HOST_FINGERPRINT: VD_PINNED_IMAGE },
-  },
 };
 
 /**
@@ -79,10 +70,6 @@ const WORLDS: Record<VdWorld, World> = {
  * `VISUAL_DIFF_DATA_DIR` is absolute because `next start` runs with the app's
  * own workspace as its working directory, and a relative value would resolve
  * there, find nothing, and be reported as sample mode rather than as an error.
- *
- * The mutating world never reuses a running server: its tree is the one a
- * previous run wrecked, and re-seeding it is exactly what makes its scenarios
- * order-independent of the last run.
  */
 function visualDiffServer(world: VdWorld) {
   const { seedFlags, env } = WORLDS[world];
@@ -95,7 +82,7 @@ function visualDiffServer(world: VdWorld) {
     command: `node ${seed.join(' ')} && pnpm --filter @gate/visual-diff-ui exec next start --port ${port}`,
     url,
     env: { VISUAL_DIFF_DATA_DIR: dataDir, ...env },
-    reuseExistingServer: world !== 'mutating' && !isCI,
+    reuseExistingServer: !isCI,
     timeout: 120_000,
   };
 }
@@ -136,43 +123,22 @@ export default defineConfig({
     // Trace the actual failing attempt, not only a retried run.
     trace: 'retain-on-failure',
   },
-  // Three projects select on tags: @desktop → desktop only, @mobile → mobile
-  // only, untagged → both. Pixel 5 is Android Chrome, so both share the one
-  // Chromium install. `@mutating` is a world, not a form factor: those
-  // scenarios wreck a server's data directory, so they leave both base projects
-  // and run alone in the third.
+  // Two projects select on tags: @desktop → desktop only, @mobile → mobile only,
+  // untagged → both. Pixel 5 is Android Chrome, so both share the one Chromium
+  // install.
   projects: [
     {
       name: 'desktop',
       use: { ...devices['Desktop Chrome'] },
-      grepInvert: /@mobile|@mutating/,
+      grepInvert: /@mobile/,
     },
     {
       name: 'mobile',
       use: { ...devices['Pixel 5'] },
-      grepInvert: /@desktop|@mutating/,
-    },
-    {
-      name: 'mutating',
-      use: { ...devices['Desktop Chrome'] },
-      grep: /@mutating/,
-      // One worker and no intra-file parallelism: these scenarios share one
-      // data directory and one job lock, so they run one after another in the
-      // order the .feature declares them.
-      workers: 1,
-      fullyParallel: false,
-      // And no retry, unlike every other project. This world is seeded once, at
-      // webServer boot — a retry replays against the tree the first attempt
-      // already wrecked, so its result describes a world no scenario declared.
-      // `visual-diff-flow.feature` is `@mode:serial`, which widens that from one
-      // scenario to the whole flow: Playwright retries a serial group together,
-      // from the start. The suite-wide `failOnFlakyTests` already reds a
-      // pass-on-retry, so the retry was buying only the flaky-vs-failed label
-      // here, at the price of a second run against a different world.
-      retries: 0,
+      grepInvert: /@desktop/,
     },
   ],
-  // Four servers, all BUILT — production behavior (draft filtering, prerendered
+  // Three servers, all BUILT — production behavior (draft filtering, prerendered
   // routes, the real cache-tag invalidation), not a dev server's. `turbo run
   // e2e` builds both apps first, via the task dependencies in the root
   // turbo.json.
@@ -185,6 +151,5 @@ export default defineConfig({
     },
     visualDiffServer('seeded'),
     visualDiffServer('sample'),
-    visualDiffServer('mutating'),
   ],
 });

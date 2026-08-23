@@ -29,7 +29,7 @@ import { defineBddConfig } from 'playwright-bdd';
 // into one directory would have each `bddgen` delete the other's specs. The
 // `steps` glob is what binds these specs to THIS lane's `test`: it reaches
 // `steps/local/fixtures.ts` and never the acceptance lane's, whose page objects
-// navigate to absolute world URLs on 3200-3202.
+// navigate to absolute world URLs on 3200-3201.
 const testDir = defineBddConfig({
   features: 'features/local/**/*.feature',
   steps: 'steps/local/**/*.ts',

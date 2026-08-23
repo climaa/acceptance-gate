@@ -48,7 +48,7 @@ export interface LocalState {
  * The local lane's `test`, named in `playwright.local.config.ts` as
  * `importTestFrom`. Two lanes now export a `test`, and the generated specs must
  * not be left to guess which: the acceptance lane's fixtures navigate to
- * absolute world URLs on 3200-3202, so a local scenario that bound to them
+ * absolute world URLs on 3200-3201, so a local scenario that bound to them
  * would silently leave the dev server this config booted.
  *
  * Page objects come from the shared `pages/` — the same markup contract the

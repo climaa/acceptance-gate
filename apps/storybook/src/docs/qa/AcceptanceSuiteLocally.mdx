@@ -28,14 +28,17 @@ a dev server's. Browsers are **not** installed by `pnpm install`; without the
 
 ## What boots when you run it
 
-The config starts four servers, all from built output. None of them is the dev server:
+The config starts three servers, all from built output. None of them is the dev server:
 
-| Server                 | Port   | What it is                                                           |
-| ---------------------- | ------ | -------------------------------------------------------------------- |
-| blog                   | `3100` | `next start` of `@gate/blog` — not 3000, so a dev server can stay up |
-| visual-diff `seeded`   | `3200` | the console on a seeded, read-only data tree                         |
-| visual-diff `sample`   | `3201` | the console on an **empty** data tree — fixture-fallback mode        |
-| visual-diff `mutating` | `3202` | the console on a tree the `@mutating` scenarios are allowed to wreck |
+| Server               | Port   | What it is                                                           |
+| -------------------- | ------ | -------------------------------------------------------------------- |
+| blog                 | `3100` | `next start` of `@gate/blog` — not 3000, so a dev server can stay up |
+| visual-diff `seeded` | `3200` | the console on a seeded, read-only data tree                         |
+| visual-diff `sample` | `3201` | the console on an **empty** data tree — fixture-fallback mode        |
+
+There used to be a fourth on `3202` — a tree the `@mutating` scenarios were allowed to
+wreck. Those requirements now live in the local lane, against your own captures, so this
+suite boots nothing that anything writes to.
 
 Port **3300** — `pnpm --filter @gate/visual-diff-ui dev`, reading your real
 `.visual-diff` captures — is deliberately not on that list. The suite never targets the
@@ -43,9 +46,8 @@ dev server or your real data: each world's tree is wiped and re-seeded by
 `scripts/seed-visual-diff.mjs` every time its server boots, which is exactly what keeps
 scenarios independent of whatever the last run did.
 
-Locally, the seeded and sample servers are reused if already up
-(`reuseExistingServer`); the mutating one never is, because its tree is the one the
-last run wrecked.
+Locally, both are reused if already up (`reuseExistingServer`) — safe, because neither
+tree is ever written to.
 
 ## The data you're watching is half real, half fabricated — on purpose
 
@@ -96,15 +98,12 @@ Three things to know before trusting what you watch:
    `.features-gen/`, not your `.feature` files. After editing a feature or step file,
    re-run `pnpm exec bddgen` before re-running the scenario — otherwise you are
    watching the previous version execute.
-2. **`@mutating` scenarios don't replay cleanly.** Their world is re-seeded only when
-   its server boots, and UI Mode boots servers once per session — so a second run of a
-   mutating scenario executes against the tree the first run already wrecked. Watch
-   those once per session, or restart UI Mode between runs. They are also one flow:
-   `features/acceptance/visual-diff-flow.feature` is tagged `@mode:serial`, so Playwright
-   skips every scenario after a failed one, and a mid-flow scenario re-run on its own is
-   being asked about a world the scenarios before it never built. Seeded and sample
-   scenarios replay freely: nothing writes to their worlds, and review marks live in
-   `localStorage` with a fresh context per test.
+2. **Everything here replays freely.** Nothing in this suite writes to a world, and
+   review marks live in `localStorage` with a fresh context per test, so a scenario means
+   the same thing the fifth time you run it as the first. The scenarios that did not
+   replay cleanly — the ones that launched a job and deleted a set — are in the local
+   lane now, where the same caveat applies with much sharper teeth: there the tree is
+   yours, and it is not re-seeded at all.
 3. **What you watch is the single honest attempt.** Local runs have `retries: 0`, so a
    failure in UI Mode is the real failure, not one a retry would have absorbed. (CI
    allows one retry but reds the run on a pass-after-retry — see the config's

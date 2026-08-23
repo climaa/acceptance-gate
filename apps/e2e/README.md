@@ -37,7 +37,7 @@ That asymmetry is the point: the two lanes ask different questions of the **same
 so they share one selector contract and a rename in `packages/ui` is still a one-file edit
 here. What they must not share is a `test` instance — each lane's `steps` glob reaches only
 its own `fixtures.ts`, so a local scenario can never bind to page objects that navigate to
-the acceptance worlds on 3200-3202. Prefer role-based locators (`getByRole`) over CSS: they hold
+the acceptance worlds on 3200-3201. Prefer role-based locators (`getByRole`) over CSS: they hold
 through a restyle, and a locator that cannot find the role is usually a real
 accessibility defect rather than a broken test.
 
@@ -119,7 +119,7 @@ nothing. Scenarios here are run as a lane or picked by name in UI Mode. There is
 `@smoke`: a smoke level exists to fail a pipeline fast, and this lane gates nothing.
 
 `check:local` no longer carries a level rule, so nothing stops a tag being added back —
-but `features/acceptance/` is where tags are load-bearing today (its three projects grep
+but `features/acceptance/` is where tags are load-bearing today (its two projects grep
 on them), and a level returning here should bring its rule back with it.
 
 ### The one flow that writes
@@ -175,8 +175,8 @@ server and each costs about a second.
 | `scripts/suite-integrity.mjs` | `features/acceptance/` | `EXPECTED_SCENARIOS` **47**       | `@desktop`+`@mobile` at once; every `.feature` under `features/` is in a lane; `@mode:serial` only on a declared flow file |
 | `scripts/local-integrity.mjs` | `features/local/`      | `EXPECTED_LOCAL_SCENARIOS` **11** | `@mode:serial` only on a declared flow file                                                                                |
 
-47 is 9 blog + 4 visual-diff console + 3 sample mode + 15 report + 7 accessibility + 3
-baseline acceptance + 6 mutating flow; 11 is 6 report + 5 mutating flow. Adding a scenario raises its count in the same PR. Lowering one is a
+41 is 9 blog + 4 visual-diff console + 3 sample mode + 15 report + 7 accessibility + 3
+baseline acceptance; 11 is 6 report + 5 mutating flow. Adding a scenario raises its count in the same PR. Lowering one is a
 product decision — a hand-authored PR with the reason written down, never a step on the
 way to green. That is what took the local count from 20 to 6: the console, accessibility
 and edge-case requirements were withdrawn from the lane, not narrowed to pass.
@@ -193,61 +193,44 @@ narrow quietly, so `test:local` and `e2e:ui:local` both run it before opening a 
 
 ## Tags select projects
 
-The suite defines three projects: `desktop` (Desktop Chrome), `mobile` (Pixel 5, Android
-Chrome — so both share the one Chromium install) and `mutating` (Desktop Chrome, one
-worker). A scenario's tags pick which of them run it:
+The suite defines two projects: `desktop` (Desktop Chrome) and `mobile` (Pixel 5, Android
+Chrome — so both share the one Chromium install). A scenario's tags pick which of them
+run it:
 
-| Tag on the scenario | Runs in                        |
-| ------------------- | ------------------------------ |
-| `@desktop`          | `desktop` only                 |
-| `@mobile`           | `mobile` only                  |
-| `@mutating`         | `mutating` only, one at a time |
-| _untagged_          | `desktop` and `mobile`         |
+| Tag on the scenario | Runs in                |
+| ------------------- | ---------------------- |
+| `@desktop`          | `desktop` only         |
+| `@mobile`           | `mobile` only          |
+| _untagged_          | `desktop` and `mobile` |
 
 Untagged is the default on purpose: a journey that is only claimed on one form factor
 should say so out loud. `@desktop` and `@mobile` at once means neither project runs it —
 each project excludes the other's tag — so the integrity guard refuses that combination
 by name.
 
-`@mutating` is a world, not a form factor. Those scenarios wreck a server's data
-directory — they launch a job, promote baselines, delete a snapshot set, prune the rest —
-so they leave both base projects and run alone in a third one with `workers: 1` and
-`fullyParallel: false`, in the order their `.feature` declares them. It is world
-vocabulary, not playwright-bdd control vocabulary, so it is deliberately NOT in the
-integrity guard's `CONTROL_TAGS` denylist. That project also runs with `retries: 0`: its
-world is seeded once at boot, so a retry replays against the tree the first attempt
-already wrecked.
+This suite has no mutating project any more. The requirements that wrecked a world —
+launch a job, promote baselines, delete a set, prune the rest — moved to
+`features/local/visual-diff-flow.feature`, where they run against the `.visual-diff` tree
+on the machine doing the running. **Nothing gates them on a pull request.** That is a
+deliberate trade, recorded in `EXPECTED_SCENARIOS` where it can be read back: the accept
+path is now covered only by whoever runs `pnpm test:local`.
 
-### The mutating flow
+`@mutating` still exists as a tag, and it means something else there — the permission to
+write, and the only way past the local lane's read-only tripwire. It selects no project in
+this suite.
 
-All six of them live in one file, `features/acceptance/visual-diff-flow.feature`, and it
-is the only file in the repo tagged `@mode:serial`. Ordering alone was never the point —
-the project already gave them that. Serial adds the dependency: Playwright **skips every
-scenario after a failure**, so a broken compare stops the accept instead of letting it
-fail a second time against a world that was never built. Before this they were spread
-across two files and chained only by alphabetical filename order, which is not a decision
-anyone had written down.
+## The two visual-diff worlds
 
-Read that file top to bottom: it is one flow, and its order is what it runs against.
-Adding a scenario to it joins the chain — the scenario before yours must pass for yours
-to run at all. A requirement that does not belong to the flow belongs in another file.
+The console's interesting states are trees on disk, not code paths, so one build of
+`@gate/visual-diff-ui` is booted twice against two data directories:
 
-`@mode:serial` is playwright-bdd control vocabulary and stays refused everywhere else:
-`SERIAL_FEATURES` in `scripts/suite-integrity.mjs` names the one file allowed to carry
-it, on its `Feature` and never on a scenario (playwright-bdd ignores it there, so it
-would read as coupled and run as isolated). Naming a file and not tagging it is refused
-too, so the list cannot rot into permission nobody is using.
+| World    | Port   | `VISUAL_DIFF_DATA_DIR`   | Who may write to it          |
+| -------- | ------ | ------------------------ | ---------------------------- |
+| `seeded` | `3200` | `.worlds/seeded`         | nobody — read-only scenarios |
+| `sample` | `3201` | `.worlds/sample` (empty) | nobody — there is nothing to |
 
-## The three visual-diff worlds
-
-The console's interesting states are three trees on disk, not three code paths, so one
-build of `@gate/visual-diff-ui` is booted three times against three data directories:
-
-| World      | Port   | `VISUAL_DIFF_DATA_DIR`   | Who may write to it               |
-| ---------- | ------ | ------------------------ | --------------------------------- |
-| `seeded`   | `3200` | `.worlds/seeded`         | nobody — read-only scenarios      |
-| `sample`   | `3201` | `.worlds/sample` (empty) | nobody — there is nothing to      |
-| `mutating` | `3202` | `.worlds/mutating`       | the `@mutating` project, serially |
+Both are read-only, which is the whole of why this suite is order-independent. The world a
+job ran in was the third, on `3202`; it went with the scenarios that wrecked it.
 
 `pages/visual-diff-hosts.ts` is the one place a world's URL, its directory and the
 pinned image its server claims are written; `playwright.config.ts` and the steps both
@@ -274,17 +257,11 @@ The `sample` world seeds nothing at all. An empty data directory is exactly what
 deployed instance that has captured nothing looks like, so the app falls back to its
 committed fixtures and badges itself — which is the state those scenarios are about.
 
-The `mutating` world never reuses a running server (`reuseExistingServer: false`): its
-tree is the one the last run wrecked, and re-seeding it is what keeps its scenarios
-independent of that run. Its server also declares
-`VISUAL_DIFF_FAKE_HOST_FINGERPRINT` — the D3 seam, server-side, inert for every scenario
-except the matched-host accept.
-
-Everywhere else, scenarios stay order-independent because of what the worlds are, not
-because anyone asserts it: review marks live in `localStorage` and every test gets a
-fresh context, and the read-only worlds are never written to. Everything that does write
-is `@mutating`, and those six are order-DEPENDENT on purpose — one flow, in one file,
-declared `@mode:serial` (see [The mutating flow](#the-mutating-flow)).
+Scenarios stay order-independent because of what the worlds are, not because anyone
+asserts it: review marks live in `localStorage` and every test gets a fresh context, and
+neither world is ever written to. The seed script still understands `--mutating` — it is
+what wrote baselines and skipped the worktree hold — and `apps/visual-diff-ui`'s own unit
+tests still exercise that flag; nothing in this suite passes it.
 
 `apps/visual-diff-ui/__tests__/seed.test.ts` reads the seed's output back through that
 app's own zod schemas and re-runs it to check the tree is the same twice — a seed the
@@ -296,7 +273,6 @@ run.
 `@playwright/test` is pinned **exactly**, no caret. That same version is transcribed into
 the visual-diff capture container tag (`mcr.microsoft.com/playwright:v1.62.1-noble`, named
 in `packages/visual-diff/src/policy.mjs` and again in this workspace's
-`pages/visual-diff-hosts.ts`, where the mutating world's server and the accept scenarios
-both read it from) — so a Playwright bump moves the image tag, the baselines and this pin
+`pages/visual-diff-hosts.ts`, which is where the accept scenario reads it from) — so a Playwright bump moves the image tag, the baselines and this pin
 together, a hand-authored change and never a bot PR. Dependabot ignores `@playwright/*`
 for that reason.
