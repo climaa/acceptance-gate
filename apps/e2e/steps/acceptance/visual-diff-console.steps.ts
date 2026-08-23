@@ -16,8 +16,10 @@ const { Given, When, Then, After } = createBdd(test);
  * refuses to seed a world that does not match them.
  */
 
-/** The A side of every comparison, and the newest row in the table. */
-const BASELINE_SET = { label: 'main-2026-08-17', branch: 'main' } as const;
+/** The A side of every comparison, and the newest row in the table. Exported:
+ *  the mutating flow's Background names it as the row that must still be listed
+ *  at every point in the chain. */
+export const BASELINE_SET = { label: 'main-2026-08-17', branch: 'main' } as const;
 
 /** The fifth set, and the reason there are five. The mutating world runs its
  *  scenarios in the order the feature declares them, so the delete lands before

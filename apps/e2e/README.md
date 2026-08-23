@@ -134,8 +134,8 @@ server and each costs about a second.
 | `scripts/suite-integrity.mjs` | `features/acceptance/` | `EXPECTED_SCENARIOS` **47**      | `@desktop`+`@mobile` at once; every `.feature` under `features/` is in a lane |
 | `scripts/local-integrity.mjs` | `features/local/`      | `EXPECTED_LOCAL_SCENARIOS` **6** | —                                                                             |
 
-47 is 9 blog + 9 visual-diff console + 3 sample mode + 15 report + 7 accessibility + 4
-baseline acceptance; 6 is every scenario in `features/local/report.feature`, which is the
+47 is 9 blog + 4 visual-diff console + 3 sample mode + 15 report + 7 accessibility + 3
+baseline acceptance + 6 mutating flow; 6 is every scenario in `features/local/report.feature`, which is the
 whole local lane. Adding a scenario raises its count in the same PR. Lowering one is a
 product decision — a hand-authored PR with the reason written down, never a step on the
 way to green. That is what took the local count from 20 to 6: the console, accessibility
@@ -170,11 +170,33 @@ each project excludes the other's tag — so the integrity guard refuses that co
 by name.
 
 `@mutating` is a world, not a form factor. Those scenarios wreck a server's data
-directory — they launch a job, delete a snapshot set, prune the rest — so they leave
-both base projects and run alone in a third one with `workers: 1` and
+directory — they launch a job, promote baselines, delete a snapshot set, prune the rest —
+so they leave both base projects and run alone in a third one with `workers: 1` and
 `fullyParallel: false`, in the order their `.feature` declares them. It is world
 vocabulary, not playwright-bdd control vocabulary, so it is deliberately NOT in the
-integrity guard's `CONTROL_TAGS` denylist.
+integrity guard's `CONTROL_TAGS` denylist. That project also runs with `retries: 0`: its
+world is seeded once at boot, so a retry replays against the tree the first attempt
+already wrecked.
+
+### The mutating flow
+
+All six of them live in one file, `features/acceptance/visual-diff-flow.feature`, and it
+is the only file in the repo tagged `@mode:serial`. Ordering alone was never the point —
+the project already gave them that. Serial adds the dependency: Playwright **skips every
+scenario after a failure**, so a broken compare stops the accept instead of letting it
+fail a second time against a world that was never built. Before this they were spread
+across two files and chained only by alphabetical filename order, which is not a decision
+anyone had written down.
+
+Read that file top to bottom: it is one flow, and its order is what it runs against.
+Adding a scenario to it joins the chain — the scenario before yours must pass for yours
+to run at all. A requirement that does not belong to the flow belongs in another file.
+
+`@mode:serial` is playwright-bdd control vocabulary and stays refused everywhere else:
+`SERIAL_FEATURES` in `scripts/suite-integrity.mjs` names the one file allowed to carry
+it, on its `Feature` and never on a scenario (playwright-bdd ignores it there, so it
+would read as coupled and run as isolated). Naming a file and not tagging it is refused
+too, so the list cannot rot into permission nobody is using.
 
 ## The three visual-diff worlds
 
@@ -218,9 +240,11 @@ independent of that run. Its server also declares
 `VISUAL_DIFF_FAKE_HOST_FINGERPRINT` — the D3 seam, server-side, inert for every scenario
 except the matched-host accept.
 
-Scenarios stay order-independent because of what the worlds are, not because anyone
-asserts it: review marks live in `localStorage` and every test gets a fresh context, the
-read-only worlds are never written to, and everything that does write is `@mutating`.
+Everywhere else, scenarios stay order-independent because of what the worlds are, not
+because anyone asserts it: review marks live in `localStorage` and every test gets a
+fresh context, and the read-only worlds are never written to. Everything that does write
+is `@mutating`, and those six are order-DEPENDENT on purpose — one flow, in one file,
+declared `@mode:serial` (see [The mutating flow](#the-mutating-flow)).
 
 `apps/visual-diff-ui/__tests__/seed.test.ts` reads the seed's output back through that
 app's own zod schemas and re-runs it to check the tree is the same twice — a seed the

@@ -161,6 +161,15 @@ export default defineConfig({
       // order the .feature declares them.
       workers: 1,
       fullyParallel: false,
+      // And no retry, unlike every other project. This world is seeded once, at
+      // webServer boot — a retry replays against the tree the first attempt
+      // already wrecked, so its result describes a world no scenario declared.
+      // `visual-diff-flow.feature` is `@mode:serial`, which widens that from one
+      // scenario to the whole flow: Playwright retries a serial group together,
+      // from the start. The suite-wide `failOnFlakyTests` already reds a
+      // pass-on-retry, so the retry was buying only the flaky-vs-failed label
+      // here, at the price of a second run against a different world.
+      retries: 0,
     },
   ],
   // Four servers, all BUILT — production behavior (draft filtering, prerendered

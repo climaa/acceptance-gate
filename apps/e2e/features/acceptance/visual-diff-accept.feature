@@ -13,14 +13,6 @@ Feature: Baseline acceptance
     Then I am told which switch to throw before accept can run
     And I can copy the container command instead of running it
 
-  @mutating
-  Scenario: A matched host accepts the baselines
-    Given every variant of the mutating report is reviewed
-    And the runner matches the pinned container
-    When I visit the mutating console
-    And I run the accept
-    Then the baselines are rewritten and restamped
-
   Scenario: An accessibility failure blocks the accept
     Given the report still carries an accessibility failure
     When I visit the console

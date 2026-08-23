@@ -22,6 +22,13 @@
 //                                  all (one inverts the expectation inside the
 //                                  test body, the other compiles to a
 //                                  test.describe.configure wrapper)
+//
+// `@mode:serial` is the one control tag a lane may declare, and it is not a
+// fifth way: the scenarios it skips are skipped only AFTER a failure, so the run
+// carrying them is already red. What it can hide is coupling — a file whose
+// scenarios silently depend on each other's leftovers — which is why a lane must
+// name the flow files that carry it rather than leaving the tag droppable
+// anywhere. See `serialFeatures`.
 import { execFileSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
@@ -197,6 +204,9 @@ export function parseFeature(text) {
   return { featureTags, scenarios };
 }
 
+/** The one control tag a lane may declare, and only on a file it named. */
+const SERIAL_TAG = '@mode:serial';
+
 function isControlTag({ tag }) {
   const lowered = tag.toLowerCase();
 
@@ -205,27 +215,62 @@ function isControlTag({ tag }) {
   );
 }
 
-/** Literal scan, deliberately stricter than playwright-bdd's own matching (which
- *  is case-sensitive for the flags and case-insensitive for `@retries:` and
- *  friends): a `@Skip` that does nothing today is still someone reaching for the
- *  mechanism. */
-function checkControlTags(file, feature) {
+/**
+ * Literal scan, deliberately stricter than playwright-bdd's own matching (which
+ * is case-sensitive for the flags and case-insensitive for `@retries:` and
+ * friends): a `@Skip` that does nothing today is still someone reaching for the
+ * mechanism.
+ *
+ * `@mode:serial` is exempt on the Feature node of a file the lane declared in
+ * `serialFeatures` — and nowhere else. On a scenario it is exempt from nothing:
+ * playwright-bdd applies `@mode:` per feature and IGNORES it on a single
+ * scenario, so a scenario carrying it reads as coupled and runs as isolated,
+ * which is the silent no-op this whole denylist exists to catch. The other two
+ * modes stay refused outright: a `@mode:parallel` would decouple a flow that
+ * reads as one.
+ */
+function checkControlTags(file, feature, serial) {
   const nodes = [
-    { on: 'the Feature', tags: feature.featureTags },
+    { on: 'the Feature', tags: feature.featureTags, isFeature: true },
     ...feature.scenarios.map((scenario) => ({
       on: `"${scenario.title}"`,
       tags: scenario.tags,
+      isFeature: false,
     })),
   ];
 
-  return nodes.flatMap(({ on, tags }) =>
+  return nodes.flatMap(({ on, tags, isFeature }) =>
     tags
       .filter(isControlTag)
-      .map(
-        ({ tag, line }) =>
-          `${file}:${line} — ${tag} on ${on} is playwright-bdd control vocabulary`,
-      ),
+      .filter(({ tag }) => !(isFeature && serial && tag.toLowerCase() === SERIAL_TAG))
+      .map(({ tag, line }) => {
+        const why =
+          tag.toLowerCase() === SERIAL_TAG
+            ? serial
+              ? 'applies to a whole feature; playwright-bdd ignores it here'
+              : "couples a file's scenarios into one flow — name the file in the " +
+                "lane's serialFeatures to declare that"
+            : 'is playwright-bdd control vocabulary';
+
+        return `${file}:${line} — ${tag} on ${on} ${why}`;
+      }),
   );
+}
+
+/** An allowlist that stops being used stops being a decision. A file named in
+ *  `serialFeatures` and not carrying the tag is either a flow that quietly
+ *  decoupled or an entry nobody removed; both read as "serial is permitted
+ *  here" to the next person. */
+function checkSerialDeclared(file, feature) {
+  const declared = feature.featureTags.some(
+    ({ tag }) => tag.toLowerCase() === SERIAL_TAG,
+  );
+  if (declared) return [];
+
+  return [
+    `${file} is named in serialFeatures but its Feature carries no ${SERIAL_TAG} — ` +
+      `either tag it or drop it from the list`,
+  ];
 }
 
 function checkFeatureFiles(lane) {
@@ -237,12 +282,22 @@ function checkFeatureFiles(lane) {
   // A scan that matches zero files passes forever while protecting nothing.
   if (files.length === 0) return [`no .feature files found under ${dir}`];
 
+  const named = files.map(String);
+  const missing = (lane.serialFeatures ?? [])
+    .filter((file) => !named.includes(file))
+    .map((file) => `${lane.featuresDir}/${file} is in serialFeatures but does not exist`);
+  if (missing.length > 0) return missing;
+
+  const serialFeatures = new Set(lane.serialFeatures ?? []);
+
   return files.flatMap((file) => {
     const relative = `${lane.featuresDir}/${file}`;
     const feature = parseFeature(readFileSync(join(dir, file), 'utf8'));
+    const serial = serialFeatures.has(String(file));
 
     return [
-      ...checkControlTags(relative, feature),
+      ...checkControlTags(relative, feature, serial),
+      ...(serial ? checkSerialDeclared(relative, feature) : []),
       ...(lane.checkTags?.(relative, feature) ?? []),
     ];
   });
@@ -284,6 +339,8 @@ export function checkLaneCoverage(root, lanes) {
  * @param {number} lane.expected        exact scenario count
  * @param {string} lane.expectedName    the constant's name, for the failure message
  * @param {string} lane.name            what to call the lane in output
+ * @param {string[]} [lane.serialFeatures] featuresDir-relative files allowed to
+ *                                     carry `@mode:serial` on their Feature
  * @param {Function} [lane.checkTags]   extra per-file tag rule
  * @param {Function} [lane.extraChecks] whole-tree checks this lane owns
  */

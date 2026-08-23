@@ -99,7 +99,10 @@ Three things to know before trusting what you watch:
 2. **`@mutating` scenarios don't replay cleanly.** Their world is re-seeded only when
    its server boots, and UI Mode boots servers once per session — so a second run of a
    mutating scenario executes against the tree the first run already wrecked. Watch
-   those once per session, or restart UI Mode between runs. Seeded and sample
+   those once per session, or restart UI Mode between runs. They are also one flow:
+   `features/acceptance/visual-diff-flow.feature` is tagged `@mode:serial`, so Playwright
+   skips every scenario after a failed one, and a mid-flow scenario re-run on its own is
+   being asked about a world the scenarios before it never built. Seeded and sample
    scenarios replay freely: nothing writes to their worlds, and review marks live in
    `localStorage` with a fresh context per test.
 3. **What you watch is the single honest attempt.** Local runs have `retries: 0`, so a
