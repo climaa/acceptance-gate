@@ -128,10 +128,16 @@ at the dev server on **3300** (reusing one `pnpm dev` already has up) and reads
 
 Four things that make it a different lane, not a second copy of the first:
 
-1. **It is read-only, and that is enforced.** The data behind 3300 is the one copy you
-   have, so `steps/local/fixtures.ts` blocks every non-`GET` request before it reaches the
-   server and fails the scenario naming what it tried. Nothing here can delete, prune,
-   accept or start a job even by accident.
+1. **It is read-only, and that is enforced — with one declared exception.** The data
+   behind 3300 is the one copy you have, so `steps/local/fixtures.ts` blocks every
+   non-`GET` request before it reaches the server and fails the scenario naming what it
+   tried. Nothing untagged can delete, prune, accept or start a job even by accident. The
+   exception is `features/local/visual-diff-flow.feature`, whose scenarios carry
+   `@mutating` — the tag is the opt-out, read from `testInfo.tags` at runtime — and which
+   **does** write: it launches a compare, deletes your oldest set and prunes one more,
+   every time the lane runs. It is `@mode:serial`, so a failure stops the rest of the
+   chain, and the lane runs `workers: 1` so it is not rewriting the tree the read-only
+   scenarios are reading.
 2. **Nothing is named.** Your labels, report ids and counts are unknowable, so every
    assertion compares values on the page with each other — the buckets sum to the total,
    the review denominator is every bucket except `unchanged`, a bucket and a search term

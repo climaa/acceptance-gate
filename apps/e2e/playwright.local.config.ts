@@ -56,6 +56,20 @@ export default defineConfig({
   timeout: 30_000,
   expect: { timeout: 10_000 },
   retries: 0,
+  // One worker, and no retry above.
+  //
+  // This lane now holds both kinds of scenario against ONE tree:
+  // `visual-diff-flow.feature` deletes a set, prunes another and writes a
+  // report, while `report.feature` reads the same console. Playwright runs
+  // separate files in parallel by default, so without this the read-only
+  // scenarios would be reading a tree the flow is rewriting underneath them —
+  // a race that passes most of the time, which is the worst kind. The
+  // acceptance lane answers the same problem by giving `@mutating` a project of
+  // its own; a lane with one project answers it here.
+  //
+  // A retry is worse here than useless: nothing re-seeds your `.visual-diff`, so
+  // the second attempt would run against the tree the first one already pruned.
+  workers: 1,
   use: {
     baseURL: LOCAL_URL,
     trace: 'retain-on-failure',

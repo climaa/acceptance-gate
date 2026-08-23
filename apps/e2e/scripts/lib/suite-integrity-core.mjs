@@ -282,25 +282,30 @@ function checkFeatureFiles(lane) {
   // A scan that matches zero files passes forever while protecting nothing.
   if (files.length === 0) return [`no .feature files found under ${dir}`];
 
+  // Accumulated, never returned early: a serialFeatures entry left behind by a
+  // rename is a finding, and so is the `@skip` someone added in the same PR.
+  // Returning here would report the first and hide the second until the first
+  // was fixed.
   const named = files.map(String);
   const missing = (lane.serialFeatures ?? [])
     .filter((file) => !named.includes(file))
     .map((file) => `${lane.featuresDir}/${file} is in serialFeatures but does not exist`);
-  if (missing.length > 0) return missing;
 
   const serialFeatures = new Set(lane.serialFeatures ?? []);
 
-  return files.flatMap((file) => {
-    const relative = `${lane.featuresDir}/${file}`;
-    const feature = parseFeature(readFileSync(join(dir, file), 'utf8'));
-    const serial = serialFeatures.has(String(file));
+  return missing.concat(
+    files.flatMap((file) => {
+      const relative = `${lane.featuresDir}/${file}`;
+      const feature = parseFeature(readFileSync(join(dir, file), 'utf8'));
+      const serial = serialFeatures.has(String(file));
 
-    return [
-      ...checkControlTags(relative, feature, serial),
-      ...(serial ? checkSerialDeclared(relative, feature) : []),
-      ...(lane.checkTags?.(relative, feature) ?? []),
-    ];
-  });
+      return [
+        ...checkControlTags(relative, feature, serial),
+        ...(serial ? checkSerialDeclared(relative, feature) : []),
+        ...(lane.checkTags?.(relative, feature) ?? []),
+      ];
+    }),
+  );
 }
 
 /**
