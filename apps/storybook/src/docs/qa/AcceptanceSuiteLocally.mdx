@@ -131,7 +131,8 @@ Four things that make it a different lane, not a second copy of the first:
    accept or start a job even by accident.
 2. **Nothing is named.** Your labels, report ids and counts are unknowable, so every
    assertion compares values on the page with each other — the buckets sum to the total,
-   the outcome word agrees with the exit code, every listed set is offered to the pickers.
+   the review denominator is every bucket except `unchanged`, a bucket and a search term
+   survive a reload.
 3. **It expects a boring report.** A run where nothing moved counts every variant as
    `unchanged` and writes no rows, which is the commonest report there is — so no scenario
    depends on a story card existing. The review loop, the comparison modal and the accept
@@ -140,10 +141,12 @@ Four things that make it a different lane, not a second copy of the first:
    fails with a message naming what to run. A skip would have reported "passed" to the
    guard and left the lane asserting nothing.
 
-Scenarios carry one level each — `@regression` or `@edge-case` — selectable in UI Mode's
-tag filter or with `--grep`. There is no `@smoke`: a smoke level exists to fail a pipeline
-fast, and this lane gates nothing. Both entry points run `check:local` first, because a
-lane with no CI behind it is the easiest one to hollow out unnoticed.
+The lane carries no tags today. It held `@regression` and `@edge-case` while it had
+console, accessibility and edge-case requirements; those were withdrawn, leaving
+`report.feature` alone with nothing to select between. There is still no `@smoke`: a smoke
+level exists to fail a pipeline fast, and this lane gates nothing. Both entry points run
+`check:local` first, because a lane with no CI behind it is the easiest one to hollow out
+unnoticed.
 
 ## Aiming at a deployment — what `E2E_BASE_URL` does and does not do
 

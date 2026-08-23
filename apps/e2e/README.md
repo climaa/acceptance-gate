@@ -13,8 +13,8 @@ catch. Adding a scenario for something a unit test could assert is a review find
 The acceptance lane names seed facts, because its worlds are built to hold them. The local
 lane cannot name anything — the data behind it is whatever your machine captured — so every
 one of its assertions is an invariant **between values on the page**: the buckets sum to the
-total, the outcome word agrees with the exit code, every listed set is offered to the
-pickers. It is also strictly read-only, and that is enforced rather than promised (see
+total, the review denominator is every bucket except unchanged, a bucket and a search term
+survive a reload. It is also strictly read-only, and that is enforced rather than promised (see
 [The local lane](#the-local-lane)).
 
 ## `.feature` files are product requirements
@@ -107,15 +107,15 @@ on exactly the machine it can vouch for least.
 
 ### Levels
 
-Every local scenario carries exactly one of `@regression` (a claim about the console) or
-`@edge-case` (a safe negative — an address or a filter that matches nothing). Select them
-with UI Mode's tag filter or `--grep`; there are deliberately no per-level scripts,
-configs or artifact directories. There is no `@smoke`: a smoke level exists to fail a
-pipeline fast, and this lane gates nothing.
+The local lane carries no tags. `@regression` and `@edge-case` were its two levels while
+it held console, accessibility and edge-case requirements; with only `report.feature`
+left there was nothing to select between, and a vocabulary with one member selects
+nothing. Scenarios here are run as a lane or picked by name in UI Mode. There is still no
+`@smoke`: a smoke level exists to fail a pipeline fast, and this lane gates nothing.
 
-Both filters are denylist-free, so an untagged scenario is not refused — it is simply never
-chosen. `check:local` refuses that combination by name, which is what keeps a level from
-being dropped silently.
+`check:local` no longer carries a level rule, so nothing stops a tag being added back —
+but `features/acceptance/` is where tags are load-bearing today (its three projects grep
+on them), and a level returning here should bring its rule back with it.
 
 Like `E2E_BASE_URL`, the local config refuses to run under `CI`. The Storybook page
 _Docs/QA/Acceptance Suite Locally_ is the long-form guide to both lanes.
@@ -129,15 +129,17 @@ or a project left running nothing. The checks live once in
 `playwright test --list`, which skips global setup, so neither needs a browser or a web
 server and each costs about a second.
 
-| Guard                         | Lane                   | Exact count                       | Also checks                                                                   |
-| ----------------------------- | ---------------------- | --------------------------------- | ----------------------------------------------------------------------------- |
-| `scripts/suite-integrity.mjs` | `features/acceptance/` | `EXPECTED_SCENARIOS` **47**       | `@desktop`+`@mobile` at once; every `.feature` under `features/` is in a lane |
-| `scripts/local-integrity.mjs` | `features/local/`      | `EXPECTED_LOCAL_SCENARIOS` **20** | exactly one level tag per scenario                                            |
+| Guard                         | Lane                   | Exact count                      | Also checks                                                                   |
+| ----------------------------- | ---------------------- | -------------------------------- | ----------------------------------------------------------------------------- |
+| `scripts/suite-integrity.mjs` | `features/acceptance/` | `EXPECTED_SCENARIOS` **47**      | `@desktop`+`@mobile` at once; every `.feature` under `features/` is in a lane |
+| `scripts/local-integrity.mjs` | `features/local/`      | `EXPECTED_LOCAL_SCENARIOS` **6** | —                                                                             |
 
 47 is 9 blog + 9 visual-diff console + 3 sample mode + 15 report + 7 accessibility + 4
-baseline acceptance; 20 is 8 console + 6 report + 3 accessibility + 3 edge cases. Adding a
-scenario raises its count in the same PR. Lowering one is a product decision — a
-hand-authored PR with the reason written down, never a step on the way to green.
+baseline acceptance; 6 is every scenario in `features/local/report.feature`, which is the
+whole local lane. Adding a scenario raises its count in the same PR. Lowering one is a
+product decision — a hand-authored PR with the reason written down, never a step on the
+way to green. That is what took the local count from 20 to 6: the console, accessibility
+and edge-case requirements were withdrawn from the lane, not narrowed to pass.
 
 The lane-coverage check exists because the two `features` globs are narrow: a file left at
 `features/whatever.feature` is compiled by neither config, so it is listed by no `--list`,

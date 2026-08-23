@@ -45,6 +45,14 @@ Given('this console holds a finished comparison', async ({ console: vd }) => {
   ).not.toHaveCount(0);
 });
 
+/** The console itself, as a destination rather than a precondition — the one
+ *  scenario that reaches a report the way a reader would, through the link the
+ *  console drew. */
+When('I visit my console', async ({ console: vd }) => {
+  await vd.openHere();
+  await expect(vd.setsTable).toBeVisible();
+});
+
 When('I open the first listed report', async ({ page, console: vd, localState }) => {
   const link = vd
     .reportLink(vd.reportRows.filter({ has: page.getByRole('cell') }).first())
@@ -189,17 +197,6 @@ Then(
     await expect(report.bucketChip('unchanged')).toHaveAttribute('aria-pressed', 'true');
   },
 );
-
-When('I filter by a term no story can match', async ({ report }) => {
-  await report.filter.fill(NO_MATCH_TERM);
-});
-
-Then('the report says no story matches the filter', async ({ report }) => {
-  await expect(report.storyCards).toHaveCount(0);
-  // A report that wrote no rows at all answers with its own verdict instead,
-  // and that is the honest answer — the filter is not why the page is empty.
-  await expect(report.emptyMessage).toHaveText(oneOf(NOTHING_MATCHES, NOTHING_MOVED));
-});
 
 /** Any one of these sentences, matched literally. The copy carries em dashes and
  *  parentheses, so it is escaped rather than trusted as a pattern. */

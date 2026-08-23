@@ -1,7 +1,6 @@
 import type { Route } from '@playwright/test';
 import { test as base } from 'playwright-bdd';
 
-import { Chrome } from '../../pages/chrome';
 import { ConsolePage } from '../../pages/console';
 import { ReportPage } from '../../pages/report';
 
@@ -19,17 +18,8 @@ const APP_ORIGIN = 'http://localhost:3300/**';
  * invariants rather than facts.
  */
 export interface LocalState {
-  /** Set labels read out of the sets table, in listed order. */
-  setLabels?: string[];
-  /** The two sets a compare step chose, as their option labels. */
-  chosen?: { a: string; b: string };
   /** The report id an earlier step opened, read off the console's own link. */
   reportId?: string;
-  /** Bucket counts read off the chip row: bucket word → count. */
-  counts?: Record<string, number>;
-  /** How many history rows the console showed when the scenario arrived — what
-   *  "no job has been started" is compared against. */
-  historyDepth?: number;
 }
 
 /**
@@ -43,15 +33,11 @@ export interface LocalState {
  * acceptance suite trusts, so a rename in the app fails both lanes in one file.
  */
 export const test = base.extend<{
-  chrome: Chrome;
   console: ConsolePage;
   report: ReportPage;
   localState: LocalState;
   readOnly: void;
 }>({
-  chrome: async ({ page }, use) => {
-    await use(new Chrome(page));
-  },
   console: async ({ page }, use) => {
     await use(new ConsolePage(page));
   },

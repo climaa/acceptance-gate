@@ -15,9 +15,10 @@ import { defineBddConfig } from 'playwright-bdd';
  *
  * Because real data cannot be named, no scenario here asserts a label, a report
  * id or a count. They assert invariants BETWEEN values on the page: the buckets
- * sum to the total, the outcome word agrees with the exit code, every listed set
- * is offered to the pickers. The journeys that need named facts — the review
- * loop, the comparison modal, the accept gate — stay in the acceptance lane.
+ * sum to the total, the review denominator is every bucket except unchanged, a
+ * bucket and a search term survive a reload. The journeys that need named facts
+ * — the review loop, the comparison modal, the accept gate — stay in the
+ * acceptance lane.
  *
  * The dev server is reused if `pnpm dev` already has it up, and booted (and torn
  * down) here if not.
