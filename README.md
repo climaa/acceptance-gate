@@ -46,7 +46,7 @@ merges carry their model co-author trailer in the squashed commit.
 | `apps/blog` — Next.js 16 App Router + MDX, consumes `@gate/ui`  | ✅ [published](https://acceptance-gate-blog.vercel.app) — posts, tags, RSS, sitemap, OG images, Cache Components + Partial Prefetching                                                                                                                                                                                                                                       |
 | `packages/ui` — atomic design system, token-only styling        | ✅ all 19 components of the inventory, in four tiers, layering enforced by `eslint-plugin-boundaries`                                                                                                                                                                                                                                                                        |
 | `apps/storybook` — the visual single source of truth            | ✅ [published](https://acceptance-gate-storybook.vercel.app) — every component rendered in isolation, plus the docs pages that describe the system                                                                                                                                                                                                                           |
-| `apps/e2e` — playwright-bdd acceptance suite                    | ✅ runs on every PR, blocks the merge — in `gate.needs`                                                                                                                                                                                                                                                                                                                      |
+| `apps/e2e` — playwright-bdd acceptance suite                    | ✅ runs on every PR, blocks the merge — in `gate.needs`. Its second lane, `features/local/`, never runs in CI and writes to your own captures — see [the two `:local` scripts](#the-two-local-scripts-delete-your-captures)                                                                                                                                                  |
 | `packages/visual-diff` — the self-built visual regression CLI   | ✅ reports on every PR, never auto-blocks — see [its README](packages/visual-diff/README.md#ci-status)                                                                                                                                                                                                                                                                       |
 | `apps/visual-diff-ui` — the console that reviews those runs     | ✅ [published](https://acceptance-gate-visual-diff-ui.vercel.app) — the visual-diff review console: sets, reports and history, the run panel with its live log and the container-bound accept gate, and the report's tier sections, review loop, accessibility treatment and the three-up viewer behind its comparison modal; sample mode browses the #242 regression report |
 
@@ -75,6 +75,31 @@ pnpm test:sandcastle  # the orchestrator's own hermetic suite
 Those last three lines are the first seven parallel gate jobs from the diagram
 above, in the same order. `e2e` is the eighth; it needs a Chromium download
 before its first local run — see [`apps/e2e/README.md`](apps/e2e/README.md).
+
+### The two `:local` scripts delete your captures
+
+```bash
+pnpm e2e:ui                          # the acceptance suite, in Playwright UI Mode
+pnpm e2e:ui:local                    # ⚠️ NOT its twin — this one writes
+pnpm --filter @gate/e2e test:local   # ⚠️ same, headless
+```
+
+`e2e:ui` runs `features/acceptance/` against seeded worlds this config builds and
+throws away. Nothing you own is involved.
+
+The two `:local` scripts run `features/local/` against **your own `.visual-diff`
+tree**, and every scenario in that lane writes: it launches a compare, takes the
+job lock, **deletes your oldest capture set and prunes one more**. Nothing
+re-seeds afterwards, so a run costs you two sets — every run, not just the first.
+Re-capturing them takes a container and a few minutes.
+
+That is the lane's purpose rather than a hazard it happens to carry: seeded
+fixtures can only prove the console works against data shaped the way the seed
+imagined, and this asks whether it works against yours. But the two script names
+sit one word apart, so the difference is written here rather than left to be
+discovered. The long form, including the guards that stop an untagged scenario
+writing, is in [`apps/e2e/README.md`](apps/e2e/README.md#the-local-lane) and the
+Storybook page _Docs/QA/Acceptance Suite Locally_.
 
 Run turbo through the `pnpm` scripts rather than `pnpm turbo run ...` directly.
 The scripts wrap turbo in `dotenv -e .env -o --` so its credentials come from
