@@ -105,27 +105,34 @@ export function branchLabel(branch: string, day: string): string | null {
 }
 
 /**
- * `YYYY-MM-DD` off the machine's own clock.
+ * `YYYY-MM-DD` on the same clock the set registry is stamped from: UTC.
  *
  * `now` is an argument with a default — the shape `repoRoot(from = process.cwd())`
  * uses one module over — so a test reaches both answers without moving a clock.
  *
- * LOCAL, not UTC, because a label is read beside a date this app writes
- * elsewhere: `scripts/capture-set.mjs` stamps `capturedAt` from the same local
- * clock. A UTC label would disagree with the set's own date column for anyone
- * working an evening west of Greenwich, and `listSets` sorts on `capturedAt`
- * with the label as tiebreak — so the two disagreeing puts a set in the table
- * under a date its name denies.
+ * UTC, because a label is read beside a date this app writes elsewhere:
+ * `scripts/capture-set.mjs` stamps `capturedAt` with
+ * `new Date().toISOString().slice(0, 10)`, and `listSets` below sorts on
+ * `capturedAt` with the label as tiebreak. Two clocks put a set in the table
+ * under a date its own name denies — which is what this used to do. It read
+ * LOCAL, on the claim that `capture-set.mjs` read local too; that claim was
+ * simply wrong, and east of Greenwich the gap opened every night between
+ * midnight and the offset: the wand offered `branch-2026-08-25` for a set
+ * stamped `2026-08-24`.
+ *
+ * A stored date is compared against other stored dates, never read against the
+ * reader's clock — the opposite of the rendered instants in lib/outcome.ts,
+ * which parse to local for exactly that reason.
  *
  * Composed from the parts rather than formatted: `toLocaleDateString('en-CA')`
  * happens to render ISO today, and that is a property of ICU rather than a
  * contract.
  */
 export function today(now: Date = new Date()): string {
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
+  const month = String(now.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(now.getUTCDate()).padStart(2, '0');
 
-  return `${now.getFullYear()}-${month}-${day}`;
+  return `${now.getUTCFullYear()}-${month}-${day}`;
 }
 
 /** The `--filter` values: substrings matched against story ids and titles, so
