@@ -252,6 +252,41 @@ main {
   color: var(--color-text-muted);
 }
 
+/* A field that carries an action beside its input.
+
+   The pair is ONE child of `.vd-field`, not two, and that is load-bearing: the
+   768px block below turns `.vd-field` into a row of label + control, and a third
+   child there would be a third column — and a third ROW in the stacked layout
+   above it, putting the button under the input rather than beside it. */
+.vd-field__control {
+  display: flex;
+  /* Stretch rather than centre: the action carries a `min-height` of its own, so
+     stretching makes it exactly as tall as the input whatever that turns out to
+     be, instead of two controls agreeing by coincidence. */
+  align-items: stretch;
+  gap: var(--space-2);
+  width: 100%;
+  min-width: 0;
+}
+
+/* `width: 100%` above was written for an input that WAS the row. As one of two
+   flex children it has to be the one that gives, and `min-width: 0` is what lets
+   it: without it an input's intrinsic minimum — roughly twenty characters — wins
+   the negotiation and pushes the action past the edge of the panel. */
+.vd-field__control .vd-field__input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* An action that could not answer, said quietly. Deliberately not `.vd-alert`:
+   the console keeps exactly one `role="alert"` inside `main`, and the acceptance
+   suite reads refusals through a strict locator that a second one breaks. */
+.vd-field__status {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
 /* D1's refusal, standing where the start button was while the lock is held.
    Deliberately NOT the `.vd-alert` danger surface below: a job holding the lock
    is the console working, not the console failing, and the red box would say

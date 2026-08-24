@@ -1,7 +1,11 @@
 // Imported explicitly rather than relying on `globals: true` — tsconfig's
 // `**/*.ts` include means tsc typechecks this file.
+import * as fs from 'node:fs';
+import * as os from 'node:os';
+import * as path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import { GET as getEnv } from '../app/api/env/route';
+import { GET as getLabel } from '../app/api/label/route';
 import { GET as getReport } from '../app/api/reports/[id]/route';
 import { GET as getReports } from '../app/api/reports/route';
 import { GET as getSets } from '../app/api/sets/route';
@@ -23,6 +27,10 @@ const context = <T extends object>(params: T) => ({ params: Promise.resolve(para
 
 afterEach(() => {
   delete process.env.VISUAL_DIFF_FAKE_HOST_FINGERPRINT;
+  // `GET /api/label` is the one handler here that is pointed somewhere other
+  // than the fixtures, because it is the one whose answer depends on what is
+  // already on disk. Unset again so the rest of the file keeps its frame.
+  delete process.env.VISUAL_DIFF_DATA_DIR;
 });
 
 describe('GET /api/sets', () => {
@@ -105,6 +113,66 @@ describe('GET /api/env', () => {
 
   it('is never cached', async () => {
     const response = await getEnv();
+
+    expect(response.headers.get('Cache-Control')).toBe('no-store');
+  });
+});
+
+/**
+ * The name the next capture would be given.
+ *
+ * Two halves meet in this handler — the branch sanitised into a label, and
+ * `freeLabel` walking past whatever is already there — and only the second needs
+ * a directory, which is why this is the one describe here that sets
+ * `VISUAL_DIFF_DATA_DIR`. The branch is deliberately not pinned to a literal:
+ * this suite runs on whatever is checked out, and on CI that is a detached HEAD.
+ */
+describe('GET /api/label', () => {
+  const today = () => {
+    const now = new Date();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+
+    return `${now.getFullYear()}-${month}-${day}`;
+  };
+
+  const read = async () => {
+    const response = await getLabel();
+
+    return {
+      response,
+      body: (await response.json()) as { label: string | null },
+    };
+  };
+
+  it('names the checkout it is running in, and today', async () => {
+    const { body } = await read();
+
+    // Shape and day, not a name: the stem is whoever is looking. `detached` is
+    // the stem on CI and is as legal as any other.
+    expect(body.label).toMatch(new RegExp(`^[A-Za-z0-9][A-Za-z0-9.-]*-${today()}$`));
+  });
+
+  it('counts past a set this instance already has', async () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'vd-label-'));
+    process.env.VISUAL_DIFF_DATA_DIR = dir;
+
+    const first = (await read()).body.label;
+    // Asserted rather than cast: a machine with no `git` answers null here, and
+    // a null joined into a path fails three lines later saying nothing useful.
+    expect(first).not.toBeNull();
+
+    fs.mkdirSync(path.join(dir, 'sets', first as string), { recursive: true });
+
+    const second = (await read()).body.label;
+
+    expect(second).toBe(`${first}-2`);
+
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
+
+  it('is never cached, because a capture that just finished changes it', async () => {
+    const { response } = await read();
 
     expect(response.headers.get('Cache-Control')).toBe('no-store');
   });

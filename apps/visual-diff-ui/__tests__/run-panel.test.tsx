@@ -17,6 +17,7 @@ import {
   REMOTE_REFUSAL,
   RUNNING_REFUSAL,
   RunPanel,
+  SUGGEST_REFUSAL,
 } from '../components/RunPanel';
 import type { ReportListEntry } from '../lib/data';
 import type { HistoryRecord } from '../lib/jobs';
@@ -80,20 +81,24 @@ interface ApiStub {
   current?: { running: boolean; job: HistoryRecord | null };
   /** What `POST /api/jobs` answers. */
   jobs?: { ok?: boolean; status?: number; body?: unknown };
+  /** What `GET /api/label` suggests. `null` is a checkout that cannot name a
+   *  set; `'throw'` is the endpoint being unreachable. */
+  label?: string | null | 'throw';
 }
 
 const answered = (ok: boolean, status: number, body: unknown) =>
   Promise.resolve({ ok, status, json: () => Promise.resolve(body) }) as never;
 
-/** The three endpoints this panel talks to, answered per case. An unstubbed URL
- *  throws rather than resolving: a screen quietly reading something this suite
- *  never arranged is exactly what the fingerprint seam must not do. */
+/** The endpoints this panel talks to, answered per case. An unstubbed URL throws
+ *  rather than resolving: a screen quietly reading something this suite never
+ *  arranged is exactly what the fingerprint seam must not do. */
 function stubApi({
   image = HOST.image,
   docker = true,
   tiers = CORPUS,
   current,
   jobs,
+  label = SUGGESTED,
 }: ApiStub = {}) {
   const fetchMock = vi.fn((url: string) => {
     if (url === '/api/env') {
@@ -115,6 +120,13 @@ function stubApi({
         jobs?.status ?? 202,
         jobs?.body ?? { job: RUNNING },
       );
+    }
+    if (url === '/api/label') {
+      // Thrown synchronously, which the hook's `try` catches exactly as it would
+      // a rejected fetch — the panel cannot tell the two apart and must not.
+      if (label === 'throw') throw new Error('unreachable');
+
+      return answered(true, 200, { label });
     }
 
     throw new Error(`unstubbed request to ${url}`);
@@ -169,6 +181,27 @@ const selectTab = (name: string) => fireEvent.click(tab(name));
 
 const startButtons = (mode: string) =>
   screen.queryAllByRole('button', { name: `start ${mode}` });
+
+const SUGGESTED = 'main-2026-08-24';
+
+const labelField = () => screen.getByRole('textbox', { name: 'label' });
+
+const wand = () => screen.getByRole('button', { name: 'suggest a label' });
+
+/** The panel, with its two on-mount fetches already settled. Every wand case is
+ *  about what the CLICK asks for, so a case that asserted before `/api/env` and
+ *  `/api/stories` had landed would be counting their calls as well. */
+async function renderSettled(options: PanelCase = {}) {
+  const fetchMock = renderPanel(options);
+  await waitFor(() =>
+    expect(fetchMock).toHaveBeenCalledWith('/api/stories', expect.anything()),
+  );
+
+  return fetchMock;
+}
+
+const askedForALabel = (fetchMock: ReturnType<typeof stubApi>) =>
+  fetchMock.mock.calls.filter(([url]) => url === '/api/label').length;
 
 /** The accept tab, once the runner's fingerprint has come back — every gate
  *  below it is a decision about that answer, so a case that asserted before it
@@ -468,6 +501,120 @@ describe('starting a job', () => {
   // than under a convention.
   it('spells that sentence the way lib/refusals.ts does', () => {
     expect(RUNNING_REFUSAL).toBe(JOB_RUNNING);
+  });
+});
+
+/**
+ * The wand beside the label field.
+ *
+ * Everything here is about the CLICK. The suggestion is a claim about what this
+ * instance holds right now, and the reviewer's own last capture is the likeliest
+ * thing to have changed it — so a panel that resolved a name at mount would be
+ * offering one that a capture since then has taken.
+ */
+describe('the label wand', () => {
+  it('fills the label with the name the server suggests', async () => {
+    await renderSettled();
+
+    fireEvent.click(wand());
+
+    await waitFor(() => expect(labelField()).toHaveProperty('value', SUGGESTED));
+  });
+
+  it('asks when it is asked, not when the panel mounts', async () => {
+    const fetchMock = await renderSettled();
+
+    expect(askedForALabel(fetchMock)).toBe(0);
+
+    fireEvent.click(wand());
+
+    await waitFor(() => expect(askedForALabel(fetchMock)).toBe(1));
+  });
+
+  // The case the whole on-click decision exists for: between the first press and
+  // the second, a capture can land and take the name the first one offered.
+  it('asks again on a second press, because a capture may have landed between', async () => {
+    const fetchMock = await renderSettled();
+
+    fireEvent.click(wand());
+    await waitFor(() => expect(labelField()).toHaveProperty('value', SUGGESTED));
+
+    fireEvent.click(wand());
+
+    await waitFor(() => expect(askedForALabel(fetchMock)).toBe(2));
+  });
+
+  // Deliberate, not incidental. A wand guarded on "only if empty" could never
+  // hand a reviewer the `-2` after their first capture landed.
+  it('replaces a label the reviewer had already typed', async () => {
+    await renderSettled();
+    fireEvent.change(labelField(), { target: { value: 'typed-by-hand' } });
+
+    fireEvent.click(wand());
+
+    await waitFor(() => expect(labelField()).toHaveProperty('value', SUGGESTED));
+  });
+
+  it('says so rather than doing nothing when no name can be had', async () => {
+    await renderSettled({ label: null });
+
+    fireEvent.click(wand());
+
+    await waitFor(() => expect(screen.getByText(SUGGEST_REFUSAL)).toBeDefined());
+  });
+
+  it('says the same when the endpoint cannot be reached at all', async () => {
+    await renderSettled({ label: 'throw' });
+
+    fireEvent.click(wand());
+
+    await waitFor(() => expect(screen.getByText(SUGGEST_REFUSAL)).toBeDefined());
+  });
+
+  // The rule this panel argues twice elsewhere: `apps/e2e/pages/console.ts` reads
+  // every refusal through `getByRole('main').getByRole('alert')` strictly, so a
+  // second alert inside the page fails every scenario that reads the first.
+  it('says it as a status, so it does not become a second alert on the page', async () => {
+    await renderSettled({ label: null });
+
+    fireEvent.click(wand());
+
+    await waitFor(() => expect(screen.getByText(SUGGEST_REFUSAL)).toBeDefined());
+    expect(screen.queryByRole('alert')).toBeNull();
+    expect(screen.getByRole('status', { name: 'label suggestion' })).toBeDefined();
+  });
+
+  // A run writes a capture set before it compares against one, so the field it
+  // fills names the same directory a capture's does.
+  it("stands beside the run tab's label too", async () => {
+    await renderSettled();
+    selectTab('run');
+
+    fireEvent.click(wand());
+
+    await waitFor(() => expect(labelField()).toHaveProperty('value', SUGGESTED));
+  });
+
+  // Compare names two sets that already exist. A FREE label is the wrong answer
+  // there by definition.
+  it('draws none beside the two labels a compare names', async () => {
+    await renderSettled();
+
+    selectTab('compare');
+
+    expect(screen.queryByRole('button', { name: 'suggest a label' })).toBeNull();
+  });
+
+  it('is frozen with the field it belongs to in sample mode', async () => {
+    await renderSettled({ isSample: true });
+
+    expect(wand()).toHaveProperty('disabled', true);
+  });
+
+  it('is frozen on a deployed console too', async () => {
+    await renderSettled({ isLocal: false });
+
+    expect(wand()).toHaveProperty('disabled', true);
   });
 });
 
