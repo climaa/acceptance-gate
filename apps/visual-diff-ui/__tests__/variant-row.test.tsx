@@ -76,14 +76,15 @@ const badge = (word: string) => screen.getByText(word);
 afterEach(cleanup);
 
 describe('the verdict badge', () => {
-  /** Every bucket, and the tone it earns. `a11y` diverges from `BUCKET_TONES`
-   *  only because `BadgeTone` has no `a11y` member — see `VariantRow`. */
+  /** Every bucket, and the tone it earns. `a11y` reads `warning` because that is
+   *  what `BucketChip`'s exclusive `a11y` tone paints — the row must not be the
+   *  same word in a different colour from the chip above it. */
   const TONES: Record<Bucket, string> = {
     changed: 'accent',
     added: 'accent',
     removed: 'danger',
     errored: 'danger',
-    a11y: 'danger',
+    a11y: 'warning',
     unchanged: 'neutral',
   };
 

@@ -39,13 +39,21 @@ const noBaseline = (bucket: Bucket) => bucket === 'added';
 const noCandidate = (bucket: Bucket) => bucket === 'removed' || bucket === 'errored';
 
 /**
- * Whether the differ had two shots to put against each other.
+ * Whether the differ had two shots to put against each other — the one
+ * precondition for everything that sets one side against the other.
  *
- * Where it did not, the row's pixel counts are `compare.mjs`'s `NOTHING_COMPARED`
- * — zeros meaning "nothing was measured", not "measured, and identical". The two
- * are the same JSON and the opposite report, so anything that quotes a pixel
- * count asks this first: `0 px differ in the shared area` under a story with no
- * baseline says the shared area was clean, when there was no shared area.
+ * Two kinds of caller ask it. Anything that quotes a pixel count: where no pair
+ * was compared the row carries `compare.mjs`'s `NOTHING_COMPARED`, zeros meaning
+ * "nothing was measured" rather than "measured, and identical". A missing count
+ * and a count of zero are the same JSON and the opposite report, so `0 px differ
+ * in the shared area` under a story with no baseline reports a clean shared area
+ * that never existed. And anything that alternates or overlays the two sides: a
+ * blink with one shot has nothing to alternate, a split has a divider over an
+ * empty half.
+ *
+ * Asked of the bucket rather than of a built `ShotSources`, so a caller that has
+ * only the variant need not mint URLs to find out. It is the same answer either
+ * way — `shotSources` below decides both sides from these same two predicates.
  */
 export const compared = (bucket: Bucket) => !noBaseline(bucket) && !noCandidate(bucket);
 
@@ -73,14 +81,6 @@ export function shotSources(reportId: string, variant: Variant): ShotSources {
     diff: baseline && candidate && painted(variant) ? at('diff') : undefined,
   };
 }
-
-/**
- * Whether the run wrote both sides — the precondition for anything that puts
- * one against the other. A blink with one shot has nothing to alternate, and a
- * split with one shot is a divider over an empty half.
- */
-export const hasPair = (shots: ShotSources) =>
-  shots.baseline !== undefined && shots.candidate !== undefined;
 
 /** The frame copy for a side the comparison never had. Pinned: the story is not
  *  in that capture set, which is a corpus fact rather than a pixel one. */

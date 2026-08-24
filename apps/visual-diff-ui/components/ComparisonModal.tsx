@@ -20,7 +20,7 @@ import {
 import { formatPixels, type ReportSides } from '@/lib/report-view';
 import {
   absentShotCopy,
-  hasPair,
+  compared,
   type ShotKind,
   type ShotSources,
   shotSources,
@@ -112,7 +112,7 @@ function Shot({ kind, shots, variant, className }: ShotProps) {
  *  the timer never starts: both frames are acceptable statically, and a blink
  *  is the one thing a reader who asked for stillness must not be given. */
 function BlinkStage({ shots, variant }: { shots: ShotSources; variant: Variant }) {
-  const pair = hasPair(shots);
+  const pair = compared(variant.bucket);
   const still = useMediaQuery(REDUCED_MOTION, false);
   const [side, setSide] = useState<ShotKind>('baseline');
 
@@ -342,7 +342,11 @@ export function ComparisonModal({
   const active = modes.includes(mode) ? mode : DEFAULT_MODE;
 
   const shots = shotSources(reportId, variant);
-  const split = active === 'slider' && hasPair(shots);
+  // One question, asked once: did the differ have two shots to work with. The
+  // slider needs it to have a second layer to reveal, and the metric below needs
+  // it to have a shared area to have measured.
+  const pair = compared(variant.bucket);
+  const split = active === 'slider' && pair;
 
   const title = `${storyTitle(variant.id)} · ${variant.viewport}/${variant.theme}`;
 
@@ -374,7 +378,7 @@ export function ComparisonModal({
             differ in the shared area` over a story with no baseline reports a
             clean shared area that never existed. The stage below already says
             which side is missing. */}
-        {hasPair(shots) && (
+        {pair && (
           <p className="vd-compare__metric">
             <span className="vd-mono">{formatPixels(variant.overlapDiffPixels)} px</span>{' '}
             differ in the shared area

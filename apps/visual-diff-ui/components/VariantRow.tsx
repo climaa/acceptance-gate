@@ -39,11 +39,13 @@ import { ThreeUp } from './ThreeUp';
  * So the row says which of the six it is, and the reviewer reads the same word
  * here, on the card's chip above it, and on the bucket chip they filtered by.
  *
- * The tones mirror `BUCKET_TONES`' ranking, with one divergence forced by the
- * atom: `BadgeTone` has no `a11y` member, and `BucketChip`'s is documented as
- * exclusive to that atom, so `a11y` takes `danger` here. It is not a demotion —
- * an accessibility failure is the one finding the accept gate refuses outright,
- * and the row under it renders the violation list on a danger surface anyway.
+ * The tones mirror `BUCKET_TONES`, so the row and the chip above it are never
+ * the same word in two colours. `BadgeTone` has no member named `a11y`, but the
+ * name is not the point: `BucketChip`'s exclusive `a11y` tone paints
+ * `--color-warning-*`, and `Badge`'s `warning` paints the same two tokens, so
+ * `a11y` matches its chip exactly rather than being ranked against it here.
+ * `muted` is the one tone with no `Badge` equivalent, and it belongs to a bucket
+ * that cannot render — see below.
  *
  * (The earlier comment argued that colouring these apart would rank failures
  * against each other. That held while the word was binary and the colour was the
@@ -55,7 +57,8 @@ const BADGE_TONES: Record<Bucket, BadgeTone> = {
   added: 'accent',
   removed: 'danger',
   errored: 'danger',
-  a11y: 'danger',
+  // `warning`, not `danger`: the same tokens the chip's `a11y` tone paints.
+  a11y: 'warning',
   // Unreachable — see above. `muted` has no `Badge` equivalent, so `neutral`.
   unchanged: 'neutral',
 };
