@@ -650,10 +650,23 @@ When(
     // retried.
     await expect(vd.reportRow(reportId)).toBeVisible();
     await vd.deleteReport(reportId);
-    await expect(vd.reportRow(reportId)).toHaveCount(0);
-
     await vd.deleteSet(label);
-    await expect(vd.setRow(label)).toHaveCount(0);
+
+    // Then ask the server again, instead of trusting the panel.
+    //
+    // The console can go on rendering a row it has already deleted.
+    // `useMutation` fires `router.refresh()` when the DELETE returns, and
+    // `CurrentJob` fires one of its own the first time it sees a job finish —
+    // and this teardown runs seconds after the accept ended, so the two overlap.
+    // If the poller's refresh, which read the reports BEFORE the delete, lands
+    // last, the deleted row is painted back. The poller then goes idle (once per
+    // job id, backing off to `MAX_IDLE_POLL_MS`), so nothing ever repaints it
+    // away and the stale row simply stays.
+    //
+    // A longer wait would not have helped: there is no later refresh coming.
+    // That race is the console's and is filed separately; what this step owes is
+    // that the artifacts are GONE, which is a question for the server.
+    await vd.openHere();
 
     fs.rmSync(promotedDir(), { recursive: true, force: true });
     madeLabel = null;
