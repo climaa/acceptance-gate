@@ -1,11 +1,12 @@
 // Imported explicitly rather than relying on `globals: true` — tsconfig's
 // `**/*.ts` include means tsc typechecks this file.
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   formatStamp,
   type Outcome,
   durationOf,
   formatBytes,
+  formatDay,
   formatDuration,
   outcomeOf,
   outcomeTone,
@@ -102,34 +103,127 @@ describe('durationOf', () => {
   });
 });
 
+/**
+ * The zone these two suites are read in.
+ *
+ * Pinned rather than inherited: the whole point of the change these tests guard
+ * is that the answer now depends on the reader's clock, so a suite that took the
+ * runner's zone would assert something different on every machine. Node re-reads
+ * `TZ` on assignment, so this really does move the process — the same technique
+ * PostMeta.test.tsx uses in packages/ui, and for the same reason.
+ *
+ * Madrid because it has an offset in both directions across the year (+2 in
+ * August, +1 in January), which is what makes the DST case below a real one.
+ */
+const MADRID = 'Europe/Madrid';
+
+/** No DST at all, and west of Greenwich rather than east, so the day rolls the
+ *  other way. A second zone is what proves the answer is computed rather than
+ *  hardcoded to one offset. */
+const BOGOTA = 'America/Bogota';
+
+afterEach(() => {
+  vi.unstubAllEnvs();
+});
+
 describe('formatStamp', () => {
   it('splits the day from the time of day and drops the fraction', () => {
-    expect(formatStamp('2026-08-21T12:51:23.716Z')).toBe('2026-08-21 12:51:23');
+    vi.stubEnv('TZ', MADRID);
+
+    expect(formatStamp('2026-08-21T12:51:23.716Z')).toBe('2026-08-21 14:51:23');
   });
 
   // `jobId` writes ids from stamps with the fraction already stripped, so both
   // spellings reach a history row.
   it('reads a stamp that carries no fractional seconds', () => {
-    expect(formatStamp('2026-08-16T07:12:44Z')).toBe('2026-08-16 07:12:44');
+    vi.stubEnv('TZ', MADRID);
+
+    expect(formatStamp('2026-08-16T07:12:44Z')).toBe('2026-08-16 09:12:44');
   });
 
   /**
-   * Sliced rather than parsed, and this is the case that pins it.
+   * Parsed rather than sliced, and this is the case that pins it.
    *
-   * `new Date(...).toLocaleString()` would render this in the host's timezone,
-   * so a console in Madrid and one in Bogotá would disagree about when the same
-   * run started — the rule `formatBytes` keeps for the same reason. The hour
-   * shown here is the hour stored, whatever clock the reader is on.
+   * The stored stamp says the 21st and the reader is shown the 22nd, because at
+   * 23:30 UTC a clock in Madrid has already turned over. Slicing the stored
+   * string cannot produce this — it can only ever echo the day the `Z` names —
+   * so this assertion fails the moment anyone reverts to a substring.
    */
-  it('shows the hour that was recorded, not the reader own clock', () => {
-    expect(formatStamp('2026-08-21T23:30:00.000Z')).toBe('2026-08-21 23:30:00');
+  it('rolls the day forward when the reader clock has already turned over', () => {
+    vi.stubEnv('TZ', MADRID);
+
+    expect(formatStamp('2026-08-21T23:30:00.000Z')).toBe('2026-08-22 01:30:00');
+  });
+
+  // And backward, from the other side of Greenwich. Together with the case
+  // above, no fixed offset satisfies both.
+  it('rolls the day back for a reader west of the stamp', () => {
+    vi.stubEnv('TZ', BOGOTA);
+
+    expect(formatStamp('2026-08-21T02:30:00Z')).toBe('2026-08-20 21:30:00');
+  });
+
+  /**
+   * The offset is the one in force ON THAT INSTANT, not a constant for the zone.
+   *
+   * Madrid is +2 in August and +1 in January. An implementation that captured a
+   * single offset — or that did the arithmetic by hand instead of letting `Date`
+   * do it — passes every case above and fails this one.
+   */
+  it('reads a winter stamp at the winter offset', () => {
+    vi.stubEnv('TZ', MADRID);
+
+    expect(formatStamp('2026-01-16T07:12:44Z')).toBe('2026-01-16 08:12:44');
   });
 
   // A `history.json` some other tool wrote. Showing it whole is more use to
   // whoever has to explain it than showing the first nineteen characters.
   it('passes through anything that is not an ISO instant', () => {
+    vi.stubEnv('TZ', MADRID);
+
     expect(formatStamp('yesterday')).toBe('yesterday');
     expect(formatStamp('2026-08-21')).toBe('2026-08-21');
+  });
+
+  // Right shape, impossible field: `\d{2}` admits a 13th month, and parsing one
+  // yields `Invalid Date`. Passed through rather than rendered, so no cell can
+  // ever read `NaN-NaN-NaN`.
+  it('passes through a stamp of the right shape that names no real instant', () => {
+    vi.stubEnv('TZ', MADRID);
+
+    expect(formatStamp('2026-13-01T00:00:00Z')).toBe('2026-13-01T00:00:00Z');
+  });
+});
+
+/**
+ * The REPORTS date column, which has to agree with the HISTORY stamp beside it.
+ *
+ * Same clock, so the same day-rolling case is the one that matters: a run that
+ * ended at 23:30 UTC belongs under the 22nd in both panels or in neither.
+ */
+describe('formatDay', () => {
+  it('reads the local day, not the stored one', () => {
+    vi.stubEnv('TZ', MADRID);
+
+    expect(formatDay('2026-08-21T23:30:00.000Z')).toBe('2026-08-22');
+  });
+
+  it('rolls back for a reader west of the stamp', () => {
+    vi.stubEnv('TZ', BOGOTA);
+
+    expect(formatDay('2026-08-21T02:30:00Z')).toBe('2026-08-20');
+  });
+
+  it('agrees with the day formatStamp puts on the same instant', () => {
+    vi.stubEnv('TZ', MADRID);
+
+    const instant = '2026-08-21T23:30:00.000Z';
+
+    expect(formatStamp(instant).startsWith(formatDay(instant))).toBe(true);
+  });
+
+  it('passes through anything that is not an ISO instant', () => {
+    expect(formatDay('2026-08-21')).toBe('2026-08-21');
   });
 });
 

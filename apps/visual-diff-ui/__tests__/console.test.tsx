@@ -2,7 +2,7 @@
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 // Imported explicitly rather than relying on `globals: true` — tsconfig's
 // `**/*.tsx` include means tsc typechecks this file.
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DashboardTemplate } from '../components/DashboardTemplate';
 import type { HistoryRecord } from '../lib/jobs';
 import type { CaptureSet } from '../lib/summary';
@@ -29,6 +29,20 @@ import { replaceCalls } from './stubs/next-navigation';
 afterEach(() => {
   cleanup();
   replaceCalls.length = 0;
+  vi.unstubAllEnvs();
+});
+
+/**
+ * The zone the history stamps below are read in.
+ *
+ * Pinned rather than inherited: `formatStamp` renders an instant on the reader's
+ * clock (lib/outcome.ts), so the expected strings here are only fixed once the
+ * reader's clock is. Madrid is +2 in August, which is the offset every stamp in
+ * this file is written with. Its own rules — the rolling, the winter offset —
+ * are pinned in outcome.test.ts; this file only needs the values to hold still.
+ */
+beforeEach(() => {
+  vi.stubEnv('TZ', 'Europe/Madrid');
 });
 
 const CLEAN: CaptureSet = {
@@ -386,11 +400,29 @@ describe('the history panel', () => {
     expect(cellsOf(row)).toEqual([
       'succeeded (diffs)',
       'compare',
-      '2026-08-17 08:00:00',
+      '2026-08-17 10:00:00',
       '1',
       '1m 35s',
       'view',
     ]);
+  });
+
+  /**
+   * The stored instant, kept where a reviewer can still reach it.
+   *
+   * The cell is on the reader's clock, so `10:00:00` here and `08:00:00` in
+   * `history.json` are the same moment — and the `title` is the only thing on
+   * the page that says so. Asserted because `cellsOf` reads `textContent` and
+   * would not notice the tooltip going missing, which would leave the absolute
+   * moment unrecoverable from the console.
+   */
+  it('keeps the stored UTC instant in the stamp cell title', () => {
+    render(consoleWith({ history: [RUN] }));
+
+    const [, , started] = within(firstRowOf('History')).getAllByRole('cell');
+
+    expect(started?.getAttribute('title')).toBe(RUN.startedAt);
+    expect(started?.textContent).toBe('2026-08-17 10:00:00');
   });
 
   // A run the container went away under: lib/jobs.ts keeps the nulls rather
@@ -403,7 +435,7 @@ describe('the history panel', () => {
     expect(cellsOf(row)).toEqual([
       'interrupted',
       'capture',
-      '2026-08-11 08:15:04',
+      '2026-08-11 10:15:04',
       '—',
       '—',
       '',
@@ -425,7 +457,7 @@ describe('the history panel', () => {
     expect(cellsOf(firstRowOf('History'))).toEqual([
       'running',
       'capture',
-      '2026-08-11 08:15:04',
+      '2026-08-11 10:15:04',
       '—',
       '—',
       '',
