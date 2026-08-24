@@ -44,6 +44,7 @@ export class ConsolePage {
   readonly dockerRequiredNote: Locator;
   readonly acceptDockerCommand: Locator;
   readonly copyCommandButton: Locator;
+  readonly labelWand: Locator;
 
   constructor(private readonly page: Page) {
     this.setsTable = page.getByRole('table', { name: 'Snapshot sets' });
@@ -91,6 +92,9 @@ export class ConsolePage {
     // Command text is a code block, not interactive — testid, like log-tail.
     this.acceptDockerCommand = page.getByTestId('accept-docker-command');
     this.copyCommandButton = page.getByRole('button', { name: 'copy command' });
+    // Icon-only, so its `aria-label` is the only name it has — which is exactly
+    // why the atom makes that name a required prop.
+    this.labelWand = page.getByRole('button', { name: 'suggest a label' });
   }
 
   async open(world: VdWorld = 'seeded') {

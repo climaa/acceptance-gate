@@ -165,13 +165,13 @@ server and each costs about a second.
 
 | Guard                         | Lane                   | Exact count                      | Also checks                                                                                                                |
 | ----------------------------- | ---------------------- | -------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| `scripts/suite-integrity.mjs` | `features/acceptance/` | `EXPECTED_SCENARIOS` **47**      | `@desktop`+`@mobile` at once; every `.feature` under `features/` is in a lane; `@mode:serial` only on a declared flow file |
+| `scripts/suite-integrity.mjs` | `features/acceptance/` | `EXPECTED_SCENARIOS` **42**      | `@desktop`+`@mobile` at once; every `.feature` under `features/` is in a lane; `@mode:serial` only on a declared flow file |
 | `scripts/local-integrity.mjs` | `features/local/`      | `EXPECTED_LOCAL_SCENARIOS` **5** | `@mode:serial` only on a declared flow file                                                                                |
 
-41 is 9 blog + 4 visual-diff console + 3 sample mode + 15 report + 7 accessibility + 3
+42 is 9 blog + 5 visual-diff console + 3 sample mode + 15 report + 7 accessibility + 3
 baseline acceptance; 5 is the mutating flow, which is the whole local lane. Adding a scenario raises its count in the same PR. Lowering one is a
 product decision — a hand-authored PR with the reason written down, never a step on the
-way to green. That is what took the local count from 20 to 6: the console, accessibility
+way to green. That is what took the local count from 20 to 5: the console, accessibility
 and edge-case requirements were withdrawn from the lane, not narrowed to pass.
 
 The lane-coverage check exists because the two `features` globs are narrow: a file left at

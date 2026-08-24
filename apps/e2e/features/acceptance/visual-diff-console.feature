@@ -18,6 +18,11 @@ Feature: Visual-diff console
     When I delete the held set
     Then the deletion is refused naming what holds it
 
+  Scenario: The console names the next capture set for me
+    When I visit the console
+    And I ask the console to name the capture set
+    Then the label field holds a set label no snapshot set already uses
+
   Scenario: Past runs are listed with their outcome
     When I visit the console
     Then the history lists each run with its outcome, exit code and duration

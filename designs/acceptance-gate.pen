@@ -417,6 +417,32 @@
           "height": 56,
           "fill": "$bg-muted",
           "cornerRadius": 8
+        },
+        {
+          "type": "frame",
+          "id": "e8ZNz6",
+          "name": "IconButton",
+          "reusable": true,
+          "width": 32,
+          "height": 32,
+          "fill": "$bg",
+          "cornerRadius": 4,
+          "stroke": "$border",
+          "strokeWidth": 1,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "icon",
+              "id": "BsEmB",
+              "name": "Glyph",
+              "width": 16,
+              "height": 16,
+              "icon": "wand-sparkles",
+              "library": "lucide",
+              "fill": "$text-muted"
+            }
+          ]
         }
       ]
     },
@@ -1085,6 +1111,116 @@
                           "textGrowth": "fixed-width",
                           "width": "fill_container",
                           "content": "wraps next/link · Text inside · underline + focus ring on interaction",
+                          "lineHeight": 1.4,
+                          "fontFamily": "$font-body",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "VWeOP",
+                  "name": "Tile IconButton",
+                  "width": 300,
+                  "fill": "#ffffff",
+                  "cornerRadius": 12,
+                  "stroke": "$note-border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 12,
+                  "padding": 18,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "QdfJf",
+                      "name": "Cap",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "X8FWs1",
+                          "name": "Name",
+                          "fill": "$ink",
+                          "content": "IconButton — 2 variants",
+                          "fontFamily": "$font-mono",
+                          "fontSize": 13,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "wou3e",
+                      "name": "Stage",
+                      "clip": true,
+                      "width": "fill_container",
+                      "fill": "#fafaf8",
+                      "cornerRadius": 8,
+                      "layout": "vertical",
+                      "gap": 8,
+                      "padding": 14,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "eoIGL",
+                          "name": "Variants",
+                          "gap": 10,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "id": "kSMCd",
+                              "type": "ref",
+                              "ref": "e8ZNz6",
+                              "name": "secondary md",
+                              "width": 40,
+                              "height": 40
+                            },
+                            {
+                              "id": "wyb06",
+                              "type": "ref",
+                              "ref": "e8ZNz6",
+                              "name": "secondary sm"
+                            },
+                            {
+                              "id": "jS4PQ",
+                              "type": "ref",
+                              "ref": "e8ZNz6",
+                              "name": "ghost md",
+                              "width": 40,
+                              "height": 40,
+                              "fill": "#00000000",
+                              "strokeWidth": 0
+                            },
+                            {
+                              "id": "B5F2R",
+                              "type": "ref",
+                              "ref": "e8ZNz6",
+                              "name": "ghost sm",
+                              "fill": "#00000000",
+                              "strokeWidth": 0
+                            },
+                            {
+                              "id": "x6lyp",
+                              "type": "ref",
+                              "ref": "e8ZNz6",
+                              "name": "disabled",
+                              "opacity": 0.45
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "iohg7",
+                          "name": "note",
+                          "fill": "$ink-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "icon-only · secondary (bordered) · ghost (bare) · sm 32 / md 40 · square, radius follows the field it stands beside · `label` is a required prop — aria-label is the whole name · disabled = 45% opacity + no pointer events",
                           "lineHeight": 1.4,
                           "fontFamily": "$font-body",
                           "fontSize": 11,
@@ -15886,27 +16022,52 @@
                                             },
                                             {
                                               "type": "frame",
-                                              "id": "CGoqg",
-                                              "name": "in",
+                                              "id": "Pp0mq",
+                                              "name": "control",
                                               "width": "fill_container",
-                                              "fill": "$bg",
-                                              "cornerRadius": 6,
-                                              "stroke": "$border",
-                                              "strokeWidth": 1,
-                                              "padding": [
-                                                5,
-                                                10
-                                              ],
+                                              "gap": 6,
+                                              "alignItems": "center",
                                               "children": [
                                                 {
-                                                  "type": "text",
-                                                  "id": "RvDzz",
-                                                  "name": "t",
-                                                  "fill": "$text-muted",
-                                                  "content": "baseline",
-                                                  "fontFamily": "$font-mono",
-                                                  "fontSize": 10,
-                                                  "fontWeight": "normal"
+                                                  "type": "frame",
+                                                  "id": "CGoqg",
+                                                  "name": "in",
+                                                  "width": "fill_container",
+                                                  "fill": "$bg",
+                                                  "cornerRadius": 6,
+                                                  "stroke": "$border",
+                                                  "strokeWidth": 1,
+                                                  "padding": [
+                                                    5,
+                                                    10
+                                                  ],
+                                                  "children": [
+                                                    {
+                                                      "type": "text",
+                                                      "id": "RvDzz",
+                                                      "name": "t",
+                                                      "fill": "$text-muted",
+                                                      "content": "baseline",
+                                                      "fontFamily": "$font-mono",
+                                                      "fontSize": 10,
+                                                      "fontWeight": "normal"
+                                                    }
+                                                  ]
+                                                },
+                                                {
+                                                  "id": "D5SCFY",
+                                                  "type": "ref",
+                                                  "ref": "e8ZNz6",
+                                                  "name": "suggest a label",
+                                                  "width": 23,
+                                                  "height": 23,
+                                                  "cornerRadius": 6,
+                                                  "descendants": {
+                                                    "BsEmB": {
+                                                      "width": 12,
+                                                      "height": 12
+                                                    }
+                                                  }
                                                 }
                                               ]
                                             }
@@ -18241,27 +18402,52 @@
                                             },
                                             {
                                               "type": "frame",
-                                              "id": "qZNdg",
-                                              "name": "in",
+                                              "id": "G371XE",
+                                              "name": "control",
                                               "width": "fill_container",
-                                              "fill": "$bg",
-                                              "cornerRadius": 6,
-                                              "stroke": "$border",
-                                              "strokeWidth": 1,
-                                              "padding": [
-                                                5,
-                                                10
-                                              ],
+                                              "gap": 6,
+                                              "alignItems": "center",
                                               "children": [
                                                 {
-                                                  "type": "text",
-                                                  "id": "TX7I0",
-                                                  "name": "t",
-                                                  "fill": "$text-muted",
-                                                  "content": "baseline",
-                                                  "fontFamily": "$font-mono",
-                                                  "fontSize": 10,
-                                                  "fontWeight": "normal"
+                                                  "type": "frame",
+                                                  "id": "qZNdg",
+                                                  "name": "in",
+                                                  "width": "fill_container",
+                                                  "fill": "$bg",
+                                                  "cornerRadius": 6,
+                                                  "stroke": "$border",
+                                                  "strokeWidth": 1,
+                                                  "padding": [
+                                                    5,
+                                                    10
+                                                  ],
+                                                  "children": [
+                                                    {
+                                                      "type": "text",
+                                                      "id": "TX7I0",
+                                                      "name": "t",
+                                                      "fill": "$text-muted",
+                                                      "content": "baseline",
+                                                      "fontFamily": "$font-mono",
+                                                      "fontSize": 10,
+                                                      "fontWeight": "normal"
+                                                    }
+                                                  ]
+                                                },
+                                                {
+                                                  "id": "E0UP63",
+                                                  "type": "ref",
+                                                  "ref": "e8ZNz6",
+                                                  "name": "suggest a label",
+                                                  "width": 23,
+                                                  "height": 23,
+                                                  "cornerRadius": 6,
+                                                  "descendants": {
+                                                    "BsEmB": {
+                                                      "width": 12,
+                                                      "height": 12
+                                                    }
+                                                  }
                                                 }
                                               ]
                                             }

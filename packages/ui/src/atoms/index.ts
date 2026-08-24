@@ -6,6 +6,12 @@ export {
 } from './BucketChip/BucketChip';
 export { Button, type ButtonProps } from './Button/Button';
 export { EmptyState, type EmptyStateProps } from './EmptyState/EmptyState';
+export {
+  IconButton,
+  type IconButtonProps,
+  type IconButtonSize,
+  type IconButtonVariant,
+} from './IconButton/IconButton';
 export { Link, type LinkProps, type LinkTone } from './Link/Link';
 export { Prose } from './Prose/Prose';
 export {

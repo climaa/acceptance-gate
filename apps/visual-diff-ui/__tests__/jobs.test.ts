@@ -10,7 +10,9 @@ import { GET as getCurrent } from '../app/api/jobs/current/route';
 import {
   HistoryRecordSchema,
   JobRequestSchema,
+  SetLabelSchema,
   WorktreesFileSchema,
+  branchLabel,
   currentJob,
   freeLabel,
   jobLog,
@@ -21,6 +23,7 @@ import {
   removeReport,
   startJob,
   takeConsoleRefresh,
+  today,
   within,
 } from '../lib/jobs';
 import { CANONICAL_LABEL } from '../lib/baselines';
@@ -485,6 +488,126 @@ describe('the set registry', () => {
     fs.mkdirSync(path.join(dir, 'sets', 'main-2026-08-17-2'), { recursive: true });
 
     expect(freeLabel(dir, 'main-2026-08-17')).toBe('main-2026-08-17-3');
+  });
+});
+
+/**
+ * The front half of `freeLabel`: what a capture is called before anything has
+ * had to make the name free.
+ *
+ * `SetLabelSchema` is imported and used rather than trusted, because that is the
+ * whole reason the rule was written in `lib/jobs.ts` at all — a suggestion the
+ * console cannot post is worse than no suggestion, and the two drifting apart is
+ * exactly what a comment would fail to catch.
+ */
+describe('branchLabel', () => {
+  const DAY = '2026-08-24';
+
+  it('names the set after the branch and the day', () => {
+    expect(branchLabel('main', DAY)).toBe('main-2026-08-24');
+  });
+
+  // Slashes are ordinary in branch names and `SET_LABEL` forbids them, so
+  // refusing would leave the wand dead on most feature branches.
+  it('collapses what a set label cannot hold into dashes', () => {
+    expect(branchLabel('feat/local-gherkin-lane', DAY)).toBe(
+      'feat-local-gherkin-lane-2026-08-24',
+    );
+    expect(branchLabel('fix/JIRA_123', DAY)).toBe('fix-JIRA-123-2026-08-24');
+  });
+
+  // One separator for the run, not one each: `feat--x` would read as the `-2`
+  // suffix `freeLabel` appends to a name already taken.
+  it('collapses a run of them to one separator, not to a suffix', () => {
+    expect(branchLabel('feat//x', DAY)).toBe('feat-x-2026-08-24');
+  });
+
+  // Dots are legal, and a release branch is the reason to check: sanitising them
+  // away would rename `release/1.2` to something that is not that branch.
+  it('keeps the dot a release branch is named with', () => {
+    expect(branchLabel('release/1.2', DAY)).toBe('release-1.2-2026-08-24');
+  });
+
+  it('drops a leading separator, because a label starts with a letter or a digit', () => {
+    expect(branchLabel('-wip', DAY)).toBe('wip-2026-08-24');
+    expect(branchLabel('.wip', DAY)).toBe('wip-2026-08-24');
+  });
+
+  it('drops a trailing one, so it cannot be read as the suffix', () => {
+    expect(branchLabel('feat/', DAY)).toBe('feat-2026-08-24');
+  });
+
+  // `describeCheckout` answers with this literal rather than `HEAD`, and it is a
+  // legal stem — which is what makes CI, where the checkout is detached, a case
+  // this rule handles rather than one it falls over on.
+  it('records the detached HEAD lib/git already named as such', () => {
+    expect(branchLabel('detached', DAY)).toBe('detached-2026-08-24');
+  });
+
+  it('has nothing to suggest for a branch with no label left in it', () => {
+    expect(branchLabel('///', DAY)).toBeNull();
+    expect(branchLabel('', DAY)).toBeNull();
+  });
+
+  it('only ever names a label POST /api/jobs would accept', () => {
+    const branches = [
+      'main',
+      'feat/local-gherkin-lane',
+      'fix/JIRA_123',
+      'feat//x',
+      'release/1.2',
+      '-wip',
+      '.wip',
+      'feat/',
+      'detached',
+      'ünïcödé/brãnch',
+      'has spaces in it',
+    ];
+
+    for (const branch of branches) {
+      const label = branchLabel(branch, DAY);
+      if (label === null) continue;
+
+      expect(SetLabelSchema.safeParse(label).success).toBe(true);
+    }
+  });
+
+  // The pair the wand actually offers: the name, and then the name made free.
+  // Written here rather than in the route's test because this is where the two
+  // halves meet.
+  it('hands a taken name to freeLabel, so the wand offers what the runner takes', () => {
+    const dir = makeDataDir();
+    fs.mkdirSync(path.join(dir, 'sets', `main-${DAY}`), { recursive: true });
+
+    const label = branchLabel('main', DAY);
+
+    expect(label).not.toBeNull();
+    expect(freeLabel(dir, label as string)).toBe(`main-${DAY}-2`);
+  });
+});
+
+/**
+ * The day a label is stamped with.
+ *
+ * Local rather than UTC, and the assertion says why by comparing against the
+ * same `Date`'s own local accessors: `scripts/capture-set.mjs` writes
+ * `capturedAt` off this clock, and a label that disagreed with it would put a
+ * set in the table under a date its name denies.
+ */
+describe('today', () => {
+  // BOTH edges of the local day, and that is what makes this a guard rather than
+  // a restatement. A UTC implementation lands on the 25th for the late moment
+  // anywhere west of Greenwich, and on the 23rd for the early one anywhere east
+  // of it — so one of the two fails on every machine with an offset. Under
+  // TZ=UTC neither can, because there is nothing there to tell the two clocks
+  // apart; the rule is still stated, it simply has no teeth on that one machine.
+  it('reads the day off the local clock, the one capturedAt is stamped from', () => {
+    expect(today(new Date(2026, 7, 24, 23, 30))).toBe('2026-08-24');
+    expect(today(new Date(2026, 7, 24, 0, 30))).toBe('2026-08-24');
+  });
+
+  it('pads a single-digit month and day', () => {
+    expect(today(new Date(2026, 0, 5))).toBe('2026-01-05');
   });
 });
 

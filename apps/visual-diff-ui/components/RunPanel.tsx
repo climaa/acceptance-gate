@@ -9,7 +9,7 @@ import {
   useReducer,
   useState,
 } from 'react';
-import { Button, CodeBlock, Stack } from '@gate/ui';
+import { Button, CodeBlock, IconButton, Stack } from '@gate/ui';
 import { useMutation } from '@/hooks/useMutation';
 import { useReviewMarks } from '@/hooks/useReviewMarks';
 import { Note } from './Note';
@@ -93,6 +93,26 @@ export const RUNNING_REFUSAL = 'a job is already running';
  *  sits above is disabled, so the reviewer starts Docker instead of a job. */
 export const DOCKER_REFUSAL = `this job runs inside ${ACCEPT_IMAGE}, and Docker is not running — start Docker and this comes back`;
 
+/**
+ * What the wand says when it cannot name a set.
+ *
+ * Deliberately silent about WHY, because two different failures reach it and the
+ * panel cannot tell them apart: a checkout with no branch a label can be built
+ * from, and an endpoint that did not answer. Naming either one would be a guess
+ * printed as a diagnosis — and the reviewer's next move is the same either way.
+ *
+ * `role="status"` where it is drawn, never `role="alert"`: this panel already
+ * argues that case twice below, and `apps/e2e/pages/console.ts` reads every
+ * refusal through `getByRole('main').getByRole('alert')` strictly. The nearer
+ * precedent is `vd-accept__pending`, which says "checking what this host is…"
+ * the same way.
+ *
+ * Saying nothing at all was the other option and is the worse one: a control
+ * that swallows a press is a console that has quietly stopped working.
+ */
+export const SUGGEST_REFUSAL =
+  'the console could not suggest a name — type the label instead';
+
 /** The deployed refusal, spelled here for the same reason and pinned against
  *  `NOT_LOCAL` by the same test. */
 export const REMOTE_REFUSAL =
@@ -107,6 +127,7 @@ function Field({
   placeholder,
   onChange,
   disabled,
+  action,
 }: {
   name: string;
   label: string;
@@ -114,6 +135,10 @@ function Field({
   placeholder: string;
   onChange: (value: string) => void;
   disabled: boolean;
+  /** What stands to the right of the input, outside it. Only the label field has
+   *  one; the wrapper below is unconditional anyway, so the compare fields
+   *  cannot drift into a second shape while nobody is looking. */
+  action?: ReactNode;
 }) {
   const id = `vd-run-${name}`;
 
@@ -122,18 +147,21 @@ function Field({
       <label className="vd-field__label" htmlFor={id}>
         {label}
       </label>
-      <input
-        id={id}
-        name={name}
-        type="text"
-        className="vd-field__input"
-        value={value}
-        placeholder={placeholder}
-        spellCheck={false}
-        autoComplete="off"
-        disabled={disabled}
-        onChange={(event) => onChange(event.target.value)}
-      />
+      <div className="vd-field__control">
+        <input
+          id={id}
+          name={name}
+          type="text"
+          className="vd-field__input"
+          value={value}
+          placeholder={placeholder}
+          spellCheck={false}
+          autoComplete="off"
+          disabled={disabled}
+          onChange={(event) => onChange(event.target.value)}
+        />
+        {action}
+      </div>
     </Stack>
   );
 }
@@ -417,6 +445,86 @@ function useStories(): StoryTier[] {
   return tiers;
 }
 
+/**
+ * A name for the set about to be captured, asked for when the reviewer asks.
+ *
+ * On the CLICK, not on mount — the one place this file's fetching hooks differ,
+ * and the difference is the whole feature. The answer counts what this instance
+ * already holds, and the reviewer's own last capture is the likeliest thing to
+ * have changed it: a suggestion resolved at mount would offer `main-2026-08-24`
+ * for a set that now exists, `runCheck` would quietly capture into
+ * `main-2026-08-24-2` instead (lib/runner.ts), and the field would be naming a
+ * directory nobody wrote.
+ *
+ * `pending` is the whole concurrency story. The button is disabled while a
+ * request is out, so there is never a second one to arrive out of order — which
+ * is why this needs no `live` flag, and why a failure re-enables rather than
+ * latching.
+ *
+ * Not `useMutation`: this is a GET that changes nothing, and that hook ends
+ * every success with `router.refresh()` — re-rendering the whole console
+ * because a text field was filled in.
+ */
+function useLabelSuggestion(apply: (label: string) => void) {
+  const [pending, setPending] = useState(false);
+  const [refused, setRefused] = useState(false);
+
+  const suggest = async () => {
+    setPending(true);
+    setRefused(false);
+
+    try {
+      const response = await fetch('/api/label', { cache: 'no-store' });
+      const body = (await response.json()) as { label?: string | null };
+
+      if (body.label) apply(body.label);
+      else setRefused(true);
+    } catch {
+      // Unreachable degrades to a wand that says so. There is no safe value to
+      // fall back on: a name composed in this bundle would be the client
+      // disagreeing with the server about a directory the server owns.
+      setRefused(true);
+    } finally {
+      setPending(false);
+    }
+  };
+
+  return { suggest, pending, refused };
+}
+
+/**
+ * The glyph, lucide's `wand-sparkles` — the one Board 01 draws in the
+ * IconButton tile.
+ *
+ * Stroked rather than filled, like `Dialog`'s close and unlike `ThemeToggle`'s
+ * crescent; `.ds-icon-btn__glyph` sizes it and tints nothing, so `currentColor`
+ * carries the button's own state into it either way.
+ *
+ * No `aria-hidden` here: `IconButton` wraps whatever it is handed in one, which
+ * is exactly why that wrapper is the atom's job rather than the caller's.
+ */
+function WandGlyph() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72" />
+      <path d="m14 7 3 3" />
+      <path d="M5 6v4" />
+      <path d="M19 14v4" />
+      <path d="M10 2v2" />
+      <path d="M7 8H3" />
+      <path d="M21 16h-4" />
+      <path d="M11 3H9" />
+    </svg>
+  );
+}
+
 /** The body `POST /api/jobs` parses, per mode. An empty filter is left out
  *  rather than sent: the differ reads any filter as "only stories matching
  *  this", and an empty one would match nothing. */
@@ -538,6 +646,12 @@ interface FieldsProps {
  *  its whole surface is `check | accept` with `--filter` — and the console never
  *  builds Storybook, so both would be controls for something that cannot happen. */
 function CaptureFields({ form, patch, disabled, stories }: FieldsProps) {
+  // Rendered for `run` as well as `capture` — `ModeFields` falls through to this
+  // for both — and the wand belongs to each of them: a run writes a capture set
+  // before it compares against one, so the field it fills names the same
+  // directory in either mode.
+  const { suggest, pending, refused } = useLabelSuggestion((label) => patch({ label }));
+
   return (
     <>
       <Field
@@ -547,7 +661,29 @@ function CaptureFields({ form, patch, disabled, stories }: FieldsProps) {
         placeholder={PLACEHOLDER.label}
         onChange={(label) => patch({ label })}
         disabled={disabled}
+        action={
+          <IconButton
+            label="suggest a label"
+            variant="secondary"
+            size="sm"
+            // Frozen with the field it stands in — a composer that cannot start
+            // a job has no set to name — and while an answer is out, which is
+            // what keeps two of them from racing into one input.
+            disabled={disabled || pending}
+            onClick={() => void suggest()}
+          >
+            <WandGlyph />
+          </IconButton>
+        }
       />
+      {/* Overwriting whatever was typed is the point rather than a compromise:
+          the second press is what a reviewer needs after a capture lands, and a
+          wand guarded on "only if empty" could never give them the `-2`. */}
+      {refused && (
+        <p role="status" aria-label="label suggestion" className="vd-field__status">
+          {SUGGEST_REFUSAL}
+        </p>
+      )}
       <FilterPicker
         tiers={stories}
         value={form.filter}

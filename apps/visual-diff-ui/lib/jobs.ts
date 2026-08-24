@@ -49,6 +49,71 @@ const REPORT_ID = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
 export const SetLabelSchema = z.string().regex(SET_LABEL, 'not a snapshot-set label');
 export const ReportIdSchema = z.string().regex(REPORT_ID, 'not a report id');
 
+/**
+ * A branch name as the nearest thing to it a set label can hold, joined to the
+ * day — or null when there is no such thing.
+ *
+ * Written in this module rather than beside the panel that offers it, because
+ * `SET_LABEL` is here: a suggestion the console could not post would be worse
+ * than no suggestion, and the two staying in one file is what keeps that from
+ * becoming a comment nobody re-checks. `__tests__/jobs.test.ts` runs every case
+ * below back through `SetLabelSchema` for the same reason.
+ *
+ * A run of forbidden characters collapses to ONE separator, not one each:
+ * `feat//x` is a single boundary, and `feat--x` would read as the `-2` suffix
+ * `freeLabel` appends. Both edges come off for the two halves of the same rule —
+ * the regex demands an alphanumeric first character, and a trailing separator
+ * would meet the day below as `feat--2026-08-24`.
+ *
+ * Null rather than a fallback stem. `main` would be a lie a reviewer could act
+ * on, and `unknown` reads as a failure in a field whose whole job is to be typed
+ * over; the caller offers no suggestion at all instead. A detached HEAD never
+ * reaches that — `describeCheckout` already answers with the literal `detached`,
+ * which is a legal stem and the honest one.
+ *
+ * Case is deliberately left alone. `hasSet` reaches `fs.existsSync`, so on a
+ * case-folding filesystem `Main-…` already reads as taken when `main-…` exists
+ * and on a case-sensitive one it does not; normalising here would make this
+ * answer a different question from the one `freeLabel` answers, and `freeLabel`
+ * is what names the directory.
+ */
+export function branchLabel(branch: string, day: string): string | null {
+  const stem = branch
+    .replace(/[^A-Za-z0-9.-]+/g, '-')
+    .replace(/^[^A-Za-z0-9]+|[.-]+$/g, '');
+  if (!stem) return null;
+
+  const label = `${stem}-${day}`;
+
+  // The composed answer, checked rather than assumed. Everything above argues it
+  // cannot fail; this is what makes that argument a test rather than a belief.
+  return SET_LABEL.test(label) ? label : null;
+}
+
+/**
+ * `YYYY-MM-DD` off the machine's own clock.
+ *
+ * `now` is an argument with a default — the shape `repoRoot(from = process.cwd())`
+ * uses one module over — so a test reaches both answers without moving a clock.
+ *
+ * LOCAL, not UTC, because a label is read beside a date this app writes
+ * elsewhere: `scripts/capture-set.mjs` stamps `capturedAt` from the same local
+ * clock. A UTC label would disagree with the set's own date column for anyone
+ * working an evening west of Greenwich, and `listSets` sorts on `capturedAt`
+ * with the label as tiebreak — so the two disagreeing puts a set in the table
+ * under a date its name denies.
+ *
+ * Composed from the parts rather than formatted: `toLocaleDateString('en-CA')`
+ * happens to render ISO today, and that is a property of ICU rather than a
+ * contract.
+ */
+export function today(now: Date = new Date()): string {
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+
+  return `${now.getFullYear()}-${month}-${day}`;
+}
+
 /** The `--filter` values: substrings matched against story ids and titles, so
  *  anything is a legal value and only the shape is a contract. A LIST, because
  *  the panel offers the corpus as checkboxes and a reviewer ticks as many as they
