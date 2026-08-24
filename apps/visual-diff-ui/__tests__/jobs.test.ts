@@ -110,6 +110,7 @@ async function waitForIdle(dir: string): Promise<void> {
 
 afterEach(() => {
   resetRequestHost();
+  vi.unstubAllEnvs();
   delete process.env.VISUAL_DIFF_DATA_DIR;
   delete process.env.VISUAL_DIFF_FAKE_HOST_FINGERPRINT;
   delete process.env.VISUAL_DIFF_FAKE_DOCKER;
@@ -589,25 +590,46 @@ describe('branchLabel', () => {
 /**
  * The day a label is stamped with.
  *
- * Local rather than UTC, and the assertion says why by comparing against the
- * same `Date`'s own local accessors: `scripts/capture-set.mjs` writes
- * `capturedAt` off this clock, and a label that disagreed with it would put a
- * set in the table under a date its name denies.
+ * UTC rather than local, because the label is sorted against `capturedAt`,
+ * which `scripts/capture-set.mjs` writes as `toISOString().slice(0, 10)`. Two
+ * clocks put a set in the table under a date its own name denies.
+ *
+ * Every case pins its own zone and builds its instant from an ISO string. Both
+ * halves matter. The suite this replaced passed `new Date(2026, 7, 24, 23, 30)`
+ * — a LOCAL constructor, so the instant it names moved with the runner — and
+ * then inherited the runner's zone to read it back, which left it asserting a
+ * different thing on every machine and, as its own comment admitted, nothing at
+ * all under TZ=UTC. Pinned and absolute, these fail on any host or none.
  */
 describe('today', () => {
-  // BOTH edges of the local day, and that is what makes this a guard rather than
-  // a restatement. A UTC implementation lands on the 25th for the late moment
-  // anywhere west of Greenwich, and on the 23rd for the early one anywhere east
-  // of it — so one of the two fails on every machine with an offset. Under
-  // TZ=UTC neither can, because there is nothing there to tell the two clocks
-  // apart; the rule is still stated, it simply has no teeth on that one machine.
-  it('reads the day off the local clock, the one capturedAt is stamped from', () => {
-    expect(today(new Date(2026, 7, 24, 23, 30))).toBe('2026-08-24');
-    expect(today(new Date(2026, 7, 24, 0, 30))).toBe('2026-08-24');
+  /**
+   * East of Greenwich, inside the gap: 23:30 UTC is already the 25th in Madrid.
+   *
+   * This is the case the old local implementation got wrong, and the bug it
+   * caused — the wand offering `branch-2026-08-25` for a set stamped
+   * `capturedAt: 2026-08-24`, which `listSets` then files under a date its name
+   * denies.
+   */
+  it('reads the UTC day when the local clock has already turned over', () => {
+    vi.stubEnv('TZ', 'Europe/Madrid');
+
+    expect(today(new Date('2026-08-24T23:30:00Z'))).toBe('2026-08-24');
+  });
+
+  // And west of it, where the local clock has NOT yet turned over: 02:30 UTC is
+  // still the 24th in Bogotá. Together with the case above, no local
+  // implementation satisfies both — which is what makes this a guard rather
+  // than a restatement.
+  it('reads the UTC day when the local clock has not yet turned over', () => {
+    vi.stubEnv('TZ', 'America/Bogota');
+
+    expect(today(new Date('2026-08-25T02:30:00Z'))).toBe('2026-08-25');
   });
 
   it('pads a single-digit month and day', () => {
-    expect(today(new Date(2026, 0, 5))).toBe('2026-01-05');
+    vi.stubEnv('TZ', 'Europe/Madrid');
+
+    expect(today(new Date('2026-01-05T12:00:00Z'))).toBe('2026-01-05');
   });
 });
 

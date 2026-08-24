@@ -128,12 +128,19 @@ describe('GET /api/env', () => {
  * this suite runs on whatever is checked out, and on CI that is a detached HEAD.
  */
 describe('GET /api/label', () => {
+  // Reimplemented rather than imported from lib/jobs, so the assertion is a
+  // second opinion instead of a restatement of the thing it checks — but on the
+  // SAME clock, which is UTC: the label is sorted against `capturedAt`, and
+  // `today` moved to UTC to agree with it. Read off the local clock, this
+  // passed at home and failed for any runner far enough east or west that the
+  // two calendars had already parted — Tokyo at 02:37 asks for the 25th of a
+  // day UTC still calls the 24th.
   const today = () => {
     const now = new Date();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
+    const month = String(now.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(now.getUTCDate()).padStart(2, '0');
 
-    return `${now.getFullYear()}-${month}-${day}`;
+    return `${now.getUTCFullYear()}-${month}-${day}`;
   };
 
   const read = async () => {

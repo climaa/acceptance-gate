@@ -3,6 +3,7 @@ import { EmptyState, Stack } from '@gate/ui';
 import type { CanonicalSet as Corpus } from '@/lib/baselines';
 import type { ReportListEntry } from '@/lib/data';
 import type { HistoryRecord } from '@/lib/jobs';
+import { formatDay } from '@/lib/outcome';
 import type { CaptureSet } from '@/lib/summary';
 import { CanonicalSet } from './CanonicalSet';
 import { ComparePickers } from './ComparePickers';
@@ -94,7 +95,10 @@ function reportDates(history: readonly HistoryRecord[]): Record<string, string> 
 
   for (const run of history) {
     if (run.reportId && run.endedAt && !(run.reportId in dates)) {
-      dates[run.reportId] = run.endedAt.slice(0, 'YYYY-MM-DD'.length);
+      // Local, like the HISTORY stamp beside it: both columns describe the
+      // same runs, so a run that ended at 01:00 local must not sit under today
+      // in one panel and yesterday in the other.
+      dates[run.reportId] = formatDay(run.endedAt);
     }
   }
 

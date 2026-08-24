@@ -128,8 +128,38 @@ export function formatDuration(ms: number): string {
   return `${Math.floor(seconds / SECONDS_PER_MINUTE)}m ${seconds % SECONDS_PER_MINUTE}s`;
 }
 
+/** The instant a stored stamp names, or null for anything this app did not
+ *  write. The shape test is not enough by itself: `\d{2}` admits a 13th month
+ *  and a 99th hour, and `new Date` answers those with `Invalid Date` rather
+ *  than throwing. An out-of-range DAY is not in that set — V8 rolls Feb 30 into
+ *  Mar 2 — but nothing here writes one, and a rolled date still reads as a
+ *  date. The guard exists so a cell can never render `NaN-NaN-NaN`. */
+function parseInstant(stamp: string): Date | null {
+  if (!ISO_INSTANT.test(stamp)) return null;
+
+  const at = new Date(stamp);
+
+  return Number.isNaN(at.getTime()) ? null : at;
+}
+
 /**
- * When a run started, as a reader reads it: `2026-08-21 12:51:23`.
+ * The local calendar parts of an instant, zero-padded.
+ *
+ * Composed from the parts rather than handed to `toLocaleDateString('en-CA')`,
+ * which happens to render ISO today — a property of ICU rather than a contract.
+ * `today` in lib/jobs.ts composes its own parts for the same reason.
+ */
+function localParts(at: Date): { day: string; time: string } {
+  const pad = (part: number) => String(part).padStart(2, '0');
+
+  return {
+    day: `${at.getFullYear()}-${pad(at.getMonth() + 1)}-${pad(at.getDate())}`,
+    time: `${pad(at.getHours())}:${pad(at.getMinutes())}:${pad(at.getSeconds())}`,
+  };
+}
+
+/**
+ * When a run started, on the clock the reader is on: `2026-08-21 14:51:23`.
  *
  * The stored value is an ISO stamp — `2026-08-21T12:51:23.716Z` — which is the
  * right thing to RECORD and the wrong thing to put in a table cell. It is 24
@@ -137,12 +167,23 @@ export function formatDuration(ms: number): string {
  * parts a reviewer actually compares between rows (the day, and the time of
  * day) were the two the `T` ran together.
  *
- * Sliced, never parsed and reformatted. `new Date(...).toLocaleString()` would
- * hand the answer to the host's locale and timezone, and two consoles must not
- * disagree about when the same run started — the same rule `formatBytes` below
- * keeps for the same reason. Slicing also cannot drift: what is shown is a
- * substring of what is stored, so the full stamp stays in the cell's `title`
- * and the `Z` it ends in is where the timezone is stated.
+ * PARSED, not sliced, and the difference is the whole point. This cell used to
+ * be the stored substring, so it read in UTC and said so nowhere: a job started
+ * two minutes ago drew `16:22:12` for a reader whose own clock said 18:24, and
+ * nothing on screen told the two apart. The rule that produced that — two
+ * consoles must not disagree about when the same run started — is the right
+ * rule for what is STORED and the wrong one for what is DRAWN. This console is
+ * a local CLI driver: the reader is one person checking a row against the clock
+ * in their menubar.
+ *
+ * So the line is drawn between the two. Instants render local — here, and
+ * `formatDay` below. Stored calendar dates stay UTC, because they are sorted
+ * and compared against each other rather than read against a clock:
+ * `capturedAt` in scripts/capture-set.mjs, and the label date `today` composes
+ * in lib/jobs.ts. `formatBytes` below keeps the locale-independence rule
+ * untouched — a size is not a moment, and has no reader's clock to be read
+ * against. The absolute instant is not lost either: the cell carries the stored
+ * stamp, `Z` and all, in its `title` (HistoryTable.tsx).
  *
  * Anything that is not the stamp this app writes is passed through untouched. A
  * value that is not an ISO instant is a `history.json` some other tool wrote,
@@ -150,9 +191,26 @@ export function formatDuration(ms: number): string {
  * the first nineteen characters of it.
  */
 export function formatStamp(startedAt: string): string {
-  return ISO_INSTANT.test(startedAt)
-    ? `${startedAt.slice(0, 10)} ${startedAt.slice(11, 19)}`
-    : startedAt;
+  const at = parseInstant(startedAt);
+  if (at === null) return startedAt;
+
+  const { day, time } = localParts(at);
+
+  return `${day} ${time}`;
+}
+
+/**
+ * The local day an instant fell on: the REPORTS table's `date` column.
+ *
+ * The same clock as {@link formatStamp}, which is why this exists rather than
+ * the `endedAt.slice(0, 10)` it replaced. Both columns describe the same runs,
+ * so a run that finished at 01:00 local must not sit under today in one panel
+ * and under yesterday in the other.
+ */
+export function formatDay(endedAt: string): string {
+  const at = parseInstant(endedAt);
+
+  return at === null ? endedAt : localParts(at).day;
 }
 
 /** Decimal units, in step with the byte budgets in `@gate/visual-diff/policy`,

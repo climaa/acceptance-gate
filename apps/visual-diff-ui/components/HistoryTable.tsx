@@ -60,8 +60,10 @@ function historyRow(
         {word}
       </span>,
       run.mode,
-      // Shown short, kept whole: the title carries the stored stamp, including
-      // the `Z` that says which clock it is on.
+      // Two clocks, deliberately. The cell is the reader's own — a row is read
+      // against the clock in their menubar — and the title is the stored
+      // instant, `Z` and all, which is the only place the absolute moment is
+      // still legible. See formatStamp in lib/outcome.ts for why the split.
       { content: formatStamp(run.startedAt), title: run.startedAt },
       run.exitCode ?? NOTHING,
       took === null ? NOTHING : formatDuration(took),
