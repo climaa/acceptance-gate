@@ -1,0 +1,201 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+import { Mermaid } from '../Mermaid';
+
+<Meta title="Docs/QA/The Deployed Console" />
+
+# The deployed console, and the reports it shows
+
+[`acceptance-gate-visual-diff-ui.vercel.app`](https://acceptance-gate-visual-diff-ui.vercel.app/)
+is the visual-diff console, deployed. It looks like the console you run locally and it is
+the same code — but it can never run a job, and every report on it is committed to this
+repo rather than captured by it.
+
+That surprises people, and the surprise is usually the same question: _I ran a capture on
+my machine, why isn't it on the site?_ It never will be. This page is why, and what to do
+instead.
+
+For the workflow the console reports **on**, see
+[Visual Diff Workflow](?path=/docs/docs-qa-visual-diff-workflow--docs); for running the
+suite against it, [Acceptance Suite Locally](?path=/docs/docs-qa-acceptance-suite-locally--docs).
+
+## The one rule
+
+> A deployed instance serves `apps/visual-diff-ui/fixtures/`. Nothing else, ever.
+
+Everything below follows from that.
+
+## Why: the data directory resolves to fixtures
+
+The console reads one environment variable, `VISUAL_DIFF_DATA_DIR`, and `dataDirFrom`
+(`lib/data-dir.ts`) decides what that means:
+
+```ts
+const configured = env.VISUAL_DIFF_DATA_DIR?.trim();
+if (!configured || !isPopulated(configured)) {
+  return { dir: FIXTURES_DIR, isSample: true };
+}
+
+return { dir: path.resolve(configured), isSample: false };
+```
+
+Two things worth reading carefully.
+
+**The fallback is not an error path.** An unset variable, and a variable pointing at a
+directory that is missing or empty, are the same answer: serve the committed fixtures and
+say so. A deployment has no capture tree, so it lands here on every request.
+
+**`isPopulated` means the check is not just "is it set".** A configured-but-empty
+directory still falls back. That is the behaviour to remember if you ever point a
+deployment at a volume and see sample data anyway.
+
+The Vercel project sets no `VISUAL_DIFF_DATA_DIR`. There is nothing to set it to: a
+serverless function has no checkout to capture, no Storybook build to point Playwright at,
+and no Docker to run the pinned container in.
+
+### `isSample` comes from the resolution, not from the file
+
+Every fixture file carries `isSample: true`, and the console **ignores it**. The badge is
+driven by `DataSource.isSample` — the answer the resolution above returned. `lib/data-dir.ts`
+says why:
+
+> The single authority on whether a screen is showing sample data: this resolution, never
+> a file's own `isSample` field. The committed fixture carries that field as provenance
+> and the schemas accept it, but deriving the badge from both would let a screen disagree
+> with its own API response.
+
+So a real report copied into a real data directory does not become "sample" because of a
+leftover field, and a fixture served from the fixtures tree cannot fail to be badged.
+
+## What a visitor can and cannot do
+
+<Mermaid
+  chart={`
+flowchart TD
+    A["Request to the deployed console"] --> B{"VISUAL_DIFF_DATA_DIR set and populated?"}
+    B -->|"no - always, on Vercel"| C["dir = fixtures/, isSample = true"]
+    C --> D["Reports, sets, shots: served"]
+    C --> E["POST /api/jobs"]
+    E --> F["409 - SAMPLE_DATA"]
+    G["A local console with a real tree"] --> H["dir = that tree, isSample = false"]
+    H --> I["POST /api/jobs"]
+    I --> J{"Host is localhost?"}
+    J -->|"no"| K["409 - NOT_LOCAL"]
+    J -->|"yes"| L["Job runs"]
+`}
+/>
+
+Reading is fully functional: the set list, the report list, every report page, the
+comparison modal, blink and slider, review marks. Those are the screens worth demoing, and
+they all work against fixture data.
+
+Writing is refused twice over, in this order (`app/api/jobs/route.ts`):
+
+1. `isSample` → **409**, `sample mode — this instance is serving the committed sample run…`
+2. not a localhost host → **409**, `this console is deployed, and a job needs the checkout it compares — start one from the console on your own machine`
+
+The order matters and is deliberate: sample mode is the more specific reason, so it is the
+one a visitor is told. The UI states both up front rather than failing on the click — the
+run panel is `frozen` when `isSample || !isLocal`, and renders the note you can see on the
+capture tab.
+
+Accept is refused for a third reason on top of these: it is container-bound, because a
+bare-metal accept writes baselines rendered by the host's own font stack. See
+[Visual Diff Workflow](?path=/docs/docs-qa-visual-diff-workflow--docs).
+
+## Deploying a report: commit it
+
+Because the deployed console reads the repo, **publishing a report is a pull request**, not
+an upload. The whole of the change is a directory under `fixtures/reports/`:
+
+```bash
+fixtures/
+├── sets.json                     # the capture sets the console lists
+└── reports/
+    └── <setA>__<setB>/
+        ├── summary.json          # packages/visual-diff's schema, plus isSample: true
+        └── shots/
+            └── <variantKey>.{baseline,candidate,diff}.png
+```
+
+The steps, given a report you already have in `.visual-diff/reports/<id>/`:
+
+1. **Copy the directory** into `apps/visual-diff-ui/fixtures/reports/`.
+2. **Add `isSample: true`** to its `summary.json`, between `warnings` and `variants` — the
+   producer never writes this field, and it is the one addition the fixture contract makes.
+   Keep the rest of the key order exactly as the differ wrote it.
+3. **Register the capture sets** it names in `fixtures/sets.json`, unless a side is the
+   committed corpus. A `check` run labels side A `baselines`, which is not a capture set —
+   the console then says "no capture set recorded under this label", which is a true
+   statement and a state worth demoing.
+4. **Say what it is in `fixtures/README.md`**, including anything unusual about it.
+5. **Run the suites.** Several tests pin the fixture tree's contents by value — the set
+   list, the report list and its counts, and schema conformance per report. They are
+   supposed to fail when you change the sample data; update them deliberately.
+
+```bash
+pnpm --filter visual-diff-ui test
+pnpm --filter e2e test:e2e     # the acceptance lane; sample-mode scenarios included
+```
+
+### What may go in there
+
+The fixture tree is evidence, not decoration. Two rules, both older than this page:
+
+- **Real runs only.** Every report is the differ's own output from a comparison that
+  actually happened. `fixtures/README.md` puts it plainly — "a real regression from this
+  repo's history, not a manufactured diff".
+- **Gaps stay gaps.** Where the corpus has never produced a verdict, the demo does not show
+  it: _"There is no `a11y` variant because the corpus has no accessibility violations — the
+  fixture doesn't fabricate one."_ A hand-written violation attributed to a real component
+  would be a lie told on a public page about this repo's own accessibility.
+
+The cost of those rules is that the demo is incomplete, and that is the accepted trade.
+`removed`, `errored` and `a11y` are currently not shown by any sample report.
+
+### Verify sample mode before you merge
+
+Your local console is almost certainly pointed at a real tree, so it will **not** show you
+what production will. The acceptance suite already runs a world that reproduces exactly the
+deployed state — an empty data directory, so the console falls back to fixtures:
+
+| world    | port   | what it is                                                    |
+| -------- | ------ | ------------------------------------------------------------- |
+| `sample` | `3201` | the console on an **empty** data tree — fixture-fallback mode |
+
+That world is what the sample-mode scenarios assert against, and it is the closest thing to
+a preview of the deployment. Vercel preview deployments are login-protected, so the local
+sample world is usually the faster check.
+
+## Deploy mechanics
+
+Merging to `main` is what publishes. Two details in `apps/visual-diff-ui/vercel.json`:
+
+```json
+{
+  "git": { "deploymentEnabled": { "sandcastle/*": false } },
+  "ignoreCommand": "npx --yes turbo@^2.10.8 query affected --packages @gate/visual-diff-ui …"
+}
+```
+
+- **Agent branches never deploy.** `sandcastle/*` is excluded outright.
+- **Unaffected commits are skipped.** The build only runs when `@gate/visual-diff-ui` is
+  affected — which includes `fixtures/`, since the fixtures live inside that package. A
+  fixture-only change does redeploy the console; a change to, say, the blog does not.
+
+Shots are served from `/api/shots/<report>/<file>` with
+`Cache-Control: public, max-age=31536000, immutable`. That is safe because a report id
+names one run's artifacts and a run never writes twice — but it does mean **you cannot
+edit a shot in place**. Overwriting a PNG under an id that has already been deployed will
+leave stale bytes in caches; publish it under a new report id instead.
+
+## Troubleshooting
+
+| Symptom                                             | Cause                                                                                          |
+| --------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| "I captured locally, the site didn't change"        | Working as designed. The site reads `fixtures/`; open a PR.                                    |
+| Sample badge on an instance with a data directory   | `isPopulated` — the directory is missing or empty, so the resolution fell back.                |
+| A report 404s on the deployed console               | Its directory is not committed, or the id was typed by hand. The console lists what exists.    |
+| Fixture-shaped tests fail after editing sample data | Intended. They pin the tree by value; update them with the change.                             |
+| A deploy didn't happen                              | `ignoreCommand` found `@gate/visual-diff-ui` unaffected, or the branch matches `sandcastle/*`. |
+| An updated shot still shows the old image           | `immutable` caching. Publish under a new report id rather than overwriting.                    |
