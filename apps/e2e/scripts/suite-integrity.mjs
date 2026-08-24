@@ -23,17 +23,23 @@ const workspace = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const LANES = ['acceptance', 'local'];
 
 /**
- * Scenarios, not Playwright tests: 9 blog + 4 visual-diff console + 3 sample
+ * Scenarios, not Playwright tests: 9 blog + 6 visual-diff console + 3 sample
  * mode + 15 report + 7 accessibility + 3 baseline acceptance. Test count is
  * higher, because an untagged scenario is listed once per project; one
  * legitimate `@desktop` lowers that number without removing a requirement,
  * which would train everyone to edit this constant for a non-event. Scenario
  * count moves only when a requirement is added or removed.
  *
- * It was 41 until the console gained a control that names the next capture set
- * for the reviewer; the scenario added with it is the one requirement that
- * cannot be met by a unit test, because everything below the browser stubs the
- * fetch the wand makes.
+ * It was 42 until the run panel's mode tabs started writing the selected tab to
+ * the URL. The scenario added with it reloads the page rather than visiting a
+ * deep link someone typed, which is the half no unit test reaches: the stubbed
+ * `next/navigation` records what `router.replace` was CALLED with, and only a
+ * browser can say that the address it wrote is one the app comes back up on.
+ *
+ * It was 41 before that, until the console gained a control that names the next
+ * capture set for the reviewer; the scenario added with it is the one
+ * requirement that cannot be met by a unit test, because everything below the
+ * browser stubs the fetch the wand makes.
  *
  * It was 47 before that, until the six `@mutating` requirements were withdrawn
  * from this suite. They are not gone — they run in `features/local/`, against the tree on
@@ -45,7 +51,7 @@ const LANES = ['acceptance', 'local'];
  * scenario is a two-line diff; LOWERING it is a product decision and belongs in
  * its own hand-authored PR with the reason written down.
  */
-const EXPECTED_SCENARIOS = 42;
+const EXPECTED_SCENARIOS = 43;
 
 /** The two project selectors. Carrying both excludes a scenario from both. */
 const PROJECT_TAGS = ['@desktop', '@mobile'];

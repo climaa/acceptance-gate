@@ -2,7 +2,6 @@ import type { Locator, Page } from '@playwright/test';
 
 import { VD_HOSTS, type VdWorld } from './visual-diff-hosts';
 
-/** The four modes the run panel offers, which are the four the runner has. */
 /** The modes the run panel offers. `run` is absent on purpose: it was a second
  *  name for `capture` and spawned the same job, so the tab is gone. */
 export type JobMode = 'capture' | 'compare' | 'accept';
