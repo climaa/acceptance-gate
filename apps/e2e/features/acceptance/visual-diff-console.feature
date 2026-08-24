@@ -23,6 +23,13 @@ Feature: Visual-diff console
     And I ask the console to name the capture set
     Then the label field holds a set label no snapshot set already uses
 
+  Scenario: The selected job tab is a link
+    When I visit the console
+    And I switch to the accept job tab
+    Then the URL carries the accept job mode
+    When I reload the console
+    Then the accept job tab is selected
+
   Scenario: Past runs are listed with their outcome
     When I visit the console
     Then the history lists each run with its outcome, exit code and duration

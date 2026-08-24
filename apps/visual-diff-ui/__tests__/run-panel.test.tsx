@@ -23,7 +23,7 @@ import type { ReportListEntry } from '../lib/data';
 import type { HistoryRecord } from '../lib/jobs';
 import { DOCKER_DOWN, JOB_RUNNING, NOT_LOCAL } from '../lib/refusals';
 import { reviewStorageKey } from '../lib/review-state';
-import { refreshCalls, setSearchParams } from './stubs/next-navigation';
+import { refreshCalls, replaceCalls, setSearchParams } from './stubs/next-navigation';
 
 /**
  * The console's write half: the four job modes, the fields behind each of them,
@@ -173,6 +173,7 @@ afterEach(() => {
   localStorage.clear();
   setSearchParams('');
   refreshCalls.length = 0;
+  replaceCalls.length = 0;
 });
 
 const tab = (name: string) => screen.getByRole('tab', { name });
@@ -283,6 +284,88 @@ describe('the mode tabs', () => {
     selectTab('compare');
 
     expect(startButtons('compare')).toHaveLength(1);
+  });
+});
+
+/**
+ * The tab, in the URL.
+ *
+ * `useSearchParams` in the stub answers with whatever the last `setSearchParams`
+ * put there and does not move when `router.replace` is called — which is not a
+ * shortcoming here but the interesting half of the contract. `router.replace`
+ * commits asynchronously in the real app too, so every render between the click
+ * and the new query string reads the OLD one, and these cases are what says the
+ * panel survives that window instead of arguing with itself across it.
+ */
+describe('the selected tab in the URL', () => {
+  const PAIR = 'a=main-2026-08-17&b=main-2026-08-13';
+
+  const written = () => replaceCalls.map(({ url }) => url);
+
+  it('writes the mode that was clicked', () => {
+    renderPanel();
+
+    selectTab('accept');
+
+    expect(replaceCalls).toEqual([{ url: '/?mode=accept', options: { scroll: false } }]);
+  });
+
+  // Capture is what a console with no query string opens on, so writing the
+  // param would be adding one that changes nothing — and the reviewer who then
+  // shares the link is sharing a longer URL for the same page.
+  it('spells capture as the absence of the param', () => {
+    renderPanel({ query: 'mode=accept' });
+
+    selectTab('capture');
+
+    expect(written()).toEqual(['/']);
+  });
+
+  // Leaving compare is not abandoning the pair that was chosen: the reviewer
+  // who clicks back finds it still there, and so does whoever they sent the URL.
+  it('carries the compare pair across a tab change', () => {
+    renderPanel({ query: `${PAIR}&mode=compare` });
+
+    selectTab('accept');
+
+    expect(written()).toEqual([`/?${PAIR}&mode=accept`]);
+  });
+
+  it('writes the mode reached with the arrow keys', () => {
+    renderPanel();
+
+    fireEvent.keyDown(tab('capture'), { key: 'ArrowRight' });
+
+    expect(written()).toEqual(['/?mode=compare']);
+  });
+
+  // The window: this render reads the query string from BEFORE the click, which
+  // still names compare. A panel that treated that as a fresh request would
+  // patch the mode straight back and the tab would snap to where the reviewer
+  // just left.
+  it('holds the new tab through the render before the URL catches up', () => {
+    renderPanel({ query: `${PAIR}&mode=compare` });
+
+    selectTab('accept');
+
+    expect(tab('accept').getAttribute('aria-selected')).toBe('true');
+  });
+
+  // ...and once it HAS caught up, the panel is reading back its own write. The
+  // pair in it is the one the pickers sent, which is no longer what the field
+  // says — so a pre-fill that fired here would overwrite the correction with
+  // the value the reviewer had just replaced.
+  it('leaves a compare field the reviewer typed alone', () => {
+    renderPanel({ query: `${PAIR}&mode=compare` });
+    const baseline = () => screen.getByRole('textbox', { name: 'baseline' });
+    fireEvent.change(baseline(), { target: { value: 'main-2026-08-20' } });
+
+    selectTab('accept');
+    setSearchParams(`${PAIR}&mode=accept`);
+    selectTab('compare');
+
+    expect(baseline()).toHaveProperty('value', 'main-2026-08-20');
+    expect(tab('compare').getAttribute('aria-selected')).toBe('true');
   });
 });
 

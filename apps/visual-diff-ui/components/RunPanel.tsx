@@ -1,6 +1,6 @@
 'use client';
 
-import { useSearchParams } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
   type Dispatch,
   type KeyboardEvent,
@@ -44,6 +44,14 @@ import { FilterPicker } from './FilterPicker';
  *    run button is absent from the DOM rather than disabled, and the mode
  *    degrades to a copyable `docker run`. The server refuses the same request
  *    independently (lib/accept-gate.ts says why that is not redundant).
+ *
+ * **Which tab is selected is in the URL.** `?mode=compare|accept`, written on
+ * every selection and read back on every render — so a reviewer can send someone
+ * the panel they are looking at, and a reload does not drop them back on capture.
+ * Capture is spelled by the param's ABSENCE, the way `ReportResults` leaves its
+ * defaults out: no `mode` already means capture, so writing it would be a param
+ * that changes nothing. `a` and `b` ride along untouched, because leaving compare
+ * is not abandoning the pair that was chosen.
  *
  * The fingerprint it gates on comes from `GET /api/env`. This bundle never reads
  * `VISUAL_DIFF_FAKE_HOST_FINGERPRINT` — the seam is server-side, so a test world
@@ -318,14 +326,18 @@ interface JobForm {
 type Patch = Dispatch<Partial<JobForm>>;
 
 interface Prefill {
+  /** The PAIR, and deliberately not the mode — see `useJobForm`, where this is
+   *  the whole of what keeps the panel from arguing with its own writes. */
   key: string;
   mode: Mode;
   baseline: string;
   candidate: string;
 }
 
-/** The pickers' seam, read back: `?a=<label>&b=<label>&mode=compare`. Null when
- *  the URL carries no request this panel can act on. */
+/** The pickers' seam and the tabs' own writes, read back:
+ *  `?a=<label>&b=<label>&mode=compare`. Null when the URL carries no request this
+ *  panel can act on — which is also what a bare `/` means, and why capture needs
+ *  no param of its own. */
 function readPrefill(params: URLSearchParams): Prefill | null {
   const mode = params.get('mode');
   if (!isMode(mode)) return null;
@@ -333,22 +345,46 @@ function readPrefill(params: URLSearchParams): Prefill | null {
   const baseline = params.get('a') ?? '';
   const candidate = params.get('b') ?? '';
 
-  return { key: `${mode}|${baseline}|${candidate}`, mode, baseline, candidate };
+  return { key: `${baseline}|${candidate}`, mode, baseline, candidate };
 }
 
 /**
- * The form's state, and the pre-fill folded into it.
+ * The form's state, the pre-fill folded into it, and the one field that is folded
+ * back out — the selected mode, which this hook writes to the URL.
  *
  * A new request from the pickers is applied during render rather than from an
  * effect: an effect would paint the old pair first, and the reviewer would watch
  * the fields they just chose being filled in a second pass. `applied` is what
  * keeps it to once per request — a tab the reviewer picks afterwards is a choice,
  * and the same URL must not take it back.
+ *
+ * `selectMode` lives in here rather than at the call site because the panel now
+ * writes the query string it also reads, and the latch is what keeps it from
+ * arguing with itself. The key is the PAIR alone. Two reasons, and the second is
+ * the one that bites:
+ *
+ *  - A write of ours comes back as a pre-fill one render later, carrying whatever
+ *    `a` and `b` the URL still holds. Keyed on the pair, that echo is equal to
+ *    what is already applied and nothing happens — so a compare field the
+ *    reviewer typed into survives every tab click. Keyed on the mode as well, it
+ *    would be re-applied and the typing would be overwritten.
+ *  - `router.replace` commits asynchronously, so between the click and the new
+ *    query string there is at least one render where `useSearchParams()` still
+ *    answers with the OLD one. Any scheme that moves the latch forward to the key
+ *    it is ABOUT to see finds that stale read unapplied and acts on it — patching
+ *    the mode back to what the reviewer just navigated away from. The pair does
+ *    not change across that window, so there is no window to get wrong.
+ *
+ * What this gives up is a mode changed in the URL bar under a mounted panel, with
+ * the pair left alone. That is not a move the console can make — the pickers
+ * always write a pair, and the tabs always write from a click that has already
+ * patched the mode — and buying it back would cost the two guarantees above.
  */
 function useJobForm(
   prefill: Prefill | null,
   reportIds: readonly string[],
-): [JobForm, Patch] {
+  params: URLSearchParams,
+): [JobForm, Patch, (mode: Mode) => void] {
   const [form, patch] = useReducer(
     (state: JobForm, update: Partial<JobForm>) => ({ ...state, ...update }),
     {
@@ -361,6 +397,8 @@ function useJobForm(
     },
   );
   const [applied, setApplied] = useState(prefill?.key ?? '');
+  const router = useRouter();
+  const pathname = usePathname();
 
   if (prefill && prefill.key !== applied) {
     setApplied(prefill.key);
@@ -380,7 +418,23 @@ function useJobForm(
     patch({ reportId: firstReport });
   }
 
-  return [form, patch];
+  const selectMode = (mode: Mode) => {
+    const next = new URLSearchParams(params.toString());
+    // Capture is the absence of the param, not a value of it — see the header.
+    if (mode === 'capture') next.delete('mode');
+    else next.set('mode', mode);
+
+    patch({ mode });
+
+    const query = next.toString();
+    // `replace`, not `push`: picking a tab corrects where the reviewer already
+    // is, and a Back button that walks a tablist is a Back button nobody wants.
+    // `scroll: false` for the reason the pickers give — this panel sits well
+    // down the page, and choosing a mode must not also send it to the top.
+    router.replace(query === '' ? pathname : `${pathname}?${query}`, { scroll: false });
+  };
+
+  return [form, patch, selectMode];
 }
 
 /** What this host is, as the server sees it. `undefined` while the answer is in
@@ -895,10 +949,12 @@ export interface RunPanelProps {
 }
 
 export function RunPanel({ isSample, isLocal, reports }: RunPanelProps) {
-  const prefill = readPrefill(useSearchParams());
-  const [form, patch] = useJobForm(
+  const params = useSearchParams();
+  const prefill = readPrefill(params);
+  const [form, patch, selectMode] = useJobForm(
     prefill,
     reports.map((entry) => entry.id),
+    params,
   );
   const runner = useRunnerFingerprint();
   const stories = useStories();
@@ -944,7 +1000,7 @@ export function RunPanel({ isSample, isLocal, reports }: RunPanelProps) {
         mode={form.mode}
         onSelect={(mode) => {
           clear();
-          patch({ mode });
+          selectMode(mode);
         }}
       />
 
