@@ -466,12 +466,13 @@ function captureArgv(
  * directly when the console is already on the pinned image — so there is no
  * second code path that only the container takes.
  *
- * **The e2e worlds never run this** — their jobs are compare-only over
- * pre-seeded shot trees.
+ * **The e2e acceptance worlds never run this** — their jobs are compare-only
+ * over pre-seeded shot trees. `features/local/accept-loop.feature` does, against
+ * whatever the machine running it has.
  */
 export async function runCheck(
   dataDir: string,
-  request: Extract<JobRequest, { mode: 'capture' | 'run' }>,
+  request: Extract<JobRequest, { mode: 'capture' }>,
   log: (message: string) => void,
   cwd: string = process.cwd(),
 ): Promise<JobOutcome> {

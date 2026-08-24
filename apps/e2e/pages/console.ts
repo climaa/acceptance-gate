@@ -3,7 +3,9 @@ import type { Locator, Page } from '@playwright/test';
 import { VD_HOSTS, type VdWorld } from './visual-diff-hosts';
 
 /** The four modes the run panel offers, which are the four the runner has. */
-export type JobMode = 'capture' | 'compare' | 'run' | 'accept';
+/** The modes the run panel offers. `run` is absent on purpose: it was a second
+ *  name for `capture` and spawned the same job, so the tab is gone. */
+export type JobMode = 'capture' | 'compare' | 'accept';
 
 /**
  * The visual-diff console at `/`, in every world.
@@ -57,7 +59,7 @@ export class ConsolePage {
     this.keepLatest = page.getByRole('spinbutton', { name: 'keep latest' });
     this.pruneButton = page.getByRole('button', { name: 'prune the rest' });
     this.startButton = page.getByRole('button', {
-      name: /^start (capture|compare|run|accept)$/,
+      name: /^start (capture|compare|accept)$/,
     });
     this.currentJob = page.getByRole('region', { name: 'Current job' });
     this.viewReportLink = this.currentJob.getByRole('link', { name: 'view report' });

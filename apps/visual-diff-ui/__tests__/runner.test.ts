@@ -604,7 +604,7 @@ describe('runCheck', () => {
     const dir = makeDataDir();
 
     await withSpawn(async ({ runCheck }) => {
-      await runCheck(dir, { mode: 'run', label: 'main-2026-08-17', filter }, silent);
+      await runCheck(dir, { mode: 'capture', label: 'main-2026-08-17', filter }, silent);
     });
 
     const args = capture()?.args ?? [];

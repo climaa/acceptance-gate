@@ -32,7 +32,21 @@ import { type CaptureSet, SetsFileSchema } from './summary';
  * is where async pays for itself.
  */
 
-/** Every mode `POST /api/jobs` accepts. */
+/**
+ * Every mode a history row or a lock may RECORD — which is not the same list as
+ * the one `POST /api/jobs` accepts, and the difference is deliberate.
+ *
+ * `run` is here and nowhere else. It was a second name for `capture`: both
+ * modes reached `runCheck`, which never read `request.mode` and built the same
+ * argv from the same label and filter, so the console offered two tabs that
+ * spawned one job. The tab is gone (see `JobRequestSchema`), but the rows it
+ * already wrote are not — and this enum is what `HistoryRecordSchema` and the
+ * lock validate against. Dropping the literal here would fail every one of
+ * those rows, and `readJson` throws the whole file away on a schema miss: a
+ * console that had forgotten its own history to tidy up an enum.
+ *
+ * So it stays readable and stops being writable. Nothing can produce a new one.
+ */
 export const JobModeSchema = z.enum(['capture', 'compare', 'run', 'accept']);
 export type JobMode = z.infer<typeof JobModeSchema>;
 
@@ -125,6 +139,11 @@ const FilterSchema = z.array(z.string()).optional();
  * What `POST /api/jobs` accepts, per mode. A discriminated union rather than one
  * object with optional fields: a `compare` with no candidate and an `accept`
  * with no report are refusals at the boundary, not `undefined` three calls deep.
+ *
+ * THREE, where `JobModeSchema` has four. `run` used to be the fourth and did
+ * exactly what `capture` does — same `runCheck`, same argv, same set on disk —
+ * so a request naming it is now refused here rather than served by a job
+ * indistinguishable from the other one.
  */
 export const JobRequestSchema = z.discriminatedUnion('mode', [
   z.object({
@@ -134,7 +153,6 @@ export const JobRequestSchema = z.discriminatedUnion('mode', [
   }),
   z.object({ mode: z.literal('accept'), reportId: ReportIdSchema }),
   z.object({ mode: z.literal('capture'), label: SetLabelSchema, filter: FilterSchema }),
-  z.object({ mode: z.literal('run'), label: SetLabelSchema, filter: FilterSchema }),
 ]);
 
 export type JobRequest = z.infer<typeof JobRequestSchema>;
