@@ -368,10 +368,18 @@ export function ComparisonModal({
           />
         </Stack>
 
-        <p className="vd-compare__metric">
-          <span className="vd-mono">{formatPixels(variant.overlapDiffPixels)} px</span>{' '}
-          differ in the shared area
-        </p>
+        {/* Same rule as the row this modal was opened from: a pixel count only
+            means something where two shots were put against each other. A
+            variant with one side carries `compare.mjs`'s zeros, and `0 px
+            differ in the shared area` over a story with no baseline reports a
+            clean shared area that never existed. The stage below already says
+            which side is missing. */}
+        {hasPair(shots) && (
+          <p className="vd-compare__metric">
+            <span className="vd-mono">{formatPixels(variant.overlapDiffPixels)} px</span>{' '}
+            differ in the shared area
+          </p>
+        )}
 
         {/*
           `tabIndex={0}` for the same reason LogTail carries one: the stage

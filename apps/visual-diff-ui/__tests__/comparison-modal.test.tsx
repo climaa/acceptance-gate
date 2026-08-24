@@ -189,6 +189,27 @@ describe('the mode toolbar', () => {
     expect(within(modal()).getByText('not on this side')).toBeTruthy();
     expect(within(modal()).queryAllByRole('img')).toHaveLength(0);
   });
+
+  // The row that opens this modal stopped quoting a pixel count for a variant
+  // with one side; the modal has to stop too, or the sentence the row refused
+  // to tell is one click away. `compare.mjs` spreads zeros over a row it never
+  // measured, and `0 px differ in the shared area` reads them as a clean shared
+  // area rather than as the absence of one.
+  it('quotes no pixel count for a variant that had nothing to compare', () => {
+    renderModal(
+      'baseline',
+      variant({
+        key: 'atoms__desktop__light__atoms-bucketchip--tones',
+        id: 'atoms-bucketchip--tones',
+        bucket: 'added',
+        overlapDiffPixels: 0,
+        diffPixels: 0,
+        allowedDiffPixels: 0,
+      }),
+    );
+
+    expect(within(modal()).queryByText(/differ in the shared area/)).toBeNull();
+  });
 });
 
 describe('the slider', () => {
