@@ -733,6 +733,23 @@ describe('the compare pre-fill', () => {
     );
   });
 
+  // The other side of every echo case in `the selected tab in the URL`: a pair
+  // the panel did NOT write is a fresh request from the pickers, and it wins —
+  // including over a field mid-edit, because a reviewer who just asked for a
+  // different comparison is no longer editing the old one. Without this the
+  // latch could be stuck shut and every echo case would still pass.
+  it('applies a pair that arrives after the panel is mounted', () => {
+    renderPanel({ query: QUERY });
+    const field = (name: string) => screen.getByRole('textbox', { name });
+
+    setSearchParams('a=main-2026-08-12&b=main-2026-08-11&mode=compare');
+    // Any render will do; the reviewer's next keystroke is the realistic one.
+    fireEvent.change(field('baseline'), { target: { value: 'mid-edit' } });
+
+    expect(field('baseline')).toHaveProperty('value', 'main-2026-08-12');
+    expect(field('candidate')).toHaveProperty('value', 'main-2026-08-11');
+  });
+
   // A tab the reviewer chose is a choice, and a pre-fill that has not changed
   // must not take it back.
   it('leaves a tab the reviewer chose afterwards alone', () => {

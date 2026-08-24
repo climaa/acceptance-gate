@@ -30,7 +30,7 @@ import { FilterPicker } from './FilterPicker';
  * about being. Flag names appear verbatim: `--filter` is spelled the way a
  * reviewer would type it, because what this panel does is compose an invocation.
  *
- * Four modes, and exactly the four the runner has. Two decisions live here:
+ * Three modes, and exactly the three the runner has. Two decisions live here:
  *
  *  - D1, one job at a time. While the lock is held there is no start button at
  *    all — in its place stands the refusal the server would have answered a
@@ -205,7 +205,7 @@ const KEYS: Record<string, (from: Mode) => Mode> = {
   End: () => MODES[MODES.length - 1] as Mode,
 };
 
-/** The mode tabs. One tab stop for the four of them, arrows between: a tablist
+/** The mode tabs. One tab stop for the three of them, arrows between: a tablist
  *  where every tab is tabbable puts three stops in front of the fields. */
 function ModeTabs({ mode, onSelect }: { mode: Mode; onSelect: (mode: Mode) => void }) {
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
@@ -311,7 +311,7 @@ function GateNotice({ gate }: { gate: AcceptGate }) {
   return null;
 }
 
-/** The form, as one value per field the four modes need between them. */
+/** The form, as one value per field the three modes need between them. */
 interface JobForm {
   mode: Mode;
   label: string;
@@ -375,16 +375,25 @@ function readPrefill(params: URLSearchParams): Prefill | null {
  *    the mode back to what the reviewer just navigated away from. The pair does
  *    not change across that window, so there is no window to get wrong.
  *
- * What this gives up is a mode changed in the URL bar under a mounted panel, with
- * the pair left alone. That is not a move the console can make — the pickers
- * always write a pair, and the tabs always write from a click that has already
- * patched the mode — and buying it back would cost the two guarantees above.
+ * What this gives up is any mode change arriving with the pair UNCHANGED, and
+ * there is one the console can actually make: pressing `compare A ⇄ B` from
+ * another tab with that pair already selected. The pickers write
+ * `?a=X&b=Y&mode=compare`, the pair equals what is applied, nothing happens — so
+ * the URL reads compare while the panel still shows accept, and the press looks
+ * swallowed. The TAB has always been inert there; a same-pair request has never
+ * re-applied. What is new is that the URL now moves and disagrees with it.
+ *
+ * The answer is not a cleverer latch — every variant of one reopens the
+ * stale-read window above. It is a vocabulary split: the pickers should write a
+ * REQUEST this panel consumes and clears, distinct from the STATE it mirrors, at
+ * which point the latch stops existing at all. Tracked separately, because doing
+ * it halfway here would leave two half-vocabularies instead of one.
  */
 function useJobForm(
-  prefill: Prefill | null,
-  reportIds: readonly string[],
   params: URLSearchParams,
+  reportIds: readonly string[],
 ): [JobForm, Patch, (mode: Mode) => void] {
+  const prefill = readPrefill(params);
   const [form, patch] = useReducer(
     (state: JobForm, update: Partial<JobForm>) => ({ ...state, ...update }),
     {
@@ -949,12 +958,9 @@ export interface RunPanelProps {
 }
 
 export function RunPanel({ isSample, isLocal, reports }: RunPanelProps) {
-  const params = useSearchParams();
-  const prefill = readPrefill(params);
   const [form, patch, selectMode] = useJobForm(
-    prefill,
+    useSearchParams(),
     reports.map((entry) => entry.id),
-    params,
   );
   const runner = useRunnerFingerprint();
   const stories = useStories();
