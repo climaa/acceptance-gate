@@ -21,8 +21,9 @@ apps/
   blog/                Next.js 16 App Router + MDX (English) — index, post, tag, about,
                        RSS, sitemap, OG images; Cache Components + Partial Prefetching on
   storybook/           Storybook 10 + nextjs-vite — 24 stories, 13 docs pages
-  e2e/                 playwright-bdd acceptance suite — 45 Gherkin scenarios across
-                       the blog and three seeded visual-diff worlds (:3200/:3201/:3202)
+  e2e/                 playwright-bdd — 42 acceptance scenarios across the blog and
+                       two seeded visual-diff worlds (:3200/:3201), plus a one-scenario
+                       local lane that runs against your own .visual-diff
   visual-diff-ui/      Next.js 16 console over the differ — zod-validated read path,
                        locked job runner + guarded mutations, sample fixtures,
                        the dashboard's sets/reports/history tables, the run
@@ -88,7 +89,7 @@ scripts/               complexity-gate.mjs (the health gate) · apply-ruleset.mj
 
 - Orchestrator hermetic suite: 39 files / 654 tests (prompt contracts, merge flow, override grammar, worktree safety, provenance guard)
 - Workspace suites, all in the `test` gate job: `packages/ui` 28 files / 432 tests (70% coverage floor), `apps/blog` 12 / 287, `packages/visual-diff` 10 / 302, `apps/storybook` 4 / 99, `apps/visual-diff-ui` 31 / 530
-- `apps/e2e`: 45 Gherkin scenarios across smoke, blog, axe a11y, the visual-diff console, sample mode, the report, its accessibility treatment and baseline acceptance — in `gate.needs`, blocking. `@mutating` scenarios run alone in their own project against their own server
+- `apps/e2e`: 42 acceptance scenarios across smoke, blog, axe a11y, the visual-diff console, sample mode, the report, its accessibility treatment and baseline acceptance — in `gate.needs`, blocking. A second lane, `features/local/`, is one scenario that captures, compares, reviews, accepts and cleans up against your own tree; it refuses to run under `CI` and gates nothing
 - `packages/visual-diff`: 106 committed baselines; the capture/compare job runs on every PR but is deliberately never in `gate.needs` (see `packages/visual-diff/README.md#ci-status`)
 
 ## 🔗 Key Dependencies

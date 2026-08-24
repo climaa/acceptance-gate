@@ -28,8 +28,6 @@ export class ConsolePage {
   readonly pickerA: Locator;
   readonly pickerB: Locator;
   readonly compareButton: Locator;
-  readonly keepLatest: Locator;
-  readonly pruneButton: Locator;
   readonly startButton: Locator;
   readonly currentJob: Locator;
   readonly viewReportLink: Locator;
@@ -47,6 +45,7 @@ export class ConsolePage {
   readonly acceptDockerCommand: Locator;
   readonly copyCommandButton: Locator;
   readonly labelWand: Locator;
+  readonly setsPanel: Locator;
 
   constructor(private readonly page: Page) {
     this.setsTable = page.getByRole('table', { name: 'Snapshot sets' });
@@ -56,8 +55,6 @@ export class ConsolePage {
     this.pickerA = page.getByRole('combobox', { name: 'A' });
     this.pickerB = page.getByRole('combobox', { name: 'B' });
     this.compareButton = page.getByRole('button', { name: 'compare A ⇄ B' });
-    this.keepLatest = page.getByRole('spinbutton', { name: 'keep latest' });
-    this.pruneButton = page.getByRole('button', { name: 'prune the rest' });
     this.startButton = page.getByRole('button', {
       name: /^start (capture|compare|accept)$/,
     });
@@ -97,6 +94,11 @@ export class ConsolePage {
     // Icon-only, so its `aria-label` is the only name it has — which is exactly
     // why the atom makes that name a required prop.
     this.labelWand = page.getByRole('button', { name: 'suggest a label' });
+    // The panel, not the table inside it. Every panel is a named `region`
+    // landmark, so this is here whether the console holds captures or not — and
+    // an empty console draws an `EmptyState` where the table would be, so
+    // `setsTable` is absent exactly when the lane starts.
+    this.setsPanel = page.getByRole('region', { name: 'snapshot sets' });
   }
 
   async open(world: VdWorld = 'seeded') {
@@ -169,12 +171,14 @@ export class ConsolePage {
       .click();
   }
 
-  async pruneKeeping(n: string) {
-    await this.keepLatest.fill(n);
-    await this.pruneButton.click();
+  /** Retire one report, by the id its link carries, through the same
+   *  confirmation a reviewer answers. Addressed rather than positional: a caller
+   *  clearing up after itself must remove ITS report and no one else's. */
+  async deleteReport(id: string) {
+    await this.reportRow(id).getByRole('button', { name: 'delete' }).click();
     await this.page
-      .getByRole('dialog', { name: 'Confirm prune' })
-      .getByRole('button', { name: 'prune' })
+      .getByRole('dialog', { name: 'Confirm deletion' })
+      .getByRole('button', { name: 'delete' })
       .click();
   }
 

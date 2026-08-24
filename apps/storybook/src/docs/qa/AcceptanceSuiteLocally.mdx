@@ -113,51 +113,54 @@ Note that this path skips `check:suite`, the scenario-count integrity guard the
 `test:e2e` script runs. That's fine for watching and debugging; the guarded entry
 points are what CI and `turbo run e2e` use.
 
-## The local lane — your own captures
+## The local lane — one scenario, on your own console
 
 ```bash
-pnpm e2e:ui:local                    # from the repo root: UI Mode against YOUR data
-pnpm --filter @gate/e2e test:local   # or headless, for a verdict
+pnpm e2e:ui:local   # from the repo root: UI Mode against YOUR data
+pnpm test:local     # or headless, for a verdict
 ```
 
 Same Gherkin, same page objects, different question: not _does this build meet its
-requirements_ but _does the console work against the tree I actually captured_. It points
-at the dev server on **3300** (reusing one `pnpm dev` already has up) and reads
-`.visual-diff` at the repo root.
+requirements_ but _does the console work against my own tree_. It points at the dev server
+on **3300** (reusing one `pnpm dev` already has up) and reads `.visual-diff` at the repo
+root.
 
 Four things that make it a different lane, not a second copy of the first:
 
-1. **⚠️ Every scenario in it writes to your captures.** The lane is one file,
-   `features/local/visual-diff-flow.feature`, and running it launches a compare in your
-   `.visual-diff`, takes its job lock, **deletes your oldest capture set and prunes one
-   more**. Nothing re-seeds afterwards, so a run costs you two sets — every run, both
-   entry points. There is no way to run the lane without it short of
-   `--grep-invert @mutating`. This lane had a read-only half once; it was withdrawn a
-   file at a time.
-2. **The write guards are still there, and still refuse nothing.** `steps/local/fixtures.ts`
-   blocks every non-`GET` an untagged scenario makes, and refuses any step reaching for
-   `node:fs` from one. Every scenario carries `@mutating` today, so neither fires — they
-   are kept for the scenario nobody has written yet. The tag is not self-grantable:
-   `scripts/local-integrity.mjs` names the only file whose scenarios may carry it, and
-   refuses it on a `Feature` node so an appended scenario cannot inherit the permission.
-3. **Nothing is named.** Your labels, report ids and counts are unknowable, so every step
-   reads what it needs off the page: the flow compares the two sets the pickers offer and
-   deletes _my oldest set_, never a set anyone chose.
-4. **An empty machine fails it, deliberately.** With nothing captured, the `Background`
-   fails with a message naming what to run. A skip would have reported "passed" to the
-   guard and left the lane asserting nothing.
+1. **⚠️ It writes, and it costs minutes.** The lane is one file and one scenario,
+   `features/local/visual-diff-flow.feature`. It names a capture set with the wand,
+   captures your whole corpus inside the pinned container, compares it against the
+   committed baselines, reads the report through, promotes it — and then removes the set,
+   the report and the promotion again. Docker has to be running.
+2. **It costs you nothing.** It captures the set it needs rather than borrowing one of
+   yours, so it starts on a console that has captured nothing and leaves one behind.
+   Nothing of yours is deleted, and it can run twice in a row. That is the point: the
+   empty console is what a fresh checkout looks like, and the lane used to be unable to
+   run there at all.
+3. **The write guards are still there.** `steps/local/fixtures.ts` blocks every non-`GET`
+   an untagged scenario makes, and refuses any step reaching for `node:fs` from one. The
+   one scenario carries `@mutating`, so neither fires — they are kept for the scenario
+   nobody has written yet. The tag is not self-grantable: `scripts/local-integrity.mjs`
+   names the only file whose scenarios may carry it, and refuses it on a `Feature` node so
+   an appended scenario cannot inherit the permission.
+4. **Nothing is named.** Your labels, report ids and counts are unknowable, so every step
+   reads what it needs off the page: the set is whatever the console suggested, and the
+   compare pair is whichever two the pickers offer first.
 
-It is `@mode:serial`, so a failure stops the rest of the chain — a compare that never
-finished cannot be followed by a lock that impersonates it. It runs `workers: 1`, which
-changes nothing for one serial file and is there for the second. And it repairs itself:
-the step that edits `history.json` writes a sidecar backup the `Background` restores, so a
-run killed mid-edit does not leave your newest real run reading as `interrupted` forever.
+The test timeout is **30 minutes**, because the whole workflow is one Playwright test now
+and every wait inside it shares that budget. `@mode:serial` is gone with the other
+scenarios — it orders scenarios, and there is one — though `workers: 1` stays.
 
-There are no level tags — `@regression` and `@edge-case` were for choosing between four
-files' worth of scenarios, and there is one file. There is still no `@smoke`: a smoke level
-exists to fail a pipeline fast, and this lane gates nothing. Both entry points run
-`check:local` first, because a lane with no CI behind it is the easiest one to hollow out
-unnoticed.
+It repairs itself twice over. The step that edits `history.json` writes a sidecar backup
+the next run restores, so a run killed mid-edit does not leave your newest real run reading
+as `interrupted` forever. And an `After` hook removes the capture, the report and the
+promotion for a run that went red before its own teardown could — without which one red run
+would leave a set behind and the next would no longer start cold.
+
+There are no level tags, and no `@accept` selector any more: with one scenario there is
+nothing to choose between. There is still no `@smoke` — a smoke level exists to fail a
+pipeline fast, and this lane gates nothing. Both entry points run `check:local` first,
+because a lane with no CI behind it is the easiest one to hollow out unnoticed.
 
 ## Aiming at a deployment — what `E2E_BASE_URL` does and does not do
 

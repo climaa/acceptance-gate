@@ -11,11 +11,10 @@ catch. Adding a scenario for something a unit test could assert is a review find
 | `features/local/`      | the **dev** console on 3300 and YOUR `.visual-diff` | never — refuses under `CI` | `playwright.local.config.ts` |
 
 The acceptance lane names seed facts, because its worlds are built to hold them. The local
-lane cannot name anything — the data behind it is whatever your machine captured — so every
-one of its assertions is an invariant **between values on the page**, and every one of them
-writes: it compares the two sets your pickers offer, then deletes and prunes what it named
-by reading the table rather than by knowing it (see
-[The local lane](#the-local-lane)).
+lane cannot name anything — the data behind it is whatever the console suggested — so every
+one of its assertions is an invariant **between values on the page**. It is one scenario
+that captures its own set, compares it, reviews it, accepts it, and takes all of it back
+out (see [The local lane](#the-local-lane)).
 
 ## `.feature` files are product requirements
 
@@ -53,11 +52,9 @@ pnpm --filter @gate/e2e check:suite  # the acceptance guard alone — no browser
 turbo run e2e                        # the full acceptance run, after building both apps
 pnpm e2e:ui                          # repo root: build both apps, open UI Mode's live picker
 
-pnpm --filter @gate/e2e test:local   # local: bddgen + check:local + playwright test
-pnpm --filter @gate/e2e check:local  # the local guard alone
-pnpm e2e:ui:local                    # repo root: the local lane in UI Mode, vs YOUR data
-
-pnpm --filter @gate/e2e test:local:accept  # the accept loop: needs Docker, costs minutes
+pnpm test:local                      # repo root: the local lane, headless — needs Docker
+pnpm e2e:ui:local                    # repo root: the same lane in UI Mode, vs YOUR data
+pnpm --filter @gate/e2e check:local  # the local guard alone — no browser, no server
 ```
 
 `turbo run e2e` is the entry point that matters: the task depends on `@gate/blog#build`
@@ -86,25 +83,26 @@ runs it first for that reason; a bare `playwright test` does not.
 `features/local/` answers a different question from the acceptance suite: not _does this
 build meet its requirements_, but _does the console work against my data_.
 
-**Everything in it writes.** Two files, and neither is free.
+**One scenario, and it is the most expensive thing in this repo.** `pnpm test:local`
+rebuilds Storybook, captures your whole corpus inside the pinned container, compares it,
+reads the report through, promotes it into `<dataDir>/__baselines__`, and then removes
+every one of those again. Budget minutes and a running Docker daemon.
 
-`visual-diff-flow.feature` is what `pnpm test:local` runs: it launches a compare in your
-`.visual-diff`, takes its job lock, deletes your oldest capture set and prunes one more.
-Nothing re-seeds afterwards: a run costs you two sets, every time, on `pnpm test:local`
-and `pnpm e2e:ui:local` alike. This lane had a read-only half once, and it was withdrawn a
-file at a time; `report.feature` was the last of it.
+**It touches nothing of yours.** It removes the set, the report and the promotion it made
+**by name** — never by clearing a panel — so it runs the same on an empty console as on one
+holding a week of your captures, and leaves either as it found it. That is deliberate: the
+empty console is not an edge case, it is what a fresh checkout looks like, and a lane that
+could only run once somebody had captured by hand was asserting requirements it could not
+reach. It also means the lane can run twice in a row, which nothing before it could.
 
-`accept-loop.feature` is the journey nothing else covers — name a set with the wand,
-capture it, read the report through, promote it — and it is the most expensive thing in
-this repo. A run rebuilds Storybook, shoots your whole corpus inside the pinned container
-and then promotes it into `<dataDir>/__baselines__`; budget minutes and a running Docker
-daemon. That is why it is **not** in `test:local`: the `@accept` tag on its scenarios is
-what `pnpm test:local:accept` greps for and what both ordinary local scripts grep away, so
-the everyday lane stays about a minute and needs no daemon. Each run of it leaves one new
-capture set behind — this is the one flow here that grows your tree rather than pruning
-it. What it promotes is the data directory's own corpus, which is gitignored and which
-nothing reads: a local accept can never make CI's `visual-diff` job pass, and is not
-trying to. That is `accept-baselines.yml`'s job.
+What it promotes is the data directory's own corpus, which is gitignored and which nothing
+reads: a local accept can never make CI's `visual-diff` job pass, and is not trying to.
+That is `accept-baselines.yml`'s job. The committed corpus at
+`packages/visual-diff/__baselines__` is never touched.
+
+It was two files and nine scenarios until 2026-08-24, and a read-only half before that
+(`report.feature` was the last of it). Both withdrawals are recorded in
+`EXPECTED_LOCAL_SCENARIOS`, along with what each cost.
 
 **Nothing can be named.** No set label, report id, story title or count is knowable, so an
 assertion compares page values with each other and each step reads what it needs off the
@@ -148,28 +146,29 @@ someone reviews.
 
 ### Order, and repair
 
-`@mode:serial` keeps the chain honest: the scenarios run in the order written and
-Playwright skips every one after a failure, so a compare that never finished cannot be
-followed by a lock that impersonates it. `SERIAL_FEATURES` names this file as the only one
-allowed to carry the tag, under the same four rules the acceptance guard used to apply.
+`@mode:serial` is gone with the scenarios it ordered. It coupled a file's scenarios into
+one chain so a compare that never finished could not be followed by a lock impersonating
+it; with a single scenario there is nothing to order, and `SERIAL_FEATURES` is empty. The
+guard still refuses the tag on any file not named there, so putting it back is a decision
+rather than an accident.
 
-The lane also runs `workers: 1`, and the second file is what it was waiting for. Playwright
-runs separate files in parallel by default, so without it the accept loop would be shooting
-a corpus while the flow beside it deleted capture sets underneath — a race that passes most
-of the time, which is the worst kind. The two never run together today anyway, because
-`@accept` puts them in different scripts; `workers: 1` is what keeps that true if someone
-ever runs the lane without a grep.
+`workers: 1` stays. It has never mattered — the lane has never had two files running at
+once — and it is what keeps a second file, if one ever lands, from shooting a corpus while
+another deletes underneath it. That race passes most of the time, which is the worst kind.
 
-And the flow repairs itself. The one step that edits `history.json` writes a sidecar
-backup first, which the `Background` restores if a previous run was killed before its hook
-could put the file back — otherwise your newest real run would read as `interrupted`
-forever, and nothing later would fix it.
+The lane repairs itself twice over, and the second half is new with the collapse:
+
+- the step that edits `history.json` writes a sidecar backup the next run restores, so a
+  run killed mid-edit does not leave your newest real run reading as `interrupted` forever;
+- an `After` hook removes the capture set, the report and the promotion for a run that went
+  red before reaching its own teardown. Without it one red run leaves a set behind and the
+  next no longer starts cold, which is the property the whole rewrite exists to hold.
 
 There are no level tags. `@regression` and `@edge-case` were a vocabulary for choosing
-between four files' worth of scenarios, and they are not coming back. `@accept` is not one
-of them: it is not a level but a cost switch, and it exists because the two files in this
-lane differ by minutes and a Docker daemon rather than by importance. There is still no
-`@smoke`: a smoke level exists to fail a pipeline fast, and this lane gates nothing.
+between four files' worth of scenarios, and they are not coming back. `@accept` was a cost
+switch for the two-file era and went with it: one scenario offers nothing to select. There
+is still no `@smoke` — a smoke level exists to fail a pipeline fast, and this lane gates
+nothing.
 
 Like `E2E_BASE_URL`, the local config refuses to run under `CI`. The Storybook page
 _Docs/QA/Acceptance Suite Locally_ is the long-form guide to both lanes.
@@ -186,10 +185,10 @@ server and each costs about a second.
 | Guard                         | Lane                   | Exact count                      | Also checks                                                                                                                |
 | ----------------------------- | ---------------------- | -------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
 | `scripts/suite-integrity.mjs` | `features/acceptance/` | `EXPECTED_SCENARIOS` **42**      | `@desktop`+`@mobile` at once; every `.feature` under `features/` is in a lane; `@mode:serial` only on a declared flow file |
-| `scripts/local-integrity.mjs` | `features/local/`      | `EXPECTED_LOCAL_SCENARIOS` **9** | `@mode:serial` only on a declared flow file                                                                                |
+| `scripts/local-integrity.mjs` | `features/local/`      | `EXPECTED_LOCAL_SCENARIOS` **1** | `@mode:serial` only on a declared flow file                                                                                |
 
 42 is 9 blog + 5 visual-diff console + 3 sample mode + 15 report + 7 accessibility + 3
-baseline acceptance; 9 is 5 for the mutating flow and 4 for the accept loop. Adding a scenario raises its count in the same PR. Lowering one is a
+baseline acceptance; 1 is the whole local lane — one scenario that captures its own input and removes it. Adding a scenario raises its count in the same PR. Lowering one is a
 product decision — a hand-authored PR with the reason written down, never a step on the
 way to green. That is what took the local count from 20 to 5: the console, accessibility
 and edge-case requirements were withdrawn from the lane, not narrowed to pass.

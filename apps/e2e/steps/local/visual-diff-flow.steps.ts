@@ -6,22 +6,28 @@ import { createBdd } from 'playwright-bdd';
 
 import { test } from './fixtures';
 import type { ConsolePage } from '../../pages/console';
+import type { ReportPage } from '../../pages/report';
 
 const { Given, When, Then, After } = createBdd(test);
 
-// Every step this lane has is in this file. There is no read-only half left to
-// borrow from: `report.feature` and its steps were withdrawn, so the flow is the
-// whole of `features/local/`.
+/**
+ * The whole local lane, in one file, for one scenario.
+ *
+ * It was two files and nine scenarios until 2026-08-24. They were collapsed
+ * because the lane consumed capture sets and never made one, so it could only run
+ * on a machine somebody had captured on by hand — and the console it is supposed
+ * to vouch for is at its least tested precisely when it has captured nothing.
+ * This scenario makes its own input and takes it away again.
+ *
+ * `EXPECTED_LOCAL_SCENARIOS` in `scripts/local-integrity.mjs` carries the
+ * decision and what it cost.
+ */
 
 /**
  * The tree the dev server on 3300 reads, as `apps/visual-diff-ui`'s own `dev`
  * script names it: `VISUAL_DIFF_DATA_DIR=../../.visual-diff`, resolved from that
  * workspace. Restated here rather than read from the app, because a step that
  * writes into a directory has to be certain WHICH one before it does.
- *
- * With the variable unset the app falls back to its committed fixtures and
- * badges itself as sample data (`lib/data-dir.ts`), which the Background rules
- * out — so if the console under test is real, this path is what it is reading.
  */
 const LOCAL_DATA_DIR = path.join(
   import.meta.dirname,
@@ -37,6 +43,15 @@ const LOCAL_DATA_DIR = path.join(
  *  test. */
 const LOCK_FILE = 'job.lock';
 
+const HISTORY_FILE = 'history.json';
+
+/** The set registry the console lists from, as `lib/data.ts` writes it. */
+const SETS_FILE = 'sets.json';
+
+/** What `accept` promotes into — `lib/jobs.ts`'s layout comment. It has no
+ *  screen, which is why removing it is the one filesystem write in this file. */
+const PROMOTED_DIR = '__baselines__';
+
 interface HistoryRun {
   mode: string;
   label: string;
@@ -46,23 +61,42 @@ interface HistoryRun {
   reportId: string | null;
 }
 
-const HISTORY_FILE = 'history.json';
+/** The shape `SetLabelSchema` accepts, restated because this suite drives the
+ *  console through a browser and shares no module graph with it. */
+const SET_LABEL = /^[A-Za-z0-9][A-Za-z0-9.-]*$/;
 
-/** The set registry the console lists from, as `lib/data.ts` writes it: one
- *  `sets` array, newest first. */
-const SETS_FILE = 'sets.json';
+/**
+ * How long a job may take before a step gives up.
+ *
+ * A capture is minutes: `runCheck` rebuilds Storybook every run and then shoots
+ * the whole corpus inside the pinned container. A promote copies bytes already on
+ * disk, so its only slow part is `docker run` — seconds warm, minutes on a cold
+ * image pull.
+ *
+ * Both must fit inside `playwright.local.config.ts`'s test timeout, which is the
+ * budget for the WHOLE scenario now that the lane is one test. 20 + 5 under 30.
+ */
+const JOB_TIMEOUT = 20 * 60_000;
+const PROMOTE_TIMEOUT = 5 * 60_000;
 
 /** The lock this lane is holding, or null. Module-scoped rather than carried
- *  through `localState`, so that a scenario which dies before its first step can
- *  still be cleaned up after — the hook below takes no fixtures and so depends
- *  on nothing the scenario built. Safe: this lane runs one worker, so one
- *  process ever writes these. */
+ *  through `localState`, so a scenario that dies before its first step can still
+ *  be cleaned up after — the hook below takes no fixtures and so depends on
+ *  nothing the scenario built. */
 let heldLock: string | null = null;
 
-/** Your history file exactly as it was before a scenario made its newest run
- *  look live — the bytes, not a re-serialization, so restoring it cannot
- *  reformat or reorder anything of yours. */
+/** Your history file exactly as it was before the scenario made its newest run
+ *  look live — the bytes, not a re-serialization. */
 let historyBefore: string | null = null;
+
+/** The set this run captured and the report it wrote, so the hook can remove
+ *  them without the fixtures a step would have used. Null once nothing is owed.
+ *
+ *  Its OWN artifacts, named — never "every set" or "every report". This lane
+ *  runs against a tree that may hold work of yours, and a teardown that swept
+ *  the panels clean would take that with it. */
+let madeLabel: string | null = null;
+let madeReportId: string | null = null;
 
 /**
  * Where those bytes also go, on disk, for the run that never reaches its hook.
@@ -70,24 +104,22 @@ let historyBefore: string | null = null;
  * Ctrl-C, a crash, or stopping a run in UI Mode between the write and the
  * teardown would otherwise leave your newest real run looking unfinished
  * forever: three nulls the console renders as `interrupted`, with no exit code
- * and no report link, and nothing later repairs it — the next run edits whatever
- * `history[0]` is by then, which is a different row.
- *
- * So the backup outlives the process, and the Background puts it back. A run
- * repairs the one before it.
+ * and no report link, and nothing later repairs it.
  */
 const HISTORY_BACKUP = 'history.json.e2e-backup';
 
+const promotedDir = () => path.join(LOCAL_DATA_DIR, PROMOTED_DIR);
+
 /**
- * Release it, whatever the scenario came to.
+ * Give back the lock and the history row, whatever the scenario came to.
  *
- * Not optional politeness: a lock left behind refuses every delete, every prune
- * and every job this console is asked for afterwards — including the ones a
- * later scenario in this flow makes, and including the ones YOU make from the
- * browser once the run is over. The acceptance lane's equivalent hook lives in
- * its own steps file and is not loaded by this config.
+ * A step calls this when the refusal it fabricated the lock for has been read;
+ * the hook calls it again for the run that never got that far. Both paths are
+ * the same three writes, so they are one function — a lock left behind refuses
+ * every job this console is asked for afterwards, including the ones YOU make
+ * from the browser once the run is over.
  */
-After(() => {
+function releaseHeldLock(): void {
   if (heldLock !== null) {
     fs.rmSync(heldLock, { force: true });
     heldLock = null;
@@ -99,11 +131,62 @@ After(() => {
   }
 
   fs.rmSync(path.join(LOCAL_DATA_DIR, HISTORY_BACKUP), { force: true });
+}
+
+/**
+ * Teardown, twice over — and the second one is why this lane can be trusted to
+ * start cold.
+ *
+ * The scenario removes what it made through the console's own dialogs, because
+ * "the console can take back what it wrote" is part of what is being asserted.
+ * But a step only runs if every step before it passed, and one long scenario
+ * fails in the middle far more often than five short ones do. So the hook repeats
+ * the removal for the run that went red, reaching past the UI to the filesystem
+ * because there may be no working console left to click.
+ *
+ * Without it, one red run leaves a capture behind and the next run starts warm —
+ * exactly the property this rewrite exists to guarantee.
+ */
+After(() => {
+  releaseHeldLock();
+
+  if (madeLabel !== null) {
+    fs.rmSync(path.join(LOCAL_DATA_DIR, 'sets', madeLabel), {
+      recursive: true,
+      force: true,
+    });
+
+    // The registry too: a shot tree removed without its row leaves the console
+    // listing a set whose directory is gone, which is worse than either.
+    const file = path.join(LOCAL_DATA_DIR, SETS_FILE);
+    if (fs.existsSync(file)) {
+      const registry = JSON.parse(fs.readFileSync(file, 'utf8')) as {
+        sets: { label: string }[];
+      };
+      fs.writeFileSync(
+        file,
+        `${JSON.stringify(
+          { ...registry, sets: registry.sets.filter((s) => s.label !== madeLabel) },
+          null,
+          2,
+        )}\n`,
+      );
+    }
+
+    if (madeReportId !== null) {
+      fs.rmSync(path.join(LOCAL_DATA_DIR, 'reports', madeReportId), {
+        recursive: true,
+        force: true,
+      });
+      madeReportId = null;
+    }
+
+    fs.rmSync(promotedDir(), { recursive: true, force: true });
+    madeLabel = null;
+  }
 });
 
-/** Put back whatever an interrupted run left mid-edit, and forget it. Safe to
- *  call when there is nothing to do, which is every run but the one after a
- *  run that died. */
+/** Put back whatever an interrupted run left mid-edit, and forget it. */
 function restoreInterruptedHistory(): void {
   const backup = path.join(LOCAL_DATA_DIR, HISTORY_BACKUP);
   if (!fs.existsSync(backup)) return;
@@ -113,9 +196,7 @@ function restoreInterruptedHistory(): void {
 }
 
 /** The newest run this console has recorded — the row a lock must impersonate
- *  for the history to read as `running`. Read at step time rather than pinned,
- *  because on real data the newest run is whatever the scenario before this one
- *  just launched. */
+ *  for the history to read as `running`. */
 function newestRun(): HistoryRun {
   const file = path.join(LOCAL_DATA_DIR, HISTORY_FILE);
   const history: unknown = JSON.parse(fs.readFileSync(file, 'utf8'));
@@ -123,201 +204,354 @@ function newestRun(): HistoryRun {
   const newest = Array.isArray(history) ? (history as HistoryRun[])[0] : undefined;
   expect(
     newest,
-    `${file} records no runs, so there is no job for a lock to impersonate. ` +
-      'Run a compare from the console first.',
+    `${file} records no runs, so there is no job for a lock to impersonate.`,
   ).toBeDefined();
 
-  // Narrowing for the compiler; the expect above is what a reader sees fail.
   if (!newest) throw new Error(`${file} records no runs`);
 
   return newest;
 }
 
-/** The report id the two sets the pickers opened on would produce: `<A>__<B>`,
- *  as `lib/jobs.ts` names it. Read off the console rather than chosen, because
- *  which two those are is a fact about your tree. */
-async function pairInThePickers(vd: ConsolePage): Promise<string> {
-  const a = (await vd.selectedOption(vd.pickerA).innerText()).trim();
-  const b = (await vd.selectedOption(vd.pickerB).innerText()).trim();
-  expect(
-    a,
-    'the two pickers opened on the same set, so this compare says nothing',
-  ).not.toBe(b);
-
-  return `${a}__${b}`;
-}
-
-/** Every set label the table lists, in listed order — newest first, the order
- *  `sets.json` is written in and the console shows. */
+/** Every set label the table lists, in listed order — newest first. */
 async function listedLabels(vd: ConsolePage): Promise<string[]> {
-  await expect(vd.setRows.first()).toBeVisible();
-
   return (await vd.setLabel(vd.setRows).allInnerTexts())
     .map((label) => label.trim())
     .filter(Boolean);
 }
 
-Given('this console is serving my own captures', async ({ console: vd }) => {
+/**
+ * Mark every section the report drew, one click each.
+ *
+ * A section checkbox is handed `section.variantKeys` — every variant of that
+ * section, not the cards currently on screen — so this is a whole-report pass
+ * however the results happen to be filtered or collapsed.
+ *
+ * Counted off the page rather than listed: an empty tier is not rendered at all,
+ * and the accessibility section appears only when a run found violations.
+ */
+async function markEverySection(report: ReportPage) {
+  await expect(
+    report.storyCards.first(),
+    'this report drew no story cards, so there is nothing to read through',
+  ).toBeVisible();
+
+  const sections = report.resultSections;
+  const drawn = await sections.count();
+  expect(drawn, 'this report drew no sections to read through').toBeGreaterThan(0);
+
+  for (let index = 0; index < drawn; index += 1) {
+    await report.sectionCheckbox(sections.nth(index)).check();
+  }
+}
+
+/** The report the newest finished job wrote, read off its own link — the lane's
+ *  way of learning an id without naming one. */
+async function reportIdFromJob(vd: ConsolePage): Promise<string> {
+  await expect(vd.viewReportLink).toBeVisible({ timeout: JOB_TIMEOUT });
+
+  const href = await vd.viewReportLink.getAttribute('href');
+  expect(href, 'the finished job links nowhere').toBeTruthy();
+
+  return (href ?? '').replace(/^\/report\//, '');
+}
+
+/** Leave the report and arm the accept tab for it. Both accept steps do this,
+ *  and what differs is only what they assert afterwards. */
+async function armAccept(vd: ConsolePage, report: ReportPage, reportId: string) {
+  await report.backToConsole.click();
+  await vd.selectJobMode('accept');
+  await vd.chooseAcceptReport(reportId);
+}
+
+/**
+ * The console, and the two things worth asserting about it before anything is
+ * written.
+ *
+ * It no longer demands existing captures. That precondition is what made the
+ * lane unrunnable on the machine it exists to vouch for; the scenario supplies
+ * its own set now.
+ *
+ * The identity check — is this console reading the tree this file writes to? —
+ * cannot live here any more either. `reuseExistingServer: true` means the console
+ * answering on 3300 may be a `pnpm dev` someone started against a different
+ * `VISUAL_DIFF_DATA_DIR`, and comparing what the page lists against what is on
+ * disk is the only question that catches it. On an empty console that comparison
+ * is `[] === []` and proves nothing, so it moves to the first moment it can bite:
+ * just after the capture, where it names a label this run created.
+ */
+Given('this console is serving my own data', async ({ console: vd }) => {
   restoreInterruptedHistory();
   await vd.openHere();
-  // The precondition is asserted, never skipped — the same rule the read-only
-  // half of this lane follows. A machine with nothing captured has a data
-  // directory and no sets in it, and a flow that quietly passed there would
-  // write nothing and claim it wrote.
-  await expect(
-    vd.setRows,
-    'This flow mutates YOUR captures, and this console lists none. Capture a set ' +
-      'first — start a capture from the console, or run `pnpm visual-diff:container capture`.',
-  ).not.toHaveCount(0);
+
   // Sample mode means the app is reading its committed fixtures, not your tree.
-  // Writing would be aimed at a directory no scenario here declared.
+  // Writing would be aimed at a directory no step here declared. Meaningful on
+  // an empty console, which is why this one stays.
   await expect(
     vd.sampleBadge,
     'This console is badged as sample data, so it is not reading your .visual-diff tree.',
   ).toHaveCount(0);
 
-  // And the tree it IS reading is the one the steps below write to.
-  //
-  // `LOCAL_DATA_DIR` is a constant, but `reuseExistingServer: true` means the
-  // console under test may be a `pnpm dev` someone started with a different
-  // `VISUAL_DIFF_DATA_DIR` — a second checkout, or one aimed at a seeded world.
-  // Both checks above pass in that case (it has sets; it is not sample mode)
-  // while every write below lands somewhere else. Comparing what the page lists
-  // against what is on disk at the path this file writes to is the question
-  // those two cannot ask.
-  const onScreen = await listedLabels(vd);
-  const onDisk = (
-    JSON.parse(fs.readFileSync(path.join(LOCAL_DATA_DIR, SETS_FILE), 'utf8')) as {
-      sets: { label: string }[];
-    }
-  ).sets.map((set) => set.label);
+  // The panel, not the table: a console that has captured nothing renders an
+  // empty state where the table goes, and this lane's whole point is starting
+  // there.
+  await expect(vd.setsPanel).toBeVisible();
+});
 
-  expect(
-    [...onScreen].sort(),
-    `This console is not reading ${LOCAL_DATA_DIR} — it lists ${onScreen.length} set(s) ` +
-      `and that directory holds ${onDisk.length}. A dev server started with a different ` +
-      'VISUAL_DIFF_DATA_DIR is being reused; stop it and let this config boot its own.',
-  ).toEqual([...onDisk].sort());
+When('I ask the console to name a capture set', async ({ console: vd, localState }) => {
+  await vd.selectJobMode('capture');
+  await vd.labelWand.click();
+
+  const field = vd.runField('label');
+  await expect(
+    field,
+    'the wand named nothing — this checkout has no branch a label can be built from',
+  ).toHaveValue(SET_LABEL);
+
+  localState.capturedLabel = await field.inputValue();
+});
+
+When('I start a capture under that name', async ({ console: vd, localState }) => {
+  const label = localState.capturedLabel ?? '';
+  expect(label, 'no step named a set before this one tried to capture it').toBeTruthy();
+
+  // Docker is asked about before the click rather than after it. Off the pinned
+  // image a capture borrows the container, and with no daemon the button is
+  // disabled — which would fail this step on a greyed control and say nothing
+  // about the loop it is here to test.
+  await expect(
+    vd.dockerRequiredNote,
+    'this capture needs the pinned container and Docker is not running — start Docker and run this again',
+  ).toHaveCount(0);
+
+  await vd.startButton.click();
+  await expect(
+    vd.refusalAlert,
+    'the console refused to start this capture — its own reason is in the run panel',
+  ).toHaveCount(0);
+
+  // Owed from here, so the hook can take it back even if nothing below runs.
+  madeLabel = label;
 });
 
 /**
- * Clear the report the compare below is about to write, if you already have one.
+ * D1, against a job that is genuinely running.
  *
- * Without this, "the console lists that report without a reload" is vacuous on
- * every run after the first: this flow always compares the two NEWEST sets and
- * always retires the two OLDEST, so the pair — and therefore the report id — is
- * the same every time. On the second run the reports panel already holds that
- * row when the page loads, and the assertion passes before the job is launched.
- *
- * The acceptance lane's identical step is sound because its world is re-seeded
- * at every webServer boot. Nothing re-seeds yours, so the state has to be made
- * here. What this removes is exactly what the next two steps regenerate.
+ * The lane used to fabricate a lock for this, and had to: a compare over shot
+ * trees that already exist is over in about a second, which is no window to
+ * assert in. A capture runs for minutes, so the console is really busy here and
+ * the refusal is the one the server would answer a second start with.
  */
-Given(
-  'no report exists yet for the two sets the pickers offer',
-  async ({ console: vd, localState, mayWrite }) => {
-    void mayWrite;
-    await vd.openHere();
-    const id = await pairInThePickers(vd);
-    localState.reportId = id;
+Then('a second job is refused while that one runs', async ({ console: vd }) => {
+  await vd.selectJobMode('compare');
 
-    fs.rmSync(path.join(LOCAL_DATA_DIR, 'reports', id), {
-      recursive: true,
-      force: true,
-    });
-  },
-);
+  // While the lock is held there is no start control to press. Reaching for it
+  // IS the attempt, and what stands in its place is the answer.
+  await expect(vd.startButton).toHaveCount(0);
+  await expect(vd.refusalAlert).toContainText('a job is already running');
+  await expect(vd.currentJob).toContainText(/capture|compare|accept/);
 
-/** The console, as the destination the flow's later scenarios start from. It was
- *  `report.steps.ts`'s until the read-only half of this lane was withdrawn; the
- *  flow is its only caller now. */
-When('I visit my console', async ({ console: vd }) => {
-  await vd.openHere();
-  await expect(vd.setsTable).toBeVisible();
-});
-
-When(
-  'I launch a comparison of the two sets the pickers offer',
-  async ({ console: vd, localState }) => {
-    // Whatever the console opens on: newest against second-newest.
-    const [a = '', b = ''] = (await pairInThePickers(vd)).split('__');
-    expect(`${a}__${b}`, 'the pickers moved between the Given and this step').toBe(
-      localState.reportId,
-    );
-
-    await vd.chooseCompare(a, b);
-    await vd.startButton.click();
-
-    // The console answers a refused start with an alert in the run panel and
-    // nothing else — no job, no new log. Read here, where it is about the click
-    // that just happened, rather than left for the assertions below to trip over
-    // three steps later.
-    await expect(
-      vd.refusalAlert,
-      'the console refused to start this compare — its own reason is in the run panel',
-    ).toHaveCount(0);
-  },
-);
-
-Then("the live log runs to the job's end", async ({ console: vd, localState }) => {
-  // THIS job's log, not whatever the panel was already showing.
-  //
-  // The current-job region keeps the last finished run on screen forever, and a
-  // finished run's log ends in `exit 0` — so on a console that has ever run
-  // anything, asserting the log alone passes whether or not the job under test
-  // started. That is not hypothetical: a refused start leaves the previous
-  // capture's log sitting there, terminal line and all.
-  //
-  // The region names the job it is showing, so the compare this scenario
-  // launched is named before its ending is read.
-  await expect(vd.currentJob).toContainText(localState.reportId ?? '');
-  await expect(vd.liveLog).toBeVisible();
-  // Milestone, not growth: a fast job can finish between two reads, so the
-  // assertion is the terminal line the contract pins, with time for a real run.
-  // A real corpus is bigger than the seeded worlds', so this is the one timeout
-  // in the lane that is generous on purpose.
-  await expect(vd.liveLog).toContainText(/exit \d/, { timeout: 120_000 });
-});
-
-Then('the finished job links to its report', async ({ console: vd }) => {
-  await expect(vd.viewReportLink).toBeVisible({ timeout: 120_000 });
+  // Back to the tab the capture was started from, so what follows reads the
+  // panel it left rather than one this assertion moved.
+  await vd.selectJobMode('capture');
 });
 
 Then(
-  'the console lists that report without a reload',
+  'the capture finishes and the set is listed',
   async ({ console: vd, localState }) => {
-    // Never reloaded: this page has been open since before the job was launched,
-    // and the only thing that re-read the server since is the poller's own
-    // `router.refresh()`, fired once when it saw the job finish.
-    //
-    // Non-vacuous because the Given removed this report before the page was
-    // opened: the row cannot have been drawn by the load. The id is not knowable
-    // in a `.feature`, so it is read from the finished job's own link and checked
-    // against the pair the Given cleared.
-    const href = await vd.viewReportLink.getAttribute('href');
-    expect(href, 'the finished job links nowhere').toBeTruthy();
-    const id = (href ?? '').replace(/^\/report\//, '');
+    const label = localState.capturedLabel ?? '';
 
-    expect(id, 'the job that finished is not the compare this scenario launched').toBe(
-      localState.reportId,
-    );
-    await expect(vd.reportRow(id)).toBeVisible();
+    await expect(vd.liveLog).toBeVisible();
+
+    // The line only THIS capture writes, waited for before the terminal one.
+    //
+    // Naming the current-job region is not enough to tell the jobs apart: it
+    // keeps the last finished run on screen forever, that run's log ends in
+    // `exit 0`, and a previous accept's label is `baselines__<set>` — which
+    // CONTAINS this set's label. A `toContainText` guard would match the old job
+    // and the terminal line would pass before this capture had started.
+    await expect(vd.liveLog).toContainText(`capturing into sets/${label}`, {
+      timeout: JOB_TIMEOUT,
+    });
+    // Milestone, not growth: a job can finish between two reads. `exit \d`
+    // rather than `exit 0` because a capture that found differences exits 1, and
+    // finding differences is the ordinary outcome of one worth comparing.
+    await expect(vd.liveLog).toContainText(/exit \d/, { timeout: JOB_TIMEOUT });
+
+    await expect(vd.setRow(label)).toBeVisible();
+
+    // And now the identity check, which could not run before this point.
+    //
+    // Both cheaper checks pass on a console pointed somewhere else — it is not
+    // sample mode, and it now lists a set — while every write lands in another
+    // tree. Comparing the page against `sets.json` at the path this file writes
+    // to is the question they cannot ask, and it is non-vacuous here because the
+    // label just captured has to appear on both sides.
+    const onScreen = await listedLabels(vd);
+    const onDisk = (
+      JSON.parse(fs.readFileSync(path.join(LOCAL_DATA_DIR, SETS_FILE), 'utf8')) as {
+        sets: { label: string }[];
+      }
+    ).sets.map((set) => set.label);
+
+    expect(
+      onDisk,
+      `This console is not reading ${LOCAL_DATA_DIR} — it lists ${onScreen.length} set(s) ` +
+        `and that directory holds ${onDisk.length}. A dev server started with a different ` +
+        'VISUAL_DIFF_DATA_DIR is being reused; stop it and let this config boot its own.',
+    ).toContain(label);
+    expect([...onScreen].sort()).toEqual([...onDisk].sort());
+  },
+);
+
+/**
+ * Compare the capture against the committed corpus.
+ *
+ * Both sides are picked by position, which names nothing:
+ * `DashboardTemplate` puts the corpus at the head of the list ahead of every
+ * capture, and the captures follow it newest first — so index 0 is the corpus
+ * and index 1 is what this scenario just wrote.
+ */
+When('I compare that capture against the corpus', async ({ console: vd, localState }) => {
+  await expect(
+    vd.setRows,
+    'this console lists no captures to compare against the corpus',
+  ).not.toHaveCount(0);
+
+  await vd.pickerA.selectOption({ index: 0 });
+  await vd.pickerB.selectOption({ index: 1 });
+
+  const corpus = (await vd.selectedOption(vd.pickerA).innerText()).trim();
+  const captured = (await vd.selectedOption(vd.pickerB).innerText()).trim();
+  expect(
+    corpus,
+    'both pickers opened on the same set, so this compare says nothing',
+  ).not.toBe(captured);
+  expect(captured, 'the second picker is not the set this run captured').toBe(
+    localState.capturedLabel,
+  );
+
+  localState.reportId = `${corpus}__${captured}`;
+
+  await vd.compareButton.click();
+
+  // Wait for the panel to actually BE on the compare tab before pressing start.
+  //
+  // `compare A ⇄ B` writes `?a=&b=&mode=compare` and the run panel reads it back
+  // — asynchronously. Press too early and `startButton` is still the capture
+  // tab's, still holding the label the wand filled in, and the click starts a
+  // SECOND capture instead of the comparison. Not theoretical: it is what this
+  // step did on its first real run, and the only trace was a capture set with a
+  // `-2` suffix nobody asked for.
+  await expect(vd.startButton).toHaveText('start compare');
+
+  await vd.startButton.click();
+  await expect(
+    vd.refusalAlert,
+    'the console refused this compare — its own reason is in the run panel',
+  ).toHaveCount(0);
+});
+
+Then('the comparison writes a report', async ({ console: vd, localState }) => {
+  await expect(vd.liveLog).toBeVisible();
+  await expect(vd.liveLog).toContainText(/exit \d/, { timeout: JOB_TIMEOUT });
+
+  // The id the finished job links to, checked against the pair the pickers were
+  // left on — which makes this a claim about the comparison this scenario asked
+  // for rather than about whatever happened to run last.
+  const written = await reportIdFromJob(vd);
+  expect(written, 'the job that finished is not the pair the pickers named').toBe(
+    localState.reportId,
+  );
+
+  await expect(vd.reportRow(written)).toBeVisible();
+
+  // Owed from here, so the hook can take it back even if nothing below runs.
+  madeReportId = written;
+});
+
+When('I read the whole report through', async ({ console: vd, report, localState }) => {
+  await vd.openHere();
+  localState.reportId = await reportIdFromJob(vd);
+
+  await report.openHere(localState.reportId);
+  await markEverySection(report);
+
+  await expect(report.uncheckedCards()).toHaveCount(0);
+  // Not vacuous: a report with no cards would satisfy the line above on its own.
+  await expect(report.checkedCards()).not.toHaveCount(0);
+  // The pinned `reviewed N/M` format, asserted as N === M through a backreference
+  // rather than against a number this lane may not know. Anchored at both ends:
+  // `toHaveText` does not anchor a RegExp for you.
+  await expect(report.reviewProgress).toHaveText(/^reviewed (\d+)\/\1$/);
+});
+
+Then('the console offers to accept it', async ({ console: vd, report, localState }) => {
+  await armAccept(vd, report, localState.reportId ?? '');
+
+  await expect(
+    vd.acceptGateNote,
+    'the gate still counts unread variants, so the marks made next door did not reach it',
+  ).toHaveCount(0);
+  await expect(vd.startButton).toBeEnabled();
+});
+
+When('I accept it', async ({ console: vd }) => {
+  await expect(
+    vd.dockerRequiredNote,
+    'a promote runs in the pinned container and Docker is not running',
+  ).toHaveCount(0);
+
+  await vd.startButton.click();
+  await expect(
+    vd.refusalAlert,
+    'the console refused this accept — its own reason is in the run panel',
+  ).toHaveCount(0);
+});
+
+Then('the promotion runs to its end', async ({ console: vd }) => {
+  await expect(vd.liveLog).toBeVisible();
+  await expect(vd.liveLog).toContainText(/promoted \d+ baseline\(s\)/, {
+    timeout: PROMOTE_TIMEOUT,
+  });
+  // `exit 0` and not `exit \d`, unlike the two jobs above: a promote that failed
+  // wrote nothing, and there is no partial success worth passing this step on.
+  await expect(vd.liveLog).toContainText(/exit 0/, { timeout: PROMOTE_TIMEOUT });
+});
+
+Then(
+  'the history records the accept as succeeded',
+  async ({ console: vd, localState }) => {
+    // Identity first, and NOT from the history table: its columns are status,
+    // type, started, exit and took — there is no label column, so a row cannot be
+    // matched on the report id at all. The label of an accept IS its report id,
+    // and the current-job region is the one place a label is drawn.
+    await expect(vd.currentJob).toContainText(localState.reportId ?? '');
+
+    // Then the row, which is the newest accept — history is newest first, and
+    // nothing else has run since this scenario's promote.
+    const row = vd.historyRow(/accept/).first();
+
+    await expect(vd.historyCell(row, 'type')).toHaveText('accept');
+    await expect(vd.historyCell(row, 'status')).toHaveText('succeeded');
+    await expect(vd.historyCell(row, 'exit')).toHaveText('0');
   },
 );
 
 /**
  * Make the newest run look live, and take its lock.
  *
- * A lock alone is not enough, and that is a fact about the data rather than
- * about this step: `lib/jobs.ts` reads a run as running only when the row is
- * unfinished — `endedAt`, `exitCode` and `reportId` all null, which is what
- * `startJob` writes and only the end of the job patches. Your newest run
- * finished, so with a lock on top the console correctly still reads it as
- * `succeeded`. Those three nulls plus the lock ARE the on-disk state of a live
- * job; nothing here fakes a screen.
+ * Still fabricated, where D1 above is not, and the difference is what each needs.
+ * D1 needs a running job; a real capture supplies one. This needs a running job
+ * AND something deletable — and until the capture finished there was nothing to
+ * delete, by which time the job was over. So the lock is made rather than waited
+ * for, which is also what makes the refusal deterministic.
  *
- * The row is restored byte-for-byte by the `After` hook above — this is the one
- * write in the flow that is not yours to keep.
+ * A lock alone is not enough: `lib/jobs.ts` reads a run as running only when the
+ * row is unfinished — `endedAt`, `exitCode` and `reportId` all null, which is
+ * what `startJob` writes and only the end of the job patches. Those three nulls
+ * plus the lock ARE the on-disk state of a live job; nothing here fakes a screen.
+ *
+ * The row is restored byte-for-byte when the lock is released.
  */
 Given('my newest run is holding the job lock', async ({ console: vd, mayWrite }) => {
   void mayWrite;
@@ -353,57 +587,11 @@ Given('my newest run is holding the job lock', async ({ console: vd, mayWrite })
   await vd.openHere();
 });
 
-When('I try to start another job', async ({ console: vd }) => {
-  await vd.selectJobMode('compare');
-  // D1, as the run panel implements it: while the lock is held there is no start
-  // control to press. Reaching for it IS the attempt, and what stands in its
-  // place is the answer the Then reads.
-  await expect(vd.startButton).toHaveCount(0);
-});
+When('I try to delete the set it captured', async ({ console: vd, localState }) => {
+  const label = localState.capturedLabel ?? '';
+  expect(label, 'no step captured a set for this one to delete').toBeTruthy();
 
-Then(
-  'the console shows the running job instead of queueing mine',
-  async ({ console: vd }) => {
-    // User-facing copy per the contract — never the bare 409 code.
-    await expect(vd.refusalAlert).toContainText('a job is already running');
-    await expect(vd.currentJob).toContainText(/capture|compare|run|accept/);
-  },
-);
-
-Then('the history shows that job as running', async ({ console: vd }) => {
-  // Matched against the DRAWN stamp, not the stored one: the table renders an
-  // ISO instant as `YYYY-MM-DD HH:MM:SS` (`formatStamp`, in
-  // apps/visual-diff-ui/lib/outcome.ts). A real run's `startedAt` carries
-  // fractional seconds that the cell does not print, so they are cut here rather
-  // than searched for.
-  const started = newestRun().startedAt.slice(0, 19).replace('T', ' ');
-  const row = vd.historyRows.filter({ hasText: started });
-
-  await expect(vd.historyCell(row, 'status')).toHaveText('running');
-});
-
-When('I delete my oldest set', async ({ console: vd, localState }) => {
-  const labels = await listedLabels(vd);
-  const oldest = labels[labels.length - 1];
-  expect(oldest, 'this console lists no sets to delete').toBeTruthy();
-  if (!oldest) return;
-
-  localState.deletedSet = oldest;
-  await vd.deleteSet(oldest);
-
-  // A held set is refused, and the console says so inside the dialog it refused
-  // in. Whether anything holds your oldest set is a fact about your machine —
-  // the kind this lane may not assume — so it is read back rather than assumed,
-  // and the reader gets the reason instead of "expected 0, received 1" two steps
-  // later. Scenarios that EXPECT a refusal assert it themselves before this
-  // matters.
-  const refusals = await vd.dialogRefusal.allInnerTexts();
-  const held = refusals.find((text) => /worktree/i.test(text));
-  expect(
-    held,
-    `"${oldest}" cannot be deleted: ${held ?? ''}. This flow retires your oldest set, ` +
-      'and a registered worktree is holding that one.',
-  ).toBeUndefined();
+  await vd.deleteSet(label);
 });
 
 Then('the deletion is refused because a job is running', async ({ console: vd }) => {
@@ -425,38 +613,70 @@ Then(
   },
 );
 
-Then('that set is no longer listed', async ({ console: vd, localState }) => {
-  const deleted = localState.deletedSet;
-  expect(deleted, 'no delete step ran before this assertion').toBeDefined();
-  if (deleted === undefined) return;
-
-  // Named, not inferred: re-reading the table and observing it still has a last
-  // row would agree with itself whether or not anything was deleted.
-  await expect(vd.setRow(deleted)).toHaveCount(0);
+When('the lock is released', async ({ console: vd, mayWrite }) => {
+  void mayWrite;
+  releaseHeldLock();
+  await vd.openHere();
 });
 
-When('I prune keeping every set but the oldest', async ({ console: vd, localState }) => {
-  const labels = await listedLabels(vd);
+/**
+ * Take back all three things this scenario made, through the console wherever
+ * the console has a way.
+ *
+ * The reports and the set go through the same confirmation dialogs a reviewer
+ * answers, because "the console can remove what it wrote" is part of what this
+ * scenario is for. The promotion has no screen at all — `accept` writes into
+ * `<dataDir>/__baselines__` and nothing in the app reads it back — so that one is
+ * the single filesystem write here, and why this step declares `mayWrite`.
+ *
+ * The committed corpus at `packages/visual-diff/__baselines__` is never touched.
+ * It is a different directory, it is what CI compares against, and nothing in
+ * this lane has any business near it.
+ */
+When(
+  'I remove the set, the report and the promotion',
+  async ({ console: vd, localState, mayWrite }) => {
+    void mayWrite;
+    await vd.openHere();
+
+    const reportId = localState.reportId ?? '';
+    const label = localState.capturedLabel ?? '';
+
+    // Its own report, by id — not every row in the table.
+    //
+    // The table is streamed: the panels live inside a `Suspense` boundary, so
+    // `goto` resolves on the shell and the rows arrive after it. Waiting for the
+    // row is what makes the click land at all, and `count()` would not have
+    // retried.
+    await expect(vd.reportRow(reportId)).toBeVisible();
+    await vd.deleteReport(reportId);
+    await expect(vd.reportRow(reportId)).toHaveCount(0);
+
+    await vd.deleteSet(label);
+    await expect(vd.setRow(label)).toHaveCount(0);
+
+    fs.rmSync(promotedDir(), { recursive: true, force: true });
+    madeLabel = null;
+    madeReportId = null;
+  },
+);
+
+Then('the console holds nothing this run made', async ({ console: vd, localState }) => {
+  // Its own three, named — deliberately NOT "the console is empty".
+  //
+  // The teardown removes what this scenario made and nothing else, so an
+  // assertion that the panels are empty is stronger than the promise behind it:
+  // it holds only on a tree that started empty, and fails at the very last step
+  // on a console that had a capture of yours on it. That is how this step first
+  // failed — the set left on screen belonged to another run entirely.
+  //
+  // Named also makes it non-vacuous: an empty panel satisfies "no rows" whether
+  // or not anything was ever removed.
+  await expect(vd.setRow(localState.capturedLabel ?? '')).toHaveCount(0);
+  await expect(vd.reportRow(localState.reportId ?? '')).toHaveCount(0);
+
   expect(
-    labels.length,
-    'a prune that keeps every set retires nothing, so this scenario needs at least two.',
-  ).toBeGreaterThan(1);
-
-  localState.setLabels = labels;
-  await vd.pruneKeeping(String(labels.length - 1));
-});
-
-Then('only the sets inside that window remain', async ({ console: vd, localState }) => {
-  const before = localState.setLabels;
-  expect(before, 'no prune step ran before this assertion').toBeDefined();
-  if (!before) return;
-
-  const oldest = before[before.length - 1];
-  // Never `?? ''` into a selector: `exactly('')` is /^$/, which would make the
-  // count assertion below pass for a reason that has nothing to do with pruning.
-  expect(oldest, 'the prune step recorded no sets').toBeDefined();
-  if (oldest === undefined) return;
-
-  await expect(vd.setRows).toHaveCount(before.length - 1);
-  await expect(vd.setRow(oldest)).toHaveCount(0);
+    fs.existsSync(promotedDir()),
+    'the promotion this scenario wrote is still on disk',
+  ).toBe(false);
 });

@@ -20,15 +20,19 @@ const workspace = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const CONFIG = 'playwright.local.config.ts';
 
 /**
- * The one file in this lane whose scenarios are steps of a flow, and the only
- * place `@mode:serial` may appear.
+ * Which files may carry `@mode:serial` — and today, none.
  *
- * Serial is what keeps the writing below honest: these scenarios change a real
- * tree in sequence, each assuming what the one before it did, so a failure has
- * to stop the rest rather than let a delete run against a console that never
- * got its compare.
+ * The tag couples a file's scenarios into one chain so a failure stops the rest,
+ * which is what kept the old flow honest: its scenarios changed a real tree in
+ * sequence, each assuming what the one before it did. The lane is one scenario
+ * now, so there is nothing left to order and the tag would be a claim about a
+ * sequence that does not exist — `checkSerialDeclared` refuses it on any file not
+ * named here.
+ *
+ * Empty rather than deleted: a second file would want it back, and the rule is
+ * the thing worth keeping.
  */
-const SERIAL_FEATURES = ['visual-diff-flow.feature', 'accept-loop.feature'];
+const SERIAL_FEATURES = [];
 
 /**
  * The write permission, as a list.
@@ -45,7 +49,7 @@ const SERIAL_FEATURES = ['visual-diff-flow.feature', 'accept-loop.feature'];
  * guards stay green — the "weakening an assertion" move `apps/e2e/README.md`
  * refuses by name, wearing a different hat.
  */
-const MUTATING_FEATURES = ['visual-diff-flow.feature', 'accept-loop.feature'];
+const MUTATING_FEATURES = ['visual-diff-flow.feature'];
 
 const MUTATING_TAG = '@mutating';
 
@@ -113,9 +117,33 @@ function checkMutatingTags(file, feature) {
  * What that leaves is a lane where every scenario writes. Nothing here reads
  * your console without changing it.
  *
- * 5 of them are the mutating flow; the other 4 are the accept loop, which costs
- * a container capture of your whole corpus and is kept out of `test:local` by
- * the `@accept` tag for exactly that reason.
+ * ONE. The lane is a single scenario that captures its own input, uses it, and
+ * removes it again.
+ *
+ * It was 9 until 2026-08-24, across two files. Those could only run on a machine
+ * somebody had captured on by hand: the lane consumed capture sets and made none,
+ * so it starved — and the console it exists to vouch for is at its least tested
+ * exactly when it has captured nothing. The one scenario starts and ends on an
+ * empty console, so it can run twice in a row.
+ *
+ * What that costs, recorded rather than implied: the delete and the D1 refusal
+ * survive as steps inside the chain, but neither is a named requirement a reader
+ * can find on its own any more, and a failure anywhere fails the whole lane
+ * rather than one scenario of it. `@mode:serial` went with them, which is why
+ * SERIAL_FEATURES above is empty — the tag orders scenarios, and there is one.
+ *
+ * It was 10 before that, when "Pruning retires the set outside the window"
+ * was withdrawn from `visual-diff-flow.feature` on the maintainer's decision.
+ * The scenario had stopped being runnable: the flow consumes capture sets and
+ * nothing replenishes them, so the delete above it left fewer than the two a
+ * prune needs and it failed on its own precondition rather than on retention.
+ *
+ * What that costs is recorded here rather than implied: retention is now
+ * asserted by no end-to-end scenario at all. `RetentionControl` and
+ * `POST /api/prune` — including the held-set skip that makes a bulk prune
+ * different from a delete — are covered by unit tests only. The alternative
+ * considered and not taken was restoring the consumed sets in teardown, the way
+ * this lane already restores `history.json`; that would have kept the scenario.
  *
  * Exact equality, not a floor, for the same reason the acceptance suite's is:
  * a floor decays into permission to delete. Raising this alongside a new
@@ -123,7 +151,7 @@ function checkMutatingTags(file, feature) {
  * claims, and belongs in its own hand-authored change with the reason written
  * down.
  */
-const EXPECTED_LOCAL_SCENARIOS = 9;
+const EXPECTED_LOCAL_SCENARIOS = 1;
 
 runIntegrityCheck({
   name: 'local-lane',
