@@ -66,6 +66,10 @@ When('I choose two sets to compare', async ({ console: consolePage }) => {
   await consolePage.chooseCompare(COMPARE_A, COMPARE_B);
 });
 
+When('I ask the console to name the capture set', async ({ console: consolePage }) => {
+  await consolePage.labelWand.click();
+});
+
 When('I delete the held set', async ({ console: consolePage }) => {
   await consolePage.deleteSet(HELD_SET.label);
 });
@@ -122,5 +126,37 @@ Then(
     await expect(consolePage.historyCell(withDiffs, 'took')).toHaveText(
       /^\d+m \d+s$|^\d+s$/,
     );
+  },
+);
+
+/**
+ * Nothing is named here, and nothing can be: the stem is the branch this suite
+ * happens to be running on, and on CI that is a detached HEAD — which `lib/git`
+ * records as the literal `detached`, a legal stem like any other.
+ *
+ * So the requirement is asserted as what it actually is: a label
+ * `POST /api/jobs` would accept, ending in today's date, that none of the seeded
+ * sets already holds. The exact-value cases are `__tests__/jobs.test.ts`'s job,
+ * where a clock can be handed in.
+ */
+Then(
+  'the label field holds a set label no snapshot set already uses',
+  async ({ console: consolePage }) => {
+    const today = new Date();
+    const day = [
+      today.getFullYear(),
+      String(today.getMonth() + 1).padStart(2, '0'),
+      String(today.getDate()).padStart(2, '0'),
+    ].join('-');
+
+    // `SET_LABEL`'s shape, restated rather than imported: this suite drives the
+    // console through a browser and shares no module graph with it.
+    await expect(consolePage.runField('label')).toHaveValue(
+      new RegExp(`^[A-Za-z0-9][A-Za-z0-9.-]*-${day}(-\\d+)?$`),
+    );
+
+    const suggested = await consolePage.runField('label').inputValue();
+
+    expect(SEEDED_SETS.map((set) => set.label)).not.toContain(suggested);
   },
 );
