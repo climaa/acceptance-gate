@@ -115,6 +115,27 @@ describe('a pixel card', () => {
     expect(within(card()).getByText('worst 12,216 px')).toBeTruthy();
   });
 
+  // `worst` is a shared-area measurement, and an `added` story has no shared
+  // area — `compare.mjs` spreads zeros over a row it never measured. Printing
+  // `worst 0 px` over one reads as "nothing moved", which is the opposite of
+  // what a story with no baseline on the other side is telling the reviewer.
+  it('claims no pixel measurement for a card that was never compared', () => {
+    renderCard(
+      cardOf(
+        variant({
+          key: 'atoms__desktop__light__atoms-bucketchip--tones',
+          id: 'atoms-bucketchip--tones',
+          bucket: 'added',
+          overlapDiffPixels: 0,
+          diffPixels: 0,
+          allowedDiffPixels: 0,
+        }),
+      ),
+    );
+
+    expect(within(card()).queryByText(/worst/)).toBeNull();
+  });
+
   // Three things this asserts, each a way the link has already been wrong:
   //
   //  - `?path=`, not `/iframe.html`: the bare preview document has no sidebar

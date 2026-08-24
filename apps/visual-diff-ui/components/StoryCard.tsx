@@ -9,6 +9,7 @@ import {
   type ReportSides,
   viewportGaps,
 } from '@/lib/report-view';
+import { compared } from '@/lib/shots';
 import type { Variant } from '@/lib/summary';
 import { BUCKET_TONES } from './BucketChipRow';
 import { VariantRow } from './VariantRow';
@@ -91,9 +92,17 @@ export function StoryCard({
           {card.title}
         </h3>
 
-        <span className="vd-card__worst vd-mono">
-          worst {formatPixels(card.worst)} px
-        </span>
+        {/* `worst` is the biggest shared-area difference any of this card's
+            variants recorded — which only means something where a shared area
+            existed. A card whose bucket never compared two shots carries
+            `compare.mjs`'s zeros, and `worst 0 px` on a story with no baseline
+            reads as "nothing moved" when nothing was measured. Cards are keyed
+            per bucket, so the card's own bucket answers for every row on it. */}
+        {compared(card.bucket) && (
+          <span className="vd-card__worst vd-mono">
+            worst {formatPixels(card.worst)} px
+          </span>
+        )}
 
         <span className="vd-card__slug vd-mono" title={card.storyId}>
           {card.storyId}

@@ -1,4 +1,4 @@
-import { Badge, Stack } from '@gate/ui';
+import { Badge, type BadgeTone, Stack } from '@gate/ui';
 import type { ComparisonMode } from '@/lib/comparison';
 import {
   DEV_STORYBOOK,
@@ -9,7 +9,8 @@ import {
   showsDevStorybook,
   storybookLink,
 } from '@/lib/report-view';
-import type { Variant } from '@/lib/summary';
+import { compared } from '@/lib/shots';
+import type { Bucket, Variant } from '@/lib/summary';
 import { ThreeUp } from './ThreeUp';
 
 /**
@@ -23,10 +24,44 @@ import { ThreeUp } from './ThreeUp';
  * no shot at all, and offers no way to accept one.
  */
 
-/** A variant passes only when nothing moved. Everything else — a diff, a
- *  missing side, a capture error, a violation — is a verdict a reviewer has to
- *  look at, and colouring them apart would rank failures against each other. */
-const passes = (variant: Variant) => variant.bucket === 'unchanged';
+/**
+ * The row's verdict, in the producer's own word.
+ *
+ * This badge used to read `pass`/`fail`, from `bucket === 'unchanged'`. Two
+ * things were wrong with that. `artifacts.mjs` drops every `unchanged` row
+ * before it writes `summary.json` and keeps only its count, so the `pass` branch
+ * could never render and the badge was the constant `fail` on every row of every
+ * report. And `fail` is the wrong word for half of what it covered: `compare.mjs`
+ * is explicit that `added` and `removed` are a corpus that moved and needs a
+ * deliberate accept, while `errored` and `a11y` are defects. A story that is
+ * simply new has not failed anything.
+ *
+ * So the row says which of the six it is, and the reviewer reads the same word
+ * here, on the card's chip above it, and on the bucket chip they filtered by.
+ *
+ * The tones mirror `BUCKET_TONES`, so the row and the chip above it are never
+ * the same word in two colours. `BadgeTone` has no member named `a11y`, but the
+ * name is not the point: `BucketChip`'s exclusive `a11y` tone paints
+ * `--color-warning-*`, and `Badge`'s `warning` paints the same two tokens, so
+ * `a11y` matches its chip exactly rather than being ranked against it here.
+ * `muted` is the one tone with no `Badge` equivalent, and it belongs to a bucket
+ * that cannot render — see below.
+ *
+ * (The earlier comment argued that colouring these apart would rank failures
+ * against each other. That held while the word was binary and the colour was the
+ * only signal. The word now carries the distinction, and the chip row already
+ * ranks these same buckets by tone.)
+ */
+const BADGE_TONES: Record<Bucket, BadgeTone> = {
+  changed: 'accent',
+  added: 'accent',
+  removed: 'danger',
+  errored: 'danger',
+  // `warning`, not `danger`: the same tokens the chip's `a11y` tone paints.
+  a11y: 'warning',
+  // Unreachable — see above. `muted` has no `Badge` equivalent, so `neutral`.
+  unchanged: 'neutral',
+};
 
 /** The rule's own documentation and the story it fired on — the only two
  *  actions an accessibility failure has. There is no accept here by design. */
@@ -64,21 +99,24 @@ export interface VariantRowProps {
 }
 
 export function VariantRow({ reportId, variant, sides, onCompare }: VariantRowProps) {
-  const pass = passes(variant);
-
   return (
     <div className="vd-variant">
       <Stack direction="row" gap={3} align="baseline" wrap>
-        <Badge tone={pass ? 'success' : 'danger'}>{pass ? 'pass' : 'fail'}</Badge>
+        <Badge tone={BADGE_TONES[variant.bucket]}>{variant.bucket}</Badge>
 
         <span className="vd-mono vd-variant__mode">
           {variant.viewport}/{variant.theme}
         </span>
 
-        <span className="vd-variant__metric">
-          <span className="vd-mono">{formatPixels(variant.overlapDiffPixels)} px</span>{' '}
-          differ in the shared area
-        </span>
+        {/* Only where two shots were actually put against each other. Where they
+            were not, the three frames below say why in words — repeating it here
+            as a pixel count of zero would be the same sentence told wrong. */}
+        {compared(variant.bucket) && (
+          <span className="vd-variant__metric">
+            <span className="vd-mono">{formatPixels(variant.overlapDiffPixels)} px</span>{' '}
+            differ in the shared area
+          </span>
+        )}
 
         {/* Both Storybooks: the one a developer has running beside the console,
             and the published build the baselines were taken from. The first is
