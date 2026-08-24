@@ -7453,31 +7453,6 @@
                                 },
                                 {
                                   "type": "frame",
-                                  "id": "e7CD2",
-                                  "name": "tab",
-                                  "fill": "$bg",
-                                  "cornerRadius": 5,
-                                  "stroke": "$border",
-                                  "strokeWidth": 1,
-                                  "padding": [
-                                    2,
-                                    5
-                                  ],
-                                  "children": [
-                                    {
-                                      "type": "text",
-                                      "id": "ZaLQ1",
-                                      "name": "t",
-                                      "fill": "$text-muted",
-                                      "content": "run",
-                                      "fontFamily": "$font-mono",
-                                      "fontSize": 9,
-                                      "fontWeight": "normal"
-                                    }
-                                  ]
-                                },
-                                {
-                                  "type": "frame",
                                   "id": "CB8gK",
                                   "name": "tab",
                                   "fill": "$bg",
@@ -7574,7 +7549,7 @@
                               "fill": "$ink-muted",
                               "textGrowth": "fixed-width",
                               "width": "fill_container",
-                              "content": "mode tabs capture / compare / run / accept + label / filter / viewports + --skip-build, verbatim mono flag names. accept is gated per D3 — no run button off the pinned container.",
+                              "content": "mode tabs capture / compare / accept + label / filter / viewports + --skip-build, verbatim mono flag names. THREE, not four: capture and run spawned the same argv — runCheck never read the mode — so run was a second name for one job. accept is gated per D3 — no run button off the pinned container.",
                               "lineHeight": 1.4,
                               "fontFamily": "$font-body",
                               "fontSize": 11,
@@ -15945,31 +15920,6 @@
                                         },
                                         {
                                           "type": "frame",
-                                          "id": "WNbEE",
-                                          "name": "tab",
-                                          "fill": "$bg",
-                                          "cornerRadius": 6,
-                                          "stroke": "$border",
-                                          "strokeWidth": 1,
-                                          "padding": [
-                                            4,
-                                            12
-                                          ],
-                                          "children": [
-                                            {
-                                              "type": "text",
-                                              "id": "ez4p7",
-                                              "name": "t",
-                                              "fill": "$text-muted",
-                                              "content": "run",
-                                              "fontFamily": "$font-mono",
-                                              "fontSize": 11,
-                                              "fontWeight": "normal"
-                                            }
-                                          ]
-                                        },
-                                        {
-                                          "type": "frame",
                                           "id": "TJdfj",
                                           "name": "tab",
                                           "fill": "$bg",
@@ -18325,31 +18275,6 @@
                                         },
                                         {
                                           "type": "frame",
-                                          "id": "YWDFy",
-                                          "name": "tab",
-                                          "fill": "$bg",
-                                          "cornerRadius": 6,
-                                          "stroke": "$border",
-                                          "strokeWidth": 1,
-                                          "padding": [
-                                            4,
-                                            12
-                                          ],
-                                          "children": [
-                                            {
-                                              "type": "text",
-                                              "id": "TtUkM",
-                                              "name": "t",
-                                              "fill": "$text-muted",
-                                              "content": "run",
-                                              "fontFamily": "$font-mono",
-                                              "fontSize": 11,
-                                              "fontWeight": "normal"
-                                            }
-                                          ]
-                                        },
-                                        {
-                                          "type": "frame",
                                           "id": "W6yj1",
                                           "name": "tab",
                                           "fill": "$bg",
@@ -19713,31 +19638,6 @@
                                     },
                                     {
                                       "type": "frame",
-                                      "id": "WPwRd",
-                                      "name": "tab",
-                                      "fill": "$bg",
-                                      "cornerRadius": 5,
-                                      "stroke": "$border",
-                                      "strokeWidth": 1,
-                                      "padding": [
-                                        3,
-                                        9
-                                      ],
-                                      "children": [
-                                        {
-                                          "type": "text",
-                                          "id": "vmTfg",
-                                          "name": "t",
-                                          "fill": "$text-muted",
-                                          "content": "run",
-                                          "fontFamily": "$font-mono",
-                                          "fontSize": 10,
-                                          "fontWeight": "normal"
-                                        }
-                                      ]
-                                    },
-                                    {
-                                      "type": "frame",
                                       "id": "v7hWUN",
                                       "name": "tab",
                                       "fill": "$bg",
@@ -20207,31 +20107,6 @@
                                           "name": "t",
                                           "fill": "$text-muted",
                                           "content": "compare",
-                                          "fontFamily": "$font-mono",
-                                          "fontSize": 10,
-                                          "fontWeight": "normal"
-                                        }
-                                      ]
-                                    },
-                                    {
-                                      "type": "frame",
-                                      "id": "JBCc8",
-                                      "name": "tab",
-                                      "fill": "$bg",
-                                      "cornerRadius": 5,
-                                      "stroke": "$border",
-                                      "strokeWidth": 1,
-                                      "padding": [
-                                        3,
-                                        9
-                                      ],
-                                      "children": [
-                                        {
-                                          "type": "text",
-                                          "id": "BGDcB",
-                                          "name": "t",
-                                          "fill": "$text-muted",
-                                          "content": "run",
                                           "fontFamily": "$font-mono",
                                           "fontSize": 10,
                                           "fontWeight": "normal"

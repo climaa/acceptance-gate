@@ -91,7 +91,7 @@ const issuesOf = (error: { issues: { path: PropertyKey[]; message: string }[] })
  * describes the machine that wrote it; the console now runs the pinned
  * container itself, exactly as a capture does, so the host decides which argv
  * the runner builds rather than whether there is anything to run. What still
- * refuses is the rule below that capture and run already answered to: no
+ * refuses is the rule below that capture already answered to: no
  * container, and no daemon to start one.
  */
 function refuseAccept(dataDir: string, reportId: string): Response | null {

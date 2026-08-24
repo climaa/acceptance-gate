@@ -1,63 +1,47 @@
-@mode:serial
-Feature: The mutating flow, against my own captures
+Feature: The whole loop, against my own console
 
-  ⚠️ These scenarios WRITE. Every other requirement in this lane is read-only and
-  enforced to be — `steps/local/fixtures.ts` aborts every non-GET before it
-  reaches the server, and a step that writes to disk asks for the `mayWrite`
-  fixture, which refuses an untagged scenario. `@mutating` on a scenario is what
-  opts it out of both. It is written on every scenario below rather than on this
-  Feature on purpose: inherited, it would hand the same permission to the next
-  scenario anyone appends here, with no line of its own for a reviewer to object
-  to. `scripts/local-integrity.mjs` refuses it on a Feature, and refuses it
-  outside this file.
+  ⚠️ This scenario WRITES, and it is the most expensive thing in this repo. It
+  rebuilds Storybook, captures your whole corpus inside the pinned container,
+  compares it, promotes it, and then takes all of that back out again. Budget
+  minutes and a running Docker daemon.
 
-  There is no seeded world behind these: they launch a job in YOUR
-  `.visual-diff`, take its lock, delete YOUR oldest capture set and prune one
-  more. Nothing re-seeds afterwards. A run costs you two sets.
+  What it does NOT do is touch anything of yours. It captures the set it needs,
+  uses it, and removes that set, that report and that promotion — by name, never
+  by clearing a panel. So it runs the same on an empty console as on one holding a
+  week of your captures, and leaves either exactly as it found it.
 
-  `@mode:serial` is what makes the chain honest. They run in the order written
-  and Playwright SKIPS every scenario after a failure, so a compare that never
-  finished cannot be followed by a lock that impersonates it, or by a delete
-  aimed at a console that is not in the state the scenario assumes.
+  That is the point. The empty console is not an edge case: it is what a fresh
+  checkout looks like, and a lane that could only run once somebody had captured
+  by hand was asserting requirements it could not reach.
 
-  Nothing is named here, as everywhere in this lane: the sets are whatever your
-  machine captured, so each step reads the labels off the page and the
-  assertions compare page values with each other.
+  One scenario, not five, because this is one task: the console is only worth
+  anything if the whole chain works, and a capture that cannot be compared or a
+  report that cannot be accepted is not a partial success. `@mutating` is the
+  write permission and is on the scenario rather than the Feature, for the reason
+  `scripts/local-integrity.mjs` spells out — inherited, it would arm whatever
+  anyone appends here next.
 
-  Background:
-    Given this console is serving my own captures
+  Nothing is named. The set is whatever the console suggests, the pair is whichever
+  two the pickers offer first, and the sections are whichever ones the report drew.
 
   @mutating
-  Scenario: Comparing the two sets the pickers offer writes a report
-    Given no report exists yet for the two sets the pickers offer
-    When I visit my console
-    And I launch a comparison of the two sets the pickers offer
-    Then the live log runs to the job's end
-    And the finished job links to its report
-    And the console lists that report without a reload
-
-  @mutating
-  Scenario: A second job is refused while one is running
+  Scenario: The console captures, compares, reviews, accepts, and leaves nothing behind
+    Given this console is serving my own data
+    When I ask the console to name a capture set
+    And I start a capture under that name
+    Then a second job is refused while that one runs
+    And the capture finishes and the set is listed
+    When I compare that capture against the corpus
+    Then the comparison writes a report
+    When I read the whole report through
+    Then the console offers to accept it
+    When I accept it
+    Then the promotion runs to its end
+    And the history records the accept as succeeded
     Given my newest run is holding the job lock
-    When I try to start another job
-    Then the console shows the running job instead of queueing mine
-    And the history shows that job as running
-
-  @mutating
-  Scenario: A refusal inside a confirmation dialog is announced on its own
-    Given my newest run is holding the job lock
-    When I delete my oldest set
+    When I try to delete the set it captured
     Then the deletion is refused because a job is running
     And the page behind the dialog announces only the running job
-
-  @mutating
-  Scenario: Deleting my oldest set removes it
-    When I visit my console
-    And I delete my oldest set
-    Then that set is no longer listed
-
-  @mutating
-  Scenario: Pruning retires the set outside the window
-    When I visit my console
-    And I prune keeping every set but the oldest
-    Then only the sets inside that window remain
+    When the lock is released
+    And I remove the set, the report and the promotion
+    Then the console holds nothing this run made

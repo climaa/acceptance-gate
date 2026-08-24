@@ -51,7 +51,15 @@ import { FilterPicker } from './FilterPicker';
  * with the server about what host it is on.
  */
 
-const MODES = ['capture', 'compare', 'run', 'accept'] as const;
+/**
+ * Three, and exactly the three the runner has.
+ *
+ * There were four. `run` sat between `compare` and `accept` and did what
+ * `capture` does — `runCheck` takes the mode and has never read it — so the
+ * strip offered a choice with one outcome, and the filter note under both tabs
+ * said the same sentence because it was describing the same job.
+ */
+const MODES = ['capture', 'compare', 'accept'] as const;
 
 type Mode = (typeof MODES)[number];
 
@@ -640,8 +648,8 @@ interface FieldsProps {
   stories: readonly StoryTier[];
 }
 
-/** capture and run take the same two: what the set will be called, and the one
- *  CLI flag this runner has. The board draws a viewports field and a
+/** Capture takes two: what the set will be called, and the one CLI flag this
+ *  runner has. The board draws a viewports field and a
  *  `--skip-build` checkbox beside them; neither exists in `visual-diff`'s CLI —
  *  its whole surface is `check | accept` with `--filter` — and the console never
  *  builds Storybook, so both would be controls for something that cannot happen. */

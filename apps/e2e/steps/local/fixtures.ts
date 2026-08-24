@@ -2,6 +2,7 @@ import type { Route } from '@playwright/test';
 import { test as base } from 'playwright-bdd';
 
 import { ConsolePage } from '../../pages/console';
+import { ReportPage } from '../../pages/report';
 
 /** The only two methods a lane pointed at the one copy of your data may use. */
 const READ_ONLY_METHODS = new Set(['GET', 'HEAD']);
@@ -35,17 +36,18 @@ const APP_ORIGIN = 'http://localhost:3300/**';
 export interface LocalState {
   /** The report id an earlier step opened, read off the console's own link. */
   reportId?: string;
-  /** Set labels read out of the sets table, in listed order — what a scenario
-   *  that changes the table compares the new table against. */
-  setLabels?: string[];
   /** The set a delete step aimed at, so the assertion after it can name the row
    *  that must be gone rather than re-reading the table and agreeing with it. */
   deletedSet?: string;
+  /** The label the console suggested for a capture, read out of the field the
+   *  wand filled — so the step that starts the run and the one that reads the
+   *  history afterwards are talking about the same set. */
+  capturedLabel?: string;
 }
 
 /**
- * The local lane's `test`, named in `playwright.local.config.ts` as
- * `importTestFrom`. Two lanes now export a `test`, and the generated specs must
+ * The local lane's `test`, reached through that config's `steps` glob. Two lanes
+ * export a `test`, and the generated specs must
  * not be left to guess which: the acceptance lane's fixtures navigate to
  * absolute world URLs on 3200-3201, so a local scenario that bound to them
  * would silently leave the dev server this config booted.
@@ -55,12 +57,23 @@ export interface LocalState {
  */
 export const test = base.extend<{
   console: ConsolePage;
+  report: ReportPage;
   localState: LocalState;
   mayWrite: void;
   readOnly: void;
 }>({
   console: async ({ page }, use) => {
     await use(new ConsolePage(page));
+  },
+  /**
+   * The report screen, for the flow that reads one through before accepting it.
+   *
+   * Reached only through `openHere`, never `open`: the latter takes a
+   * `VdWorld` and resolves to the acceptance suite's absolute host on 3200,
+   * which is exactly the leak this lane's separate `test` exists to prevent.
+   */
+  report: async ({ page }, use) => {
+    await use(new ReportPage(page));
   },
   localState: async ({}, use) => {
     await use({});
@@ -109,10 +122,10 @@ export const test = base.extend<{
    * The tag is the ONLY way through, it is declared per scenario in the feature
    * file, `scripts/local-integrity.mjs` refuses it on a Feature node and outside
    * the files it names, and `features/local/visual-diff-flow.feature` is the
-   * only one it names today. Writes that never reach the network are guarded by
+   * only file there is. Writes that never reach the network are guarded by
    * `mayWrite` above.
    *
-   * Every scenario in the lane carries the tag today, so neither guard refuses
+   * The one scenario in the lane carries the tag, so neither guard refuses
    * anything on a normal run. That is not a reason to drop them: what they
    * protect is the scenario nobody has written yet. The read-only half of this
    * lane was withdrawn one file at a time, and the next thing added here will

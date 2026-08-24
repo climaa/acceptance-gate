@@ -216,7 +216,10 @@ async function openAcceptTab(options: PanelCase = {}) {
 }
 
 describe('the mode tabs', () => {
-  it('offers exactly the four modes the runner has', () => {
+  // Three, and the count is the assertion. `run` was the fourth and spawned the
+  // same job as `capture` — `runCheck` takes a mode and has never read one — so
+  // a strip that offers it back is offering a choice with one outcome.
+  it('offers exactly the three modes the runner has', () => {
     renderPanel();
 
     const tabs = screen.getAllByRole('tab');
@@ -224,7 +227,6 @@ describe('the mode tabs', () => {
     expect(tabs.map((mode) => mode.textContent)).toEqual([
       'capture',
       'compare',
-      'run',
       'accept',
     ]);
   });
@@ -238,9 +240,9 @@ describe('the mode tabs', () => {
   it('moves the selection to the tab that was clicked', () => {
     renderPanel();
 
-    selectTab('run');
+    selectTab('compare');
 
-    expect(tab('run').getAttribute('aria-selected')).toBe('true');
+    expect(tab('compare').getAttribute('aria-selected')).toBe('true');
     expect(tab('capture').getAttribute('aria-selected')).toBe('false');
   });
 
@@ -278,9 +280,9 @@ describe('the mode tabs', () => {
   it('names the start button after the mode it would run', () => {
     renderPanel();
 
-    selectTab('run');
+    selectTab('compare');
 
-    expect(startButtons('run')).toHaveLength(1);
+    expect(startButtons('compare')).toHaveLength(1);
   });
 });
 
@@ -584,17 +586,6 @@ describe('the label wand', () => {
     expect(screen.getByRole('status', { name: 'label suggestion' })).toBeDefined();
   });
 
-  // A run writes a capture set before it compares against one, so the field it
-  // fills names the same directory a capture's does.
-  it("stands beside the run tab's label too", async () => {
-    await renderSettled();
-    selectTab('run');
-
-    fireEvent.click(wand());
-
-    await waitFor(() => expect(labelField()).toHaveProperty('value', SUGGESTED));
-  });
-
   // Compare names two sets that already exist. A FREE label is the wrong answer
   // there by definition.
   it('draws none beside the two labels a compare names', async () => {
@@ -701,7 +692,7 @@ describe('sample mode', () => {
  * a failed job.
  */
 describe('capture on a host that is not the pinned container', () => {
-  it.each(['capture', 'run'])('says the %s will run in the container', async (mode) => {
+  it.each(['capture'])('says the %s will run in the container', async (mode) => {
     renderPanel({ image: null, docker: true });
     selectTab(mode);
 
@@ -713,7 +704,7 @@ describe('capture on a host that is not the pinned container', () => {
 
   // The reminder, and the whole reason the panel asks: pressing a button that
   // can only fail is what this replaces.
-  it.each(['capture', 'run'])('disables %s while docker is down', async (mode) => {
+  it.each(['capture'])('disables %s while docker is down', async (mode) => {
     renderPanel({ image: null, docker: false });
     selectTab(mode);
 

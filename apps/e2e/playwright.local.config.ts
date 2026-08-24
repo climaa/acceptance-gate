@@ -10,7 +10,7 @@ import { defineBddConfig } from 'playwright-bdd';
  * real `.visual-diff` tree the dev server on 3300 reads. Its requirements live
  * in `features/local/`, in the same Gherkin the acceptance lane uses.
  *
- * ⚠️ Every scenario here WRITES. The lane is one file — the mutating flow — and
+ * ⚠️ The one scenario here WRITES. The lane is one file, one scenario, and
  * a run of it launches a job in your tree, deletes your oldest capture set and
  * prunes one more. Nothing re-seeds afterwards. There is no read-only half left:
  * `report.feature` was the last of it and was withdrawn.
@@ -60,7 +60,18 @@ export default defineConfig({
   // acceptance run's report.
   outputDir: 'test-results-local',
   reporter: [['html', { open: 'never', outputFolder: 'playwright-report-local' }]],
-  timeout: 30_000,
+  // Thirty minutes, for one test that is a whole workflow: a Storybook rebuild,
+  // a container capture of the entire corpus, a compare, a review pass and a
+  // promote. This used to be 30 s and the long waits inside the steps
+  // (JOB_TIMEOUT, PROMOTE_TIMEOUT) were decorative — each scenario was its own
+  // test with its own fresh slot, and the `:accept` scripts passed `--timeout`
+  // on the CLI to paper over the rest. With one test they all share this budget,
+  // and at 30 s the lane would die mid-capture with `Test timeout exceeded` and
+  // no locator diagnostics.
+  //
+  // Generous is safe here in a way it would not be in the acceptance lane: there
+  // is one test, so there is no fast scenario left to over-grant.
+  timeout: 30 * 60_000,
   expect: { timeout: 10_000 },
   retries: 0,
   // One worker, and no retry above.

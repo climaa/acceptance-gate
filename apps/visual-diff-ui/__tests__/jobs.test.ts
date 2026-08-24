@@ -633,7 +633,7 @@ describe('POST /api/jobs — the accept gate', () => {
     expect(readLock(dir)).not.toBeNull();
   });
 
-  // The rule capture and run already answered to, now that accept answers to it
+  // The rule capture already answered to, now that accept answers to it
   // too: no daemon is the one machine question a button cannot solve.
   it('refuses an accept from a host with no container and no daemon', async () => {
     const dir = configuredDataDir();
