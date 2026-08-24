@@ -71,6 +71,19 @@ async function markEverySection(report: ReportPage) {
   }
 }
 
+/**
+ * Leave the report and arm the accept tab for it.
+ *
+ * Both accept steps do this, and it is the same three actions in the same order
+ * — leave, switch, choose — so it lives once. What differs between them is what
+ * they assert afterwards, which is the whole of what each step is about.
+ */
+async function armAccept(vd: ConsolePage, report: ReportPage, reportId: string) {
+  await report.backToConsole.click();
+  await vd.selectJobMode('accept');
+  await vd.chooseAcceptReport(reportId);
+}
+
 /** The report the newest finished job wrote, read off its own link — the lane's
  *  way of learning an id without naming one. */
 async function reportIdFromJob(vd: ConsolePage): Promise<string> {
@@ -129,7 +142,7 @@ Then(
     await expect(vd.liveLog).toContainText(/exit \d/, { timeout: JOB_TIMEOUT });
 
     // A set, and deliberately not a report. `runCheck` answers with
-    // `reportId: null` — capture and run write a shot tree and nothing else, and
+    // `reportId: null` — a capture writes a shot tree and nothing else, and
     // the comparison that turns two of those into a report is the next scenario.
     await expect(vd.setRow(localState.capturedLabel ?? '')).toBeVisible();
   },
@@ -225,9 +238,7 @@ Then('every variant of that report is marked', async ({ report }) => {
 });
 
 Then('the console offers to accept it', async ({ console: vd, report, localState }) => {
-  await report.backToConsole.click();
-  await vd.selectJobMode('accept');
-  await vd.chooseAcceptReport(localState.reportId ?? '');
+  await armAccept(vd, report, localState.reportId ?? '');
 
   await expect(
     vd.acceptGateNote,
@@ -257,9 +268,7 @@ Given(
 );
 
 When('I accept it', async ({ console: vd, report, localState }) => {
-  await report.backToConsole.click();
-  await vd.selectJobMode('accept');
-  await vd.chooseAcceptReport(localState.reportId ?? '');
+  await armAccept(vd, report, localState.reportId ?? '');
 
   await expect(
     vd.dockerRequiredNote,

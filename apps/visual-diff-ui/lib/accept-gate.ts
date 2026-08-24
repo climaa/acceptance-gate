@@ -74,7 +74,7 @@ export function reviewableCount(counts: Record<Bucket, number>): number {
  * host decides HOW the job runs rather than whether there is one. What can still
  * stop it is having no daemon to start that container with, and that is a
  * property of the machine rather than of the report — `containerState` in the
- * run panel answers it for accept exactly as it does for capture and run.
+ * run panel answers it for accept exactly as it does for capture.
  */
 export type AcceptGate =
   | { state: 'accessibility'; failures: number }
@@ -98,7 +98,7 @@ export interface AcceptGateInput {
  * Both questions here are about the REPORT, which is why the host is not among
  * them: whether this machine can run the pinned container is a fact about the
  * machine, it is the same fact for every mode, and `containerState` in the run
- * panel already answers it for capture and run. Asking it twice in two
+ * panel already answers it for capture. Asking it twice in two
  * vocabularies is how accept ended up the one mode that refused where the others
  * offered a button.
  *
