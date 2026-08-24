@@ -1,4 +1,4 @@
-import type { Variant } from './summary';
+import type { Bucket, Variant } from './summary';
 
 /**
  * The three PNGs one variant can have, and the URL each is served from.
@@ -32,6 +32,23 @@ export const shotUrl = (reportId: string, key: string, kind: ShotKind) =>
  */
 const painted = (variant: Variant) => variant.diffPixels > variant.allowedDiffPixels;
 
+/** `added` is a story the baseline set never had — there is nothing behind it. */
+const noBaseline = (bucket: Bucket) => bucket === 'added';
+
+/** `removed` has no candidate left, and an `errored` capture produced no PNG. */
+const noCandidate = (bucket: Bucket) => bucket === 'removed' || bucket === 'errored';
+
+/**
+ * Whether the differ had two shots to put against each other.
+ *
+ * Where it did not, the row's pixel counts are `compare.mjs`'s `NOTHING_COMPARED`
+ * — zeros meaning "nothing was measured", not "measured, and identical". The two
+ * are the same JSON and the opposite report, so anything that quotes a pixel
+ * count asks this first: `0 px differ in the shared area` under a story with no
+ * baseline says the shared area was clean, when there was no shared area.
+ */
+export const compared = (bucket: Bucket) => !noBaseline(bucket) && !noCandidate(bucket);
+
 /** The three shots, `undefined` where the run wrote none. */
 export type ShotSources = Record<ShotKind, string | undefined>;
 
@@ -47,11 +64,8 @@ export type ShotSources = Record<ShotKind, string | undefined>;
 export function shotSources(reportId: string, variant: Variant): ShotSources {
   const at = (kind: ShotKind) => shotUrl(reportId, variant.key, kind);
 
-  const baseline = variant.bucket === 'added' ? undefined : at('baseline');
-  const candidate =
-    variant.bucket === 'removed' || variant.bucket === 'errored'
-      ? undefined
-      : at('candidate');
+  const baseline = noBaseline(variant.bucket) ? undefined : at('baseline');
+  const candidate = noCandidate(variant.bucket) ? undefined : at('candidate');
 
   return {
     baseline,
