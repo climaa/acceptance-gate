@@ -19,6 +19,9 @@ import { GET as getShot } from '../app/api/shots/[report]/[file]/route';
  */
 
 const REPORT = 'main-2026-08-17__main-2026-08-13';
+/** The second sample report: the IconButton stories entering the corpus, so the
+ *  demo carries an `added` verdict as well as a `changed` one. */
+const ADDED_REPORT = 'baselines__main-2026-08-24';
 const SHOT = 'atoms__desktop__light__atoms-prose--default.diff.png';
 
 const request = new Request('http://localhost:3300/');
@@ -39,7 +42,7 @@ describe('GET /api/sets', () => {
 
     const body = (await response.json()) as { isSample: boolean; sets: unknown[] };
     expect(body.isSample).toBe(true);
-    expect(body.sets).toHaveLength(2);
+    expect(body.sets).toHaveLength(3);
   });
 });
 
@@ -52,7 +55,8 @@ describe('GET /api/reports', () => {
       reports: { id: string }[];
     };
     expect(body.isSample).toBe(true);
-    expect(body.reports.map((report) => report.id)).toEqual([REPORT]);
+    // Newest-first is a descending sort on the id, so `main-…` leads.
+    expect(body.reports.map((report) => report.id)).toEqual([REPORT, ADDED_REPORT]);
   });
 });
 
@@ -143,6 +147,15 @@ describe('GET /api/label', () => {
     return `${now.getUTCFullYear()}-${month}-${day}`;
   };
 
+  /** A data directory that exists and holds something, which is what
+   *  `dataDirFrom` requires before it will read one instead of the fixtures. */
+  const populatedDir = () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'vd-label-'));
+    fs.mkdirSync(path.join(dir, 'sets'), { recursive: true });
+
+    return dir;
+  };
+
   const read = async () => {
     const response = await getLabel();
 
@@ -153,6 +166,13 @@ describe('GET /api/label', () => {
   };
 
   it('names the checkout it is running in, and today', async () => {
+    // Pointed away from the fixtures deliberately — see the note above. The
+    // sample tree carries dated set labels of its own, and reading it here
+    // would make this assertion depend on whether one of them happens to be
+    // today's: the wand counts past a label it already has, and `-2` is not
+    // the shape this case is about.
+    process.env.VISUAL_DIFF_DATA_DIR = populatedDir();
+
     const { body } = await read();
 
     // Shape and day, not a name: the stem is whoever is looking. `detached` is
@@ -161,7 +181,10 @@ describe('GET /api/label', () => {
   });
 
   it('counts past a set this instance already has', async () => {
-    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'vd-label-'));
+    // `sets/` up front, not just as a side effect below: an empty directory is
+    // "no data here" to `dataDirFrom`, which would send the first read to the
+    // fixtures and leave this comparing two labels from two different trees.
+    const dir = populatedDir();
     process.env.VISUAL_DIFF_DATA_DIR = dir;
 
     const first = (await read()).body.label;
