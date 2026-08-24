@@ -23,6 +23,7 @@ export class ReportPage {
   readonly resultSections: Locator;
   readonly storyCards: Locator;
   readonly a11ySection: Locator;
+  readonly backToConsole: Locator;
 
   constructor(private readonly page: Page) {
     // `region`, not `banner`: the shell renders `SiteHeader` as the page's one
@@ -55,6 +56,10 @@ export class ReportPage {
       .getByRole('article')
       .filter({ has: page.getByRole('checkbox') });
     this.a11ySection = this.results.getByRole('region', { name: 'Accessibility' });
+    // The way back out of a report. Its accessible name is its text — an arrow
+    // and the word — because `ReportTemplate` gives it no `aria-label`, so the
+    // U+2190 is part of the contract rather than decoration.
+    this.backToConsole = page.getByRole('link', { name: '← console' });
   }
 
   async open(reportId: string, world: VdWorld = 'seeded') {
@@ -110,6 +115,22 @@ export class ReportPage {
 
   async markReviewed(title: string) {
     await this.storyCard(title).getByRole('checkbox').first().check();
+  }
+
+  /**
+   * The whole-section checkbox in one of `resultSections`.
+   *
+   * `first()` because the section's head precedes its cards in the DOM, and the
+   * only other checkboxes inside a section are the cards' own. Taken by locator
+   * rather than by tier name so a caller never has to know which tiers exist —
+   * which is what lets the local lane review a report it may not name.
+   *
+   * It marks every variant of the section, not the cards currently on screen:
+   * `onToggleSection` is handed `section.variantKeys`, so a filter or a collapse
+   * does not narrow what one click means.
+   */
+  sectionCheckbox(section: Locator): Locator {
+    return section.getByRole('checkbox').first();
   }
 
   violationList(title: string): Locator {

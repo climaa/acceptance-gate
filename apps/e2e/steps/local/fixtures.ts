@@ -2,6 +2,7 @@ import type { Route } from '@playwright/test';
 import { test as base } from 'playwright-bdd';
 
 import { ConsolePage } from '../../pages/console';
+import { ReportPage } from '../../pages/report';
 
 /** The only two methods a lane pointed at the one copy of your data may use. */
 const READ_ONLY_METHODS = new Set(['GET', 'HEAD']);
@@ -41,6 +42,10 @@ export interface LocalState {
   /** The set a delete step aimed at, so the assertion after it can name the row
    *  that must be gone rather than re-reading the table and agreeing with it. */
   deletedSet?: string;
+  /** The label the console suggested for a capture, read out of the field the
+   *  wand filled — so the step that starts the run and the one that reads the
+   *  history afterwards are talking about the same set. */
+  capturedLabel?: string;
 }
 
 /**
@@ -55,12 +60,23 @@ export interface LocalState {
  */
 export const test = base.extend<{
   console: ConsolePage;
+  report: ReportPage;
   localState: LocalState;
   mayWrite: void;
   readOnly: void;
 }>({
   console: async ({ page }, use) => {
     await use(new ConsolePage(page));
+  },
+  /**
+   * The report screen, for the flow that reads one through before accepting it.
+   *
+   * Reached only through `openHere`, never `open`: the latter takes a
+   * `VdWorld` and resolves to the acceptance suite's absolute host on 3200,
+   * which is exactly the leak this lane's separate `test` exists to prevent.
+   */
+  report: async ({ page }, use) => {
+    await use(new ReportPage(page));
   },
   localState: async ({}, use) => {
     await use({});

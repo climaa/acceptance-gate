@@ -28,7 +28,7 @@ const CONFIG = 'playwright.local.config.ts';
  * to stop the rest rather than let a delete run against a console that never
  * got its compare.
  */
-const SERIAL_FEATURES = ['visual-diff-flow.feature'];
+const SERIAL_FEATURES = ['visual-diff-flow.feature', 'accept-loop.feature'];
 
 /**
  * The write permission, as a list.
@@ -45,7 +45,7 @@ const SERIAL_FEATURES = ['visual-diff-flow.feature'];
  * guards stay green — the "weakening an assertion" move `apps/e2e/README.md`
  * refuses by name, wearing a different hat.
  */
-const MUTATING_FEATURES = ['visual-diff-flow.feature'];
+const MUTATING_FEATURES = ['visual-diff-flow.feature', 'accept-loop.feature'];
 
 const MUTATING_TAG = '@mutating';
 
@@ -113,13 +113,17 @@ function checkMutatingTags(file, feature) {
  * What that leaves is a lane where every scenario writes. Nothing here reads
  * your console without changing it.
  *
+ * 5 of them are the mutating flow; the other 4 are the accept loop, which costs
+ * a container capture of your whole corpus and is kept out of `test:local` by
+ * the `@accept` tag for exactly that reason.
+ *
  * Exact equality, not a floor, for the same reason the acceptance suite's is:
  * a floor decays into permission to delete. Raising this alongside a new
  * scenario is a two-line diff; LOWERING it is a decision about what this lane
  * claims, and belongs in its own hand-authored change with the reason written
  * down.
  */
-const EXPECTED_LOCAL_SCENARIOS = 5;
+const EXPECTED_LOCAL_SCENARIOS = 9;
 
 runIntegrityCheck({
   name: 'local-lane',
