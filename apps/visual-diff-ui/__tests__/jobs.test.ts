@@ -23,8 +23,8 @@ import {
   startJob,
   takeConsoleRefresh,
   today,
-  within,
 } from '../lib/jobs';
+import { within } from '../lib/paths';
 import { CANONICAL_LABEL } from '../lib/baselines';
 import { NOT_LOCAL } from '../lib/refusals';
 import { resetRequestHost, setRequestHost } from './stubs/next-headers';
