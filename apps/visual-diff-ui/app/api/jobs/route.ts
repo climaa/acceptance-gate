@@ -1,19 +1,8 @@
-import { headers } from 'next/headers';
-import { resolveDataDir } from '@/lib/data';
 import { dockerAvailable } from '@/lib/docker';
+import { guardMutation } from '@/lib/guard';
 import { hostMatches } from '@/lib/host';
 import { JobRequestSchema, startJob } from '@/lib/jobs';
-import { isLocalHost } from '@/lib/local';
-import {
-  DOCKER_DOWN,
-  JOB_RUNNING,
-  NOT_LOCAL,
-  SAMPLE_DATA,
-  badRequest,
-  conflict,
-  jsonBody,
-  refuseWhileRunning,
-} from '@/lib/refusals';
+import { DOCKER_DOWN, JOB_RUNNING, badRequest, conflict, jsonBody } from '@/lib/refusals';
 import { runJob } from '@/lib/runner';
 
 /**
@@ -21,15 +10,14 @@ import { runJob } from '@/lib/runner';
  *
  * It answers as soon as the lock is held (202), never when the job is done: a
  * capture takes minutes, and the log at `GET /api/jobs/current` is how progress
- * is watched. Two things can refuse it before anything starts, and both are
- * decisions rather than validation:
+ * is watched.
  *
- *  - The console is deployed. A job needs the checkout it compares; the panel
- *    shows no start button off-localhost, and this is the same wall for a POST
- *    that skips the UI. Read from the request's own `Host`, so one instance can
- *    answer both a loopback caller and a proxied one correctly.
- *  - D1, one job at a time. A second request is refused, not queued, so the
- *    console shows what is running instead of promising something later.
+ * Two of the three refusals ahead of it are this route's oldest arguments and
+ * are now `guardMutation`'s, along with the order they are asked in: a job needs
+ * the checkout it compares, so a deployed console cannot start one, and D1 means
+ * a second request is refused rather than queued — the console shows what is
+ * running instead of promising something later. The panel already shows no start
+ * button off-localhost; the guard is the same wall for a POST that skips the UI.
  *
  * D3 was a third. It gated an accept mode this console no longer has — one that
  * spawned `promote` into `<dataDir>/__baselines__`, gitignored, and never the
@@ -37,13 +25,9 @@ import { runJob } from '@/lib/runner';
  * `apps/storybook/src/docs/qa/VisualDiffWorkflow.mdx`.
  */
 export async function POST(request: Request): Promise<Response> {
-  const { dir, isSample } = await resolveDataDir();
-  if (isSample) return conflict(SAMPLE_DATA);
-
-  if (!isLocalHost((await headers()).get('host'))) return conflict(NOT_LOCAL);
-
-  const busy = refuseWhileRunning(dir);
-  if (busy) return busy;
+  const gate = await guardMutation();
+  if (gate instanceof Response) return gate;
+  const { dir } = gate;
 
   const parsed = JobRequestSchema.safeParse(await jsonBody(request));
   if (!parsed.success) {
