@@ -19,24 +19,38 @@
 //   <dataDir>/sets/<label>/<variantKey>.png   the shots
 //   <dataDir>/sets.json                       the row that makes them a set
 //
-// NOTHING EXECUTES THIS FILE UNDER TEST. `check` runs at module scope against
-// real `defaultDeps()` — a Storybook build, a browser, the pinned image — so it
-// cannot be imported without running a capture, and runner.test.ts mocks
-// `spawn`, which stops at the argv this script is handed. What guards the seam
-// today is that argv, asserted from the other side in
-// `__tests__/runner.test.ts` ("hands the container the checkout git described"):
-// every flag lib/runner.ts emits is pinned there in the exact string form
-// `parseArgs` below has to read. That is a contract test, not a run of this
-// file, and the difference is not academic — `--dirty` disagreed with its own
-// parser here for as long as neither side was written down.
+// THE ARGV SEAM, AND HOW IT IS HELD. `check` runs against real `defaultDeps()`
+// — a Storybook build, a browser, the pinned image — so a module that ran it on
+// import could not be imported at all, and for as long as that was true nothing
+// executed this file under test. `runner.test.ts` mocks `spawn`, which stops at
+// the argv this script is handed, so both sides of the seam were asserted and
+// neither was ever run against the other. Not academic: `--dirty` disagreed with
+// its own parser here for as long as neither side was written down, and every
+// real capture recorded a clean tree.
 //
-// Closing the rest of the gap means the registry write below has to leave this
-// file, into a module with no `next/*` import that a plain node process — and a
-// test — can load without running a capture. lib/jobs.ts already holds that
-// logic as `recordSet`; what keeps it out of reach here is its `next/cache`
-// import, not the container.
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+// The run is behind `main()` now, called only when node was pointed at this file.
+// Importing it does nothing, so `__tests__/capture-set.test.ts` can take the argv
+// lib/runner.ts actually emits — through the same spawn mock that pins it — and
+// feed it to the real `parseArgs` below. One test, both implementations, no
+// string copied between them.
+//
+// WHAT IS STILL OUT OF REACH. `writeSet` duplicates lib/jobs.ts's `recordSet`,
+// and this file's own note used to say the blocker was that module's `next/cache`
+// import. That import is gone. The blocker is the one two paragraphs up: the
+// container runs bare `node` against mounted `node_modules`, with no TypeScript
+// toolchain, and `recordSet` is TypeScript. Sharing it means shipping a build
+// step into the container, which is a bigger change than the duplication costs —
+// so the ROW is asserted instead, against the same zod schema the app reads the
+// registry back through.
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  realpathSync,
+  writeFileSync,
+} from 'node:fs';
 import { join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { check, defaultDeps } from '@gate/visual-diff/commands';
 
@@ -46,7 +60,7 @@ const say = (message) => {
   process.stdout.write(`${message}\n`);
 };
 
-function parseArgs(argv) {
+export function parseArgs(argv) {
   const args = {};
 
   for (let i = 0; i < argv.length; i += 1) {
@@ -88,103 +102,166 @@ function parseArgs(argv) {
  * capture came to record `dirty: false` while the dirty badge only ever fired
  * for seeded fixtures.
  */
-const isDirty = (value) => value === true || value === 'true';
-
-const args = parseArgs(process.argv.slice(2));
-const rootDir = args.root && resolve(args.root);
-const dataDir = args['data-dir'] && resolve(args['data-dir']);
-const label = args.label;
-
-if (!rootDir || !dataDir || !label) {
-  say('capture-set: needs --root, --data-dir and --label');
-  process.exit(2);
-}
-
-const setDir = join(dataDir, 'sets', label);
-const registryPath = join(dataDir, 'sets.json');
-
-/** The registry as it stands, or an empty one. A file that is there and cannot
- *  be parsed stops the run: appending to it would rewrite it whole, and a
- *  half-written registry is how a console loses every set it has. */
-function readRegistry() {
-  if (!existsSync(registryPath)) return { sets: [] };
-
-  return JSON.parse(readFileSync(registryPath, 'utf8'));
-}
+export const isDirty = (value) => value === true || value === 'true';
 
 /**
- * The shots, and the row that makes them a set.
+ * The row a capture adds to `sets.json`.
  *
- * An `errored` variant is written like any other as long as it has bytes: the
- * capture still shot the page on its way out, `check`'s own report uses those
- * bytes as the candidate image, and a set that dropped them would make the next
- * compare call the story `removed` with nothing to explain it.
+ * Pure, and separated from the write so it can be asserted: this is the shape
+ * `SetsFileSchema` reads back, and the one place `--dirty` turns from the string
+ * argv carries into the boolean the registry stores.
+ *
+ * `dirty` is absent rather than false when nothing was passed. A capture run by
+ * hand did not check the tree, and a set that says `dirty: false` claims someone
+ * looked.
  */
-function writeSet(captures) {
-  mkdirSync(setDir, { recursive: true });
-
-  let written = 0;
-  for (const shot of captures) {
-    if (!shot.bytes) continue;
-
-    writeFileSync(join(setDir, `${shot.key}.png`), shot.bytes);
-    written += 1;
-  }
-
-  const registry = readRegistry();
-  const set = {
+export function buildSet(args, { label, stories, capturedAt }) {
+  return {
     label,
     // Passed in rather than read here: git is the host's answer, and this
     // process may be inside a container that has no `.git` and no `git`.
     sha: args.sha || 'unknown',
     branch: args.branch || 'unknown',
-    capturedAt: new Date().toISOString().slice(0, 10),
-    stories: written,
+    capturedAt,
+    stories,
     ...(args.dirty === undefined ? {} : { dirty: isDirty(args.dirty) }),
   };
-
-  writeFileSync(
-    registryPath,
-    `${JSON.stringify(
-      {
-        ...registry,
-        sets: [set, ...registry.sets.filter((entry) => entry.label !== label)],
-      },
-      null,
-      2,
-    )}\n`,
-  );
-
-  return written;
 }
 
-const deps = defaultDeps();
+/** The filters `check` runs with — one `--filter` per ticked component, collected
+ *  back into the list `matchesFilter` reads as a union. Absent, not empty: the
+ *  differ reads no filter as the whole corpus. */
+export const filtersOf = (args) => (args.filter ? [args.filter].flat() : undefined);
 
-const result = await check(
-  {
-    ...deps,
-    // The seam. `check` keeps candidate bytes in memory and writes only its own
-    // artifacts, so this is the one moment the shots exist as bytes anybody else
-    // can have. Written here, before `check`'s sanity gates: the shots were
-    // taken, and whether the run passes is the exit code's verdict rather than a
-    // reason to throw the pixels away.
-    capture: async (run) => {
-      say(`capturing ${run.variants.length} variant(s)`);
-      const captured = await deps.capture(run);
-      const written = writeSet(captured.captures);
-      const errored = captured.captures.filter(
-        (shot) => shot.bucket === 'errored',
-      ).length;
+/**
+ * Everything this script does when node is pointed at it, and nothing it does
+ * when it is imported.
+ *
+ * The guard below is the whole reason the seam is testable: `check` reaches for a
+ * browser and the pinned image, so a module that called it at import could not be
+ * loaded by a test at all. See the header.
+ */
+async function main(argv) {
+  const args = parseArgs(argv);
+  const rootDir = args.root && resolve(args.root);
+  const dataDir = args['data-dir'] && resolve(args['data-dir']);
+  const label = args.label;
 
-      say(
-        `wrote sets/${label} — ${written} shot(s)${errored ? `, ${errored} errored` : ''}`,
-      );
+  if (!rootDir || !dataDir || !label) {
+    say('capture-set: needs --root, --data-dir and --label');
+    process.exit(2);
+  }
 
-      return captured;
+  const setDir = join(dataDir, 'sets', label);
+  const registryPath = join(dataDir, 'sets.json');
+
+  /** The registry as it stands, or an empty one. A file that is there and cannot
+   *  be parsed stops the run: appending to it would rewrite it whole, and a
+   *  half-written registry is how a console loses every set it has. */
+  const readRegistry = () =>
+    existsSync(registryPath)
+      ? JSON.parse(readFileSync(registryPath, 'utf8'))
+      : { sets: [] };
+
+  /**
+   * The shots, and the row that makes them a set.
+   *
+   * An `errored` variant is written like any other as long as it has bytes: the
+   * capture still shot the page on its way out, `check`'s own report uses those
+   * bytes as the candidate image, and a set that dropped them would make the next
+   * compare call the story `removed` with nothing to explain it.
+   */
+  const writeSet = (captures) => {
+    mkdirSync(setDir, { recursive: true });
+
+    let written = 0;
+    for (const shot of captures) {
+      if (!shot.bytes) continue;
+
+      writeFileSync(join(setDir, `${shot.key}.png`), shot.bytes);
+      written += 1;
+    }
+
+    const registry = readRegistry();
+    const set = buildSet(args, {
+      label,
+      stories: written,
+      capturedAt: new Date().toISOString().slice(0, 10),
+    });
+
+    writeFileSync(
+      registryPath,
+      `${JSON.stringify(
+        {
+          ...registry,
+          sets: [set, ...registry.sets.filter((entry) => entry.label !== label)],
+        },
+        null,
+        2,
+      )}\n`,
+    );
+
+    return written;
+  };
+
+  const deps = defaultDeps();
+  const filter = filtersOf(args);
+
+  const result = await check(
+    {
+      ...deps,
+      // The seam. `check` keeps candidate bytes in memory and writes only its own
+      // artifacts, so this is the one moment the shots exist as bytes anybody else
+      // can have. Written here, before `check`'s sanity gates: the shots were
+      // taken, and whether the run passes is the exit code's verdict rather than a
+      // reason to throw the pixels away.
+      capture: async (run) => {
+        say(`capturing ${run.variants.length} variant(s)`);
+        const captured = await deps.capture(run);
+        const written = writeSet(captured.captures);
+        const errored = captured.captures.filter(
+          (shot) => shot.bucket === 'errored',
+        ).length;
+
+        say(
+          `wrote sets/${label} — ${written} shot(s)${errored ? `, ${errored} errored` : ''}`,
+        );
+
+        return captured;
+      },
     },
-  },
-  { rootDir, ...(args.filter ? { filter: [args.filter].flat() } : {}) },
-);
+    { rootDir, ...(filter ? { filter } : {}) },
+  );
 
-say(result.message);
-process.exit(result.exitCode);
+  say(result.message);
+  process.exit(result.exitCode);
+}
+
+/**
+ * Whether node was pointed at THIS file, rather than at something that imported
+ * it. The whole of what makes the seam testable — see the header.
+ *
+ * Both sides are resolved through `realpathSync`, and that is not defensive
+ * padding. `import.meta.url` is already the real path, because node resolves
+ * module specifiers through symlinks; `process.argv[1]` is the string the caller
+ * typed. Compare them raw and a checkout reached through a symlink fails the test
+ * — `/tmp/x` against `/private/tmp/x` on macOS, which is every `/tmp` path on this
+ * platform — and the script then exits 0 having captured nothing. A capture that
+ * silently does nothing is a worse failure than the one this guard exists to
+ * enable, so the comparison is on what the two paths point AT.
+ */
+function invokedDirectly() {
+  const invoked = process.argv[1];
+  if (!invoked) return false;
+
+  try {
+    return realpathSync(invoked) === fileURLToPath(import.meta.url);
+  } catch {
+    // A path that cannot be resolved is not this file.
+    return false;
+  }
+}
+
+if (invokedDirectly()) {
+  await main(process.argv.slice(2));
+}
