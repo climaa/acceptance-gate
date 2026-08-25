@@ -1,0 +1,188 @@
+/* ---- The story card ----------------------------------------------------- */
+
+.vd-card {
+  /* The card's own edge, named because the pinned head is sized against it and
+     has to know its width — three literals agreeing today is not one value. */
+  --vd-card-border: 1px;
+
+  border: var(--vd-card-border) solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+/* The walk unit says where it is. `j`/`k` move focus here, so the ring is the
+   whole feedback a keyboard reviewer gets. */
+.vd-card:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+.vd-card__title {
+  margin: 0;
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  min-width: 0;
+}
+
+.vd-card__worst {
+  font-size: var(--text-sm);
+}
+
+.vd-card__slug {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.vd-card__verdict {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-danger-text);
+}
+
+/* Why a viewport has no rows under this card. Muted: it explains an absence
+   rather than reporting a failure, and colouring it would rank it against the
+   verdicts above it. */
+.vd-card__gaps {
+  margin: 0;
+  padding-inline-start: var(--space-5);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+/* ---- The variant row ---------------------------------------------------- */
+
+.vd-variant {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-inline-start: var(--space-3);
+  border-inline-start: 2px solid var(--color-border);
+  min-width: 0;
+}
+
+.vd-variant__mode,
+.vd-variant__metric,
+.vd-variant__link {
+  font-size: var(--text-sm);
+}
+
+.vd-variant__metric {
+  color: var(--color-text-muted);
+}
+
+.vd-variant__error {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-danger-text);
+  overflow-wrap: anywhere;
+}
+
+/* ---- The violation list ------------------------------------------------- */
+
+/* Where a pixel report puts the diff image. Danger foreground on the danger
+   surface, because the pixels can be identical and the failure is still total. */
+.vd-violations {
+  margin: 0;
+  padding: var(--space-3) var(--space-3) var(--space-3) var(--space-6);
+  background: var(--color-danger-surface);
+  color: var(--color-danger-fg);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+}
+
+.vd-violations__item + .vd-violations__item {
+  margin-block-start: var(--space-2);
+}
+
+.vd-violations__nodes {
+  font-size: var(--text-xs);
+}
+
+.vd-violations__docs {
+  color: inherit;
+}
+
+/* ---- The three-up viewer ------------------------------------------------ */
+
+/* A grid inside a flex column: without this a wide screenshot sets the
+   viewer's minimum width and pushes the card past the viewport. */
+.vd-three-up {
+  min-width: 0;
+}
+
+/* One column below the breakpoint: three side-by-side crops of a 1248 px
+   screenshot inside a 390 px viewport are three unreadable strips. */
+.vd-three-up__frames {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-2);
+}
+
+.vd-shot {
+  margin: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+/* The caption names the capture set, which is a label a reviewer copies out —
+   so it truncates and carries the whole value on `title`, as every other
+   truncating cell in this app does. */
+.vd-shot__label {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The frame is the control: a reviewer aims at the picture, never at a caption
+   beside it. The cursor says what the click does — the modal is a magnifier. */
+.vd-shot__open {
+  appearance: none;
+  display: block;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: none;
+  cursor: zoom-in;
+  touch-action: manipulation;
+}
+
+.vd-shot__open:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+.vd-shot__absent {
+  font-family: var(--font-mono);
+}
+
+/* ---- The compare tools -------------------------------------------------- */
+
+.vd-tool {
+  appearance: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-subtle);
+  color: var(--color-text);
+  padding: var(--space-1) var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+
+.vd-tool:hover {
+  background: var(--color-bg-muted);
+}

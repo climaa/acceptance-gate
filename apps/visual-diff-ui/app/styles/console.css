@@ -1,0 +1,129 @@
+/* ---- The console -------------------------------------------------------- */
+
+/* Mobile first, as the design system is: one column, and every table row is a
+   card. 768 px — the one breakpoint in the system — is where the second column
+   and the table proper arrive, at the end of this file. */
+.vd-console {
+  display: grid;
+  gap: var(--space-6);
+  align-items: start;
+}
+
+.vd-console__column {
+  min-width: 0;
+}
+
+.vd-panel {
+  background: var(--color-bg-subtle);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  min-width: 0;
+}
+
+/* A panel title is a small mono label rather than a heading in the display
+   face: the shell's wordmark is the page's one title, and these name the
+   regions under it. The rule in front of it is the board's accent tick. */
+.vd-panel__title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.vd-panel__title::before {
+  content: '';
+  flex: none;
+  width: var(--space-3);
+  height: 3px;
+  border-radius: var(--radius-sm);
+  background: var(--color-accent);
+}
+
+/* The label and its dirty badge share a cell: the label gives up its width, the
+   badge never does — a set captured from a dirty tree must not lose the mark
+   that says so to a long name. */
+.vd-set {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.vd-set__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The state roles, straight through: a clean run reads as success, a run with
+   diffs as a warning worth opening, a broken gate as danger. An interrupted run
+   reported nothing at all, so it is muted rather than coloured — there is no
+   verdict to colour. */
+.vd-outcome {
+  font-weight: var(--weight-bold);
+  /* A row, so the running ring sits tight against the word it belongs to. The
+     current-job row is itself a `Stack` with a --space-3 gap; without this the
+     ring would read as a sixth column rather than as part of the status. */
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.vd-outcome--success {
+  color: var(--color-success-text);
+}
+
+.vd-outcome--warning {
+  color: var(--color-warning-text);
+}
+
+.vd-outcome--danger {
+  color: var(--color-danger-text);
+}
+
+.vd-outcome--muted {
+  color: var(--color-text-muted);
+}
+
+/* ---- The compare pickers and the retention control ---------------------- */
+
+.vd-picker__label,
+.vd-retention__label {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+  color: var(--color-text-muted);
+}
+
+/* A native control takes the UA's palette unless it is told otherwise, so both
+   of these state background and colour explicitly — a dark console would
+   otherwise open a light dropdown. `touch-action: manipulation` retires the
+   double-tap zoom delay on the two controls a reviewer taps on a phone. */
+.vd-picker__select,
+.vd-retention__count {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-1) var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  min-height: 2rem;
+  touch-action: manipulation;
+}
+
+.vd-picker__select {
+  max-width: 14rem;
+}
+
+.vd-retention__count {
+  width: 5rem;
+  font-variant-numeric: tabular-nums;
+}
