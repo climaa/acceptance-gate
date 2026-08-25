@@ -11,22 +11,10 @@
  * that refuses to accept baselines nobody has reviewed.
  */
 
+import { withStorage } from './browser-storage';
+
 /** `vd-review:<reportId>` → a JSON array of variant keys. */
 export const reviewStorageKey = (reportId: string) => `vd-review:${reportId}`;
-
-/**
- * Storage throws rather than returning null in private mode and with site data
- * blocked, and is absent entirely on the server. Both collapse to "no marks":
- * losing a place-keeper is a smaller failure than a console that throws.
- */
-function withStorage<T>(fallback: T, operation: (storage: Storage) => T): T {
-  try {
-    if (typeof localStorage === 'undefined') return fallback;
-    return operation(localStorage);
-  } catch {
-    return fallback;
-  }
-}
 
 const isVariantKeyList = (value: unknown): value is string[] =>
   Array.isArray(value) && value.every((entry) => typeof entry === 'string');
