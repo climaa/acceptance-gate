@@ -1163,11 +1163,18 @@ describe('starting a job clears the region below', () => {
     reportId: null,
   };
 
-  /** The panel and the region it fills, under the one provider that polls for
-   *  both — the same arrangement `DashboardTemplate` renders. */
-  function renderBoth(options: PanelCase = {}) {
-    const fetchMock = stubApi(options);
-    setSearchParams(options.query ?? '');
+  /**
+   * The panel and the region it fills, under the one provider that polls for
+   * both — the same arrangement `DashboardTemplate` renders.
+   *
+   * Takes `ApiStub` and not `PanelCase`, unlike `renderPanel` above. The panel's
+   * own props are fixed here — a local console, not sample, one report — because
+   * every case below is about what the start button does to the region, and a
+   * helper that accepted `isLocal` while hardcoding it would hand a future case
+   * a local panel and let it assert against the wrong surface in silence.
+   */
+  function renderBoth(api: ApiStub = {}) {
+    const fetchMock = stubApi(api);
 
     render(
       <CurrentJobProvider>

@@ -52,6 +52,12 @@ function createStore() {
    * `localStorage` — private mode, site data blocked — still puts the card away
    * for the person who just asked. Losing that on reload is the documented
    * failure (lib/dismiss-state.ts); a button that does nothing is not.
+   *
+   * The early return saves the WRITE, not a render — React bails on an
+   * unchanged snapshot by itself, see `onStorage` below. Worth keeping because
+   * the start button dismisses without first asking whether the reviewer had
+   * already put that same run away, and its undo writes the old value back the
+   * same way: without this, both touch storage for nothing.
    */
   const set = (next: string | null) => {
     if (getSnapshot() === next) return;
@@ -61,18 +67,29 @@ function createStore() {
     notify();
   };
 
-  /** Put a run away. */
-  const dismiss = (jobId: string) => set(jobId);
-
   /**
-   * Put the dismissal back to what it was.
+   * Put a run away, and hand back the one way to undo it.
    *
-   * For the start button, which clears the card on the click rather than on the
-   * server's answer — the POST it is waiting for runs a synchronous `docker
-   * info` first, and the card would otherwise go on showing the last run's
-   * verdict throughout. A refused start owes that run back.
+   * The undo exists for the start button, which clears the card on the CLICK
+   * rather than on the server's answer — the POST it is waiting for runs a
+   * synchronous `docker info` first, and the card would otherwise go on showing
+   * the last run's verdict throughout. A refused start owes that run back.
+   *
+   * Returned from `dismiss` rather than offered as a second `restore(previous)`
+   * method, which is what this was. That method took the value to go back to, so
+   * nothing but a comment stopped it being used as a second `dismiss` — and it
+   * made every caller carry the previous value from before the click to after
+   * the await. This closes over that value instead: there is one way in, and the
+   * way back out belongs to the dismissal that opened it.
+   *
+   * Callers with nothing to undo — the × in the panel — ignore it.
    */
-  const restore = (previous: string | null) => set(previous);
+  const dismiss = (jobId: string): (() => void) => {
+    const previous = getSnapshot();
+    set(jobId);
+
+    return () => set(previous);
+  };
 
   /**
    * The same key, written by another tab.
@@ -82,14 +99,22 @@ function createStore() {
    * panel once a second, and without this one of them goes on showing a run the
    * other put away. `event.key === null` is the whole store being cleared, which
    * is this key too.
+   *
+   * The key check is the whole guard, and it is the one that earns its keep: the
+   * review marks share this origin and fire this listener every time a reviewer
+   * ticks a variant next door.
+   *
+   * There is deliberately no second check for "the value did not move", which is
+   * what `useReviewMarks` needs beside its own. Its snapshot is a Set, so an
+   * equal-but-new one is a new identity and re-renders every consumer; this one
+   * is a string, and React's own `Object.is` bail-out already answers an
+   * unchanged read. A guard here would be a line that cannot be observed to do
+   * anything — and could not be tested for it either.
    */
   const onStorage = (event: StorageEvent) => {
     if (event.key !== null && event.key !== DISMISS_STORAGE_KEY) return;
 
-    const next = readDismissed();
-    if (next === getSnapshot()) return;
-
-    snapshot = next;
+    snapshot = readDismissed();
     notify();
   };
 
@@ -111,7 +136,7 @@ function createStore() {
     };
   };
 
-  return { getSnapshot, dismiss, restore, subscribe };
+  return { getSnapshot, dismiss, subscribe };
 }
 
 /** One per document — see the header. Building it at module scope costs
@@ -125,9 +150,9 @@ const NOTHING_DISMISSED = null;
 export interface DismissedJob {
   /** The job id this browser has put away, or null. */
   dismissed: string | null;
-  dismiss: (jobId: string) => void;
-  /** What an optimistic `dismiss` is undone with — see the store. */
-  restore: (previous: string | null) => void;
+  /** Puts `jobId` away and returns the undo for exactly that dismissal — see
+   *  the store for why the undo comes back from here. */
+  dismiss: (jobId: string) => () => void;
 }
 
 export function useDismissedJob(): DismissedJob {
@@ -137,5 +162,5 @@ export function useDismissedJob(): DismissedJob {
     () => NOTHING_DISMISSED,
   );
 
-  return { dismissed, dismiss: store.dismiss, restore: store.restore };
+  return { dismissed, dismiss: store.dismiss };
 }

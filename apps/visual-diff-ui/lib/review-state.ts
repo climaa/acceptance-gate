@@ -9,6 +9,9 @@
  * Pinned in this issue rather than in the screen that first draws it, because
  * two later ones read the same key: the report review loop, and the accept gate
  * that refuses to accept baselines nobody has reviewed.
+ *
+ * `dismiss-state.ts` is the same three parts over a different key — see its
+ * header for why the two are not merged, and what would change that.
  */
 
 import { withStorage } from './browser-storage';

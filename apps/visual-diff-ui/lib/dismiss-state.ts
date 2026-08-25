@@ -15,6 +15,15 @@
  * A dismissal hides; it never deletes. The history row, the log and the report
  * are untouched, which is why one job id is the whole of what is stored: the
  * next run has a different id and the panel shows it without being asked.
+ *
+ * This file and `review-state.ts` are the same three parts — a key, a read that
+ * falls back rather than throwing on a value this app did not write, and a
+ * write — and they are deliberately not merged. What they store has no shape in
+ * common (one scalar, one list) and neither does the validation, so a shared
+ * reader would take a predicate and a fallback and be the `withStorage` call it
+ * already wraps. `withStorage` IS the part that was worth extracting, and it
+ * was. A third key is the point to revisit: three is where the pattern is real
+ * rather than a coincidence between two.
  */
 
 import { withStorage } from './browser-storage';

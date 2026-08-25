@@ -622,7 +622,7 @@ function useStartJob() {
   const { run, refusals, busy, clear } = useMutation();
   const pollNow = usePollNow();
   const { job } = useCurrentJob();
-  const { dismissed, dismiss, restore } = useDismissedJob();
+  const { dismiss } = useDismissedJob();
 
   const start = async (request: Record<string, unknown>) => {
     /* The card is cleared on the CLICK rather than on the answer, which is the
@@ -634,8 +634,7 @@ function useStartJob() {
 
        Never a running one: `StartAction` renders no button while the lock is
        held, so what is put away here is always a finished run. */
-    const previous = dismissed;
-    if (job) dismiss(job.id);
+    const undoDismissal = job ? dismiss(job.id) : null;
 
     const result = await run({
       url: '/api/jobs',
@@ -647,10 +646,8 @@ function useStartJob() {
     if (!result.ok) {
       // Nothing is coming to fill the region, and the refusal is already drawn
       // above the button — the run the reviewer was reading is not the price of
-      // being told no. Unconditional: restoring what was already there is what
-      // the store's own early return makes free, so there is no second flag
-      // here recording whether the line above did anything.
-      restore(previous);
+      // being told no.
+      undoDismissal?.();
       return;
     }
 
