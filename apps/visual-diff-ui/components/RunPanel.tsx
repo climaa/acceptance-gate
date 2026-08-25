@@ -10,6 +10,7 @@ import {
   useState,
 } from 'react';
 import { Button, CodeBlock, IconButton, Spinner, Stack } from '@gate/ui';
+import { useDismissedJob } from '@/hooks/useDismissedJob';
 import { useMutation } from '@/hooks/useMutation';
 import { useReviewMarks } from '@/hooks/useReviewMarks';
 import { Note } from './Note';
@@ -620,8 +621,22 @@ function jobRequest(form: JobForm): Record<string, unknown> {
 function useStartJob() {
   const { run, refusals, busy, clear } = useMutation();
   const pollNow = usePollNow();
+  const { job } = useCurrentJob();
+  const { dismissed, dismiss, restore } = useDismissedJob();
 
   const start = async (request: Record<string, unknown>) => {
+    /* The card is cleared on the CLICK rather than on the answer, which is the
+       same thing its own × does. `POST /api/jobs` runs a synchronous `docker
+       info` before it answers a capture or an accept — up to three seconds
+       (lib/docker.ts) — and for all of it the region would go on showing the
+       LAST run's verdict under a button that had already greyed out. A click
+       that appears to do nothing, beside a sentence about a different job.
+
+       Never a running one: `StartAction` renders no button while the lock is
+       held, so what is put away here is always a finished run. */
+    const previous = dismissed;
+    if (job) dismiss(job.id);
+
     const result = await run({
       url: '/api/jobs',
       method: 'POST',
@@ -629,11 +644,21 @@ function useStartJob() {
       fallback: 'the console could not start that job',
     });
 
+    if (!result.ok) {
+      // Nothing is coming to fill the region, and the refusal is already drawn
+      // above the button — the run the reviewer was reading is not the price of
+      // being told no. Unconditional: restoring what was already there is what
+      // the store's own early return makes free, so there is no second flag
+      // here recording whether the line above did anything.
+      restore(previous);
+      return;
+    }
+
     // The panel below polls, and backs off while the console is idle — which is
     // exactly what it was a moment ago. Without this poke the job just started
     // would not appear until that backed-off timer came round, and the reviewer
     // would be watching a region that says nothing is running.
-    if (result.ok) pollNow();
+    pollNow();
   };
 
   // `clear` is handed back for the same reason both `ConfirmDialogs` call sites

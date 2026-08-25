@@ -38,9 +38,19 @@ export function readDismissed(): string | null {
   });
 }
 
-/** Puts `jobId` away, replacing whatever was there. A write storage refuses is
- *  silent by design — see the hook, which renders from its own snapshot rather
- *  than from this. */
-export function setDismissed(jobId: string): void {
-  withStorage(undefined, (storage) => storage.setItem(DISMISS_STORAGE_KEY, jobId));
+/**
+ * Puts `jobId` away, replacing whatever was there. `null` is the other
+ * direction — nothing dismissed — which is what a start that the server refused
+ * has to be able to say: it cleared the card on the click and now owes the
+ * reader the run they were looking at.
+ *
+ * A write storage refuses is silent by design — see the hook, which renders from
+ * its own snapshot rather than from this.
+ */
+export function setDismissed(jobId: string | null): void {
+  withStorage(undefined, (storage) =>
+    jobId === null
+      ? storage.removeItem(DISMISS_STORAGE_KEY)
+      : storage.setItem(DISMISS_STORAGE_KEY, jobId),
+  );
 }
