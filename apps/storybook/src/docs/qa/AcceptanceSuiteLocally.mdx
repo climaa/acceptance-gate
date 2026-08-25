@@ -130,8 +130,9 @@ Four things that make it a different lane, not a second copy of the first:
 1. **⚠️ It writes, and it costs minutes.** The lane is one file and one scenario,
    `features/local/visual-diff-flow.feature`. It names a capture set with the wand,
    captures your whole corpus inside the pinned container, compares it against the
-   committed baselines, reads the report through, promotes it — and then removes the set,
-   the report and the promotion again. Docker has to be running.
+   committed baselines, reads the report through — and then removes the set and the
+   report again. Docker has to be running. It ended in a promote until the console's
+   accept tab was retired; the review pass is the payoff now.
 2. **It costs you nothing.** It captures the set it needs rather than borrowing one of
    yours, so it starts on a console that has captured nothing and leaves one behind.
    Nothing of yours is deleted, and it can run twice in a row. That is the point: the

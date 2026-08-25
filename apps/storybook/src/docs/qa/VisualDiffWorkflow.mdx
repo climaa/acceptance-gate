@@ -149,5 +149,11 @@ that looked like the sign-off could not produce a commit, and a reviewer who pre
 had nothing to push.
 
 The two ways in are the ones in step 6, and both end in a commit a person reviews. That is
-the design, not a gap: per the [visual-regression post](https://acceptance-gate-blog.vercel.app),
+the design, not a gap: per
+[Visual regression with agents](https://acceptance-gate-blog.vercel.app/blog/visual-regression-with-agents),
 approving a baseline has to cost the same as reviewing a code diff.
+
+It also removes a trap the tab set. `promote.mjs` refused a promote that omitted
+`--data-dir`, precisely because `cli.mjs` resolves its own paths from `import.meta.url` —
+so a bare invocation would have rewritten the committed corpus while meaning to write a
+data directory. The subcommand went with the console it served, and that trap with it.
