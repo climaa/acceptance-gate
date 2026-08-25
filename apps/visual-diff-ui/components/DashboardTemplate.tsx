@@ -33,13 +33,16 @@ export interface DashboardTemplateProps {
   sizes: Readonly<Record<string, number>>;
   reports: readonly ReportListEntry[];
   history: readonly HistoryRecord[];
-  /** Resolved server-side (lib/data.ts). The run panel disables every start
-   *  control under it: an instance with no data directory is serving this
-   *  repo's committed fixtures, and every mutation is refused there. */
+  /** Resolved server-side (lib/data.ts). An instance with no data directory is
+   *  serving this repo's committed fixtures, and every mutating route refuses it
+   *  with `SAMPLE_DATA` — so the run panel disables every start control, and this
+   *  is half of `frozen` below, which takes the deletes and the prune off the
+   *  page too. */
   isSample: boolean;
-  /** Resolved server-side from the request's own host (lib/local.ts). False on
-   *  a deployment, where the run panel offers no start control at all — a job
-   *  needs the checkout it compares. */
+  /** Resolved server-side from the request's own host (lib/local.ts). False on a
+   *  deployment, where the run panel offers no start control at all — a job needs
+   *  the checkout it compares — and where every mutating route answers
+   *  `NOT_LOCAL`. The other half of `frozen` below. */
   isLocal: boolean;
   /** The committed baseline corpus, when there is a checkout to read one from.
    *  Drawn above the captured sets and offered to the compare pickers — it is not

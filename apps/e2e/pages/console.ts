@@ -215,6 +215,28 @@ export class ConsolePage {
     return row.locator(`[data-label="${column}"]`);
   }
 
+  /**
+   * Every delete the two tables draw.
+   *
+   * Scoped to tables on purpose, which excludes the canonical corpus's own
+   * delete: that one is drawn disabled always, because the committed corpus is
+   * changed by a commit and by no console — it is not host- or sample-dependent
+   * the way a row's is.
+   */
+  get rowDeletes(): Locator {
+    return this.page.getByRole('table').getByRole('button', { name: 'delete' });
+  }
+
+  /** The retention control's two halves. Absent rather than disabled wherever
+   *  the console cannot prune, so both are counted rather than checked. */
+  get pruneButton(): Locator {
+    return this.page.getByRole('button', { name: 'prune the rest' });
+  }
+
+  get keepLatest(): Locator {
+    return this.page.getByRole('spinbutton', { name: 'keep latest' });
+  }
+
   /** The committed corpus above the sets table: its label, its `canonical`
    *  badge, and the delete it renders disabled rather than omitting. */
   get canonicalCorpus(): Locator {
