@@ -1,17 +1,7 @@
-import { headers } from 'next/headers';
-import { resolveDataDir } from '@/lib/data';
+import { guardMutation } from '@/lib/guard';
 import { PURGE, SETS_TAG } from '@/lib/tags';
 import { SetLabelSchema, holderOf, listSets, removeSet } from '@/lib/jobs';
-import { isLocalHost } from '@/lib/local';
-import {
-  NOT_LOCAL,
-  SAMPLE_DATA,
-  badRequest,
-  conflict,
-  heldByWorktree,
-  jsonBody,
-  refuseWhileRunning,
-} from '@/lib/refusals';
+import { badRequest, heldByWorktree, jsonBody } from '@/lib/refusals';
 import { revalidateTag } from 'next/cache';
 import { z } from 'zod';
 
@@ -32,20 +22,16 @@ const PruneRequestSchema = z.object({ keep: z.number().int().min(0) });
  * words a single delete would have refused with, so the panel renders one list
  * of sentences rather than one alert and one code.
  *
- * The local gate runs first, as it does on every mutation here, and this is the
- * request it matters most on: prune is the only bulk destruction the console
- * has — one call clears everything past the retention number. The deletes each
- * name one thing and are still refused off localhost; refusing this one is the
+ * `guardMutation` runs first, as it does on every mutation here, and this is the
+ * request its local gate matters most on: prune is the only bulk destruction the
+ * console has — one call clears everything past the retention number. The
+ * deletes each name one thing and are refused off localhost too; this is the
  * same rule where the blast radius is the whole accumulation.
  */
 export async function POST(request: Request): Promise<Response> {
-  const { dir, isSample } = await resolveDataDir();
-  if (isSample) return conflict(SAMPLE_DATA);
-
-  if (!isLocalHost((await headers()).get('host'))) return conflict(NOT_LOCAL);
-
-  const busy = refuseWhileRunning(dir);
-  if (busy) return busy;
+  const gate = await guardMutation();
+  if (gate instanceof Response) return gate;
+  const { dir } = gate;
 
   const parsed = PruneRequestSchema.safeParse(await jsonBody(request));
   if (!parsed.success) {
