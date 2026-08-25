@@ -974,7 +974,7 @@
                           "fill": "$ink-muted",
                           "textGrowth": "fixed-width",
                           "width": "fill_container",
-                          "content": "loading placeholder · square / line via props · shimmer is CSS-only, disabled under prefers-reduced-motion, frozen in capture — the one sanctioned animation. No circle variant: nothing in the system renders circular content (validated — add it the day an avatar exists).",
+                          "content": "loading placeholder · square / line via props · shimmer is CSS-only, disabled under prefers-reduced-motion, frozen in capture — one of the two sanctioned animations, beside Spinner. No circle variant: nothing in the system renders circular content (validated — add it the day an avatar exists).",
                           "lineHeight": 1.4,
                           "fontFamily": "$font-body",
                           "fontSize": 11,
@@ -1221,6 +1221,184 @@
                           "textGrowth": "fixed-width",
                           "width": "fill_container",
                           "content": "icon-only · secondary (bordered) · ghost (bare) · sm 32 / md 40 · square, radius follows the field it stands beside · `label` is a required prop — aria-label is the whole name · disabled = 45% opacity + no pointer events",
+                          "lineHeight": 1.4,
+                          "fontFamily": "$font-body",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "ObdMT",
+              "name": "Tiles Row 2",
+              "width": "fill_container",
+              "gap": 16,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "hNBBw",
+                  "name": "Tile Spinner",
+                  "width": 300,
+                  "fill": "#ffffff",
+                  "cornerRadius": 12,
+                  "stroke": "$note-border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 12,
+                  "padding": 18,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "SBNOW",
+                      "name": "Cap",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "YcoWI",
+                          "name": "Name",
+                          "fill": "$ink",
+                          "content": "Spinner",
+                          "fontFamily": "$font-mono",
+                          "fontSize": 13,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "bygZV",
+                      "name": "Stage",
+                      "clip": true,
+                      "width": "fill_container",
+                      "fill": "#fafaf8",
+                      "cornerRadius": 8,
+                      "layout": "vertical",
+                      "gap": 8,
+                      "padding": 14,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "O5UEpL",
+                          "name": "Specimens",
+                          "width": "fill_container",
+                          "gap": 24,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "J2tLW",
+                              "name": "Ring at rest",
+                              "width": 20,
+                              "height": 20,
+                              "layout": "none",
+                              "children": [
+                                {
+                                  "type": "ellipse",
+                                  "id": "LsYA1",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "Track",
+                                  "innerRadius": 0.8,
+                                  "fill": "$border",
+                                  "width": 20,
+                                  "height": 20
+                                },
+                                {
+                                  "type": "ellipse",
+                                  "id": "DT3iy",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "Lit segment",
+                                  "innerRadius": 0.8,
+                                  "startAngle": 45,
+                                  "sweepAngle": 90,
+                                  "fill": "$ink",
+                                  "width": 20,
+                                  "height": 20
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "ESjWb",
+                              "name": "Beside the status word",
+                              "gap": 4,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "yOA5y",
+                                  "name": "Ring",
+                                  "width": 14,
+                                  "height": 14,
+                                  "layout": "none",
+                                  "children": [
+                                    {
+                                      "type": "ellipse",
+                                      "id": "B6JxF",
+                                      "x": 0,
+                                      "y": 0,
+                                      "name": "Track",
+                                      "innerRadius": 0.7142857142857143,
+                                      "fill": "$border",
+                                      "width": 14,
+                                      "height": 14
+                                    },
+                                    {
+                                      "type": "ellipse",
+                                      "id": "LLxkp",
+                                      "x": 0,
+                                      "y": 0,
+                                      "name": "Lit segment",
+                                      "innerRadius": 0.7142857142857143,
+                                      "startAngle": 45,
+                                      "sweepAngle": 90,
+                                      "fill": "$accent",
+                                      "width": 14,
+                                      "height": 14
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "bWawL",
+                                  "name": "Word",
+                                  "fill": "$accent",
+                                  "content": "running",
+                                  "fontFamily": "$font-mono",
+                                  "fontSize": 13,
+                                  "fontWeight": "700"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "rYbnW",
+                          "name": "Sizes",
+                          "fill": "$ink-muted",
+                          "content": "1em · currentColor",
+                          "fontFamily": "$font-mono",
+                          "fontSize": 10,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "gmeHC",
+                          "name": "note",
+                          "fill": "$ink-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "in-flight ring · no props but className — one variant, sized 1em and coloured by currentColor, so it takes the size and tone of the text it stands beside. aria-hidden always, with no label to override it: every site already writes the fact in words inside a live region, and role=alert would break the console's single-alert locator. Rotation is CSS-only, disabled under prefers-reduced-motion, frozen at 0deg in capture — the second sanctioned animation, beside Skeleton.",
                           "lineHeight": 1.4,
                           "fontFamily": "$font-body",
                           "fontSize": 11,
