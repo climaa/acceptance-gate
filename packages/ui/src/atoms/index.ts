@@ -26,6 +26,7 @@ export {
   type SkeletonVariant,
 } from './Skeleton/Skeleton';
 export { SkipLink, type SkipLinkProps } from './SkipLink/SkipLink';
+export { Spinner, type SpinnerProps } from './Spinner/Spinner';
 export { Stack, type StackProps } from './Stack/Stack';
 export { Tag, type TagProps } from './Tag/Tag';
 export { ThemeToggle, type ThemeToggleProps } from './ThemeToggle/ThemeToggle';

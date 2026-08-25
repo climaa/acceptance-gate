@@ -25,7 +25,9 @@ are self-contained — treat them as the spec.
 step) · English only in public artifacts · commits explain why, never cite
 private sources · fonts self-hosted woff2 only (one documented TTF exemption
 for OG images) · no `packages/ui` component animates on mount (Skeleton's
-CSS shimmer is the one sanctioned exception).
+CSS shimmer and Spinner's CSS ring are the two sanctioned exceptions — each
+stands in for an answer that has not arrived rather than making an entrance,
+and each rests on the frame a frozen capture photographs).
 
 ## Labels that route you
 

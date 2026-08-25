@@ -203,10 +203,15 @@
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --duration-fast: 120ms;
   --duration-base: 200ms;
-  /* One sweep of the Skeleton shimmer, the system's only looping animation. Its
-   * own role rather than a third step on the transition scale: a loop's period is
-   * a different quantity from the time a control takes to answer a pointer. */
+  /* The two loop periods. Their own roles rather than further steps on the
+   * transition scale: a loop's period is a different quantity from the time a
+   * control takes to answer a pointer, and these two are not interchangeable
+   * with each other either — a sweep across a placeholder is read as texture,
+   * a turning ring as a pulse, and they are legible at different speeds. */
+  /* One sweep of the Skeleton shimmer. */
   --duration-shimmer: 1600ms;
+  /* One full turn of the Spinner ring. */
+  --duration-spin: 800ms;
 
   /* ---- Layout ---- */
   --width-prose: 68ch;

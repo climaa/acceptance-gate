@@ -1,5 +1,6 @@
-/* The system's one sanctioned animation, and so the one shape the differ has to
-   be able to capture. Two properties make that possible.
+/* One of the system's two sanctioned animations — Spinner is the other — and so
+   one of the two shapes the differ has to be able to capture. Two properties
+   make that possible.
 
    The sweep animates `background-position` over a gradient three times the
    element's width whose sheen band occupies the middle third only. At both ends

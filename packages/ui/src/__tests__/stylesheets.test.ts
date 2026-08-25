@@ -124,3 +124,98 @@ describe('cascade order', () => {
     expect(cascadeIndex(override)).toBeGreaterThan(cascadeIndex(base));
   });
 });
+
+/**
+ * The looping-animation contract.
+ *
+ * A loop is the one thing in this system the differ structurally cannot see.
+ * `determinism.mjs` injects `animation: none !important` over `*` before every
+ * shot, so a sheet that stopped animating altogether captures byte-identically
+ * to one that still does: delete the `animation` line from either component
+ * below and all four of its baselines stay green. Appearance tests cannot cover
+ * it either — there are no pixels in which the difference exists.
+ *
+ * So the loop is pinned here, in the same shape and for the same reason as
+ * `capture-contract.test.ts` pins EXPECTED_SKIPS: prose is not a tripwire.
+ * Removing a loop now fails on the comparison below rather than silently
+ * shipping a placeholder that never shimmers or a ring that never turns.
+ *
+ * Exact equality, not a floor. A THIRD looping animation is the case this
+ * really exists for — AGENTS.md and the coding standards both say no component
+ * animates on mount and name these two as the exceptions, and a new loop that
+ * slipped in unreviewed would make that sentence false in a file nobody diffs.
+ *
+ * Each loop must also switch itself off under `prefers-reduced-motion` rather
+ * than inherit the global clamp in tokens.css, which sets
+ * `animation-duration: 0.01ms` — a period at which an infinite animation
+ * restarts tens of thousands of times a second and paints an arbitrary frame.
+ * That is a determinism guard, not a preference: it is what makes the reduced
+ * frame and the captured frame the same frame.
+ *
+ * Structural, never appearance: which sheets loop and which stop, never what
+ * any of them looks like while doing it.
+ */
+const REDUCED_MOTION = 'prefers-reduced-motion';
+
+/** Every looping animation in the system, and the selector that carries it. */
+const EXPECTED_LOOPS: Readonly<Record<string, string>> = {
+  // The shimmer sweeping a placeholder that stands in for content still loading.
+  'atoms/Skeleton/Skeleton.css': '.ds-skeleton',
+  // The ring turning while a job the console started is still running.
+  'atoms/Spinner/Spinner.css': '.ds-spinner',
+};
+
+/** Whether a declaration sits inside a reduced-motion block. */
+const underReducedMotion = (decl: { parent?: unknown }): boolean => {
+  for (let node = decl.parent as any; node; node = node.parent) {
+    if (node.type === 'atrule' && String(node.params ?? '').includes(REDUCED_MOTION)) {
+      return true;
+    }
+  }
+
+  return false;
+};
+
+/** The selectors a sheet animates forever, outside any reduced-motion block. */
+const loopingSelectorsIn = (sheet: string): string[] => {
+  const selectors = new Set<string>();
+
+  parseSheet(sheet).walkDecls(/^animation(-iteration-count)?$/, (decl) => {
+    if (underReducedMotion(decl) || !/\binfinite\b/.test(decl.value)) return;
+    if (decl.parent?.type === 'rule') selectors.add((decl.parent as any).selector);
+  });
+
+  return [...selectors].sort();
+};
+
+/** The selectors a sheet explicitly stops when motion is unwelcome. */
+const stoppedSelectorsIn = (sheet: string): string[] => {
+  const selectors = new Set<string>();
+
+  parseSheet(sheet).walkDecls('animation', (decl) => {
+    if (!underReducedMotion(decl) || decl.value.trim() !== 'none') return;
+    if (decl.parent?.type === 'rule') selectors.add((decl.parent as any).selector);
+  });
+
+  return [...selectors].sort();
+};
+
+const LOOP_ENTRIES = Object.entries(EXPECTED_LOOPS);
+
+describe('looping animations', () => {
+  it('loops exactly the animations the standards name as exceptions', () => {
+    const looping = sheetsOnDisk().filter(
+      (sheet) => loopingSelectorsIn(sheet).length > 0,
+    );
+
+    expect(looping).toEqual(Object.keys(EXPECTED_LOOPS).sort());
+  });
+
+  it.each(LOOP_ENTRIES)('%s loops on %s', (sheet, selector) => {
+    expect(loopingSelectorsIn(sheet)).toContain(selector);
+  });
+
+  it.each(LOOP_ENTRIES)('%s stops %s under reduced motion', (sheet, selector) => {
+    expect(stoppedSelectorsIn(sheet)).toContain(selector);
+  });
+});

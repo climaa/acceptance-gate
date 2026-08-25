@@ -135,6 +135,12 @@ main {
    verdict to colour. */
 .vd-outcome {
   font-weight: var(--weight-bold);
+  /* A row, so the running ring sits tight against the word it belongs to. The
+     current-job row is itself a `Stack` with a --space-3 gap; without this the
+     ring would read as a sixth column rather than as part of the status. */
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
 }
 
 .vd-outcome--success {
@@ -300,6 +306,14 @@ main {
 
 .vd-run__anchor {
   color: var(--color-accent);
+}
+
+/* The box states no colour of its own — it inherits body text — so the ring
+   would come out grey here and accent in the two rows that carry the status
+   word. One fact, one colour. */
+.vd-run__running .ds-spinner {
+  color: var(--color-accent);
+  margin-inline-end: var(--space-2);
 }
 
 /* An explanation, never a refusal — those are alerts. */

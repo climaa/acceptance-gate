@@ -15,6 +15,7 @@ import { EmptyState, Link, Stack } from '@gate/ui';
 import type { HistoryRecord } from '@/lib/jobs';
 import { durationOf, formatDuration, jobState } from '@/lib/outcome';
 import { LogTail } from './LogTail';
+import { OutcomeWord } from './OutcomeWord';
 
 /**
  * What is running right now, what it has said, and where the last run left its
@@ -440,7 +441,7 @@ function JobView({ job, running, reportExists, log }: JobViewProps) {
   return (
     <Stack gap={3}>
       <Stack direction="row" gap={3} align="center" wrap className="vd-job">
-        <span className={`vd-outcome vd-outcome--${tone}`}>{word}</span>
+        <OutcomeWord word={word} tone={tone} />
         <span className="vd-mono">{job.mode}</span>
         <span className="vd-job__label" title={job.label}>
           {job.label}
