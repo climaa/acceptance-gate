@@ -1,7 +1,10 @@
+import { headers } from 'next/headers';
 import { resolveDataDir } from '@/lib/data';
 import { PURGE, SETS_TAG } from '@/lib/tags';
 import { SetLabelSchema, holderOf, listSets, removeSet } from '@/lib/jobs';
+import { isLocalHost } from '@/lib/local';
 import {
+  NOT_LOCAL,
   SAMPLE_DATA,
   badRequest,
   conflict,
@@ -28,10 +31,18 @@ const PruneRequestSchema = z.object({ keep: z.number().int().min(0) });
  * out worktree must not strand the other nine. Every skip comes back in the same
  * words a single delete would have refused with, so the panel renders one list
  * of sentences rather than one alert and one code.
+ *
+ * The local gate runs first, as it does on every mutation here, and this is the
+ * request it matters most on: prune is the only bulk destruction the console
+ * has — one call clears everything past the retention number. The deletes each
+ * name one thing and are still refused off localhost; refusing this one is the
+ * same rule where the blast radius is the whole accumulation.
  */
 export async function POST(request: Request): Promise<Response> {
   const { dir, isSample } = await resolveDataDir();
   if (isSample) return conflict(SAMPLE_DATA);
+
+  if (!isLocalHost((await headers()).get('host'))) return conflict(NOT_LOCAL);
 
   const busy = refuseWhileRunning(dir);
   if (busy) return busy;

@@ -279,6 +279,33 @@ describe('DELETE /api/sets/[label]', () => {
     expect(revalidateTagCalls).toContain('vd:sets');
   });
 
+  /**
+   * The local gate, in the same position and for the same reason the reports
+   * delete has one.
+   *
+   * A job is refused off localhost because it needs the checkout it compares; a
+   * delete needs no checkout, so the argument is a different one for the same
+   * rule. It is the stronger argument here than it is for a report: a set is a
+   * Storybook build and a containerised capture that cannot be taken again
+   * without the checkout it came from, where a report is a summary and its
+   * shots. `next dev` listens on every interface, so "the machine running the
+   * console" is a claim about the request rather than about the process.
+   */
+  it('refuses a delete that did not come from the machine running the console', async () => {
+    const dir = seedDataDir();
+    setRequestHost('visual-diff.example.com');
+
+    const response = await deleteSet(
+      new Request('https://visual-diff.example.com/'),
+      context('main-2026-08-15'),
+    );
+
+    expect(response.status).toBe(409);
+    expect(((await response.json()) as { error: string }).error).toBe(NOT_LOCAL);
+    expect(fs.existsSync(path.join(dir, 'sets', 'main-2026-08-15'))).toBe(true);
+    expect(labelsIn(dir)).toContain('main-2026-08-15');
+  });
+
   it('refuses a held set, naming the worktree and the set', async () => {
     const dir = seedDataDir({ held: true });
 
@@ -387,6 +414,30 @@ describe('POST /api/prune', () => {
     const body = (await response.json()) as { kept: string[]; removed: string[] };
     expect(body.kept).toHaveLength(3);
     expect(body.removed).toEqual(['main-2026-08-11']);
+  });
+
+  /**
+   * The local gate, on the path with the most to lose.
+   *
+   * Prune is the only bulk destruction this console has: one request clears
+   * every set past the retention number. The deletes each name one thing and
+   * are refused off localhost for it; refusing this one is the same rule where
+   * the blast radius is the whole accumulation.
+   */
+  it('refuses a prune that did not come from the machine running the console', async () => {
+    const dir = seedDataDir();
+    setRequestHost('visual-diff.example.com');
+
+    const response = await postPrune(
+      new Request('https://visual-diff.example.com/api/prune', {
+        method: 'POST',
+        body: JSON.stringify({ keep: 1 }),
+      }),
+    );
+
+    expect(response.status).toBe(409);
+    expect(((await response.json()) as { error: string }).error).toBe(NOT_LOCAL);
+    expect(labelsIn(dir)).toEqual(SETS.map((set) => set.label));
   });
 
   it('skips a held set and says what holds it', async () => {

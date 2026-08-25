@@ -3,7 +3,11 @@ import { cleanup, fireEvent, render, screen, within } from '@testing-library/rea
 // Imported explicitly rather than relying on `globals: true` — tsconfig's
 // `**/*.tsx` include means tsc typechecks this file.
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { DeleteSetButton, PruneButton } from '../components/ConfirmDialogs';
+import {
+  DeleteReportButton,
+  DeleteSetButton,
+  PruneButton,
+} from '../components/ConfirmDialogs';
 import { refreshCalls } from './stubs/next-navigation';
 
 /**
@@ -26,6 +30,8 @@ afterEach(() => {
 });
 
 const SET = 'main-2026-08-17';
+
+const REPORT = 'main-2026-08-17__main-2026-08-13';
 
 const HELD =
   'main-2026-08-17 is checked out in the worktree at /repo/../wt-a — retire that worktree before deleting the set';
@@ -166,6 +172,71 @@ describe('the delete confirmation', () => {
 
     const alert = await screen.findByRole('alert');
     expect(alert.textContent).toMatch(/could not delete/i);
+  });
+
+  /**
+   * The encode, pinned by the only input that can show it.
+   *
+   * `SetLabelSchema` allows `[A-Za-z0-9][A-Za-z0-9.-]*`, and every character in
+   * that class is unreserved — so `encodeURIComponent` is a no-op for every
+   * legal label, and the assertion above (`/api/sets/main-2026-08-17`) passes
+   * whether the encode is there or not. What the encode is FOR is a registry
+   * entry whose label is not a label: it has to reach the route as ONE segment,
+   * or `sets/../…` names a directory outside `sets/`. That is the case this
+   * asserts, and it is the only one that can fail.
+   */
+  it('sends a label that is not a label as one segment', () => {
+    const fetchMock = stubFetch({});
+    render(<DeleteSetButton label="../etc" />);
+    openDelete();
+
+    fireEvent.click(screen.getByRole('button', { name: 'delete ../etc' }));
+
+    expect(fetchMock).toHaveBeenCalledWith('/api/sets/..%2Fetc', {
+      method: 'DELETE',
+      cache: 'no-store',
+    });
+  });
+
+  /**
+   * The report twin, which had no test of its own until this one.
+   *
+   * Every case above renders `DeleteSetButton`; both now share one
+   * implementation, so those seven are true of this one too. What they cannot
+   * cover is the four values that ARE the difference, and this is the only
+   * automated reader of them — the report delete's own e2e lives in the local
+   * lane, which is not run casually.
+   */
+  it('names the report it is about to remove, and what survives it', () => {
+    stubFetch({});
+    render(<DeleteReportButton id={REPORT} />);
+    openDelete();
+
+    const box = dialog('Confirm deletion');
+    const detail = box.querySelector('.vd-confirm__detail')?.textContent;
+
+    expect(box.querySelector('.vd-confirm__question')?.textContent).toBe(
+      `Delete the report ${REPORT}?`,
+    );
+    // Both halves. The twins say opposite things about what survives, so
+    // asserting only that one clause is present would pass on a swapped detail
+    // — and a report dialog promising "the reports that compared it stay" is
+    // not vague, it is false.
+    expect(detail).toMatch(/two capture sets it compared stay/i);
+    expect(detail).not.toMatch(/reports that compared it stay/i);
+  });
+
+  it('deletes the one report the dialog named', () => {
+    const fetchMock = stubFetch({ body: { removed: REPORT } });
+    render(<DeleteReportButton id={REPORT} />);
+    openDelete();
+
+    fireEvent.click(screen.getByRole('button', { name: `delete ${REPORT}` }));
+
+    expect(fetchMock).toHaveBeenCalledWith(`/api/reports/${REPORT}`, {
+      method: 'DELETE',
+      cache: 'no-store',
+    });
   });
 });
 

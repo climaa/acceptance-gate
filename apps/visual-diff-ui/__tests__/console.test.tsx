@@ -199,6 +199,32 @@ describe('the snapshot sets panel', () => {
   });
 
   /**
+   * Absent, not disabled, off localhost — the same rule the reports table keeps
+   * one column over, and the one this table did not keep until the route did.
+   *
+   * `DELETE /api/sets/[label]` refuses a request that did not come from the
+   * machine running the console, and a set is the thing here that cannot be
+   * remade: a report is a summary and its shots, a set is a Storybook build and
+   * a containerised capture taken against a checkout. The empty cell is the
+   * column standing where the button was, exactly as the reports row does.
+   */
+  it('draws no delete on a console nobody is running locally', () => {
+    render(consoleWith({ sets: [CLEAN], isLocal: false }));
+
+    const row = firstRowOf('Snapshot sets');
+
+    expect(cellsOf(row)).toEqual([
+      'main-2026-08-17',
+      'f2570e1',
+      'main',
+      '2026-08-17',
+      '106 stories',
+      '95.5 MB',
+      '',
+    ]);
+  });
+
+  /**
    * The unit is in the cell, clipped, rather than left to the column header.
    *
    * Below 768 px the row reflows into a card whose per-cell label is `::before`
@@ -380,6 +406,22 @@ describe('the retention control', () => {
 
     expect(screen.getByRole('spinbutton', { name: 'keep latest' })).toBeDefined();
     expect(screen.getByRole('button', { name: 'prune the rest' })).toBeDefined();
+  });
+
+  /**
+   * Gone entirely off localhost, control and count together.
+   *
+   * The deletes lose a button and keep their row; this loses the whole control,
+   * because a keep-latest number with no prune behind it states a retention
+   * policy the console cannot carry out. `POST /api/prune` refuses the request,
+   * and this is the only bulk destruction here — one call clears everything past
+   * the number.
+   */
+  it('is absent on a console nobody is running locally', () => {
+    render(consoleWith({ isLocal: false }));
+
+    expect(screen.queryByRole('spinbutton', { name: 'keep latest' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'prune the rest' })).toBeNull();
   });
 });
 

@@ -37,7 +37,7 @@ const SET_COLUMNS: readonly TableColumn[] = [
   { header: '', width: '6rem' },
 ];
 
-function setRow(set: CaptureSet, bytes: number | undefined): TableRow {
+function setRow(set: CaptureSet, bytes: number | undefined, isLocal: boolean): TableRow {
   return {
     key: set.label,
     cells: [
@@ -75,7 +75,13 @@ function setRow(set: CaptureSet, bytes: number | undefined): TableRow {
       // Named `delete` and nothing more. What it will delete is named by the
       // dialog it opens — D2: nothing here is deleted implicitly, and the row is
       // not where a set's whole identity is repeated.
-      <DeleteSetButton label={set.label} key="delete" />,
+      //
+      // Absent rather than disabled off localhost, the rule `ReportsTable` and
+      // the run panel already keep: `DELETE /api/sets/[label]` refuses the
+      // request anyway, and a button whose only outcome is a refusal is an
+      // invitation to look for the way to enable it. The column stays, holding
+      // nothing — same as the reports table.
+      isLocal ? <DeleteSetButton label={set.label} key="delete" /> : null,
     ],
   };
 }
@@ -85,14 +91,17 @@ export interface SetsTableProps {
   /** Bytes on disk per set label. A set with no entry has no shot tree here —
    *  see lib/data.ts's `readSetSizes`, which measures rather than trusts. */
   sizes: Readonly<Record<string, number>>;
+  /** Whether the request came from the machine running this console. A deployed
+   *  one draws no delete at all — see the cell. */
+  isLocal: boolean;
 }
 
-export function SetsTable({ sets, sizes }: SetsTableProps) {
+export function SetsTable({ sets, sizes, isLocal }: SetsTableProps) {
   return (
     <Table
       label={SETS_TABLE_LABEL}
       columns={SET_COLUMNS}
-      rows={sets.map((set) => setRow(set, sizes[set.label]))}
+      rows={sets.map((set) => setRow(set, sizes[set.label], isLocal))}
     />
   );
 }

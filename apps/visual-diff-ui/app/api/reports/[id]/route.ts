@@ -33,7 +33,7 @@ export async function GET(_request: Request, { params }: Context): Promise<Respo
 /**
  * Delete one comparison report.
  *
- * The same gauntlet the other two mutations run, in the same order, and the
+ * The same gauntlet the other three mutations run, in the same order, and the
  * local gate is the one worth naming. `POST /api/jobs` has always refused a
  * request that did not come from the machine running the console, because a job
  * needs the checkout; a delete needs no checkout, so this is a different
@@ -41,6 +41,11 @@ export async function GET(_request: Request, { params }: Context): Promise<Respo
  * directory would otherwise let anyone who can reach it destroy the record of
  * every comparison on it. The panel hides the button off localhost; this is what
  * makes that a rule rather than a decoration.
+ *
+ * It was the only delete keeping that rule for a while. `DELETE /api/sets/[label]`
+ * and `POST /api/prune` were written before the gate existed and did not get it
+ * when this route did, which is why the sentence above says "the other three"
+ * now and said "the other two" before.
  *
  * The id's SHAPE is checked before anything reads it, exactly as the sets route
  * checks a label's: an id that is not an id is a miss rather than a refusal,

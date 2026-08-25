@@ -138,15 +138,23 @@ export function DashboardTemplate({
           {sets.length === 0 ? (
             <EmptyState message="This instance has captured nothing yet — run a capture and the set appears here." />
           ) : (
-            <SetsTable sets={sets} sizes={sizes} />
+            <SetsTable sets={sets} sizes={sizes} isLocal={isLocal} />
           )}
 
           {/* The pickers list the corpus alongside the captured sets, which is what
               it is there for. `RetentionControl` does not: pruning is about what
               this instance accumulated, and the corpus is not prunable — the
-              delete route refuses it by name. */}
+              delete route refuses it by name.
+
+              The pickers stay on a deployed console — comparing is reading, and
+              that is what a deployment is for. The prune does not: `POST /api/prune`
+              refuses off localhost, and this is the only bulk destruction here,
+              so a control that could only ever answer with a refusal is left out
+              entirely rather than drawn disabled. */}
           {compareLabels.length > 1 && <ComparePickers labels={compareLabels} />}
-          {sets.length > 0 && <RetentionControl labels={sets.map((set) => set.label)} />}
+          {isLocal && sets.length > 0 && (
+            <RetentionControl labels={sets.map((set) => set.label)} />
+          )}
         </Panel>
 
         <Panel id="vd-reports" title="reports" count={reports.length}>
