@@ -14,6 +14,20 @@ import { useDismissedJob } from '@/hooks/useDismissedJob';
 import { useMutation } from '@/hooks/useMutation';
 import { Note } from './Note';
 import { HOST } from '@gate/visual-diff/policy';
+/**
+ * The three sentences this panel says on the server's behalf.
+ *
+ * Each was written out a second time in this file, under a comment explaining that
+ * `lib/refusals.ts` reaches the filesystem and this is a client component, and each
+ * was pinned to its original by an equality assertion in `__tests__/run-panel`. The
+ * copy is a leaf now, so the panel and the route that answers read one constant and
+ * there is nothing left for those assertions to compare.
+ *
+ * `DOCKER_DOWN` is still not a refusal after the fact where this panel renders it:
+ * the button it sits above is disabled, so the reviewer starts Docker instead of a
+ * job.
+ */
+import { DOCKER_DOWN, JOB_RUNNING, NOT_LOCAL } from '@/lib/refusal-copy';
 import type { RunnerEnv } from '@/lib/host';
 import type { StoryTier } from '@/lib/stories';
 import { CURRENT_JOB_ANCHOR, useCurrentJob, usePollNow } from './CurrentJob';
@@ -83,26 +97,10 @@ const PLACEHOLDER = {
 
 /** Sample mode explains itself, and the deployed case does not appear here: an
  *  instance can be both, and "there is no CLI behind this" is the sentence that
- *  belongs to the deployment (REMOTE_REFUSAL below), not to a local console that
+ *  belongs to the deployment (NOT_LOCAL below), not to a local console that
  *  simply has not been pointed at any data yet. */
 const SAMPLE_NOTE =
   'sample mode — this instance is serving the committed sample run, which belongs to this repo rather than to anything captured here; point VISUAL_DIFF_DATA_DIR at a real tree to start a job';
-
-/**
- * D1's refusal, in the words the server would have used.
- *
- * Spelled here rather than imported: `lib/refusals.ts` — where this sentence
- * belongs and where `POST /api/jobs` reads it from — reaches the filesystem
- * through `lib/jobs.ts`, and this is a client component. `__tests__/run-panel`
- * pins the two against each other, so the duplication is under a test rather
- * than under a convention.
- */
-export const RUNNING_REFUSAL = 'a job is already running';
-
-/** The Docker reminder, spelled here for the same reason and pinned against
- *  `DOCKER_DOWN` by the same test. Not a refusal after the fact: the button it
- *  sits above is disabled, so the reviewer starts Docker instead of a job. */
-export const DOCKER_REFUSAL = `this job runs inside ${HOST.image}, and Docker is not running — start Docker and this comes back`;
 
 /**
  * What the wand says when it cannot name a set.
@@ -121,11 +119,6 @@ export const DOCKER_REFUSAL = `this job runs inside ${HOST.image}, and Docker is
  */
 export const SUGGEST_REFUSAL =
   'the console could not suggest a name — type the label instead';
-
-/** The deployed refusal, spelled here for the same reason and pinned against
- *  `NOT_LOCAL` by the same test. */
-export const REMOTE_REFUSAL =
-  'this console is deployed, and a job needs the checkout it compares — start one from the console on your own machine (`pnpm --filter @gate/visual-diff-ui dev`)';
 
 /** One text field. `spellcheck` off on all of them: every value here is an id, a
  *  label or a substring of a story name, and none of them is prose. */
@@ -723,7 +716,7 @@ function StartAction({
   // one first would read as if it might. Absent rather than disabled, on the same
   // rule as the host gate below: nothing a reviewer can do in this tab makes a
   // deployment be their own machine, so the note names the console that works.
-  if (!isLocal) return <Note name="remote console">{REMOTE_REFUSAL}</Note>;
+  if (!isLocal) return <Note name="remote console">{NOT_LOCAL}</Note>;
 
   if (running) {
     // Announced, not merely absent: a control that vanishes without a word is a
@@ -736,7 +729,7 @@ function StartAction({
             condition as a sentence, not as a status word, and the ring is
             `aria-hidden` so it adds nothing to what this alert already says. */}
         <Spinner />
-        {RUNNING_REFUSAL} —{' '}
+        {JOB_RUNNING} —{' '}
         <a className="vd-run__anchor" href={`#${CURRENT_JOB_ANCHOR}`}>
           follow the running job below
         </a>
@@ -763,7 +756,7 @@ function StartAction({
           and shots taken anywhere else are not comparable to them
         </Note>
       )}
-      {container === 'no-docker' && <Note name="docker required">{DOCKER_REFUSAL}</Note>}
+      {container === 'no-docker' && <Note name="docker required">{DOCKER_DOWN}</Note>}
 
       <Button
         variant="primary"

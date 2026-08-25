@@ -12,16 +12,10 @@ import { HOST } from '@gate/visual-diff/policy';
 // `**/*.tsx` include means tsc typechecks this file.
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CurrentJob, CurrentJobProvider } from '../components/CurrentJob';
-import {
-  DOCKER_REFUSAL,
-  REMOTE_REFUSAL,
-  RUNNING_REFUSAL,
-  RunPanel,
-  SUGGEST_REFUSAL,
-} from '../components/RunPanel';
+import { RunPanel, SUGGEST_REFUSAL } from '../components/RunPanel';
 import type { HistoryRecord } from '../lib/job-contract';
 import { DISMISS_STORAGE_KEY } from '../lib/dismiss-state';
-import { DOCKER_DOWN, JOB_RUNNING, NOT_LOCAL } from '../lib/refusals';
+import { DOCKER_DOWN, JOB_RUNNING, NOT_LOCAL } from '../lib/refusal-copy';
 import { refreshCalls, replaceCalls, setSearchParams } from './stubs/next-navigation';
 
 /**
@@ -584,13 +578,6 @@ describe('starting a job', () => {
     expect(alert.textContent).toContain(JOB_RUNNING);
   });
 
-  // The panel is a client component and lib/refusals.ts reaches the filesystem,
-  // so the sentence is spelled twice. This is the drift under a test rather
-  // than under a convention.
-  it('spells that sentence the way lib/refusals.ts does', () => {
-    expect(RUNNING_REFUSAL).toBe(JOB_RUNNING);
-  });
-
   // The reviewer reading this is usually working somewhere else on the page —
   // the sets panel, the pickers — and a sentence that never moves is
   // indistinguishable from a stale tab. The ring is the only thing here that
@@ -845,14 +832,13 @@ describe('capture on a host that is not the pinned container', () => {
     renderPanel({ image: null, docker: false });
     selectTab(mode);
 
-    await screen.findByRole('note', { name: 'docker required' });
+    const note = await screen.findByRole('note', { name: 'docker required' });
     const [start] = startButtons(mode);
 
     expect(start).toHaveProperty('disabled', true);
-  });
-
-  it('says what to start, in the words the server would have used', () => {
-    expect(DOCKER_REFUSAL).toBe(DOCKER_DOWN);
+    // The sentence, not just the note: this used to be pinned by comparing the
+    // panel's own copy against lib/refusals.ts, and there is one constant now.
+    expect(note.textContent).toBe(DOCKER_DOWN);
   });
 
   // compare reads two shot trees off disk and moves no pixels, so neither the
@@ -916,14 +902,7 @@ describe('a deployed console', () => {
 
     const note = screen.getByRole('note', { name: 'remote console' });
 
-    expect(note.textContent).toBe(REMOTE_REFUSAL);
-  });
-
-  // The panel spells the sentence rather than importing it — `lib/refusals`
-  // reaches the filesystem and this is a client bundle — so the duplication is
-  // held here rather than by a convention. Same bargain as RUNNING_REFUSAL.
-  it('says what the server would have answered', () => {
-    expect(REMOTE_REFUSAL).toBe(NOT_LOCAL);
+    expect(note.textContent).toBe(NOT_LOCAL);
   });
 });
 
