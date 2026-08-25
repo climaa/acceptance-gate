@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { EmptyState, Stack } from '@gate/ui';
 import type { CanonicalSet as Corpus } from '@/lib/baselines';
 import type { ReportListEntry } from '@/lib/data';
-import type { HistoryRecord } from '@/lib/jobs';
+import type { HistoryRecord } from '@/lib/job-contract';
 import { formatDay } from '@/lib/outcome';
 import type { CaptureSet } from '@/lib/summary';
 import { CanonicalSet } from './CanonicalSet';

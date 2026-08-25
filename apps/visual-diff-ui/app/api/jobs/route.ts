@@ -1,7 +1,8 @@
 import { dockerAvailable } from '@/lib/docker';
 import { guardMutation } from '@/lib/guard';
 import { hostMatches } from '@/lib/host';
-import { JobRequestSchema, startJob } from '@/lib/jobs';
+import { startJob } from '@/lib/jobs';
+import { JobRequestSchema } from '@/lib/job-contract';
 import { DOCKER_DOWN, JOB_RUNNING, badRequest, conflict, jsonBody } from '@/lib/refusals';
 import { runJob } from '@/lib/runner';
 

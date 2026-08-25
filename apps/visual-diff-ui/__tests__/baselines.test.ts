@@ -5,7 +5,7 @@ import * as path from 'node:path';
 // `**/*.ts` include means tsc typechecks this file.
 import { afterAll, describe, expect, it } from 'vitest';
 import { CANONICAL_LABEL, baselinesPath, readCanonicalSet } from '../lib/baselines';
-import { SetLabelSchema } from '../lib/jobs';
+import { SetLabelSchema } from '../lib/job-contract';
 
 /**
  * The committed baseline corpus, read as something to compare against.

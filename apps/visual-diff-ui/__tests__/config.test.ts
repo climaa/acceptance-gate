@@ -68,6 +68,52 @@ describe('module resolution', () => {
   });
 });
 
+describe('the client-safe contract', () => {
+  /**
+   * lib/job-contract.ts states one thing about itself and it is a build-time
+   * property: no `node:` import, anywhere in what it pulls in. That is what lets
+   * a client component name a job's shapes.
+   *
+   * Guarded structurally because the failure is invisible to everything else
+   * here. A value import from the wrong module typechecks, passes every suite in
+   * this directory, and fails only `next build` — measured, not assumed: reaching
+   * `JobRequestSchema` through lib/jobs.ts fails with `It is not allowed to define
+   * inline "use cache" annotated functions in Client Components`, because that
+   * module reaches lib/baselines.ts and the cached readers behind it. Reaching the
+   * same schema through lib/job-contract.ts compiles.
+   *
+   * The three client components that render a `HistoryRecord` import it as a
+   * TYPE, which erases and would pull nothing in either case — so the thing that
+   * kept them safe was how the import was written rather than what it named. This
+   * is what makes it a property of the module.
+   */
+  it('reaches no node: builtin from the contract or anything it imports', () => {
+    const seen = new Set<string>();
+    const offenders: string[] = [];
+
+    const walk = (file: string) => {
+      if (seen.has(file) || !fs.existsSync(path.join(APP_ROOT, file))) return;
+      seen.add(file);
+
+      const source = read(file);
+      if (/from '(node:|next\/)/.test(source)) offenders.push(file);
+
+      // Relative specifiers only — a package is not this app's to vouch for, and
+      // the two it uses here (zod) are isomorphic by construction.
+      for (const match of source.matchAll(/from '(\.[^']*)'/g)) {
+        const spec = match[1];
+        if (spec) walk(`${path.join(path.dirname(file), spec)}.ts`);
+      }
+    };
+
+    walk('lib/job-contract.ts');
+
+    expect(offenders).toEqual([]);
+    // The walk reached something, rather than passing because it found nothing.
+    expect(seen.size).toBeGreaterThan(0);
+  });
+});
+
 describe('cache invalidation', () => {
   /**
    * `updateTag` is Server-Action-only: called from a route handler Next throws

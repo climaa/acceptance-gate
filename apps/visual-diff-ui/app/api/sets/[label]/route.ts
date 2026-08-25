@@ -1,7 +1,8 @@
 import { CANONICAL_LABEL } from '@/lib/baselines';
 import { guardMutation } from '@/lib/guard';
 import { PURGE, SETS_TAG } from '@/lib/tags';
-import { SetLabelSchema, hasSet, holderOf, removeSet } from '@/lib/jobs';
+import { hasSet, holderOf, removeSet } from '@/lib/jobs';
+import { SetLabelSchema } from '@/lib/job-contract';
 import {
   CANONICAL_IS_COMMITTED,
   conflict,

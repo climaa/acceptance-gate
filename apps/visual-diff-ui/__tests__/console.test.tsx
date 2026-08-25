@@ -4,7 +4,7 @@ import { cleanup, fireEvent, render, screen, within } from '@testing-library/rea
 // `**/*.tsx` include means tsc typechecks this file.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DashboardTemplate } from '../components/DashboardTemplate';
-import type { HistoryRecord } from '../lib/jobs';
+import type { HistoryRecord } from '../lib/job-contract';
 import type { CaptureSet } from '../lib/summary';
 import type { ReportListEntry } from '../lib/data';
 import { replaceCalls } from './stubs/next-navigation';

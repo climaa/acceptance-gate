@@ -4,8 +4,6 @@ import * as path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   ConfinementError,
-  REPORT_ID,
-  SET_LABEL,
   entryUnder,
   reportDir,
   reportDirOf,
@@ -17,6 +15,7 @@ import {
   summaryFile,
   within,
 } from '../lib/paths';
+import { REPORT_ID, SET_LABEL } from '../lib/job-contract';
 
 /**
  * The containment check, from both sides, and the layout it builds.

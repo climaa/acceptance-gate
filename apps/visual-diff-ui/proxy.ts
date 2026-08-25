@@ -2,7 +2,8 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { NextResponse, type NextRequest } from 'next/server';
 import { dataDirFrom } from '@/lib/data-dir';
-import { ReportIdSchema, hasReport } from '@/lib/jobs';
+import { hasReport } from '@/lib/jobs';
+import { ReportIdSchema } from '@/lib/job-contract';
 
 /**
  * The one thing the report route cannot do for itself: answer a miss with a

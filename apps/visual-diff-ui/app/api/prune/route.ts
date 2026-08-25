@@ -1,6 +1,7 @@
 import { guardMutation } from '@/lib/guard';
 import { PURGE, SETS_TAG } from '@/lib/tags';
-import { SetLabelSchema, holderOf, listSets, removeSet } from '@/lib/jobs';
+import { holderOf, listSets, removeSet } from '@/lib/jobs';
+import { SetLabelSchema } from '@/lib/job-contract';
 import { badRequest, heldByWorktree, jsonBody } from '@/lib/refusals';
 import { revalidateTag } from 'next/cache';
 import { z } from 'zod';

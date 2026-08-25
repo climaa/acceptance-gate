@@ -13,7 +13,7 @@ import {
 } from 'react';
 import { EmptyState, IconButton, Link, Stack } from '@gate/ui';
 import { useDismissedJob } from '@/hooks/useDismissedJob';
-import type { HistoryRecord } from '@/lib/jobs';
+import type { HistoryRecord } from '@/lib/job-contract';
 import { durationOf, formatDuration, jobState } from '@/lib/outcome';
 import { LogTail } from './LogTail';
 import { OutcomeWord } from './OutcomeWord';

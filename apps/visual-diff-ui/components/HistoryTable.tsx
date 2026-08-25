@@ -1,6 +1,6 @@
 import NextLink from 'next/link';
 import { Link, Table, type TableColumn, type TableRow } from '@gate/ui';
-import type { HistoryRecord } from '@/lib/jobs';
+import type { HistoryRecord } from '@/lib/job-contract';
 import { durationOf, formatDuration, formatStamp, jobState } from '@/lib/outcome';
 import { OutcomeWord } from './OutcomeWord';
 
