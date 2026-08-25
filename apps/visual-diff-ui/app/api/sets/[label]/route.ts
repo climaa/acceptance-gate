@@ -1,17 +1,12 @@
-import { headers } from 'next/headers';
 import { CANONICAL_LABEL } from '@/lib/baselines';
-import { resolveDataDir } from '@/lib/data';
+import { guardMutation } from '@/lib/guard';
 import { PURGE, SETS_TAG } from '@/lib/tags';
 import { SetLabelSchema, hasSet, holderOf, removeSet } from '@/lib/jobs';
-import { isLocalHost } from '@/lib/local';
 import {
   CANONICAL_IS_COMMITTED,
-  NOT_LOCAL,
-  SAMPLE_DATA,
   conflict,
   heldByWorktree,
   notFound,
-  refuseWhileRunning,
 } from '@/lib/refusals';
 import { revalidateTag } from 'next/cache';
 
@@ -32,24 +27,19 @@ interface Context {
  * a registered worktree has it checked out, or a job is reading the directory
  * right now.
  *
- * Ahead of both, the local gate every mutation on this console keeps. It is the
- * same rule `DELETE /api/reports/[id]` states and the same sentence, and the
- * argument is strongest here: `next dev` listens on every interface, so a
- * console started against a real data directory is reachable from the network
- * it is on — and a capture set is a Storybook build and a containerised capture
- * that cannot be taken again without the checkout it came from. A report is a
- * summary and its shots; this is the thing on the console that cannot be
- * remade.
+ * Ahead of both, `guardMutation` — including the local gate every mutation on
+ * this console keeps, in one place now rather than in four. The argument for it
+ * is strongest here: `next dev` listens on every interface, so a console started
+ * against a real data directory is reachable from the network it is on — and a
+ * capture set is a Storybook build and a containerised capture that cannot be
+ * taken again without the checkout it came from. A report is a summary and its
+ * shots; this is the thing on the console that cannot be remade.
  */
 export async function DELETE(_request: Request, { params }: Context): Promise<Response> {
   const { label } = await params;
-  const { dir, isSample } = await resolveDataDir();
-  if (isSample) return conflict(SAMPLE_DATA);
-
-  if (!isLocalHost((await headers()).get('host'))) return conflict(NOT_LOCAL);
-
-  const busy = refuseWhileRunning(dir);
-  if (busy) return busy;
+  const gate = await guardMutation();
+  if (gate instanceof Response) return gate;
+  const { dir } = gate;
 
   // Ahead of the miss below, and deliberately a refusal rather than a 404: the
   // corpus IS there, it just is not this console's to remove. Answering "no

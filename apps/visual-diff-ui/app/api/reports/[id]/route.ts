@@ -1,16 +1,9 @@
-import { headers } from 'next/headers';
 import { revalidateTag } from 'next/cache';
 import { readReport, resolveDataDir } from '@/lib/data';
+import { guardMutation } from '@/lib/guard';
 import { PURGE, REPORTS_TAG, reportTag } from '@/lib/tags';
 import { ReportIdSchema, hasReport, removeReport } from '@/lib/jobs';
-import { isLocalHost } from '@/lib/local';
-import {
-  NOT_LOCAL,
-  SAMPLE_DATA,
-  conflict,
-  notFound,
-  refuseWhileRunning,
-} from '@/lib/refusals';
+import { notFound } from '@/lib/refusals';
 
 interface Context {
   params: Promise<{ id: string }>;
@@ -33,19 +26,19 @@ export async function GET(_request: Request, { params }: Context): Promise<Respo
 /**
  * Delete one comparison report.
  *
- * The same gauntlet the other three mutations run, in the same order, and the
- * local gate is the one worth naming. `POST /api/jobs` has always refused a
- * request that did not come from the machine running the console, because a job
- * needs the checkout; a delete needs no checkout, so this is a different
- * argument for the same rule — a deployed console pointed at a real data
- * directory would otherwise let anyone who can reach it destroy the record of
- * every comparison on it. The panel hides the button off localhost; this is what
- * makes that a rule rather than a decoration.
+ * `guardMutation` is the same gauntlet the other three mutations run, in the
+ * same order, and its local gate carries a different argument here than it does
+ * on `POST /api/jobs`. A job is refused off-localhost because it needs the
+ * checkout it compares; a delete needs no checkout, and is refused because a
+ * deployed console pointed at a real data directory would otherwise let anyone
+ * who can reach it destroy the record of every comparison on it. The panel hides
+ * the button off localhost; the guard is what makes that a rule rather than a
+ * decoration.
  *
- * It was the only delete keeping that rule for a while. `DELETE /api/sets/[label]`
- * and `POST /api/prune` were written before the gate existed and did not get it
- * when this route did, which is why the sentence above says "the other three"
- * now and said "the other two" before.
+ * That the two arguments now reach one function is the point of it: this route
+ * was the only delete keeping the rule for a while, because `DELETE
+ * /api/sets/[label]` and `POST /api/prune` were written before the gate existed
+ * and did not get it when this route did.
  *
  * The id's SHAPE is checked before anything reads it, exactly as the sets route
  * checks a label's: an id that is not an id is a miss rather than a refusal,
@@ -60,13 +53,9 @@ export async function GET(_request: Request, { params }: Context): Promise<Respo
  */
 export async function DELETE(_request: Request, { params }: Context): Promise<Response> {
   const { id } = await params;
-  const { dir, isSample } = await resolveDataDir();
-  if (isSample) return conflict(SAMPLE_DATA);
-
-  if (!isLocalHost((await headers()).get('host'))) return conflict(NOT_LOCAL);
-
-  const busy = refuseWhileRunning(dir);
-  if (busy) return busy;
+  const gate = await guardMutation();
+  if (gate instanceof Response) return gate;
+  const { dir } = gate;
 
   if (!ReportIdSchema.safeParse(id).success || !hasReport(dir, id)) {
     return notFound(`no report at reports/${id}`);
