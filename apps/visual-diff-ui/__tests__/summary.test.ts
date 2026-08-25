@@ -14,21 +14,25 @@ import { BUCKETS, SetsFileSchema, SummarySchema } from '../lib/summary';
 
 const FIXTURES = path.resolve(__dirname, '..', 'fixtures');
 const REPORT_ID = 'main-2026-08-17__main-2026-08-13';
+/** The second committed report, carrying the `added` verdict the first has none
+ *  of. Conformance is per report, not per tree: a summary the schema cannot
+ *  parse is a report the console 500s on, whichever of them it is. */
+const ADDED_REPORT_ID = 'baselines__main-2026-08-24';
 
 const readJson = (...segments: string[]): unknown =>
   JSON.parse(fs.readFileSync(path.join(FIXTURES, ...segments), 'utf8'));
 
 describe('SummarySchema', () => {
-  it('parses the committed summary.json verbatim', () => {
-    const raw = readJson('reports', REPORT_ID, 'summary.json');
+  it.each([REPORT_ID, ADDED_REPORT_ID])('parses %s verbatim', (id) => {
+    const raw = readJson('reports', id, 'summary.json');
 
     const result = SummarySchema.safeParse(raw);
 
     expect(result.error?.issues ?? []).toEqual([]);
   });
 
-  it('keeps every field the fixture carries', () => {
-    const raw = readJson('reports', REPORT_ID, 'summary.json');
+  it.each([REPORT_ID, ADDED_REPORT_ID])('keeps every field %s carries', (id) => {
+    const raw = readJson('reports', id, 'summary.json');
 
     const summary = SummarySchema.parse(raw);
 
