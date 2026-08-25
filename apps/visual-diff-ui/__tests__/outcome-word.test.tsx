@@ -21,11 +21,41 @@ afterEach(cleanup);
 
 const ring = (container: HTMLElement) => container.querySelector('.ds-spinner');
 
-/** Every word that is not `running`, typed as the union so removing one from
- *  `JobState` fails the typecheck here rather than silently dropping a row. */
-const FINISHED: JobState[] = ['succeeded', 'succeeded (diffs)', 'failed', 'interrupted'];
+/**
+ * Every word that is not `running`.
+ *
+ * `satisfies` rather than a type annotation, so the literals survive: it still
+ * fails the typecheck when a word LEAVES `JobState`, and it additionally
+ * refuses `'running'` here, which a plain `JobState[]` would have accepted into
+ * a list whose whole meaning is the opposite.
+ *
+ * The harder direction is a word ARRIVING. A new outcome that nobody listed
+ * would simply have no row, and a ring beside it would ship unnoticed — which
+ * is precisely the drift `OutcomeWord` exists to prevent, so it is closed at
+ * compile time below rather than trusted to whoever adds the word.
+ */
+const FINISHED = [
+  'succeeded',
+  'succeeded (diffs)',
+  'failed',
+  'interrupted',
+] as const satisfies readonly Exclude<JobState, 'running'>[];
+
+/** Any word `JobState` carries that neither `running` nor the list above covers.
+ *  `never` while the rows are exhaustive. */
+type Unlisted = Exclude<JobState, 'running' | (typeof FINISHED)[number]>;
+
+/* Bracketed so `never` is compared as a whole rather than distributed away: the
+   annotation resolves to `true` only while nothing is unlisted, so the day a
+   fifth outcome joins `JobState` this assignment stops compiling and names the
+   file that has to grow a row. */
+const EVERY_WORD_HAS_A_ROW: [Unlisted] extends [never] ? true : false = true;
 
 describe('OutcomeWord', () => {
+  it('covers every word the console can draw', () => {
+    expect(EVERY_WORD_HAS_A_ROW).toBe(true);
+  });
+
   it('turns a ring beside a running job', () => {
     const { container } = render(<OutcomeWord word="running" tone="accent" />);
 
