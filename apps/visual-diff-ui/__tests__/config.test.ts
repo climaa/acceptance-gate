@@ -68,6 +68,47 @@ describe('module resolution', () => {
   });
 });
 
+/**
+ * Every module `entry` reaches through a RUNTIME import, itself included.
+ *
+ * `import type` is skipped on purpose and it is the whole subtlety here: a type
+ * import erases at compile time and pulls nothing into any bundle, so a client
+ * component naming a type out of a filesystem module is safe — and safe because of
+ * how the import was WRITTEN, which is not something the module it names can rely
+ * on. These walks are what turn that into a property of the graph.
+ *
+ * Relative specifiers only. A package is not this app's to vouch for, and the ones
+ * that matter here (`zod`, `@gate/visual-diff/policy`) are isomorphic by
+ * construction.
+ */
+function runtimeGraph(entry: string): string[] {
+  const seen = new Set<string>();
+
+  const walk = (file: string) => {
+    const candidates = [file, `${file}.ts`, `${file}.tsx`];
+    const resolved = candidates.find((name) => fs.existsSync(path.join(APP_ROOT, name)));
+    if (!resolved || seen.has(resolved)) return;
+    seen.add(resolved);
+
+    for (const match of read(resolved).matchAll(
+      /import\s+(type\s+)?[^;]*?from '([^']+)'/g,
+    )) {
+      const [, isType, spec] = match;
+      if (isType || !spec) continue;
+
+      if (spec.startsWith('.')) walk(path.join(path.dirname(resolved), spec));
+      else if (spec.startsWith('@/')) walk(spec.slice(2));
+    }
+  };
+
+  walk(entry);
+
+  return [...seen];
+}
+
+/** Whether that module names a Node builtin or a `next/*` entry point directly. */
+const reachesNode = (file: string) => /from 'node:/.test(read(file));
+
 describe('the client-safe contract', () => {
   /**
    * lib/job-contract.ts states one thing about itself and it is a build-time
@@ -81,36 +122,73 @@ describe('the client-safe contract', () => {
    * inline "use cache" annotated functions in Client Components`, because that
    * module reaches lib/baselines.ts and the cached readers behind it. Reaching the
    * same schema through lib/job-contract.ts compiles.
-   *
-   * The three client components that render a `HistoryRecord` import it as a
-   * TYPE, which erases and would pull nothing in either case — so the thing that
-   * kept them safe was how the import was written rather than what it named. This
-   * is what makes it a property of the module.
    */
   it('reaches no node: builtin from the contract or anything it imports', () => {
-    const seen = new Set<string>();
-    const offenders: string[] = [];
+    const graph = runtimeGraph('lib/job-contract.ts');
 
-    const walk = (file: string) => {
-      if (seen.has(file) || !fs.existsSync(path.join(APP_ROOT, file))) return;
-      seen.add(file);
+    expect(graph.filter(reachesNode)).toEqual([]);
+    // The walk reached something, rather than passing because it found nothing.
+    expect(graph.length).toBeGreaterThan(0);
+  });
 
-      const source = read(file);
-      if (/from '(node:|next\/)/.test(source)) offenders.push(file);
+  /**
+   * The same rule for lib/refusal-copy.ts, which exists for the same reason: the
+   * run panel renders three of its sentences and cannot import lib/refusals.ts,
+   * where the responses that carry them live.
+   */
+  it('reaches no node: builtin from the refusal copy', () => {
+    expect(runtimeGraph('lib/refusal-copy.ts').filter(reachesNode)).toEqual([]);
+  });
 
-      // Relative specifiers only — a package is not this app's to vouch for, and
-      // the two it uses here (zod) are isomorphic by construction.
-      for (const match of source.matchAll(/from '(\.[^']*)'/g)) {
-        const spec = match[1];
-        if (spec) walk(`${path.join(path.dirname(file), spec)}.ts`);
-      }
-    };
-
-    walk('lib/job-contract.ts');
+  /**
+   * The generalisation, and the one that would have caught both of the above
+   * before they were problems: nothing a client component RUNS may reach the
+   * filesystem.
+   *
+   * Two client components sit one keystroke from breaking this today.
+   * `RunPanel` names `RunnerEnv` out of lib/host.ts, which reaches
+   * `node:child_process` through lib/docker.ts, and `StoryTier` out of
+   * lib/stories.ts, which reaches `node:fs` directly; `FilterPicker` names
+   * `StoryTier` too. All three are `import type` and erase — dropping the word
+   * `type` from any of them is what this case is here to fail on, rather than
+   * `next build` failing on it later with a message about `use cache`.
+   */
+  it('runs nothing that reaches the filesystem from a client component', () => {
+    const offenders = sourceFiles()
+      .filter((file) => /^\s*'use client';/m.test(read(file)))
+      .flatMap((file) =>
+        runtimeGraph(file)
+          .filter(reachesNode)
+          .map((reached) => `${file} -> ${reached}`),
+      );
 
     expect(offenders).toEqual([]);
-    // The walk reached something, rather than passing because it found nothing.
-    expect(seen.size).toBeGreaterThan(0);
+  });
+});
+
+describe('the pure view layer', () => {
+  /**
+   * The modules a report is rendered from derive and format; they do not read,
+   * and they do not know they are in Next.
+   *
+   * Stated as a rule rather than left to review because it is what lets the
+   * component suites render a whole report out of literal rows with no filesystem
+   * and no request — which is most of what makes them fast enough to be worth
+   * having.
+   */
+  it.each([
+    'lib/report-view.ts',
+    'lib/outcome.ts',
+    'lib/comparison.ts',
+    'lib/title.ts',
+    'lib/shots.ts',
+    'lib/summary.ts',
+  ])('keeps %s free of node: and next/', (module) => {
+    const reaching = runtimeGraph(module).filter(
+      (file) => reachesNode(file) || /from 'next\//.test(read(file)),
+    );
+
+    expect(reaching).toEqual([]);
   });
 });
 
