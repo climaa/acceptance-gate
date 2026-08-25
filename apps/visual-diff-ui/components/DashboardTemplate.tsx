@@ -33,13 +33,16 @@ export interface DashboardTemplateProps {
   sizes: Readonly<Record<string, number>>;
   reports: readonly ReportListEntry[];
   history: readonly HistoryRecord[];
-  /** Resolved server-side (lib/data.ts). The run panel disables every start
-   *  control under it: an instance with no data directory is serving this
-   *  repo's committed fixtures, and every mutation is refused there. */
+  /** Resolved server-side (lib/data.ts). An instance with no data directory is
+   *  serving this repo's committed fixtures, and every mutating route refuses it
+   *  with `SAMPLE_DATA` — so the run panel disables every start control, and this
+   *  is half of `frozen` below, which takes the deletes and the prune off the
+   *  page too. */
   isSample: boolean;
-  /** Resolved server-side from the request's own host (lib/local.ts). False on
-   *  a deployment, where the run panel offers no start control at all — a job
-   *  needs the checkout it compares. */
+  /** Resolved server-side from the request's own host (lib/local.ts). False on a
+   *  deployment, where the run panel offers no start control at all — a job needs
+   *  the checkout it compares — and where every mutating route answers
+   *  `NOT_LOCAL`. The other half of `frozen` below. */
   isLocal: boolean;
   /** The committed baseline corpus, when there is a checkout to read one from.
    *  Drawn above the captured sets and offered to the compare pickers — it is not
@@ -129,6 +132,15 @@ export function DashboardTemplate({
   // see HistoryTable.tsx for what the two disagreeing looked like.
   const reportIds = new Set(reports.map((report) => report.id));
 
+  // Whether this console can change anything at all, named once and passed down
+  // rather than re-derived at each destructive control. Two consoles cannot: a
+  // deployed one, which every mutating route refuses with `NOT_LOCAL`, and one
+  // with no data directory behind it, which they refuse with `SAMPLE_DATA`
+  // because the committed fixtures are this repo's files and not an instance's
+  // state. `RunPanel` computes the same thing under the name `frozen`; it takes
+  // both halves because it also says which of the two it is, in different words.
+  const frozen = isSample || !isLocal;
+
   return (
     <div className="vd-console">
       <Stack gap={6} className="vd-console__column">
@@ -138,15 +150,24 @@ export function DashboardTemplate({
           {sets.length === 0 ? (
             <EmptyState message="This instance has captured nothing yet — run a capture and the set appears here." />
           ) : (
-            <SetsTable sets={sets} sizes={sizes} />
+            <SetsTable sets={sets} sizes={sizes} frozen={frozen} />
           )}
 
           {/* The pickers list the corpus alongside the captured sets, which is what
               it is there for. `RetentionControl` does not: pruning is about what
               this instance accumulated, and the corpus is not prunable — the
-              delete route refuses it by name. */}
+              delete route refuses it by name.
+
+              The pickers stay wherever there is something to compare — comparing
+              is reading, and that is what a deployed or sample console is for.
+              The prune does not: `POST /api/prune` refuses both, and this is the
+              only bulk destruction here, so rather than a disabled button the
+              whole control goes — a keep-latest number with no prune behind it
+              states a retention policy the console cannot carry out. */}
           {compareLabels.length > 1 && <ComparePickers labels={compareLabels} />}
-          {sets.length > 0 && <RetentionControl labels={sets.map((set) => set.label)} />}
+          {!frozen && sets.length > 0 && (
+            <RetentionControl labels={sets.map((set) => set.label)} />
+          )}
         </Panel>
 
         <Panel id="vd-reports" title="reports" count={reports.length}>
@@ -156,7 +177,7 @@ export function DashboardTemplate({
             <ReportsTable
               reports={reports}
               dates={reportDates(history)}
-              isLocal={isLocal}
+              frozen={frozen}
             />
           )}
         </Panel>

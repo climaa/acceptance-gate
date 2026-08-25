@@ -8,19 +8,27 @@ import { useMutation } from '@/hooks/useMutation';
  * D2, as the two dialogs that stand in front of every destructive control on the
  * console: nothing is deleted implicitly.
  *
- * The delete names the one set it removes. The prune names both halves — what
- * goes and what stays — because it is the only bulk path here and "the rest" is
+ * A delete names the one thing it removes — a report or a set, and the two say
+ * opposite things about what survives. The prune names both halves — what goes
+ * and what stays — because it is the only bulk path here and "the rest" is
  * precisely what the button cannot show.
  *
  * Neither dialog decides anything. The server refuses a held set and a running
- * job on its own (`DELETE /api/sets/[label]`, `POST /api/prune`), and what these
- * render is the sentence it refused with, verbatim: a reviewer who reads
+ * job on its own (`DELETE /api/reports/[id]`, `DELETE /api/sets/[label]`,
+ * `POST /api/prune`), and what these render is the sentence it refused with,
+ * verbatim: a reviewer who reads
  * `409 worktree_registered` has learned nothing, and the path of the worktree
  * still holding the set is the one thing they can act on.
  */
 
 /** Refusals, in the server's words. `role="alert"` because it answers something
- *  the reviewer just did, and it appears inside the dialog they did it in. */
+ *  the reviewer just did, and it appears inside the dialog they did it in.
+ *
+ *  Exactly one of these per dialog, always. `apps/e2e/pages/console.ts` reads a
+ *  dialog's refusal with a strict `getByRole('dialog').getByRole('alert')`, so a
+ *  second alert inside one dialog fails every scenario that reads a refusal —
+ *  on ambiguity, not on the words. A standing condition belongs in the prose
+ *  above the actions, never in a second alert. */
 function Refusals({ sentences }: { sentences: readonly string[] }) {
   const [only] = sentences;
 
@@ -67,6 +75,111 @@ function ConfirmActions({
   );
 }
 
+/**
+ * What a delete leaves behind, one sentence each, and deliberately opposite.
+ *
+ * Module-level and each on one line: JSX collapses a wrapped run of CHILDREN to
+ * a single space, but keeps a wrapped string ATTRIBUTE's newline and indent
+ * verbatim. The two render identically in a browser — HTML collapses whitespace
+ * either way — and differently in `textContent`, which is the half a test reads.
+ */
+const REPORT_DETAIL =
+  'Its summary and its shots go, and the comparison is no longer on record. The two capture sets it compared stay exactly where they are.';
+
+const SET_DETAIL =
+  'Its shots and its registry entry go. The reports that compared it stay — a report is a record of a decision, not part of the set it read.';
+
+/**
+ * The delete confirmation both destructive rows open, as one component.
+ *
+ * `DeleteReportButton` and `DeleteSetButton` were this written out twice, and
+ * only one of them was ever rendered by a test — including the two that carry
+ * the rules: that a refusal is the server's sentence verbatim, and that it
+ * announces from outside the landmark the dialog was opened inside (#319). One
+ * implementation is how those become true of both, which is the reason to have
+ * merged them; the lines saved are not.
+ *
+ * Four values differ, and they are the whole of the difference. `fallback` and
+ * the confirm verb are NOT among them: both twins already derived those from the
+ * name, so they stay derived here and cannot drift apart.
+ *
+ * `PruneButton` below deliberately does not use this. For a prune, `result.ok`
+ * is not "done" — a 200 can carry a skipped set — and folding it in would mean
+ * parameterising what success means. `useMutation` already ruled on that: it
+ * hands the parsed body back rather than growing a callback per caller.
+ */
+function DeleteConfirmButton({
+  name,
+  url,
+  noun,
+  detail,
+}: {
+  /** The thing's own name. The question names it, and so does the confirm verb
+   *  the reviewer reads last before pressing it. */
+  name: string;
+  /** Where the DELETE goes, already one segment. Built by the caller, because
+   *  the REASON for encoding differs between the two — see `DeleteSetButton`. */
+  url: string;
+  /** A noun phrase carrying its article: "the report", "the snapshot set". The
+   *  sentence is `Delete {noun} {name}?` and nothing here adds an article, so a
+   *  bare "report" would read `Delete report main-…?` and no test would catch it
+   *  for the other twin.
+   *
+   *  This shape assumes both questions stay `Delete <phrase> <name>?`. If one
+   *  ever needs a different sentence, promote the whole question to a render
+   *  prop for BOTH callers at once — a second string beside this one would put
+   *  `<strong className="vd-mono">` back at each call site, which is the drift
+   *  this component exists to prevent. */
+  noun: string;
+  /** The sentence, not the paragraph: this component owns the `<p>` and its
+   *  class, so a caller cannot misspell or drop it. */
+  detail: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const { run, refusals, busy, clear } = useMutation();
+
+  const close = () => {
+    setOpen(false);
+    clear();
+  };
+
+  const confirm = async () => {
+    const result = await run({
+      url,
+      method: 'DELETE',
+      fallback: `could not delete ${name}`,
+    });
+
+    if (result.ok) close();
+  };
+
+  return (
+    <>
+      <Button variant="danger" size="sm" onClick={() => setOpen(true)}>
+        delete
+      </Button>
+
+      <Dialog open={open} onClose={close} label="Confirm deletion">
+        <Stack gap={4}>
+          <p className="vd-confirm__question">
+            Delete {noun} <strong className="vd-mono">{name}</strong>?
+          </p>
+          <p className="vd-confirm__detail">{detail}</p>
+
+          {refusals.length > 0 && <Refusals sentences={refusals} />}
+
+          <ConfirmActions
+            confirm={`delete ${name}`}
+            onConfirm={() => void confirm()}
+            onCancel={close}
+            busy={busy}
+          />
+        </Stack>
+      </Dialog>
+    </>
+  );
+}
+
 export interface DeleteReportButtonProps {
   id: string;
 }
@@ -80,51 +193,13 @@ export interface DeleteReportButtonProps {
  * press one should be told which of the two they are doing.
  */
 export function DeleteReportButton({ id }: DeleteReportButtonProps) {
-  const [open, setOpen] = useState(false);
-  const { run, refusals, busy, clear } = useMutation();
-
-  const close = () => {
-    setOpen(false);
-    clear();
-  };
-
-  const confirm = async () => {
-    const result = await run({
-      url: `/api/reports/${encodeURIComponent(id)}`,
-      method: 'DELETE',
-      fallback: `could not delete ${id}`,
-    });
-
-    if (result.ok) close();
-  };
-
   return (
-    <>
-      <Button variant="danger" size="sm" onClick={() => setOpen(true)}>
-        delete
-      </Button>
-
-      <Dialog open={open} onClose={close} label="Confirm deletion">
-        <Stack gap={4}>
-          <p className="vd-confirm__question">
-            Delete the report <strong className="vd-mono">{id}</strong>?
-          </p>
-          <p className="vd-confirm__detail">
-            Its summary and its shots go, and the comparison is no longer on record. The
-            two capture sets it compared stay exactly where they are.
-          </p>
-
-          {refusals.length > 0 && <Refusals sentences={refusals} />}
-
-          <ConfirmActions
-            confirm={`delete ${id}`}
-            onConfirm={() => void confirm()}
-            onCancel={close}
-            busy={busy}
-          />
-        </Stack>
-      </Dialog>
-    </>
+    <DeleteConfirmButton
+      name={id}
+      url={`/api/reports/${encodeURIComponent(id)}`}
+      noun="the report"
+      detail={REPORT_DETAIL}
+    />
   );
 }
 
@@ -137,54 +212,20 @@ export interface DeleteSetButtonProps {
  *
  * The set label is encoded into the path: a registry entry whose label is not a
  * label names a directory outside `sets/`, and the route refuses it as a miss —
- * but it must reach the route as one segment rather than as a path.
+ * but it must reach the route as one segment rather than as a path. The encode
+ * stays here rather than inside {@link DeleteConfirmButton} because that is the
+ * argument for it; a report id is validated where it is read (`lib/data.ts`), so
+ * its encode is defence rather than this, and one shared comment would be a lie
+ * about one of them.
  */
 export function DeleteSetButton({ label }: DeleteSetButtonProps) {
-  const [open, setOpen] = useState(false);
-  const { run, refusals, busy, clear } = useMutation();
-
-  const close = () => {
-    setOpen(false);
-    clear();
-  };
-
-  const confirm = async () => {
-    const result = await run({
-      url: `/api/sets/${encodeURIComponent(label)}`,
-      method: 'DELETE',
-      fallback: `could not delete ${label}`,
-    });
-
-    if (result.ok) close();
-  };
-
   return (
-    <>
-      <Button variant="danger" size="sm" onClick={() => setOpen(true)}>
-        delete
-      </Button>
-
-      <Dialog open={open} onClose={close} label="Confirm deletion">
-        <Stack gap={4}>
-          <p className="vd-confirm__question">
-            Delete the snapshot set <strong className="vd-mono">{label}</strong>?
-          </p>
-          <p className="vd-confirm__detail">
-            Its shots and its registry entry go. The reports that compared it stay — a
-            report is a record of a decision, not part of the set it read.
-          </p>
-
-          {refusals.length > 0 && <Refusals sentences={refusals} />}
-
-          <ConfirmActions
-            confirm={`delete ${label}`}
-            onConfirm={() => void confirm()}
-            onCancel={close}
-            busy={busy}
-          />
-        </Stack>
-      </Dialog>
-    </>
+    <DeleteConfirmButton
+      name={label}
+      url={`/api/sets/${encodeURIComponent(label)}`}
+      noun="the snapshot set"
+      detail={SET_DETAIL}
+    />
   );
 }
 

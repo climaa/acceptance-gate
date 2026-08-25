@@ -23,12 +23,20 @@ const workspace = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const LANES = ['acceptance', 'local'];
 
 /**
- * Scenarios, not Playwright tests: 9 blog + 6 visual-diff console + 3 sample
+ * Scenarios, not Playwright tests: 9 blog + 6 visual-diff console + 4 sample
  * mode + 15 report + 7 accessibility. Test count is
  * higher, because an untagged scenario is listed once per project; one
  * legitimate `@desktop` lowers that number without removing a requirement,
  * which would train everyone to edit this constant for a non-event. Scenario
  * count moves only when a requirement is added or removed.
+ *
+ * It was 40 until the sample console was made to draw no destructive control at
+ * all. Two consoles cannot mutate — a deployed one, refused with `NOT_LOCAL`,
+ * and one serving the committed fixtures, refused with `SAMPLE_DATA` — and the
+ * tables kept only the first half of that rule for three pull requests, because
+ * nothing here said otherwise. The unit tests cover the branch; this is the
+ * requirement, and it belongs in the suite because the fixtures a sample console
+ * would have offered to delete are this repo's own files.
  *
  * It was 43 until the console's accept tab was retired. The three baseline-
  * acceptance scenarios went with it: the tab spawned `promote`, which writes
@@ -58,7 +66,7 @@ const LANES = ['acceptance', 'local'];
  * scenario is a two-line diff; LOWERING it is a product decision and belongs in
  * its own hand-authored PR with the reason written down.
  */
-const EXPECTED_SCENARIOS = 40;
+const EXPECTED_SCENARIOS = 41;
 
 /** The two project selectors. Carrying both excludes a scenario from both. */
 const PROJECT_TAGS = ['@desktop', '@mobile'];

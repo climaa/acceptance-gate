@@ -9,9 +9,9 @@ import { currentJob } from './jobs';
  * review failure. They live in one module because two of them are asserted
  * word-for-word — by this app's own suite, and by the e2e worlds — and copy
  * that is a contract belongs somewhere a reader can find all of it at once.
- * `NOT_LOCAL` is said twice over — once by `POST /api/jobs`, once by the run
- * panel client-side — which is the other reason for one home: two copies of one
- * sentence drift.
+ * `NOT_LOCAL` is said five times over — by all four mutating routes, and by the
+ * run panel client-side — which is the other reason for one home: five copies of
+ * one sentence drift.
  */
 
 /** D1. The console shows the running job instead of queueing a second one. */
@@ -26,8 +26,12 @@ export const SAMPLE_DATA =
 /** The deployed case. A job needs the checkout it compares, a Storybook build to
  *  serve and a browser to drive it, and a deployment has none of the three — so
  *  this names the console that does rather than only refusing the one that
- *  cannot. Said twice over: `POST /api/jobs` answers with it, and the run panel
- *  spells it out client-side (see RunPanel's `REMOTE_REFUSAL`). */
+ *  cannot. Every mutation answers with it — `POST /api/jobs`,
+ *  `DELETE /api/reports/[id]`, `DELETE /api/sets/[label]`, `POST /api/prune` —
+ *  and the run panel spells it out client-side (see RunPanel's
+ *  `REMOTE_REFUSAL`). The two deletes and the prune need no checkout of their
+ *  own; what they share with a job is that a console reachable from off the
+ *  machine must not be able to destroy what is on it. */
 export const NOT_LOCAL =
   'this console is deployed, and a job needs the checkout it compares — start one from the console on your own machine (`pnpm --filter @gate/visual-diff-ui dev`)';
 
