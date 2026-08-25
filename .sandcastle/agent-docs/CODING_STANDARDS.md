@@ -42,7 +42,9 @@ findings, never from ambition.
   ones.
 - **Fonts are self-hosted woff2 in `packages/ui/src/fonts/` only.** Never introduce
   `system-ui`/`-apple-system` as a leading family (`src/fonts/og/` TTF is the one
-  documented exemption). No `packages/ui` component animates on mount.
+  documented exemption). No `packages/ui` component animates on mount —
+  Skeleton's shimmer and Spinner's ring are the two sanctioned exceptions, and
+  each argues for itself in its own sheet.
 
 ## Testing
 

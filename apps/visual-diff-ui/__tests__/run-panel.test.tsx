@@ -587,6 +587,40 @@ describe('starting a job', () => {
   it('spells that sentence the way lib/refusals.ts does', () => {
     expect(RUNNING_REFUSAL).toBe(JOB_RUNNING);
   });
+
+  // The reviewer reading this is usually working somewhere else on the page —
+  // the sets panel, the pickers — and a sentence that never moves is
+  // indistinguishable from a stale tab. The ring is the only thing here that
+  // says the console is still live.
+  it('turns a ring inside that refusal', async () => {
+    renderPanel({ current: { running: true, job: RUNNING } });
+
+    const alert = await screen.findByRole('alert');
+
+    expect(alert.querySelector('.ds-spinner')).not.toBeNull();
+  });
+
+  /**
+   * The ring must not have brought a live region with it.
+   *
+   * The acceptance suite reads refusals through one strict locator,
+   * `getByRole('main').getByRole('alert')` (apps/e2e/pages/console.ts), so a
+   * second alert here fails every scenario that reads the first — which is why
+   * `Spinner` is `aria-hidden` with no role and no label to override it. Held
+   * here because this is the one place in the console where a decorative
+   * element was composed INTO an alert.
+   */
+  it('adds no second announcement to the one alert', async () => {
+    renderPanel({ current: { running: true, job: RUNNING } });
+
+    const alert = await screen.findByRole('alert');
+
+    expect(screen.queryAllByRole('alert')).toHaveLength(1);
+    // Scoped to the alert on purpose: the panel is allowed a `role="status"`
+    // elsewhere (the accept gate has one), and this is a claim about what the
+    // ring brought in, not about the panel at large.
+    expect(within(alert).queryByRole('status')).toBeNull();
+  });
 });
 
 /**

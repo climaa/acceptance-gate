@@ -1,0 +1,56 @@
+/* The system's second looping animation, and so the second shape the differ has
+   to be able to capture. It earns the exception the way Skeleton does: a ring
+   that turns while a job runs is a stand-in for an answer that has not arrived,
+   not a component making an entrance.
+
+   The resting appearance is also the first frame, which is what makes it
+   photographable. `determinism.mjs` injects `animation: none !important` into
+   every captured page, so the shot lands on `rotate(0deg)` — the lit segment at
+   the top of the ring — on every run rather than on whatever angle the loop
+   happened to be at. The loop restarts seamlessly for the same reason: 0deg and
+   360deg draw the same pixels.
+
+   `linear`, not var(--ease-out): an eased rotation spends its frames at the
+   extremes, which reads as a wobble rather than a turn.
+
+   Sized in `em` and coloured with `currentColor` so one variant serves every
+   place it stands. The console puts it beside a --text-sm status word in one
+   row and inside a --text-base refusal in another, and both want the ring to
+   match the text it belongs to rather than to state a size of its own. */
+.ds-spinner {
+  display: inline-block;
+  flex: none;
+  inline-size: 1em;
+  block-size: 1em;
+  /* A literal, and deliberately not `0.125em`: a relative ring width lands on a
+     subpixel at most text sizes and renders soft, which at this diameter is the
+     difference between a ring and a smudge. */
+  border: 2px solid var(--color-border);
+  border-block-start-color: currentColor;
+  border-radius: var(--radius-full);
+  /* Sits on the text baseline rather than above it, the way an inline glyph of
+     the same size would. */
+  vertical-align: -0.125em;
+  animation: ds-spinner-rotate var(--duration-spin) linear infinite;
+}
+
+@keyframes ds-spinner-rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* The global reduced-motion block in tokens.css clamps animation-duration to
+   0.01ms. That neutralises a one-shot transition but not a loop: at that period
+   an infinite animation restarts tens of thousands of times a second and paints
+   an arbitrary frame, so the ring would strobe rather than stop. It switches
+   itself off explicitly instead, landing on the same frame a frozen capture
+   gets — a static ring with one lit segment, which still reads as unfinished. */
+@media (prefers-reduced-motion: reduce) {
+  .ds-spinner {
+    animation: none;
+  }
+}

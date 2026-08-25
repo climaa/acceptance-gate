@@ -2,6 +2,7 @@ import NextLink from 'next/link';
 import { Link, Table, type TableColumn, type TableRow } from '@gate/ui';
 import type { HistoryRecord } from '@/lib/jobs';
 import { durationOf, formatDuration, formatStamp, jobState } from '@/lib/outcome';
+import { OutcomeWord } from './OutcomeWord';
 
 /**
  * The past runs, newest first — the order `history.json` is written in.
@@ -56,9 +57,7 @@ function historyRow(
   return {
     key: run.id,
     cells: [
-      <span className={`vd-outcome vd-outcome--${tone}`} key="status">
-        {word}
-      </span>,
+      <OutcomeWord word={word} tone={tone} key="status" />,
       run.mode,
       // Two clocks, deliberately. The cell is the reader's own — a row is read
       // against the clock in their menubar — and the title is the stored

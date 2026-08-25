@@ -9,7 +9,7 @@ import {
   useReducer,
   useState,
 } from 'react';
-import { Button, CodeBlock, IconButton, Stack } from '@gate/ui';
+import { Button, CodeBlock, IconButton, Spinner, Stack } from '@gate/ui';
 import { useMutation } from '@/hooks/useMutation';
 import { useReviewMarks } from '@/hooks/useReviewMarks';
 import { Note } from './Note';
@@ -895,6 +895,10 @@ function StartAction({
     // the acceptance contract pins as D1's surface, here and on the server.
     return (
       <div role="alert" className="vd-run__running">
+        {/* Composed directly rather than through `OutcomeWord`: this states the
+            condition as a sentence, not as a status word, and the ring is
+            `aria-hidden` so it adds nothing to what this alert already says. */}
+        <Spinner />
         {RUNNING_REFUSAL} —{' '}
         <a className="vd-run__anchor" href={`#${CURRENT_JOB_ANCHOR}`}>
           follow the running job below
