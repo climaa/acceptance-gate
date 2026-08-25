@@ -83,7 +83,7 @@ export default defineConfig({
       // the files when the floor breaks, and the default reporter set would add
       // html/clover/json artifacts nothing here reads.
       reporter: ['text', 'text-summary'],
-      thresholds: { statements: 92, branches: 86, functions: 91, lines: 93 },
+      thresholds: { statements: 93, branches: 87, functions: 92, lines: 94 },
     },
   },
 });
