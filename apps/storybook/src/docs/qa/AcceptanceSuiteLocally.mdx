@@ -68,10 +68,10 @@ and knowing which half is which saves you from chasing ghosts:
 
 So an a11y failure or a `removed` row you watch a scenario assert on is seed
 vocabulary, not a defect in your checkout — and none of it is your real `.visual-diff`
-data, which only the dev server on 3300 reads. It's also why the seeded world holds
-two reports: the grafted a11y failure makes the accept gate refuse the first report
-before asking anything else, so the accept scenarios run against the second, clean one
-— the only kind an accept can promote from.
+data, which only the dev server on 3300 reads. The world held a second, clean report
+until the console's accept tab was retired: the accept gate refused an a11y failure
+before asking anything else, so the gate's other answers needed a report that carried
+none. With no gate there is nothing for that report to be about.
 
 ## Watching it live: Playwright UI Mode
 
@@ -130,8 +130,9 @@ Four things that make it a different lane, not a second copy of the first:
 1. **⚠️ It writes, and it costs minutes.** The lane is one file and one scenario,
    `features/local/visual-diff-flow.feature`. It names a capture set with the wand,
    captures your whole corpus inside the pinned container, compares it against the
-   committed baselines, reads the report through, promotes it — and then removes the set,
-   the report and the promotion again. Docker has to be running.
+   committed baselines, reads the report through — and then removes the set and the
+   report again. Docker has to be running. It ended in a promote until the console's
+   accept tab was retired; the review pass is the payoff now.
 2. **It costs you nothing.** It captures the set it needs rather than borrowing one of
    yours, so it starts on a console that has captured nothing and leaves one behind.
    Nothing of yours is deleted, and it can run twice in a row. That is the point: the
@@ -153,9 +154,9 @@ scenarios — it orders scenarios, and there is one — though `workers: 1` stay
 
 It repairs itself twice over. The step that edits `history.json` writes a sidecar backup
 the next run restores, so a run killed mid-edit does not leave your newest real run reading
-as `interrupted` forever. And an `After` hook removes the capture, the report and the
-promotion for a run that went red before its own teardown could — without which one red run
-would leave a set behind and the next would no longer start cold.
+as `interrupted` forever. And an `After` hook removes the capture and the report for a run
+that went red before its own teardown could — without which one red run would leave a set
+behind and the next would no longer start cold.
 
 There are no level tags, and no `@accept` selector any more: with one scenario there is
 nothing to choose between. There is still no `@smoke` — a smoke level exists to fail a

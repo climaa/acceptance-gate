@@ -10,7 +10,6 @@
 // that answered a question nobody asked.
 
 import { ALLOW_HOST_MISMATCH_ENV, accept, check } from './commands.mjs';
-import { promote } from './promote.mjs';
 import { EXIT } from './policy.mjs';
 
 /** @typedef {import('./commands.mjs').CommandResult} CommandResult */
@@ -18,37 +17,32 @@ import { EXIT } from './policy.mjs';
 /** @typedef {(deps?: undefined, opts?: Options) => Promise<CommandResult>} Command */
 
 /** @type {Record<string, Command>} */
-const COMMANDS = { check, accept, promote };
+const COMMANDS = { check, accept };
 
 /** `check` is the default: the gate is run far more often than it is accepted, and the
  *  accepting one is the one that should have to be named. */
 const DEFAULT_COMMAND = 'check';
 
 export const USAGE = [
-  'Usage: visual-diff [check|accept|promote] [options]',
+  'Usage: visual-diff [check|accept] [options]',
   '',
   '  check    capture the corpus and compare it against the committed baselines',
   '  accept   capture the corpus and commit it as the new baselines',
-  "  promote  copy one report's candidates into a data directory's corpus",
   '',
   '  --filter <substring>    only stories whose id or title contains it',
   '  --allow-host-mismatch   compare against baselines captured on another host',
   `                          (or ${ALLOW_HOST_MISMATCH_ENV}=1)`,
-  '  --data-dir <path>       promote: the tree holding reports/ and __baselines__',
-  '  --report <id>           promote: which report to promote the candidates of',
   '',
   `Exit codes: ${EXIT.ok} unchanged · ${EXIT.diff} a human must look · ${EXIT.broken} the gate is broken`,
 ].join('\n');
 
 /** @typedef {{ command: string, filter?: string, allowHostMismatch: boolean,
- *              dataDir?: string, reportId?: string, error?: string }} ParsedArgs */
+ *              error?: string }} ParsedArgs */
 
 /** The flags that take a value, and what each is called when it arrives without one.
  *  A table rather than three branches: every one of them is read the same two ways. */
 const VALUED = {
   '--filter': ['filter', 'a substring to match stories against'],
-  '--data-dir': ['dataDir', 'the path of a data directory'],
-  '--report': ['reportId', 'the id of a report to promote'],
 };
 
 /** The value of a valued flag, whichever spelling it arrived in. `rest` is the argv still
@@ -134,8 +128,6 @@ export async function run(argv, io = CONSOLE_IO, commands = COMMANDS) {
   const { exitCode, message } = await commands[parsed.command](undefined, {
     filter: parsed.filter,
     allowHostMismatch: parsed.allowHostMismatch,
-    dataDir: parsed.dataDir,
-    reportId: parsed.reportId,
   });
 
   const report = exitCode === EXIT.broken ? io.err : io.out;

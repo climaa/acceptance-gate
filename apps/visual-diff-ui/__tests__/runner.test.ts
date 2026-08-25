@@ -13,7 +13,7 @@ import { BASELINE_ENV, CANONICAL_LABEL } from '../lib/baselines';
 import { describeCheckout } from '../lib/git';
 import { NO_CHECKOUT, STORYBOOK_FAILED } from '../lib/refusals';
 import { SummarySchema } from '../lib/summary';
-import { compareSets, promoteBaselines, runJob } from '../lib/runner';
+import { compareSets, runJob } from '../lib/runner';
 
 /**
  * The runner: comparing two shot trees, and promoting a report's candidates
@@ -40,8 +40,6 @@ const REAL_ARTIFACTS = path.join(VISUAL_DIFF, '.visual-diff');
 const COMMITTED_FIXTURES = path.join(process.cwd(), 'fixtures');
 const FIXTURE_REPORT = 'main-2026-08-17__main-2026-08-13';
 const FIXTURE_SHOTS = path.join(COMMITTED_FIXTURES, 'reports', FIXTURE_REPORT, 'shots');
-
-const PINNED_ENV = { VISUAL_DIFF_FAKE_HOST_FINGERPRINT: HOST.image };
 
 const temporaryDirs: string[] = [];
 const silent = () => {};
@@ -104,16 +102,6 @@ function seedSet(dataDir: string, label: string, shots: ReadonlyMap<string, Buff
   fs.mkdirSync(dir, { recursive: true });
 
   for (const [key, bytes] of shots) fs.writeFileSync(path.join(dir, `${key}.png`), bytes);
-}
-
-/** The fixture report, copied under a data directory as a real report would be. */
-function seedReport(dataDir: string, id = FIXTURE_REPORT): string {
-  const dir = path.join(dataDir, 'reports', id);
-  fs.cpSync(path.join(COMMITTED_FIXTURES, 'reports', FIXTURE_REPORT), dir, {
-    recursive: true,
-  });
-
-  return dir;
 }
 
 /** The two committed trees this app must never write into, as one digest. */
@@ -327,93 +315,6 @@ describe('compareSets against the committed corpus', () => {
   });
 });
 
-describe('promoteBaselines', () => {
-  it('rewrites the baselines and restamps BASELINE_ENV.json under the data dir', async () => {
-    const dir = makeDataDir();
-    const lines: string[] = [];
-    seedReport(dir);
-
-    const outcome = await promoteBaselines(
-      dir,
-      FIXTURE_REPORT,
-      (line) => lines.push(line),
-      PINNED_ENV,
-    );
-
-    expect(outcome.exitCode).toBe(0);
-    const promoted = fs.readdirSync(path.join(dir, '__baselines__'));
-    expect(promoted).toContain('atoms__desktop__light__atoms-prose--default.png');
-    expect(promoted).toContain('BASELINE_ENV.json');
-    expect(lines.join('\n')).toContain('BASELINE_ENV.json');
-  });
-
-  it('stamps the host that promoted, not the one the report was captured on', async () => {
-    const dir = makeDataDir();
-    seedReport(dir);
-
-    await promoteBaselines(dir, FIXTURE_REPORT, silent, PINNED_ENV);
-
-    const stamp = JSON.parse(
-      fs.readFileSync(path.join(dir, '__baselines__', 'BASELINE_ENV.json'), 'utf8'),
-    ) as Record<string, string>;
-    expect(stamp.image).toBe(HOST.image);
-  });
-
-  it('promotes the candidate bytes, not the baseline ones', async () => {
-    const dir = makeDataDir();
-    seedReport(dir);
-    const key = 'atoms__desktop__light__atoms-prose--default';
-
-    await promoteBaselines(dir, FIXTURE_REPORT, silent, PINNED_ENV);
-
-    expect(fs.readFileSync(path.join(dir, '__baselines__', `${key}.png`))).toEqual(
-      fs.readFileSync(path.join(FIXTURE_SHOTS, `${key}.candidate.png`)),
-    );
-  });
-
-  it('refuses a report that still carries an accessibility failure', async () => {
-    const dir = makeDataDir();
-    const lines: string[] = [];
-    const reportDir = seedReport(dir, 'a11y-report');
-    const summary = JSON.parse(
-      fs.readFileSync(path.join(reportDir, 'summary.json'), 'utf8'),
-    ) as { counts: Record<string, number> };
-    summary.counts.a11y = 1;
-    fs.writeFileSync(path.join(reportDir, 'summary.json'), JSON.stringify(summary));
-
-    const outcome = await promoteBaselines(
-      dir,
-      'a11y-report',
-      (line) => lines.push(line),
-      PINNED_ENV,
-    );
-
-    expect(outcome.exitCode).toBe(2);
-    expect(fs.existsSync(path.join(dir, '__baselines__'))).toBe(false);
-    expect(lines.join('\n')).toMatch(/accessibility/i);
-  });
-
-  it('refuses when a variant has no candidate shot to promote, writing nothing', async () => {
-    const dir = makeDataDir();
-    const reportDir = seedReport(dir);
-    const key = 'atoms__desktop__light__atoms-prose--default';
-    fs.rmSync(path.join(reportDir, 'shots', `${key}.candidate.png`));
-
-    const outcome = await promoteBaselines(dir, FIXTURE_REPORT, silent, PINNED_ENV);
-
-    expect(outcome.exitCode).toBe(2);
-    expect(fs.existsSync(path.join(dir, '__baselines__'))).toBe(false);
-  });
-
-  it('refuses a report that does not exist', async () => {
-    const dir = makeDataDir();
-
-    const outcome = await promoteBaselines(dir, 'never-ran', silent, PINNED_ENV);
-
-    expect(outcome.exitCode).toBe(2);
-  });
-});
-
 describe('runJob', () => {
   it('routes a compare request to the comparer', async () => {
     const dir = makeDataDir();
@@ -427,20 +328,6 @@ describe('runJob', () => {
     );
 
     expect(outcome.reportId).toBe('set-a__set-b');
-  });
-
-  it('routes an accept request to the promotion', async () => {
-    const dir = makeDataDir();
-    seedReport(dir);
-
-    const outcome = await runJob(
-      dir,
-      { mode: 'accept', reportId: FIXTURE_REPORT },
-      silent,
-      PINNED_ENV,
-    );
-
-    expect(outcome.exitCode).toBe(0);
   });
 });
 
@@ -668,56 +555,10 @@ describe('runCheck', () => {
     expect(started).toHaveLength(0);
     expect(lines).toContain(NO_CHECKOUT);
   });
-
-  /**
-   * The promote's own container decision, asserted as argv rather than by
-   * running one.
-   *
-   * This is what replaced a refusal. Off the pinned image the console used to
-   * answer accept with a `docker run` printed for a human to paste, because a
-   * promote stamps the machine that wrote it; it now starts that container
-   * itself, exactly as a capture does. The case is here rather than beside the
-   * other `promoteBaselines` cases because it must NOT spawn a real daemon —
-   * a unit suite that pulls an image answers differently on every machine.
-   */
-  it('wraps the promote in the pinned container off the pinned image', async () => {
-    const dir = makeDataDir();
-    seedReport(dir);
-
-    await withSpawn(async ({ promoteBaselines }) => {
-      await promoteBaselines(dir, FIXTURE_REPORT, silent, {});
-    });
-
-    const { command, args } = started[0] ?? { command: '', args: [] };
-    expect(command).toBe('docker');
-    expect(args).toContain(HOST.image);
-    // The data directory is mounted, and the promote is told where it landed.
-    // Passing the host's own path would name a directory the container has not
-    // got, and omitting it entirely would let `cli.mjs` resolve the COMMITTED
-    // corpus from its own location — which is the one write this must never be.
-    expect(args[args.indexOf('--data-dir') + 1]).toBe(DATA_MOUNT);
-    expect(args[args.indexOf('--report') + 1]).toBe(FIXTURE_REPORT);
-    expect(args).toContain('promote');
-  });
-
-  // On the pinned image there is nothing to wrap: the same argv, run directly.
-  // One implementation, so there is no second code path only the container takes.
-  it('promotes directly when it is already on the pinned image', async () => {
-    const dir = makeDataDir();
-    seedReport(dir);
-
-    await withSpawn(async ({ promoteBaselines }) => {
-      await promoteBaselines(dir, FIXTURE_REPORT, silent, PINNED_ENV);
-    });
-
-    const { command, args } = started[0] ?? { command: '', args: [] };
-    expect(command).toBe(process.execPath);
-    expect(args[args.indexOf('--data-dir') + 1]).toBe(dir);
-  });
 });
 
 describe('confinement', () => {
-  it('lands a whole compare-and-accept inside the data dir, leaving the repo untouched', async () => {
+  it('lands a whole compare inside the data dir, leaving the repo untouched', async () => {
     const dir = makeDataDir();
     seedSet(dir, 'set-a', fixtureShots('baseline'));
     seedSet(dir, 'set-b', fixtureShots('candidate'));
@@ -729,21 +570,50 @@ describe('confinement', () => {
       { mode: 'compare', baseline: 'set-a', candidate: 'set-b' },
       silent,
     );
-    await promoteBaselines(dir, 'set-a__set-b', silent, PINNED_ENV);
 
-    // Both effects are visible, and both are inside the temporary directory:
-    // the report the compare wrote and the corpus the accept promoted.
+    // The effect is visible, and it is inside the temporary directory: the
+    // report the compare wrote.
     expect(fs.existsSync(path.join(dir, 'reports', 'set-a__set-b', 'summary.json'))).toBe(
       true,
-    );
-    expect(fs.readdirSync(path.join(dir, '__baselines__'))).toContain(
-      'BASELINE_ENV.json',
     );
     expect(committedTrees()).toBe(before);
     // Unchanged rather than absent, for the reason `artifactTree` gives: the
     // differ's own artifacts are gitignored and a reviewer who ran a capture an
     // hour ago still has some. What this case is about is whether THIS run put
     // anything there.
+    expect(artifactTree()).toBe(artifactsBefore);
+  });
+
+  /**
+   * The one compare that reaches outside the data directory, pinned as read-only.
+   *
+   * `CANONICAL_LABEL` resolves into the CHECKOUT — `shotsDir` says why it is the
+   * single exception — so it is the only path where a write could land on the
+   * corpus CI compares against. The case above covers a compare between two
+   * data-directory sets, which never had a route there.
+   *
+   * This guard used to be carried by the compare-and-accept case, whose accept
+   * half was the dangerous one: `promote` took a `--data-dir` and would have
+   * rewritten `packages/visual-diff/__baselines__` if it ever defaulted. That
+   * subcommand is gone with the console's accept tab, and this is what is left
+   * worth guarding — the read that still happens.
+   */
+  it('reads the committed corpus for a compare without writing a byte of it', async () => {
+    const dir = makeDataDir();
+    seedSet(dir, 'candidate-set', fixtureShots('candidate'));
+    const before = committedTrees();
+    const artifactsBefore = artifactTree();
+
+    const outcome = await compareSets(
+      dir,
+      { mode: 'compare', baseline: CANONICAL_LABEL, candidate: 'candidate-set' },
+      silent,
+    );
+
+    // Non-vacuous: the compare has to have actually read the corpus and written
+    // its report, or "nothing changed" would hold for a run that did nothing.
+    expect(outcome.reportId).toBe(`${CANONICAL_LABEL}__candidate-set`);
+    expect(committedTrees()).toBe(before);
     expect(artifactTree()).toBe(artifactsBefore);
   });
 

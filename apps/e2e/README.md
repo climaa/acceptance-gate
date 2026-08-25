@@ -95,10 +95,11 @@ empty console is not an edge case, it is what a fresh checkout looks like, and a
 could only run once somebody had captured by hand was asserting requirements it could not
 reach. It also means the lane can run twice in a row, which nothing before it could.
 
-What it promotes is the data directory's own corpus, which is gitignored and which nothing
-reads: a local accept can never make CI's `visual-diff` job pass, and is not trying to.
-That is `accept-baselines.yml`'s job. The committed corpus at
-`packages/visual-diff/__baselines__` is never touched.
+The lane used to end in an accept, and no longer does. What that accept promoted was the
+data directory's own corpus — gitignored, and read by nothing — so it could never make
+CI's `visual-diff` job pass and was not trying to. That is `accept-baselines.yml`'s job.
+The console's accept tab is gone for the same reason; the committed corpus at
+`packages/visual-diff/__baselines__` was never touched by either.
 
 It was two files and nine scenarios until 2026-08-24, and a read-only half before that
 (`report.feature` was the last of it). Both withdrawals are recorded in
@@ -257,13 +258,11 @@ overlay in `seed/visual-diff/` on top of the copy. The fixture itself is never t
 The overlay is what the fixture cannot honestly show: a set captured from a dirty tree,
 a worktree hold, all four outcome words, a removed variant and an accessibility failure.
 
-Two reports, deliberately. `main-2026-08-17__main-2026-08-13` is the one carrying the
-fabricated accessibility failure — what the report and a11y suites read — and
-`main-2026-08-17__main-2026-08-16` is a clean comparison of the two newest sets, which is
-the only kind an accept can promote from: the gate refuses an accessibility failure before
-it asks anything else, so on a world holding only the first report the review gate and the
-host warning are answers no scenario could ever reach. An accept scenario names the report
-it means; nothing rides on which one the picker opens with.
+One report. `main-2026-08-17__main-2026-08-13` carries the fabricated accessibility
+failure, and it is what the report and a11y suites read. There was a second, clean one
+until the console's accept tab was retired — the accept gate refused an accessibility
+failure before it asked anything else, so a world holding only the grafted report could
+never reach the gate's other two answers. No gate, no need for the second report.
 
 The `sample` world seeds nothing at all. An empty data directory is exactly what a
 deployed instance that has captured nothing looks like, so the app falls back to its

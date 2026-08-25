@@ -4,7 +4,6 @@ import * as path from 'node:path';
 // Imported explicitly rather than relying on `globals: true` — tsconfig's
 // `**/*.ts` include means tsc typechecks this file.
 import { afterAll, afterEach, describe, expect, it, vi } from 'vitest';
-import { HOST } from '@gate/visual-diff/policy';
 import { POST as postJob } from '../app/api/jobs/route';
 import { GET as getCurrent } from '../app/api/jobs/current/route';
 import {
@@ -630,81 +629,6 @@ describe('today', () => {
     vi.stubEnv('TZ', 'Europe/Madrid');
 
     expect(today(new Date('2026-01-05T12:00:00Z'))).toBe('2026-01-05');
-  });
-});
-
-describe('POST /api/jobs — the accept gate', () => {
-  /**
-   * The host is no longer a refusal here, and this is the case that says so.
-   *
-   * A promote off the pinned image used to be answered 409 with a `docker run`
-   * to paste, because the stamp it writes describes the machine that wrote it.
-   * The runner now starts that container itself, so an accept from a machine
-   * that HAS a daemon is a job like any other — and the lock proves it started.
-   */
-  it('accepts from a host that can start the pinned container', async () => {
-    const dir = configuredDataDir();
-    process.env.VISUAL_DIFF_FAKE_DOCKER = '1';
-    seedSummary(dir, 'clean-report');
-
-    const response = await postJob(
-      jobRequest({ mode: 'accept', reportId: 'clean-report' }),
-    );
-
-    expect(response.status).toBe(202);
-    expect(readLock(dir)).not.toBeNull();
-  });
-
-  // The rule capture already answered to, now that accept answers to it
-  // too: no daemon is the one machine question a button cannot solve.
-  it('refuses an accept from a host with no container and no daemon', async () => {
-    const dir = configuredDataDir();
-    process.env.VISUAL_DIFF_FAKE_DOCKER = '0';
-    seedSummary(dir, 'clean-report');
-
-    const response = await postJob(
-      jobRequest({ mode: 'accept', reportId: 'clean-report' }),
-    );
-
-    expect(response.status).toBe(409);
-    expect(readLock(dir)).toBeNull();
-  });
-
-  it('refuses an accept while the report carries an accessibility failure', async () => {
-    const dir = configuredDataDir();
-    process.env.VISUAL_DIFF_FAKE_HOST_FINGERPRINT = HOST.image;
-    seedSummary(dir, 'a11y-report', 1);
-
-    const response = await postJob(
-      jobRequest({ mode: 'accept', reportId: 'a11y-report' }),
-    );
-
-    expect(response.status).toBe(409);
-    const body = (await response.json()) as { error: string };
-    expect(body.error).toMatch(/accessibility/i);
-    expect(readLock(dir)).toBeNull();
-  });
-
-  it('answers 404 for an accept of a report that does not exist', async () => {
-    configuredDataDir();
-    process.env.VISUAL_DIFF_FAKE_HOST_FINGERPRINT = HOST.image;
-
-    const response = await postJob(jobRequest({ mode: 'accept', reportId: 'never-ran' }));
-
-    expect(response.status).toBe(404);
-  });
-
-  it('starts the accept when the host matches and the report is clean', async () => {
-    const dir = configuredDataDir();
-    process.env.VISUAL_DIFF_FAKE_HOST_FINGERPRINT = HOST.image;
-    seedSummary(dir, 'clean-report');
-
-    const response = await postJob(
-      jobRequest({ mode: 'accept', reportId: 'clean-report' }),
-    );
-
-    expect(response.status).toBe(202);
-    await waitForIdle(dir);
   });
 });
 

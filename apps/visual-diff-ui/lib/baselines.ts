@@ -15,9 +15,9 @@ import { lastCommit } from './git';
  * It is NOT a capture set, and this module keeps the two apart on purpose:
  *
  *  - it lives in the CHECKOUT, not in the data directory, so no instance owns it;
- *  - this console never writes it. `accept` promotes into `<dataDir>/__baselines__`
- *    (D3), and the committed corpus is changed by a commit — which is why the
- *    console offers no way to delete it and refuses if asked anyway;
+ *  - this console never writes it, and no longer writes any corpus at all: the
+ *    committed one is changed by a commit — which is why the console offers no
+ *    way to delete it and refuses if asked anyway;
  *  - its provenance is a commit rather than a branch and a working tree.
  *
  * An instance with no checkout behind it — a deployment — has no corpus to offer,
@@ -81,9 +81,8 @@ const PNG = '.png';
  *
  * No `cacheTag`, unlike every reader in lib/data.ts, and the absence is the
  * point: those tags exist so a MUTATION can retire what it moved, and this
- * console performs no mutation that reaches the committed corpus. `accept`
- * promotes into `<dataDir>/__baselines__` (D3); this directory is changed by a
- * commit. There is nothing to purge it from.
+ * console performs no mutation that reaches the committed corpus — this
+ * directory is changed by a commit. There is nothing to purge it from.
  *
  * `root` is an argument with no default for the reason lib/data.ts states for
  * `dataDir`: `use cache` keys on the arguments it is passed, so a directory

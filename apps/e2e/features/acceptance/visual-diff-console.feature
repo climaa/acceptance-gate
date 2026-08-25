@@ -25,10 +25,10 @@ Feature: Visual-diff console
 
   Scenario: The selected job tab is a link
     When I visit the console
-    And I switch to the accept job tab
-    Then the URL carries the accept job mode
+    And I switch to the compare job tab
+    Then the URL carries the compare job mode
     When I reload the console
-    Then the accept job tab is selected
+    Then the compare job tab is selected
 
   Scenario: Past runs are listed with their outcome
     When I visit the console

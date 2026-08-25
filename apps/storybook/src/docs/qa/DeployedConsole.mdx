@@ -99,8 +99,9 @@ one a visitor is told. The UI states both up front rather than failing on the cl
 run panel is `frozen` when `isSample || !isLocal`, and renders the note you can see on the
 capture tab.
 
-Accept is refused for a third reason on top of these: it is container-bound, because a
-bare-metal accept writes baselines rendered by the host's own font stack. See
+There is no accept here to refuse, on a deployment or anywhere else: the console had an
+accept tab until it was retired, and what it wrote was its own instance's data directory
+rather than the committed corpus. Accepting baselines is a commit — see
 [Visual Diff Workflow](?path=/docs/docs-qa-visual-diff-workflow--docs).
 
 ## Deploying a report: commit it

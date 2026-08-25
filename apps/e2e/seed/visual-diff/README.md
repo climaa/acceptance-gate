@@ -11,15 +11,14 @@ copy.
 
 What the fixture cannot honestly show, and what each file here adds:
 
-| File                 | Adds                                                                              |
-| -------------------- | --------------------------------------------------------------------------------- |
-| `sets.json`          | five capture sets, one of them `dirty` — the registry the console lists           |
-| `worktrees.json`     | the D2 hold on the oldest set, which the refused delete names                     |
-| `history.json`       | one run per outcome word: `succeeded`, `succeeded (diffs)`, `failed`, interrupted |
-| `shots.json`         | the variant keys each set's shot tree carries, and which of them drifted          |
-| `report-graft.json`  | a `changed`, a `removed` and an `a11y` variant, plus two corpus warnings          |
-| `report-accept.json` | a second, clean report — the only kind an accept can promote from                 |
-| `baseline-env.json`  | the stamp an accept restamps, in the mutating world only                          |
+| File                | Adds                                                                              |
+| ------------------- | --------------------------------------------------------------------------------- |
+| `sets.json`         | five capture sets, one of them `dirty` — the registry the console lists           |
+| `worktrees.json`    | the D2 hold on the oldest set, which the refused delete names                     |
+| `history.json`      | one run per outcome word: `succeeded`, `succeeded (diffs)`, `failed`, interrupted |
+| `shots.json`        | the variant keys each set's shot tree carries, and which of them drifted          |
+| `report-graft.json` | a `changed`, a `removed` and an `a11y` variant, plus two corpus warnings          |
+| `baseline-env.json` | the corpus stamp, in the mutating world only                                      |
 
 The PNGs are not committed. The script synthesises them: real 16×16 RGBA PNGs whose
 pixels are a SHA-256 of the variant key, so the same seed produces the same bytes on
@@ -27,16 +26,16 @@ every machine and a re-seed is a no-op. A key listed in `shots.json`'s `drifted`
 its set's label into that seed, which is what makes a comparison between two sets
 report something rather than eighteen `unchanged` rows.
 
-## Why there are two reports
+## Why there is one report
 
-`report-graft.json` puts an accessibility failure into the report the review and a11y
-scenarios read, and `acceptGate` refuses one before it asks anything else — so on a world
-holding only that report, the accept tab's other two answers (the review gate and the host
-warning) are states no scenario could reach. `report-accept.json` is the report those
-scenarios are about: the two newest sets compared, nothing but pixels between them. Its
-two sides are copied out of those sets' own shot trees, so an accept promotes the bytes
-`sets/main-2026-08-16/` holds rather than something this directory invented; only the diff
-is synthesised, because nothing here paints one.
+There were two until the console's accept tab was retired. `report-accept.json` held a
+second, clean comparison, because the accept gate refused an accessibility failure before
+it asked anything else — so on a world holding only the grafted report, the gate's other
+two answers were states no scenario could reach. With no accept tab there is no gate, and
+the report those scenarios needed went with them.
+
+`report-graft.json` stays: it puts the accessibility failure into the report the review
+and a11y scenarios read, which is a state the committed fixture cannot show.
 
 ## Where each world differs
 

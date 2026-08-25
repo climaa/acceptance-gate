@@ -95,3 +95,17 @@ export const SetsFileSchema = z.object({
 });
 
 export type SetsFile = z.infer<typeof SetsFileSchema>;
+
+/**
+ * How many variants of a report a reviewer is shown.
+ *
+ * Everything but `unchanged`: the differ drops unchanged variants before
+ * `summary.variants` is written, so they are cards nobody can open, and counting
+ * them would leave the review bar reading 6/106 on a run where six things moved
+ * and a hundred did not.
+ */
+export function reviewableCount(counts: Record<Bucket, number>): number {
+  return Object.entries(counts)
+    .filter(([bucket]) => bucket !== 'unchanged')
+    .reduce((total, [, count]) => total + count, 0);
+}

@@ -20,7 +20,6 @@ import { type CaptureSet, SetsFileSchema } from './summary';
  *     <dataDir>/job.lock                        the one-job-at-a-time lock (D1)
  *     <dataDir>/jobs/<jobId>.log                one run's output stream
  *     <dataDir>/refresh.json                    what a finished job made stale
- *     <dataDir>/__baselines__/                  what `accept` promotes into (D3)
  *
  * Nothing here knows how to run a job. `startJob` takes the work as an
  * argument, so the runner — which reaches for the differ, PNG bytes and a
@@ -36,16 +35,20 @@ import { type CaptureSet, SetsFileSchema } from './summary';
  * Every mode a history row or a lock may RECORD — which is not the same list as
  * the one `POST /api/jobs` accepts, and the difference is deliberate.
  *
- * `run` is here and nowhere else. It was a second name for `capture`: both
- * modes reached `runCheck`, which never read `request.mode` and built the same
- * argv from the same label and filter, so the console offered two tabs that
- * spawned one job. The tab is gone (see `JobRequestSchema`), but the rows it
- * already wrote are not — and this enum is what `HistoryRecordSchema` and the
- * lock validate against. Dropping the literal here would fail every one of
- * those rows, and `readJson` throws the whole file away on a schema miss: a
- * console that had forgotten its own history to tidy up an enum.
+ * `run` and `accept` are here and nowhere else, for one reason each and the same
+ * mechanism. `run` was a second name for `capture`: both modes reached
+ * `runCheck`, which never read `request.mode` and built the same argv from the
+ * same label and filter, so the console offered two tabs that spawned one job.
+ * `accept` promoted into `<dataDir>/__baselines__`, gitignored, which meant the
+ * one control that looked like the sign-off could not produce a commit.
  *
- * So it stays readable and stops being writable. Nothing can produce a new one.
+ * Both tabs are gone (see `JobRequestSchema`), but the rows they already wrote
+ * are not — and this enum is what `HistoryRecordSchema` and the lock validate
+ * against. Dropping either literal would fail every one of those rows, and
+ * `readJson` throws the whole file away on a schema miss: a console that had
+ * forgotten its own history to tidy up an enum.
+ *
+ * So they stay readable and stop being writable. Nothing can produce a new one.
  */
 export const JobModeSchema = z.enum(['capture', 'compare', 'run', 'accept']);
 export type JobMode = z.infer<typeof JobModeSchema>;
@@ -144,13 +147,12 @@ const FilterSchema = z.array(z.string()).optional();
 
 /**
  * What `POST /api/jobs` accepts, per mode. A discriminated union rather than one
- * object with optional fields: a `compare` with no candidate and an `accept`
- * with no report are refusals at the boundary, not `undefined` three calls deep.
+ * object with optional fields: a `compare` with no candidate is a refusal at the
+ * boundary, not `undefined` three calls deep.
  *
- * THREE, where `JobModeSchema` has four. `run` used to be the fourth and did
- * exactly what `capture` does — same `runCheck`, same argv, same set on disk —
- * so a request naming it is now refused here rather than served by a job
- * indistinguishable from the other one.
+ * TWO, where `JobModeSchema` has four. The other two are readable and not
+ * writable — see that schema for why the literals have to survive the tab that
+ * produced them.
  */
 export const JobRequestSchema = z.discriminatedUnion('mode', [
   z.object({
@@ -158,7 +160,6 @@ export const JobRequestSchema = z.discriminatedUnion('mode', [
     baseline: SetLabelSchema,
     candidate: SetLabelSchema,
   }),
-  z.object({ mode: z.literal('accept'), reportId: ReportIdSchema }),
   z.object({ mode: z.literal('capture'), label: SetLabelSchema, filter: FilterSchema }),
 ]);
 
@@ -175,8 +176,8 @@ export type JobRequest = z.infer<typeof JobRequestSchema>;
  *
  * `reportId` is the one field that degrades instead of failing, and it is the
  * only one that can afford to. Everywhere else an id enters this app it is
- * checked — `JobRequestSchema` will not accept an accept-mode request without a
- * `ReportIdSchema` — but nothing checked one on the way BACK off disk, so a
+ * checked — `ReportIdSchema` guards every id this app writes — but nothing
+ * checked one on the way BACK off disk, so a
  * corrupt or hand-edited row could hand a reader a string that addresses
  * something outside the data directory. Checking it here is where that stops.
  *
@@ -259,11 +260,7 @@ export function within(dataDir: string, ...segments: string[]): string {
 
 export const setDir = (dataDir: string, label: string) => within(dataDir, 'sets', label);
 export const reportDir = (dataDir: string, id: string) => within(dataDir, 'reports', id);
-export const baselinesDir = (dataDir: string) => within(dataDir, '__baselines__');
 export const setsFilePath = (dataDir: string) => within(dataDir, 'sets.json');
-
-/** The stamp `accept` restamps, named here because the log names it back. */
-export const BASELINE_ENV_FILE = 'BASELINE_ENV.json';
 
 const lockPath = (dataDir: string) => within(dataDir, 'job.lock');
 const refreshPath = (dataDir: string) => within(dataDir, 'refresh.json');
@@ -537,7 +534,6 @@ export function jobId(startedAt: string, mode: JobMode): string {
 /** What a run is about, in one string the history table can show. */
 export function jobLabel(request: JobRequest): string {
   if (request.mode === 'compare') return `${request.baseline}__${request.candidate}`;
-  if (request.mode === 'accept') return request.reportId;
 
   return request.label;
 }

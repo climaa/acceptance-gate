@@ -381,40 +381,6 @@ main {
   overflow-wrap: anywhere;
 }
 
-/* ---- The accept gate ---------------------------------------------------- */
-
-/* What the baselines require, above what this runner is. Two rows on a phone,
-   label and value paired on a wider column. */
-.vd-fingerprints {
-  margin: 0;
-  display: grid;
-  gap: var(--space-1);
-  font-size: var(--text-sm);
-}
-
-.vd-fingerprints dt {
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  color: var(--color-text-muted);
-}
-
-.vd-fingerprints dd {
-  margin: 0;
-  overflow-wrap: anywhere;
-}
-
-.vd-accept__copied {
-  font-size: var(--text-xs);
-  color: var(--color-success-text);
-}
-
-.vd-accept__pending,
-.vd-accept__empty {
-  margin: 0;
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
-}
-
 /* ---- The confirmations -------------------------------------------------- */
 
 .vd-confirm__question {
@@ -1079,14 +1045,6 @@ main {
   .vd-field__label {
     flex: none;
     width: 6rem;
-  }
-
-  /* The fingerprint pairs read as a table at this width: the two values line up
-     under one another, which is the comparison the gate is making. */
-  .vd-fingerprints {
-    grid-template-columns: auto minmax(0, 1fr);
-    column-gap: var(--space-3);
-    align-items: baseline;
   }
 
   /* The two identity lines read as a table once there is width for one. */

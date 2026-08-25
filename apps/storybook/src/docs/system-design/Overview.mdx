@@ -98,9 +98,13 @@ quoted here rather than restated:
 Since 2026-08-17 the board also carries a second, visual-diff-scoped set (ink-black chips,
 where the blog flows wear terracotta): flows **F1–F4** — the review loop, launching a
 comparison, meeting an `a11y` failure, accepting baselines — and decisions **D1–D3** — one
-job at a time, nothing deleted implicitly, and accept is container-bound and atomic, with
-the UI supplying the host guard the CLI deliberately lacks. They belong to the pages on
-Board 04, and are narrated there.
+job at a time, nothing deleted implicitly, and accept is container-bound and atomic.
+
+F4 and D3 were redrawn on 2026-08-25. Both had depicted the console performing the accept,
+and F4's artifact node named the committed corpus — which the console never wrote: it
+spawned `promote` into its own gitignored data directory. They now describe the two paths
+that do write it, the `accept-baselines` dispatch and the pinned container, and the console
+has no accept tab to draw. They belong to the pages on Board 04, and are narrated there.
 
 ## Board 03 — Pages: the capture matrix
 
@@ -159,10 +163,12 @@ are already settled rather than deferred:
   report page leads with the accessibility section whenever it is non-empty, an `a11y`
   variant shows its violation list where the diff image would be, and reviewing it never
   clears it — only a fix does.
-- **Accepting baselines is container-bound, and the UI is the guard.** The CLI's `accept`
-  deliberately carries no host guard; the console's accept mode refuses to offer a run
-  button unless the runner matches the pinned Playwright image, degrading to a copyable
-  `docker run` command below that bar.
+- **Accepting baselines is a commit, and container-bound.** The CLI's `accept`
+  deliberately carries no host guard, so it runs in the pinned Playwright image — either
+  by dispatching the `accept-baselines` workflow, or by hand locally. The console drew an
+  accept tab for a while; it promoted into its own gitignored data directory rather than
+  the committed corpus, so the one control that looked like the sign-off could not produce
+  one, and it was retired.
 
 The board's mockups resolve their colors through `.pen` variables that mirror the
 `success`/`warning`/`danger` role pairs on

@@ -14,8 +14,8 @@
  * describes, so what this app infers is what it inferred before — `z.enum(TIERS)`
  * over the `Tier` union, `keyof typeof VIEWPORTS` over the two viewport names.
  * The values themselves are the real module's at runtime, and the suites that
- * matter read them from there: `__tests__/accept-gate.test.ts` compares the
- * pinned image against `HOST.image`, `__tests__/summary.test.ts` closes the enum
+ * matter read them from there: `__tests__/host.test.ts` and
+ * `__tests__/docker.test.ts` pin the image against `HOST.image`, `__tests__/summary.test.ts` closes the enum
  * loop against the committed fixture, and `__tests__/runner.test.ts` puts
  * `parseVariantKey` through a real corpus.
  */
