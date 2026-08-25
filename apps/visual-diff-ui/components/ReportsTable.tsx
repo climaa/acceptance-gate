@@ -16,10 +16,12 @@ import type { ReportListEntry } from '@/lib/data';
  * reviewer's side, indistinguishable from a delete that silently failed. It is
  * live now, behind the confirmation D2 requires.
  *
- * It is absent rather than disabled off localhost, which is the rule the run
- * panel already keeps. A deployed console is a screen for reading reports, and
- * the route refuses the request anyway — a button whose only outcome is a
- * refusal is an invitation to look for the way to enable it.
+ * It is absent rather than disabled on any console that cannot mutate, which is
+ * the rule the run panel already keeps. Two consoles cannot: a deployed one, and
+ * one serving the committed fixtures because no data directory was configured.
+ * Both refuse the request at the route — `NOT_LOCAL` and `SAMPLE_DATA` — and a
+ * button whose only outcome is a refusal is an invitation to look for the way to
+ * enable it.
  */
 
 const REPORTS_TABLE_LABEL = 'Reports';
@@ -40,7 +42,7 @@ const REPORT_COLUMNS: readonly TableColumn[] = [
 function reportRow(
   report: ReportListEntry,
   date: string | null,
-  isLocal: boolean,
+  frozen: boolean,
 ): TableRow {
   return {
     key: report.id,
@@ -54,7 +56,7 @@ function reportRow(
         title: report.id,
       },
       date ?? UNDATED,
-      isLocal ? <DeleteReportButton id={report.id} key="delete" /> : null,
+      frozen ? null : <DeleteReportButton id={report.id} key="delete" />,
     ],
   };
 }
@@ -64,17 +66,18 @@ export interface ReportsTableProps {
   /** When each report's run finished, by report id. Sparse on purpose: a report
    *  whose run is not in this history has no date this instance can vouch for. */
   dates: Readonly<Record<string, string>>;
-  /** Whether the request came from the machine running this console. A deployed
-   *  one draws no delete at all — see the header. */
-  isLocal: boolean;
+  /** Whether this console can change anything at all — `isSample || !isLocal`,
+   *  derived once by `DashboardTemplate` rather than twice here and in
+   *  `SetsTable`. A frozen one draws no delete at all; see the header. */
+  frozen: boolean;
 }
 
-export function ReportsTable({ reports, dates, isLocal }: ReportsTableProps) {
+export function ReportsTable({ reports, dates, frozen }: ReportsTableProps) {
   return (
     <Table
       label={REPORTS_TABLE_LABEL}
       columns={REPORT_COLUMNS}
-      rows={reports.map((report) => reportRow(report, dates[report.id] ?? null, isLocal))}
+      rows={reports.map((report) => reportRow(report, dates[report.id] ?? null, frozen))}
     />
   );
 }

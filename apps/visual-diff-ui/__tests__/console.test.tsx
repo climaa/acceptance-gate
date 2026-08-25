@@ -109,15 +109,21 @@ interface ConsoleContents {
    *  that is over. The one case that sets it is the one about a live job. */
   runningId?: string | null;
   /** True by default: this suite is about a console someone is looking at on
-   *  their own machine, which is the only kind that can mutate anything. */
+   *  their own machine, which is one of the two things a console needs to be
+   *  able to mutate anything. */
   isLocal?: boolean;
+  /** False by default — see the note below. The cases that set it are the ones
+   *  about a console serving the committed fixtures, which is what a checkout
+   *  with no capture yet looks like on your own machine. */
+  isSample?: boolean;
 }
 
 /** The console with everything populated, unless a case says otherwise.
  *
- *  Never in sample mode: this suite is about the read surface, and the write
- *  half's own suites (run-panel, current-job, confirm-dialogs) own what the
- *  controls do. The two client islands in the right column poll on mount and
+ *  Not in sample mode unless a case asks: this suite is about the read surface,
+ *  and the write half's own suites (run-panel, current-job, confirm-dialogs) own
+ *  what the controls do. What IS here is whether a destructive control is drawn
+ *  at all, which is the template's decision and not theirs. The two client islands in the right column poll on mount and
  *  jsdom answers neither — both treat an unreachable API as "nothing running",
  *  which is what keeps this suite about the tables. */
 function consoleWith({
@@ -128,6 +134,7 @@ function consoleWith({
   corpus = null,
   runningId = null,
   isLocal = true,
+  isSample = false,
 }: ConsoleContents = {}) {
   return (
     <DashboardTemplate
@@ -135,7 +142,7 @@ function consoleWith({
       sizes={sizes}
       reports={reports}
       history={history}
-      isSample={false}
+      isSample={isSample}
       isLocal={isLocal}
       corpus={corpus}
       runningId={runningId}
@@ -222,6 +229,23 @@ describe('the snapshot sets panel', () => {
       '95.5 MB',
       '',
     ]);
+  });
+
+  /**
+   * The other console that cannot mutate, and the one that is easy to forget:
+   * on your own machine, with no data directory behind it.
+   *
+   * A fresh checkout running `pnpm dev` before it has captured anything is
+   * exactly this — local, and serving the committed fixtures. Every mutating
+   * route refuses it with `SAMPLE_DATA` because those are this repo's files and
+   * not an instance's state, so a delete here could only ever answer with a
+   * refusal. The run panel has always disabled its controls on this console;
+   * the tables did not until they were given `frozen` rather than `isLocal`.
+   */
+  it('draws no delete on a local console showing the committed fixtures', () => {
+    render(consoleWith({ sets: [CLEAN], isSample: true }));
+
+    expect(cellsOf(firstRowOf('Snapshot sets')).at(-1)).toBe('');
   });
 
   /**
@@ -423,6 +447,16 @@ describe('the retention control', () => {
     expect(screen.queryByRole('spinbutton', { name: 'keep latest' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'prune the rest' })).toBeNull();
   });
+
+  /** Same on a local console serving the fixtures: `POST /api/prune` refuses it
+   *  with `SAMPLE_DATA`, and pruning what a repo committed is not a thing this
+   *  console does. */
+  it('is absent on a local console showing the committed fixtures', () => {
+    render(consoleWith({ isSample: true }));
+
+    expect(screen.queryByRole('spinbutton', { name: 'keep latest' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'prune the rest' })).toBeNull();
+  });
 });
 
 describe('the history panel', () => {
@@ -590,6 +624,15 @@ describe('the reports panel', () => {
     const row = firstRowOf('Reports');
 
     expect(cellsOf(row)).toEqual([REPORT.id, '2026-08-17', '']);
+  });
+
+  /** And on a local console with no data directory behind it, for the same
+   *  reason the sets table draws none: `DELETE /api/reports/[id]` refuses the
+   *  committed fixtures with `SAMPLE_DATA`. */
+  it('draws no delete on a local console showing the committed fixtures', () => {
+    render(consoleWith({ isSample: true }));
+
+    expect(cellsOf(firstRowOf('Reports'))).toEqual([REPORT.id, '2026-08-17', '']);
   });
 
   it('has no date for a report no run in this history claims', () => {

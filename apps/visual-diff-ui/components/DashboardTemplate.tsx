@@ -129,6 +129,15 @@ export function DashboardTemplate({
   // see HistoryTable.tsx for what the two disagreeing looked like.
   const reportIds = new Set(reports.map((report) => report.id));
 
+  // Whether this console can change anything at all, named once and passed down
+  // rather than re-derived at each destructive control. Two consoles cannot: a
+  // deployed one, which every mutating route refuses with `NOT_LOCAL`, and one
+  // with no data directory behind it, which they refuse with `SAMPLE_DATA`
+  // because the committed fixtures are this repo's files and not an instance's
+  // state. `RunPanel` computes the same thing under the name `frozen`; it takes
+  // both halves because it also says which of the two it is, in different words.
+  const frozen = isSample || !isLocal;
+
   return (
     <div className="vd-console">
       <Stack gap={6} className="vd-console__column">
@@ -138,7 +147,7 @@ export function DashboardTemplate({
           {sets.length === 0 ? (
             <EmptyState message="This instance has captured nothing yet — run a capture and the set appears here." />
           ) : (
-            <SetsTable sets={sets} sizes={sizes} isLocal={isLocal} />
+            <SetsTable sets={sets} sizes={sizes} frozen={frozen} />
           )}
 
           {/* The pickers list the corpus alongside the captured sets, which is what
@@ -146,13 +155,14 @@ export function DashboardTemplate({
               this instance accumulated, and the corpus is not prunable — the
               delete route refuses it by name.
 
-              The pickers stay on a deployed console — comparing is reading, and
-              that is what a deployment is for. The prune does not: `POST /api/prune`
-              refuses off localhost, and this is the only bulk destruction here,
-              so a control that could only ever answer with a refusal is left out
-              entirely rather than drawn disabled. */}
+              The pickers stay wherever there is something to compare — comparing
+              is reading, and that is what a deployed or sample console is for.
+              The prune does not: `POST /api/prune` refuses both, and this is the
+              only bulk destruction here, so rather than a disabled button the
+              whole control goes — a keep-latest number with no prune behind it
+              states a retention policy the console cannot carry out. */}
           {compareLabels.length > 1 && <ComparePickers labels={compareLabels} />}
-          {isLocal && sets.length > 0 && (
+          {!frozen && sets.length > 0 && (
             <RetentionControl labels={sets.map((set) => set.label)} />
           )}
         </Panel>
@@ -164,7 +174,7 @@ export function DashboardTemplate({
             <ReportsTable
               reports={reports}
               dates={reportDates(history)}
-              isLocal={isLocal}
+              frozen={frozen}
             />
           )}
         </Panel>
