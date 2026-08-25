@@ -198,7 +198,7 @@ describe('renderSummaryMd', () => {
     expect(md).not.toContain('To fix');
   });
 
-  it('remediates with a container-only recipe, not a bare-metal command', () => {
+  it('offers the dispatch before the container recipe, and no bare-metal command', () => {
     const summary = buildSummary([row(), changedRow()], ENV);
 
     const md = renderSummaryMd(summary);
@@ -213,6 +213,11 @@ describe('renderSummaryMd', () => {
     expect(md).toContain('inside the pinned container');
     expect(md).toContain('no host guard');
     expect(md).toContain('packages/visual-diff/README.md');
+    // The hardware-free path is named, and named FIRST: a reader without Docker who
+    // meets the container paragraph before the dispatch has already been told the only
+    // way in needs hardware they haven't got, and stops reading.
+    expect(md).toContain('accept-baselines');
+    expect(md.indexOf('accept-baselines')).toBeLessThan(md.indexOf('inside the pinned container'));
   });
 
   it('formats a size change and a strict-mode (zero-allowance) ratio', () => {

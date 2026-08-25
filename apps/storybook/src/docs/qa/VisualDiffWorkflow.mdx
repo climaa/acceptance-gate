@@ -44,10 +44,10 @@ flowchart TD
     H --> K
     I --> K
     J --> K
-    K --> L["CI posts summary.md as a sticky PR comment, uploads report.html"]
+    K --> L["CI posts summary.md as a sticky PR comment (plus report/run/dispatch links), uploads report.html"]
     L --> M["Job fails loudly on anything but unchanged - visible, never a required check"]
     M --> N{"Developer reviews the report"}
-    N -->|"intentional visual change"| O["pnpm visual-diff:accept, locally"]
+    N -->|"intentional visual change"| O["dispatch accept-baselines, or pnpm visual-diff:accept locally"]
     O --> P["commit the updated __baselines__/*.png in the SAME PR"]
     N -->|"errored"| Q["fix the story or capture pipeline - accept cannot write over an error"]
     N -->|"unintended regression"| R["fix the component, push again"]
@@ -117,14 +117,19 @@ git commit -m "chore(visual-diff): accept baseline for <what changed>"
 1. Push your change. Wait for the `visual-diff` check on the PR (it's not required, but give
    it a minute — it runs alongside the rest of the pipeline).
 2. If it's green (`unchanged`), you're done — nothing else to read here.
-3. If it's red, open the sticky PR comment first. It's the same content as `report.html`'s
-   text summary — bucket counts, a worst-first table, capped at 20 rows.
+3. If it's red, open the sticky PR comment first. Its body is `report.html`'s text summary
+   — bucket counts, a worst-first table, capped at 20 rows — with a link footer the file
+   itself does not carry.
 4. For the full picture (every variant, the actual images, the blink/onion-skin compare
-   tools), download the `visual-diff-report` artifact from the workflow run and open
-   `report.html` locally — no server needed, it's fully self-contained.
+   tools), follow the comment's **report.html** link: it goes straight to the
+   `visual-diff-report` artifact for that run. Download it, unzip, untar, open the file —
+   no server needed, it's fully self-contained.
 5. Triage by bucket, using the table above. `errored` first (nothing else can be accepted
    until it's clean), then `changed`/`a11y` (read the diff, decide if it's right), then
    `added`/`removed` (confirm the addition or removal is intentional).
-6. If everything checks out: `pnpm visual-diff:accept` locally, commit the updated
-   `__baselines__/`, push to the same branch.
+6. If everything checks out, accept. Either dispatch `accept-baselines` on the branch —
+   the comment links it, and it needs no Docker and no arm64 hardware — or run
+   `pnpm visual-diff:accept` locally, commit the updated `__baselines__/`, and push to the
+   same branch. The dispatch commits for you; note that its push starts no workflows, so
+   push again (or close and reopen) before expecting the gate to re-run.
 7. Merge. The baseline `main` carries now includes your change.

@@ -203,24 +203,41 @@ function renderWarnings(summary) {
   return ['### Warnings', '', ...lines].join('\n');
 }
 
+/** The hardware-free path, and the step that must not need a checkout to follow. This is
+ *  the one place in the comment that restates mechanism `README.md` owns — deliberately,
+ *  against the rule below, because a reader who has to open `packages/visual-diff` to
+ *  learn the primary way forward has already lost the thing this step exists to give
+ *  them. The wrinkle clause is the load-bearing half: a GITHUB_TOKEN push starts no
+ *  workflows, so without it the reader dispatches, gets a commit, and waits on a gate
+ *  that will never re-run. `pr.yml` appends the link; this renderer holds no URLs. */
+const DISPATCH_ACCEPT_STEP = [
+  'If the changes are intentional, dispatch the `accept-baselines` workflow on this',
+  'branch (maintainers) — nothing to install, no Docker, no arm64 hardware. It runs the',
+  'accept and commits the baselines back to this PR. One wrinkle: that commit re-runs no',
+  'checks, so push anything (or close and reopen) to re-arm the gate.',
+].join(' ');
+
 /** Linked, never restated: the README stays the single source for the container recipe,
  *  while this is the copy a reader actually sees. It names the bare-metal risk rather
  *  than a command because `accept` has no host guard — a bare-metal run goes green and
  *  the corrupted corpus only surfaces when CI's guard trips. Fragments join on a space,
  *  so re-wrapping the paragraph can't drop a trailing one and run two words together. */
 const CONTAINER_ACCEPT_STEP = [
-  'If the changes are intentional, accept them **inside the pinned container**, not',
-  'bare-metal — `accept` carries no host guard, so a bare-metal run succeeds but',
-  "silently corrupts the baseline corpus with your host's font rendering. See",
-  '`packages/visual-diff/README.md` → "Running the pinned container locally" for the',
-  'exact commands.',
+  'Accepting on your own machine instead: it has to run **inside the pinned container**.',
+  '`accept` carries no host guard, so a bare-metal run succeeds but silently corrupts the',
+  "baseline corpus with your host's font rendering — `packages/visual-diff/README.md` →",
+  '"Running the pinned container locally" has the exact commands.',
 ].join(' ');
 
+/** Dispatch before container, and not for symmetry: the reader without Docker who meets
+ *  the container paragraph first has been told the only way in needs hardware they
+ *  haven't got, and stops reading before the step that would have unblocked them. */
 const REMEDIATION = [
   '### To fix',
   '',
   "1. Review `report.html` for every failing variant's diff.",
-  `2. ${CONTAINER_ACCEPT_STEP}`,
+  `2. ${DISPATCH_ACCEPT_STEP}`,
+  `3. ${CONTAINER_ACCEPT_STEP}`,
 ].join('\n');
 
 /** The PR-comment markdown. Its only input is the `summary.json` object, so the file
