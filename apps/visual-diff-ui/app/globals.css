@@ -703,7 +703,11 @@ main {
 /* ---- The story card ----------------------------------------------------- */
 
 .vd-card {
-  border: 1px solid var(--color-border);
+  /* The card's own edge, named because the pinned head is sized against it and
+     has to know its width — three literals agreeing today is not one value. */
+  --vd-card-border: 1px;
+
+  border: var(--vd-card-border) solid var(--color-border);
   border-radius: var(--radius-lg);
   padding: var(--space-4);
   min-width: 0;
@@ -1133,10 +1137,22 @@ main {
     position: sticky;
     inset-block-start: var(--vd-section-head);
     z-index: 1;
-    margin: calc(var(--space-4) * -1) calc(var(--space-4) * -1) 0;
+    margin: calc((var(--space-4) + var(--vd-card-border)) * -1)
+      calc((var(--space-4) + var(--vd-card-border)) * -1) 0;
     padding: var(--space-4) var(--space-4) var(--space-2);
-    border-block-end: 1px solid var(--color-border);
     background: var(--color-bg);
+
+    /* Out to the card's border box, not its padding box. Inset by that last
+       pixel, the rule underneath stops just short of the sides at both ends and
+       reads as a divider with a margin rather than the card's own. Bleeding
+       over the border puts this row on top of the card's start, inline-start
+       and inline-end edges, so it draws all three itself, at the card's weight,
+       colour and radius: the same outline either way, drawn by whichever box is
+       in front. Square corners here would paint background over the arc and cut
+       the card's top corners off. */
+    border: var(--vd-card-border) solid var(--color-border);
+    border-start-start-radius: var(--radius-lg);
+    border-start-end-radius: var(--radius-lg);
   }
 
   /* Two opaque bars now hang over the top of the scroll port, and the browser's
