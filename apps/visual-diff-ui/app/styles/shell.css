@@ -1,0 +1,64 @@
+/* Native surfaces — scrollbars, the caret, `<select>` popups, focus rings the
+   UA draws — take their palette from `color-scheme`, never from our tokens, so
+   a dark console keeps light scrollbars without this. Bound to the same
+   `[data-theme]` attribute the toggle writes rather than to a media query,
+   which is the one theme mechanism CODING_STANDARDS allows: an OS in dark mode
+   must not repaint the inputs of a page the reader chose to keep light. */
+:root {
+  color-scheme: light;
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+}
+
+main {
+  padding-block: var(--space-8);
+  min-height: 60vh;
+}
+
+/* The header's brand line, which is also the console's heading — the board
+   draws the wordmark and its tagline as one row, not as a title above the
+   panels. */
+.vd-brand {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.vd-brand__mark {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
+}
+
+.vd-brand__tagline {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+/* Sample data is a property of the whole screen, so the notice sits above
+   everything the screen shows rather than beside one panel. */
+.vd-sample {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-block-end: var(--space-6);
+}
+
+.vd-sample__note {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+/* Counts, pixel numbers and ids: figures that line up column-wise, and a key
+   that has to be readable character by character when a variant is looked up. */
+.vd-count,
+.vd-report-id,
+.vd-mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}

@@ -1,0 +1,158 @@
+/* ---- The comparison modal ----------------------------------------------- */
+
+.vd-compare__head {
+  justify-content: space-between;
+}
+
+/* The thumb bar: the full width of the sheet below the breakpoint, so every
+   mode is a target the thumb reaches without crossing it. */
+.vd-compare__modes {
+  width: 100%;
+}
+
+.vd-compare__title {
+  margin: 0;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vd-compare__metric,
+.vd-compare__sides,
+.vd-compare__hint {
+  margin: 0;
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+/* The stage scrolls and the scroll stops here: a flick that reaches the end of
+   a screenshot must not carry on into the report behind the modal. The
+   checkerboard is what makes a transparent pixel visible as one — a shot on a
+   flat ground would read as opaque wherever the ground shows through.
+
+   A fixed height rather than a cap: the six modes show images of three
+   different intrinsic sizes — a variant records a size delta, and the diff is
+   the union of both sides — so a stage sized by its contents resizes the whole
+   dialog on every mode change, and once a second in `blink`. Holding the frame
+   still is the whole fix; the shot inside is never scaled, because a viewer for
+   one-pixel differences cannot resample the evidence to make it fit.
+
+   `dvh`, not `vh`: `vh` measures the viewport with the mobile URL bar retracted,
+   which is space the reader does not have while it is showing — a stage sized
+   from it pushes the scrubber and the hint off a phone, and the stage contains
+   its own overscroll, so there is little left to grab to scroll them back. */
+.vd-compare__stage {
+  position: relative;
+  block-size: 60dvh;
+  overflow: auto;
+  overscroll-behavior: contain;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background-color: var(--color-bg-subtle);
+}
+
+/* The checkerboard is what makes a transparent pixel visible as one — a shot on
+   a flat ground would read as opaque wherever the ground shows through. Behind
+   the shot rather than across the stage: the stage is now taller than most
+   shots, and a checkerboard filling the space under one would be claiming
+   transparency for pixels that are not in the image at all. */
+.vd-compare__shot {
+  display: block;
+  width: 100%;
+  height: auto;
+  background-image: repeating-conic-gradient(
+    var(--color-bg-muted) 0% 25%,
+    transparent 0% 50%
+  );
+  background-size: var(--space-4) var(--space-4);
+}
+
+/* 1:1 CSS pixels, and every pixel drawn as itself: a scaled screenshot
+   interpolates exactly the one-pixel differences this whole tool exists to
+   find. The stage scrolls to reach the rest of the shot. */
+.vd-compare__shot--actual {
+  width: auto;
+  max-width: none;
+  image-rendering: pixelated;
+}
+
+.vd-compare__absent {
+  margin: 0;
+  padding: var(--space-6);
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.vd-compare__split {
+  position: relative;
+}
+
+/* The candidate over the baseline, clipped at the divider — the clip is inline,
+   because it is the one value the pointer decides. */
+.vd-compare__over {
+  position: absolute;
+  inset: 0;
+}
+
+.vd-compare__divider {
+  position: absolute;
+  inset-block: 0;
+  width: 2px;
+  background: var(--color-accent);
+  cursor: ew-resize;
+  /* The gesture is the drag itself, so the browser must not read it as a pan. */
+  touch-action: none;
+}
+
+.vd-compare__handle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--space-6);
+  height: var(--space-6);
+  border-radius: var(--radius-full);
+  background: var(--color-accent);
+  box-shadow: var(--shadow-md);
+  transform: translate(-50%, -50%);
+}
+
+/* ---- The scrubber ------------------------------------------------------- */
+
+/* The divider's accessible twin: the same number, reachable from the keyboard
+   and wide enough to drag with a thumb. */
+.vd-scrub {
+  position: relative;
+  height: var(--space-6);
+  border-radius: var(--radius-full);
+  background: var(--color-bg-muted);
+  cursor: ew-resize;
+  touch-action: none;
+}
+
+.vd-scrub:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+.vd-scrub__fill {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  border-radius: inherit;
+  background: var(--color-accent-subtle);
+}
+
+.vd-scrub__knob {
+  position: absolute;
+  top: 50%;
+  width: var(--space-5);
+  height: var(--space-5);
+  border-radius: var(--radius-full);
+  background: var(--color-accent);
+  transform: translate(-50%, -50%);
+}

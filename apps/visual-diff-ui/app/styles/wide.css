@@ -1,0 +1,165 @@
+/* ---- From 768 px: two columns ------------------------------------------- */
+
+@media (min-width: 768px) {
+  /* The board's desktop layout: sets and reports left, jobs and history right.
+     `minmax(0, 1fr)` rather than `1fr` — a grid track's default minimum is its
+     content, so a long branch name would widen the column past the viewport
+     instead of letting the cell that owns the truncation do its job. */
+  .vd-console {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  /* Two rows, filled column-first — see `.vd-filter__tiers`. Below the
+     breakpoint the panel is one narrow column and the tiers stay stacked, which
+     is what the bare rule already does. */
+  .vd-filter__tiers {
+    grid-template-rows: repeat(2, auto);
+    grid-auto-flow: column;
+    column-gap: var(--space-4);
+  }
+
+  /* A field is a labelled row once there is width for one; stacked below, where
+     an input beside its label would leave neither enough room. */
+  .vd-field {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  .vd-field__label {
+    flex: none;
+    width: 6rem;
+  }
+
+  /* The two identity lines read as a table once there is width for one. */
+  .vd-report__sets {
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: var(--space-3);
+    align-items: baseline;
+  }
+
+  .vd-review__search {
+    min-width: 16rem;
+  }
+
+  /* The tier a reviewer is in and the story they are judging both have to stay
+     on screen: a card can be four variant rows of full-height screenshots tall,
+     and the checkbox that marks it reviewed is in the second of these rows —
+     scrolling back up to find it is the whole friction. Stacked rather than
+     both at zero, so neither pins over the other.
+
+     Only from this width. Below it both rows wrap to several lines, and a
+     multi-line bar pinned to the top of a phone is most of the viewport. */
+  .vd-section {
+    /* The pinned height of the tier row, written once and read by both rules
+       below — the offset the card head hangs at has to be the height the row
+       above it actually occupies, and two literals agreeing today is not the
+       same as one value. `min-block-size` floors it here; a tier row that grew
+       past this (a very long section name wrapping, a fourth control) would
+       still slide the card head under it, so keep the row to one line. */
+    --vd-section-head: var(--space-10);
+  }
+
+  .vd-section__head {
+    position: sticky;
+    inset-block-start: 0;
+    z-index: 2;
+    min-block-size: var(--vd-section-head);
+    padding-block-start: var(--space-2);
+    background: var(--color-bg);
+  }
+
+  /* Opaque, and bled over the card's own padding: the card is transparent on
+     the page background, so an unbacked row would have screenshots scrolling
+     through it, and one inset by the padding would leave the card's border
+     showing down either side of it. The rule underneath says where the pinned
+     row ends — without it, screenshots scroll up and vanish at an invisible
+     line. */
+  .vd-card__head {
+    position: sticky;
+    inset-block-start: var(--vd-section-head);
+    z-index: 1;
+    margin: calc((var(--space-4) + var(--vd-card-border)) * -1)
+      calc((var(--space-4) + var(--vd-card-border)) * -1) 0;
+    padding: var(--space-4) var(--space-4) var(--space-2);
+    background: var(--color-bg);
+
+    /* Out to the card's border box, not its padding box. Inset by that last
+       pixel, the rule underneath stops just short of the sides at both ends and
+       reads as a divider with a margin rather than the card's own. Bleeding
+       over the border puts this row on top of the card's start, inline-start
+       and inline-end edges, so it draws all three itself, at the card's weight,
+       colour and radius: the same outline either way, drawn by whichever box is
+       in front. Square corners here would paint background over the arc and cut
+       the card's top corners off. */
+    border: var(--vd-card-border) solid var(--color-border);
+    border-start-start-radius: var(--radius-lg);
+    border-start-end-radius: var(--radius-lg);
+  }
+
+  /* Two opaque bars now hang over the top of the scroll port, and the browser's
+     own scrolling knows nothing about them: Tab, Shift+Tab, find-in-page and a
+     `#vd-card-…` fragment all use a minimal scroll that parks the target
+     underneath one of them. A focus ring nobody can see is not a focus
+     indicator — WCAG 2.4.11 Focus Not Obscured, and 2.4.7 in practice. Stated
+     once, for every one of those mechanisms at once. `useReportKeys` centres
+     the card it focuses, so `j`/`k`/`n` never needed this; everything else did. */
+  html {
+    scroll-padding-block-start: calc(var(--space-10) + var(--space-12));
+  }
+
+  /* Every frame the same box, so a row of three is one comparison rather than
+     three ragged columns and every row on the page is the same height.
+
+     5 / 2 is the shape a desktop shot actually has: not the capture viewport,
+     but `#storybook-root` inside it — as wide as the viewport allows and only
+     as tall as the story, which lands around 1248×470 in practice. Sizing the
+     tile to the viewport would letterbox a third of every desktop row away to
+     make room for height no shot uses. A mobile shot letterboxes the other way
+     into the same box, which is the point: its row is the height of a desktop
+     row instead of three times it.
+
+     Only from this width, because only from this width is there a row of three
+     to make uniform. Below it the frames are already one per line, so there is
+     nothing to line up and a ratio would do nothing but shrink a phone
+     screenshot — the one place the full column width is all the reader has. */
+  .vd-shot__frame {
+    aspect-ratio: 5 / 2;
+  }
+
+  /* Whatever is standing in the frame right now — the shot, the placeholder
+     while it arrives, or the sentence explaining that it never will — fills it,
+     so the three states are one box and the row never reflows between them. The
+     frame stays `display: block`: a grid row is auto-sized by its content, and
+     a percentage height against it resolves to the image's own, which is
+     exactly the height being normalised away. */
+  .vd-shot__frame > * {
+    block-size: 100%;
+  }
+
+  /* The atom sizes its image to the frame's width; here the frame is what is
+     fixed and the image fits inside it. `contain`, never `cover`: this is
+     evidence, and a cropped thumbnail hides exactly the band a reviewer came to
+     look at. Nothing is judged at this size — the modal is where the pixels are
+     read 1:1, and it still resamples nothing. */
+  .vd-shot__frame .ds-thumbnail__img {
+    inline-size: 100%;
+    object-fit: contain;
+  }
+
+  /* The three shots side by side, which is the comparison the viewer is named
+     after — `minmax(0, 1fr)` so a wide screenshot cannot widen its column past
+     the two beside it. */
+  .vd-three-up__frames {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  /* A row of pointer targets in the header, sized by its own contents. */
+  .vd-compare__modes {
+    width: auto;
+  }
+
+  .vd-compare__stage {
+    block-size: 70dvh;
+  }
+}

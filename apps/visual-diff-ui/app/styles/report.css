@@ -1,0 +1,257 @@
+/* ---- The report: header, review bar, sections, cards --------------------- */
+
+/* The report's own landmark. The app shell already renders a `banner` at body
+   scope, so this one is labelled — `banner "report"` — and a reader hears which
+   is which. */
+.vd-report__header {
+  border-block-end: 1px solid var(--color-border);
+  padding-block-end: var(--space-4);
+}
+
+.vd-report__back {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  text-decoration: none;
+}
+
+.vd-report__back:hover {
+  color: var(--color-text);
+}
+
+.vd-report-id {
+  margin: 0;
+  font-size: var(--text-base);
+  font-weight: var(--weight-bold);
+  overflow-wrap: anywhere;
+}
+
+/* Everything about the run that is not its identity, behind one disclosure: the
+   report's first screenful is otherwise five lines of provenance above the work,
+   and a reviewer scrolling image comparisons wants that height back. Open by
+   default — folding it is a deliberate click, and the two capture sets are what
+   a reader arriving at a shared link needs first. */
+.vd-report__more {
+  font-size: var(--text-sm);
+}
+
+.vd-report__more summary {
+  cursor: pointer;
+  touch-action: manipulation;
+  color: var(--color-text-muted);
+}
+
+.vd-report__more[open] summary {
+  margin-block-end: var(--space-3);
+}
+
+.vd-report__run-info {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+/* One row per side, label above value below 768 px and paired across from it
+   above — the same shape the fingerprint pairs take, for the same reason. */
+.vd-report__sets {
+  margin: 0;
+  display: grid;
+  gap: var(--space-1);
+  font-size: var(--text-sm);
+}
+
+.vd-report__side {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+  color: var(--color-text-muted);
+}
+
+.vd-report__identity {
+  margin: 0;
+  min-width: 0;
+}
+
+/* A label and a branch name both truncate, and both carry the whole value on
+   `title` — the pattern the console's tables already use. */
+.vd-report__label {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: bottom;
+}
+
+.vd-report__meta {
+  color: var(--color-text-muted);
+}
+
+/* ---- The review bar ----------------------------------------------------- */
+
+.vd-review {
+  padding-block: var(--space-3);
+  border-block: 1px solid var(--color-border);
+}
+
+.vd-review__search {
+  min-width: 12rem;
+}
+
+/* The committed corpus, above the sets this instance captured. Bordered rather
+   than merely spaced: it is a different kind of thing from the rows below it, and
+   the border is what says so without a heading competing with the panel's own. */
+.vd-canonical {
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+/* Wraps to as many lines as the panel's width needs — four facts on one line at
+   desktop, stacked in the mobile column. */
+.vd-canonical__facts {
+  row-gap: var(--space-2);
+}
+
+/* The filter picker. A fieldset rather than a div, so one `disabled` reaches every
+   box inside it — which is why the border and padding a fieldset brings are reset
+   here rather than fought elsewhere. */
+.vd-filter {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+/* The four tiers, one column at a time until there is room for two.
+
+   `grid-auto-flow: column` over two explicit rows fills DOWN rather than across,
+   so the reading order of a column is the corpus's own order: atoms, molecules,
+   then organisms, templates. Four is not a guess — `TIERS` in
+   packages/visual-diff/src/policy.mjs is Atomic Design's four, so two rows is
+   exactly two columns.
+
+   `align-items: start` because a tier expands in place: opening `atoms` makes
+   its row as tall as thirteen components, and the tier beside it should stay at
+   the top of that row rather than centre itself against the gap. */
+.vd-filter__tiers {
+  display: grid;
+  gap: var(--space-2);
+  align-items: start;
+  min-width: 0;
+}
+
+.vd-filter__tier {
+  min-width: 0;
+}
+
+/* The disclosure beside a tier's box. Monospace and muted like a field label: it
+   carries a count and a sign, and neither is prose. */
+.vd-filter__toggle {
+  padding: 0 var(--space-1);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.vd-filter__toggle:hover {
+  color: var(--color-text);
+}
+
+/* Indented under the tier that owns them, on the same rhythm the report's tier
+   sections use. */
+.vd-filter__components {
+  padding-left: var(--space-5);
+}
+
+/* Decorative and aria-hidden: the number beside it is what is announced, and a
+   bar that was also read out would say the same thing twice. */
+.vd-review__bar {
+  display: block;
+  inline-size: 6rem;
+  block-size: var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--color-bg-muted);
+  overflow: hidden;
+}
+
+.vd-review__bar-fill {
+  display: block;
+  block-size: 100%;
+  background: var(--color-accent);
+  transition: inline-size var(--duration-base) var(--ease-out);
+}
+
+.vd-review__percent {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+/* ---- The corpus warnings ------------------------------------------------ */
+
+/* Evidence, not a toast: the warning surface, and nothing that dismisses it. */
+.vd-warnings {
+  background: var(--color-warning-surface);
+  color: var(--color-warning-fg);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  font-size: var(--text-sm);
+}
+
+.vd-warnings__list {
+  margin: 0;
+  padding-inline-start: var(--space-5);
+}
+
+/* ---- The sections ------------------------------------------------------- */
+
+.vd-section {
+  min-width: 0;
+}
+
+.vd-section__head {
+  border-block-end: 1px solid var(--color-border);
+  padding-block-end: var(--space-2);
+}
+
+.vd-section__title {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-normal);
+  color: var(--color-text-muted);
+}
+
+.vd-section__collapse {
+  appearance: none;
+  border: 0;
+  background: none;
+  margin-inline-start: auto;
+  padding: var(--space-1) var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.vd-section__collapse:hover {
+  color: var(--color-text);
+}
+
+.vd-section__note {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-warning-text);
+}
+
+/* A viewport the whole tier is never captured at. Muted rather than warned —
+   the note beside it reports a verdict that outranks the pixels; this one only
+   explains why a row a reader might go looking for was never taken. */
+.vd-section__viewports {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
