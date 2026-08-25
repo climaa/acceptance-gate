@@ -9,18 +9,11 @@ import {
   useReducer,
   useState,
 } from 'react';
-import { Button, CodeBlock, IconButton, Spinner, Stack } from '@gate/ui';
+import { Button, IconButton, Spinner, Stack } from '@gate/ui';
 import { useDismissedJob } from '@/hooks/useDismissedJob';
 import { useMutation } from '@/hooks/useMutation';
-import { useReviewMarks } from '@/hooks/useReviewMarks';
 import { Note } from './Note';
-import {
-  ACCEPT_COMMAND,
-  ACCEPT_IMAGE,
-  type AcceptGate,
-  acceptGate,
-} from '@/lib/accept-gate';
-import type { ReportListEntry } from '@/lib/data';
+import { HOST } from '@gate/visual-diff/policy';
 import type { RunnerEnv } from '@/lib/host';
 import type { StoryTier } from '@/lib/stories';
 import { CURRENT_JOB_ANCHOR, useCurrentJob, usePollNow } from './CurrentJob';
@@ -31,7 +24,7 @@ import { FilterPicker } from './FilterPicker';
  * about being. Flag names appear verbatim: `--filter` is spelled the way a
  * reviewer would type it, because what this panel does is compose an invocation.
  *
- * Three modes, and exactly the three the runner has. Two decisions live here:
+ * Two modes, and exactly the two the runner has. One decision lives here:
  *
  *  - D1, one job at a time. While the lock is held there is no start button at
  *    all — in its place stands the refusal the server would have answered a
@@ -39,36 +32,39 @@ import { FilterPicker } from './FilterPicker';
  *    running. A second start would be refused anyway (`POST /api/jobs` answers
  *    409), so offering the click would be offering a refusal; saying nothing at
  *    all would be a console that has silently stopped working.
- *  - D3, accept is container-bound. The CLI's `accept` has no host guard — run
- *    bare-metal it silently writes host-rendered baselines and stamps them as
- *    pinned-container output. This panel is that guard: off the pinned image the
- *    run button is absent from the DOM rather than disabled, and the mode
- *    degrades to a copyable `docker run`. The server refuses the same request
- *    independently (lib/accept-gate.ts says why that is not redundant).
  *
- * **Which tab is selected is in the URL.** `?mode=compare|accept`, written on
+ * D3 used to live here too, as an accept tab. It never belonged: the console's
+ * accept spawned `promote`, which writes `<dataDir>/__baselines__` — gitignored,
+ * and not the corpus CI compares against — so the one control that looked like
+ * the sign-off could not produce a commit. Accepting is a commit now and says so
+ * everywhere: the `accept-baselines` workflow, or `accept` in the pinned
+ * container. See `apps/storybook/src/docs/qa/VisualDiffWorkflow.mdx`.
+ *
+ * **Which tab is selected is in the URL.** `?mode=compare`, written on
  * every selection and read back on every render — so a reviewer can send someone
  * the panel they are looking at, and a reload does not drop them back on capture.
  * Capture is spelled by the param's ABSENCE, the way `ReportResults` leaves its
  * defaults out: no `mode` already means capture, so writing it would be a param
  * that changes nothing. `a` and `b` ride along untouched, because leaving compare
- * is not abandoning the pair that was chosen.
+ * is not abandoning the pair that was chosen. A stale `?mode=accept` link reads
+ * as an unknown mode and falls back to capture, which is what it now is.
  *
- * The fingerprint it gates on comes from `GET /api/env`. This bundle never reads
+ * The fingerprint it reads comes from `GET /api/env`. This bundle never reads
  * `VISUAL_DIFF_FAKE_HOST_FINGERPRINT` — the seam is server-side, so a test world
  * drives the whole decision from one variable and the client cannot disagree
  * with the server about what host it is on.
  */
 
 /**
- * Three, and exactly the three the runner has.
+ * Two, and exactly the two the runner has.
  *
  * There were four. `run` sat between `compare` and `accept` and did what
  * `capture` does — `runCheck` takes the mode and has never read it — so the
  * strip offered a choice with one outcome, and the filter note under both tabs
- * said the same sentence because it was describing the same job.
+ * said the same sentence because it was describing the same job. `accept` went
+ * for a different reason: it wrote a corpus nothing reads (see the header).
  */
-const MODES = ['capture', 'compare', 'accept'] as const;
+const MODES = ['capture', 'compare'] as const;
 
 type Mode = (typeof MODES)[number];
 
@@ -92,8 +88,6 @@ const PLACEHOLDER = {
 const SAMPLE_NOTE =
   'sample mode — this instance is serving the committed sample run, which belongs to this repo rather than to anything captured here; point VISUAL_DIFF_DATA_DIR at a real tree to start a job';
 
-const NO_REPORT = 'No report to accept from — compare two capture sets first.';
-
 /**
  * D1's refusal, in the words the server would have used.
  *
@@ -108,7 +102,7 @@ export const RUNNING_REFUSAL = 'a job is already running';
 /** The Docker reminder, spelled here for the same reason and pinned against
  *  `DOCKER_DOWN` by the same test. Not a refusal after the fact: the button it
  *  sits above is disabled, so the reviewer starts Docker instead of a job. */
-export const DOCKER_REFUSAL = `this job runs inside ${ACCEPT_IMAGE}, and Docker is not running — start Docker and this comes back`;
+export const DOCKER_REFUSAL = `this job runs inside ${HOST.image}, and Docker is not running — start Docker and this comes back`;
 
 /**
  * What the wand says when it cannot name a set.
@@ -120,9 +114,7 @@ export const DOCKER_REFUSAL = `this job runs inside ${ACCEPT_IMAGE}, and Docker 
  *
  * `role="status"` where it is drawn, never `role="alert"`: this panel already
  * argues that case twice below, and `apps/e2e/pages/console.ts` reads every
- * refusal through `getByRole('main').getByRole('alert')` strictly. The nearer
- * precedent is `vd-accept__pending`, which says "checking what this host is…"
- * the same way.
+ * refusal through `getByRole('main').getByRole('alert')` strictly.
  *
  * Saying nothing at all was the other option and is the worse one: a control
  * that swallows a press is a console that has quietly stopped working.
@@ -242,77 +234,7 @@ function ModeTabs({ mode, onSelect }: { mode: Mode; onSelect: (mode: Mode) => vo
   );
 }
 
-/** What the runner is, beside what the baselines require. Two rows rather than a
- *  verdict, because a reviewer looking at a refused accept needs to see which of
- *  the two is not what they expected. */
-function Fingerprints({ runner }: { runner: RunnerEnv }) {
-  return (
-    <dl className="vd-fingerprints">
-      <dt>baselines require</dt>
-      <dd className="vd-mono">{ACCEPT_IMAGE}</dd>
-      <dt>this runner</dt>
-      <dd className="vd-mono">
-        {runner.image ?? 'no declared container'} · {runner.platform}/{runner.arch}
-      </dd>
-    </dl>
-  );
-}
-
-function CopyableCommand() {
-  const [copied, setCopied] = useState(false);
-
-  const copy = async () => {
-    try {
-      await navigator.clipboard?.writeText(ACCEPT_COMMAND);
-      setCopied(true);
-    } catch {
-      // A browser that refused the clipboard still shows the command; the
-      // reviewer selects it themselves.
-      setCopied(false);
-    }
-  };
-
-  return (
-    <Stack gap={2}>
-      <div data-testid="accept-docker-command" className="vd-accept__command">
-        <CodeBlock language="bash">{ACCEPT_COMMAND}</CodeBlock>
-      </div>
-      <Stack direction="row" gap={3} align="center" wrap>
-        <Button variant="secondary" size="sm" onClick={() => void copy()}>
-          copy command
-        </Button>
-        {copied && <span className="vd-accept__copied">copied</span>}
-      </Stack>
-    </Stack>
-  );
-}
-
-/** What the gate refuses with, or explains itself with. `ready` renders nothing:
- *  the start button below it is the whole answer. */
-function GateNotice({ gate }: { gate: AcceptGate }) {
-  if (gate.state === 'accessibility') {
-    return (
-      <Alert>
-        this report carries {gate.failures} accessibility failure(s) — reviewing never
-        clears one and baselining it would hide it for good, so there is nothing to accept
-        here
-      </Alert>
-    );
-  }
-
-  if (gate.state === 'unreviewed') {
-    return (
-      <Note name="accept gate">
-        {gate.total - gate.reviewed} of {gate.total} variants are still unreviewed —
-        accept opens once the report has been read through
-      </Note>
-    );
-  }
-
-  return null;
-}
-
-/** The form, as one value per field the three modes need between them. */
+/** The form, as one value per field the two modes need between them. */
 interface JobForm {
   mode: Mode;
   label: string;
@@ -321,7 +243,6 @@ interface JobForm {
   filter: string[];
   baseline: string;
   candidate: string;
-  reportId: string;
 }
 
 type Patch = Dispatch<Partial<JobForm>>;
@@ -390,10 +311,7 @@ function readPrefill(params: URLSearchParams): Prefill | null {
  * which point the latch stops existing at all. Tracked separately, because doing
  * it halfway here would leave two half-vocabularies instead of one.
  */
-function useJobForm(
-  params: URLSearchParams,
-  reportIds: readonly string[],
-): [JobForm, Patch, (mode: Mode) => void] {
+function useJobForm(params: URLSearchParams): [JobForm, Patch, (mode: Mode) => void] {
   const prefill = readPrefill(params);
   const [form, patch] = useReducer(
     (state: JobForm, update: Partial<JobForm>) => ({ ...state, ...update }),
@@ -403,7 +321,6 @@ function useJobForm(
       filter: [],
       baseline: prefill?.baseline ?? '',
       candidate: prefill?.candidate ?? '',
-      reportId: reportIds[0] ?? '',
     },
   );
   const [applied, setApplied] = useState(prefill?.key ?? '');
@@ -417,15 +334,6 @@ function useJobForm(
       baseline: prefill.baseline,
       candidate: prefill.candidate,
     });
-  }
-
-  // The report picker follows the list it is handed. An instance whose first
-  // compare finishes while this panel is mounted arrives here with a list the
-  // picker's value is not in, and every question the gate below asks is about
-  // the report that value names.
-  const [firstReport] = reportIds;
-  if (firstReport && !reportIds.includes(form.reportId)) {
-    patch({ reportId: firstReport });
   }
 
   const selectMode = (mode: Mode) => {
@@ -605,8 +513,6 @@ function jobRequest(form: JobForm): Record<string, unknown> {
   if (mode === 'compare') {
     return { mode, baseline: form.baseline, candidate: form.candidate };
   }
-  if (mode === 'accept') return { mode, reportId: form.reportId };
-
   // An empty list is left out rather than sent: the differ reads no filter as the
   // whole corpus, which is what nothing ticked means, and sending `[]` would say
   // the same thing in a second way.
@@ -660,36 +566,17 @@ function useStartJob() {
 
   // `clear` is handed back for the same reason both `ConfirmDialogs` call sites
   // take it: a refusal answers the request that earned it, and carrying it into
-  // another mode makes the panel say no to a question nobody asked. Accept is
-  // the mode where that matters — `GateNotice` draws its own alert there, and a
-  // stale one beside it is the two-alert failure below by a second route.
+  // another mode makes the panel say no to a question nobody asked — and a stale
+  // one left beside a fresh alert is the two-alert failure below by a second
+  // route.
   return { start, refusal: refusals[0] ?? null, starting: busy, clear };
 }
 
 /** Whether the form names a job the runner could take. */
-function isRunnable(form: JobForm, gate: AcceptGate | null): boolean {
+function isRunnable(form: JobForm): boolean {
   if (form.mode === 'compare') return Boolean(form.baseline && form.candidate);
-  if (form.mode === 'accept') return gate?.state === 'ready';
 
   return Boolean(form.label);
-}
-
-/**
- * Whether accept is refused outright — no button at all, rather than a disabled
- * one.
- *
- * A greyed control invites the reviewer to look for the way to enable it, and
- * for these two there is none: there is no report to accept from, and an
- * accessibility failure is fixed rather than reviewed away. Neither of the other
- * two answers belongs here — an unreviewed report has a disabled button because
- * reading it is exactly the way to enable it, and a machine with no Docker has
- * one because starting Docker is.
- */
-function isRefused(form: JobForm, gate: AcceptGate | null, hasReport: boolean): boolean {
-  if (form.mode !== 'accept') return false;
-  if (!hasReport) return true;
-
-  return gate?.state === 'accessibility';
 }
 
 /**
@@ -701,10 +588,7 @@ function isRefused(form: JobForm, gate: AcceptGate | null, hasReport: boolean): 
  * a Docker question, and that is the one the panel answers up front: a daemon
  * that is down is a start button whose only outcome is a failed job.
  *
- * ACCEPT answers to it too, and that is what makes it three modes rather than
- * two. A promote stamps the machine that wrote it, so off the pinned image it
- * belongs in the container for the same reason a capture does. Only `compare`
- * is native everywhere — it reads PNGs and renders nothing.
+ * Only `compare` is native everywhere — it reads PNGs and renders nothing.
  *
  * `undefined` while the fingerprint is in flight is deliberately NOT a refusal:
  * the answer is a moment away, and blocking the button until it lands would make
@@ -715,7 +599,7 @@ function containerState(
   runner: RunnerEnv | undefined,
 ): 'native' | 'container' | 'no-docker' {
   if (mode === 'compare') return 'native';
-  if (runner === undefined || runner.image === ACCEPT_IMAGE) return 'native';
+  if (runner === undefined || runner.image === HOST.image) return 'native';
 
   return runner.docker ? 'container' : 'no-docker';
 }
@@ -726,9 +610,7 @@ interface FieldsProps {
   /** Sample mode or a deployed console: the composer freezes as a whole rather
    *  than offering a form whose button is not there. */
   disabled: boolean;
-  reports: readonly ReportListEntry[];
   runner: RunnerEnv | undefined;
-  gate: AcceptGate | null;
   /** The corpus to tick from, from `GET /api/stories`. */
   stories: readonly StoryTier[];
 }
@@ -736,7 +618,7 @@ interface FieldsProps {
 /** Capture takes two: what the set will be called, and the one CLI flag this
  *  runner has. The board draws a viewports field and a
  *  `--skip-build` checkbox beside them; neither exists in `visual-diff`'s CLI —
- *  its whole surface is `check | accept` with `--filter` — and the console never
+ *  its whole surface is `check` with `--filter` — and the console never
  *  builds Storybook, so both would be controls for something that cannot happen. */
 function CaptureFields({ form, patch, disabled, stories }: FieldsProps) {
   // Rendered for `run` as well as `capture` — `ModeFields` falls through to this
@@ -810,61 +692,16 @@ function CompareFields({ form, patch, disabled }: FieldsProps) {
   );
 }
 
-/** The accept tab's own fields: which report, what this host is, and what the
- *  gate makes of the pair. */
-function AcceptFields({ form, patch, disabled, reports, runner, gate }: FieldsProps) {
-  if (reports.length === 0) return <p className="vd-accept__empty">{NO_REPORT}</p>;
-
-  return (
-    <Stack gap={4}>
-      <Stack gap={1} className="vd-field">
-        <label className="vd-field__label" htmlFor="vd-run-report">
-          report
-        </label>
-        <select
-          id="vd-run-report"
-          name="report"
-          className="vd-field__select"
-          value={form.reportId}
-          disabled={disabled}
-          onChange={(event) => patch({ reportId: event.target.value })}
-        >
-          {reports.map((report) => (
-            <option key={report.id} value={report.id}>
-              {report.id}
-            </option>
-          ))}
-        </select>
-      </Stack>
-
-      {runner && gate ? (
-        <>
-          <Fingerprints runner={runner} />
-          <GateNotice gate={gate} />
-        </>
-      ) : (
-        <p role="status" className="vd-accept__pending">
-          checking what this host is…
-        </p>
-      )}
-    </Stack>
-  );
-}
-
 function ModeFields(props: FieldsProps) {
-  if (props.form.mode === 'accept') return <AcceptFields {...props} />;
   if (props.form.mode === 'compare') return <CompareFields {...props} />;
 
   return <CaptureFields {...props} />;
 }
 
 /** What stands where the start button would: the deployed refusal, D1's link
- *  while the lock is held, the container command where this host cannot capture,
- *  nothing at all where accept is refused, the button otherwise. */
+ *  while the lock is held, the button otherwise. */
 function StartAction({
   form,
-  gate,
-  hasReport,
   isLocal,
   isSample,
   runner,
@@ -873,8 +710,6 @@ function StartAction({
   onStart,
 }: {
   form: JobForm;
-  gate: AcceptGate | null;
-  hasReport: boolean;
   isLocal: boolean;
   isSample: boolean;
   runner: RunnerEnv | undefined;
@@ -889,26 +724,6 @@ function StartAction({
   // rule as the host gate below: nothing a reviewer can do in this tab makes a
   // deployment be their own machine, so the note names the console that works.
   if (!isLocal) return <Note name="remote console">{REMOTE_REFUSAL}</Note>;
-
-  // Checked before `running`, and the order is load-bearing rather than tidy.
-  //
-  // `AcceptFields` renders `GateNotice` whatever the runner is doing, and the
-  // host and accessibility refusals are drawn as `role="alert"`. This branch
-  // draws one too. With `running` first, accept mode on a bare-metal host with a
-  // job in flight put both inside `main` at once — and both are pinned by the
-  // same strict locator: `console.ts:64` is `getByRole('main').getByRole('alert')`,
-  // read by D1 as `refusalAlert` and by the accept scenarios as
-  // `acceptHostAlert`. Two matches fail every one of them on strict mode.
-  //
-  // It is also the better message. `isRefused` is the outright refusals — there
-  // is no button, and waiting will not produce one — so telling a reviewer to
-  // follow the running job implies a start that finishing the job would unlock.
-  // It would not.
-  //
-  // D1 is untouched: `isRefused` is false for every mode but accept, and false
-  // in accept once the gate is `ready`, so the running refusal still renders
-  // wherever a start could otherwise have happened.
-  if (isRefused(form, gate, hasReport)) return null;
 
   if (running) {
     // Announced, not merely absent: a control that vanishes without a word is a
@@ -944,26 +759,16 @@ function StartAction({
           bare `role=alert` lookup cannot survive. */}
       {container === 'container' && (
         <Note name="runs in the container">
-          this {form.mode} runs inside {ACCEPT_IMAGE} — the baselines were captured there,
+          this {form.mode} runs inside {HOST.image} — the baselines were captured there,
           and shots taken anywhere else are not comparable to them
         </Note>
       )}
-      {container === 'no-docker' && (
-        <Stack gap={3}>
-          <Note name="docker required">{DOCKER_REFUSAL}</Note>
-          {/* Accept alone keeps a copyable command, because accept alone has a
-              hand-run equivalent worth offering: a capture with no daemon has
-              nothing to paste that this panel is not already trying to do. */}
-          {form.mode === 'accept' && <CopyableCommand />}
-        </Stack>
-      )}
+      {container === 'no-docker' && <Note name="docker required">{DOCKER_REFUSAL}</Note>}
 
       <Button
         variant="primary"
         onClick={onStart}
-        disabled={
-          disabled || starting || container === 'no-docker' || !isRunnable(form, gate)
-        }
+        disabled={disabled || starting || container === 'no-docker' || !isRunnable(form)}
       >
         start {form.mode}
       </Button>
@@ -979,15 +784,10 @@ export interface RunPanelProps {
    *  A deployment gets no start control at all — `POST /api/jobs` refuses the
    *  same request independently, so this is the copy rather than the guard. */
   isLocal: boolean;
-  /** Newest first — what accept can be run against. */
-  reports: readonly ReportListEntry[];
 }
 
-export function RunPanel({ isSample, isLocal, reports }: RunPanelProps) {
-  const [form, patch, selectMode] = useJobForm(
-    useSearchParams(),
-    reports.map((entry) => entry.id),
-  );
+export function RunPanel({ isSample, isLocal }: RunPanelProps) {
+  const [form, patch, selectMode] = useJobForm(useSearchParams());
   const runner = useRunnerFingerprint();
   const stories = useStories();
   const { start, refusal, starting, clear } = useStartJob();
@@ -999,32 +799,6 @@ export function RunPanel({ isSample, isLocal, reports }: RunPanelProps) {
   // refusals — one is answered above the button, the other instead of it — but a
   // field does not care which of them froze it.
   const frozen = isSample || !isLocal;
-  const report = reports.find((entry) => entry.id === form.reportId) ?? null;
-  // Read through the store rather than by calling `readReviewed` here, which is
-  // what this used to do. Two reasons, and the second is the one that bites:
-  //
-  //  - `localStorage.getItem` + `JSON.parse` during render is synchronous work
-  //    on the render path, and this panel re-renders on every poll.
-  //  - reading storage in render is not reactive and not safe for a component
-  //    the server renders. It only agreed with the server because `gate` is
-  //    null until `/api/env` lands, so nothing derived from the count reached
-  //    the first paint — true today, pinned by nothing, and one `runner` change
-  //    away from a hydration mismatch. `useSyncExternalStore` is what
-  //    `useReviewMarks` exists to provide (see its header).
-  //
-  // The empty string when there is no report selected asks the store for a
-  // report nobody has marked: an empty set, which is the right answer for a
-  // gate that is null anyway.
-  const { marks } = useReviewMarks(report?.id ?? '');
-  const gate =
-    report && runner
-      ? acceptGate({
-          counts: report.counts,
-          // Marks live in this browser and nowhere else — the server never sees
-          // which variants a reader has opened, and never should.
-          reviewed: marks.size,
-        })
-      : null;
 
   return (
     <Stack gap={4}>
@@ -1042,9 +816,7 @@ export function RunPanel({ isSample, isLocal, reports }: RunPanelProps) {
             form={form}
             patch={patch}
             disabled={frozen}
-            reports={reports}
             runner={runner}
-            gate={gate}
             stories={stories}
           />
 
@@ -1064,8 +836,6 @@ export function RunPanel({ isSample, isLocal, reports }: RunPanelProps) {
 
           <StartAction
             form={form}
-            gate={gate}
-            hasReport={report !== null}
             isLocal={isLocal}
             isSample={isSample}
             runner={runner}

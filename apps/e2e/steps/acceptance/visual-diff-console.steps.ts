@@ -70,12 +70,10 @@ When('I ask the console to name the capture set', async ({ console: consolePage 
   await consolePage.labelWand.click();
 });
 
-/** Deliberately not the accept step in `visual-diff-accept.steps.ts`, which also
- *  picks a report: this scenario is about the tab and the address bar, and a
- *  step that chose a report as well would be asserting through setup it does not
- *  need. Two step definitions with one name would collide anyway. */
-When('I switch to the accept job tab', async ({ console: consolePage }) => {
-  await consolePage.selectJobMode('accept');
+/** The tab and the address bar, and nothing else: no fields are filled, because
+ *  what this scenario is about is that the selection survives a reload. */
+When('I switch to the compare job tab', async ({ console: consolePage }) => {
+  await consolePage.selectJobMode('compare');
 });
 
 /** A reload rather than a hand-built deep link. Typing the URL a test WISHES the
@@ -121,12 +119,12 @@ Then(
   },
 );
 
-Then('the URL carries the accept job mode', async ({ page }) => {
-  await expect(page).toHaveURL(/\?mode=accept$/);
+Then('the URL carries the compare job mode', async ({ page }) => {
+  await expect(page).toHaveURL(/\?mode=compare$/);
 });
 
-Then('the accept job tab is selected', async ({ console: consolePage }) => {
-  await expect(consolePage.jobTab('accept')).toHaveAttribute('aria-selected', 'true');
+Then('the compare job tab is selected', async ({ console: consolePage }) => {
+  await expect(consolePage.jobTab('compare')).toHaveAttribute('aria-selected', 'true');
 });
 
 Then('the deletion is refused naming what holds it', async ({ console: consolePage }) => {

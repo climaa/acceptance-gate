@@ -68,10 +68,10 @@ and knowing which half is which saves you from chasing ghosts:
 
 So an a11y failure or a `removed` row you watch a scenario assert on is seed
 vocabulary, not a defect in your checkout — and none of it is your real `.visual-diff`
-data, which only the dev server on 3300 reads. It's also why the seeded world holds
-two reports: the grafted a11y failure makes the accept gate refuse the first report
-before asking anything else, so the accept scenarios run against the second, clean one
-— the only kind an accept can promote from.
+data, which only the dev server on 3300 reads. The world held a second, clean report
+until the console's accept tab was retired: the accept gate refused an a11y failure
+before asking anything else, so the gate's other answers needed a report that carried
+none. With no gate there is nothing for that report to be about.
 
 ## Watching it live: Playwright UI Mode
 
@@ -153,9 +153,9 @@ scenarios — it orders scenarios, and there is one — though `workers: 1` stay
 
 It repairs itself twice over. The step that edits `history.json` writes a sidecar backup
 the next run restores, so a run killed mid-edit does not leave your newest real run reading
-as `interrupted` forever. And an `After` hook removes the capture, the report and the
-promotion for a run that went red before its own teardown could — without which one red run
-would leave a set behind and the next would no longer start cold.
+as `interrupted` forever. And an `After` hook removes the capture and the report for a run
+that went red before its own teardown could — without which one red run would leave a set
+behind and the next would no longer start cold.
 
 There are no level tags, and no `@accept` selector any more: with one scenario there is
 nothing to choose between. There is still no `@smoke` — a smoke level exists to fail a

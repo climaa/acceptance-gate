@@ -133,3 +133,21 @@ git commit -m "chore(visual-diff): accept baseline for <what changed>"
    same branch. The dispatch commits for you; note that its push starts no workflows, so
    push again (or close and reopen) before expecting the gate to re-run.
 7. Merge. The baseline `main` carries now includes your change.
+
+## The console does not accept, and never did
+
+The visual-diff console (`apps/visual-diff-ui`) captures, compares and helps you read a
+report through. It has no accept, and the tab it drew until 2026-08-25 was retired rather
+than fixed.
+
+That tab spawned the differ's `promote`, which writes `<dataDir>/__baselines__` — the
+console instance's own corpus, gitignored, and read by nothing. The corpus CI compares
+against is `packages/visual-diff/__baselines__`, committed, and no console has ever
+written it: `promote` refuses outright rather than defaulting to it, and a regression test
+pins the committed tree unchanged across a whole compare-and-accept. So the one control
+that looked like the sign-off could not produce a commit, and a reviewer who pressed it
+had nothing to push.
+
+The two ways in are the ones in step 6, and both end in a commit a person reviews. That is
+the design, not a gap: per the [visual-regression post](https://acceptance-gate-blog.vercel.app),
+approving a baseline has to cost the same as reviewing a code diff.

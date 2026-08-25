@@ -159,10 +159,12 @@ are already settled rather than deferred:
   report page leads with the accessibility section whenever it is non-empty, an `a11y`
   variant shows its violation list where the diff image would be, and reviewing it never
   clears it — only a fix does.
-- **Accepting baselines is container-bound, and the UI is the guard.** The CLI's `accept`
-  deliberately carries no host guard; the console's accept mode refuses to offer a run
-  button unless the runner matches the pinned Playwright image, degrading to a copyable
-  `docker run` command below that bar.
+- **Accepting baselines is a commit, and container-bound.** The CLI's `accept`
+  deliberately carries no host guard, so it runs in the pinned Playwright image — either
+  by dispatching the `accept-baselines` workflow, or by hand locally. The console drew an
+  accept tab for a while; it promoted into its own gitignored data directory rather than
+  the committed corpus, so the one control that looked like the sign-off could not produce
+  one, and it was retired.
 
 The board's mockups resolve their colors through `.pen` variables that mirror the
 `success`/`warning`/`danger` role pairs on

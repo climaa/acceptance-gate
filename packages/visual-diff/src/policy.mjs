@@ -188,9 +188,8 @@ const ARTIFACTS = 'packages/visual-diff/.visual-diff';
  *  the name keeps it from reading as a source folder anyone edits by hand. */
 const BASELINES = 'packages/visual-diff/__baselines__';
 
-/** The stamp beside a corpus: which host captured it. Named on its own because two
- *  corpora carry one — the committed baselines under {@link PATHS}, and the one a
- *  console promotes into its data directory (see promote.mjs). */
+/** The stamp beside a corpus: which host captured it — what `accept` restamps, and
+ *  what `check`'s host guard reads back. */
 export const BASELINE_ENV = 'BASELINE_ENV.json';
 
 /** Repo-root-relative, so a path means the same thing whichever workspace the CLI
@@ -245,10 +244,9 @@ export const BASELINE_PNG_BUDGET_BYTES = 512_000;
  *  A refusal names the stories: "the corpus is too big" is not something a reviewer
  *  can act on, and the offending story usually is.
  *
- *  Here rather than in either caller because there are two of them, committing the
- *  same directory by different routes — the CLI's `accept`, which promotes what it
- *  just captured, and the console's, which promotes what a reviewer accepted out of
- *  a report. One ceiling enforced in two places is one ceiling that can drift.
+ *  Here rather than in the caller so the ceiling has one home. It had two callers
+ *  until the console's `promote` was retired — that one wrote a gitignored corpus
+ *  nothing read — and one ceiling enforced in two places is one that can drift.
  *  @param {ReadonlyMap<string, Uint8Array>} shots The set about to be written.
  *  @param {number} retainedBytes Committed bytes this write does not replace.
  *  @throws {Error} */

@@ -9,9 +9,9 @@ import { currentJob } from './jobs';
  * review failure. They live in one module because two of them are asserted
  * word-for-word — by this app's own suite, and by the e2e worlds — and copy
  * that is a contract belongs somewhere a reader can find all of it at once.
- * Two of them are said twice over — once by the accept gate in
- * `POST /api/jobs`, once by the runner behind it — which is the other reason
- * for one home: two copies of one sentence drift.
+ * `NOT_LOCAL` is said twice over — once by `POST /api/jobs`, once by the run
+ * panel client-side — which is the other reason for one home: two copies of one
+ * sentence drift.
  */
 
 /** D1. The console shows the running job instead of queueing a second one. */
@@ -43,23 +43,16 @@ export const NO_CHECKOUT =
 export const STORYBOOK_FAILED =
   'the storybook build failed, so there was nothing to capture against';
 
-/** The reminder, not a refusal after the fact: a capture, a run and an accept
- *  all happen inside the pinned container, and a machine whose Docker is not up
+/** The reminder, not a refusal after the fact: every job this console runs
+ *  happens inside the pinned container, and a machine whose Docker is not up
  *  cannot start one. Named by the panel before the button is pressed, and by the
- *  server if one is anyway. It replaced D3's own host refusal, which said there
- *  was no button rather than which switch to throw. */
+ *  server if one is anyway. */
 export const DOCKER_DOWN = `this job runs inside ${HOST.image}, and Docker is not running — start Docker and this comes back`;
 
-/** D3. Shown after any refused or aborted accept: the two commands that put a
- *  half-written corpus back, in the order they have to run. */
-export const ACCEPT_RECOVERY = [
-  'git checkout -- __baselines__/',
-  'git clean -fd __baselines__/',
-];
-
-/** The canonical corpus is committed, not captured: it is changed by a commit and
- *  by `accept` inside the pinned container, and no console owns it. Refused rather
- *  than hidden, because a POST that skips the UI asks the same thing. */
+/** The canonical corpus is committed, not captured: it is changed by a commit —
+ *  from the `accept-baselines` workflow, or from `accept` run in the pinned
+ *  container — and no console owns it. Refused rather than hidden, because a POST
+ *  that skips the UI asks the same thing. */
 export const CANONICAL_IS_COMMITTED =
   'the baseline corpus is committed to this repository — it is changed by a commit, never by this console';
 
@@ -68,11 +61,8 @@ export const CANONICAL_IS_COMMITTED =
 export const heldByWorktree = (label: string, worktreePath: string) =>
   `${label} is checked out in the worktree at ${worktreePath} — retire that worktree before deleting the set`;
 
-/** An accept naming a report this instance does not have. */
-export const noReportAt = (reportId: string) => `no report at reports/${reportId}`;
-
 /** A refusal, never a bare code. `extra` carries whatever the screen renders
- *  beside the sentence: the running job, the recovery commands, the held sets. */
+ *  beside the sentence: the running job, the held sets. */
 export function conflict(error: string, extra: Record<string, unknown> = {}): Response {
   return Response.json({ error, ...extra }, { status: 409 });
 }

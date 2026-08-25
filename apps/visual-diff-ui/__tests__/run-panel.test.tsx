@@ -10,7 +10,7 @@ import {
 import { HOST } from '@gate/visual-diff/policy';
 // Imported explicitly rather than relying on `globals: true` — tsconfig's
 // `**/*.tsx` include means tsc typechecks this file.
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CurrentJob, CurrentJobProvider } from '../components/CurrentJob';
 import {
   DOCKER_REFUSAL,
@@ -19,11 +19,9 @@ import {
   RunPanel,
   SUGGEST_REFUSAL,
 } from '../components/RunPanel';
-import type { ReportListEntry } from '../lib/data';
 import type { HistoryRecord } from '../lib/jobs';
 import { DISMISS_STORAGE_KEY } from '../lib/dismiss-state';
 import { DOCKER_DOWN, JOB_RUNNING, NOT_LOCAL } from '../lib/refusals';
-import { reviewStorageKey } from '../lib/review-state';
 import { refreshCalls, replaceCalls, setSearchParams } from './stubs/next-navigation';
 
 /**
@@ -36,17 +34,6 @@ import { refreshCalls, replaceCalls, setSearchParams } from './stubs/next-naviga
  * an env var this bundle read — and the review marks arrive from localStorage,
  * where the reader who made them put them.
  */
-
-const REPORT: ReportListEntry = {
-  id: 'main-2026-08-17__main-2026-08-13',
-  exitCode: 1,
-  counts: { unchanged: 100, changed: 6, added: 0, removed: 0, errored: 0, a11y: 0 },
-};
-
-const OLDER: ReportListEntry = {
-  ...REPORT,
-  id: 'main-2026-08-13__main-2026-08-11',
-};
 
 const RUNNING: HistoryRecord = {
   id: '2026-08-17T08-00-00Z-capture',
@@ -142,7 +129,6 @@ interface PanelCase extends ApiStub {
   /** Defaults to a local console: every case that is not about the deployed
    *  refusal is about a panel a reviewer can actually press. */
   isLocal?: boolean;
-  reports?: ReportListEntry[];
   /** The query string the pickers would have written. */
   query?: string;
 }
@@ -150,7 +136,6 @@ interface PanelCase extends ApiStub {
 function renderPanel({
   isSample = false,
   isLocal = true,
-  reports = [REPORT],
   query = '',
   ...api
 }: PanelCase = {}) {
@@ -159,7 +144,7 @@ function renderPanel({
 
   render(
     <CurrentJobProvider>
-      <RunPanel isSample={isSample} isLocal={isLocal} reports={reports} />
+      <RunPanel isSample={isSample} isLocal={isLocal} />
     </CurrentJobProvider>,
   );
 
@@ -205,32 +190,17 @@ async function renderSettled(options: PanelCase = {}) {
 const askedForALabel = (fetchMock: ReturnType<typeof stubApi>) =>
   fetchMock.mock.calls.filter(([url]) => url === '/api/label').length;
 
-/** The accept tab, once the runner's fingerprint has come back — every gate
- *  below it is a decision about that answer, so a case that asserted before it
- *  arrived would be asserting the "checking this host" state. */
-async function openAcceptTab(options: PanelCase = {}) {
-  const fetchMock = renderPanel(options);
-  selectTab('accept');
-
-  await waitFor(() => expect(screen.queryByRole('status')).toBeNull());
-
-  return fetchMock;
-}
-
 describe('the mode tabs', () => {
-  // Three, and the count is the assertion. `run` was the fourth and spawned the
-  // same job as `capture` — `runCheck` takes a mode and has never read one — so
-  // a strip that offers it back is offering a choice with one outcome.
-  it('offers exactly the three modes the runner has', () => {
+  // Two, and the count is the assertion. `run` was a third and spawned the same
+  // job as `capture` — `runCheck` takes a mode and has never read one — so a
+  // strip that offers it back is offering a choice with one outcome. `accept`
+  // was a fourth and wrote a corpus nothing reads.
+  it('offers exactly the two modes the runner has', () => {
     renderPanel();
 
     const tabs = screen.getAllByRole('tab');
 
-    expect(tabs.map((mode) => mode.textContent)).toEqual([
-      'capture',
-      'compare',
-      'accept',
-    ]);
+    expect(tabs.map((mode) => mode.textContent)).toEqual(['capture', 'compare']);
   });
 
   it('opens on capture', () => {
@@ -260,9 +230,9 @@ describe('the mode tabs', () => {
 
   it('wraps from the last mode back to the first', () => {
     renderPanel();
-    selectTab('accept');
+    selectTab('compare');
 
-    fireEvent.keyDown(tab('accept'), { key: 'ArrowRight' });
+    fireEvent.keyDown(tab('compare'), { key: 'ArrowRight' });
 
     expect(tab('capture').getAttribute('aria-selected')).toBe('true');
   });
@@ -306,16 +276,16 @@ describe('the selected tab in the URL', () => {
   it('writes the mode that was clicked', () => {
     renderPanel();
 
-    selectTab('accept');
+    selectTab('compare');
 
-    expect(replaceCalls).toEqual([{ url: '/?mode=accept', options: { scroll: false } }]);
+    expect(replaceCalls).toEqual([{ url: '/?mode=compare', options: { scroll: false } }]);
   });
 
   // Capture is what a console with no query string opens on, so writing the
   // param would be adding one that changes nothing — and the reviewer who then
   // shares the link is sharing a longer URL for the same page.
   it('spells capture as the absence of the param', () => {
-    renderPanel({ query: 'mode=accept' });
+    renderPanel({ query: 'mode=compare' });
 
     selectTab('capture');
 
@@ -324,12 +294,13 @@ describe('the selected tab in the URL', () => {
 
   // Leaving compare is not abandoning the pair that was chosen: the reviewer
   // who clicks back finds it still there, and so does whoever they sent the URL.
+  // Capture is the absence of `mode`, so the pair is the whole of what is left.
   it('carries the compare pair across a tab change', () => {
     renderPanel({ query: `${PAIR}&mode=compare` });
 
-    selectTab('accept');
+    selectTab('capture');
 
-    expect(written()).toEqual([`/?${PAIR}&mode=accept`]);
+    expect(written()).toEqual([`/?${PAIR}`]);
   });
 
   it('writes the mode reached with the arrow keys', () => {
@@ -347,9 +318,9 @@ describe('the selected tab in the URL', () => {
   it('holds the new tab through the render before the URL catches up', () => {
     renderPanel({ query: `${PAIR}&mode=compare` });
 
-    selectTab('accept');
+    selectTab('capture');
 
-    expect(tab('accept').getAttribute('aria-selected')).toBe('true');
+    expect(tab('capture').getAttribute('aria-selected')).toBe('true');
   });
 
   // ...and once it HAS caught up, the panel is reading back its own write. The
@@ -361,8 +332,8 @@ describe('the selected tab in the URL', () => {
     const baseline = () => screen.getByRole('textbox', { name: 'baseline' });
     fireEvent.change(baseline(), { target: { value: 'main-2026-08-20' } });
 
-    selectTab('accept');
-    setSearchParams(`${PAIR}&mode=accept`);
+    selectTab('capture');
+    setSearchParams(PAIR);
     selectTab('compare');
 
     expect(baseline()).toHaveProperty('value', 'main-2026-08-20');
@@ -925,233 +896,6 @@ describe('a deployed console', () => {
   });
 });
 
-describe('the accept gate', () => {
-  it('names the report it would accept from', async () => {
-    await openAcceptTab();
-
-    expect(screen.getByRole('combobox', { name: 'report' })).toHaveProperty(
-      'value',
-      REPORT.id,
-    );
-  });
-
-  it('holds accept closed while variants remain unreviewed', async () => {
-    await openAcceptTab();
-
-    const [start] = startButtons('accept');
-    expect(start).toHaveProperty('disabled', true);
-    expect(screen.getByRole('note', { name: 'accept gate' }).textContent).toMatch(
-      /unreviewed/,
-    );
-  });
-
-  it('opens accept once every variant of the report is reviewed', async () => {
-    localStorage.setItem(
-      reviewStorageKey(REPORT.id),
-      JSON.stringify(['a', 'b', 'c', 'd', 'e', 'f']),
-    );
-
-    await openAcceptTab();
-
-    const [start] = startButtons('accept');
-    expect(start).toHaveProperty('disabled', false);
-  });
-
-  // The gate is per report, so the picker is not a convenience: switching it
-  // re-asks every question below with the other report's counts and marks.
-  it('accepts the report the picker names', async () => {
-    localStorage.setItem(
-      reviewStorageKey(OLDER.id),
-      JSON.stringify(['a', 'b', 'c', 'd', 'e', 'f']),
-    );
-    const fetchMock = await openAcceptTab({ reports: [REPORT, OLDER] });
-    fireEvent.change(screen.getByRole('combobox', { name: 'report' }), {
-      target: { value: OLDER.id },
-    });
-
-    fireEvent.click(screen.getByRole('button', { name: 'start accept' }));
-
-    await waitFor(() =>
-      expect(fetchMock).toHaveBeenCalledWith(
-        '/api/jobs',
-        expect.objectContaining({
-          body: JSON.stringify({ mode: 'accept', reportId: OLDER.id }),
-        }),
-      ),
-    );
-  });
-
-  // A fresh instance's first compare finishes while this panel is open: the
-  // reports arrive as a prop on a panel that is already mounted, and a picker
-  // still naming nothing would leave the gate asking about a report the list
-  // does not hold.
-  it('picks up a report list that arrived after it mounted', async () => {
-    const panel = (reports: readonly ReportListEntry[]) => (
-      <CurrentJobProvider>
-        <RunPanel isSample={false} isLocal reports={reports} />
-      </CurrentJobProvider>
-    );
-    stubApi();
-    const { rerender } = render(panel([]));
-    selectTab('accept');
-
-    rerender(panel([REPORT]));
-
-    // The gate asks every one of its questions about the report the picker
-    // names: with the picker still naming nothing, the tab sits on "checking
-    // what this host is" for as long as it is open.
-    expect(await screen.findByRole('note', { name: 'accept gate' })).toBeDefined();
-  });
-
-  it('has nothing to accept on an instance that has compared nothing', async () => {
-    await openAcceptTab({ reports: [] });
-
-    expect(startButtons('accept')).toHaveLength(0);
-    expect(screen.getByText(/no report to accept/i)).toBeDefined();
-  });
-});
-
-describe('the accept gate off the pinned container', () => {
-  /** No declared image and no daemon: the one machine answer a button cannot
-   *  solve, and the only one accept still degrades to a command for. */
-  const CASE: PanelCase = { image: null, docker: false };
-
-  /** Every case below is a report that has already been read through. An
-   *  unreviewed one is held at the review gate instead — the answer a reviewer
-   *  can still act on. */
-  beforeEach(() => {
-    localStorage.setItem(
-      reviewStorageKey(REPORT.id),
-      JSON.stringify(['a', 'b', 'c', 'd', 'e', 'f']),
-    );
-  });
-
-  /**
-   * The button is there and disabled, not absent.
-   *
-   * Off the pinned image accept used to have no button at all, because a promote
-   * stamps the machine that wrote it and there was no way to run it anywhere
-   * else. The console now starts the pinned container itself — so what is left
-   * to refuse is having no daemon to start it with, and that is a disabled
-   * control with a note saying which switch to throw, exactly as capture has.
-   */
-  it('offers the button disabled rather than withholding it', async () => {
-    await openAcceptTab(CASE);
-
-    await waitFor(() => expect(startButtons('accept')).toHaveLength(1));
-    expect(startButtons('accept')[0]).toHaveProperty('disabled', true);
-    expect(screen.getByRole('note', { name: 'docker required' })).toBeDefined();
-  });
-
-  // The whole point of the change, and the case that would have caught the old
-  // behaviour: a machine that CAN start the container gets a live button.
-  it('offers a live button on a host that has a daemon', async () => {
-    await openAcceptTab({ image: null, docker: true });
-
-    await waitFor(() => expect(startButtons('accept')).toHaveLength(1));
-    expect(startButtons('accept')[0]).toHaveProperty('disabled', false);
-    expect(screen.getByRole('note', { name: 'runs in the container' })).toBeDefined();
-  });
-
-  it('degrades to the container command, copyable, when there is no daemon', async () => {
-    await openAcceptTab(CASE);
-
-    const command = screen.getByTestId('accept-docker-command');
-
-    expect(command.textContent).toContain(HOST.image);
-    expect(command.textContent).toContain('node packages/visual-diff/src/cli.mjs accept');
-    expect(screen.getByRole('button', { name: 'copy command' })).toBeDefined();
-  });
-
-  it('copies the command a reviewer would otherwise retype', async () => {
-    // jsdom ships no clipboard at all, and `vi.stubGlobal('navigator', …)` would
-    // take `userAgent` with it — the property is defined onto the real navigator
-    // and removed again in this file's `afterEach`.
-    const writeText = vi.fn((text: string) => Promise.resolve(text));
-    Object.defineProperty(navigator, 'clipboard', {
-      value: { writeText },
-      configurable: true,
-    });
-    await openAcceptTab(CASE);
-
-    fireEvent.click(screen.getByRole('button', { name: 'copy command' }));
-
-    await waitFor(() => expect(writeText).toHaveBeenCalledTimes(1));
-    expect(writeText.mock.calls[0]?.[0]).toContain(HOST.image);
-  });
-
-  /**
-   * One `role="alert"` inside `main`, ever.
-   *
-   * Two would break every scenario on either side of it: the e2e suite reads
-   * this region with one strict locator, `getByRole('main').getByRole('alert')`
-   * (apps/e2e/pages/console.ts), as `acceptHostAlert` here and as `refusalAlert`
-   * for D1, and a locator that matches twice fails.
-   *
-   * The pressure is different now and the rule is not. The host refusal that
-   * used to sit here has become a `note` — no daemon is a disabled button with
-   * something to read, not a refusal — so the running job is the only alert
-   * left. That is what this pins: the count, and that the surviving one is D1's.
-   */
-  it('answers with one alert, not two, when a job is running as well', async () => {
-    await openAcceptTab({ ...CASE, current: { running: true, job: RUNNING } });
-
-    const alerts = await screen.findAllByRole('alert');
-
-    expect(alerts).toHaveLength(1);
-    expect(alerts[0]?.textContent).toContain(JOB_RUNNING);
-  });
-
-  // The reading comes first: on the machine a report is actually read — which
-  // is never the pinned image — a host-first gate would be the only answer this
-  // panel ever gave, and it would never once ask for the pass it exists to
-  // collect. The host is still refused, one question later.
-  it('asks for the reading before it names the host', async () => {
-    localStorage.clear();
-
-    await openAcceptTab(CASE);
-
-    const [start] = startButtons('accept');
-    expect(start).toHaveProperty('disabled', true);
-    expect(screen.getByRole('note', { name: 'accept gate' }).textContent).toMatch(
-      /unreviewed/,
-    );
-  });
-});
-
-describe('the accept gate on a report with an accessibility failure', () => {
-  const FAILING: ReportListEntry = {
-    ...REPORT,
-    counts: { ...REPORT.counts, changed: 5, a11y: 1 },
-  };
-
-  it('refuses it outright, whatever the host is', async () => {
-    await openAcceptTab({ reports: [FAILING] });
-
-    expect(startButtons('accept')).toHaveLength(0);
-  });
-
-  it('says which bucket did it', async () => {
-    await openAcceptTab({ reports: [FAILING] });
-
-    const alert = await screen.findByRole('alert');
-    expect(alert.textContent).toMatch(/accessibility/i);
-  });
-});
-
-/**
- * The start button clearing the card below it.
- *
- * Pressing start does what the region's own × does, and does it on the CLICK:
- * `POST /api/jobs` runs a synchronous `docker info` before it answers a capture,
- * so waiting for the answer would leave the last run's verdict on screen for up
- * to three seconds under a button that had already greyed out.
- *
- * Both halves are rendered here, unlike everywhere else in this file. The
- * behaviour is a button in one component and a region in another, and a case
- * that rendered only the panel would asserting nothing about what a reviewer
- * sees.
- */
 describe('starting a job clears the region below', () => {
   const FINISHED: HistoryRecord = {
     id: '2026-08-17T07-00-00Z-compare',
@@ -1168,7 +912,7 @@ describe('starting a job clears the region below', () => {
    * both — the same arrangement `DashboardTemplate` renders.
    *
    * Takes `ApiStub` and not `PanelCase`, unlike `renderPanel` above. The panel's
-   * own props are fixed here — a local console, not sample, one report — because
+   * own props are fixed here — a local console, not sample — because
    * every case below is about what the start button does to the region, and a
    * helper that accepted `isLocal` while hardcoding it would hand a future case
    * a local panel and let it assert against the wrong surface in silence.
@@ -1178,7 +922,7 @@ describe('starting a job clears the region below', () => {
 
     render(
       <CurrentJobProvider>
-        <RunPanel isSample={false} isLocal reports={[REPORT]} />
+        <RunPanel isSample={false} isLocal />
         <CurrentJob />
       </CurrentJobProvider>,
     );

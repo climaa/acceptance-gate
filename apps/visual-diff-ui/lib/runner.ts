@@ -12,19 +12,19 @@ import { DATA_MOUNT, REPO_MOUNT, containerArgv } from './docker';
 import { type Checkout, describeCheckout, repoRoot } from './git';
 import { type HostEnv, hostFingerprint, hostMatches } from './host';
 import { type JobOutcome, type JobRequest, freeLabel, reportDir, setDir } from './jobs';
-import { NO_CHECKOUT, STORYBOOK_FAILED, noReportAt } from './refusals';
+import { NO_CHECKOUT, STORYBOOK_FAILED } from './refusals';
 import { type Summary, SummarySchema } from './summary';
 
 /**
  * The runner: `packages/visual-diff` composed programmatically, always under
  * the app's own data directory.
  *
- * The CLI is never spawned. Its surface is `check | accept` with no `--root`,
- * and `commands.mjs` derives `REPO_ROOT` from `import.meta.url` — so a bare
- * `node cli.mjs` reads and writes the real `packages/visual-diff/__baselines__`
- * and `.visual-diff`, whatever this app intended. Everything below goes through
- * the package's exported functions with paths this module built, and every one
- * of those paths goes through `within()`.
+ * The CLI is never spawned. Its surface is `check` with no `--root`, and
+ * `commands.mjs` derives `REPO_ROOT` from `import.meta.url` — so a bare `node
+ * cli.mjs` reads and writes the real `packages/visual-diff/__baselines__` and
+ * `.visual-diff`, whatever this app intended. Everything below goes through the
+ * package's exported functions with paths this module built, and every one of
+ * those paths goes through `within()`.
  */
 
 const PNG = '.png';
@@ -50,10 +50,9 @@ const shotPath = (dir: string, key: string, kind: string) =>
  * Every label but one resolves under the data directory, through `within()`. The
  * canonical corpus is the exception and the only one: it lives in the CHECKOUT,
  * because it is committed rather than captured. This is a READ path — nothing in
- * this app writes there, `accept` promotes into `<dataDir>/__baselines__`, and the
- * delete route refuses the label outright — so the confinement `within()` exists
- * to enforce is not being widened, only the set of directories a compare may read
- * two shot trees from.
+ * this app writes anywhere near it, and the delete route refuses the label
+ * outright — so the confinement `within()` exists to enforce is not being
+ * widened, only the set of directories a compare may read two shot trees from.
  */
 function shotsDir(dataDir: string, label: string): string {
   if (label !== CANONICAL_LABEL) return setDir(dataDir, label);
@@ -212,112 +211,6 @@ function refuse(log: (message: string) => void, reason: string): JobOutcome {
   log(reason);
 
   return { exitCode: EXIT.broken, reportId: null };
-}
-
-/** One report's `summary.json`, or null when there is no readable report there.
- *  Shared with `POST /api/jobs`, whose accept gate asks the same question of the
- *  same file before the lock is claimed. */
-export function readSummary(dataDir: string, reportId: string): Summary | null {
-  try {
-    return SummarySchema.parse(
-      JSON.parse(
-        fs.readFileSync(path.join(reportDir(dataDir, reportId), 'summary.json'), 'utf8'),
-      ),
-    );
-  } catch {
-    return null;
-  }
-}
-
-/** The differ subcommand that promotes, relative to the checkout — the same
- *  path inside the container, because the checkout is mounted at its root. */
-const PROMOTE_CLI = 'packages/visual-diff/src/cli.mjs';
-
-/**
- * The argv that promotes one report, on this host or inside the pinned image.
- *
- * The mirror of {@link captureArgv}, and deliberately so: a promote is refused
- * off the pinned image for the same reason a capture is, so it is answered the
- * same way — by running the container rather than printing a `docker run` for
- * someone to paste.
- *
- * `--data-dir` is always passed and never defaulted. `cli.mjs` resolves its own
- * paths from `import.meta.url`, so a promote that omitted it would rewrite the
- * COMMITTED `packages/visual-diff/__baselines__` instead of this instance's
- * data directory. `promote.mjs` refuses rather than falling back, and this is
- * the caller that makes sure it never has to.
- */
-function promoteArgv(
-  rootDir: string,
-  dataDir: string,
-  reportId: string,
-  env: HostEnv,
-): { command: string; args: string[]; inContainer: boolean } {
-  const inContainer = !hostMatches(hostFingerprint(env));
-  const at = (dir: string) => (inContainer ? dir : undefined);
-
-  const script = [
-    inContainer ? `${REPO_MOUNT}/${PROMOTE_CLI}` : path.join(rootDir, PROMOTE_CLI),
-    'promote',
-    '--data-dir',
-    at(DATA_MOUNT) ?? dataDir,
-    '--report',
-    reportId,
-  ];
-
-  return inContainer
-    ? {
-        command: 'docker',
-        args: containerArgv(rootDir, dataDir, ['node', ...script]),
-        inContainer,
-      }
-    : { command: process.execPath, args: script, inContainer };
-}
-
-/**
- * Promote a report's candidates into `<dataDir>/__baselines__` (D3).
- *
- * NOT the CLI's `accept`, which captures: the shots being promoted were taken
- * in the pinned container and live in the report already, so `promote` copies
- * them and restamps the corpus. It is all-or-nothing — every refusal happens
- * before the first write, and every byte is in memory before any of them lands.
- *
- * SPAWNED rather than composed, and that is what changed here. The stamp a
- * promote writes describes the machine that wrote it, so promoting from a
- * developer's laptop marks a linux corpus `darwin` — which the next `check`
- * refuses, but only after a reviewer believed the accept had landed. This used
- * to be answered by refusing and printing a `docker run` to paste; the console
- * now runs that container itself, exactly as a capture does.
- *
- * The refusals that survive here are the two this side can answer before the
- * job starts — no such report, and an accessibility failure — and they are
- * answered again by `promote.mjs`, which is the last gate before a byte lands.
- * The host question is no longer one of them: it decides which argv to build,
- * not whether to refuse.
- */
-export async function promoteBaselines(
-  dataDir: string,
-  reportId: string,
-  log: (message: string) => void,
-  env: HostEnv = process.env,
-  cwd: string = process.cwd(),
-): Promise<JobOutcome> {
-  const rootDir = repoRoot(cwd);
-  if (!rootDir) return refuse(log, NO_CHECKOUT);
-
-  const summary = readSummary(dataDir, reportId);
-  if (!summary) return refuse(log, noReportAt(reportId));
-
-  const { command, args, inContainer } = promoteArgv(rootDir, dataDir, reportId, env);
-  log(
-    inContainer
-      ? `promoting ${reportId} into __baselines__ inside ${HOST.image}`
-      : `promoting ${reportId} into __baselines__`,
-  );
-
-  const exitCode = await run(command, args, rootDir, log);
-
-  return { exitCode, reportId };
 }
 
 /** The script that does the capture, relative to the checkout — the same path
@@ -519,9 +412,6 @@ export async function runJob(
   env: HostEnv = process.env,
 ): Promise<JobOutcome> {
   if (request.mode === 'compare') return compareSets(dataDir, request, log, env);
-  if (request.mode === 'accept') {
-    return promoteBaselines(dataDir, request.reportId, log, env);
-  }
 
   return runCheck(dataDir, request, log);
 }

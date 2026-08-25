@@ -10,7 +10,7 @@
 // this instance has captured no sets, and says so.
 //
 // Idempotent, and it never overwrites. The directory is a reviewer's own
-// captures, reports and promoted baselines; a boot that reset it would throw
+// captures and reports; a boot that reset it would throw
 // away the corpus the whole console exists to compare.
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';

@@ -48,10 +48,6 @@ const HISTORY_FILE = 'history.json';
 /** The set registry the console lists from, as `lib/data.ts` writes it. */
 const SETS_FILE = 'sets.json';
 
-/** What `accept` promotes into — `lib/jobs.ts`'s layout comment. It has no
- *  screen, which is why removing it is the one filesystem write in this file. */
-const PROMOTED_DIR = '__baselines__';
-
 interface HistoryRun {
   mode: string;
   label: string;
@@ -69,15 +65,12 @@ const SET_LABEL = /^[A-Za-z0-9][A-Za-z0-9.-]*$/;
  * How long a job may take before a step gives up.
  *
  * A capture is minutes: `runCheck` rebuilds Storybook every run and then shoots
- * the whole corpus inside the pinned container. A promote copies bytes already on
- * disk, so its only slow part is `docker run` — seconds warm, minutes on a cold
- * image pull.
+ * the whole corpus inside the pinned container.
  *
- * Both must fit inside `playwright.local.config.ts`'s test timeout, which is the
- * budget for the WHOLE scenario now that the lane is one test. 20 + 5 under 30.
+ * It must fit inside `playwright.local.config.ts`'s test timeout, which is the
+ * budget for the WHOLE scenario now that the lane is one test.
  */
 const JOB_TIMEOUT = 20 * 60_000;
-const PROMOTE_TIMEOUT = 5 * 60_000;
 
 /** The lock this lane is holding, or null. Module-scoped rather than carried
  *  through `localState`, so a scenario that dies before its first step can still
@@ -107,8 +100,6 @@ let madeReportId: string | null = null;
  * and no report link, and nothing later repairs it.
  */
 const HISTORY_BACKUP = 'history.json.e2e-backup';
-
-const promotedDir = () => path.join(LOCAL_DATA_DIR, PROMOTED_DIR);
 
 /**
  * Give back the lock and the history row, whatever the scenario came to.
@@ -181,7 +172,6 @@ After(() => {
       madeReportId = null;
     }
 
-    fs.rmSync(promotedDir(), { recursive: true, force: true });
     madeLabel = null;
   }
 });
@@ -264,14 +254,6 @@ async function reportIdFromJob(vd: ConsolePage): Promise<string> {
   expect(href, 'the finished job links nowhere').toBeTruthy();
 
   return (href ?? '').replace(/^\/report\//, '');
-}
-
-/** Leave the report and arm the accept tab for it. Both accept steps do this,
- *  and what differs is only what they assert afterwards. */
-async function armAccept(vd: ConsolePage, report: ReportPage, reportId: string) {
-  await report.backToConsole.click();
-  await vd.selectJobMode('accept');
-  await vd.chooseAcceptReport(reportId);
 }
 
 /**
@@ -359,7 +341,7 @@ Then('a second job is refused while that one runs', async ({ console: vd }) => {
   // IS the attempt, and what stands in its place is the answer.
   await expect(vd.startButton).toHaveCount(0);
   await expect(vd.refusalAlert).toContainText('a job is already running');
-  await expect(vd.currentJob).toContainText(/capture|compare|accept/);
+  await expect(vd.currentJob).toContainText(/capture|compare/);
 
   // Back to the tab the capture was started from, so what follows reads the
   // panel it left rather than one this assertion moved.
@@ -376,10 +358,9 @@ Then(
     // The line only THIS capture writes, waited for before the terminal one.
     //
     // Naming the current-job region is not enough to tell the jobs apart: it
-    // keeps the last finished run on screen forever, that run's log ends in
-    // `exit 0`, and a previous accept's label is `baselines__<set>` — which
-    // CONTAINS this set's label. A `toContainText` guard would match the old job
-    // and the terminal line would pass before this capture had started.
+    // keeps the last finished run on screen forever, and that run's log ends in
+    // `exit 0`. A `toContainText` guard on the terminal line alone would match
+    // the old job and pass before this capture had started.
     await expect(vd.liveLog).toContainText(`capturing into sets/${label}`, {
       timeout: JOB_TIMEOUT,
     });
@@ -498,82 +479,22 @@ When('I read the whole report through', async ({ console: vd, report, localState
     // own, which is why it is inside the branch that knows there are some.
     await expect(report.checkedCards()).not.toHaveCount(0);
   }
+});
 
-  // The pinned `reviewed N/M` format, asserted as N === M through a backreference
-  // rather than against a number this lane may not know. Anchored at both ends:
-  // `toHaveText` does not anchor a RegExp for you. True of both branches — a
-  // clean run reads `reviewed 0/0`.
+/** The pinned `reviewed N/M` format, asserted as N === M through a backreference
+ *  rather than against a number this lane may not know. Anchored at both ends:
+ *  `toHaveText` does not anchor a RegExp for you. True of both branches — a clean
+ *  run reads `reviewed 0/0`.
+ *
+ *  Its own step now, and the read-through's payoff. It used to be the last line
+ *  of the step above, because what came next was the accept gate opening — the
+ *  console's one consequence of having read a report. That gate is gone (the
+ *  console's accept wrote a corpus nothing read), so the marks are the outcome
+ *  this scenario asserts rather than a precondition for the next one. */
+Then('every variant of it is marked reviewed', async ({ report }) => {
   await expect(report.reviewProgress).toHaveText(/^reviewed (\d+)\/\1$/);
 });
 
-Then('the console offers to accept it', async ({ console: vd, report, localState }) => {
-  await armAccept(vd, report, localState.reportId ?? '');
-
-  await expect(
-    vd.acceptGateNote,
-    'the gate still counts unread variants, so the marks made next door did not reach it',
-  ).toHaveCount(0);
-  await expect(vd.startButton).toBeEnabled();
-});
-
-When('I accept it', async ({ console: vd }) => {
-  await expect(
-    vd.dockerRequiredNote,
-    'a promote runs in the pinned container and Docker is not running',
-  ).toHaveCount(0);
-
-  await vd.startButton.click();
-  await expect(
-    vd.refusalAlert,
-    'the console refused this accept — its own reason is in the run panel',
-  ).toHaveCount(0);
-});
-
-Then('the promotion runs to its end', async ({ console: vd }) => {
-  await expect(vd.liveLog).toBeVisible();
-  await expect(vd.liveLog).toContainText(/promoted \d+ baseline\(s\)/, {
-    timeout: PROMOTE_TIMEOUT,
-  });
-  // `exit 0` and not `exit \d`, unlike the two jobs above: a promote that failed
-  // wrote nothing, and there is no partial success worth passing this step on.
-  await expect(vd.liveLog).toContainText(/exit 0/, { timeout: PROMOTE_TIMEOUT });
-});
-
-Then(
-  'the history records the accept as succeeded',
-  async ({ console: vd, localState }) => {
-    // Identity first, and NOT from the history table: its columns are status,
-    // type, started, exit and took — there is no label column, so a row cannot be
-    // matched on the report id at all. The label of an accept IS its report id,
-    // and the current-job region is the one place a label is drawn.
-    await expect(vd.currentJob).toContainText(localState.reportId ?? '');
-
-    // Then the row, which is the newest accept — history is newest first, and
-    // nothing else has run since this scenario's promote.
-    const row = vd.historyRow(/accept/).first();
-
-    await expect(vd.historyCell(row, 'type')).toHaveText('accept');
-    await expect(vd.historyCell(row, 'status')).toHaveText('succeeded');
-    await expect(vd.historyCell(row, 'exit')).toHaveText('0');
-  },
-);
-
-/**
- * Make the newest run look live, and take its lock.
- *
- * Still fabricated, where D1 above is not, and the difference is what each needs.
- * D1 needs a running job; a real capture supplies one. This needs a running job
- * AND something deletable — and until the capture finished there was nothing to
- * delete, by which time the job was over. So the lock is made rather than waited
- * for, which is also what makes the refusal deterministic.
- *
- * A lock alone is not enough: `lib/jobs.ts` reads a run as running only when the
- * row is unfinished — `endedAt`, `exitCode` and `reportId` all null, which is
- * what `startJob` writes and only the end of the job patches. Those three nulls
- * plus the lock ARE the on-disk state of a live job; nothing here fakes a screen.
- *
- * The row is restored byte-for-byte when the lock is released.
- */
 Given('my newest run is holding the job lock', async ({ console: vd, mayWrite }) => {
   void mayWrite;
   const file = path.join(LOCAL_DATA_DIR, HISTORY_FILE);
@@ -641,62 +562,57 @@ When('the lock is released', async ({ console: vd, mayWrite }) => {
 });
 
 /**
- * Take back all three things this scenario made, through the console wherever
- * the console has a way.
+ * Take back both things this scenario made, through the console's own dialogs.
  *
- * The reports and the set go through the same confirmation dialogs a reviewer
- * answers, because "the console can remove what it wrote" is part of what this
- * scenario is for. The promotion has no screen at all — `accept` writes into
- * `<dataDir>/__baselines__` and nothing in the app reads it back — so that one is
- * the single filesystem write here, and why this step declares `mayWrite`.
+ * They go through the same confirmations a reviewer answers, because "the
+ * console can remove what it wrote" is part of what this scenario is for. There
+ * is no third artifact any more: this lane used to promote a corpus into
+ * `<dataDir>/__baselines__`, which had no screen and had to be unlinked by hand,
+ * and the console's accept is gone with it.
  *
  * The committed corpus at `packages/visual-diff/__baselines__` is never touched.
  * It is a different directory, it is what CI compares against, and nothing in
  * this lane has any business near it.
  */
-When(
-  'I remove the set, the report and the promotion',
-  async ({ console: vd, localState, mayWrite }) => {
-    void mayWrite;
-    await vd.openHere();
+When('I remove the set and the report', async ({ console: vd, localState, mayWrite }) => {
+  void mayWrite;
+  await vd.openHere();
 
-    const reportId = localState.reportId ?? '';
-    const label = localState.capturedLabel ?? '';
+  const reportId = localState.reportId ?? '';
+  const label = localState.capturedLabel ?? '';
 
-    // Its own report, by id — not every row in the table.
-    //
-    // The table is streamed: the panels live inside a `Suspense` boundary, so
-    // `goto` resolves on the shell and the rows arrive after it. Waiting for the
-    // row is what makes the click land at all, and `count()` would not have
-    // retried.
-    await expect(vd.reportRow(reportId)).toBeVisible();
-    await vd.deleteReport(reportId);
-    await vd.deleteSet(label);
+  // Its own report, by id — not every row in the table.
+  //
+  // The table is streamed: the panels live inside a `Suspense` boundary, so
+  // `goto` resolves on the shell and the rows arrive after it. Waiting for the
+  // row is what makes the click land at all, and `count()` would not have
+  // retried.
+  await expect(vd.reportRow(reportId)).toBeVisible();
+  await vd.deleteReport(reportId);
+  await vd.deleteSet(label);
 
-    // Then ask the server again, instead of trusting the panel.
-    //
-    // The console can go on rendering a row it has already deleted.
-    // `useMutation` fires `router.refresh()` when the DELETE returns, and
-    // `CurrentJob` fires one of its own the first time it sees a job finish —
-    // and this teardown runs seconds after the accept ended, so the two overlap.
-    // If the poller's refresh, which read the reports BEFORE the delete, lands
-    // last, the deleted row is painted back. The poller then goes idle (once per
-    // job id, backing off to `MAX_IDLE_POLL_MS`), so nothing ever repaints it
-    // away and the stale row simply stays.
-    //
-    // A longer wait would not have helped: there is no later refresh coming.
-    // That race is the console's and is filed separately; what this step owes is
-    // that the artifacts are GONE, which is a question for the server.
-    await vd.openHere();
+  // Then ask the server again, instead of trusting the panel.
+  //
+  // The console can go on rendering a row it has already deleted.
+  // `useMutation` fires `router.refresh()` when the DELETE returns, and
+  // `CurrentJob` fires one of its own the first time it sees a job finish —
+  // and this teardown runs seconds after the compare ended, so the two overlap.
+  // If the poller's refresh, which read the reports BEFORE the delete, lands
+  // last, the deleted row is painted back. The poller then goes idle (once per
+  // job id, backing off to `MAX_IDLE_POLL_MS`), so nothing ever repaints it
+  // away and the stale row simply stays.
+  //
+  // A longer wait would not have helped: there is no later refresh coming.
+  // That race is the console's and is filed separately; what this step owes is
+  // that the artifacts are GONE, which is a question for the server.
+  await vd.openHere();
 
-    fs.rmSync(promotedDir(), { recursive: true, force: true });
-    madeLabel = null;
-    madeReportId = null;
-  },
-);
+  madeLabel = null;
+  madeReportId = null;
+});
 
 Then('the console holds nothing this run made', async ({ console: vd, localState }) => {
-  // Its own three, named — deliberately NOT "the console is empty".
+  // Its own two, named — deliberately NOT "the console is empty".
   //
   // The teardown removes what this scenario made and nothing else, so an
   // assertion that the panels are empty is stronger than the promise behind it:
@@ -708,9 +624,4 @@ Then('the console holds nothing this run made', async ({ console: vd, localState
   // or not anything was ever removed.
   await expect(vd.setRow(localState.capturedLabel ?? '')).toHaveCount(0);
   await expect(vd.reportRow(localState.reportId ?? '')).toHaveCount(0);
-
-  expect(
-    fs.existsSync(promotedDir()),
-    'the promotion this scenario wrote is still on disk',
-  ).toBe(false);
 });

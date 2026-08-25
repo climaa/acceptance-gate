@@ -5,7 +5,6 @@ import { useMemo, useState } from 'react';
 import { EmptyState, Stack } from '@gate/ui';
 import { useReportKeys } from '@/hooks/useReportKeys';
 import { useReviewMarks } from '@/hooks/useReviewMarks';
-import { reviewableCount } from '@/lib/accept-gate';
 import {
   comparableVariants,
   type ComparisonMode,
@@ -26,7 +25,13 @@ import {
   sectionViewportNote,
   type ReportSides,
 } from '@/lib/report-view';
-import { BUCKETS, type Bucket, type Summary, type Variant } from '@/lib/summary';
+import {
+  BUCKETS,
+  type Bucket,
+  reviewableCount,
+  type Summary,
+  type Variant,
+} from '@/lib/summary';
 import { BucketChipRow } from './BucketChipRow';
 import { ComparisonModal } from './ComparisonModal';
 import { ReviewBar } from './ReviewBar';

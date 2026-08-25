@@ -24,11 +24,18 @@ const LANES = ['acceptance', 'local'];
 
 /**
  * Scenarios, not Playwright tests: 9 blog + 6 visual-diff console + 3 sample
- * mode + 15 report + 7 accessibility + 3 baseline acceptance. Test count is
+ * mode + 15 report + 7 accessibility. Test count is
  * higher, because an untagged scenario is listed once per project; one
  * legitimate `@desktop` lowers that number without removing a requirement,
  * which would train everyone to edit this constant for a non-event. Scenario
  * count moves only when a requirement is added or removed.
+ *
+ * It was 43 until the console's accept tab was retired. The three baseline-
+ * acceptance scenarios went with it: the tab spawned `promote`, which writes
+ * `<dataDir>/__baselines__` — gitignored, and never the corpus CI compares
+ * against — so what they vouched for was a control that could not produce the
+ * sign-off it looked like. Accepting is a commit now, and the workflow that
+ * makes it has no browser surface for this suite to drive.
  *
  * It was 42 until the run panel's mode tabs started writing the selected tab to
  * the URL. The scenario added with it reloads the page rather than visiting a
@@ -51,7 +58,7 @@ const LANES = ['acceptance', 'local'];
  * scenario is a two-line diff; LOWERING it is a product decision and belongs in
  * its own hand-authored PR with the reason written down.
  */
-const EXPECTED_SCENARIOS = 43;
+const EXPECTED_SCENARIOS = 40;
 
 /** The two project selectors. Carrying both excludes a scenario from both. */
 const PROJECT_TAGS = ['@desktop', '@mobile'];

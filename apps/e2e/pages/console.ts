@@ -4,7 +4,7 @@ import { VD_HOSTS, type VdWorld } from './visual-diff-hosts';
 
 /** The modes the run panel offers. `run` is absent on purpose: it was a second
  *  name for `capture` and spawned the same job, so the tab is gone. */
-export type JobMode = 'capture' | 'compare' | 'accept';
+export type JobMode = 'capture' | 'compare';
 
 /**
  * The visual-diff console at `/`, in every world.
@@ -38,11 +38,7 @@ export class ConsolePage {
   readonly sampleBadge: Locator;
   readonly sampleModeNote: Locator;
   readonly sampleReportLink: Locator;
-  readonly acceptReport: Locator;
-  readonly acceptGateNote: Locator;
   readonly dockerRequiredNote: Locator;
-  readonly acceptDockerCommand: Locator;
-  readonly copyCommandButton: Locator;
   readonly labelWand: Locator;
   readonly setsPanel: Locator;
 
@@ -55,7 +51,7 @@ export class ConsolePage {
     this.pickerB = page.getByRole('combobox', { name: 'B' });
     this.compareButton = page.getByRole('button', { name: 'compare A ⇄ B' });
     this.startButton = page.getByRole('button', {
-      name: /^start (capture|compare|accept)$/,
+      name: /^start (capture|compare)$/,
     });
     this.currentJob = page.getByRole('region', { name: 'Current job' });
     this.viewReportLink = this.currentJob.getByRole('link', { name: 'view report' });
@@ -84,12 +80,7 @@ export class ConsolePage {
     this.sampleBadge = page.getByRole('status', { name: 'sample data' });
     this.sampleModeNote = page.getByRole('note', { name: 'sample mode' });
     this.sampleReportLink = page.getByRole('link', { name: /__/ }).first();
-    this.acceptReport = page.getByRole('combobox', { name: 'report' });
-    this.acceptGateNote = page.getByRole('note', { name: 'accept gate' });
     this.dockerRequiredNote = page.getByRole('note', { name: 'docker required' });
-    // Command text is a code block, not interactive — testid, like log-tail.
-    this.acceptDockerCommand = page.getByTestId('accept-docker-command');
-    this.copyCommandButton = page.getByRole('button', { name: 'copy command' });
     // Icon-only, so its `aria-label` is the only name it has — which is exactly
     // why the atom makes that name a required prop.
     this.labelWand = page.getByRole('button', { name: 'suggest a label' });
@@ -144,14 +135,6 @@ export class ConsolePage {
     await this.pickerA.selectOption({ label: a });
     await this.pickerB.selectOption({ label: b });
     await this.compareButton.click();
-  }
-
-  /** Which report an accept would promote from. Named rather than left to the
-   *  picker's default: the gate asks every one of its questions about this
-   *  report, so a scenario about one of its answers has to say which report it
-   *  means. */
-  async chooseAcceptReport(reportId: string) {
-    await this.acceptReport.selectOption({ label: reportId });
   }
 
   /** The label text of a picker's selected option — asserting selection without

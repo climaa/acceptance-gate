@@ -29,7 +29,7 @@ import { VariantRow } from './VariantRow';
  */
 
 /** Pinned copy. The accept gate refuses a report with any a11y failure
- *  (lib/accept-gate.ts) and this is the card's half of that same refusal. */
+ *  (the a11y bucket is never acceptable) and this is the card's half of it. */
 export const A11Y_VERDICT = 'reviewing does not clear this — fixing does';
 
 /** The gap list's accessible name. Carries the story, because a report renders
