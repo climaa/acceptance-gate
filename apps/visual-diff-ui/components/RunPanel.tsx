@@ -1,19 +1,28 @@
 'use client';
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import {
-  type Dispatch,
-  type KeyboardEvent,
-  type ReactNode,
-  useEffect,
-  useReducer,
-  useState,
-} from 'react';
+import { type Dispatch, type ReactNode, useReducer, useState } from 'react';
 import { Button, IconButton, Spinner, Stack } from '@gate/ui';
+import { type Mode, ModeTabs, PANEL_ID, isMode, tabId } from '@/components/ModeTabs';
 import { useDismissedJob } from '@/hooks/useDismissedJob';
+import { useJsonOnMount } from '@/hooks/useJsonOnMount';
 import { useMutation } from '@/hooks/useMutation';
 import { Note } from './Note';
 import { HOST } from '@gate/visual-diff/policy';
+/**
+ * The three sentences this panel says on the server's behalf.
+ *
+ * Each was written out a second time in this file, under a comment explaining that
+ * `lib/refusals.ts` reaches the filesystem and this is a client component, and each
+ * was pinned to its original by an equality assertion in `__tests__/run-panel`. The
+ * copy is a leaf now, so the panel and the route that answers read one constant and
+ * there is nothing left for those assertions to compare.
+ *
+ * `DOCKER_DOWN` is still not a refusal after the fact where this panel renders it:
+ * the button it sits above is disabled, so the reviewer starts Docker instead of a
+ * job.
+ */
+import { DOCKER_DOWN, JOB_RUNNING, NOT_LOCAL } from '@/lib/refusal-copy';
 import type { RunnerEnv } from '@/lib/host';
 import type { StoryTier } from '@/lib/stories';
 import { CURRENT_JOB_ANCHOR, useCurrentJob, usePollNow } from './CurrentJob';
@@ -55,26 +64,6 @@ import { FilterPicker } from './FilterPicker';
  * with the server about what host it is on.
  */
 
-/**
- * Two, and exactly the two the runner has.
- *
- * There were four. `run` sat between `compare` and `accept` and did what
- * `capture` does — `runCheck` takes the mode and has never read it — so the
- * strip offered a choice with one outcome, and the filter note under both tabs
- * said the same sentence because it was describing the same job. `accept` went
- * for a different reason: it wrote a corpus nothing reads (see the header).
- */
-const MODES = ['capture', 'compare'] as const;
-
-type Mode = (typeof MODES)[number];
-
-const isMode = (value: string | null): value is Mode =>
-  MODES.some((mode) => mode === value);
-
-const PANEL_ID = 'vd-run-fields';
-
-const tabId = (mode: Mode) => `vd-tab-${mode}`;
-
 /** Placeholders end in an ellipsis so a shape can never be read as a value. Only
  *  the label is typed now — `--filter` is ticked off the corpus (FilterPicker). */
 const PLACEHOLDER = {
@@ -83,26 +72,10 @@ const PLACEHOLDER = {
 
 /** Sample mode explains itself, and the deployed case does not appear here: an
  *  instance can be both, and "there is no CLI behind this" is the sentence that
- *  belongs to the deployment (REMOTE_REFUSAL below), not to a local console that
+ *  belongs to the deployment (NOT_LOCAL below), not to a local console that
  *  simply has not been pointed at any data yet. */
 const SAMPLE_NOTE =
   'sample mode — this instance is serving the committed sample run, which belongs to this repo rather than to anything captured here; point VISUAL_DIFF_DATA_DIR at a real tree to start a job';
-
-/**
- * D1's refusal, in the words the server would have used.
- *
- * Spelled here rather than imported: `lib/refusals.ts` — where this sentence
- * belongs and where `POST /api/jobs` reads it from — reaches the filesystem
- * through `lib/jobs.ts`, and this is a client component. `__tests__/run-panel`
- * pins the two against each other, so the duplication is under a test rather
- * than under a convention.
- */
-export const RUNNING_REFUSAL = 'a job is already running';
-
-/** The Docker reminder, spelled here for the same reason and pinned against
- *  `DOCKER_DOWN` by the same test. Not a refusal after the fact: the button it
- *  sits above is disabled, so the reviewer starts Docker instead of a job. */
-export const DOCKER_REFUSAL = `this job runs inside ${HOST.image}, and Docker is not running — start Docker and this comes back`;
 
 /**
  * What the wand says when it cannot name a set.
@@ -121,11 +94,6 @@ export const DOCKER_REFUSAL = `this job runs inside ${HOST.image}, and Docker is
  */
 export const SUGGEST_REFUSAL =
   'the console could not suggest a name — type the label instead';
-
-/** The deployed refusal, spelled here for the same reason and pinned against
- *  `NOT_LOCAL` by the same test. */
-export const REMOTE_REFUSAL =
-  'this console is deployed, and a job needs the checkout it compares — start one from the console on your own machine (`pnpm --filter @gate/visual-diff-ui dev`)';
 
 /** One text field. `spellcheck` off on all of them: every value here is an id, a
  *  label or a substring of a story name, and none of them is prose. */
@@ -179,57 +147,6 @@ function Alert({ children }: { children: ReactNode }) {
   return (
     <div role="alert" className="vd-alert">
       <p className="vd-alert__line">{children}</p>
-    </div>
-  );
-}
-
-const step = (from: Mode, by: number) =>
-  MODES[(MODES.indexOf(from) + by + MODES.length) % MODES.length] as Mode;
-
-/** Which mode a key moves to from the one selected, or nothing for a key the
- *  tablist does not own. Wrapping, both axes: the strip reads as a row and stacks
- *  to a column below 768 px. */
-const KEYS: Record<string, (from: Mode) => Mode> = {
-  ArrowRight: (from) => step(from, 1),
-  ArrowDown: (from) => step(from, 1),
-  ArrowLeft: (from) => step(from, -1),
-  ArrowUp: (from) => step(from, -1),
-  Home: () => MODES[0],
-  End: () => MODES[MODES.length - 1] as Mode,
-};
-
-/** The mode tabs. One tab stop for the three of them, arrows between: a tablist
- *  where every tab is tabbable puts three stops in front of the fields. */
-function ModeTabs({ mode, onSelect }: { mode: Mode; onSelect: (mode: Mode) => void }) {
-  const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    const next = KEYS[event.key]?.(mode);
-    if (!next) return;
-
-    onSelect(next);
-    // Focus follows the selection, because the roving `tabIndex` below is about
-    // to make the tab under it untabbable: leaving focus there would send the
-    // next Tab out of the tablist from a stop that no longer exists.
-    event.currentTarget.querySelector<HTMLButtonElement>(`#${tabId(next)}`)?.focus();
-    event.preventDefault();
-  };
-
-  return (
-    <div role="tablist" aria-label="job mode" className="vd-tabs" onKeyDown={onKeyDown}>
-      {MODES.map((candidate) => (
-        <button
-          key={candidate}
-          type="button"
-          role="tab"
-          id={tabId(candidate)}
-          aria-controls={PANEL_ID}
-          aria-selected={candidate === mode}
-          tabIndex={candidate === mode ? 0 : -1}
-          className={`vd-tab${candidate === mode ? ' vd-tab--selected' : ''}`}
-          onClick={() => onSelect(candidate)}
-        >
-          {candidate}
-        </button>
-      ))}
     </div>
   );
 }
@@ -359,37 +276,18 @@ function useJobForm(params: URLSearchParams): [JobForm, Patch, (mode: Mode) => v
  *  flight — distinct from a host that declares no image, which is a refusal
  *  rather than a wait. */
 function useRunnerFingerprint(): RunnerEnv | undefined {
-  const [runner, setRunner] = useState<RunnerEnv | undefined>(undefined);
-
-  useEffect(() => {
-    let live = true;
-
-    void (async () => {
-      try {
-        const response = await fetch('/api/env', { cache: 'no-store' });
-        const fingerprint = (await response.json()) as RunnerEnv;
-        if (live) setRunner(fingerprint);
-      } catch {
-        // Unreachable is not a match: the gate reads a null image as the refusal
-        // it is, which is the fail-closed answer.
-        if (live) {
-          setRunner({
-            platform: '?',
-            arch: '?',
-            image: null,
-            playwright: null,
-            docker: false,
-          });
-        }
-      }
-    })();
-
-    return () => {
-      live = false;
-    };
-  }, []);
-
-  return runner;
+  return useJsonOnMount<RunnerEnv | undefined>('/api/env', (body) => body as RunnerEnv, {
+    initial: undefined,
+    // Unreachable is not a match: the gate reads a null image as the refusal
+    // it is, which is the fail-closed answer.
+    unreachable: {
+      platform: '?',
+      arch: '?',
+      image: null,
+      playwright: null,
+      docker: false,
+    },
+  });
 }
 
 /**
@@ -400,29 +298,13 @@ function useRunnerFingerprint(): RunnerEnv | undefined {
  * means, and a build that lands is one poll of this away.
  */
 function useStories(): StoryTier[] {
-  const [tiers, setTiers] = useState<StoryTier[]>([]);
-
-  useEffect(() => {
-    let live = true;
-
-    void (async () => {
-      try {
-        const response = await fetch('/api/stories', { cache: 'no-store' });
-        const body = (await response.json()) as { tiers?: StoryTier[] };
-        if (live) setTiers(body.tiers ?? []);
-      } catch {
-        // Unreachable is an empty corpus: the picker then offers nothing to tick,
-        // which is a run over everything — the same thing the gate does.
-        if (live) setTiers([]);
-      }
-    })();
-
-    return () => {
-      live = false;
-    };
-  }, []);
-
-  return tiers;
+  return useJsonOnMount<StoryTier[]>(
+    '/api/stories',
+    (body) => (body as { tiers?: StoryTier[] }).tiers ?? [],
+    // Unreachable is an empty corpus: the picker then offers nothing to tick,
+    // which is a run over everything — the same thing the gate does.
+    { initial: [], unreachable: [] },
+  );
 }
 
 /**
@@ -723,7 +605,7 @@ function StartAction({
   // one first would read as if it might. Absent rather than disabled, on the same
   // rule as the host gate below: nothing a reviewer can do in this tab makes a
   // deployment be their own machine, so the note names the console that works.
-  if (!isLocal) return <Note name="remote console">{REMOTE_REFUSAL}</Note>;
+  if (!isLocal) return <Note name="remote console">{NOT_LOCAL}</Note>;
 
   if (running) {
     // Announced, not merely absent: a control that vanishes without a word is a
@@ -736,7 +618,7 @@ function StartAction({
             condition as a sentence, not as a status word, and the ring is
             `aria-hidden` so it adds nothing to what this alert already says. */}
         <Spinner />
-        {RUNNING_REFUSAL} —{' '}
+        {JOB_RUNNING} —{' '}
         <a className="vd-run__anchor" href={`#${CURRENT_JOB_ANCHOR}`}>
           follow the running job below
         </a>
@@ -763,7 +645,7 @@ function StartAction({
           and shots taken anywhere else are not comparable to them
         </Note>
       )}
-      {container === 'no-docker' && <Note name="docker required">{DOCKER_REFUSAL}</Note>}
+      {container === 'no-docker' && <Note name="docker required">{DOCKER_DOWN}</Note>}
 
       <Button
         variant="primary"

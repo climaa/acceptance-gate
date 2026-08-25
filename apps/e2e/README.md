@@ -185,11 +185,17 @@ server and each costs about a second.
 
 | Guard                         | Lane                   | Exact count                      | Also checks                                                                                                                |
 | ----------------------------- | ---------------------- | -------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| `scripts/suite-integrity.mjs` | `features/acceptance/` | `EXPECTED_SCENARIOS` **42**      | `@desktop`+`@mobile` at once; every `.feature` under `features/` is in a lane; `@mode:serial` only on a declared flow file |
+| `scripts/suite-integrity.mjs` | `features/acceptance/` | `EXPECTED_SCENARIOS` **41**      | `@desktop`+`@mobile` at once; every `.feature` under `features/` is in a lane; `@mode:serial` only on a declared flow file |
 | `scripts/local-integrity.mjs` | `features/local/`      | `EXPECTED_LOCAL_SCENARIOS` **1** | `@mode:serial` only on a declared flow file                                                                                |
 
-42 is 9 blog + 5 visual-diff console + 3 sample mode + 15 report + 7 accessibility + 3
-baseline acceptance; 1 is the whole local lane — one scenario that captures its own input and removes it. Adding a scenario raises its count in the same PR. Lowering one is a
+The acceptance total covers the blog and its accessibility sweep, the visual-diff
+console, sample mode, the report and its accessibility treatment; 1 is the whole local
+lane — one scenario that captures its own input and removes it. The number itself lives
+in `EXPECTED_SCENARIOS` and nowhere else, deliberately: it was written out here as a
+sum of six terms, and stayed at 42 through the PR that retired baseline acceptance and
+the two that added a console and a sample scenario — stale in the one document that
+warns a count repeated in prose goes stale silently. Adding a scenario raises the
+constant in the same PR. Lowering one is a
 product decision — a hand-authored PR with the reason written down, never a step on the
 way to green. That is what took the local count from 20 to 5: the console, accessibility
 and edge-case requirements were withdrawn from the lane, not narrowed to pass.
