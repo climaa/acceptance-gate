@@ -19,7 +19,7 @@ import {
   usePollNow,
 } from '../components/CurrentJob';
 import { DISMISS_STORAGE_KEY } from '../lib/dismiss-state';
-import type { HistoryRecord } from '../lib/jobs';
+import type { HistoryRecord } from '../lib/job-contract';
 import { refreshCalls } from './stubs/next-navigation';
 
 /**

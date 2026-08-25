@@ -7,11 +7,6 @@ import { afterAll, afterEach, describe, expect, it, vi } from 'vitest';
 import { POST as postJob } from '../app/api/jobs/route';
 import { GET as getCurrent } from '../app/api/jobs/current/route';
 import {
-  HistoryRecordSchema,
-  JobRequestSchema,
-  SetLabelSchema,
-  WorktreesFileSchema,
-  branchLabel,
   currentJob,
   freeLabel,
   jobLog,
@@ -22,8 +17,15 @@ import {
   removeReport,
   startJob,
   takeConsoleRefresh,
-  today,
 } from '../lib/jobs';
+import {
+  HistoryRecordSchema,
+  JobRequestSchema,
+  SetLabelSchema,
+  WorktreesFileSchema,
+  branchLabel,
+  today,
+} from '../lib/job-contract';
 import { within } from '../lib/paths';
 import { CANONICAL_LABEL } from '../lib/baselines';
 import { NOT_LOCAL } from '../lib/refusals';

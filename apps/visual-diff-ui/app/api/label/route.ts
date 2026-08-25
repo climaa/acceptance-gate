@@ -1,6 +1,7 @@
 import { resolveDataDir } from '@/lib/data';
 import { describeCheckout, repoRoot } from '@/lib/git';
-import { branchLabel, freeLabel, today } from '@/lib/jobs';
+import { freeLabel } from '@/lib/jobs';
+import { branchLabel, today } from '@/lib/job-contract';
 
 /**
  * What the next capture set would be called: `<branch>-<YYYY-MM-DD>`, with the

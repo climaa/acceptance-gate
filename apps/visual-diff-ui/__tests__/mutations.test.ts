@@ -10,7 +10,8 @@ import { DELETE as deleteReport } from '../app/api/reports/[id]/route';
 import { DELETE as deleteSet } from '../app/api/sets/[label]/route';
 import { CANONICAL_LABEL } from '../lib/baselines';
 import { CANONICAL_IS_COMMITTED, NOT_LOCAL } from '../lib/refusals';
-import { JobRequestSchema, startJob } from '../lib/jobs';
+import { startJob } from '../lib/jobs';
+import { JobRequestSchema } from '../lib/job-contract';
 import { revalidateTagCalls } from './stubs/next-cache';
 import { resetRequestHost, setRequestHost } from './stubs/next-headers';
 

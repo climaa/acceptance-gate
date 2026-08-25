@@ -1,12 +1,12 @@
 import { resolveDataDir } from '@/lib/data';
 import {
-  ReportIdSchema,
   currentJob,
   hasReport,
   jobLog,
   readHistory,
   takeConsoleRefresh,
 } from '@/lib/jobs';
+import { ReportIdSchema } from '@/lib/job-contract';
 import { PURGE } from '@/lib/tags';
 import { revalidateTag } from 'next/cache';
 

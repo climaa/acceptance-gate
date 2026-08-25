@@ -1,4 +1,10 @@
 import * as path from 'node:path';
+// What may name a directory is a fact about the data before it is one about the
+// filesystem, so the pattern lives with the shapes. Checked here before
+// `entryUnder` rather than instead of it: confinement catches the climb, and this
+// catches what confinement has no opinion about — a NUL reaches `readFile` as a
+// read error rather than a miss, and answers 500 where a 404 is owed.
+import { REPORT_ID } from './job-contract';
 
 /**
  * The data directory's layout, and the one check that keeps every path inside it.
@@ -53,30 +59,6 @@ const REPORTS_DIR = 'reports';
 const SHOTS_DIR = 'shots';
 const SETS_FILE = 'sets.json';
 const SUMMARY_FILE = 'summary.json';
-
-/* ---- The shapes ---------------------------------------------------------- */
-
-/**
- * A snapshot-set label. No underscore, so `<a>__<b>` splits back into the two
- * labels it names — the same reason `policy.variantKey` can join on `__`.
- */
-export const SET_LABEL = /^[A-Za-z0-9][A-Za-z0-9.-]*$/;
-
-/**
- * A report id: one directory name, `<setA>__<setB>`.
- *
- * One regex, where there were two identical ones — lib/jobs.ts built
- * `ReportIdSchema` on its copy and lib/data.ts tested its own before opening
- * anything, and jobs.ts's comment said "Matches lib/data.ts's own read-side shape"
- * rather than importing it. An id the console can write has to be an id it can
- * read back, and that is a property of one pattern, not an agreement between two.
- *
- * Checked before `entryUnder` rather than instead of it. Confinement catches the
- * climb; this catches what confinement has no opinion about — a NUL reaches
- * `readFile` as a read error rather than a miss, and answers 500 to a request that
- * deserves a 404.
- */
-export const REPORT_ID = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
 
 /* ---- The containment check ----------------------------------------------- */
 

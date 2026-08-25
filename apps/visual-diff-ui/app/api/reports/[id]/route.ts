@@ -2,7 +2,8 @@ import { revalidateTag } from 'next/cache';
 import { readReport, resolveDataDir } from '@/lib/data';
 import { guardMutation } from '@/lib/guard';
 import { PURGE, REPORTS_TAG, reportTag } from '@/lib/tags';
-import { ReportIdSchema, hasReport, removeReport } from '@/lib/jobs';
+import { hasReport, removeReport } from '@/lib/jobs';
+import { ReportIdSchema } from '@/lib/job-contract';
 import { notFound } from '@/lib/refusals';
 
 interface Context {

@@ -19,7 +19,7 @@ import {
   RunPanel,
   SUGGEST_REFUSAL,
 } from '../components/RunPanel';
-import type { HistoryRecord } from '../lib/jobs';
+import type { HistoryRecord } from '../lib/job-contract';
 import { DISMISS_STORAGE_KEY } from '../lib/dismiss-state';
 import { DOCKER_DOWN, JOB_RUNNING, NOT_LOCAL } from '../lib/refusals';
 import { refreshCalls, replaceCalls, setSearchParams } from './stubs/next-navigation';
