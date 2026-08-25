@@ -383,6 +383,17 @@ const verdictOf = (summary) =>
 
 /** Capture the corpus and compare it against the committed baselines.
  *  @param {Deps} [deps] @param {Options} [opts] @returns {Promise<CommandResult>} */
+/**
+ * A monotonic reading in milliseconds.
+ *
+ * `performance.now()` rather than `Date.now()`, because the number that matters is an
+ * elapsed one and a wall clock can step sideways mid-run. This is node's clock and not
+ * the page's — `determinism.mjs` pins `performance.now` inside the BROWSER so a story
+ * cannot render a timestamp, and that init script never runs here.
+ *
+ * @returns {number} */
+const now = () => performance.now();
+
 export async function check(deps = defaultDeps(), opts = {}) {
   const { rootDir = REPO_ROOT, filter, allowHostMismatch = false } = opts;
   const at = under(rootDir);
@@ -399,12 +410,21 @@ export async function check(deps = defaultDeps(), opts = {}) {
     });
     if (guard.blocked) return broken(guard.message);
 
+    const startedAt = now();
     const { captures, chromium } = await runCapture(deps, at, variants);
+    const capturedAt = now();
     assertSane(captures);
 
     const results = deps.compare({ captures, baselines, env: deps.env });
+    const comparedAt = now();
+
     const summary = buildSummary(results, { ...(await deps.host()), chromium });
     summary.warnings.push(...guard.warnings, ...skipWarnings(skipped));
+    summary.timing = {
+      captureMs: Math.round(capturedAt - startedAt),
+      compareMs: Math.round(comparedAt - capturedAt),
+      totalMs: Math.round(now() - startedAt),
+    };
 
     await deps.writeArtifacts(deps.fs, {
       rootDir,

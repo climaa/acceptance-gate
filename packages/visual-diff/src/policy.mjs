@@ -131,9 +131,15 @@ export const THRESHOLDS = { maxDiffPixels: 40, maxDiffRatio: 0.0005 };
 /** Everything the capture loop needs to render the same bytes twice, on two machines.
  *  `determinism.mjs` and `capture.mjs` read these; neither restates one. */
 export const DETERMINISM = {
-  /** Wait between the two shots the stability check compares. A range, not a point:
-   *  retries back off from `min` toward `max`, because a cold CI runner needs the
-   *  long wait that would tax every fast story if it were the only one. */
+  /** Wait between the two shots the stability check compares. A range, not a point,
+   *  and drawn UNIFORMLY from it on every attempt — `capture.mjs`'s `stableWaitMs`
+   *  samples fresh each time rather than climbing. This comment used to claim retries
+   *  "back off from `min` toward `max`"; nothing implemented that, and a reader tuning
+   *  the range was reading a schedule the code does not have.
+   *
+   *  The range is still the point: a cold CI runner needs the long wait that would tax
+   *  every fast story if it were the only one, and jitter means a run does not
+   *  synchronise all four pages onto the same beat. */
   stableShotIntervalMs: { min: 300, max: 450 },
 
   /** Attempts at a pair of identical shots before the story is reported unstable. */
