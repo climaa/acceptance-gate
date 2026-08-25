@@ -238,6 +238,11 @@ jobs:
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 30
     container: mcr.microsoft.com/playwright:v1.62.1-noble
+    # One source for how long the report lives: the upload step configures it and the
+    # comment's copy quotes it, and a drift between the two is a comment that lies about
+    # a link it just handed the reader.
+    env:
+      REPORT_RETENTION_DAYS: 14
     permissions:
       contents: read
       # Scoped to this job only — posts/updates the sticky report comment.
@@ -265,10 +270,42 @@ jobs:
         # comment/upload steps below still run" — only the explicit failing
         # step at the end turns that into the job's real, visible result.
         continue-on-error: true
+      # actions/upload-artifact@v7 cannot see files written inside this job's
+      # `container:` when given a directory path — confirmed twice: a debug
+      # step proved the files exist at exactly this path, with and without a
+      # trailing slash, and upload-artifact reported "no files" both times
+      # regardless. tar first (a plain `run:` step, proven to see the
+      # container's filesystem) and upload the one resulting file instead —
+      # a single explicit path sidesteps whatever upload-artifact's directory
+      # traversal is failing to do here.
+      - name: Archive the report
+        if: always()
+        run: tar -C packages/visual-diff/.visual-diff -czf /tmp/visual-diff-report.tar.gz .
+      # ORDERING CONTRACT: this step must stay AHEAD of "Post report comment".
+      # The comment links `steps.report-artifact.outputs.artifact-url`, which does
+      # not exist until the upload has run; move the comment back above this and
+      # the link silently degrades to the run URL on every PR, forever, with
+      # nothing red to notice it. Nothing in this repo validates workflow YAML or
+      # step order — there is no actionlint, no yamllint, and `.yml` is not in
+      # `format:check`'s glob — so this comment is the only guard there is.
+      - uses: actions/upload-artifact@v7
+        id: report-artifact
+        if: always()
+        with:
+          name: visual-diff-report
+          path: /tmp/visual-diff-report.tar.gz
+          retention-days: ${{ env.REPORT_RETENTION_DAYS }}
       - name: Post report comment
         # Only meaningful on a PR — push-to-main has no PR to comment on.
         if: always() && github.event_name == 'pull_request'
         uses: actions/github-script@v9
+        # Through env, not `${{ }}` into the script source — the house rule
+        # accept-baselines.yml states. Empty string when the upload found no
+        # files (`if-no-files-found` defaults to `warn`, so the step still
+        # succeeds), which is what the `|| runUrl` fallback below is for.
+        env:
+          ARTIFACT_URL: ${{ steps.report-artifact.outputs.artifact-url }}
+          RETENTION_DAYS: ${{ env.REPORT_RETENTION_DAYS }}
         with:
           script: |
             const fs = require('fs');
@@ -277,7 +314,33 @@ jobs:
             const summary = fs.existsSync(summaryPath)
               ? fs.readFileSync(summaryPath, 'utf8')
               : 'visual-diff did not produce a summary — the run itself is broken (see the job log).';
-            const body = `${marker}\n${summary}`;
+
+            // The footer's logic lives in a module beside the renderer, not in this
+            // string: logic in YAML is logic nothing can test. Imported by path because
+            // github-script has no view of the workspace's package graph — the relative
+            // `summaryPath` read above proves the cwd this resolves against.
+            const links = await import(
+              `${process.cwd()}/packages/visual-diff/src/comment-links.mjs`
+            );
+
+            const base = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}`;
+            const pr = context.payload.pull_request;
+            const footer = links.renderCommentFooter({
+              // Read the rendered body, not `steps.visual-diff.outcome`, which is
+              // `failure` for a real diff (exit 1) AND a broken run (exit 2) alike.
+              remediated: summary.includes('### To fix'),
+              summarised: fs.existsSync(summaryPath),
+              runUrl: `${base}/actions/runs/${context.runId}`,
+              artifactUrl: process.env.ARTIFACT_URL,
+              workflowUrl: `${base}/actions/workflows/accept-baselines.yml`,
+              branch: pr.head.ref,
+              // `head.repo` is null when the head fork has been deleted with the PR
+              // still open. A head repo that no longer exists is not this repo, so the
+              // dispatch link drops — what a live fork would have got anyway.
+              sameRepo: pr.head.repo?.full_name === context.payload.repository.full_name,
+              retentionDays: Number(process.env.RETENTION_DAYS),
+            });
+            const body = links.renderCommentBody(marker, summary, footer);
 
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
@@ -301,23 +364,6 @@ jobs:
                 body,
               });
             }
-      # actions/upload-artifact@v7 cannot see files written inside this job's
-      # `container:` when given a directory path — confirmed twice: a debug
-      # step proved the files exist at exactly this path, with and without a
-      # trailing slash, and upload-artifact reported "no files" both times
-      # regardless. tar first (a plain `run:` step, proven to see the
-      # container's filesystem) and upload the one resulting file instead —
-      # a single explicit path sidesteps whatever upload-artifact's directory
-      # traversal is failing to do here.
-      - name: Archive the report
-        if: always()
-        run: tar -C packages/visual-diff/.visual-diff -czf /tmp/visual-diff-report.tar.gz .
-      - uses: actions/upload-artifact@v7
-        if: always()
-        with:
-          name: visual-diff-report
-          path: /tmp/visual-diff-report.tar.gz
-          retention-days: 14
       - name: Fail the job if visual-diff found something
         # The real signal: a visible, non-required ❌ in the PR checks list.
         # Never added to gate.needs — see the file header.

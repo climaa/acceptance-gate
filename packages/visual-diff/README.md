@@ -196,12 +196,12 @@ Everything below is written to `packages/visual-diff/.visual-diff/` — gitignor
 per-run scratch output. `packages/visual-diff/__baselines__/` is the opposite: **committed**,
 and the only directory here that is.
 
-| File              | What it is                                                                                                                                |
-| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| `summary.json`    | Schema-versioned machine output: counts, thresholds, host env, every non-unchanged variant, worst-first                                   |
-| `summary.md`      | The PR-comment body, rendered only from `summary.json` — never re-derived from raw rows, so the two can't disagree                        |
-| `report.html`     | Self-contained (no CDN, images inlined as `data:` URIs) review page — baseline/candidate/diff triptychs, blink + onion-skin compare tools |
-| `diffs/{key}.png` | One diff image per failing variant only — never generated for `unchanged`, to keep artifact size down                                     |
+| File              | What it is                                                                                                                                                                                                                       |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `summary.json`    | Schema-versioned machine output: counts, thresholds, host env, every non-unchanged variant, worst-first                                                                                                                          |
+| `summary.md`      | The diff body of the PR comment, rendered only from `summary.json` — never re-derived from raw rows, so the two can't disagree about what changed. Carries no run-specific links; `pr.yml` appends those to the comment it posts |
+| `report.html`     | Self-contained (no CDN, images inlined as `data:` URIs) review page — baseline/candidate/diff triptychs, blink + onion-skin compare tools                                                                                        |
+| `diffs/{key}.png` | One diff image per failing variant only — never generated for `unchanged`, to keep artifact size down                                                                                                                            |
 
 ## CI status
 
@@ -212,6 +212,14 @@ posts `summary.md` as a sticky PR comment (created once, updated in place on lat
 pushes), and uploads `report.html` plus the diff PNGs as a workflow artifact. The job
 fails its own status on a real diff (a visible ❌ in the PR checks list), but it is never
 added to `gate.needs`, so it never blocks a merge on its own.
+
+On a red run the comment carries a link footer the file itself cannot: the uploaded
+artifact, this run, and — on a same-repo PR — a dispatch link for `accept-baselines`
+scoped to the branch. `summary.md` holds no URLs on purpose (it has no run to name when
+a developer produces it locally), so those are built in `pr.yml` from `context`, which is
+the only place a run id exists. That is also why the comment names the dispatch as the
+first way to accept: a reviewer without Docker or arm64 hardware should not have to open
+this file to find the way forward.
 
 That's intentional, not a gap to close later. Per
 [`visual-regression-with-agents.mdx`](../../apps/blog/content/posts/visual-regression-with-agents.mdx):

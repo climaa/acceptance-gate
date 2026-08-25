@@ -22,7 +22,8 @@
       "cache": false
     },
     "test": {
-      "dependsOn": ["^build"]
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/.github/workflows/pr.yml"]
     },
     "e2e": {
       "dependsOn": ["@gate/blog#build", "@gate/visual-diff-ui#build"],
