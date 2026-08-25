@@ -316,7 +316,11 @@ jobs:
             const runUrl = `${base}/actions/runs/${context.runId}`;
             const artifactUrl = process.env.ARTIFACT_URL || runUrl;
             const pr = context.payload.pull_request;
-            const sameRepo = pr.head.repo.full_name === context.payload.repository.full_name;
+            // `head.repo` is null when the head fork has been deleted with the PR still
+            // open. Optional chaining lands on the right answer rather than merely not
+            // throwing: a head repo that no longer exists is not this repo, so the
+            // dispatch link drops, which is what a fork would have got anyway.
+            const sameRepo = pr.head.repo?.full_name === context.payload.repository.full_name;
 
             // Read the renderer's own decision rather than re-deriving it from
             // steps.visual-diff.outcome, which is `failure` for a real diff (exit 1)
