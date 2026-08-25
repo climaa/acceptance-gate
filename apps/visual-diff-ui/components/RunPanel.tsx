@@ -1,16 +1,11 @@
 'use client';
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import {
-  type Dispatch,
-  type KeyboardEvent,
-  type ReactNode,
-  useEffect,
-  useReducer,
-  useState,
-} from 'react';
+import { type Dispatch, type ReactNode, useReducer, useState } from 'react';
 import { Button, IconButton, Spinner, Stack } from '@gate/ui';
+import { type Mode, ModeTabs, PANEL_ID, isMode, tabId } from '@/components/ModeTabs';
 import { useDismissedJob } from '@/hooks/useDismissedJob';
+import { useJsonOnMount } from '@/hooks/useJsonOnMount';
 import { useMutation } from '@/hooks/useMutation';
 import { Note } from './Note';
 import { HOST } from '@gate/visual-diff/policy';
@@ -68,26 +63,6 @@ import { FilterPicker } from './FilterPicker';
  * drives the whole decision from one variable and the client cannot disagree
  * with the server about what host it is on.
  */
-
-/**
- * Two, and exactly the two the runner has.
- *
- * There were four. `run` sat between `compare` and `accept` and did what
- * `capture` does — `runCheck` takes the mode and has never read it — so the
- * strip offered a choice with one outcome, and the filter note under both tabs
- * said the same sentence because it was describing the same job. `accept` went
- * for a different reason: it wrote a corpus nothing reads (see the header).
- */
-const MODES = ['capture', 'compare'] as const;
-
-type Mode = (typeof MODES)[number];
-
-const isMode = (value: string | null): value is Mode =>
-  MODES.some((mode) => mode === value);
-
-const PANEL_ID = 'vd-run-fields';
-
-const tabId = (mode: Mode) => `vd-tab-${mode}`;
 
 /** Placeholders end in an ellipsis so a shape can never be read as a value. Only
  *  the label is typed now — `--filter` is ticked off the corpus (FilterPicker). */
@@ -172,57 +147,6 @@ function Alert({ children }: { children: ReactNode }) {
   return (
     <div role="alert" className="vd-alert">
       <p className="vd-alert__line">{children}</p>
-    </div>
-  );
-}
-
-const step = (from: Mode, by: number) =>
-  MODES[(MODES.indexOf(from) + by + MODES.length) % MODES.length] as Mode;
-
-/** Which mode a key moves to from the one selected, or nothing for a key the
- *  tablist does not own. Wrapping, both axes: the strip reads as a row and stacks
- *  to a column below 768 px. */
-const KEYS: Record<string, (from: Mode) => Mode> = {
-  ArrowRight: (from) => step(from, 1),
-  ArrowDown: (from) => step(from, 1),
-  ArrowLeft: (from) => step(from, -1),
-  ArrowUp: (from) => step(from, -1),
-  Home: () => MODES[0],
-  End: () => MODES[MODES.length - 1] as Mode,
-};
-
-/** The mode tabs. One tab stop for the three of them, arrows between: a tablist
- *  where every tab is tabbable puts three stops in front of the fields. */
-function ModeTabs({ mode, onSelect }: { mode: Mode; onSelect: (mode: Mode) => void }) {
-  const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    const next = KEYS[event.key]?.(mode);
-    if (!next) return;
-
-    onSelect(next);
-    // Focus follows the selection, because the roving `tabIndex` below is about
-    // to make the tab under it untabbable: leaving focus there would send the
-    // next Tab out of the tablist from a stop that no longer exists.
-    event.currentTarget.querySelector<HTMLButtonElement>(`#${tabId(next)}`)?.focus();
-    event.preventDefault();
-  };
-
-  return (
-    <div role="tablist" aria-label="job mode" className="vd-tabs" onKeyDown={onKeyDown}>
-      {MODES.map((candidate) => (
-        <button
-          key={candidate}
-          type="button"
-          role="tab"
-          id={tabId(candidate)}
-          aria-controls={PANEL_ID}
-          aria-selected={candidate === mode}
-          tabIndex={candidate === mode ? 0 : -1}
-          className={`vd-tab${candidate === mode ? ' vd-tab--selected' : ''}`}
-          onClick={() => onSelect(candidate)}
-        >
-          {candidate}
-        </button>
-      ))}
     </div>
   );
 }
@@ -352,37 +276,18 @@ function useJobForm(params: URLSearchParams): [JobForm, Patch, (mode: Mode) => v
  *  flight — distinct from a host that declares no image, which is a refusal
  *  rather than a wait. */
 function useRunnerFingerprint(): RunnerEnv | undefined {
-  const [runner, setRunner] = useState<RunnerEnv | undefined>(undefined);
-
-  useEffect(() => {
-    let live = true;
-
-    void (async () => {
-      try {
-        const response = await fetch('/api/env', { cache: 'no-store' });
-        const fingerprint = (await response.json()) as RunnerEnv;
-        if (live) setRunner(fingerprint);
-      } catch {
-        // Unreachable is not a match: the gate reads a null image as the refusal
-        // it is, which is the fail-closed answer.
-        if (live) {
-          setRunner({
-            platform: '?',
-            arch: '?',
-            image: null,
-            playwright: null,
-            docker: false,
-          });
-        }
-      }
-    })();
-
-    return () => {
-      live = false;
-    };
-  }, []);
-
-  return runner;
+  return useJsonOnMount<RunnerEnv | undefined>('/api/env', (body) => body as RunnerEnv, {
+    initial: undefined,
+    // Unreachable is not a match: the gate reads a null image as the refusal
+    // it is, which is the fail-closed answer.
+    unreachable: {
+      platform: '?',
+      arch: '?',
+      image: null,
+      playwright: null,
+      docker: false,
+    },
+  });
 }
 
 /**
@@ -393,29 +298,13 @@ function useRunnerFingerprint(): RunnerEnv | undefined {
  * means, and a build that lands is one poll of this away.
  */
 function useStories(): StoryTier[] {
-  const [tiers, setTiers] = useState<StoryTier[]>([]);
-
-  useEffect(() => {
-    let live = true;
-
-    void (async () => {
-      try {
-        const response = await fetch('/api/stories', { cache: 'no-store' });
-        const body = (await response.json()) as { tiers?: StoryTier[] };
-        if (live) setTiers(body.tiers ?? []);
-      } catch {
-        // Unreachable is an empty corpus: the picker then offers nothing to tick,
-        // which is a run over everything — the same thing the gate does.
-        if (live) setTiers([]);
-      }
-    })();
-
-    return () => {
-      live = false;
-    };
-  }, []);
-
-  return tiers;
+  return useJsonOnMount<StoryTier[]>(
+    '/api/stories',
+    (body) => (body as { tiers?: StoryTier[] }).tiers ?? [],
+    // Unreachable is an empty corpus: the picker then offers nothing to tick,
+    // which is a run over everything — the same thing the gate does.
+    { initial: [], unreachable: [] },
+  );
 }
 
 /**
