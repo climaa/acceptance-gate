@@ -303,6 +303,37 @@ describe('the selected tab in the URL', () => {
     expect(written()).toEqual([`/?${PAIR}`]);
   });
 
+  /**
+   * `?mode=accept` was a shareable URL for two months, and those links are in
+   * people's history. `isMode` rejects the value, `readPrefill` returns null,
+   * and the panel opens where a bare `/` opens.
+   *
+   * The pair going with it is the part worth pinning rather than merely
+   * observing: `readPrefill` returns null WHOLESALE on an unknown mode, so `a`
+   * and `b` are dropped too. That is the same answer a bare `?a&b` with no mode
+   * has always given, so it is consistent rather than a second rule — but it is
+   * the behaviour a future "ignore just the mode" refactor would quietly change.
+   */
+  it('opens a stale ?mode=accept link on capture, pair and all', () => {
+    renderPanel({ query: `${PAIR}&mode=accept` });
+
+    expect(tab('capture').getAttribute('aria-selected')).toBe('true');
+    expect(screen.queryAllByRole('tab', { name: 'accept' })).toHaveLength(0);
+    // Not merely "no crash": nothing was written back to the URL either, so the
+    // reader is not handed a corrected link they did not ask for.
+    expect(written()).toEqual([]);
+
+    // And the pair really is gone, asserted rather than described — this is the
+    // half an "ignore just the mode" refactor would change without touching
+    // anything above.
+    selectTab('compare');
+    expect(screen.getByRole('textbox', { name: 'baseline' })).toHaveProperty('value', '');
+    expect(screen.getByRole('textbox', { name: 'candidate' })).toHaveProperty(
+      'value',
+      '',
+    );
+  });
+
   it('writes the mode reached with the arrow keys', () => {
     renderPanel();
 
@@ -512,8 +543,8 @@ describe('starting a job', () => {
   });
 
   // A refusal answers the request that earned it. Carrying it into another mode
-  // makes the panel say no to a question nobody asked — and in `accept`, where
-  // `GateNotice` draws its own alert, it is the two-alert failure again.
+  // makes the panel say no to a question nobody asked — and beside any alert the
+  // next mode draws of its own, it is the two-alert failure again.
   it('clears a refusal when the reviewer changes mode', async () => {
     renderPanel({ jobs: { ok: false, status: 409, body: { error: JOB_RUNNING } } });
     fireEvent.change(screen.getByRole('textbox', { name: 'label' }), {
@@ -870,8 +901,8 @@ describe('capture on a host that is not the pinned container', () => {
 /**
  * The local gate. A deployment has no checkout to compare, no Storybook build to
  * serve and no browser to drive, so there is nothing a reviewer could do in this
- * tab to make the button work — which is the rule `isRefused` states for the
- * host gate, applied one level up: absent, not disabled.
+ * tab to make the button work — so the control is absent, not disabled. A greyed
+ * button invites a reader to hunt for the way to enable it; there is none here.
  */
 describe('a deployed console', () => {
   it('offers no start button at all', () => {

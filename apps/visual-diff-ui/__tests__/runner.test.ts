@@ -584,6 +584,39 @@ describe('confinement', () => {
     expect(artifactTree()).toBe(artifactsBefore);
   });
 
+  /**
+   * The one compare that reaches outside the data directory, pinned as read-only.
+   *
+   * `CANONICAL_LABEL` resolves into the CHECKOUT — `shotsDir` says why it is the
+   * single exception — so it is the only path where a write could land on the
+   * corpus CI compares against. The case above covers a compare between two
+   * data-directory sets, which never had a route there.
+   *
+   * This guard used to be carried by the compare-and-accept case, whose accept
+   * half was the dangerous one: `promote` took a `--data-dir` and would have
+   * rewritten `packages/visual-diff/__baselines__` if it ever defaulted. That
+   * subcommand is gone with the console's accept tab, and this is what is left
+   * worth guarding — the read that still happens.
+   */
+  it('reads the committed corpus for a compare without writing a byte of it', async () => {
+    const dir = makeDataDir();
+    seedSet(dir, 'candidate-set', fixtureShots('candidate'));
+    const before = committedTrees();
+    const artifactsBefore = artifactTree();
+
+    const outcome = await compareSets(
+      dir,
+      { mode: 'compare', baseline: CANONICAL_LABEL, candidate: 'candidate-set' },
+      silent,
+    );
+
+    // Non-vacuous: the compare has to have actually read the corpus and written
+    // its report, or "nothing changed" would hold for a run that did nothing.
+    expect(outcome.reportId).toBe(`${CANONICAL_LABEL}__candidate-set`);
+    expect(committedTrees()).toBe(before);
+    expect(artifactTree()).toBe(artifactsBefore);
+  });
+
   it('refuses a set label that climbs out of the data directory', async () => {
     const dir = makeDataDir();
 
