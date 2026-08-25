@@ -220,7 +220,8 @@ async function listedLabels(vd: ConsolePage): Promise<string[]> {
 }
 
 /**
- * Mark every section the report drew, one click each.
+ * Mark every section the report drew, one click each, and answer how many that
+ * was.
  *
  * A section checkbox is handed `section.variantKeys` — every variant of that
  * section, not the cards currently on screen — so this is a whole-report pass
@@ -228,20 +229,30 @@ async function listedLabels(vd: ConsolePage): Promise<string[]> {
  *
  * Counted off the page rather than listed: an empty tier is not rendered at all,
  * and the accessibility section appears only when a run found violations.
+ *
+ * **Zero is an answer, not a failure.** This used to open by demanding a story
+ * card, and that demand was wrong: the scenario captures the corpus and compares
+ * it against the corpus, so on a branch that moved no pixels every variant
+ * matches and the report draws no rows at all. The feature asks for "whichever
+ * ones the report drew", which admits none. The caller decides what to assert
+ * about each case; this one only reports what it found.
+ *
+ * The progress figure is the settle point the card assertion used to be by
+ * accident. It is drawn either way — `reviewed 0/0` on a clean run — so waiting
+ * for it means a count of zero is the report's answer rather than a race with
+ * its first paint.
  */
-async function markEverySection(report: ReportPage) {
-  await expect(
-    report.storyCards.first(),
-    'this report drew no story cards, so there is nothing to read through',
-  ).toBeVisible();
+async function markEverySection(report: ReportPage): Promise<number> {
+  await expect(report.reviewProgress).toBeVisible();
 
   const sections = report.resultSections;
   const drawn = await sections.count();
-  expect(drawn, 'this report drew no sections to read through').toBeGreaterThan(0);
 
   for (let index = 0; index < drawn; index += 1) {
     await report.sectionCheckbox(sections.nth(index)).check();
   }
+
+  return drawn;
 }
 
 /** The report the newest finished job wrote, read off its own link — the lane's
@@ -474,14 +485,24 @@ When('I read the whole report through', async ({ console: vd, report, localState
   localState.reportId = await reportIdFromJob(vd);
 
   await report.openHere(localState.reportId);
-  await markEverySection(report);
+  const drawn = await markEverySection(report);
 
-  await expect(report.uncheckedCards()).toHaveCount(0);
-  // Not vacuous: a report with no cards would satisfy the line above on its own.
-  await expect(report.checkedCards()).not.toHaveCount(0);
+  if (drawn === 0) {
+    // A clean run: nothing to read through, and the report says exactly that
+    // rather than drawing an empty list. Asserted rather than skipped — the
+    // verdict is the thing being read here.
+    await expect(report.nothingMoved).toBeVisible();
+  } else {
+    await expect(report.uncheckedCards()).toHaveCount(0);
+    // Not vacuous: a report with no cards would satisfy the line above on its
+    // own, which is why it is inside the branch that knows there are some.
+    await expect(report.checkedCards()).not.toHaveCount(0);
+  }
+
   // The pinned `reviewed N/M` format, asserted as N === M through a backreference
   // rather than against a number this lane may not know. Anchored at both ends:
-  // `toHaveText` does not anchor a RegExp for you.
+  // `toHaveText` does not anchor a RegExp for you. True of both branches — a
+  // clean run reads `reviewed 0/0`.
   await expect(report.reviewProgress).toHaveText(/^reviewed (\d+)\/\1$/);
 });
 

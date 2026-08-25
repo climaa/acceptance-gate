@@ -1,5 +1,13 @@
 // @vitest-environment jsdom
-import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
+import {
+  act,
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react';
 import { useEffect } from 'react';
 // Imported explicitly rather than relying on `globals: true` — tsconfig's
 // `**/*.tsx` include means tsc typechecks this file.
@@ -10,6 +18,7 @@ import {
   useCurrentJob,
   usePollNow,
 } from '../components/CurrentJob';
+import { DISMISS_STORAGE_KEY } from '../lib/dismiss-state';
 import type { HistoryRecord } from '../lib/jobs';
 import { refreshCalls } from './stubs/next-navigation';
 
@@ -32,6 +41,9 @@ afterEach(() => {
   // after it would time out on a clock nobody is advancing.
   vi.useRealTimers();
   refreshCalls.length = 0;
+  // The dismissed job id outlives a render the same way, and every case below
+  // that does not dismiss anything expects to start with nothing put away.
+  localStorage.clear();
   // The visibility getter is redefined on `document` itself, which outlives a
   // render — a test that left it hidden would silence every poll after it.
   setVisibility('visible');
@@ -685,5 +697,141 @@ describe('an out-of-band poll request', () => {
     // One chain at 400ms of work plus a 1s wait is 7-9 requests in ten seconds.
     // Two chains were measured at 16.
     expect(calls).toBeLessThan(12);
+  });
+});
+
+/**
+ * Putting the last run away.
+ *
+ * `GET /api/jobs/current` answers with the last finished run when nothing is
+ * running, deliberately — so on any instance that has ever run anything, the
+ * panel's empty state is otherwise unreachable. These cases are the way back to
+ * it, and the guard rails around it: a dismissal hides one job id in one
+ * browser, and never touches the run.
+ */
+describe('dismissing the run on the card', () => {
+  const dismissButton = () => screen.queryByRole('button', { name: 'dismiss this run' });
+
+  it('replaces a finished run with the empty state', async () => {
+    stubCurrent({ running: false, job: FINISHED });
+    renderCurrentJob();
+    await screen.findByText(FINISHED.label);
+
+    fireEvent.click(dismissButton() as HTMLElement);
+
+    expect(screen.getByText('Nothing running. Start a job above.')).toBeDefined();
+    expect(screen.queryByText(FINISHED.label)).toBeNull();
+  });
+
+  // The panel this console polls once a second must never be silent about work
+  // in flight, so there is nothing to press while a job is running.
+  it('offers nothing to press while a job is running', async () => {
+    stubCurrent({ running: true, job: RUNNING });
+    renderCurrentJob();
+    await screen.findByText(RUNNING.label);
+
+    expect(dismissButton()).toBeNull();
+  });
+
+  // Absent rather than disabled, the same answer the label wand gives: there is
+  // no run on the card to put away.
+  it('offers nothing to press once the run is already put away', async () => {
+    stubCurrent({ running: false, job: FINISHED });
+    renderCurrentJob();
+    await screen.findByText(FINISHED.label);
+
+    fireEvent.click(dismissButton() as HTMLElement);
+
+    expect(dismissButton()).toBeNull();
+  });
+
+  // The dismissal is keyed on the job id and nothing else, which is what makes
+  // it self-clearing: the next run is a different id and arrives unasked.
+  it('shows the next run without being asked again', async () => {
+    const next: HistoryRecord = {
+      ...FINISHED,
+      id: '2026-08-17T09-00-00Z-capture',
+      label: 'main-2026-08-17',
+    };
+    stubCurrent({ running: false, job: FINISHED });
+    renderCurrentJob();
+    await screen.findByText(FINISHED.label);
+    fireEvent.click(dismissButton() as HTMLElement);
+
+    stubCurrent({ running: false, job: next });
+
+    expect(await screen.findByText(next.label)).toBeDefined();
+    expect(dismissButton()).not.toBeNull();
+  });
+
+  /**
+   * The probe is what makes the reload case mean anything: the panel is empty
+   * before the first poll lands too, so without waiting for the answer to
+   * arrive the assertion would pass on a build that never dismissed anything.
+   */
+  function JobProbe() {
+    const { job } = useCurrentJob();
+
+    return <span data-testid="polled">{job?.id ?? 'none'}</span>;
+  }
+
+  it('is still put away after a reload', async () => {
+    stubCurrent({ running: false, job: FINISHED });
+    renderCurrentJob();
+    await screen.findByText(FINISHED.label);
+    fireEvent.click(dismissButton() as HTMLElement);
+    cleanup();
+
+    render(
+      <CurrentJobProvider>
+        <CurrentJob />
+        <JobProbe />
+      </CurrentJobProvider>,
+    );
+
+    await waitFor(() =>
+      expect(screen.getByTestId('polled').textContent).toBe(FINISHED.id),
+    );
+    expect(within(region()).queryByText(FINISHED.label)).toBeNull();
+    expect(
+      within(region()).getByText('Nothing running. Start a job above.'),
+    ).toBeDefined();
+  });
+
+  /**
+   * Private mode, and site data blocked. The snapshot moves before the write, so
+   * the reader still gets what they asked for — losing it on the next load is
+   * the documented failure; a button that does nothing is not.
+   */
+  it('puts the run away even when storage refuses the write', async () => {
+    const setItem = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new Error('storage is full');
+    });
+    stubCurrent({ running: false, job: FINISHED });
+    renderCurrentJob();
+    await screen.findByText(FINISHED.label);
+
+    fireEvent.click(dismissButton() as HTMLElement);
+
+    expect(screen.getByText('Nothing running. Start a job above.')).toBeDefined();
+    setItem.mockRestore();
+  });
+
+  /**
+   * Two console tabs both poll this panel. `storage` fires in every OTHER
+   * document on the origin, so without it one tab goes on showing a run the
+   * other put away.
+   */
+  it('follows a dismissal made in another tab', async () => {
+    stubCurrent({ running: false, job: FINISHED });
+    renderCurrentJob();
+    await screen.findByText(FINISHED.label);
+
+    localStorage.setItem(DISMISS_STORAGE_KEY, FINISHED.id);
+    act(() => {
+      window.dispatchEvent(new StorageEvent('storage', { key: DISMISS_STORAGE_KEY }));
+    });
+
+    expect(screen.getByText('Nothing running. Start a job above.')).toBeDefined();
   });
 });

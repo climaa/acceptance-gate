@@ -22,6 +22,7 @@ export class ReportPage {
   readonly results: Locator;
   readonly resultSections: Locator;
   readonly storyCards: Locator;
+  readonly nothingMoved: Locator;
   readonly a11ySection: Locator;
   readonly backToConsole: Locator;
 
@@ -55,6 +56,13 @@ export class ReportPage {
     this.storyCards = this.results
       .getByRole('article')
       .filter({ has: page.getByRole('checkbox') });
+    // The verdict a clean run draws INSTEAD of rows: every variant matched its
+    // baseline, so the comparison wrote nothing to review. It is an
+    // `EmptyState`, which carries no role of its own, so it is pinned by its
+    // copy — the same way this lane pins the console's refusal sentences.
+    // `ReportResults.tsx` owns the wording (`NOTHING_MOVED`); only its opening
+    // is matched here, so a reworded tail does not red the lane.
+    this.nothingMoved = this.results.getByText(/^Nothing moved —/);
     this.a11ySection = this.results.getByRole('region', { name: 'Accessibility' });
     // The way back out of a report. Its accessible name is its text — an arrow
     // and the word — because `ReportTemplate` gives it no `aria-label`, so the

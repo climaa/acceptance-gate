@@ -11,7 +11,8 @@ import {
   useRef,
   useState,
 } from 'react';
-import { EmptyState, Link, Stack } from '@gate/ui';
+import { EmptyState, IconButton, Link, Stack } from '@gate/ui';
+import { useDismissedJob } from '@/hooks/useDismissedJob';
 import type { HistoryRecord } from '@/lib/jobs';
 import { durationOf, formatDuration, jobState } from '@/lib/outcome';
 import { LogTail } from './LogTail';
@@ -42,6 +43,11 @@ export const CURRENT_JOB_ANCHOR = 'vd-current-job';
 const CURRENT_JOB_TITLE = 'Current job';
 
 const NOTHING_RUNNING = 'Nothing running. Start a job above.';
+
+/** The dismiss control's accessible name, and its tooltip — `IconButton`
+ *  makes them the same string. "this run" rather than "this panel": what goes
+ *  away is one finished job, not the region. */
+const DISMISS_LABEL = 'dismiss this run';
 
 const CURRENT_ENDPOINT = '/api/jobs/current';
 
@@ -483,6 +489,31 @@ function JobView({ job, running, reportExists, log }: JobViewProps) {
 }
 
 /**
+ * The glyph, lucide's `x` — the one Board 04 draws in the CURRENT JOB title row.
+ *
+ * Copied by hand rather than pulled from a package: this repo has no icon
+ * dependency, and every glyph in it is inline SVG. No `width`, no `height` and
+ * no `aria-hidden` — `IconButton` sizes the glyph through `.ds-icon-btn__glyph`
+ * and hides it from the accessibility tree itself, which is the whole reason the
+ * atom wraps what it is handed.
+ */
+function DismissGlyph() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M18 6 6 18" />
+      <path d="m6 6 12 12" />
+    </svg>
+  );
+}
+
+/**
  * The panel itself.
  *
  * It brings its own section rather than borrowing the dashboard's `Panel`,
@@ -493,7 +524,16 @@ function JobView({ job, running, reportExists, log }: JobViewProps) {
  */
 export function CurrentJob() {
   const state = useCurrentJob();
+  const { dismissed, dismiss } = useDismissedJob();
   const titleId = `${CURRENT_JOB_ANCHOR}-title`;
+
+  /* A job is put away only while it is finished. `running` outranks a dismissal
+     rather than being checked alongside it, so a label a reader dismissed
+     yesterday cannot hide a run starting now under the same id — and so the
+     panel this console polls once a second can never be silent about work in
+     flight. */
+  const job =
+    state.job !== null && !state.running && state.job.id === dismissed ? null : state.job;
 
   return (
     <section
@@ -504,15 +544,37 @@ export function CurrentJob() {
       className="vd-panel"
     >
       <Stack gap={4}>
-        <h2 className="vd-panel__title" id={titleId}>
-          {CURRENT_JOB_TITLE}
-        </h2>
+        {/* The button is a SIBLING of the heading, never a child of it: the
+            section is named through `aria-labelledby`, and a control inside the
+            heading would append its own name to the region's — which is the
+            string `apps/e2e/pages/console.ts` finds this panel by. */}
+        <Stack direction="row" gap={2} justify="space-between" align="center">
+          <h2 className="vd-panel__title" id={titleId}>
+            {CURRENT_JOB_TITLE}
+          </h2>
 
-        {state.job === null ? (
+          {job !== null && !state.running && (
+            <IconButton
+              label={DISMISS_LABEL}
+              variant="ghost"
+              size="sm"
+              /* `aria-live="off"`, the same opt-out the elapsed figure takes
+                 above. This section is a polite live region, and without it the
+                 button's name is read out as part of every announcement of the
+                 job's state. */
+              aria-live="off"
+              onClick={() => dismiss(job.id)}
+            >
+              <DismissGlyph />
+            </IconButton>
+          )}
+        </Stack>
+
+        {job === null ? (
           <EmptyState message={NOTHING_RUNNING} />
         ) : (
           <JobView
-            job={state.job}
+            job={job}
             running={state.running}
             reportExists={state.reportExists}
             log={state.log}

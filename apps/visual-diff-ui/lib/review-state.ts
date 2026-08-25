@@ -9,24 +9,15 @@
  * Pinned in this issue rather than in the screen that first draws it, because
  * two later ones read the same key: the report review loop, and the accept gate
  * that refuses to accept baselines nobody has reviewed.
+ *
+ * `dismiss-state.ts` is the same three parts over a different key — see its
+ * header for why the two are not merged, and what would change that.
  */
+
+import { withStorage } from './browser-storage';
 
 /** `vd-review:<reportId>` → a JSON array of variant keys. */
 export const reviewStorageKey = (reportId: string) => `vd-review:${reportId}`;
-
-/**
- * Storage throws rather than returning null in private mode and with site data
- * blocked, and is absent entirely on the server. Both collapse to "no marks":
- * losing a place-keeper is a smaller failure than a console that throws.
- */
-function withStorage<T>(fallback: T, operation: (storage: Storage) => T): T {
-  try {
-    if (typeof localStorage === 'undefined') return fallback;
-    return operation(localStorage);
-  } catch {
-    return fallback;
-  }
-}
 
 const isVariantKeyList = (value: unknown): value is string[] =>
   Array.isArray(value) && value.every((entry) => typeof entry === 'string');

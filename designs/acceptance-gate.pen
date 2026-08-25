@@ -14766,6 +14766,19 @@
               "fontWeight": "600"
             },
             {
+              "type": "text",
+              "id": "PTGHo",
+              "name": "note",
+              "fill": "$ink-muted",
+              "textGrowth": "fixed-width",
+              "width": 1000,
+              "content": "CURRENT JOB carries a ghost IconButton that dismisses the run on the card — the panel answers with the LAST run when nothing is running, so this is the only way back to the empty state drawn here. It is present only while a FINISHED run is showing: absent on a fresh instance, and absent while a job is running. A dismissal is browser-only and keyed on the job id — the history row, the log and the report are untouched, and the next run brings the card back.",
+              "lineHeight": 1.5,
+              "fontFamily": "$font-body",
+              "fontSize": 13,
+              "fontWeight": "normal"
+            },
+            {
               "type": "frame",
               "id": "uCQfj",
               "name": "row",
@@ -16369,27 +16382,55 @@
                                       "name": "ptrow",
                                       "width": "fill_container",
                                       "gap": 8,
+                                      "justifyContent": "space_between",
                                       "alignItems": "center",
                                       "children": [
                                         {
                                           "type": "frame",
-                                          "id": "Dlydf",
-                                          "name": "tick",
-                                          "width": 14,
-                                          "height": 3,
-                                          "fill": "$accent",
-                                          "cornerRadius": 2
+                                          "id": "wOdAA",
+                                          "name": "pthead",
+                                          "gap": 8,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "frame",
+                                              "id": "Dlydf",
+                                              "name": "tick",
+                                              "width": 14,
+                                              "height": 3,
+                                              "fill": "$accent",
+                                              "cornerRadius": 2
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "hXsN6",
+                                              "name": "pt",
+                                              "fill": "$text-muted",
+                                              "content": "CURRENT JOB",
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 11,
+                                              "fontWeight": "700",
+                                              "letterSpacing": 1
+                                            }
+                                          ]
                                         },
                                         {
-                                          "type": "text",
-                                          "id": "hXsN6",
-                                          "name": "pt",
-                                          "fill": "$text-muted",
-                                          "content": "CURRENT JOB",
-                                          "fontFamily": "$font-mono",
-                                          "fontSize": 11,
-                                          "fontWeight": "700",
-                                          "letterSpacing": 1
+                                          "id": "HkCBn",
+                                          "type": "ref",
+                                          "ref": "e8ZNz6",
+                                          "name": "dismiss this run",
+                                          "width": 23,
+                                          "height": 23,
+                                          "cornerRadius": 6,
+                                          "fill": "#00000000",
+                                          "strokeWidth": 0,
+                                          "descendants": {
+                                            "BsEmB": {
+                                              "width": 12,
+                                              "height": 12,
+                                              "icon": "x"
+                                            }
+                                          }
                                         }
                                       ]
                                     },
@@ -18724,27 +18765,55 @@
                                       "name": "ptrow",
                                       "width": "fill_container",
                                       "gap": 8,
+                                      "justifyContent": "space_between",
                                       "alignItems": "center",
                                       "children": [
                                         {
                                           "type": "frame",
-                                          "id": "u9bMdj",
-                                          "name": "tick",
-                                          "width": 14,
-                                          "height": 3,
-                                          "fill": "$accent",
-                                          "cornerRadius": 2
+                                          "id": "kn9Z2",
+                                          "name": "pthead",
+                                          "gap": 8,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "frame",
+                                              "id": "u9bMdj",
+                                              "name": "tick",
+                                              "width": 14,
+                                              "height": 3,
+                                              "fill": "$accent",
+                                              "cornerRadius": 2
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "lhKve",
+                                              "name": "pt",
+                                              "fill": "$text-muted",
+                                              "content": "CURRENT JOB",
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 11,
+                                              "fontWeight": "700",
+                                              "letterSpacing": 1
+                                            }
+                                          ]
                                         },
                                         {
-                                          "type": "text",
-                                          "id": "lhKve",
-                                          "name": "pt",
-                                          "fill": "$text-muted",
-                                          "content": "CURRENT JOB",
-                                          "fontFamily": "$font-mono",
-                                          "fontSize": 11,
-                                          "fontWeight": "700",
-                                          "letterSpacing": 1
+                                          "id": "Ymmvm",
+                                          "type": "ref",
+                                          "ref": "e8ZNz6",
+                                          "name": "dismiss this run",
+                                          "width": 23,
+                                          "height": 23,
+                                          "cornerRadius": 6,
+                                          "fill": "#00000000",
+                                          "strokeWidth": 0,
+                                          "descendants": {
+                                            "BsEmB": {
+                                              "width": 12,
+                                              "height": 12,
+                                              "icon": "x"
+                                            }
+                                          }
                                         }
                                       ]
                                     },

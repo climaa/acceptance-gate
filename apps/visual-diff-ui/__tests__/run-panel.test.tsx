@@ -11,7 +11,7 @@ import { HOST } from '@gate/visual-diff/policy';
 // Imported explicitly rather than relying on `globals: true` — tsconfig's
 // `**/*.tsx` include means tsc typechecks this file.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { CurrentJobProvider } from '../components/CurrentJob';
+import { CurrentJob, CurrentJobProvider } from '../components/CurrentJob';
 import {
   DOCKER_REFUSAL,
   REMOTE_REFUSAL,
@@ -21,6 +21,7 @@ import {
 } from '../components/RunPanel';
 import type { ReportListEntry } from '../lib/data';
 import type { HistoryRecord } from '../lib/jobs';
+import { DISMISS_STORAGE_KEY } from '../lib/dismiss-state';
 import { DOCKER_DOWN, JOB_RUNNING, NOT_LOCAL } from '../lib/refusals';
 import { reviewStorageKey } from '../lib/review-state';
 import { refreshCalls, replaceCalls, setSearchParams } from './stubs/next-navigation';
@@ -1135,5 +1136,122 @@ describe('the accept gate on a report with an accessibility failure', () => {
 
     const alert = await screen.findByRole('alert');
     expect(alert.textContent).toMatch(/accessibility/i);
+  });
+});
+
+/**
+ * The start button clearing the card below it.
+ *
+ * Pressing start does what the region's own × does, and does it on the CLICK:
+ * `POST /api/jobs` runs a synchronous `docker info` before it answers a capture,
+ * so waiting for the answer would leave the last run's verdict on screen for up
+ * to three seconds under a button that had already greyed out.
+ *
+ * Both halves are rendered here, unlike everywhere else in this file. The
+ * behaviour is a button in one component and a region in another, and a case
+ * that rendered only the panel would asserting nothing about what a reviewer
+ * sees.
+ */
+describe('starting a job clears the region below', () => {
+  const FINISHED: HistoryRecord = {
+    id: '2026-08-17T07-00-00Z-compare',
+    mode: 'compare',
+    label: 'a-run-that-already-ended',
+    startedAt: '2026-08-17T07:00:00Z',
+    endedAt: '2026-08-17T07:01:00Z',
+    exitCode: 0,
+    reportId: null,
+  };
+
+  /**
+   * The panel and the region it fills, under the one provider that polls for
+   * both — the same arrangement `DashboardTemplate` renders.
+   *
+   * Takes `ApiStub` and not `PanelCase`, unlike `renderPanel` above. The panel's
+   * own props are fixed here — a local console, not sample, one report — because
+   * every case below is about what the start button does to the region, and a
+   * helper that accepted `isLocal` while hardcoding it would hand a future case
+   * a local panel and let it assert against the wrong surface in silence.
+   */
+  function renderBoth(api: ApiStub = {}) {
+    const fetchMock = stubApi(api);
+
+    render(
+      <CurrentJobProvider>
+        <RunPanel isSample={false} isLocal reports={[REPORT]} />
+        <CurrentJob />
+      </CurrentJobProvider>,
+    );
+
+    return fetchMock;
+  }
+
+  const card = () => within(screen.getByRole('region', { name: 'Current job' }));
+
+  const startCapture = () => {
+    fireEvent.change(screen.getByRole('textbox', { name: 'label' }), {
+      target: { value: 'main-2026-08-17' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'start capture' }));
+  };
+
+  it('puts the last run away on the click, before the server has answered', async () => {
+    renderBoth({ current: { running: false, job: FINISHED } });
+    await waitFor(() => expect(card().queryByText(FINISHED.label)).not.toBeNull());
+
+    startCapture();
+
+    // Asserted with no `await` in between: the point is that the region cleared
+    // on the click rather than on the answer that has not arrived yet.
+    expect(card().queryByText(FINISHED.label)).toBeNull();
+    expect(card().getByText('Nothing running. Start a job above.')).toBeDefined();
+  });
+
+  it('gives the run back when the server refuses the start', async () => {
+    renderBoth({
+      current: { running: false, job: FINISHED },
+      jobs: { ok: false, status: 409, body: { error: JOB_RUNNING } },
+    });
+    await waitFor(() => expect(card().queryByText(FINISHED.label)).not.toBeNull());
+
+    startCapture();
+
+    expect(card().queryByText(FINISHED.label)).toBeNull();
+    await waitFor(() => expect(card().queryByText(FINISHED.label)).not.toBeNull());
+  });
+
+  /**
+   * A start from a region that had nothing in it must not write a dismissal.
+   * Asserted on the ACCEPTED path, because on the refused one the restore below
+   * would put storage back either way and hide the mistake.
+   */
+  it('writes no dismissal when the region was already empty', async () => {
+    const fetchMock = renderBoth({ current: { running: false, job: null } });
+
+    startCapture();
+
+    await waitFor(() =>
+      expect(fetchMock).toHaveBeenCalledWith('/api/jobs', expect.anything()),
+    );
+    expect(localStorage.getItem(DISMISS_STORAGE_KEY)).toBeNull();
+    expect(card().getByText('Nothing running. Start a job above.')).toBeDefined();
+  });
+
+  /**
+   * A run the reviewer had already put away by hand stays away. The store's
+   * early return is what makes both calls no-ops here — without it the refusal
+   * would restore a dismissal the reviewer never lifted.
+   */
+  it('keeps an already-dismissed run dismissed through a refused start', async () => {
+    localStorage.setItem(DISMISS_STORAGE_KEY, FINISHED.id);
+    renderBoth({
+      current: { running: false, job: FINISHED },
+      jobs: { ok: false, status: 409, body: { error: JOB_RUNNING } },
+    });
+
+    startCapture();
+
+    await waitFor(() => expect(screen.getAllByRole('alert')).toHaveLength(1));
+    expect(card().queryByText(FINISHED.label)).toBeNull();
   });
 });
