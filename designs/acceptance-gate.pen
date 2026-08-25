@@ -7628,31 +7628,6 @@
                                       "fontWeight": "normal"
                                     }
                                   ]
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "CB8gK",
-                                  "name": "tab",
-                                  "fill": "$bg",
-                                  "cornerRadius": 5,
-                                  "stroke": "$border",
-                                  "strokeWidth": 1,
-                                  "padding": [
-                                    2,
-                                    5
-                                  ],
-                                  "children": [
-                                    {
-                                      "type": "text",
-                                      "id": "ISasA",
-                                      "name": "t",
-                                      "fill": "$text-muted",
-                                      "content": "accept",
-                                      "fontFamily": "$font-mono",
-                                      "fontSize": 9,
-                                      "fontWeight": "normal"
-                                    }
-                                  ]
                                 }
                               ]
                             },
@@ -7727,7 +7702,7 @@
                               "fill": "$ink-muted",
                               "textGrowth": "fixed-width",
                               "width": "fill_container",
-                              "content": "mode tabs capture / compare / accept + label / filter / viewports + --skip-build, verbatim mono flag names. THREE, not four: capture and run spawned the same argv — runCheck never read the mode — so run was a second name for one job. accept is gated per D3 — no run button off the pinned container.",
+                              "content": "mode tabs capture / compare + label / filter / viewports + --skip-build, verbatim mono flag names. TWO, not four: capture and run spawned the same argv — runCheck never read the mode — so run was a second name for one job, and accept never belonged here at all. The corpus CI compares against changes by a commit, not by this console.",
                               "lineHeight": 1.4,
                               "fontFamily": "$font-body",
                               "fontSize": 11,
@@ -8449,7 +8424,7 @@
                               "fill": "$ink-muted",
                               "textGrowth": "fixed-width",
                               "width": "fill_container",
-                              "content": "violation list replaces the diff pane; no accept affordance. The bucket outranks the pixel verdict — the anti-Chromatic piece.",
+                              "content": "violation list replaces the diff pane; never acceptable at all. The bucket outranks the pixel verdict — the anti-Chromatic piece.",
                               "lineHeight": 1.4,
                               "fontFamily": "$font-body",
                               "fontSize": 11,
@@ -11732,7 +11707,7 @@
                   "fill": "$ink-muted",
                   "textGrowth": "fixed-width",
                   "width": "fill_container",
-                  "content": "The violation list replaces the diff pane — the pixels can be identical. No accept affordance: the bucket outranks the pixel verdict and never folds into changed/unchanged. No precedent in either prior implementation.",
+                  "content": "The violation list replaces the diff pane — the pixels can be identical. Never acceptable at all: the bucket outranks the pixel verdict and never folds into changed/unchanged. No precedent in either prior implementation.",
                   "lineHeight": 1.45,
                   "fontFamily": "$font-body",
                   "fontSize": 12,
@@ -11860,8 +11835,8 @@
                         },
                         {
                           "type": "frame",
-                          "id": "sqXMB",
-                          "name": "acceptbtn",
+                          "id": "UtJFt",
+                          "name": "dispatchbtn",
                           "fill": "$accent",
                           "cornerRadius": 5,
                           "padding": [
@@ -11871,10 +11846,10 @@
                           "children": [
                             {
                               "type": "text",
-                              "id": "Hvp1l",
+                              "id": "zHd52",
                               "name": "t",
                               "fill": "$bg",
-                              "content": "accept baselines →",
+                              "content": "dispatch accept-baselines →",
                               "fontFamily": "$font-mono",
                               "fontSize": 9,
                               "fontWeight": "700"
@@ -11945,7 +11920,7 @@
                   "fill": "$ink-muted",
                   "textGrowth": "fixed-width",
                   "width": "fill_container",
-                  "content": "Review complete → accept job → the corpus is rewritten. Atomic per commands.mjs: over budget = exit 2, nothing written. a11y variants are never acceptable. The save action that closes the loop — README §Running the pinned container locally.",
+                  "content": "Review complete → dispatch accept-baselines → the workflow runs accept in the pinned container and commits the corpus to the branch. Atomic per commands.mjs: over budget = exit 2, nothing written. a11y variants are never acceptable. The console reviews; it never accepts — its promote writes the instance's own data directory, never the committed corpus.",
                   "lineHeight": 1.45,
                   "fontFamily": "$font-body",
                   "fontSize": 12,
@@ -12348,7 +12323,7 @@
                           "fill": "$warning-fg",
                           "textGrowth": "fixed-width",
                           "width": "fill_container",
-                          "content": "host ≠ v1.62.1-noble — a bare-metal accept silently writes wrong baselines. No run button below this bar.",
+                          "content": "a bare-metal accept silently writes baselines rendered by the host's font stack — the CLI has no host guard to stop it. Both ways in run the pinned container.",
                           "lineHeight": 1.35,
                           "fontFamily": "$font-mono",
                           "fontSize": 9,
@@ -12408,43 +12383,6 @@
                           "fontWeight": "normal"
                         }
                       ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "FP3dA",
-                      "name": "copy",
-                      "fill": "$bg",
-                      "cornerRadius": 5,
-                      "stroke": "$border-strong",
-                      "strokeWidth": 1,
-                      "gap": 4,
-                      "padding": [
-                        2,
-                        8
-                      ],
-                      "alignItems": "center",
-                      "children": [
-                        {
-                          "type": "icon",
-                          "id": "JHaXk",
-                          "name": "i",
-                          "width": 10,
-                          "height": 10,
-                          "icon": "copy",
-                          "library": "lucide",
-                          "fill": "$text"
-                        },
-                        {
-                          "type": "text",
-                          "id": "t8qlFS",
-                          "name": "t",
-                          "fill": "$text",
-                          "content": "copy command",
-                          "fontFamily": "$font-mono",
-                          "fontSize": 9,
-                          "fontWeight": "normal"
-                        }
-                      ]
                     }
                   ]
                 },
@@ -12455,7 +12393,7 @@
                   "fill": "$ink-muted",
                   "textGrowth": "fixed-width",
                   "width": "fill_container",
-                  "content": "The CLI's accept has no host guard — the UI is the guard it lacks: fingerprint match against policy.HOST gates the run button; below the bar the mode degrades to a copyable docker command, never a button. Recovery after a bad accept: git checkout -- __baselines__/ && git clean -fd __baselines__/.",
+                  "content": "The CLI's accept has no host guard — a bare-metal run succeeds and the corruption only surfaces when CI's guard trips on the next check. Two ways in, both container-run: dispatch accept-baselines on the branch (nothing to install), or run the pinned container locally. The console never accepts — its promote writes the instance's own data directory, and the committed corpus changes by a commit a person reviews.",
                   "lineHeight": 1.45,
                   "fontFamily": "$font-body",
                   "fontSize": 12,
@@ -16108,31 +16046,6 @@
                                               "fontWeight": "normal"
                                             }
                                           ]
-                                        },
-                                        {
-                                          "type": "frame",
-                                          "id": "TJdfj",
-                                          "name": "tab",
-                                          "fill": "$bg",
-                                          "cornerRadius": 6,
-                                          "stroke": "$border",
-                                          "strokeWidth": 1,
-                                          "padding": [
-                                            4,
-                                            12
-                                          ],
-                                          "children": [
-                                            {
-                                              "type": "text",
-                                              "id": "tMMGk",
-                                              "name": "t",
-                                              "fill": "$text-muted",
-                                              "content": "accept",
-                                              "fontFamily": "$font-mono",
-                                              "fontSize": 11,
-                                              "fontWeight": "normal"
-                                            }
-                                          ]
                                         }
                                       ]
                                     },
@@ -18491,31 +18404,6 @@
                                               "fontWeight": "normal"
                                             }
                                           ]
-                                        },
-                                        {
-                                          "type": "frame",
-                                          "id": "W6yj1",
-                                          "name": "tab",
-                                          "fill": "$bg",
-                                          "cornerRadius": 6,
-                                          "stroke": "$border",
-                                          "strokeWidth": 1,
-                                          "padding": [
-                                            4,
-                                            12
-                                          ],
-                                          "children": [
-                                            {
-                                              "type": "text",
-                                              "id": "pdL50",
-                                              "name": "t",
-                                              "fill": "$text-muted",
-                                              "content": "accept",
-                                              "fontFamily": "$font-mono",
-                                              "fontSize": 11,
-                                              "fontWeight": "normal"
-                                            }
-                                          ]
                                         }
                                       ]
                                     },
@@ -19882,31 +19770,6 @@
                                           "fontWeight": "normal"
                                         }
                                       ]
-                                    },
-                                    {
-                                      "type": "frame",
-                                      "id": "v7hWUN",
-                                      "name": "tab",
-                                      "fill": "$bg",
-                                      "cornerRadius": 5,
-                                      "stroke": "$border",
-                                      "strokeWidth": 1,
-                                      "padding": [
-                                        3,
-                                        9
-                                      ],
-                                      "children": [
-                                        {
-                                          "type": "text",
-                                          "id": "wuPIW",
-                                          "name": "t",
-                                          "fill": "$text-muted",
-                                          "content": "accept",
-                                          "fontFamily": "$font-mono",
-                                          "fontSize": 10,
-                                          "fontWeight": "normal"
-                                        }
-                                      ]
                                     }
                                   ]
                                 },
@@ -20354,31 +20217,6 @@
                                           "name": "t",
                                           "fill": "$text-muted",
                                           "content": "compare",
-                                          "fontFamily": "$font-mono",
-                                          "fontSize": 10,
-                                          "fontWeight": "normal"
-                                        }
-                                      ]
-                                    },
-                                    {
-                                      "type": "frame",
-                                      "id": "wRfm0",
-                                      "name": "tab",
-                                      "fill": "$bg",
-                                      "cornerRadius": 5,
-                                      "stroke": "$border",
-                                      "strokeWidth": 1,
-                                      "padding": [
-                                        3,
-                                        9
-                                      ],
-                                      "children": [
-                                        {
-                                          "type": "text",
-                                          "id": "otQ9L",
-                                          "name": "t",
-                                          "fill": "$text-muted",
-                                          "content": "accept",
                                           "fontFamily": "$font-mono",
                                           "fontSize": 10,
                                           "fontWeight": "normal"
@@ -21363,7 +21201,7 @@
                                   "id": "R401F",
                                   "name": "rule",
                                   "fill": "$warning-fg",
-                                  "content": "no accept affordance — reviewing does not clear this, fixing does",
+                                  "content": "never acceptable — reviewing does not clear this, fixing does",
                                   "fontFamily": "$font-body",
                                   "fontSize": 11,
                                   "fontWeight": "700"
@@ -22799,7 +22637,7 @@
                                   "id": "zsGsy",
                                   "name": "rule",
                                   "fill": "$warning-fg",
-                                  "content": "no accept affordance — reviewing does not clear this, fixing does",
+                                  "content": "never acceptable — reviewing does not clear this, fixing does",
                                   "fontFamily": "$font-body",
                                   "fontSize": 11,
                                   "fontWeight": "700"
