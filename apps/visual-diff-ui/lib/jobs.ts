@@ -4,6 +4,9 @@ import { EXIT } from '@gate/visual-diff/policy';
 import { z } from 'zod';
 import { REPORTS_TAG, SETS_TAG, reportTag } from './tags';
 import { CANONICAL_LABEL } from './baselines';
+// The layout, the shapes and the confinement check — one owner, imported by both
+// halves of the app. See lib/paths.ts for why they are not written here any more.
+import { REPORT_ID, SET_LABEL, reportDir, setDir, setsFilePath, within } from './paths';
 import { type CaptureSet, SetsFileSchema } from './summary';
 
 /**
@@ -13,13 +16,16 @@ import { type CaptureSet, SetsFileSchema } from './summary';
  *
  * The layout this module owns, all of it under `VISUAL_DIFF_DATA_DIR`:
  *
- *     <dataDir>/sets/<label>/<variantKey>.png   one capture set's shot tree
- *     <dataDir>/reports/<id>/summary.json       one comparison's record
  *     <dataDir>/history.json                    every run, newest first
  *     <dataDir>/worktrees.json                  which sets are held (D2)
  *     <dataDir>/job.lock                        the one-job-at-a-time lock (D1)
  *     <dataDir>/jobs/<jobId>.log                one run's output stream
  *     <dataDir>/refresh.json                    what a finished job made stale
+ *
+ * The four above are this module's own state and are named here. Everything the
+ * read path also touches — the set tree, the report tree, the registry — is
+ * lib/paths.ts's, along with the confinement check every path here still passes
+ * through.
  *
  * Nothing here knows how to run a job. `startJob` takes the work as an
  * argument, so the runner — which reaches for the differ, PNG bytes and a
@@ -52,16 +58,6 @@ import { type CaptureSet, SetsFileSchema } from './summary';
  */
 export const JobModeSchema = z.enum(['capture', 'compare', 'run', 'accept']);
 export type JobMode = z.infer<typeof JobModeSchema>;
-
-/**
- * A snapshot-set label. No underscore, so `<a>__<b>` splits back into the two
- * labels it names — the same reason `policy.variantKey` can join on `__`.
- */
-const SET_LABEL = /^[A-Za-z0-9][A-Za-z0-9.-]*$/;
-
-/** A report id: one directory name, `<setA>__<setB>`. Matches lib/data.ts's own
- *  read-side shape, so an id the console can write is an id it can read back. */
-const REPORT_ID = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
 
 export const SetLabelSchema = z.string().regex(SET_LABEL, 'not a snapshot-set label');
 export const ReportIdSchema = z.string().regex(REPORT_ID, 'not a report id');
@@ -232,35 +228,6 @@ const WorktreeSchema = z.object({
 export const WorktreesFileSchema = z.object({ worktrees: z.array(WorktreeSchema) });
 
 export type Worktree = z.infer<typeof WorktreeSchema>;
-
-/** A path that would have landed outside the data directory. Thrown, never
- *  returned: an escaped write corrupts the corpus the whole gate protects, so
- *  the only safe answer is to stop rather than to fall back to something. */
-class ConfinementError extends Error {}
-
-/**
- * `path.resolve` under the data directory, and nothing else — the one gate every
- * write in this app passes through.
- *
- * The check is on the RESOLVED path, so `..`, an absolute segment and a sibling
- * directory sharing the data dir's prefix are all refused. Route handlers
- * validate their URL segments first and answer 404; reaching this is a bug, and
- * it says so by throwing.
- */
-export function within(dataDir: string, ...segments: string[]): string {
-  const base = path.resolve(dataDir);
-  const target = path.resolve(base, ...segments);
-
-  if (target !== base && !target.startsWith(base + path.sep)) {
-    throw new ConfinementError(`${target} is outside the data directory ${base}`);
-  }
-
-  return target;
-}
-
-export const setDir = (dataDir: string, label: string) => within(dataDir, 'sets', label);
-export const reportDir = (dataDir: string, id: string) => within(dataDir, 'reports', id);
-export const setsFilePath = (dataDir: string) => within(dataDir, 'sets.json');
 
 const lockPath = (dataDir: string) => within(dataDir, 'job.lock');
 const refreshPath = (dataDir: string) => within(dataDir, 'refresh.json');

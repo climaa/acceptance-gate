@@ -4,6 +4,16 @@ import { cacheLife, cacheTag } from 'next/cache';
 import { connection } from 'next/server';
 import { type DataDirEnv, type DataSource, FIXTURES_DIR, dataDirFrom } from './data-dir';
 import { REPORTS_TAG, SETS_TAG, reportTag } from './tags';
+// The layout, the shapes and the confinement check. This module had its own copy
+// of all three — see lib/paths.ts for what that cost and why it is one now.
+import {
+  reportDirOf,
+  reportsRoot,
+  setsFilePath,
+  setsRoot,
+  shotUnder,
+  summaryFile,
+} from './paths';
 import {
   type Bucket,
   type SetsFile,
@@ -17,19 +27,11 @@ import type { z } from 'zod';
  * The read path: which directory the console reads, and the four readers that
  * read it. Nothing here writes.
  *
- * The layout is the fixtures layout, because the fixtures are a real run's
- * artifacts:
- *
- *     <dir>/sets.json
- *     <dir>/reports/<id>/summary.json
- *     <dir>/reports/<id>/shots/<variantKey>.{baseline,candidate,diff}.png
+ * The layout it reads is lib/paths.ts's, and the fixtures are that layout because
+ * they are a real run's artifacts rather than a fabrication of one. Every path
+ * below is built by a function from there — including the confinement check that
+ * used to live in this file as `withinDir`, beside a second copy in lib/jobs.ts.
  */
-
-const REPORTS_DIR = 'reports';
-const SETS_DIR = 'sets';
-const SETS_FILE = 'sets.json';
-const SUMMARY_FILE = 'summary.json';
-const SHOTS_DIR = 'shots';
 
 // Re-exported rather than moved out of reach: these are the read path's public
 // names and every caller already imports them from here.
@@ -94,19 +96,6 @@ function parseFile<T>(schema: z.ZodType<T>, value: unknown, file: string): T {
   throw new Error(`${file} does not match the visual-diff schema: ${issues}`);
 }
 
-/**
- * `path.resolve(root, segment)`, but only when the result stays strictly under
- * `root`. Every path built from a URL segment goes through this: the check is
- * on the resolved path, so `..`, an absolute path and a sibling sharing the
- * root's prefix are all refused.
- */
-function withinDir(root: string, segment: string): string | null {
-  const base = path.resolve(root);
-  const target = path.resolve(base, segment);
-
-  return target.startsWith(base + path.sep) ? target : null;
-}
-
 /** Code-unit order, descending. Report ids lead with their capture-set labels,
  *  which lead with a date, so this is newest-first for every id the CLI writes. */
 function newestFirst(left: string, right: string): number {
@@ -114,28 +103,11 @@ function newestFirst(left: string, right: string): number {
   return left < right ? 1 : -1;
 }
 
-/**
- * A report id is one directory name — `<setA>__<setB>`. Nothing carrying a
- * separator, a NUL or a leading dot can be one of the directories this module
- * lists, so refusing the shape keeps a decoded URL segment from reaching the
- * filesystem at all: `withinDir` would catch the climb, but a NUL reaches
- * `readFile` as a read error rather than a miss, and answers 500 to a request
- * that deserves a 404.
- */
-const REPORT_ID = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
-
-/** The directory holding one report, or `null` for anything that cannot name one. */
-function reportDir(dataDir: string, id: string): string | null {
-  if (!REPORT_ID.test(id)) return null;
-
-  return withinDir(path.join(dataDir, REPORTS_DIR), id);
-}
-
 async function loadSummary(dataDir: string, id: string): Promise<Summary | null> {
-  const dir = reportDir(dataDir, id);
+  const dir = reportDirOf(dataDir, id);
   if (!dir) return null;
 
-  const file = path.join(dir, SUMMARY_FILE);
+  const file = summaryFile(dir);
   const read = await readJsonFile(file);
 
   return read.missing ? null : parseFile(SummarySchema, read.value, file);
@@ -157,7 +129,7 @@ async function listEntry(dataDir: string, id: string): Promise<ReportListEntry |
 
 async function listReportIds(dataDir: string): Promise<string[]> {
   try {
-    const entries = await fs.promises.readdir(path.join(dataDir, REPORTS_DIR), {
+    const entries = await fs.promises.readdir(reportsRoot(dataDir), {
       withFileTypes: true,
     });
 
@@ -184,7 +156,7 @@ export async function readSets(dataDir: string): Promise<SetsFile> {
   cacheLife('seconds');
   cacheTag(SETS_TAG);
 
-  const file = path.join(dataDir, SETS_FILE);
+  const file = setsFilePath(dataDir);
   const read = await readJsonFile(file);
 
   return read.missing ? { sets: [] } : parseFile(SetsFileSchema, read.value, file);
@@ -229,7 +201,7 @@ export async function readSetSizes(dataDir: string): Promise<Record<string, numb
   cacheLife('seconds');
   cacheTag(SETS_TAG);
 
-  const root = path.join(dataDir, SETS_DIR);
+  const root = setsRoot(dataDir);
 
   let entries: fs.Dirent[];
   try {
@@ -288,8 +260,8 @@ export function resolveShotPath(
 ): string | null {
   if (!SHOT_FILE.test(file)) return null;
 
-  const dir = reportDir(dataDir, reportId);
+  const dir = reportDirOf(dataDir, reportId);
   if (!dir) return null;
 
-  return withinDir(path.join(dir, SHOTS_DIR), file);
+  return shotUnder(dir, file);
 }

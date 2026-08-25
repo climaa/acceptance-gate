@@ -11,7 +11,8 @@ import { BASELINE_ENV, CANONICAL_LABEL, baselinesPath } from './baselines';
 import { DATA_MOUNT, REPO_MOUNT, containerArgv } from './docker';
 import { type Checkout, describeCheckout, repoRoot } from './git';
 import { type HostEnv, hostFingerprint, hostMatches } from './host';
-import { type JobOutcome, type JobRequest, freeLabel, reportDir, setDir } from './jobs';
+import { type JobOutcome, type JobRequest, freeLabel } from './jobs';
+import { reportDir, setDir } from './paths';
 import { NO_CHECKOUT, STORYBOOK_FAILED } from './refusals';
 import { type Summary, SummarySchema } from './summary';
 

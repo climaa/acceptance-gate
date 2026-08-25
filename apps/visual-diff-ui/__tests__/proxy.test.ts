@@ -5,7 +5,7 @@ import * as path from 'node:path';
 // `**/*.ts` include means tsc typechecks this file.
 import { afterEach, describe, expect, it } from 'vitest';
 import { isMissingReport } from '../proxy';
-import { within } from '../lib/jobs';
+import { within } from '../lib/paths';
 
 /**
  * The proxy: the only place left that can put `404` on a missing report.
