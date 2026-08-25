@@ -238,6 +238,11 @@ jobs:
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 30
     container: mcr.microsoft.com/playwright:v1.62.1-noble
+    # One source for how long the report lives: the upload step configures it and the
+    # comment's copy quotes it, and a drift between the two is a comment that lies about
+    # a link it just handed the reader.
+    env:
+      REPORT_RETENTION_DAYS: 14
     permissions:
       contents: read
       # Scoped to this job only — posts/updates the sticky report comment.
@@ -289,7 +294,7 @@ jobs:
         with:
           name: visual-diff-report
           path: /tmp/visual-diff-report.tar.gz
-          retention-days: 14
+          retention-days: ${{ env.REPORT_RETENTION_DAYS }}
       - name: Post report comment
         # Only meaningful on a PR — push-to-main has no PR to comment on.
         if: always() && github.event_name == 'pull_request'
@@ -300,6 +305,7 @@ jobs:
         # succeeds), which is what the `|| runUrl` fallback below is for.
         env:
           ARTIFACT_URL: ${{ steps.report-artifact.outputs.artifact-url }}
+          RETENTION_DAYS: ${{ env.REPORT_RETENTION_DAYS }}
         with:
           script: |
             const fs = require('fs');
@@ -309,51 +315,32 @@ jobs:
               ? fs.readFileSync(summaryPath, 'utf8')
               : 'visual-diff did not produce a summary — the run itself is broken (see the job log).';
 
-            // The comment body is `summary.md` verbatim — the two must not disagree
-            // about what changed — so run-specific URLs live here instead, the only
-            // place `context.runId` exists. Same construction as accept-baselines.yml.
+            // The footer's logic lives in a module beside the renderer, not in this
+            // string: logic in YAML is logic nothing can test. Imported by path because
+            // github-script has no view of the workspace's package graph — the relative
+            // `summaryPath` read above proves the cwd this resolves against.
+            const links = await import(
+              `${process.cwd()}/packages/visual-diff/src/comment-links.mjs`
+            );
+
             const base = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}`;
-            const runUrl = `${base}/actions/runs/${context.runId}`;
-            const artifactUrl = process.env.ARTIFACT_URL || runUrl;
             const pr = context.payload.pull_request;
-            // `head.repo` is null when the head fork has been deleted with the PR still
-            // open. Optional chaining lands on the right answer rather than merely not
-            // throwing: a head repo that no longer exists is not this repo, so the
-            // dispatch link drops, which is what a fork would have got anyway.
-            const sameRepo = pr.head.repo?.full_name === context.payload.repository.full_name;
-
-            // Read the renderer's own decision rather than re-deriving it from
-            // steps.visual-diff.outcome, which is `failure` for a real diff (exit 1)
-            // AND a broken run (exit 2) alike. A broken run wrote no report and
-            // measured nothing, so it gets the run link and no invitation to accept.
-            let footer = `[this run](${runUrl})`;
-            if (summary.includes('### To fix')) {
-              footer = [
-                `[**report.html**](${artifactUrl}) — download the \`visual-diff-report\``,
-                'artifact, unzip, untar, open the file. Kept 14 days.',
-                // Dropped on a fork: `head.ref` names a branch inside the fork, which
-                // is absent from this repo's dispatch dropdown, and accept-baselines
-                // could not push to it anyway.
-                sameRepo
-                  ? `· [**dispatch \`accept-baselines\`**](${base}/actions/workflows/accept-baselines.yml) on \`${pr.head.ref}\``
-                  : '',
-                `· [this run](${runUrl})`,
-              ]
-                .filter(Boolean)
-                .join(' ');
-            } else if (fs.existsSync(summaryPath)) {
-              footer = ''; // green: a verdict and its counts need no links
-            }
-
-            // Joined on a BLANK line, and never with a bare '\n': GFM treats a
-            // single newline as a lazy continuation of remediation step 3 and
-            // renders the whole footer inside that list item. `filter` drops the
-            // footer when it is empty rather than leaving a trailing separator —
-            // do not fold the blank line into the array as an '' element, which is
-            // what `filter(Boolean)` would silently eat.
-            const body = [`${marker}\n${summary.trimEnd()}`, footer]
-              .filter(Boolean)
-              .join('\n\n');
+            const footer = links.renderCommentFooter({
+              // Read the rendered body, not `steps.visual-diff.outcome`, which is
+              // `failure` for a real diff (exit 1) AND a broken run (exit 2) alike.
+              remediated: summary.includes('### To fix'),
+              summarised: fs.existsSync(summaryPath),
+              runUrl: `${base}/actions/runs/${context.runId}`,
+              artifactUrl: process.env.ARTIFACT_URL,
+              workflowUrl: `${base}/actions/workflows/accept-baselines.yml`,
+              branch: pr.head.ref,
+              // `head.repo` is null when the head fork has been deleted with the PR
+              // still open. A head repo that no longer exists is not this repo, so the
+              // dispatch link drops — what a live fork would have got anyway.
+              sameRepo: pr.head.repo?.full_name === context.payload.repository.full_name,
+              retentionDays: Number(process.env.RETENTION_DAYS),
+            });
+            const body = links.renderCommentBody(marker, summary, footer);
 
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
