@@ -71,18 +71,29 @@ export default defineConfig({
         // Named on its own because it is the one module that answers a request
         // without living under `app/` — the proxy runs before the router does.
         'proxy.ts',
+        'scripts/capture-set.mjs',
       ],
-      // `scripts/` is deliberately absent, and it is the one omission here that
-      // is not bookkeeping. capture-set.mjs runs `check` at module scope against
-      // real deps — a Storybook build, a browser, the pinned image — so no suite
-      // can import it and its coverage would be a fixed 0 that only ever drags
-      // the floor down. The gap is named where it lives, in that file's header,
-      // rather than encoded as a number nobody can move.
+      // `scripts/capture-set.mjs` is named, and it is the one entry here that had
+      // to be earned. It ran `check` at module scope against real deps — a
+      // Storybook build, a browser, the pinned image — so no suite could import
+      // it, its coverage would have been a fixed 0, and the omission was recorded
+      // in that file's header instead of as a number nobody could move. The run
+      // is behind a `main()` guard now and the module imports inert, so the file
+      // is measured like any other. `local-data-dir.mjs` stays out: it is a dev
+      // convenience `pnpm dev` runs before Next starts, with no consumer to break.
       exclude: ['**/*.test.{ts,tsx}'],
       // Explicit, so a run writes no `coverage/` directory: `text` is what names
       // the files when the floor breaks, and the default reporter set would add
       // html/clover/json artifacts nothing here reads.
       reporter: ['text', 'text-summary'],
+      // UNCHANGED when capture-set.mjs joined the measured set, and the margin
+      // is now thin on purpose rather than by neglect: branches clears by ~0.6
+      // and lines by ~0.4. That file's `main()` reaches a browser and the pinned
+      // container, so its ~90 lines can never be covered by a unit test and the
+      // aggregate will not climb back on its own. Lowering these to restore the
+      // old slack would be lowering a floor that still passes, which is the one
+      // thing the note above forbids. If a future change breaks one of them by a
+      // fraction, read the per-file table before touching the number.
       thresholds: { statements: 93, branches: 87, functions: 92, lines: 94 },
     },
   },
