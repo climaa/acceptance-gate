@@ -34,14 +34,17 @@
 // feed it to the real `parseArgs` below. One test, both implementations, no
 // string copied between them.
 //
-// WHAT IS STILL OUT OF REACH. `writeSet` duplicates lib/jobs.ts's `recordSet`,
-// and this file's own note used to say the blocker was that module's `next/cache`
-// import. That import is gone. The blocker is the one two paragraphs up: the
-// container runs bare `node` against mounted `node_modules`, with no TypeScript
-// toolchain, and `recordSet` is TypeScript. Sharing it means shipping a build
-// step into the container, which is a bigger change than the duplication costs —
-// so the ROW is asserted instead, against the same zod schema the app reads the
-// registry back through.
+// WHAT WRITES THE ROW. `writeSet` below is the only thing that registers a
+// capture set. lib/jobs.ts had a TypeScript twin of it, `recordSet`, back when
+// the console wrote sets itself; that twin outlived its callers and is gone, and
+// nothing was lost with it — a mirror held in step by nothing is not a guarantee.
+//
+// Sharing the real one is what remains out of reach, for the reason two
+// paragraphs up: the container runs bare `node` against mounted `node_modules`
+// with no TypeScript toolchain. So the ROW is asserted instead, against the same
+// zod schema the app reads the registry back through — see
+// `__tests__/capture-set.test.ts`, which puts `buildSet`'s output through
+// `SetsFileSchema`.
 import {
   existsSync,
   mkdirSync,
