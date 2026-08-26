@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 import {
   FREEZE_CSS,
   PINNED_NOW_ISO,
+  PINNED_TIMEZONE,
   RENDERED_PHASES,
   RENDER_PHASE_EXPRESSION,
   buildInitScript,
@@ -239,5 +240,32 @@ describe('shotsEqual', () => {
     const equal = shotsEqual(first, second);
 
     expect(equal).toBe(false);
+  });
+});
+
+describe('PINNED_TIMEZONE', () => {
+  it('is the zone the pinned instant is written in', () => {
+    expect(PINNED_TIMEZONE).toBe('UTC');
+  });
+
+  it('names a zone ICU resolves — a typo here fails only on a real capture', () => {
+    const resolved = new Intl.DateTimeFormat('en-CA', {
+      timeZone: PINNED_TIMEZONE,
+    }).resolvedOptions().timeZone;
+
+    expect(resolved).toBe(PINNED_TIMEZONE);
+  });
+
+  it('reads the pinned instant back on its own calendar day', () => {
+    // `2026-01-01T12:00:00Z` is the 1st in UTC and the 1st in Los Angeles; nearer a
+    // boundary the two are different days, which is the whole reason the zone is pinned.
+    const day = new Intl.DateTimeFormat('en-CA', {
+      timeZone: PINNED_TIMEZONE,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).format(new Date(PINNED_NOW_ISO));
+
+    expect(day).toBe(PINNED_NOW_ISO.slice(0, 'YYYY-MM-DD'.length));
   });
 });

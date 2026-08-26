@@ -50,6 +50,9 @@ capture runs inside one pinned Chromium context with:
 
 - the clock and `Math.random` frozen (fixed ISO instant, seeded PRNG) so nothing time- or
   chance-dependent renders differently between runs
+- the **zone** pinned to UTC alongside that instant — a pinned clock read through the
+  capturing machine's own zone is only half a pin, and near a boundary it is two
+  different calendar days
 - animations, transitions, caret blink, and smooth scroll killed via injected CSS
 - font-rendering flags pinned (`--disable-lcd-text`, `--force-color-profile=srgb`, …) —
   a laptop and a CI container hint glyph edges differently, and this is the fix

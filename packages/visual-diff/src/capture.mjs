@@ -20,6 +20,7 @@
 
 import {
   FREEZE_CSS,
+  PINNED_TIMEZONE,
   RENDER_PHASE_EXPRESSION,
   buildInitScript,
   isRenderedPhase,
@@ -600,6 +601,10 @@ export async function captureAll({ variants, baseUrl, browser }) {
   const context = await browser.newContext({
     reducedMotion: 'reduce',
     deviceScaleFactor: DETERMINISM.deviceScaleFactor,
+    // Same contract as the pinned clock below, and useless without it: the zone is
+    // resolved by ICU inside the driver, so no init script can reach it and it has to
+    // be asked for here.
+    timezoneId: PINNED_TIMEZONE,
   });
 
   // Both before any page exists, so nothing can navigate ahead of them.

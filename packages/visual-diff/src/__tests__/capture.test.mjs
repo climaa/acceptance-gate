@@ -2,12 +2,14 @@ import vm from 'node:vm';
 
 import { describe, expect, it } from 'vitest';
 
+import { PINNED_NOW_ISO, PINNED_TIMEZONE } from '../determinism.mjs';
 import { COLOR_SCHEME_GLOBAL, DETERMINISM, VIEWPORTS } from '../policy.mjs';
 import {
   ERROR_OVERLAY_EXPRESSION,
   STORY_PHASES_EXPRESSION,
   SanityError,
   buildStoryUrl,
+  captureAll,
   drainQueue,
   ensureViewport,
   fontCheckSpec,
@@ -49,6 +51,31 @@ const fakePage = () => {
     resizes,
     setViewportSize: async (size) => {
       resizes.push(size);
+    },
+  };
+};
+
+/** A stand-in for the browser `captureAll` is handed, recording what the run asks of
+ *  its context. `playwright` never enters the suite; the injected browser is the seam,
+ *  and with no variants to shoot nothing past `newPage` is ever reached. */
+const fakeBrowser = () => {
+  /** @type {{ options: Record<string, unknown>, initScripts: string[] }[]} */
+  const contexts = [];
+
+  return {
+    contexts,
+    newContext: async (options) => {
+      const context = { options, initScripts: [] };
+      contexts.push(context);
+
+      return {
+        addInitScript: async (source) => {
+          context.initScripts.push(source);
+        },
+        route: async () => {},
+        newPage: async () => fakePage(),
+        close: async () => {},
+      };
     },
   };
 };
@@ -683,5 +710,34 @@ describe('STORY_PHASES_EXPRESSION', () => {
     const phases = inPage(STORY_PHASES_EXPRESSION, {});
 
     expect(phases).toEqual([]);
+  });
+});
+
+describe('captureAll', () => {
+  it('opens its context in an explicit zone, so the pinned instant renders one day', async () => {
+    const browser = fakeBrowser();
+
+    await captureAll({ variants: [], baseUrl: BASE_URL, browser });
+
+    expect(browser.contexts[0]?.options.timezoneId).toBe(PINNED_TIMEZONE);
+  });
+
+  it('keeps the other two context-level determinism options beside it', async () => {
+    const browser = fakeBrowser();
+
+    await captureAll({ variants: [], baseUrl: BASE_URL, browser });
+
+    expect(browser.contexts[0]?.options).toMatchObject({
+      reducedMotion: 'reduce',
+      deviceScaleFactor: DETERMINISM.deviceScaleFactor,
+    });
+  });
+
+  it('pins the clock on the same context — half a pin is the bug this guards', async () => {
+    const browser = fakeBrowser();
+
+    await captureAll({ variants: [], baseUrl: BASE_URL, browser });
+
+    expect(browser.contexts[0]?.initScripts[0]).toContain(PINNED_NOW_ISO);
   });
 });
