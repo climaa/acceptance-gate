@@ -593,19 +593,13 @@ When('I remove the set and the report', async ({ console: vd, localState, mayWri
 
   // No reload before the assertion below, deliberately.
   //
-  // This step used to end with one, because the console could go on rendering a
-  // row it had already deleted: `useMutation` and `CurrentJob` each fired a
-  // `router.refresh()` of their own, and this teardown runs seconds after the
-  // compare ended — exactly when the two overlap. The poller's refresh had read
-  // the reports BEFORE the delete, so if it landed last the row came back and
-  // stayed, the poller having nothing later to say. Reloading was the right
-  // answer for a teardown and the wrong one for coverage: it asked the server a
-  // question this step was supposed to be asking the screen.
-  //
-  // `apps/visual-diff-ui/lib/page-refresh.ts` owns the ordering now — a mutation
-  // holds the page for the length of its request and nothing else may re-read it
-  // meanwhile — so the panel is the thing to trust again, and this lane is what
-  // notices if that stops being true.
+  // This step used to end with one, to work around the console painting back a
+  // row it had already deleted — two `router.refresh()` calls racing, which
+  // `apps/visual-diff-ui/lib/page-refresh.ts` now orders. Reloading was the
+  // right answer for a teardown and the wrong one for coverage: it asked the
+  // server a question this step was supposed to be asking the screen. The panel
+  // is the thing to trust again, and this lane is what notices if that stops
+  // being true.
 
   madeLabel = null;
   madeReportId = null;

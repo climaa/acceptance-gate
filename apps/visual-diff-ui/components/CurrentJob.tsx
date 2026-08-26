@@ -312,12 +312,11 @@ function useJobPoller(): { state: CurrentJobState; pollNow: () => void } {
       // id, so a job still in flight is not reported as done the first time it
       // is seen.
       //
-      // Asked for rather than performed. A reviewer tidies up in the seconds
-      // after a compare ends, so this is the one moment a delete is likely to be
-      // in flight — and a re-read issued beside it reads a server that still has
-      // the row. `requestRefresh` hands the read to whichever mutation holds the
-      // page, which is why the id is marked reported either way: the promise is
-      // that the page WILL be read again, not that it just was.
+      // Asked for rather than performed: a delete is at its most likely to be in
+      // flight right here, and `requestRefresh` hands the read to whichever
+      // mutation holds the page instead of reading beside it — see
+      // lib/page-refresh.ts. Which is why the id is marked reported either way:
+      // the promise is that the page WILL be read again, not that it just was.
       const { job, running } = answer.state;
       if (job && !running && reported.current !== job.id) {
         if (primed.current) requestRefresh(() => latestRouter.current.refresh());

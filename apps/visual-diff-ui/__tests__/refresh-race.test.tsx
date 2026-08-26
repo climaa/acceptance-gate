@@ -11,15 +11,9 @@ import { refreshCalls } from './stubs/next-navigation';
 
 /**
  * The two re-reads this console used to run independently, in the one window
- * where they overlap.
- *
- * Every table here is server-rendered, so both a mutation and a finished job end
- * in `router.refresh()`. Finishing a compare is exactly when a reviewer tidies
- * up, so a delete lands within a second or two of the poller noticing the job —
- * and the poller's refresh read the tables BEFORE the delete. Whichever resolves
- * last is what stays on screen, and the poller has nothing later to say: it
- * refreshes once per job id and then backs off to `MAX_IDLE_POLL_MS`. The
- * deleted row is not flickering, it is stuck.
+ * where they overlap: a delete landing within a second or two of the poller
+ * noticing the job the reviewer was tidying up after. Why that left the deleted
+ * row stuck rather than flickering is argued in `lib/page-refresh.ts`.
  *
  * What is asserted is the invariant rather than the symptom, because the symptom
  * is a resolution order jsdom does not have: while a mutation holds the page,

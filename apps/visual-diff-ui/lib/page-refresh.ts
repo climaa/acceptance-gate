@@ -91,13 +91,15 @@ export function holdPage(): (refresh: Refresh, changed: boolean) => void {
     if (released) return;
     released = true;
     held -= 1;
+    // A mutation that changed something owes a read of its own, on top of
+    // anything asked for while it held the page.
+    owed = owed || changed;
 
-    if (held > 0) {
-      owed = owed || changed;
-      return;
-    }
+    // Another mutation is still holding: the debt passes to its release rather
+    // than being paid beside it.
+    if (held > 0) return;
 
-    const wanted = owed || changed;
+    const wanted = owed;
     owed = false;
     if (wanted) refresh();
   };
