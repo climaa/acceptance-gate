@@ -21,19 +21,22 @@ import { describe, expect, it } from 'vitest';
  */
 
 const REPO_ROOT = path.resolve(import.meta.dirname, '..', '..', '..');
-const ATTRIBUTES = fs.readFileSync(path.join(REPO_ROOT, '.gitattributes'), 'utf8');
+const GITATTRIBUTES = fs.readFileSync(path.join(REPO_ROOT, '.gitattributes'), 'utf8');
 
 /** The rule and the comment block immediately above it, whatever they say. */
 const RULE = /((?:^#.*\n)*)^designs\/\*\.pen (.+)$/m;
-const [, comment = '', flags = ''] = RULE.exec(ATTRIBUTES) ?? [];
+const [, comment = '', attributes = ''] = RULE.exec(GITATTRIBUTES) ?? [];
 
 const penSources = fs
   .readdirSync(path.join(REPO_ROOT, 'designs'))
   .filter((entry) => entry.endsWith('.pen'));
 
 describe('the rule in .gitattributes', () => {
-  it('exists, and matches a source that is actually committed', () => {
-    expect(flags).not.toBe('');
+  it('exists', () => {
+    expect(attributes).not.toBe('');
+  });
+
+  it('matches a source that is actually committed', () => {
     expect(penSources).not.toEqual([]);
   });
 
@@ -41,7 +44,7 @@ describe('the rule in .gitattributes', () => {
   // half that matters most: a three-way textual merge of two Pencil saves can
   // land a document Pencil will not reopen, and no gate here would catch it.
   it('marks the source binary, which is what suppresses the line merge', () => {
-    expect(flags.split(/\s+/)).toContain('binary');
+    expect(attributes.split(/\s+/)).toContain('binary');
   });
 
   // A canary for the exact claim that was here, not a proof about prose — the
