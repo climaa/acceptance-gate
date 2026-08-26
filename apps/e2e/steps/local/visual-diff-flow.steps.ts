@@ -591,21 +591,21 @@ When('I remove the set and the report', async ({ console: vd, localState, mayWri
   await vd.deleteReport(reportId);
   await vd.deleteSet(label);
 
-  // Then ask the server again, instead of trusting the panel.
+  // No reload before the assertion below, deliberately.
   //
-  // The console can go on rendering a row it has already deleted.
-  // `useMutation` fires `router.refresh()` when the DELETE returns, and
-  // `CurrentJob` fires one of its own the first time it sees a job finish —
-  // and this teardown runs seconds after the compare ended, so the two overlap.
-  // If the poller's refresh, which read the reports BEFORE the delete, lands
-  // last, the deleted row is painted back. The poller then goes idle (once per
-  // job id, backing off to `MAX_IDLE_POLL_MS`), so nothing ever repaints it
-  // away and the stale row simply stays.
+  // This step used to end with one, because the console could go on rendering a
+  // row it had already deleted: `useMutation` and `CurrentJob` each fired a
+  // `router.refresh()` of their own, and this teardown runs seconds after the
+  // compare ended — exactly when the two overlap. The poller's refresh had read
+  // the reports BEFORE the delete, so if it landed last the row came back and
+  // stayed, the poller having nothing later to say. Reloading was the right
+  // answer for a teardown and the wrong one for coverage: it asked the server a
+  // question this step was supposed to be asking the screen.
   //
-  // A longer wait would not have helped: there is no later refresh coming.
-  // That race is the console's and is filed separately; what this step owes is
-  // that the artifacts are GONE, which is a question for the server.
-  await vd.openHere();
+  // `apps/visual-diff-ui/lib/page-refresh.ts` owns the ordering now — a mutation
+  // holds the page for the length of its request and nothing else may re-read it
+  // meanwhile — so the panel is the thing to trust again, and this lane is what
+  // notices if that stops being true.
 
   madeLabel = null;
   madeReportId = null;
