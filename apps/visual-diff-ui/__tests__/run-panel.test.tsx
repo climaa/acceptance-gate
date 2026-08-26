@@ -279,6 +279,30 @@ describe('the mode tabs', () => {
  * and the new query string reads the OLD one, and these cases are what says the
  * panel survives that window instead of arguing with itself across it.
  */
+describe('the field axis', () => {
+  /**
+   * The 768px block in `wide.css` turns a field into a row of label + control.
+   * It can only do that if nothing sets the axis inline: this stylesheet carries
+   * no `!important` anywhere, so an inline `flex-direction` would win and the
+   * breakpoint would be dead — which is exactly what happened while the field
+   * was a `Stack`, for as long as the rule had existed.
+   *
+   * Asserting on the absence of the attribute rather than on a computed value:
+   * jsdom applies no stylesheet, so the computed axis here would be meaningless.
+   * What this pins is the one thing that would take the rule out again.
+   */
+  it('leaves the axis to the stylesheet, setting no inline style', () => {
+    renderPanel();
+
+    const label = screen.getByText('label', { selector: '.vd-field__label' });
+    const field = label.closest('.vd-field');
+
+    expect(field).not.toBeNull();
+    expect(field?.getAttribute('style')).toBeNull();
+    expect(field?.className).toBe('vd-field');
+  });
+});
+
 describe('the selected tab in the URL', () => {
   const PAIR = 'a=main-2026-08-17&b=main-2026-08-13';
 
