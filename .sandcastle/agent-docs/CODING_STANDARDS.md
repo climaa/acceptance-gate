@@ -94,6 +94,14 @@ findings, never from ambition.
 - **YAGNI:** zero call sites = don't add it. **No partial features:** if you start,
   finish — no TODO stubs for core functionality.
 - Respect every issue's do-not-touch list.
+- **Widening a formatter's or linter's scope lands the mechanical reformat as its
+  own commit, ahead of the change that widened it.** Adding a glob or a check
+  pulls previously-unchecked files into scope, and if that reflow rides inside
+  the commit that also does the real work, a reviewer can't tell "the tool did
+  this" from "a human decided this" without re-running the tool. Worked example:
+  #370 widened `format:check`'s glob to include `mjs,cjs,js`; the resulting
+  reflow of `scripts/apply-ruleset.mjs` and others landed inside the same commit
+  that turned on `typecheck` for `packages/visual-diff` (#372).
 
 ## Comments
 
