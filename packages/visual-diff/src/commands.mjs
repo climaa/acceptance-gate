@@ -394,6 +394,17 @@ const verdictOf = (summary) =>
 
 /** Capture the corpus and compare it against the committed baselines.
  *  @param {Deps} [deps] @param {Options} [opts] @returns {Promise<CommandResult>} */
+/**
+ * A monotonic reading in milliseconds.
+ *
+ * `performance.now()` rather than `Date.now()`, because the number that matters is an
+ * elapsed one and a wall clock can step sideways mid-run. This is node's clock and not
+ * the page's — `determinism.mjs` pins `performance.now` inside the BROWSER so a story
+ * cannot render a timestamp, and that init script never runs here.
+ *
+ * @returns {number} */
+const now = () => performance.now();
+
 export async function check(deps = defaultDeps(), opts = {}) {
   const { rootDir = REPO_ROOT, filter, allowHostMismatch = false } = opts;
   const at = under(rootDir);
