@@ -199,10 +199,28 @@ jobs:
           # of this workspace's other devDependencies moves the key too and costs one
           # redundant download.
           key: playwright-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('apps/e2e/package.json') }}
-      # --with-deps runs whether or not that cache hit: the cache carries the browser,
-      # apt carries the system libraries it dynamically links, and only one of those
-      # two lives under HOME. On a hit the download half is a no-op.
-      - run: pnpm --filter @gate/e2e exec playwright install --with-deps chromium
+      # NO --with-deps, and that is the whole change here. It used to run whether or
+      # not the cache hit, on the reasoning that the cache carries the browser while
+      # apt carries the system libraries it dynamically links. The first half is still
+      # true; the second was never measured.
+      #
+      # Measured: the cache restore HITS in ~3 s and the install step still cost ~18 s,
+      # because `--with-deps` shells out to apt-get every run and that half is
+      # uncacheable as written.
+      #
+      # The HYPOTHESIS this run tests is that `ubuntu-24.04-arm` already ships the
+      # shared libraries Chromium links, making that apt pass ~18 s of re-proving what
+      # the image provides — on the one job that sets the gate's latency, every run.
+      # Nobody had checked. A green `e2e` here is the check.
+      #
+      # This is an experiment with a loud failure and a one-word revert. If a future
+      # runner image drops those libraries, Chromium fails to launch and `e2e` goes red
+      # with a linker error naming the missing .so — put `--with-deps` back. It cannot
+      # fail quietly: a browser that will not start takes the whole suite with it.
+      #
+      # `nightly-determinism.yml` is deliberately untouched, so the two are not changed
+      # together. It is off the critical path and now acts as the control.
+      - run: pnpm --filter @gate/e2e exec playwright install chromium
       # `turbo run e2e`, not `pnpm --filter @gate/e2e test:e2e`: the task dependsOn
       # @gate/blog#build and @gate/visual-diff-ui#build, so what the suite boots is
       # what the build produced rather than whatever .next was lying around. Same
