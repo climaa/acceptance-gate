@@ -125,7 +125,10 @@ function Field({
   const id = `vd-run-${name}`;
 
   return (
-    <Stack gap={1} className="vd-field">
+    // Deliberately a plain element rather than `Stack`: `Stack` sets
+    // `flex-direction` and `gap` inline, and inline style beats the 768px rule
+    // that makes this a labelled row. The axis lives in `run-panel.css`.
+    <div className="vd-field">
       <label className="vd-field__label" htmlFor={id}>
         {label}
       </label>
@@ -144,7 +147,7 @@ function Field({
         />
         {action}
       </div>
-    </Stack>
+    </div>
   );
 }
 

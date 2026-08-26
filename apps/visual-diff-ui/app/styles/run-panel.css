@@ -34,6 +34,23 @@
   border-block-end-color: var(--color-accent);
 }
 
+/* A field owns its axis in CSS rather than inline, and that is what makes the
+   768px block reachable at all.
+
+   This was a `Stack`. `Stack` writes `flex-direction` and `gap` as inline style,
+   which beats any rule in this stylesheet — there is no `!important` anywhere in
+   it — so the wide block's `row` and `var(--space-3)` never landed and only its
+   `align-items: center` did. The breakpoint had been a no-op since it was
+   written; nobody noticed because the stacked layout is legible.
+
+   `display` and `min-width` are what `.ds-stack` contributed and are kept. */
+.vd-field {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
 .vd-field__label {
   font-family: var(--font-mono);
   font-size: var(--text-xs);
