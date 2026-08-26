@@ -9,6 +9,7 @@
  */
 
 import { HOST } from '@gate/visual-diff/policy';
+import type { RunnerEnv } from './api-contract';
 import { dockerAvailable } from './docker';
 
 /** The one variable this endpoint reads, named as a type for the same reason
@@ -19,24 +20,18 @@ export interface HostEnv {
   [variable: string]: string | undefined;
 }
 
-export interface RunnerEnv extends HostFingerprint {
-  /** Whether a container could be started right now — the panel disables its
-   *  start button on this, and `POST /api/jobs` refuses on it. */
-  docker: boolean;
-}
-
-export interface HostFingerprint {
-  platform: string;
-  arch: string;
-  /**
-   * `null` unless declared. A process cannot see the image it runs in, and
-   * guessing would be the one wrong answer here: an unfounded match is what
-   * would let baselines be accepted from a host that never captured them.
-   */
-  image: string | null;
-  /** Read off the image tag — policy pins the image and the library together. */
-  playwright: string | null;
-}
+/**
+ * The four keys `HOST.comparedKeys` names, which is `RunnerEnv` minus the one
+ * field that is not a fingerprint — see {@link runnerEnv} for why `docker` rides
+ * alongside rather than in here.
+ *
+ * Derived rather than declared, because the shape is the wire shape:
+ * `RunnerEnvSchema` in lib/api-contract.ts is what `GET /api/env` answers with
+ * and what the run panel parses that answer against, and a second declaration
+ * here would be free to disagree with it. The per-field prose lives on the
+ * schema for the same reason.
+ */
+export type HostFingerprint = Omit<RunnerEnv, 'docker'>;
 
 /** `mcr.microsoft.com/playwright:v1.62.1-noble` → `1.62.1`. */
 const IMAGE_TAG = /playwright:v(\d+\.\d+\.\d+)/;
@@ -95,7 +90,7 @@ export function runnerEnv(env: HostEnv = process.env): RunnerEnv {
  * repo captures from, so holding them to a value would refuse a legitimate
  * container, and `playwright` is read back off the same tag `image` carries,
  * so comparing it twice would only assert the parse. An absent image is a
- * refusal, never a pass — see {@link HostFingerprint.image}.
+ * refusal, never a pass — see `RunnerEnvSchema.image` in lib/api-contract.ts.
  */
 export function hostMatches(fingerprint: HostFingerprint = hostFingerprint()): boolean {
   return fingerprint.image === HOST.image;

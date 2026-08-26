@@ -13,6 +13,7 @@ import {
 } from 'react';
 import { EmptyState, IconButton, Link, Stack } from '@gate/ui';
 import { useDismissedJob } from '@/hooks/useDismissedJob';
+import { type CurrentJobResponse, CurrentJobResponseSchema } from '@/lib/api-contract';
 import type { HistoryRecord } from '@/lib/job-contract';
 import { durationOf, formatDuration, jobState } from '@/lib/outcome';
 import { requestRefresh } from '@/lib/page-refresh';
@@ -103,22 +104,17 @@ function sameAnswer(left: CurrentJobState, right: CurrentJobState): boolean {
   );
 }
 
-export interface CurrentJobState {
-  running: boolean;
-  /** The running job, or the last one to finish. Null on an instance that has
-   *  never run anything. */
-  job: HistoryRecord | null;
-  /** Whether the report `job.reportId` names is still on disk, answered by the
-   *  server on every poll. Not derivable here: a history row keeps the id of the
-   *  report its run produced even after the report is deleted, so the id alone
-   *  would offer a link into a 404 — see the route for why this is its answer to
-   *  give. False whenever there is no report to begin with, and false whenever
-   *  the answer did not carry the field at all: an absent flag withholds a link
-   *  that would have worked, which is the cheaper of the two ways to be wrong. */
-  reportExists: boolean;
-  /** The tail of that job's log, oldest line first. */
-  log: readonly string[];
-}
+/**
+ * What the console's client islands know about the runner: the poll's answer,
+ * less the one field that describes the instance rather than the job.
+ *
+ * Derived from `CurrentJobResponseSchema` rather than declared, because every
+ * field here arrives on the wire and the schema is what the poll parses against
+ * — see lib/api-contract.ts. `isSample` is dropped because it never changes for
+ * the life of a tab, and the provider reads it once for a decision the islands
+ * below never re-ask.
+ */
+export type CurrentJobState = Omit<CurrentJobResponse, 'isSample'>;
 
 const IDLE: CurrentJobState = {
   running: false,
@@ -168,19 +164,14 @@ async function readCurrent(): Promise<{
     const response = await fetch(CURRENT_ENDPOINT, { cache: 'no-store' });
     if (!response.ok) return null;
 
-    const body = (await response.json()) as Partial<CurrentJobState> & {
-      isSample?: boolean;
-    };
+    // Parsed, not read field by field with a default under each: an answer that
+    // is not the shape the route promises is an answer this poll did not get,
+    // which the caller already knows how to survive. Reading the fields that
+    // happened to be well formed would paint a state no run was ever in — a job
+    // with no log, or a finished one reported as running.
+    const { isSample, ...state } = CurrentJobResponseSchema.parse(await response.json());
 
-    return {
-      state: {
-        running: body.running === true,
-        job: body.job ?? null,
-        reportExists: body.reportExists === true,
-        log: Array.isArray(body.log) ? body.log : [],
-      },
-      isSample: body.isSample === true,
-    };
+    return { state, isSample };
   } catch {
     return null;
   }

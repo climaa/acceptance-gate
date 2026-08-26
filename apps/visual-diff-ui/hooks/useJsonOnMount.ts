@@ -28,8 +28,16 @@ import { useEffect, useState } from 'react';
  */
 export function useJsonOnMount<T>(
   url: string,
-  /** The body, as this caller reads it. Runs inside the try, so a parse that
-   *  throws is treated as a request that did not land — which it effectively is. */
+  /**
+   * The body, as this caller reads it. Runs inside the try, so a parse that
+   * throws is treated as a request that did not land — which it effectively is.
+   *
+   * That is where the SCHEMA goes, and both callers put one there: this hook is
+   * handed `unknown` on purpose, so a `read` that casts is a read with nothing
+   * behind it. lib/api-contract.ts holds the schema for each endpoint, and the
+   * route handler annotates its payload with the same type — see that module for
+   * why the fallback below is what a rejection has to land on.
+   */
   read: (body: unknown) => T,
   fallback: {
     /** Before the first answer. */

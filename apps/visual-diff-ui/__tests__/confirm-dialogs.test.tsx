@@ -313,6 +313,28 @@ describe('the prune confirmation', () => {
     expect(alert.textContent).toBe(JOB_RUNNING);
   });
 
+  /**
+   * The prune's own answer, parsed rather than duck-typed — `PruneResponseSchema`
+   * in lib/api-contract.ts, which the route annotates its payload with.
+   *
+   * A body this dialog cannot read carries no skip to report, and the mutation
+   * itself has already been confirmed by the 200. Closing is therefore the
+   * honest outcome: staying open would put the dialog on a refusal nobody wrote.
+   */
+  it('closes on a success whose body it cannot read', async () => {
+    // A list of things that are not sentences, which the old duck-typed read
+    // would have rendered as the reason a set was skipped.
+    stubFetch({ body: { kept: SETS.slice(0, 3), removed: [], refused: [42] } });
+    render(<PruneButton keep={3} labels={SETS} />);
+    openPrune();
+
+    fireEvent.click(screen.getByRole('button', { name: 'prune 1 set' }));
+
+    await vi.waitFor(() =>
+      expect(screen.queryByRole('dialog', { name: 'Confirm prune' })).toBeNull(),
+    );
+  });
+
   it('has nothing to confirm when the instance holds fewer sets than it keeps', () => {
     stubFetch({});
     render(<PruneButton keep={5} labels={SETS} />);

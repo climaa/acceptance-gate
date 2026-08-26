@@ -4,12 +4,20 @@ import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
+import { GET as getCurrentJob } from '../app/api/jobs/current/route';
 import { GET as getEnv } from '../app/api/env/route';
 import { GET as getLabel } from '../app/api/label/route';
 import { GET as getReport } from '../app/api/reports/[id]/route';
 import { GET as getReports } from '../app/api/reports/route';
 import { GET as getSets } from '../app/api/sets/route';
 import { GET as getShot } from '../app/api/shots/[report]/[file]/route';
+import { GET as getStories } from '../app/api/stories/route';
+import {
+  CurrentJobResponseSchema,
+  LabelResponseSchema,
+  RunnerEnvSchema,
+  StoriesResponseSchema,
+} from '../lib/api-contract';
 
 /**
  * The read-only JSON and image surface. Every handler resolves the data
@@ -156,12 +164,15 @@ describe('GET /api/label', () => {
     return dir;
   };
 
+  /** Parsed, not cast: `LabelResponseSchema` is what the wand reads this answer
+   *  with, so running every case below through it makes this describe the
+   *  runtime witness for the label endpoint's half of that contract. */
   const read = async () => {
     const response = await getLabel();
 
     return {
       response,
-      body: (await response.json()) as { label: string | null },
+      body: LabelResponseSchema.parse(await response.json()),
     };
   };
 
@@ -246,5 +257,50 @@ describe('GET /api/shots/[report]/[file]', () => {
     );
 
     expect(response.status).toBe(404);
+  });
+});
+
+/**
+ * The runtime witness for the client contract.
+ *
+ * Each of these handlers annotates its payload with the type the console parses
+ * that answer against, so tsc already refuses a field dropped or added on the
+ * server. What a type cannot see is the trip through `Response.json` — an
+ * `undefined` that vanishes, a value serialised as something else — and what it
+ * cannot see at all is a handler nobody typechecked because it was never
+ * imported here. These cases run the REAL response back through the REAL schema.
+ *
+ * `.parse`, not `.safeParse`: a miss should name the failing path in the report
+ * rather than come back as `false`, which is the whole reason this app parses
+ * files with zod instead of duck-typing them.
+ *
+ * `GET /api/label` is not here — it is exercised against a data directory of its
+ * own above, and its schema case rides along there for the same reason.
+ */
+describe('every answer the console parses', () => {
+  it('serves an env body the run panel can read', async () => {
+    const response = await getEnv();
+
+    const body = RunnerEnvSchema.parse(await response.json());
+    expect(body.platform).toBe(process.platform);
+  });
+
+  it('serves a corpus the filter picker can read', async () => {
+    const response = await getStories();
+
+    const body = StoriesResponseSchema.parse(await response.json());
+    // A deployment with no Storybook build answers with an empty list, which is
+    // a real answer — so the shape is the assertion and the length is not.
+    expect(Array.isArray(body.tiers)).toBe(true);
+  });
+
+  it('serves a poll the current-job region can read', async () => {
+    const response = await getCurrentJob();
+
+    const body = CurrentJobResponseSchema.parse(await response.json());
+    // The fixture tree has no CLI behind it, which is the answer the poller
+    // stops polling on.
+    expect(body.isSample).toBe(true);
+    expect(body.running).toBe(false);
   });
 });

@@ -132,6 +132,22 @@ describe('the client-safe contract', () => {
   });
 
   /**
+   * The same rule for lib/api-contract.ts, which states it for the same reason
+   * and is the one place it had to be earned rather than inherited: the schemas
+   * there describe what four route handlers ANSWER with, and a handler is
+   * exactly the kind of module that reaches the filesystem two imports down.
+   * The run panel, the prune dialog and the job poller all value-import it.
+   */
+  it('reaches no node: builtin from the response contract', () => {
+    const graph = runtimeGraph('lib/api-contract.ts');
+
+    expect(graph.filter(reachesNode)).toEqual([]);
+    // The walk reached the job contract, rather than passing because it found
+    // nothing: `HistoryRecordSchema` is most of what `/api/jobs/current` says.
+    expect(graph).toContain('lib/job-contract.ts');
+  });
+
+  /**
    * The same rule for lib/refusal-copy.ts, which exists for the same reason: the
    * run panel renders three of its sentences and cannot import lib/refusals.ts,
    * where the responses that carry them live.
@@ -145,13 +161,18 @@ describe('the client-safe contract', () => {
    * before they were problems: nothing a client component RUNS may reach the
    * filesystem.
    *
-   * Two client components sit one keystroke from breaking this today.
-   * `RunPanel` names `RunnerEnv` out of lib/host.ts, which reaches
-   * `node:child_process` through lib/docker.ts, and `StoryTier` out of
-   * lib/stories.ts, which reaches `node:fs` directly; `FilterPicker` names
-   * `StoryTier` too. All three are `import type` and erase — dropping the word
-   * `type` from any of them is what this case is here to fail on, rather than
-   * `next build` failing on it later with a message about `use cache`.
+   * The two components this was written for no longer test it. `RunPanel` named
+   * `RunnerEnv` out of lib/host.ts, which reaches `node:child_process` through
+   * lib/docker.ts, and `StoryTier` out of lib/stories.ts, which reaches
+   * `node:fs` directly; `FilterPicker` named `StoryTier` too. All three were
+   * `import type` and erased — safe because of how the import was WRITTEN, one
+   * keyword from not being. Both shapes are declared in lib/api-contract.ts now,
+   * which the case above holds client-safe, so those imports are safe by what
+   * they NAME.
+   *
+   * The rule stays, because the next such import is one edit away and this is
+   * the only thing that would report it — before `next build` does, with a
+   * message about `use cache`.
    */
   it('runs nothing that reaches the filesystem from a client component', () => {
     const offenders = sourceFiles()
