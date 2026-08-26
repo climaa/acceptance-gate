@@ -1,2 +1,7 @@
-# .pen sources are encrypted binaries — the PNG exports beside them stay diffable
+# .pen sources are plain UTF-8 JSON, not encrypted — anyone who clones this repo
+# can read every board with `cat`. They are marked for how Pencil WRITES them,
+# not for what they hold: `binary` also means `-merge`, and a three-way textual
+# merge of two saves can land a document Pencil will not reopen. What changes on
+# a save is coordinates and ids, so the review happens against the PNG exports
+# beside them, which stay diffable.
 designs/*.pen binary -diff
