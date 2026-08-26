@@ -50,14 +50,33 @@
 
      Only from this width. Below it both rows wrap to several lines, and a
      multi-line bar pinned to the top of a phone is most of the viewport. */
-  .vd-section {
-    /* The pinned height of the tier row, written once and read by both rules
-       below — the offset the card head hangs at has to be the height the row
-       above it actually occupies, and two literals agreeing today is not the
-       same as one value. `min-block-size` floors it here; a tier row that grew
-       past this (a very long section name wrapping, a fourth control) would
-       still slide the card head under it, so keep the row to one line. */
+  /* The two pinned heights, declared on `html` rather than on `.vd-section` so
+     that the `scroll-padding` rule at the end of this block can read them too.
+     They were literals there — `calc(var(--space-10) + var(--space-12))` — which
+     restated these heights instead of reading them, and drifted from them.
+
+     `--vd-section-head` is the offset the card head hangs at. It is a FLOOR, not
+     the row's natural height: the row measures 46px on one line, 6px past this.
+     That is deliberate and has no symptom — the tier row is `z-index: 2` and the
+     card head `z-index: 1`, so the row paints over the overlap. What has to
+     clear the bars is the card head's pinned BOTTOM, and that is what the calc
+     below uses.
+
+     `--vd-card-head-max` is an over-estimate of the card head, and saying so is
+     the point: that row is content-driven (checkbox, bucket chip, title, worst
+     figure, slug) and has no floor that would make it a constant. Measured on a
+     real report: 53px at 1583px wide, and 83px at 780px, where the slug wraps to
+     a second line — still past this breakpoint, so a media query cannot separate
+     the two cases. 5.5rem covers the wrapped row with a little margin. The cost
+     is that a jump at a wide viewport clears ~35px more than it needs; the cost
+     of guessing low is a focus ring under an opaque bar, which is the defect
+     this exists to prevent. Re-measure before lowering it.
+
+     Keep the tier row to one line either way: a row that grew further past
+     `--vd-section-head` would slide further over the card head beneath it. */
+  html {
     --vd-section-head: var(--space-10);
+    --vd-card-head-max: 5.5rem;
   }
 
   .vd-section__head {
@@ -105,7 +124,7 @@
      once, for every one of those mechanisms at once. `useReportKeys` centres
      the card it focuses, so `j`/`k`/`n` never needed this; everything else did. */
   html {
-    scroll-padding-block-start: calc(var(--space-10) + var(--space-12));
+    scroll-padding-block-start: calc(var(--vd-section-head) + var(--vd-card-head-max));
   }
 
   /* Every frame the same box, so a row of three is one comparison rather than
