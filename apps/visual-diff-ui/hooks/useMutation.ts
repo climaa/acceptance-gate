@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { holdPage } from '@/lib/page-refresh';
 
 /**
  * The one lifecycle every mutation on this console runs.
@@ -85,6 +86,11 @@ export function useMutation(): Mutation {
   }: MutationRequest): Promise<MutationResult> => {
     setBusy(true);
     setRefusals([]);
+    // The page belongs to this mutation until the request comes back. Nothing
+    // else may re-read it meanwhile, because between here and the response the
+    // server still has whatever this is about to remove — see lib/page-refresh.ts.
+    const release = holdPage();
+    let changed = false;
 
     try {
       const response = await fetch(url, {
@@ -104,8 +110,10 @@ export function useMutation(): Mutation {
       }
 
       // Every table this console mutates is server-rendered, so the row that
-      // just changed only changes on screen once the page is read again.
-      router.refresh();
+      // just changed only changes on screen once the page is read again. The
+      // read itself is `release`'s, below: it is the last thing this mutation
+      // does, and it carries anything the poller asked for while it waited.
+      changed = true;
 
       return { ok: true, body: await response.json().catch(() => ({})) };
     } catch {
@@ -113,6 +121,7 @@ export function useMutation(): Mutation {
       return { ok: false };
     } finally {
       setBusy(false);
+      release(() => router.refresh(), changed);
     }
   };
 
