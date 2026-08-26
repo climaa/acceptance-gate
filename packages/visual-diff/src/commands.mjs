@@ -375,14 +375,6 @@ async function writeArtifacts(fs, { rootDir, summary, images }) {
   }
 }
 
-/** @param {Summary} summary @returns {string} */
-const verdictOf = (summary) =>
-  summary.exitCode === EXIT.ok
-    ? `no visual change across ${summary.counts.unchanged} variant(s)`
-    : `${summary.variants.length} variant(s) need review — open ${PATHS.reportHtml}`;
-
-/** Capture the corpus and compare it against the committed baselines.
- *  @param {Deps} [deps] @param {Options} [opts] @returns {Promise<CommandResult>} */
 /**
  * A monotonic reading in milliseconds.
  *
@@ -394,6 +386,14 @@ const verdictOf = (summary) =>
  * @returns {number} */
 const now = () => performance.now();
 
+/** @param {Summary} summary @returns {string} */
+const verdictOf = (summary) =>
+  summary.exitCode === EXIT.ok
+    ? `no visual change across ${summary.counts.unchanged} variant(s)`
+    : `${summary.variants.length} variant(s) need review — open ${PATHS.reportHtml}`;
+
+/** Capture the corpus and compare it against the committed baselines.
+ *  @param {Deps} [deps] @param {Options} [opts] @returns {Promise<CommandResult>} */
 export async function check(deps = defaultDeps(), opts = {}) {
   const { rootDir = REPO_ROOT, filter, allowHostMismatch = false } = opts;
   const at = under(rootDir);
