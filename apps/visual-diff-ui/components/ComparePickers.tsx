@@ -87,8 +87,36 @@ export function ComparePickers({ labels }: ComparePickersProps) {
     if (!labels.includes(candidate)) setCandidate(labels[1] ?? labels[0] ?? '');
   }
 
+  /**
+   * Which press this is, and the whole of what makes a repeat press land.
+   *
+   * `?a&b&mode` describes the pair. It cannot describe the ASK, because two
+   * presses for the same pair are byte-identical — and the run panel, which has
+   * to ignore its own writes coming back, cannot tell an ask from its echo by
+   * content alone. It ignored both, so pressing this from another tab for the
+   * pair already on screen moved the URL and left the panel where it was.
+   *
+   * The counter is what separates them: it changes on every press and on nothing
+   * else, so an ask is never equal to what is already applied and an echo always
+   * is. Note what is NOT here — the panel never writes `cn` and never clears it.
+   * One writer per param is the point. #344 tried a split vocabulary the panel
+   * consumed and cleared, and the clear raced the tabs' own `router.replace`:
+   * the tab click was superseded by the in-flight navigation for the ask, the URL
+   * never left, and the next press wrote a byte-identical URL that Next no-ops.
+   * That wedged 4 of 6 production runs, permanently.
+   */
+  const [asks, setAsks] = useState(0);
+
   const compare = () => {
-    const query = new URLSearchParams({ a: baseline, b: candidate, mode: COMPARE_MODE });
+    const ask = asks + 1;
+    setAsks(ask);
+
+    const query = new URLSearchParams({
+      a: baseline,
+      b: candidate,
+      mode: COMPARE_MODE,
+      cn: String(ask),
+    });
 
     // `scroll: false` — the pickers sit below the table the reviewer just chose
     // from, and jumping to the top would move it out from under them.

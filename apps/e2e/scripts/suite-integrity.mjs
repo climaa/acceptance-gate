@@ -66,7 +66,7 @@ const LANES = ['acceptance', 'local'];
  * scenario is a two-line diff; LOWERING it is a product decision and belongs in
  * its own hand-authored PR with the reason written down.
  */
-const EXPECTED_SCENARIOS = 41;
+const EXPECTED_SCENARIOS = 42;
 
 /** The two project selectors. Carrying both excludes a scenario from both. */
 const PROJECT_TAGS = ['@desktop', '@mobile'];

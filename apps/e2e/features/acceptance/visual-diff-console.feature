@@ -30,6 +30,14 @@ Feature: Visual-diff console
     When I reload the console
     Then the compare job tab is selected
 
+  Scenario: Asking for the same comparison again lands, from another tab
+    When I visit the console
+    And I choose two sets to compare
+    And I switch to the capture job tab
+    Then the URL has dropped the compare job mode
+    When I choose the same two sets to compare
+    Then the job form is set to compare those two sets
+
   Scenario: Past runs are listed with their outcome
     When I visit the console
     Then the history lists each run with its outcome, exit code and duration

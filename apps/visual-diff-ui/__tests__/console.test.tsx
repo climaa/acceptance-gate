@@ -351,16 +351,40 @@ describe('the compare pickers', () => {
   });
 
   // Nothing pre-fills the run panel but the URL: no store, no context. The panel
-  // reads these three params back with `useSearchParams()` — see
+  // reads these four params back with `useSearchParams()` — see
   // __tests__/run-panel.test.tsx, which drives the other half of this seam.
+  // `cn` is the ask counter: the pair says WHAT to compare, `cn` says that a
+  // press happened, which two identical pairs cannot say for themselves.
   it('writes the chosen pair into the URL as a compare request', () => {
     render(consoleWith());
 
     fireEvent.click(screen.getByRole('button', { name: 'compare A ⇄ B' }));
 
     expect(replaceCalls.map((call) => call.url)).toEqual([
-      `/?a=${CLEAN.label}&b=${DIRTY.label}&mode=compare`,
+      `/?a=${CLEAN.label}&b=${DIRTY.label}&mode=compare&cn=1`,
     ]);
+  });
+
+  /**
+   * The guarantee the counter exists for. Two presses for the SAME pair must not
+   * write the same URL twice: Next no-ops a byte-identical `replace`, so the
+   * second press would not navigate and the panel would never be asked again —
+   * which is the defect this closes, seen from the writing side.
+   */
+  it('writes a different URL for a second press of the same pair', () => {
+    render(consoleWith());
+    const button = screen.getByRole('button', { name: 'compare A ⇄ B' });
+
+    fireEvent.click(button);
+    fireEvent.click(button);
+
+    const urls = replaceCalls.map((call) => call.url);
+
+    expect(urls).toEqual([
+      `/?a=${CLEAN.label}&b=${DIRTY.label}&mode=compare&cn=1`,
+      `/?a=${CLEAN.label}&b=${DIRTY.label}&mode=compare&cn=2`,
+    ]);
+    expect(urls[0]).not.toBe(urls[1]);
   });
 
   it('sends the reviewer the pair they chose, not the pair it opened with', () => {
@@ -372,7 +396,7 @@ describe('the compare pickers', () => {
     fireEvent.click(screen.getByRole('button', { name: 'compare A ⇄ B' }));
 
     expect(replaceCalls.map((call) => call.url)).toEqual([
-      `/?a=${CLEAN.label}&b=${CLEAN.label}&mode=compare`,
+      `/?a=${CLEAN.label}&b=${CLEAN.label}&mode=compare&cn=1`,
     ]);
   });
 
@@ -392,7 +416,7 @@ describe('the compare pickers', () => {
     fireEvent.click(screen.getByRole('button', { name: 'compare A ⇄ B' }));
 
     expect(replaceCalls.at(-1)?.url).toBe(
-      `/?a=${CORPUS.label}&b=${DIRTY.label}&mode=compare`,
+      `/?a=${CORPUS.label}&b=${DIRTY.label}&mode=compare&cn=1`,
     );
   });
 
@@ -409,7 +433,7 @@ describe('the compare pickers', () => {
     fireEvent.click(screen.getByRole('button', { name: 'compare A ⇄ B' }));
 
     expect(replaceCalls.at(-1)?.url).toBe(
-      `/?a=${CLEAN.label}&b=${CLEAN.label}&mode=compare`,
+      `/?a=${CLEAN.label}&b=${CLEAN.label}&mode=compare&cn=1`,
     );
   });
 
