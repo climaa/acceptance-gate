@@ -118,21 +118,43 @@ export default defineConfig({
   // at twice the worst-case per-test time.
   retries: isCI ? 1 : 0,
   failOnFlakyTests: isCI,
+  // Parallel by SCENARIO, not by file — and this is the setting that matters.
+  //
+  // Without it Playwright schedules a file at a time, so every scenario inside one
+  // runs serially in a single worker and the longest file is the floor no worker
+  // count can lower. Measured, run 32947357701:
+  //
+  //     17.5 s  15 specs  visual-diff-report [desktop]   <- the floor
+  //     15.5 s   7 specs  visual-diff-a11y   [desktop]
+  //     12.5 s   7 specs  visual-diff-a11y   [mobile]
+  //
+  // That was proven the expensive way. Raising `workers` from 2 to 3 alone changed
+  // the suite from 46.9 s to 46.9 s — not a rounding artefact, the same number —
+  // because a third worker gets a FILE to run, never a share of the big one.
+  //
+  // Safe here because nothing is shared across scenarios: every page object in
+  // `steps/acceptance/fixtures.ts` wraps the per-test `page`, `scenarioState` is a
+  // fresh object per scenario, and the acceptance lane performs no successful
+  // mutation — its one delete scenario asserts a REFUSAL. The mutating lane is
+  // `playwright.local.config.ts`, a separate config this does not touch.
+  fullyParallel: true,
   // Three, where the default gave two.
   //
-  // Unset, Playwright takes `ceil(cpus / 2)` — and `ubuntu-24.04-arm` reports four,
-  // so the suite ran on half the box. Measured on run 32946584004: 81 specs, 74.0 s
-  // of serial spec time, 46.9 s of wall-clock across those two workers.
+  // Unset, Playwright takes `ceil(cpus / 2)`, and the observed default of 2 means
+  // this runner reports 3 or 4 cores — the formula cannot distinguish them, and an
+  // earlier version of this comment asserted four as though it could.
   //
   // THREE and not four, deliberately. Three `next start` servers share this runner
   // with the workers, and a browser driving an axe scan is the CPU-hungry half of
-  // that pairing — twelve of the 41 scenarios run one. Four workers would leave the
-  // servers nothing, and `failOnFlakyTests` above means contention does not show up
-  // as a slow run: it shows up as a RED one. Four is the next experiment if this is
-  // clean over a few runs, not something to assume alongside the first change.
+  // that pairing — NINE of the 41 scenarios run one (five in `a11y.feature`, four of
+  // the seven in `visual-diff-a11y.feature`; the other three assert on how
+  // violations are displayed and scan nothing). `failOnFlakyTests` above means
+  // contention does not show up as a slow run: it shows up as a RED one. If the
+  // runner turns out to have three cores, this is already full subscription and
+  // should come back down.
   //
   // CI only. Locally the default reads the developer's own core count, which is the
-  // right answer on a machine that is not a four-core runner.
+  // right answer on a machine that is not a CI runner.
   workers: isCI ? 3 : undefined,
   use: {
     baseURL,
