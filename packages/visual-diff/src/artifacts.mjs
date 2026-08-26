@@ -27,7 +27,12 @@ import { EXIT, THRESHOLDS } from './policy.mjs';
  *  committed fixtures predate it. A reader that has never heard of this field parses a
  *  file carrying it unchanged — verified against the console's own zod schema, which is
  *  not `.strict()` and drops what it does not name.
- *  @typedef {{ captureMs: number, compareMs: number, totalMs: number }} SummaryTiming */
+ *  `reportMs` covers everything after the comparison: building this object, collecting
+ *  the images, rendering the page with every diff inlined, and writing one PNG per
+ *  failing variant. It is near-zero on a green run and is the phase that grows on a red
+ *  one, which is exactly when a reader wants to know where the time went.
+ *  @typedef {{ captureMs: number, compareMs: number, reportMs: number,
+ *              totalMs: number }} SummaryTiming */
 
 /** The `summary.json` object.
  *  @typedef {{ schemaVersion: number, exitCode: number,

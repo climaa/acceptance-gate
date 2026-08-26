@@ -298,16 +298,19 @@ describe('check', () => {
     expect(result.exitCode).toBe(EXIT.broken);
   });
 
-  it('writes summary.json, summary.md, report.html and one PNG per failing variant', async () => {
+  /** Order is asserted, not just membership: `summary.json` is written LAST because it
+   *  is stamped with how long producing the others took. A writer that emitted it first
+   *  would report a run that had not finished. */
+  it('writes summary.md, report.html, one PNG per failing variant, then the record', async () => {
     const gate = deps({ compare: () => changedRows() });
 
     await check(gate, { rootDir: ROOT });
 
     expect([...gate.fs.writes.keys()]).toEqual([
-      at(PATHS.summaryJson),
       at(PATHS.summaryMd),
       at(PATHS.reportHtml),
       path.join(at(PATHS.diffs), `${KEYS[0]}.png`),
+      at(PATHS.summaryJson),
     ]);
   });
 
@@ -587,26 +590,53 @@ describe('the timing a run records', () => {
 
     const { summary } = await check(deps(), { rootDir: ROOT });
 
-    expect(summary.timing).toEqual({ captureMs: 700, compareMs: 50, totalMs: 800 });
+    expect(summary.timing).toEqual({
+      captureMs: 700,
+      compareMs: 50,
+      reportMs: 50,
+      totalMs: 800,
+    });
   });
 
-  /** The total is the run's own span, not a third independent reading — a total that
-   *  could come in under its own parts would make comparing two runs unreadable. */
-  it('covers both phases with the total', async () => {
+  /** The total is the run's own span, not a fourth independent reading — a total that
+   *  could come in under its own parts would make comparing two runs unreadable. All
+   *  three phases now, so a report phase that went missing could not hide inside it. */
+  it('covers every phase with the total', async () => {
     clock(0, 400, 900, 1000);
 
     const { timing } = (await check(deps(), { rootDir: ROOT })).summary;
 
-    expect(timing.totalMs).toBeGreaterThanOrEqual(timing.captureMs + timing.compareMs);
+    expect(timing.totalMs).toBeGreaterThanOrEqual(
+      timing.captureMs + timing.compareMs + timing.reportMs,
+    );
   });
 
   it('reports three whole numbers of milliseconds on a real clock', async () => {
     const { timing } = (await check(deps(), { rootDir: ROOT })).summary;
 
-    for (const span of [timing.captureMs, timing.compareMs, timing.totalMs]) {
+    for (const span of [
+      timing.captureMs,
+      timing.compareMs,
+      timing.reportMs,
+      timing.totalMs,
+    ]) {
       expect(Number.isInteger(span)).toBe(true);
       expect(span).toBeGreaterThanOrEqual(0);
     }
+  });
+
+  /** The record is the last artifact written, so the span it reports must be one that
+   *  already contains the others. Reading it back off the fake filesystem — rather than
+   *  off the returned object — is the point: a stamp applied after serialisation would
+   *  satisfy every assertion above and still write a file with no timing in it. */
+  it('carries the timing into the file it writes, not just the returned object', async () => {
+    const gate = deps({ compare: () => changedRows() });
+
+    const { summary } = await check(gate, { rootDir: ROOT });
+    const written = JSON.parse(String(gate.fs.writes.get(at(PATHS.summaryJson))));
+
+    expect(written.timing).toEqual(summary.timing);
+    expect(written.timing.reportMs).toBeGreaterThanOrEqual(0);
   });
 
   /** Optional by design — see the `SummaryTiming` typedef. `schemaVersion` stays 1
