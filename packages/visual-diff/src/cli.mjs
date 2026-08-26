@@ -46,6 +46,10 @@ export const USAGE = [
  *  `string`, and the whole point of that element is that it names a field of
  *  {@link ParsedArgs}. Widened, `parsed[VALUED[flag][0]] = …` would write to any key
  *  at all.
+ *  The type names the one flag rather than being a `Record`: under
+ *  `noUncheckedIndexedAccess` a `Record` lookup answers `undefined`, which is the very
+ *  thing this annotation exists to remove. The cost is that a second valued flag has to
+ *  be added HERE as well as to the table below.
  *  @type {{ readonly '--filter': readonly ['filter', string] }} */
 const VALUED = {
   '--filter': ['filter', 'a substring to match stories against'],
@@ -133,9 +137,13 @@ export async function run(argv, io = CONSOLE_IO, commands = COMMANDS) {
     return EXIT.broken;
   }
 
-  // `parseArgs` rejects any command not in the table before this line is reached, so
-  // the lookup cannot miss. Asserted rather than guarded on purpose: a guard here
-  // would be a second, untested error path for a state the parser already refuses.
+  // `parseArgs` validates against the module's own `COMMANDS`, and this reads the
+  // `commands` it was HANDED — the same object by default, and only by default. So
+  // the cast is not the guarantee it would be if the two were one table: an injected
+  // map missing a command still fails here, exactly as it did before the cast existed.
+  // Asserted rather than guarded deliberately — a guard would be a second, untested
+  // error path for a state no real caller reaches, and it would quietly turn a test
+  // double's missing key into a clean exit instead of a loud failure.
   const command = /** @type {Command} */ (commands[parsed.command]);
   const { exitCode, message } = await command(undefined, {
     filter: parsed.filter,

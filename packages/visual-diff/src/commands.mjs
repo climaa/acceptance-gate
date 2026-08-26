@@ -365,14 +365,22 @@ function collectImages(summary, results, captures, baselines) {
  *  first, as it once was, the run's own most expensive artifact-producing phase fell
  *  outside every number in it.
  *  @param {GateFs} fs
+ *  `stamp` is REQUIRED, not optional. There is one caller and it always passes one,
+ *  so an optional parameter bought nothing but a branch no test could reach — and a
+ *  way for a future writer to drop the timing silently, which is the one failure this
+ *  function must not have.
  *  @param {{ rootDir: string, summary: Summary,
  *            images: ReadonlyMap<string, VariantImages>,
- *            stamp?: () => void }} run
+ *            stamp: () => void }} run
  *  @returns {Promise<void>} */
 async function writeArtifacts(fs, { rootDir, summary, images, stamp }) {
   const at = under(rootDir);
   await fs.mkdir(at(PATHS.diffs), { recursive: true });
 
+  // Both renderers see `summary` BEFORE `stamp` has run, so `summary.timing` is
+  // undefined to them. Neither reads it today. Anything added here that wants a
+  // timing must move below the stamp — the field is optional, so reading it early
+  // yields `undefined` rather than an error, and would render a blank nobody notices.
   await fs.writeFile(at(PATHS.summaryMd), `${renderSummaryMd(summary)}\n`);
   await fs.writeFile(at(PATHS.reportHtml), renderReport(summary, images));
 
@@ -380,7 +388,7 @@ async function writeArtifacts(fs, { rootDir, summary, images, stamp }) {
     if (diff) await fs.writeFile(path.join(at(PATHS.diffs), `${key}${PNG_SUFFIX}`), diff);
   }
 
-  stamp?.();
+  stamp();
   await fs.writeFile(at(PATHS.summaryJson), `${JSON.stringify(summary, null, 2)}\n`);
 }
 
