@@ -257,8 +257,8 @@ describe('PINNED_TIMEZONE', () => {
   });
 
   it('reads the pinned instant back on its own calendar day', () => {
-    // `2026-01-01T12:00:00Z` is the 1st in UTC and the 1st in Los Angeles; nearer a
-    // boundary the two are different days, which is the whole reason the zone is pinned.
+    // Trips if either half of the pin moves far enough that noon on the 1st formats as
+    // the 31st or the 2nd — the drift a zone left unpinned produces for free.
     const day = new Intl.DateTimeFormat('en-CA', {
       timeZone: PINNED_TIMEZONE,
       year: 'numeric',
@@ -266,6 +266,6 @@ describe('PINNED_TIMEZONE', () => {
       day: '2-digit',
     }).format(new Date(PINNED_NOW_ISO));
 
-    expect(day).toBe(PINNED_NOW_ISO.slice(0, 'YYYY-MM-DD'.length));
+    expect(day).toBe(PINNED_NOW_ISO.split('T')[0]);
   });
 });

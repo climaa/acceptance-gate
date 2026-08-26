@@ -722,7 +722,7 @@ describe('captureAll', () => {
     expect(browser.contexts[0]?.options.timezoneId).toBe(PINNED_TIMEZONE);
   });
 
-  it('keeps the other two context-level determinism options beside it', async () => {
+  it('keeps the context-level determinism options it already had beside it', async () => {
     const browser = fakeBrowser();
 
     await captureAll({ variants: [], baseUrl: BASE_URL, browser });
