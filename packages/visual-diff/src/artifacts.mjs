@@ -20,11 +20,21 @@ import { EXIT, THRESHOLDS } from './policy.mjs';
  *              violations: Comparison['violations'],
  *              error: string | null }} SummaryVariant */
 
+/** How long the run took, by phase, in milliseconds.
+ *
+ *  OPTIONAL, and that is what keeps `schemaVersion` at 1. `check()` attaches it; the
+ *  console composes `buildSummary` itself for its compare mode and does not, and the
+ *  committed fixtures predate it. A reader that has never heard of this field parses a
+ *  file carrying it unchanged — verified against the console's own zod schema, which is
+ *  not `.strict()` and drops what it does not name.
+ *  @typedef {{ captureMs: number, compareMs: number, totalMs: number }} SummaryTiming */
+
 /** The `summary.json` object.
  *  @typedef {{ schemaVersion: number, exitCode: number,
  *              thresholds: { maxDiffPixels: number, maxDiffRatio: number },
  *              env: Record<string, string>, counts: Record<Bucket, number>,
- *              warnings: string[], variants: SummaryVariant[] }} Summary */
+ *              warnings: string[], variants: SummaryVariant[],
+ *              timing?: SummaryTiming }} Summary */
 
 /** The schema every consumer of `summary.json` reads against. Bump only when a reader
  *  would have to change to keep parsing the file. */

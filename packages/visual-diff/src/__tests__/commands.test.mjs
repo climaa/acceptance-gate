@@ -1,6 +1,6 @@
 import path from 'node:path';
 
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { accept, check, defaultDeps, mismatchedHostKeys } from '../commands.mjs';
 import { BASELINE_PNG_BUDGET_BYTES, EXIT, HOST, PATHS } from '../policy.mjs';
@@ -547,5 +547,73 @@ describe('accept', () => {
 
     expect(result.exitCode).toBe(EXIT.broken);
     expect(gate.fs.writes.size).toBe(0);
+  });
+});
+
+/**
+ * How long the run took.
+ *
+ * The artifact recorded counts, thresholds and env, and nothing about elapsed time — so
+ * a capture that got 50% slower wrote a byte-identical `summary.json` and no reader
+ * could see it. The nightly determinism job captures the whole corpus twice and had no
+ * way to say which half was slow.
+ *
+ * Attached by `check`, not by `buildSummary`: the console composes that function itself
+ * for its own compare mode, through a hand-written declaration, and widening its
+ * signature would ripple into another workspace to no purpose here.
+ *
+ * The clock is STUBBED here rather than measured. Against the fake filesystem every
+ * phase completes inside a millisecond and rounds to zero, so an assertion like
+ * "the total is at least the sum of its parts" holds no matter what the code does —
+ * a version returning a hardcoded `totalMs: 0` passed it. Feeding a known sequence is
+ * what makes the arithmetic checkable at all.
+ */
+describe('the timing a run records', () => {
+  /** Readings in the order `check` takes them: start, after capture, after compare,
+   *  and the total's own read at the end. */
+  const clock = (...readings) => {
+    const queue = [...readings];
+    return vi
+      .spyOn(performance, 'now')
+      .mockImplementation(() => queue.shift() ?? readings[readings.length - 1]);
+  };
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('reports each phase as the span it actually took', async () => {
+    clock(1000, 1700, 1750, 1800);
+
+    const { summary } = await check(deps(), { rootDir: ROOT });
+
+    expect(summary.timing).toEqual({ captureMs: 700, compareMs: 50, totalMs: 800 });
+  });
+
+  /** The total is the run's own span, not a third independent reading — a total that
+   *  could come in under its own parts would make comparing two runs unreadable. */
+  it('covers both phases with the total', async () => {
+    clock(0, 400, 900, 1000);
+
+    const { timing } = (await check(deps(), { rootDir: ROOT })).summary;
+
+    expect(timing.totalMs).toBeGreaterThanOrEqual(timing.captureMs + timing.compareMs);
+  });
+
+  it('reports three whole numbers of milliseconds on a real clock', async () => {
+    const { timing } = (await check(deps(), { rootDir: ROOT })).summary;
+
+    for (const span of [timing.captureMs, timing.compareMs, timing.totalMs]) {
+      expect(Number.isInteger(span)).toBe(true);
+      expect(span).toBeGreaterThanOrEqual(0);
+    }
+  });
+
+  /** Optional by design — see the `SummaryTiming` typedef. `schemaVersion` stays 1
+   *  because a reader that has never heard of the field parses the file unchanged. */
+  it('adds the field without bumping the schema every reader checks', async () => {
+    const { summary } = await check(deps(), { rootDir: ROOT });
+
+    expect(summary.schemaVersion).toBe(1);
   });
 });

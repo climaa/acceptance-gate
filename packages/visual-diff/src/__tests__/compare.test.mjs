@@ -448,3 +448,66 @@ describe('compareAll ordering', () => {
     expect(order.map((result) => result.id)).toEqual(['a-first', 'z-last']);
   });
 });
+
+/**
+ * The fast path out of a comparison there is nothing to compare.
+ *
+ * A green run is the common case and it was the expensive one: every unchanged variant
+ * decoded both sides and walked every pixel of both bitmaps to arrive at zero. These
+ * cases pin what the short-circuit must keep true — that its answer is the answer the
+ * decode would have given, not merely a plausible one.
+ */
+describe('two shots that are the same bytes', () => {
+  const shot = png(8, 4, () => INK);
+
+  it('passes with nothing differing', () => {
+    const result = comparePixels(shot, shot);
+
+    expect(result.pass).toBe(true);
+    expect(result.diffPixels).toBe(0);
+    expect(result.overlapDiffPixels).toBe(0);
+    expect(result.marginPixels).toBe(0);
+  });
+
+  it('reports the size it read out of the header', () => {
+    const result = comparePixels(shot, shot);
+
+    expect(result).toMatchObject({ width: 8, height: 4, sizeDelta: null });
+  });
+
+  /** The diff PNG is what a reviewer opens. There is nothing to open. */
+  it('paints no diff', () => {
+    expect(comparePixels(shot, shot).diff).toBeNull();
+  });
+
+  /** Strict zeroes the allowance, and zero differing pixels is still within it — the
+   *  nightly determinism run compares a corpus against itself twice. */
+  it('passes under strict, where the allowance is zero', () => {
+    const result = comparePixels(shot, shot, { strict: true });
+
+    expect(result).toMatchObject({ pass: true, diffPixels: 0, allowedDiffPixels: 0 });
+  });
+
+  it('states the same allowance the decoding path would have', () => {
+    const fast = comparePixels(shot, shot);
+
+    expect(fast.allowedDiffPixels).toBe(allowedDiffPixels(8, 4, false));
+  });
+
+  /** Equal-but-unreadable bytes fall through to the decode and fail there, exactly as
+   *  they did before the fast path existed: `pngSize` answers null for anything whose
+   *  header it cannot read, and this must not become a silent pass. */
+  it('refuses a pair that is identical and not a PNG', () => {
+    const notPng = Buffer.from('the same bytes, twice, and not an image');
+
+    expect(() => comparePixels(notPng, notPng)).toThrow();
+  });
+
+  /** The fast path must not swallow a real change: same size, one pixel moved. */
+  it('does not fire for two shots that merely look alike', () => {
+    const moved = png(8, 4, (x, y) => (x === 0 && y === 0 ? WHITE : INK));
+    const result = comparePixels(shot, moved);
+
+    expect(result.diffPixels).toBeGreaterThan(0);
+  });
+});
