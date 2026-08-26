@@ -15,6 +15,7 @@ import { EmptyState, IconButton, Link, Stack } from '@gate/ui';
 import { useDismissedJob } from '@/hooks/useDismissedJob';
 import type { HistoryRecord } from '@/lib/job-contract';
 import { durationOf, formatDuration, jobState } from '@/lib/outcome';
+import { requestRefresh } from '@/lib/page-refresh';
 import { LogTail } from './LogTail';
 import { OutcomeWord } from './OutcomeWord';
 
@@ -310,9 +311,15 @@ function useJobPoller(): { state: CurrentJobState; pollNow: () => void } {
       // row, and maybe a report and a set. `running` is checked as well as the
       // id, so a job still in flight is not reported as done the first time it
       // is seen.
+      //
+      // Asked for rather than performed: a delete is at its most likely to be in
+      // flight right here, and `requestRefresh` hands the read to whichever
+      // mutation holds the page instead of reading beside it — see
+      // lib/page-refresh.ts. Which is why the id is marked reported either way:
+      // the promise is that the page WILL be read again, not that it just was.
       const { job, running } = answer.state;
       if (job && !running && reported.current !== job.id) {
-        if (primed.current) latestRouter.current.refresh();
+        if (primed.current) requestRefresh(() => latestRouter.current.refresh());
         reported.current = job.id;
       }
       primed.current = true;
