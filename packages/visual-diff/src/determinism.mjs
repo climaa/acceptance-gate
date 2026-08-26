@@ -17,6 +17,23 @@ import { DETERMINISM } from './policy.mjs';
  *  render a different day depending on where the capture ran. */
 export const PINNED_NOW_ISO = '2026-01-01T12:00:00.000Z';
 
+/** The zone that instant is rendered through — the other half of the same pin.
+ *
+ *  A pinned clock alone leaves a component that prints a local time deterministic in
+ *  *when* it thinks it is and non-deterministic in *where*. Unset, the zone is whatever
+ *  the capturing process happens to sit in — the container on CI, the author's own
+ *  machine for a bare-metal capture — and a pinned instant near a boundary is two
+ *  different calendar days between the two.
+ *
+ *  Declared beside {@link PINNED_NOW_ISO} rather than in `policy.DETERMINISM`: this is a
+ *  property of the clock above it and reads as nonsense apart from it. `capture.mjs`
+ *  applies it as a context option rather than from the init script below, because `Intl`
+ *  resolves the zone beneath JavaScript, where only the driver can reach.
+ *
+ *  UTC because the corpus already renders that way: `PostMeta` passes
+ *  `timeZone: 'UTC'` of its own accord, so pinning the harness to it moves no baseline. */
+export const PINNED_TIMEZONE = 'UTC';
+
 /** The source injected via `addInitScript` on the browser context, **before `goto`** —
  *  after navigation the page has already read the clock it was going to read.
  *

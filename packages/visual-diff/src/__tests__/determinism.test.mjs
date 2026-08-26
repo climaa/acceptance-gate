@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 import {
   FREEZE_CSS,
   PINNED_NOW_ISO,
+  PINNED_TIMEZONE,
   RENDERED_PHASES,
   RENDER_PHASE_EXPRESSION,
   buildInitScript,
@@ -239,5 +240,32 @@ describe('shotsEqual', () => {
     const equal = shotsEqual(first, second);
 
     expect(equal).toBe(false);
+  });
+});
+
+describe('PINNED_TIMEZONE', () => {
+  it('is the zone the pinned instant is written in', () => {
+    expect(PINNED_TIMEZONE).toBe('UTC');
+  });
+
+  it('names a zone ICU resolves — a typo here fails only on a real capture', () => {
+    const resolved = new Intl.DateTimeFormat('en-CA', {
+      timeZone: PINNED_TIMEZONE,
+    }).resolvedOptions().timeZone;
+
+    expect(resolved).toBe(PINNED_TIMEZONE);
+  });
+
+  it('reads the pinned instant back on its own calendar day', () => {
+    // Trips if either half of the pin moves far enough that noon on the 1st formats as
+    // the 31st or the 2nd — the drift a zone left unpinned produces for free.
+    const day = new Intl.DateTimeFormat('en-CA', {
+      timeZone: PINNED_TIMEZONE,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).format(new Date(PINNED_NOW_ISO));
+
+    expect(day).toBe(PINNED_NOW_ISO.split('T')[0]);
   });
 });
