@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { RefusalSchema } from '@/lib/api-contract';
 import { holdPage } from '@/lib/page-refresh';
 
 /**
@@ -40,13 +41,12 @@ export const UNREACHABLE =
  */
 export async function refusalOf(response: Response, fallback: string): Promise<string> {
   try {
-    const body = (await response.json()) as { error?: unknown };
-    if (typeof body.error === 'string') return body.error;
+    return RefusalSchema.parse(await response.json()).error;
   } catch {
-    // A refusal that is not JSON is still a refusal.
+    // A refusal that is not JSON — or is JSON and carries no sentence — is still
+    // a refusal. Both land here, which is what the fallback above is for.
+    return fallback;
   }
-
-  return fallback;
 }
 
 export interface MutationRequest {

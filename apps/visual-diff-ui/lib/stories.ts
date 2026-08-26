@@ -2,6 +2,13 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { SKIP_TAG, TIERS, tierOf } from '@gate/visual-diff/policy';
 import { z } from 'zod';
+/**
+ * The two shapes this module answers with are declared in lib/api-contract.ts,
+ * as `StoryTierSchema`: `GET /api/stories` serves them verbatim and the run
+ * panel parses that answer against the same schema, so declaring them here as
+ * well would be the drift this app has no other mechanism against.
+ */
+import type { StoryComponent, StoryTier } from './api-contract';
 import { repoRoot } from './git';
 
 /**
@@ -38,19 +45,6 @@ const EntrySchema = z.object({
 });
 
 const IndexSchema = z.object({ entries: z.record(z.string(), EntrySchema) });
-
-export interface StoryComponent {
-  /** What goes in `--filter`: the story id up to its `--`, which is the id every
-   *  story of this component shares. */
-  filter: string;
-  /** The last segment of the Storybook title — `Atoms/Button` is `Button`. */
-  name: string;
-}
-
-export interface StoryTier {
-  tier: string;
-  components: StoryComponent[];
-}
 
 /** A story id is `<tier>-<component>--<story>`; everything before the `--` is
  *  what every story of that component shares, and so is what a filter names. */

@@ -57,8 +57,14 @@ interface ApiStub {
   image?: string | null;
   /** Whether `GET /api/env` says a container could be started. */
   docker?: boolean;
+  /** The whole `GET /api/env` body, verbatim, for the cases about a handler that
+   *  has drifted out of its schema. Overrides `image` and `docker`. */
+  envBody?: unknown;
   /** What `GET /api/stories` says there is to capture. */
   tiers?: typeof CORPUS;
+  /** The whole `GET /api/stories` body, verbatim, for the same reason. Overrides
+   *  `tiers`. */
+  storiesBody?: unknown;
   /** What `GET /api/jobs/current` says is happening. */
   current?: { running: boolean; job: HistoryRecord | null };
   /** What `POST /api/jobs` answers. */
@@ -66,6 +72,9 @@ interface ApiStub {
   /** What `GET /api/label` suggests. `null` is a checkout that cannot name a
    *  set; `'throw'` is the endpoint being unreachable. */
   label?: string | null | 'throw';
+  /** The whole `GET /api/label` body, verbatim, for the same reason. Overrides
+   *  `label`. */
+  labelBody?: unknown;
 }
 
 const answered = (ok: boolean, status: number, body: unknown) =>
@@ -77,24 +86,32 @@ const answered = (ok: boolean, status: number, body: unknown) =>
 function stubApi({
   image = HOST.image,
   docker = true,
+  envBody,
   tiers = CORPUS,
+  storiesBody,
   current,
   jobs,
   label = SUGGESTED,
+  labelBody,
 }: ApiStub = {}) {
   const fetchMock = vi.fn((url: string) => {
     if (url === '/api/env') {
-      return answered(true, 200, {
-        platform: 'linux',
-        arch: 'x64',
-        image,
-        playwright: null,
-        docker,
-      });
+      return answered(
+        true,
+        200,
+        envBody ?? { platform: 'linux', arch: 'x64', image, playwright: null, docker },
+      );
     }
-    if (url === '/api/stories') return answered(true, 200, { tiers });
+    if (url === '/api/stories') return answered(true, 200, storiesBody ?? { tiers });
     if (url === '/api/jobs/current') {
-      return answered(true, 200, { running: false, job: null, log: [], ...current });
+      return answered(true, 200, {
+        isSample: false,
+        running: false,
+        job: null,
+        reportExists: false,
+        log: [],
+        ...current,
+      });
     }
     if (url === '/api/jobs') {
       return answered(
@@ -108,7 +125,7 @@ function stubApi({
       // a rejected fetch — the panel cannot tell the two apart and must not.
       if (label === 'throw') throw new Error('unreachable');
 
-      return answered(true, 200, { label });
+      return answered(true, 200, labelBody ?? { label });
     }
 
     throw new Error(`unstubbed request to ${url}`);
@@ -881,6 +898,58 @@ describe('capture on a host that is not the pinned container', () => {
     await screen.findByRole('note', { name: 'docker required' });
 
     expect(screen.queryAllByRole('alert')).toHaveLength(0);
+  });
+});
+
+/**
+ * The two mount reads, answered by a handler that has drifted out of its schema.
+ *
+ * Neither is hypothetical in the way it matters: the halves of these endpoints
+ * agree today because one commit wrote both, and nothing but the schema stands
+ * between a changed payload and a panel reading it as something else. What each
+ * case asserts is that the answer lands on the fallback the read site already
+ * states for an endpoint it could not reach at all, which is the only landing
+ * that is not a blank panel.
+ */
+describe('a response this panel cannot parse', () => {
+  /**
+   * The dangerous drift, and why the fingerprint fails CLOSED.
+   *
+   * An answer carrying the pinned image and no `docker` field reads, field by
+   * field, as the one host that needs no container: `containerState` sees a
+   * matching image and returns native, and the panel offers a start button on a
+   * claim nothing behind it stood for. The schema refuses the whole answer
+   * instead, and `unreachable` is the refusal an unknown runner already is.
+   */
+  it('reads a half-answered fingerprint as no fingerprint at all', async () => {
+    renderPanel({ envBody: { image: HOST.image } });
+
+    const note = await screen.findByRole('note', { name: 'docker required' });
+
+    expect(note.textContent).toBe(DOCKER_DOWN);
+    expect(startButtons('capture')[0]).toHaveProperty('disabled', true);
+  });
+
+  // An empty corpus, which is a run over everything — the same thing the gate
+  // does, and the same thing an unreachable `GET /api/stories` already means.
+  it('reads a malformed corpus as an empty one', async () => {
+    renderPanel({ storiesBody: { tiers: [{ tier: 'atoms', components: 'button' }] } });
+
+    // The picker's own words for a corpus it has nothing to offer from, rather
+    // than an absence: `FilterPicker` says a run over everything is what this is.
+    await screen.findByRole('note', { name: 'no corpus yet' });
+    expect(screen.queryByRole('checkbox', { name: 'atoms' })).toBeNull();
+  });
+
+  // The wand says so rather than typing a name the server never offered.
+  it('refuses a label suggestion it cannot read', async () => {
+    await renderSettled({ labelBody: { label: 42 } });
+    fireEvent.click(wand());
+
+    const status = await screen.findByRole('status', { name: 'label suggestion' });
+
+    expect(status.textContent).toBe(SUGGEST_REFUSAL);
+    expect((labelField() as HTMLInputElement).value).toBe('');
   });
 });
 

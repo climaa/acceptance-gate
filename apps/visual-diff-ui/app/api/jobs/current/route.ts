@@ -1,3 +1,4 @@
+import type { CurrentJobResponse } from '@/lib/api-contract';
 import { resolveDataDir } from '@/lib/data';
 import {
   currentJob,
@@ -82,16 +83,19 @@ export async function GET(): Promise<Response> {
   const running = currentJob(dir);
   const job = running ?? readHistory(dir)[0] ?? null;
 
-  return Response.json(
-    {
-      isSample,
-      running: running !== null,
-      job,
-      reportExists: hasNamedReport(dir, job?.reportId ?? null),
-      log: job ? jobLog(dir, job.id, TAIL_LINES) : [],
-    },
-    { headers: { 'Cache-Control': 'no-store' } },
-  );
+  // Annotated with the type the poller parses this answer against, which is what
+  // makes this handler and `readCurrent` one declaration rather than two that
+  // happen to agree — see lib/api-contract.ts. An object literal, so a field
+  // dropped here and a field added here are both compile errors.
+  const body: CurrentJobResponse = {
+    isSample,
+    running: running !== null,
+    job,
+    reportExists: hasNamedReport(dir, job?.reportId ?? null),
+    log: job ? jobLog(dir, job.id, TAIL_LINES) : [],
+  };
+
+  return Response.json(body, { headers: { 'Cache-Control': 'no-store' } });
 }
 
 /** Whether that report is on disk, for an id that may be anything at all. A

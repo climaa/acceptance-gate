@@ -1,4 +1,5 @@
 import { connection } from 'next/server';
+import type { StoriesResponse } from '@/lib/api-contract';
 import { readStories } from '@/lib/stories';
 
 /**
@@ -13,12 +14,15 @@ import { readStories } from '@/lib/stories';
  * An empty list is a real answer — a checkout nobody has captured from yet, or a
  * deployment with no checkout at all — so this never 404s. `no-store` because a
  * build lands between two polls and a cached corpus is the one before it.
+ *
+ * Annotated with the type the run panel parses this answer against: an object
+ * literal checked for missing and excess fields is what binds the two halves of
+ * this endpoint together. See lib/api-contract.ts.
  */
 export async function GET(): Promise<Response> {
   await connection();
 
-  return Response.json(
-    { tiers: readStories() },
-    { headers: { 'Cache-Control': 'no-store' } },
-  );
+  const body: StoriesResponse = { tiers: readStories() };
+
+  return Response.json(body, { headers: { 'Cache-Control': 'no-store' } });
 }

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Stack, TriStateCheckbox } from '@gate/ui';
 import { Note } from './Note';
-import type { StoryTier } from '@/lib/stories';
+import type { StoryTier } from '@/lib/api-contract';
 
 /**
  * What to capture, ticked rather than typed.

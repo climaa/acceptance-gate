@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Button, Dialog, Stack } from '@gate/ui';
 import { useMutation } from '@/hooks/useMutation';
+import { PruneResponseSchema } from '@/lib/api-contract';
 
 /**
  * D2, as the two dialogs that stand in front of every destructive control on the
@@ -291,8 +292,13 @@ export function PruneButton({ keep, labels }: PruneButtonProps) {
     // A prune can succeed and still have something to say: the server keeps the
     // sets a worktree holds and names them back. Something moved either way, so
     // the hook has already re-read the page; only the dialog's fate differs.
-    const { refused } = result.body as { refused?: unknown };
-    const skipped = Array.isArray(refused) ? (refused as string[]) : [];
+    //
+    // Parsed against the schema the route annotates its answer with. A body this
+    // cannot read carries no skip to report, so the dialog closes on the
+    // mutation the server has already confirmed rather than staying open on a
+    // sentence nobody wrote.
+    const parsed = PruneResponseSchema.safeParse(result.body);
+    const skipped = parsed.success ? parsed.data.refused : [];
 
     if (skipped.length === 0) close();
     else refuse(skipped);
