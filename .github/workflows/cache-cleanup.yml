@@ -1,0 +1,59 @@
+# Delete a PR's Actions caches when the PR closes.
+#
+# GitHub gives a repository 10 GB of Actions cache and evicts least-recently-used
+# entries once that fills. Eviction is indiscriminate: it does not know that the
+# Playwright browser cache is load-bearing and that a cache belonging to a PR
+# merged last week is not. So the store fills with entries nobody can ever hit
+# again, and the ones that still matter get pushed out.
+#
+# Measured on 2026-08-26, before this file existed:
+#
+#   10,825 MB of active cache against a 10,240 MB limit — already over
+#   44 entries, of which ~27 belonged to CLOSED pull requests
+#   #313-#316 alone (four Dependabot PRs) held 21 of them
+#
+# A cache is scoped to the ref that wrote it. Once `refs/pull/<n>/merge` is
+# closed, nothing will ever restore from it again — GitHub does expire these
+# after 7 days of no access, but "no access" is exactly the state they are in
+# while they crowd out live entries. Deleting at close is the same outcome,
+# a week earlier.
+#
+# `main`'s caches are deliberately NOT touched. They are the ones every new
+# branch restores from through restore-keys, so pruning them would make the
+# first run on every branch cold — the opposite of the point.
+name: Cache cleanup
+
+on:
+  pull_request:
+    types: [closed]
+
+# `actions: write` is what the cache API requires, and it is the only scope here.
+# `contents` is not needed: nothing is checked out.
+permissions:
+  actions: write
+
+jobs:
+  cleanup:
+    # Same-repo pull requests only. A fork PR's `pull_request` token is read-only
+    # regardless of what this block asks for, so the step could not delete anything
+    # — it would just fail on every outside contribution and look like a broken
+    # workflow. `pull_request_target` would grant the write, and is deliberately
+    # not used: it runs with repository write scope and is the wrong shape for a
+    # janitor.
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 5
+    steps:
+      # Fires whether the PR merged or was closed unmerged — both end the ref's
+      # useful life. `--succeed-on-no-caches` covers the ordinary case of a PR that
+      # never populated one (docs-only, or closed before CI finished); without it
+      # that would exit non-zero and report a red run for a no-op.
+      - name: Delete the caches scoped to this PR's ref
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REF: refs/pull/${{ github.event.pull_request.number }}/merge
+        run: |
+          gh cache delete --all \
+            --repo "${{ github.repository }}" \
+            --ref "$REF" \
+            --succeed-on-no-caches
