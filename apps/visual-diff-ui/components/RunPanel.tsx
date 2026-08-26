@@ -381,6 +381,10 @@ function useLabelSuggestion(apply: (label: string) => void) {
  *
  * No `aria-hidden` here: `IconButton` wraps whatever it is handed in one, which
  * is exactly why that wrapper is the atom's job rather than the caller's.
+ *
+ * An `Icon` atom was considered for Board 01 and declined (#339): a glyph stays
+ * children of `IconButton`/`EmptyState`, so this block and its twin stay apart
+ * deliberately rather than pending a collapse.
  */
 function WandGlyph() {
   return (

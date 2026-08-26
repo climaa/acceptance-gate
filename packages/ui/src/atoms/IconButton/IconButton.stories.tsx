@@ -7,6 +7,9 @@ import { IconButton } from './IconButton';
  * way `Dialog`'s close is stroked. It is a sample rather than part of the atom:
  * `IconButton` takes whatever glyph it is handed, and the one the visual-diff
  * console hands it lives with the panel that has a reason to.
+ *
+ * An `Icon` atom was considered for Board 01 and declined (#339); the twin in
+ * `RunPanel.tsx` stays where it is for that reason, not for want of a decision.
  */
 const Wand = () => (
   // The twin of this block is `WandGlyph` in the visual-diff console's

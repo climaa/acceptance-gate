@@ -630,7 +630,7 @@
                       "fill": "$ink-muted",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "Five exist in the seed (Button, Badge, Stack, Prose, Card). Stack stays a code-level layout primitive — no tile, no story, no baseline. The rest — including Link and Skeleton — land one issue per component.",
+                      "content": "Five exist in the seed (Button, Badge, Stack, Prose, Card). Stack stays a code-level layout primitive — no tile, no story, no baseline. The rest — including Link and Skeleton — land one issue per component. Tabs and Icon were considered and declined — twice-used is what earns design-system status and each has one consumer: the console's mode strip stays app-local in ModeTabs, a glyph stays children of IconButton/EmptyState. No tile, no story, no baseline for either.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font-body",
                       "fontSize": 12,
@@ -7702,7 +7702,7 @@
                               "fill": "$ink-muted",
                               "textGrowth": "fixed-width",
                               "width": "fill_container",
-                              "content": "mode tabs capture / compare + label / filter / viewports + --skip-build, verbatim mono flag names. TWO, not four: capture and run spawned the same argv — runCheck never read the mode — so run was a second name for one job, and accept never belonged here at all. The corpus CI compares against changes by a commit, not by this console.",
+                              "content": "mode tabs capture / compare + label / filter, verbatim mono flag names. TWO, not four: capture and run spawned the same argv — runCheck never read the mode — so run was a second name for one job, and accept never belonged here at all. The corpus CI compares against changes by a commit, not by this console.",
                               "lineHeight": 1.4,
                               "fontFamily": "$font-body",
                               "fontSize": 11,
@@ -16172,82 +16172,6 @@
                                               ]
                                             }
                                           ]
-                                        },
-                                        {
-                                          "type": "frame",
-                                          "id": "py0J2",
-                                          "name": "fg",
-                                          "width": "fill_container",
-                                          "layout": "vertical",
-                                          "gap": 3,
-                                          "children": [
-                                            {
-                                              "type": "text",
-                                              "id": "pdRqL",
-                                              "name": "t",
-                                              "fill": "$text-muted",
-                                              "content": "viewports",
-                                              "fontFamily": "$font-mono",
-                                              "fontSize": 9,
-                                              "fontWeight": "normal"
-                                            },
-                                            {
-                                              "type": "frame",
-                                              "id": "INTSF",
-                                              "name": "in",
-                                              "width": "fill_container",
-                                              "fill": "$bg",
-                                              "cornerRadius": 6,
-                                              "stroke": "$border",
-                                              "strokeWidth": 1,
-                                              "padding": [
-                                                5,
-                                                10
-                                              ],
-                                              "children": [
-                                                {
-                                                  "type": "text",
-                                                  "id": "DQpJJ",
-                                                  "name": "t",
-                                                  "fill": "$text-muted",
-                                                  "content": "desktop,mobile",
-                                                  "fontFamily": "$font-mono",
-                                                  "fontSize": 10,
-                                                  "fontWeight": "normal"
-                                                }
-                                              ]
-                                            }
-                                          ]
-                                        }
-                                      ]
-                                    },
-                                    {
-                                      "type": "frame",
-                                      "id": "o7f87",
-                                      "name": "skip",
-                                      "gap": 6,
-                                      "alignItems": "center",
-                                      "children": [
-                                        {
-                                          "type": "frame",
-                                          "id": "y3j6W",
-                                          "name": "cb",
-                                          "width": 13,
-                                          "height": 13,
-                                          "fill": "$bg",
-                                          "cornerRadius": 3,
-                                          "stroke": "$border-strong",
-                                          "strokeWidth": 1
-                                        },
-                                        {
-                                          "type": "text",
-                                          "id": "nzbws",
-                                          "name": "t",
-                                          "fill": "$text-muted",
-                                          "content": "--skip-build (reuse the existing storybook-static)",
-                                          "fontFamily": "$font-mono",
-                                          "fontSize": 10,
-                                          "fontWeight": "normal"
                                         }
                                       ]
                                     },
@@ -18530,82 +18454,6 @@
                                               ]
                                             }
                                           ]
-                                        },
-                                        {
-                                          "type": "frame",
-                                          "id": "KUvHi",
-                                          "name": "fg",
-                                          "width": "fill_container",
-                                          "layout": "vertical",
-                                          "gap": 3,
-                                          "children": [
-                                            {
-                                              "type": "text",
-                                              "id": "PfRl7",
-                                              "name": "t",
-                                              "fill": "$text-muted",
-                                              "content": "viewports",
-                                              "fontFamily": "$font-mono",
-                                              "fontSize": 9,
-                                              "fontWeight": "normal"
-                                            },
-                                            {
-                                              "type": "frame",
-                                              "id": "KlwCH",
-                                              "name": "in",
-                                              "width": "fill_container",
-                                              "fill": "$bg",
-                                              "cornerRadius": 6,
-                                              "stroke": "$border",
-                                              "strokeWidth": 1,
-                                              "padding": [
-                                                5,
-                                                10
-                                              ],
-                                              "children": [
-                                                {
-                                                  "type": "text",
-                                                  "id": "i11gGc",
-                                                  "name": "t",
-                                                  "fill": "$text-muted",
-                                                  "content": "desktop,mobile",
-                                                  "fontFamily": "$font-mono",
-                                                  "fontSize": 10,
-                                                  "fontWeight": "normal"
-                                                }
-                                              ]
-                                            }
-                                          ]
-                                        }
-                                      ]
-                                    },
-                                    {
-                                      "type": "frame",
-                                      "id": "LVuMt",
-                                      "name": "skip",
-                                      "gap": 6,
-                                      "alignItems": "center",
-                                      "children": [
-                                        {
-                                          "type": "frame",
-                                          "id": "NJpIw",
-                                          "name": "cb",
-                                          "width": 13,
-                                          "height": 13,
-                                          "fill": "$bg",
-                                          "cornerRadius": 3,
-                                          "stroke": "$border-strong",
-                                          "strokeWidth": 1
-                                        },
-                                        {
-                                          "type": "text",
-                                          "id": "uAhlt",
-                                          "name": "t",
-                                          "fill": "$text-muted",
-                                          "content": "--skip-build (reuse the existing storybook-static)",
-                                          "fontFamily": "$font-mono",
-                                          "fontSize": 10,
-                                          "fontWeight": "normal"
                                         }
                                       ]
                                     },
