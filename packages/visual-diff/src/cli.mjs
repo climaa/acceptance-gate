@@ -40,20 +40,21 @@ export const USAGE = [
  *              error?: string }} ParsedArgs */
 
 /** The flags that take a value, and what each is called when it arrives without one.
- *  A table rather than three branches: every one of them is read the same two ways.
+ *  A table rather than three branches: every one of them is read the same two ways —
+ *  add a row here and the parsing follows, with no second declaration to update.
  *
- *  Spelled out as a type rather than inferred: inference widens the first element to
- *  `string`, and the whole point of that element is that it names a field of
- *  {@link ParsedArgs}. Widened, `parsed[VALUED[flag][0]] = …` would write to any key
- *  at all.
- *  The type names the one flag rather than being a `Record`: under
- *  `noUncheckedIndexedAccess` a `Record` lookup answers `undefined`, which is the very
- *  thing this annotation exists to remove. The cost is that a second valued flag has to
- *  be added HERE as well as to the table below.
- *  @type {{ readonly '--filter': readonly ['filter', string] }} */
-const VALUED = {
+ *  `@satisfies` checks each row's first element against {@link ParsedArgs} without
+ *  widening the table's own type the way a `@type {Record<...>}` annotation would:
+ *  `VALUED` keeps the literal keys and tuples its rows were written with, so
+ *  `VALUED[flag][0]` stays the field it names rather than widening to `string` — the
+ *  whole point, since `parsed[VALUED[flag][0]] = …` would otherwise write to any key
+ *  at all. `@type {const}` is what makes the rows tuples instead of arrays; without it
+ *  every element widens to the union of the tuple's own types before `@satisfies` ever
+ *  sees them.
+ *  @satisfies {Record<string, readonly [keyof ParsedArgs, string]>} */
+const VALUED = /** @type {const} */ ({
   '--filter': ['filter', 'a substring to match stories against'],
-};
+});
 
 /** @typedef {keyof typeof VALUED} ValuedFlag */
 
