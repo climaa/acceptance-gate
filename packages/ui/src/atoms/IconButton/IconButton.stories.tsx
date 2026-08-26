@@ -9,6 +9,10 @@ import { IconButton } from './IconButton';
  * console hands it lives with the panel that has a reason to.
  */
 const Wand = () => (
+  // The twin of this block is `WandGlyph` in the visual-diff console's
+  // `RunPanel.tsx`; the comment above says why the two stay apart. Line-scoped
+  // rather than `fallow-ignore-file`, so a real clone in this file still reports.
+  // fallow-ignore-next-line code-duplication
   <svg
     viewBox="0 0 24 24"
     fill="none"

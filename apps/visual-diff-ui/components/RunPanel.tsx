@@ -367,6 +367,10 @@ function useLabelSuggestion(apply: (label: string) => void) {
  */
 function WandGlyph() {
   return (
+    // The twin of this block is the sample glyph in `IconButton.stories.tsx`;
+    // the comment above says why the two stay apart. Line-scoped rather than
+    // `fallow-ignore-file`, so a real clone elsewhere in this file still reports.
+    // fallow-ignore-next-line code-duplication
     <svg
       viewBox="0 0 24 24"
       fill="none"
