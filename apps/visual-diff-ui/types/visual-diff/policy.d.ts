@@ -65,15 +65,6 @@ declare module '@gate/visual-diff/policy' {
     broken: number;
   };
 
-  /** Both baseline budgets — the whole committed set, and one baseline in it —
-   *  checked over the shots a promotion is about to write. Throws naming the
-   *  offending stories; the two ceilings themselves are not declared here, because
-   *  this app reads them only through this function. */
-  export function assertWithinBudget(
-    shots: ReadonlyMap<string, Uint8Array>,
-    retainedBytes: number,
-  ): void;
-
   /** Applied to a story that cannot be captured deterministically. */
   export const SKIP_TAG: string;
 

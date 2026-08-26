@@ -36,7 +36,10 @@ export type Bucket = (typeof BUCKETS)[number];
 
 const ViolationSchema = z.object({ id: z.string(), nodes: z.number() });
 
-export const VariantSchema = z.object({
+// Not exported: nothing parses a variant on its own. `SummarySchema` below
+// composes it, and `Variant` carries the shape outward — the same split
+// `ViolationSchema` above is on.
+const VariantSchema = z.object({
   /** `${tier}__${viewport}__${theme}__${storyId}` — also the shot filename stem. */
   key: z.string(),
   id: z.string(),
@@ -76,7 +79,9 @@ export const SummarySchema = z.object({
 
 export type Summary = z.infer<typeof SummarySchema>;
 
-export const SetSchema = z.object({
+// Not exported, for `VariantSchema`'s reason: `SetsFileSchema` is what reads a
+// registry, and `CaptureSet` is what a caller wants from this one.
+const SetSchema = z.object({
   label: z.string(),
   sha: z.string(),
   branch: z.string(),

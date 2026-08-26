@@ -33,9 +33,11 @@ import type { z } from 'zod';
  * used to live in this file as `withinDir`, beside a second copy in lib/jobs.ts.
  */
 
-// Re-exported rather than moved out of reach: these are the read path's public
-// names and every caller already imports them from here.
-export { FIXTURES_DIR, type DataDirEnv, type DataSource };
+// Re-exported rather than moved out of reach: the fixtures directory is a fact
+// about the read path, and this is the module that reads it. `DataDirEnv` and
+// `DataSource` used to ride along here and no longer do — every caller that
+// wants either takes it from `./data-dir`, which is where they are declared.
+export { FIXTURES_DIR };
 
 export interface ReportListEntry {
   id: string;

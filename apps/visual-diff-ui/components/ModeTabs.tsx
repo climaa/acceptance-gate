@@ -59,8 +59,8 @@ const KEYS: Record<string, (from: Mode) => Mode> = {
   End: () => MODES[MODES.length - 1] as Mode,
 };
 
-/** The mode tabs. One tab stop for the three of them, arrows between: a tablist
- *  where every tab is tabbable puts three stops in front of the fields. */
+/** The mode tabs. One tab stop for both of them, arrows between: a tablist where
+ *  every tab is tabbable puts two stops in front of the fields. */
 export function ModeTabs({
   mode,
   onSelect,

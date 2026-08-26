@@ -203,25 +203,6 @@ export function freeLabel(dataDir: string, label: string): string {
 }
 
 /**
- * Register one capture set — the mirror of {@link removeSet}.
- *
- * The runner writes the shot tree; this is the row that makes it a set the
- * console can see. Newest first, and a label claims one row: a re-registered
- * label replaces its entry rather than appearing twice, which `listSets` has no
- * way to choose between. Spreading the registry keeps a fixture's `isSample`
- * provenance, exactly as `removeSet` does.
- */
-export function recordSet(dataDir: string, set: CaptureSet): void {
-  const file = setsFilePath(dataDir);
-  const registry = readJson(file, SetsFileSchema, { sets: [] });
-
-  writeJson(file, {
-    ...registry,
-    sets: [set, ...registry.sets.filter((entry) => entry.label !== set.label)],
-  });
-}
-
-/**
  * The tags a finished job made stale, cleared as they are handed over.
  *
  * Read-and-clear in one call, and the order matters: the file is removed BEFORE

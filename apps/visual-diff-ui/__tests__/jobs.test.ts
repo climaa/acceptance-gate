@@ -10,10 +10,8 @@ import {
   currentJob,
   freeLabel,
   jobLog,
-  listSets,
   readHistory,
   readLock,
-  recordSet,
   removeReport,
   startJob,
   takeConsoleRefresh,
@@ -434,39 +432,6 @@ describe('POST /api/jobs', () => {
 });
 
 describe('the set registry', () => {
-  it('lists a recorded set', () => {
-    const dir = makeDataDir();
-
-    recordSet(dir, {
-      label: 'main-2026-08-17',
-      sha: 'f2570e1',
-      branch: 'main',
-      capturedAt: '2026-08-17',
-      stories: 106,
-    });
-
-    expect(listSets(dir).map((set) => set.label)).toEqual(['main-2026-08-17']);
-  });
-
-  // `listSets` has no way to choose between two rows claiming one label, so a
-  // re-registered label replaces its entry rather than appearing twice.
-  it('replaces the row a label already had', () => {
-    const dir = makeDataDir();
-    const set = {
-      label: 'main-2026-08-17',
-      sha: 'f2570e1',
-      branch: 'main',
-      capturedAt: '2026-08-17',
-      stories: 106,
-    };
-
-    recordSet(dir, set);
-    recordSet(dir, { ...set, stories: 12 });
-
-    expect(listSets(dir)).toHaveLength(1);
-    expect(listSets(dir)[0]?.stories).toBe(12);
-  });
-
   // The corpus is not in `sets.json` — nothing in this app put it there — so
   // `hasSet` cannot see it, and a capture called `baselines` would otherwise
   // shadow it in the compare pickers.
