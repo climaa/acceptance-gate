@@ -59,11 +59,12 @@ interface ApiStub {
   docker?: boolean;
   /** The whole `GET /api/env` body, verbatim, for the cases about a handler that
    *  has drifted out of its schema. Overrides `image` and `docker`. */
-  env?: unknown;
+  envBody?: unknown;
   /** What `GET /api/stories` says there is to capture. */
   tiers?: typeof CORPUS;
-  /** The whole `GET /api/stories` body, verbatim, for the same reason. */
-  stories?: unknown;
+  /** The whole `GET /api/stories` body, verbatim, for the same reason. Overrides
+   *  `tiers`. */
+  storiesBody?: unknown;
   /** What `GET /api/jobs/current` says is happening. */
   current?: { running: boolean; job: HistoryRecord | null };
   /** What `POST /api/jobs` answers. */
@@ -85,9 +86,9 @@ const answered = (ok: boolean, status: number, body: unknown) =>
 function stubApi({
   image = HOST.image,
   docker = true,
-  env,
+  envBody,
   tiers = CORPUS,
-  stories,
+  storiesBody,
   current,
   jobs,
   label = SUGGESTED,
@@ -98,10 +99,10 @@ function stubApi({
       return answered(
         true,
         200,
-        env ?? { platform: 'linux', arch: 'x64', image, playwright: null, docker },
+        envBody ?? { platform: 'linux', arch: 'x64', image, playwright: null, docker },
       );
     }
-    if (url === '/api/stories') return answered(true, 200, stories ?? { tiers });
+    if (url === '/api/stories') return answered(true, 200, storiesBody ?? { tiers });
     if (url === '/api/jobs/current') {
       return answered(true, 200, {
         isSample: false,
@@ -921,7 +922,7 @@ describe('a response this panel cannot parse', () => {
    * instead, and `unreachable` is the refusal an unknown runner already is.
    */
   it('reads a half-answered fingerprint as no fingerprint at all', async () => {
-    renderPanel({ env: { image: HOST.image } });
+    renderPanel({ envBody: { image: HOST.image } });
 
     const note = await screen.findByRole('note', { name: 'docker required' });
 
@@ -932,7 +933,7 @@ describe('a response this panel cannot parse', () => {
   // An empty corpus, which is a run over everything — the same thing the gate
   // does, and the same thing an unreachable `GET /api/stories` already means.
   it('reads a malformed corpus as an empty one', async () => {
-    renderPanel({ stories: { tiers: [{ tier: 'atoms', components: 'button' }] } });
+    renderPanel({ storiesBody: { tiers: [{ tier: 'atoms', components: 'button' }] } });
 
     // The picker's own words for a corpus it has nothing to offer from, rather
     // than an absence: `FilterPicker` says a run over everything is what this is.

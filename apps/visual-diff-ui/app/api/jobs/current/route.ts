@@ -1,3 +1,4 @@
+import type { CurrentJobResponse } from '@/lib/api-contract';
 import { resolveDataDir } from '@/lib/data';
 import {
   currentJob,
@@ -6,7 +7,6 @@ import {
   readHistory,
   takeConsoleRefresh,
 } from '@/lib/jobs';
-import type { CurrentJobResponse } from '@/lib/api-contract';
 import { ReportIdSchema } from '@/lib/job-contract';
 import { PURGE } from '@/lib/tags';
 import { revalidateTag } from 'next/cache';

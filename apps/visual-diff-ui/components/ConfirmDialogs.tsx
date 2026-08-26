@@ -292,6 +292,7 @@ export function PruneButton({ keep, labels }: PruneButtonProps) {
     // A prune can succeed and still have something to say: the server keeps the
     // sets a worktree holds and names them back. Something moved either way, so
     // the hook has already re-read the page; only the dialog's fate differs.
+    //
     // Parsed against the schema the route annotates its answer with. A body this
     // cannot read carries no skip to report, so the dialog closes on the
     // mutation the server has already confirmed rather than staying open on a

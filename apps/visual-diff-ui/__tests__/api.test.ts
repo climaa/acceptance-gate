@@ -279,22 +279,25 @@ describe('GET /api/shots/[report]/[file]', () => {
  */
 describe('every answer the console parses', () => {
   it('serves an env body the run panel can read', async () => {
-    const body = RunnerEnvSchema.parse(await (await getEnv()).json());
+    const response = await getEnv();
 
+    const body = RunnerEnvSchema.parse(await response.json());
     expect(body.platform).toBe(process.platform);
   });
 
   it('serves a corpus the filter picker can read', async () => {
-    const body = StoriesResponseSchema.parse(await (await getStories()).json());
+    const response = await getStories();
 
+    const body = StoriesResponseSchema.parse(await response.json());
     // A deployment with no Storybook build answers with an empty list, which is
     // a real answer — so the shape is the assertion and the length is not.
     expect(Array.isArray(body.tiers)).toBe(true);
   });
 
   it('serves a poll the current-job region can read', async () => {
-    const body = CurrentJobResponseSchema.parse(await (await getCurrentJob()).json());
+    const response = await getCurrentJob();
 
+    const body = CurrentJobResponseSchema.parse(await response.json());
     // The fixture tree has no CLI behind it, which is the answer the poller
     // stops polling on.
     expect(body.isSample).toBe(true);

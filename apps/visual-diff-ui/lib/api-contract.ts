@@ -153,5 +153,11 @@ export type PruneResponse = z.infer<typeof PruneResponseSchema>;
  * a field a handler adds is stripped rather than rejected, and a reader is never
  * broken by a payload growing something it does not read. A field REMOVED is the
  * drift that matters, and that is the direction these all fail on.
+ *
+ * One exception, and it is not one in practice: `CurrentJobResponse.job` is
+ * `HistoryRecordSchema`, which IS `.strict()`, so an extra field on a job record
+ * would reject the whole poll. Nothing can send one — `readHistory` parses the
+ * rows it serves through that same schema, so a record the poller would refuse
+ * is a record the route never read off disk.
  */
 export const RefusalSchema = z.object({ error: z.string() });

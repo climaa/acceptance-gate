@@ -402,14 +402,18 @@ describe('the console around it', () => {
  * no exit code, or a running one whose log has vanished.
  */
 describe('a poll it cannot parse', () => {
-  /** A running job, then an answer that has lost its `job`. */
+  /** A running job, then the same answer with its `job` gone and nothing else
+   *  changed — one missing field is the whole drift, so what the cases below
+   *  observe cannot be blamed on a second one. */
+  const DRIFTED = { isSample: false, running: true, reportExists: false, log: [] };
+
   function stubDrift() {
     const answers = [poll({ running: true, job: RUNNING, log: ['comparing'] })];
     const fetchMock = vi.fn(
       () =>
         Promise.resolve({
           ok: true,
-          json: () => Promise.resolve(answers.shift() ?? { running: true, log: [] }),
+          json: () => Promise.resolve(answers.shift() ?? DRIFTED),
         }) as never,
     );
     vi.stubGlobal('fetch', fetchMock);

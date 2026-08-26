@@ -24,8 +24,8 @@ import { HOST } from '@gate/visual-diff/policy';
  */
 import { DOCKER_DOWN, JOB_RUNNING, NOT_LOCAL } from '@/lib/refusal-copy';
 import {
-  type RunnerEnv,
   LabelResponseSchema,
+  type RunnerEnv,
   RunnerEnvSchema,
   StoriesResponseSchema,
   type StoryTier,
