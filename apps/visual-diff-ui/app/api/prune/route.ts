@@ -1,3 +1,4 @@
+import type { PruneResponse } from '@/lib/api-contract';
 import { guardMutation } from '@/lib/guard';
 import { PURGE, SETS_TAG } from '@/lib/tags';
 import { holderOf, listSets, removeSet } from '@/lib/jobs';
@@ -59,7 +60,11 @@ export async function POST(request: Request): Promise<Response> {
   // sets it compared, so `vd:reports` is deliberately left alone.
   revalidateTag(SETS_TAG, PURGE);
 
-  return Response.json({ kept, removed, refused });
+  // Annotated with the type the prune dialog parses this answer against — see
+  // lib/api-contract.ts. `refused` is the half it reads.
+  const body: PruneResponse = { kept, removed, refused };
+
+  return Response.json(body);
 }
 
 /**

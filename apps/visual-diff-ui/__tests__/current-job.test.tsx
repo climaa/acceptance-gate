@@ -77,15 +77,25 @@ interface CurrentPayload {
   log?: string[];
 }
 
+/**
+ * One poll's body, completed the way the route completes it.
+ *
+ * EVERY field, never only the ones a case is about: `readCurrent` parses this
+ * answer against `CurrentJobResponseSchema` (lib/api-contract.ts) and discards a
+ * body that is not the whole shape, so a stub missing a field would be a poll
+ * that never landed rather than the answer the case meant to arrange.
+ */
+const poll = (payload: CurrentPayload) => ({
+  isSample: false,
+  log: [],
+  reportExists: payload.job?.reportId !== null && payload.job?.reportId !== undefined,
+  ...payload,
+});
+
 /** `GET /api/jobs/current`, answered with whatever the case is about. Returns
  *  the mock so a case can assert how it was called. */
 function stubCurrent(payload: CurrentPayload) {
-  const json = {
-    isSample: false,
-    log: [],
-    reportExists: payload.job?.reportId !== null && payload.job?.reportId !== undefined,
-    ...payload,
-  };
+  const json = poll(payload);
   const fetchMock = vi.fn(
     () => Promise.resolve({ ok: true, json: () => Promise.resolve(json) }) as never,
   );
@@ -297,8 +307,8 @@ describe('the console around it', () => {
   // the poll is the only thing that knows it did.
   it('re-reads the server when a running job finishes', async () => {
     const responses = [
-      { isSample: false, running: true, job: RUNNING, log: [] },
-      { isSample: false, running: false, job: FINISHED, log: ['exit 1'] },
+      poll({ running: true, job: RUNNING }),
+      poll({ running: false, job: FINISHED, log: ['exit 1'] }),
     ];
     vi.stubGlobal(
       'fetch',
@@ -332,8 +342,8 @@ describe('the console around it', () => {
   // exit 2` about the same run.
   it('re-reads the server for a job that began and ended between two polls', async () => {
     const responses = [
-      { isSample: false, running: false, job: null, log: [] },
-      { isSample: false, running: false, job: FINISHED, log: ['exit 2'] },
+      poll({ running: false, job: null }),
+      poll({ running: false, job: FINISHED, log: ['exit 2'] }),
     ];
     vi.stubGlobal(
       'fetch',
@@ -356,8 +366,8 @@ describe('the console around it', () => {
   // table beside it once a second.
   it('re-reads once for a job, not once per poll', async () => {
     const responses = [
-      { isSample: false, running: true, job: RUNNING, log: [] },
-      { isSample: false, running: false, job: FINISHED, log: ['exit 1'] },
+      poll({ running: true, job: RUNNING }),
+      poll({ running: false, job: FINISHED, log: ['exit 1'] }),
     ];
     vi.stubGlobal(
       'fetch',
@@ -375,6 +385,77 @@ describe('the console around it', () => {
     await waitFor(() => expect(refreshCalls).toEqual(['refresh']), { timeout: 5000 });
     await new Promise((resolve) => setTimeout(resolve, 2500));
     expect(refreshCalls).toEqual(['refresh']);
+  });
+});
+
+/**
+ * A poll whose answer is not the shape the route promises.
+ *
+ * The endpoint and this poller agree today because one commit wrote both, and
+ * `CurrentJobResponseSchema` is now the only thing standing between a changed
+ * payload and a region reading it as something else. A discarded answer is the
+ * state `readCurrent` already has for a poll that never landed: the last good
+ * answer stays on screen, nothing is announced, and the next tick tries again.
+ *
+ * The alternative — reading the fields that happen to be well formed — is what
+ * this replaces, and it paints a state no run was ever in: a finished job with
+ * no exit code, or a running one whose log has vanished.
+ */
+describe('a poll it cannot parse', () => {
+  /** A running job, then an answer that has lost its `job`. */
+  function stubDrift() {
+    const answers = [poll({ running: true, job: RUNNING, log: ['comparing'] })];
+    const fetchMock = vi.fn(
+      () =>
+        Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve(answers.shift() ?? { running: true, log: [] }),
+        }) as never,
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    return fetchMock;
+  }
+
+  it('keeps drawing the last answer it could read', async () => {
+    vi.useFakeTimers();
+    stubDrift();
+    renderCurrentJob();
+    await vi.waitFor(() =>
+      expect(within(region()).getByText(RUNNING.label)).toBeDefined(),
+    );
+
+    await vi.advanceTimersByTimeAsync(3_000);
+
+    expect(within(region()).getByText(RUNNING.label)).toBeDefined();
+    expect(screen.getByTestId('log-tail').textContent).toContain('comparing');
+  });
+
+  // Not an error state, and not a reason to re-read the page: everything else on
+  // this console is server-rendered and still true.
+  it('says nothing to the tables around it', async () => {
+    vi.useFakeTimers();
+    stubDrift();
+    renderCurrentJob();
+    await vi.waitFor(() =>
+      expect(within(region()).getByText(RUNNING.label)).toBeDefined(),
+    );
+
+    await vi.advanceTimersByTimeAsync(3_000);
+
+    expect(refreshCalls).toEqual([]);
+  });
+
+  it('goes on polling, because the next answer may be readable', async () => {
+    vi.useFakeTimers();
+    const fetchMock = stubDrift();
+    renderCurrentJob();
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalled());
+    const settled = fetchMock.mock.calls.length;
+
+    await vi.advanceTimersByTimeAsync(3_000);
+
+    expect(fetchMock.mock.calls.length).toBeGreaterThan(settled);
   });
 });
 
@@ -563,8 +644,7 @@ describe('the provider value', () => {
         () =>
           Promise.resolve({
             ok: true,
-            json: () =>
-              Promise.resolve({ isSample: false, running: true, job: RUNNING, log }),
+            json: () => Promise.resolve(poll({ running: true, job: RUNNING, log })),
           }) as never,
       ),
     );

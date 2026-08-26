@@ -1,3 +1,4 @@
+import type { LabelResponse } from '@/lib/api-contract';
 import { resolveDataDir } from '@/lib/data';
 import { describeCheckout, repoRoot } from '@/lib/git';
 import { freeLabel } from '@/lib/jobs';
@@ -41,8 +42,9 @@ export async function GET(): Promise<Response> {
   const checkout = root ? describeCheckout(root) : null;
   const base = checkout ? branchLabel(checkout.branch, today()) : null;
 
-  return Response.json(
-    { label: base ? freeLabel(dir, base) : null },
-    { headers: { 'Cache-Control': 'no-store' } },
-  );
+  // Annotated with the type the wand parses this answer against — see
+  // lib/api-contract.ts for why the binding is the annotation.
+  const body: LabelResponse = { label: base ? freeLabel(dir, base) : null };
+
+  return Response.json(body, { headers: { 'Cache-Control': 'no-store' } });
 }

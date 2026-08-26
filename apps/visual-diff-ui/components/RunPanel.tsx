@@ -23,8 +23,13 @@ import { HOST } from '@gate/visual-diff/policy';
  * job.
  */
 import { DOCKER_DOWN, JOB_RUNNING, NOT_LOCAL } from '@/lib/refusal-copy';
-import type { RunnerEnv } from '@/lib/host';
-import type { StoryTier } from '@/lib/stories';
+import {
+  type RunnerEnv,
+  LabelResponseSchema,
+  RunnerEnvSchema,
+  StoriesResponseSchema,
+  type StoryTier,
+} from '@/lib/api-contract';
 import { CURRENT_JOB_ANCHOR, useCurrentJob, usePollNow } from './CurrentJob';
 import { FilterPicker } from './FilterPicker';
 
@@ -276,18 +281,26 @@ function useJobForm(params: URLSearchParams): [JobForm, Patch, (mode: Mode) => v
  *  flight — distinct from a host that declares no image, which is a refusal
  *  rather than a wait. */
 function useRunnerFingerprint(): RunnerEnv | undefined {
-  return useJsonOnMount<RunnerEnv | undefined>('/api/env', (body) => body as RunnerEnv, {
-    initial: undefined,
-    // Unreachable is not a match: the gate reads a null image as the refusal
-    // it is, which is the fail-closed answer.
-    unreachable: {
-      platform: '?',
-      arch: '?',
-      image: null,
-      playwright: null,
-      docker: false,
+  return useJsonOnMount<RunnerEnv | undefined>(
+    '/api/env',
+    // Parsed rather than cast, and the whole answer or none of it. An
+    // announcement carrying the pinned image and nothing else would read, field
+    // by field, as the one host that needs no container — see the schema.
+    (body) => RunnerEnvSchema.parse(body),
+    {
+      initial: undefined,
+      // Unreachable is not a match: the gate reads a null image as the refusal
+      // it is, which is the fail-closed answer, and an answer this could not
+      // parse is an answer it did not get.
+      unreachable: {
+        platform: '?',
+        arch: '?',
+        image: null,
+        playwright: null,
+        docker: false,
+      },
     },
-  });
+  );
 }
 
 /**
@@ -300,9 +313,11 @@ function useRunnerFingerprint(): RunnerEnv | undefined {
 function useStories(): StoryTier[] {
   return useJsonOnMount<StoryTier[]>(
     '/api/stories',
-    (body) => (body as { tiers?: StoryTier[] }).tiers ?? [],
+    (body) => StoriesResponseSchema.parse(body).tiers,
     // Unreachable is an empty corpus: the picker then offers nothing to tick,
-    // which is a run over everything — the same thing the gate does.
+    // which is a run over everything — the same thing the gate does. A corpus
+    // this could not parse lands here too, rather than half-drawing a picker out
+    // of the entries that happened to be well formed.
     { initial: [], unreachable: [] },
   );
 }
@@ -337,12 +352,14 @@ function useLabelSuggestion(apply: (label: string) => void) {
 
     try {
       const response = await fetch('/api/label', { cache: 'no-store' });
-      const body = (await response.json()) as { label?: string | null };
+      const { label } = LabelResponseSchema.parse(await response.json());
 
-      if (body.label) apply(body.label);
+      if (label) apply(label);
       else setRefused(true);
     } catch {
-      // Unreachable degrades to a wand that says so. There is no safe value to
+      // Unreachable degrades to a wand that says so, and so does an answer this
+      // could not parse — a suggestion is a name the server owns, so a body that
+      // is not one is nothing to type into the field. There is no safe value to
       // fall back on: a name composed in this bundle would be the client
       // disagreeing with the server about a directory the server owns.
       setRefused(true);

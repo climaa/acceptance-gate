@@ -1,4 +1,5 @@
 import { connection } from 'next/server';
+import type { RunnerEnv } from '@/lib/api-contract';
 import { runnerEnv } from '@/lib/host';
 
 /**
@@ -13,11 +14,18 @@ import { runnerEnv } from '@/lib/host';
  *
  * `no-store` for the same reason at the other end: a fingerprint is a claim
  * about right now, and a cached one is a claim about a machine that answered.
+ *
+ * The payload is `RunnerEnv` because `runnerEnv()` returns exactly that type,
+ * and that type is `z.infer` of the schema the run panel parses this answer
+ * against — the two halves are one declaration rather than two that agree. See
+ * lib/api-contract.ts.
  */
 export async function GET(): Promise<Response> {
   await connection();
 
-  return Response.json(runnerEnv(), {
+  const body: RunnerEnv = runnerEnv();
+
+  return Response.json(body, {
     headers: { 'Cache-Control': 'no-store' },
   });
 }
