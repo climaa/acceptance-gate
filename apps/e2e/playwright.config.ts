@@ -118,6 +118,22 @@ export default defineConfig({
   // at twice the worst-case per-test time.
   retries: isCI ? 1 : 0,
   failOnFlakyTests: isCI,
+  // Three, where the default gave two.
+  //
+  // Unset, Playwright takes `ceil(cpus / 2)` — and `ubuntu-24.04-arm` reports four,
+  // so the suite ran on half the box. Measured on run 32946584004: 81 specs, 74.0 s
+  // of serial spec time, 46.9 s of wall-clock across those two workers.
+  //
+  // THREE and not four, deliberately. Three `next start` servers share this runner
+  // with the workers, and a browser driving an axe scan is the CPU-hungry half of
+  // that pairing — twelve of the 41 scenarios run one. Four workers would leave the
+  // servers nothing, and `failOnFlakyTests` above means contention does not show up
+  // as a slow run: it shows up as a RED one. Four is the next experiment if this is
+  // clean over a few runs, not something to assume alongside the first change.
+  //
+  // CI only. Locally the default reads the developer's own core count, which is the
+  // right answer on a machine that is not a four-core runner.
+  workers: isCI ? 3 : undefined,
   use: {
     baseURL,
     // Trace the actual failing attempt, not only a retried run.
