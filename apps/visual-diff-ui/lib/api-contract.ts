@@ -144,9 +144,14 @@ export type PruneResponse = z.infer<typeof PruneResponseSchema>;
 /**
  * What a refused mutation answers with, on any of the routes.
  *
- * Not strict, and that is the one place here where openness is the contract:
- * `conflict()` carries `extra` beside the sentence — the running job, the sets a
- * worktree holds — and each route decides what belongs there. `error` is the
- * part every refusal has, and the only part `refusalOf` reads.
+ * `error` is the part every refusal has, and the only part `refusalOf` reads.
+ * The rest is per-route and deliberately unlisted: `conflict()` carries `extra`
+ * beside the sentence — the running job, the sets a worktree holds — and this
+ * schema is not the place those are decided.
+ *
+ * Which is what every `z.object` above does too. None of them is `.strict()`, so
+ * a field a handler adds is stripped rather than rejected, and a reader is never
+ * broken by a payload growing something it does not read. A field REMOVED is the
+ * drift that matters, and that is the direction these all fail on.
  */
 export const RefusalSchema = z.object({ error: z.string() });
