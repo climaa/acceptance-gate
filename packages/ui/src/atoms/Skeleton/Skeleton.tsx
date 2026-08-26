@@ -49,10 +49,19 @@ function Shape({ variant, width, height, className }: ShapeProps) {
  * region per placeholder would announce N times for one load.
  *
  * The stacked-lines case does not compose `Stack`, though it is the obvious
- * layout for it: `boundaries/dependencies` disallows an atom importing a sibling
- * atom, and reaching through the barrel is named in the eslint config as the same
- * violation. `.ds-skeleton-group` therefore states the two declarations `Stack`
- * would have produced.
+ * layout for it, and no rule is what stands in the way: `boundaries/dependencies`
+ * allows an atom to import a sibling atom directly, which is how `Thumbnail.tsx`
+ * imports this one. The single edge refused within a tier is the one routed
+ * through the tier's own barrel (`..` or `../index`) — what the eslint config's
+ * own comment says, and what `src/__tests__/boundaries-contract.test.ts` runs
+ * both halves of.
+ *
+ * `.ds-skeleton-group` therefore states the two declarations `Stack` would have
+ * contributed for want of a capture round, not for want of permission:
+ * `atoms-skeleton--multi-line-group` has committed light and dark baselines, and
+ * trading the class for `Stack`'s inline `flexDirection`/`gap` can move them by a
+ * pixel. That swap is deferred to an attended round that can capture and accept,
+ * rather than landing here unverified.
  */
 export function Skeleton({
   variant = 'line',
