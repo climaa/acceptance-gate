@@ -170,7 +170,10 @@ describe('filterNeedles', () => {
     ['', []],
     ['   ', []],
     ['Button', ['button']],
-    [['Button', 'Badge'], ['button', 'badge']],
+    [
+      ['Button', 'Badge'],
+      ['button', 'badge'],
+    ],
     [[], []],
   ])('reads %j as %j', (filter, needles) => {
     expect(filterNeedles(filter)).toEqual(needles);
@@ -581,7 +584,9 @@ describe('fontsLoadCheckExpression', () => {
     // fetch this expression itself triggered, not a fetch some earlier call started.
     const expression = fontsLoadCheckExpression('1em "Fraunces"');
 
-    expect(expression.indexOf('fonts.load')).toBeLessThan(expression.indexOf('fonts.check'));
+    expect(expression.indexOf('fonts.load')).toBeLessThan(
+      expression.indexOf('fonts.check'),
+    );
     expect(expression).toMatch(/fonts\.load\([^)]*\)\.then\(/);
   });
 });

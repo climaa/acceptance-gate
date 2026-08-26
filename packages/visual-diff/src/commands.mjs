@@ -402,7 +402,9 @@ export async function check(deps = defaultDeps(), opts = {}) {
     const { variants, skipped } = await readPlan(deps, at, filter);
     const committed = await readBaselines(deps.fs, at(PATHS.baselines));
     const baselines =
-      filterNeedles(filter).length > 0 ? coveredBaselines(committed, variants) : committed;
+      filterNeedles(filter).length > 0
+        ? coveredBaselines(committed, variants)
+        : committed;
 
     const guard = await guardHost(deps, at, {
       allowHostMismatch,

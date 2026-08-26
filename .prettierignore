@@ -39,3 +39,9 @@ packages/ui/src/fonts/
 # every build dirty the tree, so it is excluded instead.
 apps/blog/next-env.d.ts
 apps/visual-diff-ui/next-env.d.ts
+
+# `bddgen` output: playwright-bdd compiles every .feature into a .spec.js here on
+# each e2e run. Gitignored via apps/e2e/.gitignore, but Prettier does not read
+# .gitignore — and once the format glob learned .js, a local run left generated
+# files for `format:check` to fail on.
+apps/e2e/.features-gen/

@@ -1,0 +1,38 @@
+{
+  "extends": "@gate/tsconfig/base.json",
+  // The package is JSDoc-typed `.mjs`, not TypeScript — every source file opens with
+  // `// @ts-check` and the type contract of the whole diff engine lives in those
+  // comments. Until this file existed nothing read them: `turbo run typecheck` ran
+  // `tsc` in five workspaces and this was not one of them, so a docblock could drift
+  // off the function it described and ship green (#369).
+  //
+  // `checkJs` is therefore the point of the file, not an accommodation.
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "noEmit": true,
+
+    // The package ships as `"type": "module"` .mjs run directly by node — not bundled.
+    // `nodenext` is the resolution node itself performs, so an import that typechecks
+    // here is one node can actually load.
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+
+    // `declaration` is inherited from base and cannot be produced from .mjs sources.
+    // Nothing consumes a .d.ts from this package — `apps/visual-diff-ui` hand-writes
+    // its own declarations under `types/visual-diff/` on purpose.
+    "declaration": false,
+    "declarationMap": false,
+
+    "types": ["node"]
+  },
+  "include": ["src"],
+
+  // `src/__tests__` is excluded FOR NOW, and that is a debt rather than a policy.
+  // Turning `checkJs` on across the suite surfaces 152 further errors — fixture
+  // literals widening to `string`, implicit-any parameters in hand-rolled mocks —
+  // none of which say anything about the engine. Fixing them is mechanical and
+  // belongs in its own change; leaving them here would have buried the twelve real
+  // ones under them.
+  "exclude": ["node_modules", "src/__tests__"]
+}

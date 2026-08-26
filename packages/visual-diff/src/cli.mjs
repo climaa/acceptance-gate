@@ -40,14 +40,22 @@ export const USAGE = [
  *              error?: string }} ParsedArgs */
 
 /** The flags that take a value, and what each is called when it arrives without one.
- *  A table rather than three branches: every one of them is read the same two ways. */
+ *  A table rather than three branches: every one of them is read the same two ways.
+ *
+ *  Spelled out as a type rather than inferred: inference widens the first element to
+ *  `string`, and the whole point of that element is that it names a field of
+ *  {@link ParsedArgs}. Widened, `parsed[VALUED[flag][0]] = …` would write to any key
+ *  at all.
+ *  @type {{ readonly '--filter': readonly ['filter', string] }} */
 const VALUED = {
   '--filter': ['filter', 'a substring to match stories against'],
 };
 
+/** @typedef {keyof typeof VALUED} ValuedFlag */
+
 /** The value of a valued flag, whichever spelling it arrived in. `rest` is the argv still
  *  to be read, so the separated spelling consumes the word after the flag.
- *  @param {string} flag @param {string} argument @param {string[]} rest
+ *  @param {ValuedFlag} flag @param {string} argument @param {string[]} rest
  *  @returns {string} */
 function readValue(flag, argument, rest) {
   const assignment = `${flag}=`;
@@ -61,10 +69,10 @@ function readValue(flag, argument, rest) {
 
 /** Which valued flag an argument is, or null. Matches `--flag` and `--flag=value`
  *  without matching `--flagged`.
- *  @param {string} argument @returns {string | null} */
+ *  @param {string} argument @returns {ValuedFlag | null} */
 function valuedFlag(argument) {
   return (
-    Object.keys(VALUED).find(
+    /** @type {ValuedFlag[]} */ (Object.keys(VALUED)).find(
       (flag) => argument === flag || argument.startsWith(`${flag}=`),
     ) ?? null
   );
@@ -125,7 +133,11 @@ export async function run(argv, io = CONSOLE_IO, commands = COMMANDS) {
     return EXIT.broken;
   }
 
-  const { exitCode, message } = await commands[parsed.command](undefined, {
+  // `parseArgs` rejects any command not in the table before this line is reached, so
+  // the lookup cannot miss. Asserted rather than guarded on purpose: a guard here
+  // would be a second, untested error path for a state the parser already refuses.
+  const command = /** @type {Command} */ (commands[parsed.command]);
+  const { exitCode, message } = await command(undefined, {
     filter: parsed.filter,
     allowHostMismatch: parsed.allowHostMismatch,
   });

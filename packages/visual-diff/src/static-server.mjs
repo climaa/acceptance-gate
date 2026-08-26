@@ -54,7 +54,10 @@ const mimeOf = (filePath) => {
 function resolveFile(root, url) {
   let pathname;
   try {
-    pathname = decodeURIComponent(url.split(/[?#]/)[0]);
+    // `split` always yields at least one element, so the default is for the type
+    // rather than for a case that can arise.
+    const [target = ''] = url.split(/[?#]/);
+    pathname = decodeURIComponent(target);
   } catch {
     return { status: 400 };
   }
