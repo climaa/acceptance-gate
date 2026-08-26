@@ -12,7 +12,7 @@ import { DATA_MOUNT, REPO_MOUNT, containerArgv } from './docker';
 import { type Checkout, describeCheckout, repoRoot } from './git';
 import { type HostEnv, hostFingerprint, hostMatches } from './host';
 import { type JobOutcome, freeLabel } from './jobs';
-import { type JobRequest } from './job-contract';
+import type { JobRequest } from './job-contract';
 import { reportDir, setDir } from './paths';
 import { NO_CHECKOUT, STORYBOOK_FAILED } from './refusals';
 import { type Summary, SummarySchema } from './summary';
