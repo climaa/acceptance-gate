@@ -57,7 +57,9 @@ const HTML_ESCAPES = {
  *  backslash in front of every pipe.
  *  @param {string} value @returns {string} */
 function escapeHtml(value) {
-  return value.replaceAll(/[&<>"']/g, (char) => HTML_ESCAPES[char]);
+  // The pattern matches only the five keys, so the fallback is unreachable. It is
+  // here so the replacer's contract — always a string — holds without a cast.
+  return value.replaceAll(/[&<>"']/g, (char) => HTML_ESCAPES[char] ?? char);
 }
 
 /** @param {Uint8Array} bytes @returns {string} */

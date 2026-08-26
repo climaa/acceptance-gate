@@ -64,9 +64,11 @@ export function buildStoryUrl(baseUrl, { id, theme }) {
  *  @param {string | readonly string[] | undefined} filter
  *  @returns {string[]} */
 export function filterNeedles(filter) {
-  const values = typeof filter === 'string' ? [filter] : filter ?? [];
+  const values = typeof filter === 'string' ? [filter] : (filter ?? []);
 
-  return values.filter((value) => value.trim() !== '').map((value) => value.toLowerCase());
+  return values
+    .filter((value) => value.trim() !== '')
+    .map((value) => value.toLowerCase());
 }
 
 /** `--filter`: a case-insensitive substring of a story's id or its title, or any of
@@ -117,7 +119,9 @@ export async function drainQueue(items, workers, handle) {
         const index = next;
         next += 1;
 
-        results[index] = await handle(worker, items[index]);
+        // `index < items.length` was just checked, so the read cannot miss. The
+        // cast states that invariant; it does not assume a new one.
+        results[index] = await handle(worker, /** @type {T} */ (items[index]));
       }
     }),
   );
@@ -228,6 +232,8 @@ function siblingSets(shots, groupOf, axisOf, valueOf) {
 /** @param {Map<string, Uint8Array>} cells theme → the bytes captured in it */
 function anyThemeDiffers(cells) {
   const [first, ...rest] = [...cells.values()];
+  if (first === undefined) return false;
+
   return rest.some((other) => !shotsEqual(first, other));
 }
 
@@ -266,8 +272,10 @@ function reflowed(cells) {
     ([left], [right]) => policyWidth(left) - policyWidth(right),
   );
 
-  const atNarrowest = byViewport[0][1];
-  const atWidest = byViewport[byViewport.length - 1][1];
+  const atNarrowest = byViewport[0]?.[1];
+  const atWidest = byViewport.at(-1)?.[1];
+  if (atNarrowest === undefined || atWidest === undefined) return false;
+
   return atNarrowest < atWidest;
 }
 
@@ -291,7 +299,7 @@ export function viewportSanity(shots) {
 
   throw new SanityError(
     `none of the ${sets.length} stories captured at more than one viewport came back ` +
-      `narrower at the smaller one (${sets[0].id} among them) — the viewport is not ` +
+      `narrower at the smaller one (${sets[0]?.id} among them) — the viewport is not ` +
       'being applied before navigation',
   );
 }

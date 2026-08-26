@@ -55,7 +55,14 @@ function gh(args, input) {
 
 // nameWithOwner rather than a hardcoded climaa/acceptance-gate: a fork should
 // be able to run this against itself without editing the script.
-const repo = gh(['repo', 'view', '--json', 'nameWithOwner', '-q', '.nameWithOwner']).trim();
+const repo = gh([
+  'repo',
+  'view',
+  '--json',
+  'nameWithOwner',
+  '-q',
+  '.nameWithOwner',
+]).trim();
 
 /**
  * Is every value `want` declares present and equal in `have`?
@@ -90,7 +97,9 @@ function subsetOf(want, have, path, mismatches) {
     // Element-wise and positional, EXCEPT where the caller matched by identity
     // first (see `rules` below). Fine for the leaf arrays here — contexts and
     // merge methods — which are short and authored in one place.
-    return want.map((v, i) => subsetOf(v, have[i], `${path}[${i}]`, mismatches)).every(Boolean);
+    return want
+      .map((v, i) => subsetOf(v, have[i], `${path}[${i}]`, mismatches))
+      .every(Boolean);
   }
 
   if (want && typeof want === 'object') {
@@ -104,7 +113,9 @@ function subsetOf(want, have, path, mismatches) {
   }
 
   if (want !== have) {
-    mismatches.push(`${path}: want ${JSON.stringify(want)}, live ${JSON.stringify(have)}`);
+    mismatches.push(
+      `${path}: want ${JSON.stringify(want)}, live ${JSON.stringify(have)}`,
+    );
     return false;
   }
   return true;
@@ -151,7 +162,9 @@ function compare(desired, live) {
 // those by name and then PUTting to /repos/{this}/rulesets/{orgRulesetId} is a
 // state worth being unable to reach — and it is exactly the fork case the
 // nameWithOwner lookup above exists to support.
-const live = JSON.parse(gh(['api', `repos/${repo}/rulesets?includes_parents=false`, '--paginate']));
+const live = JSON.parse(
+  gh(['api', `repos/${repo}/rulesets?includes_parents=false`, '--paginate']),
+);
 
 let changed = 0;
 
@@ -178,7 +191,9 @@ for (const file of readdirSync(RULESET_DIR).filter((f) => f.endsWith('.json'))) 
       continue;
     }
     changed += 1;
-    console.log(`\n~ ${file}: ${mismatches.length} mismatch(es) against ruleset ${current.id}`);
+    console.log(
+      `\n~ ${file}: ${mismatches.length} mismatch(es) against ruleset ${current.id}`,
+    );
     for (const line of mismatches) console.log(`    ${line}`);
   } else {
     changed += 1;
@@ -189,7 +204,10 @@ for (const file of readdirSync(RULESET_DIR).filter((f) => f.endsWith('.json'))) 
 
   const body = JSON.stringify(desired);
   if (current) {
-    gh(['api', '--method', 'PUT', `repos/${repo}/rulesets/${current.id}`, '--input', '-'], body);
+    gh(
+      ['api', '--method', 'PUT', `repos/${repo}/rulesets/${current.id}`, '--input', '-'],
+      body,
+    );
     console.log(`applied: updated ruleset ${current.id} (${desired.name})`);
   } else {
     gh(['api', '--method', 'POST', `repos/${repo}/rulesets`, '--input', '-'], body);

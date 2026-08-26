@@ -4,11 +4,7 @@ import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
-import {
-  codeSpan,
-  renderCommentBody,
-  renderCommentFooter,
-} from '../comment-links.mjs';
+import { codeSpan, renderCommentBody, renderCommentFooter } from '../comment-links.mjs';
 
 const RUN = 'https://github.com/climaa/acceptance-gate/actions/runs/1';
 const ARTIFACT = `${RUN}/artifacts/9`;
@@ -101,7 +97,11 @@ describe('renderCommentBody', () => {
   it('separates the footer with a blank line, never a bare newline', () => {
     // One newline and GFM reads the footer as a lazy continuation of remediation step 3,
     // rendering the links inside that list item instead of under the comment.
-    const body = renderCommentBody('<!-- m -->', '### To fix\n\n1. Review it.\n', 'links');
+    const body = renderCommentBody(
+      '<!-- m -->',
+      '### To fix\n\n1. Review it.\n',
+      'links',
+    );
 
     expect(body).toBe('<!-- m -->\n### To fix\n\n1. Review it.\n\nlinks');
   });

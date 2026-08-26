@@ -17,7 +17,7 @@ import pixelmatch from 'pixelmatch';
 import { PNG } from 'pngjs';
 
 import { THRESHOLDS, parseVariantKey } from './policy.mjs';
-// Both already exist for other reasons — see `identicalSize`. Neither pulls
+// Both already exist for other reasons — see `sizeIfIdentical`. Neither pulls
 // `playwright`: capture.mjs reaches it through `import()` inside its two browser
 // functions, so naming `pngSize` here loads no browser and keeps this module
 // composable from the console, which imports the comparer without one.
@@ -112,6 +112,11 @@ const readPng = (bytes) => PNG.sync.read(Buffer.from(bytes));
  * The shot's dimensions when the two byte strings are the same one, and `null`
  * otherwise — the fast path out of a comparison there is nothing to compare.
  *
+ * Named for the condition it tests, which is BYTE identity and not size: two shots
+ * of one size with a pixel moved answer `null` here and go the long way round. An
+ * earlier name said `identicalSize`, which read at the call site as a size check
+ * guarding a `pass: true` — the weaker claim, and the wrong one.
+ *
  * A green run is the common case, and it was the expensive one: every unchanged
  * variant decoded BOTH sides — zlib inflate plus un-filter, synchronously, on the
  * thread the CLI is running on — and then walked every pixel of both bitmaps to
@@ -131,7 +136,7 @@ const readPng = (bytes) => PNG.sync.read(Buffer.from(bytes));
  *
  * @param {Uint8Array} baseline @param {Uint8Array} candidate
  * @returns {{ width: number, height: number } | null} */
-function identicalSize(baseline, candidate) {
+function sizeIfIdentical(baseline, candidate) {
   return shotsEqual(baseline, candidate) ? pngSize(baseline) : null;
 }
 
@@ -165,7 +170,7 @@ function cropTopLeft(image, width, height) {
  *  @param {{ strict?: boolean }} [options]
  *  @returns {PixelComparison} */
 export function comparePixels(baseline, candidate, { strict = false } = {}) {
-  const unchanged = identicalSize(baseline, candidate);
+  const unchanged = sizeIfIdentical(baseline, candidate);
   if (unchanged) {
     const { width, height } = unchanged;
 

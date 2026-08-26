@@ -356,23 +356,40 @@ function collectImages(summary, results, captures, baselines) {
   );
 }
 
-/** The run's output: the record, the comment rendered from it, the review page, and one
- *  diff PNG per failing variant. Every path comes from `policy.PATHS`.
+/** The run's output: the comment, the review page, one diff PNG per failing variant,
+ *  and — last — the record. Every path comes from `policy.PATHS`.
+ *
+ *  `summary.json` is written last, not first, because it is the only artifact that
+ *  describes the others: `stamp` is called immediately before it is serialised, which
+ *  is what lets its `timing` cover rendering the page and writing the PNGs. Written
+ *  first, as it once was, the run's own most expensive artifact-producing phase fell
+ *  outside every number in it.
  *  @param {GateFs} fs
+ *  `stamp` is REQUIRED, not optional. There is one caller and it always passes one,
+ *  so an optional parameter bought nothing but a branch no test could reach — and a
+ *  way for a future writer to drop the timing silently, which is the one failure this
+ *  function must not have.
  *  @param {{ rootDir: string, summary: Summary,
- *            images: ReadonlyMap<string, VariantImages> }} run
+ *            images: ReadonlyMap<string, VariantImages>,
+ *            stamp: () => void }} run
  *  @returns {Promise<void>} */
-async function writeArtifacts(fs, { rootDir, summary, images }) {
+async function writeArtifacts(fs, { rootDir, summary, images, stamp }) {
   const at = under(rootDir);
   await fs.mkdir(at(PATHS.diffs), { recursive: true });
 
-  await fs.writeFile(at(PATHS.summaryJson), `${JSON.stringify(summary, null, 2)}\n`);
+  // Both renderers see `summary` BEFORE `stamp` has run, so `summary.timing` is
+  // undefined to them. Neither reads it today. Anything added here that wants a
+  // timing must move below the stamp — the field is optional, so reading it early
+  // yields `undefined` rather than an error, and would render a blank nobody notices.
   await fs.writeFile(at(PATHS.summaryMd), `${renderSummaryMd(summary)}\n`);
   await fs.writeFile(at(PATHS.reportHtml), renderReport(summary, images));
 
   for (const [key, { diff }] of images) {
     if (diff) await fs.writeFile(path.join(at(PATHS.diffs), `${key}${PNG_SUFFIX}`), diff);
   }
+
+  stamp();
+  await fs.writeFile(at(PATHS.summaryJson), `${JSON.stringify(summary, null, 2)}\n`);
 }
 
 /**
@@ -402,7 +419,9 @@ export async function check(deps = defaultDeps(), opts = {}) {
     const { variants, skipped } = await readPlan(deps, at, filter);
     const committed = await readBaselines(deps.fs, at(PATHS.baselines));
     const baselines =
-      filterNeedles(filter).length > 0 ? coveredBaselines(committed, variants) : committed;
+      filterNeedles(filter).length > 0
+        ? coveredBaselines(committed, variants)
+        : committed;
 
     const guard = await guardHost(deps, at, {
       allowHostMismatch,
@@ -420,16 +439,24 @@ export async function check(deps = defaultDeps(), opts = {}) {
 
     const summary = buildSummary(results, { ...(await deps.host()), chromium });
     summary.warnings.push(...guard.warnings, ...skipWarnings(skipped));
-    summary.timing = {
-      captureMs: Math.round(capturedAt - startedAt),
-      compareMs: Math.round(comparedAt - capturedAt),
-      totalMs: Math.round(now() - startedAt),
-    };
 
     await deps.writeArtifacts(deps.fs, {
       rootDir,
       summary,
       images: collectImages(summary, results, captures, baselines),
+      // Stamped by the writer, immediately before the record is serialised, so the
+      // numbers in it describe the run that produced it rather than the run up to
+      // the point it happened to be written. `reportMs` runs from the compare mark
+      // because building the summary and collecting the images are report work too.
+      stamp: () => {
+        const reportedAt = now();
+        summary.timing = {
+          captureMs: Math.round(capturedAt - startedAt),
+          compareMs: Math.round(comparedAt - capturedAt),
+          reportMs: Math.round(reportedAt - comparedAt),
+          totalMs: Math.round(reportedAt - startedAt),
+        };
+      },
     });
 
     return { exitCode: summary.exitCode, message: verdictOf(summary), summary };

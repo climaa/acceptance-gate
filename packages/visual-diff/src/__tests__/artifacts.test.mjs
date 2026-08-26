@@ -217,7 +217,9 @@ describe('renderSummaryMd', () => {
     // meets the container paragraph before the dispatch has already been told the only
     // way in needs hardware they haven't got, and stops reading.
     expect(md).toContain('accept-baselines');
-    expect(md.indexOf('accept-baselines')).toBeLessThan(md.indexOf('inside the pinned container'));
+    expect(md.indexOf('accept-baselines')).toBeLessThan(
+      md.indexOf('inside the pinned container'),
+    );
   });
 
   it('formats a size change and a strict-mode (zero-allowance) ratio', () => {
