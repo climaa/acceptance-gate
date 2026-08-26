@@ -41,7 +41,7 @@ const PACKAGE_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 
 const RULE = 'boundaries/dependencies';
 
-/** An imaginary file in a real component folder. See the note on basedir above. */
+/** Imaginary files in real component folders. See the note on basedir above. */
 const ATOM = 'src/atoms/Skeleton/boundaries-probe.tsx';
 const MOLECULE = 'src/molecules/Card/boundaries-probe.tsx';
 
@@ -56,6 +56,66 @@ const boundaryErrors = async (filePath: string, specifier: string) => {
     .filter((message) => message.ruleId === RULE)
     .map((message) => message.message);
 };
+
+/** Edges the layering permits. Each `edge` completes the test name below. */
+const ALLOWED = [
+  {
+    // The claim #350 was opened against. `Thumbnail.tsx` is the committed proof
+    // that this direction is used and not merely tolerated: it is an atom, and it
+    // imports `../Skeleton/Skeleton`.
+    edge: 'an atom importing a sibling atom directly',
+    from: ATOM,
+    specifier: '../Stack/Stack',
+  },
+  {
+    edge: 'a molecule importing an atom directly',
+    from: MOLECULE,
+    specifier: '../../atoms/Stack/Stack',
+  },
+  {
+    // Inward is allowed both ways: the barrel restriction is about SIBLINGS, not
+    // about barrels. Stating it stops "never import from a barrel" becoming the
+    // next over-reading.
+    edge: 'a molecule importing an atom through the atom barrel',
+    from: MOLECULE,
+    specifier: '../../atoms',
+  },
+];
+
+/** Edges the layering refuses, each reported exactly once. */
+const REFUSED = [
+  // The half of the Skeleton comment that was right, and the whole of the
+  // within-tier constraint. `..` and `../index` are one edge; both are named
+  // because the bare form is the one a writer reaches for. Each name leads with
+  // the specifier so the two stay apart in a truncated reporter line.
+  {
+    edge: 'an atom reaching `..`, its own tier barrel',
+    from: ATOM,
+    specifier: '..',
+  },
+  {
+    edge: 'an atom reaching `../index`, the same barrel spelled out',
+    from: ATOM,
+    specifier: '../index',
+  },
+  // The direction the layering exists to forbid. If these ever pass, the rule has
+  // stopped being applied and the allowances above mean nothing.
+  {
+    edge: 'an atom importing a later tier directly',
+    from: ATOM,
+    specifier: '../../molecules/Card/Card',
+  },
+  {
+    edge: 'a molecule importing a later tier directly',
+    from: MOLECULE,
+    specifier: '../../organisms/Table/Table',
+  },
+  {
+    edge: 'a molecule importing a later tier through its barrel',
+    from: MOLECULE,
+    specifier: '../../organisms',
+  },
+];
 
 /**
  * The FIRST `lintText` pays for the whole flat-config and plugin graph and takes
@@ -79,38 +139,20 @@ beforeAll(async () => {
   // no element and reporting a clean bill of health.
   eslint = new ESLint({ cwd: PACKAGE_ROOT });
 
+  // The warm-up itself; its result is the subject of the first case below.
   await boundaryErrors(ATOM, '../Stack/Stack');
 }, SETUP_TIMEOUT_MS);
 
 describe('the tier layering rule', () => {
-  it('lets an atom import a sibling atom directly', async () => {
-    // The claim #350 was opened against. `Thumbnail.tsx` is the committed proof
-    // that this direction is used and not merely tolerated: it is an atom, and it
-    // imports `../Skeleton/Skeleton`.
-    expect(await boundaryErrors(ATOM, '../Stack/Stack')).toEqual([]);
+  it.each(ALLOWED)('permits $edge', async ({ from, specifier }) => {
+    const messages = await boundaryErrors(from, specifier);
+
+    expect(messages).toEqual([]);
   });
 
-  it('refuses an atom reaching a sibling atom through the tier barrel', async () => {
-    // The half of the Skeleton comment that was right, and the whole of the
-    // constraint. `..` and `../index` are one edge; both are named because the
-    // bare form is the one a writer reaches for.
-    expect(await boundaryErrors(ATOM, '..')).toHaveLength(1);
-    expect(await boundaryErrors(ATOM, '../index')).toHaveLength(1);
-  });
+  it.each(REFUSED)('refuses $edge', async ({ from, specifier }) => {
+    const messages = await boundaryErrors(from, specifier);
 
-  it('lets a molecule reach an atom directly or through the atom barrel', async () => {
-    // Inward is allowed both ways: the barrel restriction is about SIBLINGS, not
-    // about barrels. Stating it stops "never import from a barrel" becoming the
-    // next over-reading.
-    expect(await boundaryErrors(MOLECULE, '../../atoms/Stack/Stack')).toEqual([]);
-    expect(await boundaryErrors(MOLECULE, '../../atoms')).toEqual([]);
-  });
-
-  it('refuses a component importing a later tier, directly or through its barrel', async () => {
-    // The direction the layering exists to forbid. If these ever pass, the rule
-    // has stopped being applied and the allowances above mean nothing.
-    expect(await boundaryErrors(ATOM, '../../molecules/Card/Card')).toHaveLength(1);
-    expect(await boundaryErrors(MOLECULE, '../../organisms/Table/Table')).toHaveLength(1);
-    expect(await boundaryErrors(MOLECULE, '../../organisms')).toHaveLength(1);
+    expect(messages).toHaveLength(1);
   });
 });
