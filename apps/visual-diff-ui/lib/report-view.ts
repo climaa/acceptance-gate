@@ -1,5 +1,5 @@
 import { TIER_VIEWPORTS, TIERS, VIEWPORTS } from '@gate/visual-diff/policy';
-import { type Bucket, type Variant } from './summary';
+import type { Bucket, Variant } from './summary';
 import { storyTitle } from './title';
 
 /**
