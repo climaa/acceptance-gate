@@ -30,6 +30,25 @@ export const SITE_COPYRIGHT = 'Carlos Lima · Barcelona';
  */
 export const SITE_COPYRIGHT_YEAR = 2026;
 
+/**
+ * The 404 page's heading and its `<title>`, what it says under that, and the way
+ * on. Nobody arrives here on purpose: a slug that changed, an address typed
+ * wrong, or a draft's URL passed around before it was ever published. The copy
+ * names the situation without accusing the reader of anything, because from out
+ * here a post that was never published and one that never existed are the same
+ * page — which is the whole point of `dynamicParams = false` on both dynamic
+ * segments.
+ *
+ * `/blog` rather than `/` as the way on: the header's wordmark is not a link,
+ * and the index is what someone chasing an article actually wanted.
+ */
+export const NOT_FOUND_TITLE = 'Not found';
+
+export const NOT_FOUND_NOTE =
+  'Nothing at this address. An article that was never published and one that never existed read the same from out here.';
+
+export const NOT_FOUND_ACTION = 'All articles';
+
 export const SITE_DESCRIPTION =
   'Notes on Next.js, testing with Cypress and Gherkin, visual regression and coding agents.';
 

@@ -47,6 +47,9 @@ const E2E_STEPS = path.resolve(
  */
 const DRAFT_FIXTURE_TITLE = 'Draft fixture — must never be published';
 
+/** The slug the route answers to, which is the filename without its extension. */
+const DRAFT_FIXTURE_SLUG = path.basename(FIXTURE).replace(/\.mdx?$/, '');
+
 describe('e2e draft fixture', () => {
   it('exists', () => {
     expect(fs.existsSync(FIXTURE)).toBe(true);
@@ -62,6 +65,23 @@ describe('e2e draft fixture', () => {
     const { data } = matter(fs.readFileSync(FIXTURE, 'utf8'));
 
     expect(data.title).toBe(DRAFT_FIXTURE_TITLE);
+  });
+
+  // The address half of the same coupling. "A draft is unreachable at its own
+  // address" asks `/blog/<DRAFT_FIXTURE_SLUG>` for a 404, and a renamed or
+  // deleted fixture answers 404 just as readily as a filtered draft does — so
+  // without this the scenario would go green having proved nothing, with no diff
+  // anywhere near apps/e2e/.
+  it('matches DRAFT_FIXTURE_SLUG exported by the e2e step definition', () => {
+    const source = fs.readFileSync(E2E_STEPS, 'utf8');
+
+    const exported = source.match(
+      /export const DRAFT_FIXTURE_SLUG\s*=\s*(['"])(.*?)\1/,
+    )?.[2];
+
+    expect(exported, `no exported DRAFT_FIXTURE_SLUG in ${E2E_STEPS}`).toBe(
+      DRAFT_FIXTURE_SLUG,
+    );
   });
 
   // Read as source, not imported, for the reason above. A regex over one

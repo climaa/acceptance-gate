@@ -14626,6 +14626,686 @@
               ]
             }
           ]
+        },
+        {
+          "type": "frame",
+          "id": "dX7Zl",
+          "name": "Section Not found — 404",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 14,
+          "children": [
+            {
+              "type": "text",
+              "id": "qnkxn",
+              "name": "st",
+              "fill": "$ink",
+              "content": "Not found — 404",
+              "fontFamily": "$font-display",
+              "fontSize": 24,
+              "fontWeight": "600"
+            },
+            {
+              "type": "frame",
+              "id": "LlBIG",
+              "name": "row",
+              "gap": 36,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "CDjuH",
+                  "name": "Variant desktop · light",
+                  "layout": "vertical",
+                  "gap": 8,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "c7rez",
+                      "name": "vlabel",
+                      "fill": "$ink-muted",
+                      "content": "desktop · light",
+                      "fontFamily": "$font-mono",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "olYyq",
+                      "name": "NotFoundDesktopLight",
+                      "theme": {
+                        "mode": "light"
+                      },
+                      "clip": true,
+                      "width": 1280,
+                      "fill": "$bg",
+                      "cornerRadius": 4,
+                      "stroke": "$border-strong",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "id": "V81evA",
+                          "type": "ref",
+                          "ref": "zlU7C",
+                          "name": "hdr"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "UVpjp",
+                          "name": "notfound",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 18,
+                          "padding": [
+                            96,
+                            280,
+                            120,
+                            280
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "CHAcM",
+                              "name": "h1",
+                              "fill": "$text",
+                              "content": "Not found",
+                              "lineHeight": 1.2,
+                              "fontFamily": "$font-display",
+                              "fontSize": 42,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "k8OEe8",
+                              "name": "empty",
+                              "width": "fill_container",
+                              "fill": "$bg-subtle",
+                              "cornerRadius": 8,
+                              "stroke": "$border",
+                              "strokeWidth": 1,
+                              "layout": "vertical",
+                              "gap": 16,
+                              "padding": [
+                                32,
+                                28
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "xiMOg",
+                                  "name": "message",
+                                  "fill": "$text-muted",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Nothing at this address. An article that was never published and one that never existed read the same from out here.",
+                                  "lineHeight": 1.6,
+                                  "textAlign": "center",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 16,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "id": "GPABw",
+                                  "type": "ref",
+                                  "ref": "MrZbQ",
+                                  "name": "action",
+                                  "descendants": {
+                                    "LwKtr": {
+                                      "content": "All articles"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "id": "XHU8u",
+                          "type": "ref",
+                          "ref": "R9C0Ay",
+                          "name": "ftr"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "TH1LN",
+                  "name": "Variant desktop · dark",
+                  "layout": "vertical",
+                  "gap": 8,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "yImlS",
+                      "name": "vlabel",
+                      "fill": "$ink-muted",
+                      "content": "desktop · dark",
+                      "fontFamily": "$font-mono",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "E0gq4R",
+                      "name": "NotFoundDesktopDark",
+                      "theme": {
+                        "mode": "dark"
+                      },
+                      "clip": true,
+                      "width": 1280,
+                      "fill": "$bg",
+                      "cornerRadius": 4,
+                      "stroke": "$border-strong",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "id": "Wnu8P",
+                          "type": "ref",
+                          "ref": "zlU7C",
+                          "name": "hdr"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "r8y2xB",
+                          "name": "notfound",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 18,
+                          "padding": [
+                            96,
+                            280,
+                            120,
+                            280
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "OjRaX",
+                              "name": "h1",
+                              "fill": "$text",
+                              "content": "Not found",
+                              "lineHeight": 1.2,
+                              "fontFamily": "$font-display",
+                              "fontSize": 42,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "cOXL3",
+                              "name": "empty",
+                              "width": "fill_container",
+                              "fill": "$bg-subtle",
+                              "cornerRadius": 8,
+                              "stroke": "$border",
+                              "strokeWidth": 1,
+                              "layout": "vertical",
+                              "gap": 16,
+                              "padding": [
+                                32,
+                                28
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "y3xdh",
+                                  "name": "message",
+                                  "fill": "$text-muted",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Nothing at this address. An article that was never published and one that never existed read the same from out here.",
+                                  "lineHeight": 1.6,
+                                  "textAlign": "center",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 16,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "id": "rFIVw",
+                                  "type": "ref",
+                                  "ref": "MrZbQ",
+                                  "name": "action",
+                                  "descendants": {
+                                    "LwKtr": {
+                                      "content": "All articles"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "id": "q6WCDV",
+                          "type": "ref",
+                          "ref": "R9C0Ay",
+                          "name": "ftr"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "eqQ95",
+                  "name": "Variant mobile · light",
+                  "layout": "vertical",
+                  "gap": 8,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "tDGSQ",
+                      "name": "vlabel",
+                      "fill": "$ink-muted",
+                      "content": "mobile · light",
+                      "fontFamily": "$font-mono",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "g6616u",
+                      "name": "NotFoundMobileLight",
+                      "theme": {
+                        "mode": "light"
+                      },
+                      "clip": true,
+                      "width": 390,
+                      "fill": "$bg",
+                      "cornerRadius": 4,
+                      "stroke": "$border-strong",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "bbC22",
+                          "name": "mheader",
+                          "width": "fill_container",
+                          "stroke": "$border",
+                          "strokeWidth": {
+                            "bottom": 1
+                          },
+                          "padding": [
+                            14,
+                            20
+                          ],
+                          "justifyContent": "space_between",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "E0Oo0",
+                              "name": "brand",
+                              "fill": "$text",
+                              "content": "Carles Lima",
+                              "fontFamily": "$font-display",
+                              "fontSize": 16,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "NQifZ",
+                              "name": "navgroup",
+                              "gap": 14,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "id": "IbtH6",
+                                  "type": "ref",
+                                  "ref": "MrZbQ",
+                                  "name": "NavBlog",
+                                  "descendants": {
+                                    "LwKtr": {
+                                      "content": "Blog",
+                                      "fontSize": 13
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "LxVGC",
+                                  "type": "ref",
+                                  "ref": "MrZbQ",
+                                  "name": "NavAbout",
+                                  "descendants": {
+                                    "LwKtr": {
+                                      "content": "About",
+                                      "fill": "$text-muted",
+                                      "fontWeight": "normal",
+                                      "fontSize": 13
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "eopHm",
+                                  "type": "ref",
+                                  "ref": "QywBG",
+                                  "name": "tg"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "cIhcF",
+                          "name": "notfound",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 14,
+                          "padding": [
+                            44,
+                            20,
+                            56,
+                            20
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "VOaKM",
+                              "name": "h1",
+                              "fill": "$text",
+                              "content": "Not found",
+                              "lineHeight": 1.2,
+                              "fontFamily": "$font-display",
+                              "fontSize": 28,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "qPRWz",
+                              "name": "empty",
+                              "width": "fill_container",
+                              "fill": "$bg-subtle",
+                              "cornerRadius": 8,
+                              "stroke": "$border",
+                              "strokeWidth": 1,
+                              "layout": "vertical",
+                              "gap": 12,
+                              "padding": [
+                                22,
+                                18
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "DCuam",
+                                  "name": "message",
+                                  "fill": "$text-muted",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Nothing at this address. An article that was never published and one that never existed read the same from out here.",
+                                  "lineHeight": 1.6,
+                                  "textAlign": "center",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 14,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "id": "H1mCrP",
+                                  "type": "ref",
+                                  "ref": "MrZbQ",
+                                  "name": "action",
+                                  "descendants": {
+                                    "LwKtr": {
+                                      "content": "All articles"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "z8wSC",
+                          "name": "mfooter",
+                          "width": "fill_container",
+                          "fill": "$bg-subtle",
+                          "stroke": "$border",
+                          "strokeWidth": {
+                            "top": 1
+                          },
+                          "layout": "vertical",
+                          "gap": 4,
+                          "padding": [
+                            18,
+                            20
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "z2c3mq",
+                              "name": "c",
+                              "fill": "$text-muted",
+                              "content": "© 2026 Carles Lima",
+                              "fontFamily": "$font-body",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "EVwEF",
+                  "name": "Variant mobile · dark",
+                  "layout": "vertical",
+                  "gap": 8,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "TPl4x",
+                      "name": "vlabel",
+                      "fill": "$ink-muted",
+                      "content": "mobile · dark",
+                      "fontFamily": "$font-mono",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "uIyzR",
+                      "name": "NotFoundMobileDark",
+                      "theme": {
+                        "mode": "dark"
+                      },
+                      "clip": true,
+                      "width": 390,
+                      "fill": "$bg",
+                      "cornerRadius": 4,
+                      "stroke": "$border-strong",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "ayB4N",
+                          "name": "mheader",
+                          "width": "fill_container",
+                          "stroke": "$border",
+                          "strokeWidth": {
+                            "bottom": 1
+                          },
+                          "padding": [
+                            14,
+                            20
+                          ],
+                          "justifyContent": "space_between",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "mQWVl",
+                              "name": "brand",
+                              "fill": "$text",
+                              "content": "Carles Lima",
+                              "fontFamily": "$font-display",
+                              "fontSize": 16,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "VS8pw",
+                              "name": "navgroup",
+                              "gap": 14,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "id": "qwoiM",
+                                  "type": "ref",
+                                  "ref": "MrZbQ",
+                                  "name": "NavBlog",
+                                  "descendants": {
+                                    "LwKtr": {
+                                      "content": "Blog",
+                                      "fontSize": 13
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "O2eU4",
+                                  "type": "ref",
+                                  "ref": "MrZbQ",
+                                  "name": "NavAbout",
+                                  "descendants": {
+                                    "LwKtr": {
+                                      "content": "About",
+                                      "fill": "$text-muted",
+                                      "fontWeight": "normal",
+                                      "fontSize": 13
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "Lkn2e",
+                                  "type": "ref",
+                                  "ref": "QywBG",
+                                  "name": "tg"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "tDqfy",
+                          "name": "notfound",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 14,
+                          "padding": [
+                            44,
+                            20,
+                            56,
+                            20
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "jy5q7",
+                              "name": "h1",
+                              "fill": "$text",
+                              "content": "Not found",
+                              "lineHeight": 1.2,
+                              "fontFamily": "$font-display",
+                              "fontSize": 28,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "kWGai",
+                              "name": "empty",
+                              "width": "fill_container",
+                              "fill": "$bg-subtle",
+                              "cornerRadius": 8,
+                              "stroke": "$border",
+                              "strokeWidth": 1,
+                              "layout": "vertical",
+                              "gap": 12,
+                              "padding": [
+                                22,
+                                18
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "OR7Mf",
+                                  "name": "message",
+                                  "fill": "$text-muted",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Nothing at this address. An article that was never published and one that never existed read the same from out here.",
+                                  "lineHeight": 1.6,
+                                  "textAlign": "center",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 14,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "id": "foMNG",
+                                  "type": "ref",
+                                  "ref": "MrZbQ",
+                                  "name": "action",
+                                  "descendants": {
+                                    "LwKtr": {
+                                      "content": "All articles"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "A5l66",
+                          "name": "mfooter",
+                          "width": "fill_container",
+                          "fill": "$bg-subtle",
+                          "stroke": "$border",
+                          "strokeWidth": {
+                            "top": 1
+                          },
+                          "layout": "vertical",
+                          "gap": 4,
+                          "padding": [
+                            18,
+                            20
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "fyjaJ",
+                              "name": "c",
+                              "fill": "$text-muted",
+                              "content": "© 2026 Carles Lima",
+                              "fontFamily": "$font-body",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ]
     },

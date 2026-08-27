@@ -20,3 +20,11 @@ Feature: Blog publication
   Scenario: Drafts are not published
     When I visit the blog index
     Then no listed article is marked as a draft
+
+  Scenario: An address that was never published is a real 404
+    When I request an article address that was never published
+    Then the response status is 404
+
+  Scenario: A draft is unreachable at its own address
+    When I request the draft fixture's address
+    Then the response status is 404

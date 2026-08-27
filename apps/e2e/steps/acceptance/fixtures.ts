@@ -1,3 +1,4 @@
+import type { Response } from '@playwright/test';
 import { test as base } from 'playwright-bdd';
 
 import { BlogIndexPage } from '../../pages/blog-index';
@@ -17,6 +18,9 @@ export interface ScenarioState {
   /** Which report an accept scenario is about, when it is not the one the
    *  console's picker opens on. */
   acceptReport?: string;
+  /** What a navigation answered with, for the scenarios whose claim is the
+   *  status code rather than anything on the page. */
+  response?: Response | null;
 }
 
 /** Page objects reach the steps as fixtures, never as `new` inside a step: two steps
