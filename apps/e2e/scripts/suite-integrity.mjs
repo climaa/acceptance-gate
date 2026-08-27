@@ -61,12 +61,21 @@ const LANES = ['acceptance', 'local'];
  * the machine doing the running — but nothing gates them on a pull request any
  * more, and this number is where that decision is recorded.
  *
+ * It was 42 until `/blog/[slug]` and `/tags/[tag]` were made to answer a real
+ * 404. Both declared `generateStaticParams()` and no `dynamicParams`, so an
+ * unknown slug rendered on demand, `notFound()` fired after the response had
+ * already committed 200, and the not-found body was cached and served with that
+ * status — a slug that had never existed answered 200. The two scenarios added
+ * with it are requirements no unit test can meet: the body was always right, so
+ * the status code is the entire claim, and only something that speaks HTTP can
+ * read it back.
+ *
  * Exact equality, not a floor: a floor decays, and after ten more scenarios a
  * floor of 47 would permit deleting ten of them. Raising this alongside a new
  * scenario is a two-line diff; LOWERING it is a product decision and belongs in
  * its own hand-authored PR with the reason written down.
  */
-const EXPECTED_SCENARIOS = 42;
+const EXPECTED_SCENARIOS = 44;
 
 /** The two project selectors. Carrying both excludes a scenario from both. */
 const PROJECT_TAGS = ['@desktop', '@mobile'];

@@ -13,6 +13,15 @@ const { Given, When, Then } = createBdd(test);
 // apps/blog/__tests__/e2e-draft-fixture.test.ts, which reads this declaration.
 export const DRAFT_FIXTURE_TITLE = 'Draft fixture — must never be published';
 
+// The same fixture's address. Pinned to its filename by the same test that pins
+// the title above, because `/blog/<slug>` 404s just as convincingly when the
+// file has been renamed as when the draft filter is doing its job.
+export const DRAFT_FIXTURE_SLUG = 'e2e-draft-fixture';
+
+// Never a post, never a redirect, and shaped like a slug so nothing but the
+// route's own refusal can be what answers.
+const UNPUBLISHED_SLUG = 'this-post-does-not-exist';
+
 // "I visit the blog index" is already defined in smoke.steps.ts and reused
 // here — one step definition per Gherkin line, shared across every feature.
 
@@ -24,6 +33,17 @@ Given('at least one published article exists', async ({ blogIndex }) => {
 When('I open the first article', async ({ blogIndex, scenarioState }) => {
   scenarioState.articleTitle = await blogIndex.articleTitles.first().innerText();
   await blogIndex.openFirstArticle();
+});
+
+When(
+  'I request an article address that was never published',
+  async ({ post, scenarioState }) => {
+    scenarioState.response = await post.requestSlug(UNPUBLISHED_SLUG);
+  },
+);
+
+When("I request the draft fixture's address", async ({ post, scenarioState }) => {
+  scenarioState.response = await post.requestSlug(DRAFT_FIXTURE_SLUG);
 });
 
 Then('I see the list of articles', async ({ blogIndex }) => {
@@ -62,4 +82,16 @@ Then("the article title is the page's main heading", async ({ post, scenarioStat
 
 Then('no listed article is marked as a draft', async ({ blogIndex }) => {
   await expect(blogIndex.articlesTitled(DRAFT_FIXTURE_TITLE)).toHaveCount(0);
+});
+
+Then('the response status is 404', ({ scenarioState }) => {
+  const { response } = scenarioState;
+  // No fallback and no optional chain: `undefined?.status()` is `undefined`,
+  // which compares unequal to 404 and would report a soft 404 for a scenario
+  // that simply never navigated.
+  if (!response) {
+    throw new Error('No response recorded — a "When I request …" step must run first.');
+  }
+
+  expect(response.status()).toBe(404);
 });

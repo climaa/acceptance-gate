@@ -86,6 +86,36 @@ describe('BlogIndexTemplate', () => {
     expect(screen.queryAllByRole('heading', { level: 2 })).toHaveLength(0);
   });
 
+  it('renders the empty action beside the message when one is given', () => {
+    render(
+      <BlogIndexTemplate
+        title="Not found"
+        posts={[]}
+        empty="Nothing at this address."
+        emptyAction={<a href="/blog">All articles</a>}
+      />,
+    );
+
+    const action = screen.getByRole('link', { name: 'All articles' });
+
+    expect(action.getAttribute('href')).toBe('/blog');
+  });
+
+  // The error path: the slot is the template's to forward, and a page with posts
+  // on it has no empty state to hang it from. Passing one anyway must not draw a
+  // stray link under the last card.
+  it('renders no empty action when the list is not empty', () => {
+    render(
+      <BlogIndexTemplate
+        title="Blog"
+        posts={posts}
+        emptyAction={<a href="/blog">All articles</a>}
+      />,
+    );
+
+    expect(screen.queryByRole('link', { name: 'All articles' })).toBeNull();
+  });
+
   it('falls back to its own message when no empty slot is given', () => {
     const { container } = render(<BlogIndexTemplate title="Blog" posts={[]} />);
 

@@ -21,6 +21,14 @@ export interface BlogIndexTemplateProps {
    * wording belongs to the design system.
    */
   empty?: ReactNode;
+  /**
+   * What the empty state offers as a way on, beside what it says. `EmptyState`
+   * has carried the slot since it was drawn; this is the template handing it
+   * through, because a page with nothing on it is exactly where a reader needs
+   * a route out and the layout is the only thing here that knows the list is
+   * empty.
+   */
+  emptyAction?: ReactNode;
   className?: string;
 }
 
@@ -40,6 +48,7 @@ export function BlogIndexTemplate({
   intro,
   posts,
   empty,
+  emptyAction,
   className,
 }: BlogIndexTemplateProps) {
   return (
@@ -56,7 +65,7 @@ export function BlogIndexTemplate({
           ))}
         </Stack>
       ) : (
-        <EmptyState message={empty ?? DEFAULT_EMPTY_MESSAGE} />
+        <EmptyState message={empty ?? DEFAULT_EMPTY_MESSAGE} action={emptyAction} />
       )}
     </Stack>
   );

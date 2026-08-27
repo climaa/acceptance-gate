@@ -1,6 +1,10 @@
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+
 import type { Route } from '@playwright/test';
 import { test as base } from 'playwright-bdd';
 
+import { BlogDevPage } from '../../pages/blog-dev';
 import { ConsolePage } from '../../pages/console';
 import { ReportPage } from '../../pages/report';
 
@@ -26,6 +30,56 @@ const MUTATING_TAG = '@mutating';
 /** Everything this lane's own server answers. Third-party origins are not this
  *  guard's business, and the app talks to none. */
 const APP_ORIGIN = 'http://localhost:3300/**';
+
+/**
+ * Where the blog reads its posts from, and the one address this lane may create
+ * there.
+ *
+ * `zz-` so it sorts last in a directory listing and reads as scaffolding at a
+ * glance, and the name says which lane made it — a file left behind by a crashed
+ * run should accuse the right suite. `.gitignore` carries this exact path too,
+ * so a leaked probe cannot be committed by accident.
+ */
+export const POSTS_DIR = path.join(
+  import.meta.dirname,
+  '..',
+  '..',
+  '..',
+  'blog',
+  'content',
+  'posts',
+);
+
+export const PROBE_SLUG = 'zz-local-lane-probe';
+
+const PROBE_FILE = path.join(POSTS_DIR, `${PROBE_SLUG}.mdx`);
+
+/**
+ * Valid frontmatter, published, and dated at a fixed day.
+ *
+ * Fixed rather than read off the clock for the reason `lib/site.ts` pins the
+ * footer's year: a value that changes with the run is a value a later assertion
+ * cannot name. Published because a draft would 404 in production and pass this
+ * scenario for the wrong reason — the claim here is about the dev server
+ * noticing a file, not about the draft filter, which the acceptance lane owns.
+ */
+const PROBE_POST = `---
+title: 'Local lane probe'
+description: 'Written and removed by apps/e2e/features/local. If you are reading this in a commit, a local run crashed.'
+date: '2026-01-01'
+tags: []
+draft: false
+---
+
+Written by the local lane. Removed by it too.
+`;
+
+/** What the probe steps hand each other, and what teardown cleans up after. */
+export interface ContentProbe {
+  slug: string;
+  write(): void;
+  remove(): void;
+}
 
 /**
  * What one scenario's steps hand each other. Real data cannot be named in a
@@ -56,12 +110,17 @@ export interface LocalState {
  * acceptance suite trusts, so a rename in the app fails both lanes in one file.
  */
 export const test = base.extend<{
+  blogDev: BlogDevPage;
   console: ConsolePage;
   report: ReportPage;
   localState: LocalState;
+  contentProbe: ContentProbe;
   mayWrite: void;
   readOnly: void;
 }>({
+  blogDev: async ({ page }, use) => {
+    await use(new BlogDevPage(page));
+  },
   console: async ({ page }, use) => {
     await use(new ConsolePage(page));
   },
@@ -80,11 +139,38 @@ export const test = base.extend<{
   },
 
   /**
+   * The probe post, and the promise that it leaves.
+   *
+   * Removal is teardown, not a step. The scenario removes it itself and then
+   * asserts the address is gone — that is the requirement — but a scenario that
+   * fails before its last line would otherwise leave a post in the directory the
+   * blog serves and `git status` reports. So the fixture unlinks it again after
+   * the test whatever happened, and the step that removes it is idempotent.
+   *
+   * `mayWrite` is depended on rather than re-implemented: creating this file is a
+   * write to a real tree of yours, and the permission is checked in one place.
+   */
+  contentProbe: async ({ mayWrite: _mayWrite }, use) => {
+    const remove = () => fs.rmSync(PROBE_FILE, { force: true });
+
+    remove();
+
+    await use({
+      slug: PROBE_SLUG,
+      write: () => fs.writeFileSync(PROBE_FILE, PROBE_POST),
+      remove,
+    });
+
+    remove();
+  },
+
+  /**
    * The same rule, for the writes no browser makes.
    *
    * `readOnly` below is a `page.route` handler, so it sees requests the app's
    * pages make and nothing else. A step reaching for `node:fs` — writing the job
-   * lock, editing `history.json` — walks straight past it, and playwright-bdd
+   * lock, editing `history.json`, creating a post — walks straight past it, and
+   * playwright-bdd
    * resolves steps by TEXT across the whole `steps/local/**` glob, so any
    * scenario in this lane can call one of those steps by name whether or not it
    * carries the tag.
@@ -97,7 +183,8 @@ export const test = base.extend<{
   mayWrite: async ({}, use, testInfo) => {
     if (!testInfo.tags.includes(MUTATING_TAG)) {
       throw new Error(
-        `This step writes to your real .visual-diff tree, and "${testInfo.title}" is not ` +
+        `This step writes to a real tree of yours — .visual-diff, or the posts the ` +
+          `blog is serving — and "${testInfo.title}" is not ` +
           `tagged ${MUTATING_TAG}. Tag the scenario in its feature file — and note that ` +
           'scripts/local-integrity.mjs only permits that inside the files named in its ' +
           'MUTATING_FEATURES, so this is a decision someone reviews.',
