@@ -4,9 +4,24 @@ import matter from 'gray-matter';
 import { NextRequest } from 'next/server';
 // Imported explicitly rather than relying on `globals: true` — same reason as
 // content.test.ts: tsconfig's `**/*.ts` include means tsc typechecks this file.
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { proxy } from '../proxy';
 import { tagSlug } from '../lib/posts';
+
+/** Flipped by the one case that needs `getAllPosts()` to throw. */
+const content = vi.hoisted(() => ({ broken: false }));
+
+vi.mock('../lib/posts', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../lib/posts')>();
+
+  return {
+    ...actual,
+    getAllPosts: () => {
+      if (content.broken) throw new Error('Invalid frontmatter in broken.mdx');
+      return actual.getAllPosts();
+    },
+  };
+});
 
 /**
  * Which addresses reach a route and which are refused before one renders.
@@ -120,6 +135,38 @@ describe('proxy', () => {
   // is a 500 in front of every article rather than a 404 on one address.
   it('refuses a malformed address instead of throwing', () => {
     const status = statusOf('/blog/%');
+
+    expect(status).toBe(404);
+  });
+
+  // The other error path, and the reason the read is wrapped. A post with broken
+  // frontmatter makes `getAllPosts()` throw, which `next build` refuses and
+  // content.test.ts refuses — so it only ever happens on a machine mid-edit,
+  // where a 500 across every address under /blog and /tags would bury the one
+  // page that can actually name the offending file.
+  //
+  // Mocked rather than staged on disk: writing a broken post into content/posts
+  // would be visible to every other suite reading that directory, and vitest
+  // runs test files in parallel.
+  it('lets the request through when the content cannot be read', () => {
+    content.broken = true;
+
+    try {
+      expect(statusOf('/blog/this-post-does-not-exist')).toBeNull();
+    } finally {
+      content.broken = false;
+    }
+  });
+
+  // Reached only if someone widens the matcher, which is exactly when a silent
+  // wrong answer would cost the most. The param is a real post slug on purpose:
+  // an unknown one is refused by any implementation, so it would pass against a
+  // proxy that measured every segment against the post set and prove nothing.
+  it('refuses a segment the matcher does not cover, even under a real slug', () => {
+    const [post] = published;
+    expect(post).toBeDefined();
+
+    const status = statusOf(`/drafts/${published[0]?.slug}`);
 
     expect(status).toBe(404);
   });

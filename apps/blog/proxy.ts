@@ -33,12 +33,33 @@ import { getAllPosts, getAllTags, tagSlug } from '@/lib/posts';
  * and anyone reading this repo as a worked example.
  */
 
-// Read once per instance rather than once per request: `getAllPosts()` parses
-// the frontmatter of every post on disk, and this file now sits in front of
-// every article. The content cannot change without a deployment, and a
-// deployment is a new instance.
-const POST_SLUGS = new Set(getAllPosts().map((post) => post.slug));
-const TAG_SLUGS = new Set(getAllTags().map((tag) => tag.slug));
+interface KnownAddresses {
+  posts: ReadonlySet<string>;
+  tags: ReadonlySet<string>;
+}
+
+function readContent(): KnownAddresses {
+  return {
+    posts: new Set(getAllPosts().map((post) => post.slug)),
+    tags: new Set(getAllTags().map((tag) => tag.slug)),
+  };
+}
+
+/**
+ * Read once in production, every request in development.
+ *
+ * `getAllPosts()` parses the frontmatter of every post on disk and this file now
+ * sits in front of every article, so caching it is worth real time — but only
+ * where the content cannot move. In production it cannot: it is fixed at deploy,
+ * and a deploy is a new instance.
+ *
+ * `next dev` is the opposite. It does not re-evaluate this module when a file
+ * under content/posts changes, so a cached read there survives writing a post —
+ * and the index, which reads fresh, would list the new post while its own
+ * address answered from a set that has never heard of it. Drafting a post is the
+ * most ordinary thing anyone does in this repo; it must not need a restart.
+ */
+const CACHED = process.env.NODE_ENV === 'production' ? readContent() : null;
 
 /** A stray `%` is "no such post", not a throw in front of the whole blog. */
 function decodeParam(param: string): string | null {
@@ -57,16 +78,35 @@ function isKnown(segment: string | undefined, param: string | undefined): boolea
   const decoded = decodeParam(param);
   if (decoded === null) return false;
 
+  const known = CACHED ?? readContent();
+
   // Tags go through `tagSlug` on both sides, exactly as the page does, so
   // `/tags/CI` and `/tags/visual%20regression` stay the pages they already were.
-  if (segment === 'tags') return TAG_SLUGS.has(tagSlug(decoded));
+  if (segment === 'tags') return known.tags.has(tagSlug(decoded));
+  if (segment === 'blog') return known.posts.has(decoded);
 
-  return POST_SLUGS.has(decoded);
+  // Unreachable through the matcher below. A refusal rather than a fallthrough
+  // to the post set, so that widening the matcher one day fails loudly on the
+  // new route instead of quietly measuring it against the wrong list.
+  return false;
 }
 
 export function proxy(request: NextRequest) {
   const [, segment, param] = request.nextUrl.pathname.split('/');
-  if (isKnown(segment, param)) return NextResponse.next();
+
+  // A read that throws is a post with broken frontmatter, which `next build` and
+  // __tests__/content.test.ts both refuse — so this is a development-only state,
+  // and there the page itself reports it far better than a 500 across every
+  // address under /blog and /tags would. Let the request through and let the
+  // route speak.
+  let known: boolean;
+  try {
+    known = isKnown(segment, param);
+  } catch {
+    return NextResponse.next();
+  }
+
+  if (known) return NextResponse.next();
 
   // Rewritten rather than answered from here, so the reader still gets the
   // site's own 404 page — header, footer, and the way back to the index — under
