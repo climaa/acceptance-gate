@@ -3,7 +3,7 @@
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { GET as getCurrentJob } from '../app/api/jobs/current/route';
 import { GET as getEnv } from '../app/api/env/route';
 import { GET as getLabel } from '../app/api/label/route';
@@ -38,6 +38,7 @@ const context = <T extends object>(params: T) => ({ params: Promise.resolve(para
 
 afterEach(() => {
   delete process.env.VISUAL_DIFF_FAKE_HOST_FINGERPRINT;
+  delete process.env.VISUAL_DIFF_FAKE_DOCKER;
   // `GET /api/label` is the one handler here that is pointed somewhere other
   // than the fixtures, because it is the one whose answer depends on what is
   // already on disk. Unset again so the rest of the file keeps its frame.
@@ -94,6 +95,24 @@ describe('GET /api/reports/[id]', () => {
 });
 
 describe('GET /api/env', () => {
+  // `runnerEnv` asks `dockerAvailable()` whenever this host is not already the
+  // pinned image, and that probe is an `execFileSync('docker', ['info', ...])`
+  // with a 3s ceiling — a blocking subprocess, inside a unit test whose default
+  // timeout is 5s. On a laptop with the daemon up it answers in milliseconds and
+  // nothing here ever noticed; on a cold CI runner it can burn the full three
+  // seconds, and spawn overhead on top of that is what took `reports the running
+  // host` past 5000ms and reddened a release PR that had touched no code.
+  //
+  // `VISUAL_DIFF_FAKE_DOCKER` is the seam lib/docker.ts declares for exactly this
+  // — its own comment says a probe that shells out "answers differently on a
+  // laptop with Docker Desktop running and on one without", which is the same
+  // reason it must not be reached from a unit test at all. Declared for every
+  // test in this block rather than the one that failed: three of the four take
+  // the same path, and only luck separated them.
+  beforeEach(() => {
+    process.env.VISUAL_DIFF_FAKE_DOCKER = '1';
+  });
+
   it('reports the running host', async () => {
     const response = await getEnv();
 
