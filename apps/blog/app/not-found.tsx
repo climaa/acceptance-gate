@@ -7,14 +7,15 @@ import { NOT_FOUND_ACTION, NOT_FOUND_NOTE, NOT_FOUND_TITLE } from '@/lib/site';
  * What every miss on this site renders: an address no route matches, and every
  * `notFound()` a route calls.
  *
- * Note what this page CAN do, and what the console's cannot. The visual-diff
- * console's 404 (apps/visual-diff-ui/app/not-found.tsx) is reached from inside
- * `/report/[id]`'s `<Suspense>`, so the shell has already streamed and the
- * response carries `200` with that body inside it — anything checking for a
- * miss there has to match the copy rather than the status. Here both dynamic
- * segments declare `dynamicParams = false`, so an unknown slug or tag fails to
- * match a route before any render begins, and this page is served with a real
- * `404`.
+ * It carries a real `404`, and under `cacheComponents` that takes work. A
+ * status goes out with the response's first byte, and every route here has a
+ * prerendered shell Next sends before the page's own reads resolve — so a slug
+ * discovered to be unknown mid-render is discovered too late to set one.
+ * `dynamicParams = false` would have refused it ahead of any render, but the
+ * build rejects that export outright with the flag on. `proxy.ts` closes it
+ * instead: it runs before routing, recognizes the miss, and rewrites here with
+ * the status attached. See that file for the measurements, and for why it stays
+ * quiet when it cannot see the content tree.
  *
  * `BlogIndexTemplate` rather than a bare `EmptyState`: a heading and a
  * one-thing-to-do-next block below it is exactly the arrangement it already

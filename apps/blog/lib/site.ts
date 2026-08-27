@@ -36,8 +36,9 @@ export const SITE_COPYRIGHT_YEAR = 2026;
  * wrong, or a draft's URL passed around before it was ever published. The copy
  * names the situation without accusing the reader of anything, because from out
  * here a post that was never published and one that never existed are the same
- * page — which is the whole point of `dynamicParams = false` on both dynamic
- * segments.
+ * page. Neither is in `generateStaticParams`, so `proxy.ts` turns both into the
+ * same `404` before either reaches a render — the copy is what makes that
+ * indistinguishably deliberate rather than a leak.
  *
  * `/blog` rather than `/` as the way on: the header's wordmark is not a link,
  * and the index is what someone chasing an article actually wanted.

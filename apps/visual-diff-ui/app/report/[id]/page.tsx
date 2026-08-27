@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 import { Skeleton, Stack } from '@gate/ui';
@@ -11,6 +12,27 @@ import { readReport, readSets, resolveDataDir } from '@/lib/data';
  * else — everything a reviewer touches is below, where it can be rendered from
  * literal rows without a filesystem.
  */
+
+/**
+ * The report id is the page's `<h1>` (components/ReportTemplate.tsx), so it is
+ * the `<title>` too — the heading and the tab say the same sentence, and the
+ * root layout's `%s · visual-diff console` template wraps it. Without this every
+ * report tab read `visual-diff console` and a reviewer comparing two of them
+ * side by side had no way to tell which was which.
+ *
+ * Reading `params` here defers the metadata to request time, which is free on
+ * this route and would not be on another: the page below already awaits `params`
+ * inside its `<Suspense>` and `resolveDataDir()` calls `connection()`, so the
+ * head streams with content that was deferred anyway rather than turning an
+ * otherwise-pre-render route dynamic.
+ */
+export async function generateMetadata({
+  params,
+}: PageProps<'/report/[id]'>): Promise<Metadata> {
+  const { id } = await params;
+
+  return { title: id };
+}
 
 export default function ReportPage({ params }: PageProps<'/report/[id]'>) {
   return (
