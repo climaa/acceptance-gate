@@ -117,9 +117,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* Production deployments only. The package's own detection keys off
             NODE_ENV, which reads "production" on every preview build too — so
             without this, each login-protected preview would report page views
-            into the same dataset as the live site. Decided at prerender rather
-            than in the browser: the shell is static under `cacheComponents`, so
-            a preview's HTML never names the script at all. */}
+            into the same dataset as the live site.
+
+            Decided at prerender rather than in the browser, though not in the
+            shape that suggests: no build's HTML carries the beacon's <script>,
+            because the component builds that element in an effect. What the
+            gate withholds is the component itself — a preview's RSC payload
+            never names it, so the chunk it sits in is never asked to run. */}
         {process.env.VERCEL_ENV === 'production' && <Analytics />}
       </body>
     </html>
