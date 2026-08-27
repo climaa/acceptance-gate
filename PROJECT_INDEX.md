@@ -1,6 +1,6 @@
 # Project Index: acceptance-gate
 
-Version 1.0.0 · generated 2026-08-18 (regenerate with `/sc:index-repo` — a stale date here
+Version 1.1.0 · generated 2026-08-27 (regenerate with `/sc:index-repo` — a stale date here
 means the index needs a refresh)
 
 ## 📁 Project Structure
@@ -20,8 +20,8 @@ means the index needs a refresh)
 apps/
   blog/                Next.js 16 App Router + MDX (English) — index, post, tag, about,
                        RSS, sitemap, OG images; Cache Components + Partial Prefetching on
-  storybook/           Storybook 10 + nextjs-vite — 24 stories, 13 docs pages
-  e2e/                 playwright-bdd — 41 acceptance scenarios across the blog and
+  storybook/           Storybook 10 + nextjs-vite — 26 stories, 15 docs pages
+  e2e/                 playwright-bdd — 42 acceptance scenarios across the blog and
                        two seeded visual-diff worlds (:3200/:3201), plus a one-scenario
                        local lane that runs against your own .visual-diff
   visual-diff-ui/      Next.js 16 console over the differ — zod-validated read path,
@@ -31,11 +31,11 @@ apps/
                        the report's tier sections, review loop and a11y
                        treatment, the three-up viewer and comparison modal
 packages/
-  ui/                  design system: tokens.css + 25 components in 4 tiers
-                       (14 atoms · 5 molecules · 4 organisms · 2 templates); every
+  ui/                  design system: tokens.css + 27 components in 4 tiers
+                       (16 atoms · 5 molecules · 4 organisms · 2 templates); every
                        one storied but Stack, the layout primitive with nothing
                        of its own to capture
-  visual-diff/         the self-built visual-regression CLI + 106 committed baselines
+  visual-diff/         the self-built visual-regression CLI + 158 committed baselines
   tsconfig/            shared TS configs
 designs/               acceptance-gate.pen (Pencil source) + exports/*.png
 scripts/               complexity-gate.mjs (the health gate) · apply-ruleset.mjs
@@ -70,7 +70,7 @@ scripts/               complexity-gate.mjs (the health gate) · apply-ruleset.mj
 
 - `turbo.json` — `build`/`lint`/`typecheck`/`test` (+`dependsOn: ["^build"]`), `e2e` (dependsOn `@gate/blog#build` and `@gate/visual-diff-ui#build`, uncached), `health` (whose `inputs` include `$TURBO_ROOT$/scripts/complexity-gate.mjs`, so editing the gate script busts every cached result), `dev`, `clean`
 - `pnpm-workspace.yaml` — apps/* + packages/*; `allowBuilds` for sharp, unrs-resolver
-- `package.json` — pnpm 11.20.0 pinned (sha512), Node `>=22.14.0 <23`, turbo ^2.10.9. `@types/node` is deliberately held on the `^22` line: it describes the runtime `engines` pins and `.sandcastle/Dockerfile` (`node:22-bookworm`) runs, so a newer major would type built-ins that do not exist here. It moves when the runtime moves, not when `ncu` says so
+- `package.json` — pnpm 11.20.0 pinned (sha512), Node `>=22.14.0 <23`, turbo ^2.10.11. `@types/node` is deliberately held on the `^22` line: it describes the runtime `engines` pins and `.sandcastle/Dockerfile` (`node:22-bookworm`) runs, so a newer major would type built-ins that do not exist here. It moves when the runtime moves, not when `ncu` says so
 - `.github/rulesets/main.json` — the branch ruleset as committed JSON: PR required, squash-only, `gate` the sole required status check, no bypass actors
 - `.gitattributes` — `designs/*.pen` binary
 - Exact pins that are never bot-bumped: `@playwright/test` and `playwright` at `1.62.1`, matched to the `mcr.microsoft.com/playwright:v1.62.1-noble` capture container
@@ -88,17 +88,17 @@ scripts/               complexity-gate.mjs (the health gate) · apply-ruleset.mj
 ## 🧪 Tests
 
 - Orchestrator hermetic suite: 39 files / 654 tests (prompt contracts, merge flow, override grammar, worktree safety, provenance guard)
-- Workspace suites, all in the `test` gate job: `packages/ui` 28 files / 432 tests (70% coverage floor), `apps/blog` 12 / 287, `packages/visual-diff` 10 / 302, `apps/storybook` 4 / 99, `apps/visual-diff-ui` 31 / 530
-- `apps/e2e`: 41 acceptance scenarios across smoke, blog, axe a11y, the visual-diff console, sample mode, the report and its accessibility treatment — in `gate.needs`, blocking. A second lane, `features/local/`, is one scenario that captures, compares, reviews, accepts and cleans up against your own tree; it refuses to run under `CI` and gates nothing
-- `packages/visual-diff`: 106 committed baselines; the capture/compare job runs on every PR but is deliberately never in `gate.needs` (see `packages/visual-diff/README.md#ci-status`)
+- Workspace suites, all in the `test` gate job: `packages/ui` 34 files / 490 tests (70% coverage floor), `apps/blog` 13 / 307, `packages/visual-diff` 11 / 334, `apps/storybook` 5 / 115, `apps/visual-diff-ui` 48 / 790 (floors 93/87/92/94)
+- `apps/e2e`: 42 acceptance scenarios across smoke, blog, axe a11y, the visual-diff console, sample mode, the report and its accessibility treatment — in `gate.needs`, blocking. A second lane, `features/local/`, is one scenario that captures, compares, reviews, accepts and cleans up against your own tree; it refuses to run under `CI` and gates nothing
+- `packages/visual-diff`: 158 committed baselines; the capture/compare job runs on every PR but is deliberately never in `gate.needs` (see `packages/visual-diff/README.md#ci-status`)
 
 ## 🔗 Key Dependencies
 
 - `@ai-hero/sandcastle` 0.12.0 — sandbox engine under `.sandcastle/`
-- `next` ^16.3.0 / `react` ^19.2.8 — blog and storybook
+- `next` ^16.3.2 / `react` ^19.2.8 — blog and storybook
 - `storybook` 10 with `nextjs-vite` — the visual single source of truth
 - `playwright` 1.62.1 (exact) — acceptance suite and pixel capture
-- `turbo` ^2.10.9 — task graph + remote cache (team-ID-scoped)
+- `turbo` ^2.10.11 — task graph + remote cache (team-ID-scoped)
 
 ## 📝 Quick Start
 
