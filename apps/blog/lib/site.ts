@@ -49,6 +49,26 @@ export const NOT_FOUND_NOTE =
 
 export const NOT_FOUND_ACTION = 'All articles';
 
+/**
+ * What `app/error.tsx` and `app/global-error.tsx` say when a render throws.
+ *
+ * Separate copy from the 404's, because the two are not the same event and a
+ * reader can act on the difference: a miss means the address leads nowhere and
+ * the way on is elsewhere on the site, while this means the address was right
+ * and this end failed to serve it. So the way on here is the same page again,
+ * not a different one — `retry()` re-renders the segment, and for a transient
+ * fault that is the whole fix.
+ *
+ * The copy names no cause. What threw is a server-side detail the reader cannot
+ * act on, and in production React redacts the message anyway.
+ */
+export const ERROR_TITLE = 'Something went wrong';
+
+export const ERROR_NOTE =
+  'This page could not be rendered. Nothing is wrong with the address you followed — the fault is on this end.';
+
+export const ERROR_ACTION = 'Try again';
+
 export const SITE_DESCRIPTION =
   'Notes on Next.js, testing with Cypress and Gherkin, visual regression and coding agents.';
 
