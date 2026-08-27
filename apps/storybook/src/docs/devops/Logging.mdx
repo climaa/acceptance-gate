@@ -1,0 +1,145 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs/DevOps/Logging" />
+
+# Logging
+
+Shipped app code in this repo does not print to the console in production. Both Next.js
+surfaces — the blog and the visual-diff console — route everything through one shared
+logger, `@gate/logger`, and a lint rule makes the raw `console` an error everywhere that
+code ships. In development nothing changes: the same calls print exactly what
+`console.error` / `warn` / `info` would have printed. In a production build they print
+nothing — except that `logger.error()` also hands its arguments to a pluggable reporter,
+which is where an error tracker attaches without any call site changing.
+
+At the time this landed, shipped code contained zero `console.*` calls, so nothing was
+migrated. The package exists for the next call, not the last one: the lint rule is the
+ratchet, the logger is the outlet.
+
+## Using it
+
+```ts
+import { logger } from '@gate/logger';
+
+logger.error('capture set missing', err); // always forwarded to the reporter
+logger.warn('falling back to bundled fonts'); // dev-only print
+logger.info('report promoted', reportId); // dev-only print
+```
+
+That is the whole API surface an app author needs. The module is plain ES2022 with no
+dependencies, so the same import works in Server Components, route handlers, `proxy.ts`
+and client components alike — both apps list it in `transpilePackages`, the same
+source-direct arrangement `@gate/ui` uses.
+
+The three levels differ in exactly one way:
+
+- **`error`** — prints in development, silent in production, and **always** calls the
+  reporter, in every environment. If something is worth `error`, it is worth telling the
+  tracker about.
+- **`warn`, `info`** — print in development, silent in production, never reach the
+  reporter. They are for the person running `next dev`, not for observability.
+
+There is no `debug`, no log levels to configure, no formatting, no transports. A call
+site that needs structure passes it as arguments — the reporter receives them as-is.
+
+## The lint rule
+
+Both apps carry the same block in `eslint.config.mjs`:
+
+```js
+{
+  files: [
+    'app/**/*.{ts,tsx}',
+    'components/**/*.{ts,tsx}',
+    'lib/**/*.{ts,tsx}',
+    'hooks/**/*.{ts,tsx}',
+    'proxy.ts',
+  ],
+  rules: { 'no-console': 'error' },
+},
+```
+
+Two decisions hide in those few lines.
+
+**`console.error` is banned too.** The rule is the bare `'no-console': 'error'`, with no
+`allow` list — deliberately. An allowed `console.error` would print in production _and_
+bypass the reporter, which is the one path errors must not take. `logger.error` does both
+jobs; the raw call does neither correctly.
+
+**The boundary is drawn by location, not by exception.** The `files` globs name the four
+shipped-source directories plus `proxy.ts` — the middleware-replacement file that lives
+at the app root and would otherwise slip through. Everything else — `scripts/`,
+`__tests__/`, `*.config.*` — simply never matches, so CLI tooling keeps printing with no
+`eslint-disable` comments anywhere. The seed scripts and local-data helpers under
+`apps/*/scripts/` call `console` today and are meant to.
+
+The logger package itself has no ESLint config at all, on the `@gate/visual-diff`
+precedent: per-workspace `eslint .` cannot leak the apps' rule into it, and its entire
+job is to call `console`.
+
+## What "production" means here
+
+The gate is `NODE_ENV === 'production'`, read once when the logger is created. Next
+inlines `process.env.NODE_ENV` into client bundles and Vercel sets it on the server, so
+`next build` + `next start` is silent and `next dev` prints — locally and deployed alike.
+
+Note the contrast with [Web Analytics](?path=/docs/docs-devops-web-analytics--docs),
+which cannot use `NODE_ENV` because preview deployments also set it to `production` and
+would pollute the production dataset. For logging that same property is the point:
+a preview should behave like production, and silence is production behaviour. Two gates,
+two env vars, each right for its job.
+
+One honesty note: the silence is a runtime check, not dead code elimination. The `mode`
+that decides it is an injectable function parameter (that is what makes the behaviour
+testable), so the minifier cannot prove the console branch dead and a few inert bytes of
+it ship in the client bundle. They never execute.
+
+## The reporter
+
+`logger.error()` forwards its arguments to a reporter before it considers printing:
+
+```ts
+import { setReporter } from '@gate/logger';
+
+setReporter((...data) => {
+  /* hand off to the error tracker */
+});
+```
+
+The default reporter is a no-op, so until something calls `setReporter` the forwarding
+is free. The slot lives on `globalThis` under `Symbol.for('@gate/logger.reporter')`
+rather than in module state, because Next gives the RSC layer and the SSR layer separate
+copies of every module — a module-level variable would make `setReporter` a per-layer
+switch that silently missed half the errors.
+
+The planned tracker is a self-hosted **Bugsink** instance, spoken to through the Sentry
+SDK — Bugsink is Sentry-compatible and has no SDK of its own. When that lands, the
+wiring is two `setReporter` calls, one in `instrumentation.ts` and one in
+`instrumentation-client.ts` (server and browser are separate realms; the `globalThis`
+slot cannot cross that line), and no call site in either app changes. Two conventions
+for that adapter, both from the Bugsink author's own guidance: wrap plain strings in
+`new Error(...)` before capturing, because `captureMessage` loses the stack; and pass an
+actual `Error` object to `logger.error` whenever one exists, since the reporter receives
+the arguments positionally and recovers the `Error` from them.
+
+## Testing against it
+
+The singleton is for app code. Tests use the factory:
+
+```ts
+import { createLogger } from '@gate/logger';
+
+const report = vi.fn();
+const log = createLogger(report, 'production');
+
+log.error('boom', err);
+expect(report).toHaveBeenCalledWith('boom', err); // forwarded even in production
+```
+
+`createLogger(report?, mode?)` takes the reporter and the mode as defaulted parameters —
+the repo's usual pattern for testable environment reads — so a test injects
+`'production'` or `'development'` instead of mutating `process.env`. The package's own
+suite (`packages/logger/src/index.test.ts`) pins the contract: dev prints all three
+levels, production prints none, and production `error()` still reaches the reporter
+while `warn` and `info` do not. App tests that need to assert "this path logged" should
+inject a spy the same way rather than spying on the global `console`.

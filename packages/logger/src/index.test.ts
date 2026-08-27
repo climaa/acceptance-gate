@@ -19,9 +19,11 @@ describe('createLogger', () => {
   it('prints all three levels in development mode', () => {
     const spies = spyConsole();
     const log = createLogger(undefined, 'development');
+
     log.error('e');
     log.warn('w');
     log.info('i');
+
     expect(spies.error).toHaveBeenCalledWith('e');
     expect(spies.warn).toHaveBeenCalledWith('w');
     expect(spies.info).toHaveBeenCalledWith('i');
@@ -30,9 +32,11 @@ describe('createLogger', () => {
   it('prints nothing in production mode', () => {
     const spies = spyConsole();
     const log = createLogger(undefined, 'production');
+
     log.error('e');
     log.warn('w');
     log.info('i');
+
     expect(spies.error).not.toHaveBeenCalled();
     expect(spies.warn).not.toHaveBeenCalled();
     expect(spies.info).not.toHaveBeenCalled();
@@ -41,11 +45,13 @@ describe('createLogger', () => {
   it('error() still forwards args to the reporter in production; warn/info do not', () => {
     spyConsole();
     const report = vi.fn();
-    const log = createLogger(report, 'production');
     const failure = new Error('boom');
+    const log = createLogger(report, 'production');
+
     log.error('context', failure);
     log.warn('w');
     log.info('i');
+
     expect(report).toHaveBeenCalledTimes(1);
     expect(report).toHaveBeenCalledWith('context', failure);
   });
@@ -53,6 +59,7 @@ describe('createLogger', () => {
   it('default reporter does not throw', () => {
     spyConsole();
     const log = createLogger(undefined, 'development');
+
     expect(() => log.error('e')).not.toThrow();
   });
 });
@@ -62,7 +69,9 @@ describe('logger singleton', () => {
     spyConsole();
     const spy = vi.fn();
     setReporter(spy);
+
     logger.error('x');
+
     expect(spy).toHaveBeenCalledWith('x');
   });
 });
