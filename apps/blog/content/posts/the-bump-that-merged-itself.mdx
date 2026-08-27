@@ -51,8 +51,10 @@ The other ten did not merge themselves, and they did not all get a no either:
   [#223](https://github.com/climaa/acceptance-gate/pull/223),
   [#315](https://github.com/climaa/acceptance-gate/pull/315)).
 
-Three refusals is the number worth publishing, and it covers more than three pull requests:
-each one is an entire dependency family the bot is no longer permitted to propose.
+Three refusals, against the three that merged themselves. That symmetry is a coincidence of
+this sample and not a finding, but the second three is the one worth publishing, and it
+covers more than three pull requests: each one is an entire dependency family the bot is no
+longer permitted to propose.
 
 ## The third actor
 
@@ -179,6 +181,8 @@ on the Node we ship".
 Nothing broke, and that is the part worth sitting with. The green was not wrong; it was a
 standing grant of permission for future code to compile against APIs that are absent at
 runtime. A latent license is harder to notice than a failure.
+
+## The check that is not a test
 
 I have asked a version of this question before. [The migration that passed
 CI](/blog/the-migration-that-passed-ci) ends on it: if every color in the app shifted one
