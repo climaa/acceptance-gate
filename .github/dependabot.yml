@@ -45,10 +45,10 @@
 #   that actually runs the code; on @types/node 26 tsc green-lights Node 26
 #   APIs that throw on 22, and typecheck goes green precisely because it has
 #   been told to describe a different runtime — so a red gate is not what
-#   catches this one. 22.20.1 ends the 22 line (DefinitelyTyped last published
-#   it 2026-08-07), which makes this a stable pin rather than rot: there is no
-#   minor or patch left to miss. It comes out in the same commit that moves
-#   .nvmrc off 22 — never before it, and never on its own.
+#   catches this one. 22.20.1 is the last of the 22 line (DefinitelyTyped
+#   published it 2026-07-08), which makes this a stable pin rather than rot:
+#   there is no minor or patch left to miss. It comes out in the same commit
+#   that moves .nvmrc off 22 — never before it, and never on its own.
 version: 2
 updates:
   - package-ecosystem: npm
