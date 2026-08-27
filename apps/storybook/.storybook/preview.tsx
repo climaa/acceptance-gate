@@ -129,7 +129,9 @@ const preview: Preview = {
             'DevOps',
             // The Gate first: it explains what `gate` is, which Dependency
             // Bumps then assumes when it talks about a bump PR waiting on it.
-            ['The Gate', 'Dependency Bumps'],
+            // Web Analytics last: it is the only one about what happens after a
+            // merge, and the only page whose subject no job in the gate runs.
+            ['The Gate', 'Dependency Bumps', 'Web Analytics'],
             'Skills',
             [
               'Overview',
