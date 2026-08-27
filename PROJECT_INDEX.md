@@ -19,8 +19,9 @@ means the index needs a refresh)
   __tests__/           39 hermetic vitest files (654 tests) guarding the contracts
 apps/
   blog/                Next.js 16 App Router + MDX (English) — index, post, tag, about,
-                       RSS, sitemap, OG images; Cache Components + Partial Prefetching on
-  storybook/           Storybook 10 + nextjs-vite — 26 stories, 15 docs pages
+                       RSS, sitemap, OG images; Cache Components + Partial Prefetching on;
+                       web analytics on the production deployment only
+  storybook/           Storybook 10 + nextjs-vite — 26 stories, 16 docs pages
   e2e/                 playwright-bdd — 42 acceptance scenarios across the blog and
                        two seeded visual-diff worlds (:3200/:3201), plus a one-scenario
                        local lane that runs against your own .visual-diff
@@ -29,7 +30,8 @@ apps/
                        the dashboard's sets/reports/history tables, the run
                        panel with its live log, current job and accept gate,
                        the report's tier sections, review loop and a11y
-                       treatment, the three-up viewer and comparison modal
+                       treatment, the three-up viewer and comparison modal;
+                       web analytics on the production deployment only
 packages/
   ui/                  design system: tokens.css + 27 components in 4 tiers
                        (16 atoms · 5 molecules · 4 organisms · 2 templates); every
@@ -88,7 +90,7 @@ scripts/               complexity-gate.mjs (the health gate) · apply-ruleset.mj
 ## 🧪 Tests
 
 - Orchestrator hermetic suite: 39 files / 654 tests (prompt contracts, merge flow, override grammar, worktree safety, provenance guard)
-- Workspace suites, all in the `test` gate job: `packages/ui` 34 files / 490 tests (70% coverage floor), `apps/blog` 13 / 307, `packages/visual-diff` 11 / 334, `apps/storybook` 5 / 115, `apps/visual-diff-ui` 48 / 790 (floors 93/87/92/94)
+- Workspace suites, all in the `test` gate job: `packages/ui` 34 files / 490 tests (70% coverage floor), `apps/blog` 14 / 310, `packages/visual-diff` 11 / 334, `apps/storybook` 5 / 118, `apps/visual-diff-ui` 49 / 793 (floors 93/87/92/94)
 - `apps/e2e`: 42 acceptance scenarios across smoke, blog, axe a11y, the visual-diff console, sample mode, the report and its accessibility treatment — in `gate.needs`, blocking. A second lane, `features/local/`, is one scenario that captures, compares, reviews, accepts and cleans up against your own tree; it refuses to run under `CI` and gates nothing
 - `packages/visual-diff`: 158 committed baselines; the capture/compare job runs on every PR but is deliberately never in `gate.needs` (see `packages/visual-diff/README.md#ci-status`)
 
