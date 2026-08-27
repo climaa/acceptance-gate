@@ -6,10 +6,13 @@ import { Mermaid } from '../Mermaid';
 
 # Web analytics
 
-The blog counts page views with Vercel Web Analytics, and only on the production
-deployment. Every preview is login-protected, so a view one could report is a reviewer or
-a machine — and it would land in the same dataset as the live site, where it reads as a
-reader.
+Both published Next.js surfaces — the blog and the visual-diff console — count page
+views with Vercel Web Analytics, and only on their production deployment. Every preview is
+login-protected, so a view one could report is a reviewer or a machine, and it would land
+in the same dataset as the live site where it reads as a reader.
+
+The gate, the reasoning and the costs below are identical in both apps. The measurements
+are the blog's, taken once rather than repeated per app.
 
 This is the first thing on the site that phones home. It is cookieless and writes no
 client-side storage, so it adds nothing to the one `localStorage` key
@@ -116,11 +119,25 @@ VERCEL_ENV=production pnpm --filter @gate/blog build
 VERCEL_ENV=production pnpm --filter @gate/blog start
 ```
 
-Load `http://localhost:3000` and read the network log: `/_vercel/insights/script.js` must
-be requested. It **503s locally** — that endpoint only exists on Vercel's edge — and the
-request being made at all is the proof. Then repeat with `VERCEL_ENV` unset and confirm the
-request is absent. Without that second half, the first proves only that something loaded.
+**The script path differs between local and production, and this is the trap.** Locally
+the page requests `/_vercel/insights/script.js`, which **503s** — that endpoint only
+exists on Vercel's edge, and the request being made at all is the proof. On the deployed
+site there is no such request: Vercel rewrites the beacon to an obfuscated per-project
+path, so you are looking for `/<hex>/script.js` and a `POST /<hex>/view` beside it.
+Filtering a production network log for `_vercel` finds nothing and looks exactly like a
+broken gate.
 
-`apps/blog/__tests__/analytics.test.ts` covers the same three branches at the unit layer,
-with the component stubbed: the real one reaches through `next/navigation` for a router
-`renderToStaticMarkup` cannot mount.
+Then repeat with `VERCEL_ENV` unset and confirm the request is absent. Without that second
+half, the first proves only that something loaded.
+
+**Check the served HTML, not the built file, on the console.** The blog's `/` is `○ Static`
+so its prerendered `index.html` carries the payload line; the console's `/` is `◐ Partial
+Prerender`, and the analytics boundary is a dynamic hole that is simply not in the static
+shell. `grep`ping `.next/server/app/index.html` there returns zero on a correct production
+build. Run the server and read what it serves.
+
+Each app's `__tests__/analytics.test.ts` covers the same three branches at the unit layer
+with the component stubbed, because the real one appends its `<script>` in an effect no
+server render runs. The two differ in renderer: the blog uses `renderToStaticMarkup`, the
+console `renderToReadableStream`, because its sample-mode badge is an async component
+behind `<Suspense>` that the static renderer cannot resolve.
