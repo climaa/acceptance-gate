@@ -4,10 +4,6 @@ import { notFound } from 'next/navigation';
 import { BlogIndexTemplate } from '@gate/ui';
 import { getAllTags, getPostsByTag, getTagLabel, tagPath } from '@/lib/posts';
 
-interface PageProps {
-  params: Promise<{ tag: string }>;
-}
-
 // The page's heading and its `<title>` are the same sentence, and a crawler that
 // reads one against the other should not find two.
 const tagTitle = (label: string) => `Posts tagged ${label}`;
@@ -18,7 +14,9 @@ export function generateStaticParams() {
   return getAllTags().map(({ slug }) => ({ tag: slug }));
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: PageProps<'/tags/[tag]'>): Promise<Metadata> {
   const { tag } = await params;
   const label = getTagLabel(tag);
   if (!label) return {};
@@ -32,7 +30,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export default async function TagPage({ params }: PageProps) {
+export default async function TagPage({ params }: PageProps<'/tags/[tag]'>) {
   const { tag } = await params;
   const label = getTagLabel(tag);
   // The tag set is built from published posts, so an unknown tag has no page —

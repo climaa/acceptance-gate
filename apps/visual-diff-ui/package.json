@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start --port 3300",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
     "health": "node ../../scripts/complexity-gate.mjs",
     "clean": "rm -rf .next .turbo node_modules"

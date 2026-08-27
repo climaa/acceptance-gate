@@ -7,15 +7,13 @@ import { PostTemplate } from '@gate/ui';
 import { mdxComponents, mdxRemoteOptions } from '@/lib/mdx';
 import { getAllPosts, getPostBySlug, tagPath } from '@/lib/posts';
 
-interface PageProps {
-  params: Promise<{ slug: string }>;
-}
-
 export function generateStaticParams() {
   return getAllPosts().map((post) => ({ slug: post.slug }));
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: PageProps<'/blog/[slug]'>): Promise<Metadata> {
   const { slug } = await params;
   const post = getPostBySlug(slug);
   if (!post) return {};
@@ -59,7 +57,7 @@ async function PostBody({ source }: { source: string }) {
   );
 }
 
-export default async function PostPage({ params }: PageProps) {
+export default async function PostPage({ params }: PageProps<'/blog/[slug]'>) {
   const { slug } = await params;
   const post = getPostBySlug(slug);
   if (!post) notFound();

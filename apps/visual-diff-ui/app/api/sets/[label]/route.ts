@@ -11,10 +11,6 @@ import {
 } from '@/lib/refusals';
 import { revalidateTag } from 'next/cache';
 
-interface Context {
-  params: Promise<{ label: string }>;
-}
-
 /**
  * Delete one capture set (D2).
  *
@@ -36,7 +32,10 @@ interface Context {
  * taken again without the checkout it came from. A report is a summary and its
  * shots; this is the thing on the console that cannot be remade.
  */
-export async function DELETE(_request: Request, { params }: Context): Promise<Response> {
+export async function DELETE(
+  _request: Request,
+  { params }: RouteContext<'/api/sets/[label]'>,
+): Promise<Response> {
   const { label } = await params;
   const gate = await guardMutation();
   if (gate instanceof Response) return gate;

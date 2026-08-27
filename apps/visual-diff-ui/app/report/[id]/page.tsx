@@ -12,7 +12,7 @@ import { readReport, readSets, resolveDataDir } from '@/lib/data';
  * literal rows without a filesystem.
  */
 
-export default function ReportPage({ params }: { params: Promise<{ id: string }> }) {
+export default function ReportPage({ params }: PageProps<'/report/[id]'>) {
   return (
     <Stack gap={6}>
       {/* `params` is request data and the summary is read per request, so the
@@ -28,7 +28,7 @@ export default function ReportPage({ params }: { params: Promise<{ id: string }>
   );
 }
 
-async function ReportContents({ params }: { params: Promise<{ id: string }> }) {
+async function ReportContents({ params }: Pick<PageProps<'/report/[id]'>, 'params'>) {
   const { id } = await params;
   const { dir } = await resolveDataDir();
   const [report, registry] = await Promise.all([readReport(dir, id), readSets(dir)]);
