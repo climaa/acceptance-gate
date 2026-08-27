@@ -173,8 +173,9 @@ interface JobForm {
 type Patch = Dispatch<Partial<JobForm>>;
 
 interface Prefill {
-  /** The PAIR, and deliberately not the mode — see `useJobForm`, where this is
-   *  the whole of what keeps the panel from arguing with its own writes. */
+  /** The pair AND the pickers' ask counter — deliberately not the mode. See
+   *  `useJobForm`: this is the whole of what keeps the panel from arguing with
+   *  its own writes while still obeying every ask the pickers make. */
   key: string;
   mode: Mode;
   baseline: string;
@@ -191,8 +192,12 @@ function readPrefill(params: URLSearchParams): Prefill | null {
 
   const baseline = params.get('a') ?? '';
   const candidate = params.get('b') ?? '';
+  // Written by `ComparePickers` on every press and by nothing else. Absent on a
+  // URL this panel wrote, on a shared link, and on a reload — all of which are a
+  // pair without an ask behind them, and all of which key the same as each other.
+  const ask = params.get('cn') ?? '';
 
-  return { key: `${baseline}|${candidate}`, mode, baseline, candidate };
+  return { key: `${baseline}|${candidate}|${ask}`, mode, baseline, candidate };
 }
 
 /**
@@ -222,19 +227,28 @@ function readPrefill(params: URLSearchParams): Prefill | null {
  *    the mode back to what the reviewer just navigated away from. The pair does
  *    not change across that window, so there is no window to get wrong.
  *
- * What this gives up is any mode change arriving with the pair UNCHANGED, and
+ * The pair alone gave up any mode change arriving with the pair UNCHANGED, and
  * there is one the console can actually make: pressing `compare A ⇄ B` from
- * another tab with that pair already selected. The pickers write
- * `?a=X&b=Y&mode=compare`, the pair equals what is applied, nothing happens — so
- * the URL reads compare while the panel still shows accept, and the press looks
- * swallowed. The TAB has always been inert there; a same-pair request has never
- * re-applied. What is new is that the URL now moves and disagrees with it.
+ * another tab for the pair already selected. Keyed on the pair, that ask equalled
+ * what was applied and nothing happened — the URL read compare while the panel
+ * stayed put, and the press looked swallowed.
  *
- * The answer is not a cleverer latch — every variant of one reopens the
- * stale-read window above. It is a vocabulary split: the pickers should write a
- * REQUEST this panel consumes and clears, distinct from the STATE it mirrors, at
- * which point the latch stops existing at all. Tracked separately, because doing
- * it halfway here would leave two half-vocabularies instead of one.
+ * `cn` closes that without reopening the window. It is the pickers' ask counter,
+ * written on every press and by nothing else, so:
+ *
+ *  - a tab click does not touch it, and the echo one render later still keys the
+ *    same — a compare field the reviewer typed into still survives every tab click
+ *  - the stale read after a click carries the same pair AND the same `cn`, so
+ *    there is still no window in which the latch moves ahead of what it has seen
+ *  - a repeat press changes it, so an ask is never equal to what is applied
+ *
+ * The vocabulary split this used to call for is NOT what landed, and the
+ * difference is the whole lesson. #344 had the pickers write `?ca&cb` for the
+ * panel to consume and CLEAR. The clear is a second writer on one query string:
+ * the tab's `router.replace` was superseded by the still-in-flight navigation for
+ * the ask, the URL never left `?ca&cb`, and the next press wrote a byte-identical
+ * URL that Next no-ops. Four of six production runs wedged, permanently. Here the
+ * panel writes `mode` and the pickers write `cn`, and neither writes the other's.
  */
 function useJobForm(params: URLSearchParams): [JobForm, Patch, (mode: Mode) => void] {
   const prefill = readPrefill(params);

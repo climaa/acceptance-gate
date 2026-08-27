@@ -66,6 +66,19 @@ When('I choose two sets to compare', async ({ console: consolePage }) => {
   await consolePage.chooseCompare(COMPARE_A, COMPARE_B);
 });
 
+/** The same pair a second time, which is the whole point: an ask whose content
+ *  matches what the URL already carries still has to be obeyed. Driven through
+ *  the same page method as the first press so the two are indistinguishable to
+ *  the app — a bespoke second path here would prove something the reviewer never
+ *  does. */
+When('I choose the same two sets to compare', async ({ console: consolePage }) => {
+  await consolePage.chooseCompare(COMPARE_A, COMPARE_B);
+});
+
+When('I switch to the capture job tab', async ({ console: consolePage }) => {
+  await consolePage.selectJobMode('capture');
+});
+
 When('I ask the console to name the capture set', async ({ console: consolePage }) => {
   await consolePage.labelWand.click();
 });
@@ -121,6 +134,22 @@ Then(
 
 Then('the URL carries the compare job mode', async ({ page }) => {
   await expect(page).toHaveURL(/\?mode=compare$/);
+});
+
+/**
+ * The barrier this scenario needs, and the reason it is a step of its own rather
+ * than a wait inside the next one. `router.replace` commits asynchronously: for a
+ * window after the tab click the panel already reads `capture` while the address
+ * bar still says `mode=compare`. Pressing compare inside that window is a press
+ * against a navigation still in flight, and the RSC response for the ask re-renders
+ * the panel into compare on its own — which makes the scenario pass while the
+ * defect it is aimed at is untouched. Observed: without this, 12 of 12 runs passed
+ * against the production build that reproduces the defect by hand.
+ *
+ * `toHaveURL` polls, so this is a barrier rather than a sleep.
+ */
+Then('the URL has dropped the compare job mode', async ({ page }) => {
+  await expect(page).not.toHaveURL(/mode=compare/);
 });
 
 Then('the compare job tab is selected', async ({ console: consolePage }) => {
