@@ -58,7 +58,16 @@ const MULTI_WORD_TAG = { slug: 'visual-regression', label: 'visual regression' }
  */
 const DRAFT_ONLY_TAG = 'fixture';
 
-const paramsFor = (tag: string) => ({ params: Promise.resolve({ tag }) });
+/**
+ * `searchParams` beside `params` because `PageProps<'/tags/[tag]'>` is the whole
+ * contract Next hands a page, not the half this one reads. The page itself never
+ * touches it: under `cacheComponents` reading it would open a dynamic hole in a
+ * route built to prerender.
+ */
+const propsFor = (tag: string) => ({
+  params: Promise.resolve({ tag }),
+  searchParams: Promise.resolve({}),
+});
 
 /**
  * The props the page hands `BlogIndexTemplate` — a page renders nothing else.
@@ -66,7 +75,7 @@ const paramsFor = (tag: string) => ({ params: Promise.resolve({ tag }) });
  * intro and the post list under the names the template gives them.
  */
 const renderTagPage = async (tag: string): Promise<BlogIndexTemplateProps> =>
-  (await TagPage(paramsFor(tag))).props;
+  (await TagPage(propsFor(tag))).props;
 
 describe('content/posts', () => {
   // A suite whose fixtures no longer exist would pass while protecting nothing —
@@ -209,7 +218,7 @@ describe('app/tags/[tag]', () => {
 
 describe('generateMetadata', () => {
   it('names the tag in the title and the description', async () => {
-    const metadata = await generateMetadata(paramsFor(MULTI_WORD_TAG.slug));
+    const metadata = await generateMetadata(propsFor(MULTI_WORD_TAG.slug));
 
     expect(metadata.title).toContain(MULTI_WORD_TAG.label);
     expect(metadata.description).toContain(MULTI_WORD_TAG.label);
@@ -218,15 +227,13 @@ describe('generateMetadata', () => {
   // Case and the display form both render the slug's page, so the slug is the one
   // URL a crawler should be pointed at.
   it('points the canonical URL at the slug, not at the segment as typed', async () => {
-    const metadata = await generateMetadata(
-      paramsFor(MULTI_WORD_TAG.label.toUpperCase()),
-    );
+    const metadata = await generateMetadata(propsFor(MULTI_WORD_TAG.label.toUpperCase()));
 
     expect(metadata.alternates?.canonical).toBe(`/tags/${MULTI_WORD_TAG.slug}`);
   });
 
   it('is empty for a tag no published post carries', async () => {
-    const metadata = await generateMetadata(paramsFor(DRAFT_ONLY_TAG));
+    const metadata = await generateMetadata(propsFor(DRAFT_ONLY_TAG));
 
     expect(metadata).toEqual({});
   });

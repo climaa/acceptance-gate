@@ -53,6 +53,15 @@ describe('GET /api/sets', () => {
     expect(body.isSample).toBe(true);
     expect(body.sets).toHaveLength(3);
   });
+
+  // The reader behind it is cached with `cacheLife('seconds')` and a tag a
+  // delete purges, so a stored copy in front of it would outlive the
+  // invalidation and hand back a set the reviewer just removed.
+  it('refuses to be stored', async () => {
+    const response = await getSets();
+
+    expect(response.headers.get('Cache-Control')).toBe('no-store');
+  });
 });
 
 describe('GET /api/reports', () => {
@@ -66,6 +75,13 @@ describe('GET /api/reports', () => {
     expect(body.isSample).toBe(true);
     // Newest-first is a descending sort on the id, so `main-…` leads.
     expect(body.reports.map((report) => report.id)).toEqual([REPORT, ADDED_REPORT]);
+  });
+
+  // Same reason as /api/sets: a cached list survives the tag a delete purges.
+  it('refuses to be stored', async () => {
+    const response = await getReports();
+
+    expect(response.headers.get('Cache-Control')).toBe('no-store');
   });
 });
 

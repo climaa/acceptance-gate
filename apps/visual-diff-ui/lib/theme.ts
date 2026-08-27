@@ -1,4 +1,4 @@
-import { THEME_STORAGE_KEY } from '@gate/ui';
+import { applyTheme, THEME_STORAGE_KEY, type Theme } from '@gate/ui';
 
 /** The key as a JS literal: this script is text until the browser parses it. */
 const KEY = JSON.stringify(THEME_STORAGE_KEY);
@@ -27,3 +27,35 @@ const KEY = JSON.stringify(THEME_STORAGE_KEY);
 export const THEME_SCRIPT =
   `try{if(localStorage.getItem(${KEY})==='dark')` +
   `document.documentElement.dataset.theme='dark'}catch(e){}`;
+
+/**
+ * The same resolution as `THEME_SCRIPT`, as code rather than as a string.
+ *
+ * `app/global-error.tsx` needs it because that file replaces the root layout:
+ * React BUILDS that document instead of parsing it, and a `<script>` created
+ * that way never executes — so the inline script cannot carry the theme there,
+ * and the attribute the layout's copy had set is discarded with the document it
+ * was set on. Measured, not assumed: a reader with `dark` stored was served the
+ * light palette on every root-layout error.
+ *
+ * Two encodings of one rule is a drift risk, so `__tests__/theme.test.ts` runs
+ * the script and this function against the same inputs and compares them.
+ *
+ * No `matchMedia`, exactly as the script has none: a capture needs a theme it
+ * chose, never one the capture machine's OS happened to be set to. The read is
+ * wrapped because `localStorage` throws rather than returning null in private
+ * mode, and an uncaught throw in an error boundary would replace this page with
+ * a blank one.
+ */
+export function resolveTheme(): Theme {
+  try {
+    return localStorage.getItem(THEME_STORAGE_KEY) === 'dark' ? 'dark' : 'light';
+  } catch {
+    return 'light';
+  }
+}
+
+/** The theme a document React built rather than parsed has to be given. */
+export function applyStoredTheme(): void {
+  applyTheme(resolveTheme());
+}

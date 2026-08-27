@@ -10,6 +10,12 @@ const nextConfig = {
   // with no per-link exceptions: nothing here passes `prefetch`, so no link was
   // relying on the old behaviour of fetching everything ahead of the click.
   partialPrefetching: true,
+  // Every `href` in this app is a literal, and the design system forwards its
+  // `as` target's own props (packages/ui/src/atoms/Link/Link.tsx), so
+  // `<Link as={NextLink} href="/blog">` is checked against the route tree even
+  // though `@gate/ui` never imports next. Free here: the flag costs this app no
+  // casts at all. apps/visual-diff-ui declines it, and says there why.
+  typedRoutes: true,
   // The design system ships as uncompiled TypeScript (source-direct).
   transpilePackages: ['@gate/ui'],
   experimental: {

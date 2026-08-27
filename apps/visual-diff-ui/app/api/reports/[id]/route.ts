@@ -6,12 +6,11 @@ import { hasReport, removeReport } from '@/lib/jobs';
 import { ReportIdSchema } from '@/lib/job-contract';
 import { notFound } from '@/lib/refusals';
 
-interface Context {
-  params: Promise<{ id: string }>;
-}
-
 /** One report's validated `summary.json`. */
-export async function GET(_request: Request, { params }: Context): Promise<Response> {
+export async function GET(
+  _request: Request,
+  { params }: RouteContext<'/api/reports/[id]'>,
+): Promise<Response> {
   const { id } = await params;
   const { dir, isSample } = await resolveDataDir();
   const report = await readReport(dir, id);
@@ -52,7 +51,10 @@ export async function GET(_request: Request, { params }: Context): Promise<Respo
  * indistinguishable from removing something, and "deleted" over a report that
  * was never there is a worse answer than a miss.
  */
-export async function DELETE(_request: Request, { params }: Context): Promise<Response> {
+export async function DELETE(
+  _request: Request,
+  { params }: RouteContext<'/api/reports/[id]'>,
+): Promise<Response> {
   const { id } = await params;
   const gate = await guardMutation();
   if (gate instanceof Response) return gate;

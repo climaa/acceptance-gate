@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
-import { THEME_STORAGE_KEY, type Theme } from './theme';
+import { applyTheme, THEME_STORAGE_KEY, type Theme } from './theme';
 
 export interface ThemeToggleProps {
   className?: string;
@@ -10,22 +10,6 @@ export interface ThemeToggleProps {
    *  only name the button has; `aria-pressed` supplies the state. */
   label?: string;
 }
-
-/**
- * Light is the default `:root`, so light is the *absence* of the attribute —
- * writing `data-theme="light"` would select a `[data-theme='light']` block that
- * tokens.css deliberately does not have. Storage still spells both out: it has
- * to distinguish a chosen light from no choice at all.
- */
-const applyTheme = (theme: Theme) => {
-  const root = document.documentElement;
-
-  if (theme === 'dark') {
-    root.dataset.theme = theme;
-  } else {
-    delete root.dataset.theme;
-  }
-};
 
 /** Icon-only switch flipping `[data-theme='dark']` on `<html>`. */
 export function ThemeToggle({ className, label = 'Dark theme' }: ThemeToggleProps) {

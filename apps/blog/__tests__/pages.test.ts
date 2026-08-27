@@ -48,8 +48,19 @@ const hrefsIn = (html: string) =>
 
 const renderPage = (Page: () => ReactNode) => renderToStaticMarkup(createElement(Page));
 
+/**
+ * `searchParams` beside `params` because `PageProps<'/blog/[slug]'>` is the whole
+ * contract Next hands a page, not the half this one reads. The page itself never
+ * touches it: under `cacheComponents` reading it would open a dynamic hole in a
+ * route built to prerender.
+ */
 const postPage = async (slug: string): Promise<PostTemplateProps> =>
-  (await PostPage({ params: Promise.resolve({ slug }) })).props;
+  (
+    await PostPage({
+      params: Promise.resolve({ slug }),
+      searchParams: Promise.resolve({}),
+    })
+  ).props;
 
 const blogIndex = (): BlogIndexTemplateProps => BlogIndexPage().props;
 

@@ -33,3 +33,28 @@ export const NOT_FOUND_NOTE =
 /** The way back, on a page whose whole point is that the reader took a wrong
  *  turn. The shell's wordmark is not a link, so without this there is none. */
 export const NOT_FOUND_ACTION = 'Back to the console';
+
+/**
+ * What `app/error.tsx` and `app/global-error.tsx` say when a render throws.
+ *
+ * The console reaches this more readily than most apps do, and on purpose:
+ * `lib/data.ts` throws rather than returning null when a summary it was asked
+ * for is malformed, so schema drift in a written report surfaces as a failure
+ * instead of as an empty screen. This is where that lands.
+ *
+ * Distinct from the 404's copy because the two answer different questions. A
+ * miss says the report is gone; this says the report may well be there and the
+ * console could not read it — which is why the way on is the same page again
+ * rather than a link back to the index.
+ *
+ * NO `role="alert"` on the element that carries this. apps/e2e/pages/console.ts
+ * matches every console refusal with a strict
+ * `getByRole('main').getByRole('alert')`, and a second alert inside `main`
+ * fails that locator on every scenario that uses it.
+ */
+export const ERROR_TITLE = 'Something went wrong';
+
+export const ERROR_NOTE =
+  'This view could not be rendered. A report the console failed to read reads the same from here as one that was never written.';
+
+export const ERROR_ACTION = 'Try again';

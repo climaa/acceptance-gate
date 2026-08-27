@@ -1,10 +1,6 @@
 import * as fs from 'node:fs';
 import { resolveDataDir, resolveShotPath } from '@/lib/data';
 
-interface Context {
-  params: Promise<{ report: string; file: string }>;
-}
-
 const notFound = () => new Response('Not found', { status: 404 });
 
 /**
@@ -18,7 +14,10 @@ const notFound = () => new Response('Not found', { status: 404 });
  * Buffered rather than streamed: policy caps one committed shot at 512 KB, so
  * the whole file is smaller than the machinery to stream it.
  */
-export async function GET(_request: Request, { params }: Context): Promise<Response> {
+export async function GET(
+  _request: Request,
+  { params }: RouteContext<'/api/shots/[report]/[file]'>,
+): Promise<Response> {
   const { report, file } = await params;
   const { dir } = await resolveDataDir();
 

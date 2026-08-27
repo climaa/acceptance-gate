@@ -19,12 +19,14 @@ import { NOT_FOUND_ACTION, NOT_FOUND_NOTE, NOT_FOUND_TITLE } from '@/lib/site';
  * one: the sample-data notice resolves the data directory per request (see
  * app/layout.tsx), and every route in the app inherits that boundary.
  *
- * Note what this page CANNOT do. Rendered under `/report/[id]`'s `<Suspense>`,
- * `notFound()` fires after the shell has already streamed, so the response
- * carries `200` with this body inside it — the status is committed before the
- * miss is discovered. That is the cost of the static shell that page chose on
- * purpose, and it is why anything checking for a miss here has to match this
- * copy rather than the status code.
+ * The status on it is `proxy.ts`'s doing, not this page's. Rendered under
+ * `/report/[id]`'s `<Suspense>`, `notFound()` fires after the shell has already
+ * streamed, so the status is spent before the miss is discovered — the cost of
+ * the static shell that page chose on purpose. The proxy recognises an unknown
+ * report ahead of routing and rewrites here with a real `404`. It fails open by
+ * design, so a deployment shipped without the reports tree still answers `200`
+ * with this body; anything that must hold in both cases matches this copy
+ * rather than the status code.
  */
 
 export const metadata: Metadata = { title: NOT_FOUND_TITLE };
