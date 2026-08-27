@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import NextLink from 'next/link';
 import { preload } from 'react-dom';
 import { SiteFooter, SiteHeader } from '@gate/ui';
+import { Analytics } from '@vercel/analytics/next';
 import {
   SITE_COPYRIGHT,
   SITE_COPYRIGHT_YEAR,
@@ -112,6 +113,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           year={SITE_COPYRIGHT_YEAR}
           links={FOOTER_LINKS}
         />
+
+        {/* Production deployments only. The package's own detection keys off
+            NODE_ENV, which reads "production" on every preview build too — so
+            without this, each login-protected preview would report page views
+            into the same dataset as the live site. Decided at prerender rather
+            than in the browser: the shell is static under `cacheComponents`, so
+            a preview's HTML never names the script at all. */}
+        {process.env.VERCEL_ENV === 'production' && <Analytics />}
       </body>
     </html>
   );
