@@ -1,6 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
 import { defineBddConfig } from 'playwright-bdd';
 
+import { BLOG_DEV_URL } from './pages/blog-dev';
+
 /**
  * The LOCAL lane — deliberately not the acceptance suite.
  *
@@ -10,10 +12,12 @@ import { defineBddConfig } from 'playwright-bdd';
  * real `.visual-diff` tree the dev server on 3300 reads. Its requirements live
  * in `features/local/`, in the same Gherkin the acceptance lane uses.
  *
- * ⚠️ The one scenario here WRITES. The lane is one file, one scenario, and
- * a run of it launches a job in your tree, deletes your oldest capture set and
- * prunes one more. Nothing re-seeds afterwards. There is no read-only half left:
- * `report.feature` was the last of it and was withdrawn.
+ * ⚠️ Every scenario here WRITES, to two different trees of yours. The console
+ * flow launches a job, deletes your oldest capture set and prunes one more, and
+ * nothing re-seeds afterwards. The blog scenario creates a post file in
+ * `apps/blog/content/posts` and removes it again — it restores what it touched,
+ * which the console flow deliberately does not. There is no read-only scenario
+ * left: `report.feature` was the last of it and was withdrawn.
  *
  * The guards in `steps/local/fixtures.ts` stay anyway. `readOnly` aborts every
  * non-GET an untagged scenario makes and `mayWrite` refuses an untagged step
@@ -27,8 +31,15 @@ import { defineBddConfig } from 'playwright-bdd';
  * chose. The journeys that need named facts — the review loop, the comparison
  * modal, the accept gate's refusals — stay in the acceptance lane.
  *
- * The dev server is reused if `pnpm dev` already has it up, and booted (and torn
- * down) here if not.
+ * The blog joined the lane for the same reason the console is in it: there is a
+ * claim about `next dev` that no build can make. `apps/blog/proxy.ts` decides
+ * whether an address exists by reading `content/posts`, and it caches that read
+ * in production, where the content cannot move. In development it must not — a
+ * post written while the server runs has to be reachable at once — and the
+ * acceptance lane never sees a dev server, so nothing there can say so.
+ *
+ * Both dev servers are reused if `pnpm dev` already has them up, and booted (and
+ * torn down) here if not.
  */
 
 // A second, isolated BDD config. `outputDir` is explicit because the default is
@@ -76,13 +87,14 @@ export default defineConfig({
   retries: 0,
   // One worker, and no retry above.
   //
-  // The lane is one `@mode:serial` file today, so its scenarios would run in
-  // order regardless. This is about the second file: Playwright runs separate
-  // files in parallel by default, and anything added beside a flow that deletes
-  // capture sets would be reading a tree being rewritten underneath it — a race
-  // that passes most of the time, which is the worst kind. The acceptance lane
-  // answered the same problem by giving `@mutating` a project of its own; a lane
-  // with one project answers it here.
+  // There are two files now, and Playwright runs separate files in parallel by
+  // default — so this line is load-bearing rather than incidental. Anything
+  // running beside a flow that deletes capture sets would be reading a tree
+  // being rewritten underneath it, and the blog scenario adds and removes a post
+  // that the console's own Storybook capture would otherwise see appear
+  // mid-run: races that pass most of the time, which is the worst kind. The
+  // acceptance lane answered the same problem by giving `@mutating` a project of
+  // its own; a lane with one project answers it here.
   //
   // A retry is worse here than useless: nothing re-seeds your `.visual-diff`, so
   // the second attempt would run against the tree the first one already pruned.
@@ -95,10 +107,18 @@ export default defineConfig({
   // that do differ — the comparison sheet below 768px — belong to scenarios this
   // lane deliberately does not carry.
   projects: [{ name: 'desktop', use: { ...devices['Desktop Chrome'] } }],
-  webServer: {
-    command: 'pnpm --filter @gate/visual-diff-ui dev',
-    url: LOCAL_URL,
-    reuseExistingServer: true,
-    timeout: 120_000,
-  },
+  webServer: [
+    {
+      command: 'pnpm --filter @gate/visual-diff-ui dev',
+      url: LOCAL_URL,
+      reuseExistingServer: true,
+      timeout: 120_000,
+    },
+    {
+      command: 'pnpm --filter @gate/blog dev',
+      url: BLOG_DEV_URL,
+      reuseExistingServer: true,
+      timeout: 120_000,
+    },
+  ],
 });

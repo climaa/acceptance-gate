@@ -44,4 +44,11 @@ apps/visual-diff-ui/next-env.d.ts
 # each e2e run. Gitignored via apps/e2e/.gitignore, but Prettier does not read
 # .gitignore — and once the format glob learned .js, a local run left generated
 # files for `format:check` to fail on.
+#
+# Both lanes, because both generate. The local lane's directory was missed when
+# the acceptance one was added: it never fires in CI — `playwright.local.config.ts`
+# refuses under `CI`, so nothing there ever writes it — which is exactly why it
+# went unnoticed, and why it failed `format:check` only on the machine of whoever
+# had last run `pnpm test:local`.
 apps/e2e/.features-gen/
+apps/e2e/.features-gen-local/

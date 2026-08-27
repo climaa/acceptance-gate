@@ -51,5 +51,11 @@ Thumbs.db
 # apps/blog/content/posts, which is a natural vault root for writing drafts.
 .obsidian/
 
+# The post `features/local/blog-content.feature` creates and removes again. Its
+# fixture unlinks it in teardown too, so this only catches the run that crashed
+# between the two — but that run would otherwise leave a fake post in the
+# directory the blog serves, one `git add -A` away from being published.
+apps/blog/content/posts/zz-local-lane-probe.mdx
+
 # Turborepo
 .turbo
