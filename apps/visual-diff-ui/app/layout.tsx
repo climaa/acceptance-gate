@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import NextLink from 'next/link';
 import { Suspense } from 'react';
 import { Badge, SiteHeader } from '@gate/ui';
+import { Analytics } from '@vercel/analytics/next';
 import { resolveDataDir } from '@/lib/data';
 import {
   APP_DESCRIPTION,
@@ -87,6 +88,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
           {children}
         </main>
+
+        {/* Production deployments only. The package's own detection keys off
+            NODE_ENV, which reads "production" on every preview build too — so
+            without this, each login-protected preview would report the reviewer
+            clicking through it into the same dataset as the live console.
+
+            Same gate apps/blog uses, and the reasoning it rests on is measured
+            once for both in Docs/DevOps/Web Analytics rather than restated
+            here. The short of it: what the gate withholds is the component, not
+            a <script> — no build's HTML carries the beacon's tag, because the
+            package appends it in an effect. Read the network log, not the
+            markup, when checking whether this works. */}
+        {process.env.VERCEL_ENV === 'production' && <Analytics />}
       </body>
     </html>
   );
