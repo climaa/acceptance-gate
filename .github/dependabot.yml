@@ -2,7 +2,7 @@
 # gate as feature work. Minor+patch grouped weekly (a pnpm monorepo without
 # grouping is a PR-per-package noise machine); majors arrive individually.
 #
-# The ignore list has two kinds of entry, and the difference matters when you
+# The ignore list has three kinds of entry, and the difference matters when you
 # come to remove one.
 #
 # ALL UPDATES IGNORED — a bump here is a hand-authored issue, never a bot PR,
@@ -41,7 +41,7 @@
 # broken. The version is pinned to something else in this repo, so the bump is
 # not wrong, it is early:
 # - @types/node: engines pins node to >=22.14.0 <23.0.0 and .nvmrc is 22.14.0,
-#   which is what all four CI jobs install. Types must describe the runtime
+#   which is what every CI job installs. Types must describe the runtime
 #   that actually runs the code; on @types/node 26 tsc green-lights Node 26
 #   APIs that throw on 22, and typecheck goes green precisely because it has
 #   been told to describe a different runtime — so a red gate is not what

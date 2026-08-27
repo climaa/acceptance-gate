@@ -117,9 +117,9 @@ feature branches and merges with `gh pr merge --squash --auto`, never to `main` 
 Write this down while calm rather than during the incident.
 
 `bypass_actors: []` plus a required PR means that **if `gate` itself breaks, the fix must
-go through a PR that must pass the broken gate.** Classic protection with
-`enforce_admins: true` has the same property today, so this is not new — but it becomes
-committed and load-bearing.
+go through a PR that must pass the broken gate.** That property is inherited, not
+introduced: the classic protection this replaced had it too, under `enforce_admins: true`.
+What changed is that it is now committed and load-bearing.
 
 The recovery path is a UI action, by design: Settings → Rules → the `main` ruleset → set
 enforcement to **Disabled**, land the fix, set it back to **Active**. Expect a two-minute

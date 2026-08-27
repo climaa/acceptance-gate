@@ -19,8 +19,19 @@ name: dependabot-auto-merge
 # auth error months from now. Same fine-grained, this-repo-only discipline as
 # .sandcastle/.env.example — never a classic repo-scope token.
 #
-# This does not weaken the gate: enforce_admins is on, so even an admin PAT
-# cannot bypass branch protection, and `--auto` still waits for `gate`.
+# This does not weaken the gate: main's ruleset sets `bypass_actors: []` and a
+# fine-grained PAT acts as its user, so this token gets no bypass and `--auto`
+# still waits for `gate`. Rulesets have no `enforce_admins` toggle — non-bypass
+# is the default and bypass is opt-in per actor, which is what the empty list
+# means. Classic branch protection was removed in #232, so the ruleset is the
+# sole enforcement on main.
+#
+# What an empty bypass list does NOT buy is safety from a token that deletes
+# the ruleset outright — one `gh api -X DELETE` call, as TheGate.mdx spells
+# out, because deleting the rule is the only lever a ruleset offers. That is a
+# question of scope, not of bypass: this PAT must never carry `Administration`.
+# Widen it there and every sentence above stays true while the gate becomes
+# removable by the thing it gates.
 #
 # `preflight` and `auto-merge` are deliberately separate jobs, gated
 # differently. `github.event.pull_request.user.login` (the PR author) never
