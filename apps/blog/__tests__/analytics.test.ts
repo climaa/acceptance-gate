@@ -17,8 +17,8 @@ import RootLayout from '../app/layout';
  * for it, and these assertions say only which branch the shell took.
  */
 
-// Hoisted above the imports above, so it cannot close over this file's own
-// `createElement` — the factory has to reach for its own.
+// Hoisted above this file's own imports, so the factory cannot close over the
+// `createElement` bound at the top — it has to reach for its own.
 vi.mock('@vercel/analytics/next', async () => {
   const { createElement: h } = await import('react');
 
