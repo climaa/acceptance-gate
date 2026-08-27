@@ -32,7 +32,7 @@ export { Tag, type TagProps } from './Tag/Tag';
 export { ThemeToggle, type ThemeToggleProps } from './ThemeToggle/ThemeToggle';
 // Not through ThemeToggle.tsx: re-exporting a value from a `'use client'` module
 // hands a server component a client reference rather than the string itself.
-export { THEME_STORAGE_KEY, type Theme } from './ThemeToggle/theme';
+export { applyTheme, THEME_STORAGE_KEY, type Theme } from './ThemeToggle/theme';
 export { Thumbnail, type ThumbnailProps } from './Thumbnail/Thumbnail';
 export {
   TriStateCheckbox,

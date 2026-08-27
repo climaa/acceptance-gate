@@ -72,12 +72,19 @@ describe('app/global-error.tsx', () => {
     expect(html).toContain(`<title>${ERROR_TITLE}</title>`);
   });
 
-  // Without this the one surface in the site whose theme is decided by the
-  // reader's OS rather than by `[data-theme]` would be this page.
-  it('re-runs the theme script the layout would have run', () => {
+  /**
+   * It must NOT carry a copy of the layout's inline script. React builds this
+   * document rather than parsing it, so a `<script>` here never executes — and
+   * one that never executes reads, to the next person, as a theme that is
+   * handled. `applyStoredTheme` on mount is what actually carries it; the rule
+   * itself is covered in theme.test.ts, and the console's jsdom suite asserts
+   * the attribute a mounted boundary leaves behind.
+   */
+  it('ships no inline theme script, which could not run here', () => {
     const html = renderGlobal(vi.fn());
 
-    expect(html).toContain(THEME_SCRIPT);
+    expect(html).not.toContain(THEME_SCRIPT);
+    expect(html).not.toContain('<script');
   });
 
   it('prints neither the thrown message nor the digest', () => {

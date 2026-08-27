@@ -13,3 +13,28 @@ export const THEME_STORAGE_KEY = 'gate-theme';
 
 /** What `localStorage` holds. `<html>` carries `dark` or nothing at all. */
 export type Theme = 'light' | 'dark';
+
+/**
+ * The write half of the theme, in one place because three callers need it:
+ * `ThemeToggle`, and each app's `global-error.tsx` — which has to apply the
+ * theme itself, since React builds that document rather than parsing it and the
+ * pre-hydration script the layout uses never runs there.
+ *
+ * Light is the default `:root`, so light is the ABSENCE of the attribute:
+ * writing `data-theme="light"` would select a `[data-theme='light']` block
+ * tokens.css deliberately does not have. Storage still spells both out — it has
+ * to tell a chosen light from no choice at all.
+ *
+ * Here rather than in `ThemeToggle.tsx` for the same reason `THEME_STORAGE_KEY`
+ * is: that module is `'use client'`, and its exports reach a Server Component as
+ * client references rather than as the value.
+ */
+export const applyTheme = (theme: Theme) => {
+  const root = document.documentElement;
+
+  if (theme === 'dark') {
+    root.dataset.theme = theme;
+  } else {
+    delete root.dataset.theme;
+  }
+};

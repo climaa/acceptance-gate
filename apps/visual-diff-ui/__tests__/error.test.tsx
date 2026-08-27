@@ -6,6 +6,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import ErrorBoundary from '../app/error';
 import GlobalError from '../app/global-error';
+import { THEME_STORAGE_KEY } from '@gate/ui';
 import { ERROR_ACTION, ERROR_NOTE, ERROR_TITLE } from '../lib/site';
 import { THEME_SCRIPT } from '../lib/theme';
 
@@ -23,7 +24,11 @@ import { THEME_SCRIPT } from '../lib/theme';
  * asserts its own.
  */
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  localStorage.clear();
+  delete document.documentElement.dataset.theme;
+});
 
 const thrown = Object.assign(new Error('Unexpected token < in JSON at position 0'), {
   digest: '3310027745',
@@ -95,14 +100,33 @@ describe('app/global-error.tsx', () => {
   });
 
   /**
-   * Without this the console would have one surface whose theme comes from the
-   * capture machine's OS rather than from the `[data-theme]` attribute the
-   * toggle writes — the split CODING_STANDARDS calls absolute for this app.
+   * It must NOT carry a copy of the layout's inline script: React builds this
+   * document rather than parsing it, so a `<script>` here never executes, and
+   * one that never executes reads as a theme that is handled.
    */
-  it('re-runs the theme script the layout would have run', () => {
+  it('ships no inline theme script, which could not run here', () => {
     const html = renderGlobal();
 
-    expect(html).toContain(THEME_SCRIPT);
+    expect(html).not.toContain(THEME_SCRIPT);
+    expect(html).not.toContain('<script');
+  });
+
+  /**
+   * The claim the markup assertion above cannot make: mounted, the boundary
+   * actually leaves `[data-theme]` on `<html>` for a reader who chose dark.
+   * This is the case that was silently false before — a dark reader was served
+   * the light palette on every root-layout error.
+   */
+  it('gives the document the theme the reader chose', () => {
+    localStorage.setItem(THEME_STORAGE_KEY, 'dark');
+
+    render(<GlobalError error={thrown} retry={vi.fn()} />, {
+      // `<html>` cannot nest inside jsdom's own; the boundary's effect is what
+      // is under test here, not where React parked its markup.
+      container: document.createElement('div'),
+    });
+
+    expect(document.documentElement.dataset.theme).toBe('dark');
   });
 
   it('draws no alert, and prints neither the thrown message nor the digest', () => {
