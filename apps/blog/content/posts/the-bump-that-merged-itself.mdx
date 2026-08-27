@@ -1,0 +1,199 @@
+---
+title: 'The bump that merged itself, and the ten that didn''t'
+description: 'A dependency bot opened sixteen pull requests against this repo. Three merged themselves at two in the morning. What makes that defensible is not the pipeline that said yes — it is what happened to the ten that got a no.'
+date: '2026-08-27'
+tags: ['ci', 'dependencies', 'automation', 'quality']
+draft: true
+---
+
+At 02:20:00 on a Thursday, a bot opened a pull request bumping five packages. At 02:22:03 it
+was on `main`. Two minutes and three seconds, no human awake, no review, five dependencies
+into the branch every deploy comes from.
+
+That should read as reckless. The interesting question is why it is not, and the answer is
+not in that pull request at all. It is in the other ten.
+
+## The record, in full
+
+Dependabot has opened **sixteen** pull requests here. Three died to something unrelated: I
+rewrote `main`'s history to purge a work-account identifier and their bases stopped existing.
+That leaves **thirteen real encounters with the gate**.
+
+Of those thirteen, the machine resolved three:
+
+| PR | Packages | Created | Merged | Window |
+| --- | --- | --- | --- | --- |
+| [#314](https://github.com/climaa/acceptance-gate/pull/314) | 7 | 02:19:25 | 02:22:13 | 2m 48s |
+| [#327](https://github.com/climaa/acceptance-gate/pull/327) | 4 | 18:04:59 | 18:07:34 | 2m 35s |
+| [#390](https://github.com/climaa/acceptance-gate/pull/390) | 5 | 02:20:00 | 02:22:03 | 2m 03s |
+
+Three out of thirteen. Before that number reads as a failure, note what the three have in
+common: they are the same pull request. All three are the weekly `minor-and-patch` group,
+arriving with a different payload each time. Every individual bump — which in this repo means
+every major — went through a person.
+
+**The automation did not make the decisions. It made ten of them cheap enough to be worth
+making properly.**
+
+## The third actor
+
+I have written before about [the two paths to `main` and what protects them](/blog/the-guardrail-you-can-switch-off):
+me, reaching for a shortcut on a bad afternoon, and an autonomous agent whose surface was
+narrowed in advance so the shortcut was never available. The conclusion there was that rules
+bind only until the person who wrote them deletes them, and the durable control is a
+capability never granted.
+
+Dependabot is neither of those actors, and the model has nothing to say about it.
+
+It is not me, so narrowing my own habits does nothing. It is not the agent, whose token I
+scoped myself and whose instructions I wrote. It is a third party pushing to a branch in my
+repository, on a schedule I do not control, carrying a lockfile diff I did not author and
+will not read line by line. Nobody is going to review 301 changed lines of `pnpm-lock.yaml`
+at two in the morning, and pretending otherwise is how supply-chain assumptions get made by
+default rather than on purpose.
+
+So the question is not whether I trust the bot. It is what a `yes` has to clear before it
+means anything.
+
+## What the yes waits for
+
+`gh pr merge --auto --squash`. The flag is the whole mechanism: it does not merge, it parks
+the request until the required check reports green, and the required check is a single
+aggregator named `gate` that fails unless every job it depends on succeeded. That
+indirection, and why a skipped check has to count as red, is [documented next to the diagram
+of the two paths](https://acceptance-gate-storybook.vercel.app/index.html?path=/docs/docs-devops-the-gate--docs).
+
+For #390 the legs were lint, typecheck, build, test, format, a cognitive-complexity ceiling,
+the sandcastle suite and the full end-to-end run. All green, `gate` closed at 02:21:58, and
+the merge fired five seconds later.
+
+One honest caveat, because it matters more than the list does: passing that is evidence about
+compilation, types, behaviour and complexity. It is not evidence that the bump is a good idea.
+Those are different claims, and the rest of this post is about the gap between them.
+
+## The ten that did not
+
+Here is the part that never gets published, because publishing refusals requires having
+measured them.
+
+[#221](https://github.com/climaa/acceptance-gate/pull/221) offered ESLint 10. It fails because
+`eslint-plugin-react` and `eslint-plugin-jsx-a11y` both cap their peer ranges at ESLint 9 and
+still call `context.getFilename()`, an API ESLint 10 removed.
+[#223](https://github.com/climaa/acceptance-gate/pull/223) offered TypeScript 7 and died on
+`TS5102: Option 'baseUrl' has been removed`, with `typescript-eslint` refusing TS 7 outright
+for good measure. Both are blocked upstream. No diff makes either work.
+
+Closing them would have been the obvious move, and the wrong one — Dependabot would reopen
+both the following week, forever. Each instead became an entry in
+[`dependabot.yml`](https://github.com/climaa/acceptance-gate/blob/main/.github/dependabot.yml)
+carrying the issue number, the date it was last re-verified against a real failing run, and
+the condition that takes it back out. The commands that decide when an entry expires live in
+the issue, not the config, so removing the entry without running them is a step somebody has
+to take deliberately.
+
+That file now distinguishes three kinds of refusal, and the distinction is the useful part:
+
+| Kind | Means | Comes out when |
+| --- | --- | --- |
+| Blanket | The bump is a hand-authored issue, never a bot PR | Someone decides to do the work |
+| Majors, blocked upstream | No diff makes it work | The issue's re-check commands pass |
+| Majors, pinned to this repo | Not wrong — early. It tracks a value here | The same commit that moves that value |
+
+The third category is the one I did not anticipate needing, and it is where the interesting
+failure lives.
+
+## The one no layer could have caught
+
+[#315](https://github.com/climaa/acceptance-gate/pull/315) offered `@types/node` 22 to 26.
+Every check that matters went green. `typecheck` in particular: five packages, clean.
+
+That green is the finding, not the reassurance.
+
+`engines` pins Node to `>=22.14.0 <23.0.0`, `.nvmrc` says `22.14.0`, and every CI job installs
+from `.nvmrc`. Types describe a runtime. On `@types/node` 26, `tsc` accepts Node 26 APIs that
+throw on the Node 22 that actually runs the code. **The typecheck leg passed precisely because
+it had been pointed at a different runtime than the one under test.**
+
+I have asked a version of this question before. [The migration that passed CI](/blog/the-migration-that-passed-ci)
+ends on it: if every colour in the app shifted one scheme sideways tomorrow, which test would
+fail? That post has an answer — none of the compiled layers, and the visual one. The rubric is
+*did not catch it* against *caught it*, and the lesson is that a layer was missing.
+
+Ask the same question of this bump and the answer is different in kind. Not "no test failed,
+so build a better layer". There is no layer to build. A type-level assertion cannot detect that
+it has been handed the wrong runtime description, because the description is the thing it
+reasons from. You cannot write a test that catches its own premise being swapped.
+
+So the fix was not a test. It was a policy entry, scoped to majors so minor and patch keep
+flowing, and `22.20.1` is where the 22 line ends anyway — DefinitelyTyped published it last on
+2026-08-07 — which makes it a stable pin rather than rot. It comes out in the same commit that
+moves `.nvmrc` off 22. Never before it, and never on its own.
+
+A gate that only ever produces green or red cannot express that. A written refusal can.
+
+## When the gate is the thing that is wrong
+
+Three times the failing component was not the bump. It was the automation.
+
+**The secret in the wrong store.** On
+[#220](https://github.com/climaa/acceptance-gate/pull/220) every leg passed except `auto-merge`.
+The merge runs on a personal token rather than `GITHUB_TOKEN`, because a `GITHUB_TOKEN` merge
+does not trigger further workflows and the push-to-`main` run that seeds the shared build cache
+was being skipped on every bot merge. But that token has to live in the **Dependabot** secret
+store, not Actions. Put it in the wrong one and it looks correct in the UI, arrives as an empty
+string, and `gh` fails with an auth error that never mentions the word "store".
+
+The fix was not to move the secret quietly. It was a `preflight` job whose only purpose is to
+fail with the answer in the log:
+
+```text
+::error::GH_TOKEN is empty, so auto-merge cannot authenticate.
+::error::Add it under Settings > Secrets and variables > Dependabot.
+::error::A secret of the same name under Actions does NOT reach Dependabot-triggered runs.
+```
+
+**The guard aimed at the wrong sample.** That `preflight` job gates on the pull request's
+author, never on the actor who triggered the run. Gating it on the actor as well seemed
+tidier and made it silent at the one moment it was needed: pressing "Update branch" on a bot
+PR flips the actor to a human, the job skips, and the checks list reads "all passed, 1
+skipped" instead of naming the missing secret. That is not hypothetical — #218, #222 and #225
+each show `auto-merge` skipped, and each was merged by hand minutes after somebody pressed
+that button.
+
+**The check that was green having done nothing.** On #219 and #224 the `auto-merge` check
+reports pass. Neither was merged by it. Both are majors, the merge step is conditional on the
+update type, and the job log ends without ever opening the `Run gh pr merge` group. The job
+correctly declined — and reported the same colour it reports when it succeeds. From the checks
+list you cannot tell "merged it" from "looked at it and refused".
+
+All three are one defect. A check can be green for reasons that have nothing to do with what a
+reader assumes it is asserting. The clearest instance in this repo is not in CI at all — it is
+an accessibility scenario that scanned "the first article" on the blog index:
+
+> the newest published post happened to be the only one carrying no code fences, so the
+> post-page scenario stayed green for a year of publishing while never once putting a
+> highlighted token in front of axe.
+
+Same shape, different domain, a year apart. That is what makes it a rule rather than an
+anecdote: **a check pointed at the wrong sample passes for reasons unrelated to its claim,
+and it passes quietly.**
+
+## What the two minutes actually buy
+
+Not speed. Nobody needed those dependencies at 02:22 rather than over coffee, and the whole
+exercise saves an afternoon a year at best.
+
+What it buys is that a dependency bump is **one class of decision instead of thirteen
+conversations**. Did the gate pass? If yes, it lands and I read about it later. If no, the
+refusal gets written down somewhere the next bump will meet it, and I never have that
+conversation again.
+
+That second half is the load-bearing one, and it is the half that gets left out of posts about
+auto-merge. A gate that only knows how to say yes is a rubber stamp with extra steps. Thirteen
+encounters produced ten refusals here, and not one of them has had to be re-litigated — not
+because the tooling is clever, but because each `no` cost the twenty minutes it takes to write
+down what failed, what would have to change, and who decides.
+
+The confidence to leave it running unattended does not come from the three that merged
+themselves. It comes from knowing exactly what the other ten cost, because the answer is
+written in a file I can read.
