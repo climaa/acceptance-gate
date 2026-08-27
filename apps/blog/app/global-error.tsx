@@ -6,27 +6,21 @@ import { THEME_SCRIPT } from '@/lib/theme';
 import './globals.css';
 
 /**
- * The boundary of last resort: a throw in the root layout itself, which
- * `app/error.tsx` sits inside and therefore cannot catch.
+ * A throw in the root layout, which `app/error.tsx` renders inside and so
+ * cannot catch.
  *
- * This file REPLACES the root layout rather than rendering inside it, so
- * everything the layout would have supplied has to be restated here — the
- * document, the stylesheet, and the theme. That is why `globals.css` is
- * imported again and why `THEME_SCRIPT` runs again: without the script this
- * page would be the one surface in the site whose theme is decided by the
- * reader's OS rather than by the `[data-theme]` attribute the toggle writes,
- * which is the split CODING_STANDARDS exists to prevent.
+ * This file replaces that layout instead of rendering inside it, which is why
+ * the document, `globals.css` and `THEME_SCRIPT` are all restated below.
+ * `app/layout.tsx` is where each of those is explained, and `app/error.tsx` is
+ * where `retry` and the unread `error` are — neither is repeated here.
  *
- * `<title>` as an element, not a `metadata` export: metadata is unsupported in
- * a Client Component, and an error boundary has to be one. React hoists it.
- *
- * No header and no footer. Both are the layout's, and a layout that just threw
- * is not something to re-run inside its own fallback.
+ * What is only true here: `<title>` is an element because a `metadata` export
+ * is unsupported in a Client Component, and an error boundary has to be one.
+ * And no header or footer, because both belong to the layout that just threw.
  */
 export default function GlobalError({ retry }: { error: Error; retry: () => void }) {
   return (
-    // Matches the root layout: the script below sets `data-theme` before React
-    // sees the document, so server markup and hydrated DOM disagree by design.
+    // Disagreeing markup is the point — see app/layout.tsx.
     <html lang="en" suppressHydrationWarning>
       <head>
         <title>{ERROR_TITLE}</title>

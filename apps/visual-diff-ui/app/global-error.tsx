@@ -6,26 +6,25 @@ import { THEME_SCRIPT } from '@/lib/theme';
 import './globals.css';
 
 /**
- * The boundary of last resort: a throw in the root layout, which `app/error.tsx`
- * renders inside and therefore cannot catch. The layout has a real way to get
- * there — `SampleNotice` awaits `resolveDataDir()`, which reads the filesystem.
+ * A throw in the root layout, which `app/error.tsx` renders inside and so
+ * cannot catch. This one has a real way to get there: `SampleNotice` awaits
+ * `resolveDataDir()`, which reads the filesystem.
  *
- * This file REPLACES the root layout, so what the layout supplies has to be
- * restated: the document, the stylesheet, and the theme. `THEME_SCRIPT` runs
- * again because without it this page would be the one surface in the app whose
- * theme comes from the reader's OS instead of the `[data-theme]` attribute the
- * toggle writes — and a capture pipeline that reads a theme it did not choose
- * is the exact failure CODING_STANDARDS forbids.
+ * Replacing that layout is why the document, `globals.css` and `THEME_SCRIPT`
+ * are restated below; `app/layout.tsx` explains each, and `app/error.tsx`
+ * explains `retry` and the unread `error`.
  *
- * `<title>` as an element, not a `metadata` export: metadata is unsupported in
- * a Client Component, and an error boundary has to be one.
+ * The script is this app's own, and that is the part worth knowing: unlike the
+ * blog's, it never consults `prefers-color-scheme`, because a capture needs a
+ * theme it chose rather than one the capture machine was set to. lib/theme.ts
+ * argues both halves.
  *
- * No `SiteHeader`. It is the layout's, and the layout is what just threw.
+ * `<title>` is an element because a `metadata` export is unsupported in a
+ * Client Component. No `SiteHeader`: it belongs to the layout that just threw.
  */
 export default function GlobalError({ retry }: { error: Error; retry: () => void }) {
   return (
-    // Matches the root layout: the script below sets `data-theme` before React
-    // sees the document, so server markup and hydrated DOM disagree by design.
+    // Disagreeing markup is the point — see app/layout.tsx.
     <html lang="en" suppressHydrationWarning>
       <head>
         <title>{ERROR_TITLE}</title>
