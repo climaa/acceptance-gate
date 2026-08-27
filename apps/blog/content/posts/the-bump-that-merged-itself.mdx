@@ -1,0 +1,268 @@
+---
+title: 'The bump that merged itself, and the ten that did not'
+description: 'A dependency bot opened sixteen pull requests against this repo. Three merged themselves unattended. What makes that defensible is not the pipeline that said yes, but the three refusals that had to be written down first.'
+date: '2026-08-27'
+tags: ['ci', 'automation', 'quality']
+draft: false
+---
+
+At 02:20:00 UTC on a Thursday, a bot opened a pull request bumping five packages. At
+02:22:03 it was on `main`. Two minutes and three seconds, nobody awake, no review, five
+dependencies into the branch every deploy comes from.
+
+That should read as reckless. The interesting question is why it is not, and the answer is
+not in that pull request. It is in the other ten.
+
+Some orientation first, because the argument depends on it. This is a pnpm monorepo that
+publishes a blog, a Storybook and a screenshot differ, and every route to `main` runs
+through one required check. It is small, it is public, and I am the only person in it.
+
+## The record, in full
+
+Dependabot has opened **sixteen** pull requests here. Three died to something unrelated: I
+rewrote `main`'s history to purge [an identifier that did not belong in
+it](/blog/the-guardrail-you-can-switch-off), and their bases stopped existing. That leaves
+thirteen real encounters with the merge gate.
+
+Three of the thirteen merged themselves:
+
+| PR | Packages | Created | Merged | Window |
+| --- | --- | --- | --- | --- |
+| [#314](https://github.com/climaa/acceptance-gate/pull/314) | 7 | 02:19:25 | 02:22:13 | 2m 48s |
+| [#327](https://github.com/climaa/acceptance-gate/pull/327) | 4 | 18:04:59 | 18:07:34 | 2m 35s |
+| [#390](https://github.com/climaa/acceptance-gate/pull/390) | 5 | 02:20:00 | 02:22:03 | 2m 03s |
+
+Before three out of thirteen reads as a failure, note what the three have in common: they
+are the same pull request. All three are Dependabot's grouped update, one PR carrying every
+minor and patch bump at once, because a pnpm monorepo without grouping is a
+PR-per-package noise machine. Everything that arrives individually is a major.
+
+The other ten did not merge themselves, and they did not all get a no either:
+
+- **Five landed by hand** ([#218](https://github.com/climaa/acceptance-gate/pull/218),
+  [#219](https://github.com/climaa/acceptance-gate/pull/219),
+  [#222](https://github.com/climaa/acceptance-gate/pull/222),
+  [#224](https://github.com/climaa/acceptance-gate/pull/224),
+  [#225](https://github.com/climaa/acceptance-gate/pull/225)) — majors I read and merged
+  on a green gate.
+- **One was right and needed work** ([#316](https://github.com/climaa/acceptance-gate/pull/316)).
+- **One the bot closed itself** ([#220](https://github.com/climaa/acceptance-gate/pull/220)),
+  superseded by a later group.
+- **Three produced a written refusal** ([#221](https://github.com/climaa/acceptance-gate/pull/221),
+  [#223](https://github.com/climaa/acceptance-gate/pull/223),
+  [#315](https://github.com/climaa/acceptance-gate/pull/315)).
+
+Three refusals, against the three that merged themselves. That symmetry is a coincidence of
+this sample and not a finding, but the second three is the one worth publishing, and it
+covers more than three pull requests: each one is an entire dependency family the bot is no
+longer permitted to propose.
+
+## The third actor
+
+I have written before about [the two paths to `main` and what protects
+them](/blog/the-guardrail-you-can-switch-off): me, reaching for a shortcut on a bad
+afternoon, and an autonomous agent whose surface was narrowed in advance so the shortcut was
+never available. The conclusion there was that rules bind only until the person who wrote
+them deletes them, and the durable control is a capability never granted.
+
+I expected that model to break on a dependency bot. It does not. It generalizes, and the
+generalization is less comfortable than I would like.
+
+Dependabot is not me, so narrowing my own habits does nothing. It is not the agent, whose
+token I scoped myself and whose instructions I wrote. It is a third party pushing to a
+branch in my repository, on a schedule I do not control, carrying a lockfile diff I did not
+author and will not read line by line. Nobody reviews 301 changed lines of `pnpm-lock.yaml`
+at two in the morning.
+
+The only control I have over it is a list of things it is not allowed to propose. That is a
+capability withheld, exactly as the earlier post argues — and it is also four lines of YAML
+I can delete on a bad afternoon. Same seatbelt, one layer out.
+
+## What the yes waits for
+
+`gh pr merge --auto --squash` is the mechanism, and the flag is only half of it. `--auto`
+parks the request until the branch ruleset's required check goes green; without a ruleset
+making `gate` required, the same command merges on the spot with nothing checked. What
+`gate` is, and why a skipped job has to count as red, is [documented next to the diagram of
+what blocks a
+merge](https://acceptance-gate-storybook.vercel.app/index.html?path=/docs/docs-devops-the-gate--docs).
+
+Two honest caveats, because they matter more than the job list does.
+
+The first is what a green gate certifies. Passing it is evidence about compilation, types,
+behavior and complexity. It is not evidence that the bump is a good idea, and it is not
+evidence about those 301 lockfile lines either: a pipeline that runs the code is not a
+pipeline that audited it. Nothing here would notice a dependency that behaves correctly
+under test and badly in production. What actually constrains that is `--frozen-lockfile` and
+a diff that stays readable after the fact, not the eight jobs.
+
+The second is that `gate` does not wait for everything. On #390 it closed at 02:21:58 and
+the merge fired five seconds later — while `visual-diff` was still capturing, finishing at
+02:22:36, thirty-three seconds after the bump was already on `main`. That is deliberate: the
+screenshot layer [posts a report and never blocks a
+merge](/blog/visual-regression-with-agents), because a baseline approval nobody has to read
+is not a safety net. It does mean the merge condition is narrower than the checks list
+makes it look.
+
+## The ten that did not
+
+The refusals are the half nobody publishes, and the reason is that publishing them means
+having kept a record.
+
+[#221](https://github.com/climaa/acceptance-gate/pull/221) offered ESLint 10. It fails
+because `eslint-plugin-react` and `eslint-plugin-jsx-a11y` both cap their peer ranges at
+ESLint 9 and still call `context.getFilename()`, an API ESLint 10 removed.
+[#223](https://github.com/climaa/acceptance-gate/pull/223) offered TypeScript 7 and died on
+`TS5102: Option 'baseUrl' has been removed`, with `typescript-eslint` refusing TS 7 outright
+for good measure. Both are blocked upstream. No diff makes either work.
+
+Closing them would have been the obvious move, and the wrong one — Dependabot reopens both
+the following week, forever. Each became an entry in
+[`dependabot.yml`](https://github.com/climaa/acceptance-gate/blob/main/.github/dependabot.yml)
+pointing at an issue that carries the failing stack frame and the commands that decide when
+the entry comes out: [#68](https://github.com/climaa/acceptance-gate/issues/68) for ESLint,
+[#47](https://github.com/climaa/acceptance-gate/issues/47) for TypeScript. The commands live
+in the issue rather than the config on purpose, so removing an entry without running them is
+a step somebody has to take deliberately.
+
+That file distinguishes three kinds of refusal, and the distinction is the useful part:
+
+| Kind | Means | Comes out when |
+| --- | --- | --- |
+| Blanket | The bump is hand-authored work, never a bot PR | Someone decides to do it |
+| Majors, blocked upstream | No diff makes it work | The issue's re-check commands pass |
+| Majors, pinned to this repo | Not wrong — early. It tracks a value here | The same commit that moves that value |
+
+Playwright is the clearest blanket entry: a bump has to move the container image, the
+policy-sync test and a mass re-baseline together, so it is a piece of work with an issue
+number, not a version bump. The full taxonomy is written up in [Dependency
+Bumps](https://acceptance-gate-storybook.vercel.app/index.html?path=/docs/docs-devops-dependency-bumps--docs).
+
+## The one the gate did catch
+
+[#316](https://github.com/climaa/acceptance-gate/pull/316) bumped Vite 7 to 8, and `test`
+went red: eight suites in the blog, two in the differ UI, every one reported as invalid JS
+syntax on files that are fine.
+
+The bump was correct. What broke was its silent half. Vite 8 replaced esbuild with oxc and
+still accepts an `esbuild` block, so nothing looked wrong — but the conversion between them
+only runs when `oxc` is unset, and Vitest sets it unconditionally. Both present, oxc wins,
+the `esbuild` block is discarded, and the `jsx: 'preserve'` it was carrying goes with it.
+Read as classic JSX instead, every element throws `React is not defined`.
+
+No type checker sees that. Nothing in the lockfile hints at it. It is a behavioral break
+that exists only when the code runs, which is the entire argument for having a job that runs
+it. The resolution was not a refusal: the config migration landed by hand as
+[#328](https://github.com/climaa/acceptance-gate/pull/328) three days later, and Vite 8 has
+been in the repo since. Vite stays out of the ignore list deliberately — the engine swap was
+a one-off, and minor bumps should keep arriving.
+
+That is the yes half of the record earning its keep.
+
+## The one no test could have caught
+
+[#315](https://github.com/climaa/acceptance-gate/pull/315) offered `@types/node` 22 to 26.
+It came out red, and the red was noise — three timeouts in a file that
+[#322](https://github.com/climaa/acceptance-gate/pull/322) had already
+rewritten, on a branch six commits behind `main`. Rerun it today and it is green.
+
+Which is the point, because the job that would have had to catch this one was green the
+whole time. `typecheck`, five packages, clean.
+
+`engines` pins Node to `>=22.14.0 <23.0.0`, `.nvmrc` says `22.14.0`, and every CI job
+installs from `.nvmrc`. The code runs on Node 22, every time.
+
+`tsc` never runs that code. It never sees Node at all. What it checks against is
+`@types/node` — a package of hand-maintained declarations whose major line is
+DefinitelyTyped's statement of which Node release it describes. The bump swapped the
+description of Node 22 for the description of Node 26 and changed nothing about what
+executes. `tsc` compared the code to the new description, found it consistent, and reported
+green. It was right. It answered the question it was asked, which was never "does this run
+on the Node we ship".
+
+Nothing broke, and that is the part worth sitting with. The green was not wrong; it was a
+standing grant of permission for future code to compile against APIs that are absent at
+runtime. A latent license is harder to notice than a failure.
+
+## The check that is not a test
+
+I have asked a version of this question before. [The migration that passed
+CI](/blog/the-migration-that-passed-ci) ends on it: if every color in the app shifted one
+scheme sideways tomorrow, which test would fail? That post answers with a layer that already
+existed and caught it. The rubric is *did not catch it* against *caught it*, and something
+caught it.
+
+Here nothing did, and the honest version of why is narrower than I first wrote it. A type
+checker cannot catch this, because the description is what it reasons from. But a check that
+compares two declarations to each other can: fifteen lines reading `.nvmrc` and the
+`@types/node` range and asserting the majors agree. This repo already builds that shape
+twice, for other pins, and I did not build it here.
+
+The reason is the interesting part. A red check and a written refusal assert the same fact,
+but only one of them stops the pull request being opened again next Thursday. So the fix was
+an ignore entry scoped to majors, so minor and patch keep flowing. `22.20.1` is the last of
+the 22 line — DefinitelyTyped published it on 2026-07-08 — so there is nothing left to miss.
+It comes out in the same commit that moves `.nvmrc` off 22. Never before it, and never on
+its own.
+
+The entry is not a note to self. It is the check.
+
+## When the gate is the thing that is wrong
+
+Three ways the failing component was not the bump at all.
+
+**The secret in the wrong store.** On #220 every job passed except `auto-merge`. The merge
+runs on a personal token rather than `GITHUB_TOKEN`, because a `GITHUB_TOKEN` merge does not
+trigger further workflows and the push-to-`main` run that seeds the shared build cache was
+being skipped on every bot merge. But Dependabot-triggered runs are treated as untrusted —
+the PR content originates in a package ecosystem — so they get a read-only token and a
+separate secret store. The PAT has to live in **Dependabot**, not Actions. Put it in the
+wrong one and it looks correct in the UI, arrives as an empty string, and `gh` fails with an
+auth error that never mentions the word "store". The obvious alternative does not help: a
+`pull_request_target` run would see Actions secrets, but its `GITHUB_TOKEN` merge still
+would not fire the run that seeds the cache.
+
+The fix was not to move the secret quietly. It was a `preflight` job whose only purpose is
+to fail with the answer in the log:
+
+```text
+::error::GH_TOKEN is empty, so auto-merge cannot authenticate.
+::error::Add it under Settings > Secrets and variables > Dependabot.
+::error::A secret of the same name under Actions does NOT reach Dependabot-triggered runs.
+```
+
+**The guard aimed at the wrong sample.** That guard originally lived inside the `auto-merge`
+job, gated on both the actor who triggered the run and the pull request's author. Pressing
+"Update branch" on a bot PR flips the actor to a human, so the whole job skipped and the
+checks list read "all passed, 1 skipped" instead of naming the missing secret. #218, #222
+and #225 each show exactly that, and each was merged by hand within minutes of somebody
+pressing the button. `preflight` exists because the guard had to be split out and gated on
+author only, where a human push cannot silence it.
+
+**The check that was green having done nothing.** On #219 and #224 `auto-merge` reports
+pass. Neither was merged by it. Both are majors, the merge step is conditional on the update
+type, and the job log ends without ever opening the `Run gh pr merge` group. The job
+correctly declined, and reported the same color it reports when it succeeds.
+
+All three are one defect: **a check can be green for reasons that have nothing to do with
+what a reader assumes it is asserting, and it is green quietly.**
+
+## What the two minutes actually buy
+
+Not speed. Nobody needed those five packages before breakfast.
+
+What they buy is that a green gate answers one question well, and I know which question. It
+tells me what was checked. It cannot tell me what was not — and the ignore block is the only
+artefact in this repository that does. Three entries, each naming a failure the pipeline is
+structurally unable to catch, each paid for by a run that went red first, each with the
+condition that takes it back out.
+
+That is why the unattended yes is not reckless. Not because the eight jobs are exhaustive
+— #315 is proof that they are not, and the supply-chain gap above is proof that I know it.
+Because the places where they stop are written down, in the same repository, where the next
+bump will meet them.
+
+So the question worth asking of your own setup is not whether your pipeline is green. It is
+this: open your ignore list, and for every entry ask what takes it back out, and who
+decides. If you cannot answer both, that entry is not a decision. It is a silence with a
+version number on it, and it will still be there long after everyone has forgotten why.
