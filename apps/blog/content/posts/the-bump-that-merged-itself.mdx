@@ -3,7 +3,7 @@ title: 'The bump that merged itself, and the ten that did not'
 description: 'A dependency bot opened sixteen pull requests against this repo. Three merged themselves unattended. What makes that defensible is not the pipeline that said yes, but the three refusals that had to be written down first.'
 date: '2026-08-27'
 tags: ['ci', 'automation', 'quality']
-draft: true
+draft: false
 ---
 
 At 02:20:00 UTC on a Thursday, a bot opened a pull request bumping five packages. At
@@ -62,8 +62,8 @@ afternoon, and an autonomous agent whose surface was narrowed in advance so the 
 never available. The conclusion there was that rules bind only until the person who wrote
 them deletes them, and the durable control is a capability never granted.
 
-I expected that model to break on a dependency bot. It does not. It generalises, and the
-generalisation is less comfortable than I would like.
+I expected that model to break on a dependency bot. It does not. It generalizes, and the
+generalization is less comfortable than I would like.
 
 Dependabot is not me, so narrowing my own habits does nothing. It is not the agent, whose
 token I scoped myself and whose instructions I wrote. It is a third party pushing to a
@@ -87,7 +87,7 @@ merge](https://acceptance-gate-storybook.vercel.app/index.html?path=/docs/docs-d
 Two honest caveats, because they matter more than the job list does.
 
 The first is what a green gate certifies. Passing it is evidence about compilation, types,
-behaviour and complexity. It is not evidence that the bump is a good idea, and it is not
+behavior and complexity. It is not evidence that the bump is a good idea, and it is not
 evidence about those 301 lockfile lines either: a pipeline that runs the code is not a
 pipeline that audited it. Nothing here would notice a dependency that behaves correctly
 under test and badly in production. What actually constrains that is `--frozen-lockfile` and
@@ -131,7 +131,7 @@ That file distinguishes three kinds of refusal, and the distinction is the usefu
 | Majors, pinned to this repo | Not wrong — early. It tracks a value here | The same commit that moves that value |
 
 Playwright is the clearest blanket entry: a bump has to move the container image, the
-policy-sync test and a mass rebaseline together, so it is a piece of work with an issue
+policy-sync test and a mass re-baseline together, so it is a piece of work with an issue
 number, not a version bump. The full taxonomy is written up in [Dependency
 Bumps](https://acceptance-gate-storybook.vercel.app/index.html?path=/docs/docs-devops-dependency-bumps--docs).
 
@@ -147,7 +147,7 @@ only runs when `oxc` is unset, and Vitest sets it unconditionally. Both present,
 the `esbuild` block is discarded, and the `jsx: 'preserve'` it was carrying goes with it.
 Read as classic JSX instead, every element throws `React is not defined`.
 
-No type checker sees that. Nothing in the lockfile hints at it. It is a behavioural break
+No type checker sees that. Nothing in the lockfile hints at it. It is a behavioral break
 that exists only when the code runs, which is the entire argument for having a job that runs
 it. The resolution was not a refusal: the config migration landed by hand as
 [#328](https://github.com/climaa/acceptance-gate/pull/328) three days later, and Vite 8 has
@@ -178,10 +178,10 @@ on the Node we ship".
 
 Nothing broke, and that is the part worth sitting with. The green was not wrong; it was a
 standing grant of permission for future code to compile against APIs that are absent at
-runtime. A latent licence is harder to notice than a failure.
+runtime. A latent license is harder to notice than a failure.
 
 I have asked a version of this question before. [The migration that passed
-CI](/blog/the-migration-that-passed-ci) ends on it: if every colour in the app shifted one
+CI](/blog/the-migration-that-passed-ci) ends on it: if every color in the app shifted one
 scheme sideways tomorrow, which test would fail? That post answers with a layer that already
 existed and caught it. The rubric is *did not catch it* against *caught it*, and something
 caught it.
@@ -236,7 +236,7 @@ author only, where a human push cannot silence it.
 **The check that was green having done nothing.** On #219 and #224 `auto-merge` reports
 pass. Neither was merged by it. Both are majors, the merge step is conditional on the update
 type, and the job log ends without ever opening the `Run gh pr merge` group. The job
-correctly declined, and reported the same colour it reports when it succeeds.
+correctly declined, and reported the same color it reports when it succeeds.
 
 All three are one defect: **a check can be green for reasons that have nothing to do with
 what a reader assumes it is asserting, and it is green quietly.**
