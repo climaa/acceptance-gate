@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import NextLink from 'next/link';
 import { preload } from 'react-dom';
 import { SiteFooter, SiteHeader } from '@gate/ui';
+import { Analytics } from '@vercel/analytics/next';
 import {
   SITE_COPYRIGHT,
   SITE_COPYRIGHT_YEAR,
@@ -112,6 +113,26 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           year={SITE_COPYRIGHT_YEAR}
           links={FOOTER_LINKS}
         />
+
+        {/* Production deployments only. The package's own detection keys off
+            NODE_ENV, which reads "production" on every preview build too — so
+            without this, each login-protected preview would report page views
+            into the same dataset as the live site.
+
+            Decided at prerender rather than in the browser, though not in the
+            shape that suggests: no build's HTML carries the beacon's <script>,
+            because the component builds that element in an effect. What the
+            gate withholds is the component itself — a preview's RSC payload
+            never names it, so the chunk it sits in is never asked to run.
+
+            Not free on the side that does render it. The component reads
+            `useSearchParams`, which under `cacheComponents` bails its own
+            Suspense boundary out to client rendering, so production ships a
+            deferred boundary and one empty client retry that a preview does
+            not. Contained to that boundary — this route still prerenders
+            static — but it is the reason the two builds' HTML differs by more
+            than the payload line above. */}
+        {process.env.VERCEL_ENV === 'production' && <Analytics />}
       </body>
     </html>
   );

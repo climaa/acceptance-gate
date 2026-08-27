@@ -1,0 +1,126 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+import { Mermaid } from '../Mermaid';
+
+<Meta title="Docs/DevOps/Web Analytics" />
+
+# Web analytics
+
+The blog counts page views with Vercel Web Analytics, and only on the production
+deployment. Every preview is login-protected, so a view one could report is a reviewer or
+a machine — and it would land in the same dataset as the live site, where it reads as a
+reader.
+
+This is the first thing on the site that phones home. It is cookieless and writes no
+client-side storage, so it adds nothing to the one `localStorage` key
+`apps/blog/lib/theme.ts` already owns. There is no consent banner, and none is required.
+
+## The gate
+
+`@vercel/analytics` decides development from production by reading `NODE_ENV` — which
+every **preview** build also sets to `production`. Its own detection cannot draw the line
+this needs, so `apps/blog/app/layout.tsx` draws it:
+
+```tsx
+<body>
+  <SiteHeader brand={SITE_TITLE} nav={NAV} as={NextLink} />
+  <main id="main">{children}</main>
+
+  {process.env.VERCEL_ENV === 'production' && <Analytics />}
+</body>
+```
+
+`VERCEL_ENV` is a Vercel [system environment
+variable](https://vercel.com/docs/environment-variables/system-environment-variables).
+Nobody declares it: it is injected into every deployment, and it is **absent** locally and
+in CI — which is why the blog behaves identically on your machine before and after this
+landed, and why the unit suite stubs it rather than reading one.
+
+<Mermaid
+  chart={`
+flowchart TD
+    A["next build"] --> B{"VERCEL_ENV"}
+    B -->|"production"| C["payload names it"]
+    B -->|"preview"| D["payload omits it"]
+    B -->|"unset"| D
+    C --> E["effect fires —<br/>script.js appended"]
+    D --> F["chunk fetched anyway,<br/>nothing executes"]
+`}
+/>
+
+## What the gate does and does not buy
+
+It withholds the **beacon**, not the **bytes**. Measured by building the blog with and
+without the feature:
+
+| Build                            | Scripts | Raw     | Gzip    |
+| -------------------------------- | ------- | ------- | ------- |
+| Without analytics                | 8       | 578,378 | 177,647 |
+| With it, `VERCEL_ENV` unset      | 8       | 582,052 | 178,960 |
+| With it, `VERCEL_ENV=production` | 8       | 582,052 | 178,960 |
+
+The last two rows are identical. `process.env.VERCEL_ENV` is a runtime branch inside a
+server component, so the client reference is registered at module level and the code is
+emitted either way: **+1.3 KB gzip on every page load, in every environment**, including
+previews that will never fire a beacon. Recovering it would mean a dynamic import, trading
+1.3 KB for an extra request in production — not worth it at this size, but worth knowing
+before someone reports it as a bug.
+
+What the gate does buy on the transfer side is **no new request**: eight `<script>` tags
+before and after. `@vercel/analytics` lands inside an already-required shared chunk rather
+than one of its own.
+
+## Two things that look wrong and are not
+
+**No `<script>` tag appears in any build's HTML.** Grepping a prerendered `index.html` for
+`_vercel/insights` returns zero in production as well as preview. The component renders
+`null` and builds the script element in an effect, appending it to `document.head` after
+hydration. What the gate withholds is the component: production's RSC payload carries
+`I[...,"Analytics"]` and names its chunk, a preview's does not. Do not read a missing
+script tag as a broken gate — read the network log.
+
+**Production ships a client-side bailout.** The component reads `useSearchParams`, which
+under `cacheComponents` bails its own Suspense boundary out to client rendering. The
+production `index.html` carries 491 bytes the preview one does not — a
+`<template id="B:0">` placeholder and an `$RX(…, "BAILOUT_TO_CLIENT_SIDE_RENDERING")` call.
+It is contained to that boundary, whose fallback is `null`; the route still prerenders
+static. The package wrapping itself in `<Suspense>` is what keeps this from failing the
+build, not what keeps it free.
+
+## Why `turbo.json` names the variable
+
+`build` declares `env: ["VERCEL_ENV"]`. Turborepo's builtin passthrough already forwards
+`VERCEL_*`, so the gate reads correctly without it — but passthrough deliberately does not
+**hash**. Without the declaration, all three environments produce one task hash, and a
+shared remote cache is free to restore a preview-built artifact into production:
+
+| `VERCEL_ENV` | Hash without `env` | With it            |
+| ------------ | ------------------ | ------------------ |
+| unset        | `45c84adffed7da93` | `307f0a1be1a7aa76` |
+| `preview`    | `45c84adffed7da93` | `b43c776e6f983da3` |
+| `production` | `45c84adffed7da93` | `3938daa03f6271c6` |
+
+The cost is that a production deploy can no longer restore an artifact CI already built,
+because their hashes now differ by design — roughly ten seconds of cold blog build per
+production deploy. That is the trade: shipping a preview-built artifact to the live site is
+the worse outcome.
+
+## Verifying a change to any of this
+
+No CI job sets `VERCEL_ENV`, so a green suite proves nothing about the production path.
+Production is the one configuration nothing in the [gate](?path=/docs/docs-devops-the-gate--docs)
+exercises. Run both sides by hand:
+
+```bash
+VERCEL_ENV=production pnpm --filter @gate/blog build
+VERCEL_ENV=production pnpm --filter @gate/blog start
+```
+
+Load `http://localhost:3000` and read the network log: `/_vercel/insights/script.js` must
+be requested. It **503s locally** — that endpoint only exists on Vercel's edge — and the
+request being made at all is the proof. Then repeat with `VERCEL_ENV` unset and confirm the
+request is absent. Without that second half, the first proves only that something loaded.
+
+`apps/blog/__tests__/analytics.test.ts` covers the same three branches at the unit layer,
+with the component stubbed: the real one reaches through `next/navigation` for a router
+`renderToStaticMarkup` cannot mount.
