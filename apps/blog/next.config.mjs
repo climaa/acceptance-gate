@@ -17,7 +17,7 @@ const nextConfig = {
   // casts at all. apps/visual-diff-ui declines it, and says there why.
   typedRoutes: true,
   // The design system ships as uncompiled TypeScript (source-direct).
-  transpilePackages: ['@gate/ui'],
+  transpilePackages: ['@gate/logger', '@gate/ui'],
   experimental: {
     // Posts are read from the filesystem at build time.
     optimizePackageImports: ['@gate/ui'],

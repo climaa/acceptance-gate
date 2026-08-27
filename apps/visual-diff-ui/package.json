@@ -13,6 +13,7 @@
     "clean": "rm -rf .next .turbo node_modules"
   },
   "dependencies": {
+    "@gate/logger": "workspace:*",
     "@gate/ui": "workspace:*",
     "@gate/visual-diff": "workspace:*",
     "@vercel/analytics": "^2.0.1",

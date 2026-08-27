@@ -21,7 +21,7 @@ const nextConfig = {
   // shared shell. Revisit when the report route gains links of its own.
 
   // The design system ships as uncompiled TypeScript (source-direct).
-  transpilePackages: ['@gate/ui'],
+  transpilePackages: ['@gate/logger', '@gate/ui'],
   // The differ runs, it does not get bundled. Two reasons, both fatal to a
   // built server that tries: `commands.mjs` derives its repo root from
   // `new URL('../../..', import.meta.url)`, which the bundler reads as an asset
