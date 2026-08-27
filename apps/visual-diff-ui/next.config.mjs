@@ -5,6 +5,16 @@ const nextConfig = {
   // scope becomes a dynamic hole instead of being baked into the prerender, and
   // a route that starts reading cookies or headers fails the build.
   cacheComponents: true,
+  // Deliberately NOT `typedRoutes`, which apps/blog enables and gets for free.
+  // It works through the design system's `as` indirection for a literal href —
+  // `href="/nope"` is caught — but not for a computed one. `Link` forwards
+  // `ComponentPropsWithoutRef<E>`, and that collapses next/link's own route type
+  // parameter to `unknown`, so the checked type becomes `RouteImpl<unknown>`:
+  // satisfiable by a string literal, and by no template literal at all. Every
+  // link into a report is `` `/report/${id}` ``, so the flag rejects three
+  // correct hrefs, and `router.replace` builds its URL from `pathname` + query
+  // in three more places. Six `as Route` casts, half of them on code that is
+  // right — the tool would be asserting less here than it costs to silence.
   // Deliberately NOT `partialPrefetching`, which apps/blog enables. That flag
   // pays off on an index that links to many distinct destinations; this app has
   // two routes, and everything worth prefetching on the console is already the
