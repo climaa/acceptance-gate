@@ -4,6 +4,8 @@ import { Suspense } from 'react';
 import { Skeleton, Stack } from '@gate/ui';
 import { ReportTemplate } from '@/components/ReportTemplate';
 import { readReport, readSets, resolveDataDir } from '@/lib/data';
+import { ReportIdSchema } from '@/lib/job-contract';
+import { NOT_FOUND_TITLE } from '@/lib/site';
 
 /**
  * The report route: one comparison, read and handed to the template.
@@ -25,13 +27,23 @@ import { readReport, readSets, resolveDataDir } from '@/lib/data';
  * inside its `<Suspense>` and `resolveDataDir()` calls `connection()`, so the
  * head streams with content that was deferred anyway rather than turning an
  * otherwise-pre-render route dynamic.
+ *
+ * `ReportIdSchema` because a URL segment is not a report id until something says
+ * so, and every other reader of one already asks: `proxy.ts` before it decides a
+ * miss, `app/api/reports/[id]` before it reads or deletes. This was the single
+ * consumer echoing the segment onward unchecked. React escapes it, so the stake
+ * is not injection — it is that a title is the one part of a miss a reader keeps,
+ * in a tab strip and in their history, and a malformed id has no business being
+ * remembered as a report. Normally unreachable, since the proxy rewrites such a
+ * segment to `/_not-found` first; this is what the page says when the proxy fails
+ * open, which it does by design on a deployment shipped without a reports tree.
  */
 export async function generateMetadata({
   params,
 }: PageProps<'/report/[id]'>): Promise<Metadata> {
   const { id } = await params;
 
-  return { title: id };
+  return { title: ReportIdSchema.safeParse(id).success ? id : NOT_FOUND_TITLE };
 }
 
 export default function ReportPage({ params }: PageProps<'/report/[id]'>) {
