@@ -20,7 +20,8 @@ means the index needs a refresh)
 apps/
   blog/                Next.js 16 App Router + MDX (English) — index, post, tag, about,
                        RSS, sitemap, OG images; Cache Components + Partial Prefetching on;
-                       web analytics on the production deployment only
+                       web analytics on the production deployment only; Bugsink error
+                       reporting wired in both realms, dormant without a DSN
   storybook/           Storybook 10 + nextjs-vite — 26 stories, 16 docs pages
   e2e/                 playwright-bdd — 42 acceptance scenarios across the blog and
                        two seeded visual-diff worlds (:3200/:3201), plus a one-scenario
@@ -31,8 +32,12 @@ apps/
                        panel with its live log, current job and accept gate,
                        the report's tier sections, review loop and a11y
                        treatment, the three-up viewer and comparison modal;
-                       web analytics on the production deployment only
+                       web analytics on the production deployment only; Bugsink error
+                       reporting wired in both realms, dormant without a DSN
 packages/
+  logger/              the shared error/warn/info logger: silent in production, and
+                       `error()` always forwards to a reporter — with the Bugsink
+                       adapter behind `@gate/logger/bugsink`, inert until a DSN exists
   ui/                  design system: tokens.css + 27 components in 4 tiers
                        (16 atoms · 5 molecules · 4 organisms · 2 templates); every
                        one storied but Stack, the layout primitive with nothing
@@ -90,7 +95,7 @@ scripts/               complexity-gate.mjs (the health gate) · apply-ruleset.mj
 ## 🧪 Tests
 
 - Orchestrator hermetic suite: 39 files / 654 tests (prompt contracts, merge flow, override grammar, worktree safety, provenance guard)
-- Workspace suites, all in the `test` gate job: `packages/ui` 34 files / 490 tests (70% coverage floor), `apps/blog` 14 / 310, `packages/visual-diff` 11 / 334, `apps/storybook` 5 / 118, `apps/visual-diff-ui` 49 / 793 (floors 93/87/92/94)
+- Workspace suites, all in the `test` gate job: `packages/ui` 34 files / 492 tests (70% coverage floor), `apps/blog` 18 / 359, `packages/visual-diff` 11 / 334, `apps/storybook` 5 / 121, `apps/visual-diff-ui` 53 / 825 (floors 93/87/92/94), `packages/logger` 2 / 20
 - `apps/e2e`: 42 acceptance scenarios across smoke, blog, axe a11y, the visual-diff console, sample mode, the report and its accessibility treatment — in `gate.needs`, blocking. A second lane, `features/local/`, is one scenario that captures, compares, reviews, accepts and cleans up against your own tree; it refuses to run under `CI` and gates nothing
 - `packages/visual-diff`: 158 committed baselines; the capture/compare job runs on every PR but is deliberately never in `gate.needs` (see `packages/visual-diff/README.md#ci-status`)
 

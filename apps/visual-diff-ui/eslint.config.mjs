@@ -11,6 +11,10 @@ const config = [
       'lib/**/*.{ts,tsx}',
       'hooks/**/*.{ts,tsx}',
       'proxy.ts',
+      // Root-level like proxy.ts, and shipped like it: Next loads both realm
+      // entry points before any app code runs.
+      'instrumentation.ts',
+      'instrumentation-client.ts',
     ],
     rules: { 'no-console': 'error' },
   },

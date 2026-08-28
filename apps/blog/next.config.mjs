@@ -18,6 +18,14 @@ const nextConfig = {
   typedRoutes: true,
   // The design system ships as uncompiled TypeScript (source-direct).
   transpilePackages: ['@gate/logger', '@gate/ui'],
+  // Defined so it can be ELIMINATED. Next inlines a `NEXT_PUBLIC_*` read only
+  // when the variable exists; an absent one is left as a live `process.env`
+  // lookup, so `instrumentation-client.ts`'s DSN guard stays a runtime branch
+  // and the `@sentry/browser` chunk behind its dynamic import is loaded on
+  // every page — 438 KB, measured, to decide not to report. Normalising unset
+  // to `''` makes the guard `if ('')`, which the bundler drops along with the
+  // import, the chunk, and the instrumentation entry itself.
+  env: { NEXT_PUBLIC_BUGSINK_DSN: process.env.NEXT_PUBLIC_BUGSINK_DSN ?? '' },
   experimental: {
     // Posts are read from the filesystem at build time.
     optimizePackageImports: ['@gate/ui'],
