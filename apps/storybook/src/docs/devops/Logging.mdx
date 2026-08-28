@@ -54,6 +54,8 @@ Both apps carry the same block in `eslint.config.mjs`:
     'lib/**/*.{ts,tsx}',
     'hooks/**/*.{ts,tsx}',
     'proxy.ts',
+    'instrumentation.ts',
+    'instrumentation-client.ts',
   ],
   rules: { 'no-console': 'error' },
 },
@@ -67,8 +69,9 @@ bypass the reporter, which is the one path errors must not take. `logger.error` 
 jobs; the raw call does neither correctly.
 
 **The boundary is drawn by location, not by exception.** The `files` globs name the four
-shipped-source directories plus `proxy.ts` — the middleware-replacement file that lives
-at the app root and would otherwise slip through. Everything else — `scripts/`,
+shipped-source directories plus the three shipped files that sit at the app root and
+would otherwise slip through: `proxy.ts`, which replaces middleware, and the two
+`instrumentation*` entry points Next loads before anything else. Everything else — `scripts/`,
 `__tests__/`, `*.config.*` — simply never matches, so CLI tooling keeps printing with no
 `eslint-disable` comments anywhere. The seed scripts and local-data helpers under
 `apps/*/scripts/` call `console` today and are meant to.
@@ -112,15 +115,150 @@ rather than in module state, because Next gives the RSC layer and the SSR layer 
 copies of every module — a module-level variable would make `setReporter` a per-layer
 switch that silently missed half the errors.
 
-The planned tracker is a self-hosted **Bugsink** instance, spoken to through the Sentry
-SDK — Bugsink is Sentry-compatible and has no SDK of its own. When that lands, the
-wiring is two `setReporter` calls, one in `instrumentation.ts` and one in
-`instrumentation-client.ts` (server and browser are separate realms; the `globalThis`
-slot cannot cross that line), and no call site in either app changes. Two conventions
-for that adapter, both from the Bugsink author's own guidance: wrap plain strings in
-`new Error(...)` before capturing, because `captureMessage` loses the stack; and pass an
-actual `Error` object to `logger.error` whenever one exists, since the reporter receives
-the arguments positionally and recovers the `Error` from them.
+## The tracker
+
+The reporter is wired to a self-hosted **Bugsink** instance, spoken to through a Sentry
+SDK — Bugsink is Sentry-compatible and has no SDK of its own. The adapter is
+`@gate/logger/bugsink`, and each app installs it once per realm:
+
+```ts
+// apps/blog/instrumentation.ts — the server
+export const register = async (dsn = process.env.BUGSINK_DSN): Promise<void> => {
+  if (process.env.NEXT_RUNTIME === 'edge') return;
+
+  await installBugsink({
+    dsn,
+    load: () => import('@sentry/node'),
+    environment: process.env.VERCEL_ENV,
+  });
+};
+```
+
+```ts
+// apps/blog/instrumentation-client.ts — the browser
+if (process.env.NEXT_PUBLIC_BUGSINK_DSN) {
+  void installBugsink({
+    dsn: process.env.NEXT_PUBLIC_BUGSINK_DSN,
+    load: () => import('@sentry/browser'),
+  });
+}
+```
+
+Two files because the `globalThis` slot unifies Next's several server-side module graphs
+and cannot cross into the browser. No call site in either app changed.
+
+### It does nothing until a DSN exists
+
+`installBugsink` returns before calling `load()` when the DSN is unset or blank, which is
+the configuration every local run, every CI job and every sandbox agent takes. No SDK is
+evaluated, no reporter is installed, and `logger.error` keeps reaching the same no-op it
+reached before this landed.
+
+On the server that is nearly the whole story: `import()` is genuinely lazy at runtime, so
+`@sentry/node` ships inside the deployed function and is never evaluated. What it costs
+is deployment bytes, not cold-start time.
+
+### The browser half, and the 438 KB it nearly shipped
+
+The client is not the server, and a dynamic `import()` is not a promise about what gets
+downloaded. Measured against a real production build of the blog, the first working
+version of this file loaded **the entire SDK on every page view** — with no DSN
+configured, to run a branch that could only decide not to report.
+
+Two things combine to cause it, and neither is visible in the source:
+
+- **Turbopack chunked `@sentry/browser` together with `instrumentation-client.ts`**
+  rather than behind it. The built entry reads
+  `Promise.all(['…/1k_kxzok50cio.js'].map(o.l)).then(() => t(299319))`: one 438 KB chunk
+  (144 KB gzip) holding both the SDK and this module, fetched before the module runs.
+- **Next only inlines a `NEXT_PUBLIC_*` read when the variable exists.** An unset one
+  stays a live `process.env` lookup, so the `if` is a runtime branch and nothing can be
+  eliminated. That is the opposite of the usual assumption about `NEXT_PUBLIC_`.
+
+The fix is one line in each app's `next.config.mjs`:
+
+```js
+env: { NEXT_PUBLIC_BUGSINK_DSN: process.env.NEXT_PUBLIC_BUGSINK_DSN ?? '' },
+```
+
+Defined so it can be eliminated. The guard compiles to `if ('')`, the bundler drops the
+branch, the dynamic import, the SDK chunk and the instrumentation entry itself — verified
+both ways against `next build`: with no DSN, `grep -rl sentry .next/static/chunks` is
+empty and `rootMainFiles` has no instrumentation entry at all; with one set, the chunk is
+back and the DSN is inlined.
+
+This is also why the DSN is read as a bare literal in that file instead of through the
+defaulted parameter this repo reaches for everywhere else. Behind a function parameter
+the import stays reachable from an export, and the elimination does not happen.
+
+The contrast with [Web Analytics](?path=/docs/docs-devops-web-analytics--docs) is worth
+keeping straight, because the two gates fail differently. That one is a runtime branch in
+a _server_ component: a preview still ships 1.3 KB of analytics code it will never
+execute. This one is a build-time constant, so a build without a DSN ships no SDK at all.
+
+### Why `@sentry/browser` + `@sentry/node`, not `@sentry/nextjs`
+
+`@sentry/nextjs` is the documented path and it handles the serverless flush for you via
+`waitUntil`. It was declined because everything else it brings is something this repo
+explicitly does not want: a build plugin whose main job is source-map upload — which is
+[not worth investing in yet](https://github.com/bugsink/bugsink/issues/133), since
+Bugsink still cannot resolve server-component stacks — plus auto-instrumentation and
+config files that run whether or not a DSN exists. The pair is smaller and inert by
+default; the price is that the flush is hand-rolled.
+
+`tracesSampleRate: 0` is not a tuning choice. Bugsink deliberately does not accept
+traces, and there is no replay or profiling integration for the same reason.
+
+### What the adapter does with the arguments
+
+`Reporter` is `(...data: unknown[]) => void` — console-shaped, so the `Error` is
+somewhere in the argument list rather than in a named slot. Both rules for finding it
+come from the Bugsink author's own guidance:
+
+- **An `Error` among the arguments is captured as-is**, first one wins, and everything
+  else is attached as `extra.arguments`. Pass a real `Error` to `logger.error` whenever
+  one exists — it is the only argument carrying a stack.
+- **A report that is only a string is wrapped in `new Error(message)`**, not sent through
+  `captureMessage`, which files it with no stack at all.
+
+The reporter swallows everything the tracker throws. A reporter that throws turns a
+logged error into an unhandled one, at the call site that was being careful.
+
+### The flush, and the one thing to watch
+
+`Reporter` returns `void`, so the send cannot be awaited — the adapter starts a
+`flush(2000)` immediately after capturing and lets it race the host. On Vercel a function
+may freeze the moment the response is written, so an event captured on the very last tick
+of a request can still be lost. This is the cost of the pair over `@sentry/nextjs`, and
+it is the first thing to revisit if events go missing.
+
+`instrumentation.ts` also declines the edge runtime outright: `register()` runs once per
+runtime, and `@sentry/node` opens sockets and starts OpenTelemetry, neither of which
+exists there. `proxy.ts` is the only edge code in either app, and it does not report.
+
+Note the asymmetry with the browser file: the server keeps its defaulted `dsn` parameter,
+because `BUGSINK_DSN` is read at request time and there is no bundle to eliminate it
+from. Only the client half pays for being a build-time constant.
+
+### Deploying it
+
+`BUGSINK_DSN` (server) and `NEXT_PUBLIC_BUGSINK_DSN` (browser) are set in Vercel's
+project settings, per environment. Setting them on production alone is the whole gate —
+there is no second switch, and a preview with no DSN reports nothing.
+
+Only the public one is named in `turbo.json`'s `build.env`, and the asymmetry is the
+point. Its value is baked into the client bundle, so a build with a DSN and a build
+without one are genuinely different artifacts and must hash differently, or a shared
+remote cache is free to restore either for the other — the same trap
+[Web Analytics](?path=/docs/docs-devops-web-analytics--docs) documents for `VERCEL_ENV`.
+`BUGSINK_DSN` is read at request time, so hashing it would only cost cold builds.
+
+One consequence of that baking: `NEXT_PUBLIC_BUGSINK_DSN` must be present at **build**
+time, not only at runtime. A value added to Vercel after a deployment is built does not
+reach the browser half until the next build.
+
+A DSN is submit-only, which is what makes the public half safe to ship; abuse control is
+Bugsink's per-project rate limiting.
 
 ## Testing against it
 

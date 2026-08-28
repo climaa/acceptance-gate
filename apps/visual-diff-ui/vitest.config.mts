@@ -71,6 +71,11 @@ export default defineConfig({
         // Named on its own because it is the one module that answers a request
         // without living under `app/` — the proxy runs before the router does.
         'proxy.ts',
+        // The two realm entry points, named for the same reason: Next loads
+        // them, nothing imports them, and the reporter they wire is the one
+        // path an untested branch would silently disable.
+        'instrumentation.ts',
+        'instrumentation-client.ts',
         'scripts/capture-set.mjs',
       ],
       // `scripts/capture-set.mjs` is named, and it is the one entry here that had

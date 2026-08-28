@@ -5,7 +5,8 @@
   "type": "module",
   "sideEffects": false,
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./bugsink": "./src/bugsink.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
