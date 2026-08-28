@@ -36,6 +36,15 @@ const ARTICLE_SLUG = ARTICLE?.slug ?? '';
 /** A tag whose display text and slug differ, which is where a wrong href shows. */
 const MULTI_WORD_TAG = 'visual regression';
 
+/**
+ * The home page shows only the newest four, so the multi-word specimen must
+ * come from that slice — hardcoding one couples the test to publication order,
+ * which a new post breaks. The guard below fails first if no post on the home
+ * page carries one.
+ */
+const MULTI_WORD_TAG_ON_HOME =
+  ON_HOME.flatMap((post) => post.tags).find((tag) => tag.includes(' ')) ?? '';
+
 const headingLevels = (html: string) =>
   [...html.matchAll(/<h([1-6])\b/g)].map(([, level]) => Number(level));
 
@@ -70,6 +79,7 @@ describe('content/posts', () => {
   it('finds the published posts it was written against', () => {
     expect(PUBLISHED.length).toBeGreaterThan(0);
     expect(PUBLISHED.flatMap((post) => post.tags)).toContain(MULTI_WORD_TAG);
+    expect(MULTI_WORD_TAG_ON_HOME).not.toBe('');
   });
 });
 
@@ -103,8 +113,10 @@ describe('the home page', () => {
   it('points every tag chip at the prerendered tag route', () => {
     const html = renderPage(HomePage);
 
-    expect(hrefsIn(html)).toContain(tagPath(MULTI_WORD_TAG));
-    expect(hrefsIn(html)).not.toContain(`/tags/${encodeURIComponent(MULTI_WORD_TAG)}`);
+    expect(hrefsIn(html)).toContain(tagPath(MULTI_WORD_TAG_ON_HOME));
+    expect(hrefsIn(html)).not.toContain(
+      `/tags/${encodeURIComponent(MULTI_WORD_TAG_ON_HOME)}`,
+    );
   });
 });
 

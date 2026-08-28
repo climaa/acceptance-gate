@@ -1,0 +1,138 @@
+---
+title: 'The research said GlitchTip. The decision was Bugsink.'
+description: 'Six days before choosing an error tracker, I wrote a research doc recommending the other one. On the seam that made reversing it cheap, the free tier that changed the maths, and the adblocker that ate my first production error.'
+date: '2026-08-28'
+tags: ['error tracking', 'logging', 'quality']
+draft: false
+---
+
+Until yesterday, both production apps in this repo handled errors the same way: a themed
+fallback screen, rendered politely, reported to absolutely no one. The error boundaries
+[landed in #400](https://github.com/climaa/acceptance-gate/pull/400) and did their visual
+job. If one of them ever fired in production, the only person who could know was the
+visitor watching it happen.
+
+This post is about the two days that closed that gap — and about the uncomfortable part:
+the written research recommended GlitchTip, and I chose Bugsink anyway. I want to walk
+through why that reversal was cheap, because the answer is not "the research was wrong".
+The answer is a seam.
+
+## The seam first
+
+Before any tracker existed, [#402](https://github.com/climaa/acceptance-gate/pull/402)
+landed `@gate/logger`: a console-shaped logger that prints nothing in production, with one
+exception — `logger.error()` always forwards to a pluggable reporter. The reporter lives
+in a `globalThis` slot keyed by a `Symbol.for`, because Next.js gives the RSC and SSR
+layers separate module instances and a plain module-level variable would not survive the
+crossing. The default reporter is a no-op.
+
+That ordering matters more than it looks. It meant the apps could adopt the logger — and
+an ESLint `no-console` rule over shipped source — while the "which tracker?" question was
+still open. Call sites commit to `logger.error(error)`; they never learn where the error
+goes. The tracker became a configuration detail instead of an architecture decision.
+
+The adapter that fills the slot ([#406](https://github.com/climaa/acceptance-gate/pull/406))
+keeps the same discipline. It takes a `load()` thunk instead of importing any SDK, reads
+the DSN from the environment, and **does nothing when the DSN is unset** — no SDK
+evaluates, no reporter installs. In the browser bundle this is stronger than a runtime
+check: the DSN read is a bare `process.env.NEXT_PUBLIC_*` literal, so a build without the
+variable compiles the whole branch to `if (undefined)` and the bundler drops the ~430 KB
+Sentry chunk behind the dynamic import. Local dev, CI, preview deploys, and the sandbox
+agents that wrote most of this code all run the identical source with zero configuration
+and zero behaviour change. Production, with the variable set, reports.
+
+One environment variable is the entire difference between "observability" and "inert".
+That is the advantage of routing everything through the logger, and it is also what made
+the next section painless.
+
+## The research said GlitchTip
+
+Six days before the decision I wrote a comparison doc, and its recommendation was
+GlitchTip, with reasons that still hold: it is MIT-licensed where Bugsink is
+source-available, it has the documented Next.js sourcemap story where Bugsink has two
+open issues ([#133](https://github.com/bugsink/bugsink/issues/133),
+[#157](https://github.com/bugsink/bugsink/issues/157), both dormant since mid-2025), and
+its supposed ops-weight disadvantage had mostly evaporated in recent releases.
+
+So why is this post not titled "GlitchTip"?
+
+Two things changed between the doc and the decision. The first is scope honesty. This
+repo needs exactly one thing: readable stack traces when a production error fires, at a
+volume close to zero. GlitchTip's extra surface — uptime monitoring, performance
+transactions, OTLP logs — is capability I would be hosting, patching, and backing up
+without using. Bugsink's pitch is that it deliberately does errors and nothing else,
+which is not a limitation here. It is the spec.
+
+The second is that re-checking Bugsink at decision time surfaced something the comparison
+had weighted wrong: a hosted tier that is free at this repo's volume — 15K events a
+month, single user. That collapses the deployment half of the work from "stand up a VPS,
+terminate TLS, mind the backups, track a security-fix-heavy release train" to "create the
+instance, paste the DSN into Vercel". For a single-maintainer repo whose error budget is
+measured in events per month, the ops surface going to zero beats the license difference
+and the sourcemap gap combined.
+
+The sourcemap gap I accepted with eyes open, and the screenshot below shows it honestly:
+the browser frame renders with *no code context available*, because Bugsink cannot yet
+resolve Next.js production sourcemaps. Server-side stacks are readable unminified, which
+is where the errors I care most about live. And if that trade stops being acceptable —
+this is the seam again — the reporter is Sentry-shaped, so the backend swaps behind one
+adapter without any call site noticing.
+
+The research doc still says GlitchTip on its first line, with a supersession note above
+it. I would rather keep the reversal on the record than pretend the process was tidy.
+
+## Shipping it, mostly unattended
+
+The implementation went through the same pipeline as everything else here: two issues
+released to [Sandcastle](/blog/what-is-sandcastle), one run. The first issue turned the
+error boundaries from #400 into the logger's first real call sites — the App Router
+pattern of a `useEffect` keyed on the `error` prop. The second built the Bugsink adapter.
+Implementer and reviewer agents handled both; the wave ran just under two hours.
+
+One thing needed a human. The two PRs both touched a generated binary file, the first
+merge landed, and the second PR went `CONFLICTING` — with auto-merge armed, which means
+it would have sat there politely forever. The orchestrator had already exited; conflict
+resolution on a binary is exactly the kind of judgement call that stays attended. I merged
+main into the branch, took main's version of the generated file, and the gate did the
+rest.
+
+## The first error, and who ate it
+
+With the DSN live in production, verification should have been the boring part. Throw an
+uncaught error on the live blog, watch it arrive. Instead the envelope request came back
+refused, five times in a row — while the same payload sent from `curl` returned 200
+against the same endpoint.
+
+The difference was not the server. It was my browser. Privacy blocklists ship rules for
+Sentry's ingestion URL shape, and `/api/1/envelope/?sentry_key=…` matches them; my own
+shields were eating my own telemetry before it left the machine. The instance root was
+reachable from the page; the ingestion path specifically was not. A clean Chromium with
+no extensions sent the identical error and it landed immediately.
+
+<img src="/images/bugsink/first-real-error-issues-list.jpg" alt="The Bugsink issues list for acceptance-gate-blog showing the first real production error at the top, above two direct-API probe events from earlier in the verification." />
+
+That is worth internalising beyond this repo: **client-side error tracking undercounts,
+structurally.** Some real fraction of visitors run the same blocklists I do, and their
+errors will never arrive. For this blog the numbers are not the point — one readable
+stack trace from the wild is worth more than a complete count of nothing, which is what I
+had before. But if you are making decisions off error *rates* rather than error
+*existence*, the blind spot is real and it is not evenly distributed across your users.
+
+<img src="/images/bugsink/issue-detail-production.jpg" alt="The Bugsink issue detail page for the verification error: environment production, handled false, browser and OS tags populated, and a minified stack frame with no code context available." />
+
+The detail view validates the whole chain: `environment: production`, `handled: false`,
+browser and OS tags filled in — and that honest minified frame, the sourcemap gap made
+visible, exactly as priced in.
+
+## Final thoughts
+
+The tracker was never the interesting decision. The seam was. Because `logger.error` is
+the only door and the reporter is the only wiring, the expensive-sounding moves in this
+story were all cheap: adopting a logger before a tracker existed, reversing a written
+recommendation six days later, and — if the sourcemap issues stay dormant long enough to
+matter — swapping Bugsink out again someday. The call sites will not hear about it.
+
+What the screenshots actually certify is narrower and better than "it works": a
+production error on this blog now becomes a stack trace somewhere I will see it, and the
+path it travels is one I have watched fail, diagnosed, and watched succeed — including
+the failure mode where the observer's own browser is the outage.
