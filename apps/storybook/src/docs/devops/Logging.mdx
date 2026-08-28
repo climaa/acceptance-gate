@@ -122,8 +122,11 @@ switch that silently missed half the errors.
 
 ## The tracker
 
-The reporter is wired to a self-hosted **Bugsink** instance, spoken to through a Sentry
-SDK — Bugsink is Sentry-compatible and has no SDK of its own. The adapter is
+The reporter is wired to a hosted **Bugsink** instance, spoken to through a Sentry
+SDK — Bugsink is Sentry-compatible and has no SDK of its own. Which tracker, which
+tier, how the instance is provisioned and how to verify the path are
+[Error Tracking](?path=/docs/docs-devops-error-tracking--docs)'s story; this page stays
+on the code. The adapter is
 `@gate/logger/bugsink`, and each app installs it once per realm:
 
 ```ts
