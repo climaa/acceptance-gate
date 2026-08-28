@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 
+import { logger } from '@gate/logger';
 import { BlogIndexTemplate, Button } from '@gate/ui';
 import { ERROR_ACTION, ERROR_NOTE, ERROR_TITLE } from '@/lib/site';
 import { applyStoredTheme } from '@/lib/theme';
@@ -13,7 +14,9 @@ import './globals.css';
  *
  * This file replaces that layout instead of rendering inside it, so the
  * document and `globals.css` are restated below; `app/layout.tsx` explains
- * each, and `app/error.tsx` explains `retry` and the unread `error`.
+ * each, and `app/error.tsx` explains `retry` and why `error` is reported
+ * without being rendered. It is reported from here for the same reason this
+ * file exists: a throw in the root layout is the one nothing else catches.
  *
  * The theme is NOT restated as the layout's inline script, and that is the one
  * thing here worth reading twice. React builds this document rather than
@@ -28,8 +31,17 @@ import './globals.css';
  * is unsupported in a Client Component, and an error boundary has to be one.
  * And no header or footer, because both belong to the layout that just threw.
  */
-export default function GlobalError({ retry }: { error: Error; retry: () => void }) {
+export default function GlobalError({
+  error,
+  retry,
+}: {
+  error: Error;
+  retry: () => void;
+}) {
   useEffect(applyStoredTheme, []);
+  useEffect(() => {
+    logger.error(error);
+  }, [error]);
 
   return (
     <html lang="en">
