@@ -13,35 +13,14 @@ job. If one of them ever fired in production, the only person who could know was
 visitor watching it happen.
 
 This post is about the two days that closed that gap — and about the uncomfortable part:
-the written research recommended GlitchTip, and I chose Bugsink anyway. I want to walk
-through why that reversal was cheap, because the answer is not "the research was wrong".
-The answer is a seam.
-
-## The seam first
-
-Before any tracker existed, [#402](https://github.com/climaa/acceptance-gate/pull/402)
-landed `@gate/logger`: a console-shaped logger that prints nothing in production, with
-one exception — `logger.error()` always forwards to a pluggable reporter, and the
-default reporter is a no-op. That ordering matters more than it looks. It meant the apps
-could adopt the logger — and an ESLint `no-console` rule over shipped source — while the
-"which tracker?" question was still open. Call sites commit to `logger.error(error)`;
-they never learn where the error goes. The tracker became a configuration detail instead
-of an architecture decision.
-
-The adapter that fills the slot ([#406](https://github.com/climaa/acceptance-gate/pull/406))
-keeps the same discipline: **it does nothing when the DSN is unset** — no SDK evaluates,
-no reporter installs, and a production build without the variable ships no SDK at all.
-Local dev, CI, preview deploys, and the sandbox agents that wrote most of this code all
-run the identical source with zero configuration and zero behavior change. Production,
-with the variable set, reports. The mechanics that make all of that true — where the
-reporter actually lives, and the build trick that keeps 438 KB of Sentry SDK out of a
-bundle that would never use it — are the [Logging
+the written research recommended GlitchTip, and I chose Bugsink anyway. The reversal was
+cheap for one reason. Before any tracker existed,
+[#402](https://github.com/climaa/acceptance-gate/pull/402) landed `@gate/logger`, whose
+`logger.error()` forwards everything to one pluggable reporter — call sites never learn
+where an error goes, so the tracker is a configuration detail, not an architecture
+decision. That seam is the [Logging
 page](https://acceptance-gate-storybook.vercel.app/index.html?path=/docs/docs-devops-logging--docs)'s
-story.
-
-One environment variable is the entire difference between "observable" and "inert".
-That is the advantage of routing everything through the logger, and it is also what made
-the next section painless.
+story; this post is about what it made possible.
 
 ## The research said GlitchTip
 
@@ -72,9 +51,9 @@ and the sourcemap gap combined.
 
 The sourcemap gap I accepted with eyes open: the browser frame renders with *no code
 context available*, because Bugsink cannot yet resolve Next.js production sourcemaps.
-Server-side stacks are readable unminified, and that is where the errors that matter
+Server-side stacks are readable un-minified, and that is where the errors that matter
 most here live — a route handler failing, a Server Component render blowing up
-mid-stream: the classes with real stacks and no adblocker in the path. The
+mid-stream: the classes with real stacks and no ad-blocker in the path. The
 boundary-caught client errors are minified existence proofs, and for this blog that is
 enough. And if that trade stops being acceptable, the reporter is Sentry-shaped: the
 backend swaps behind one adapter without any call site noticing.
