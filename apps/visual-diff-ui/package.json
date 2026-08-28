@@ -1,6 +1,6 @@
 {
   "name": "@gate/visual-diff-ui",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "private": true,
   "scripts": {
     "dev": "node scripts/local-data-dir.mjs ../../.visual-diff && VISUAL_DIFF_DATA_DIR=../../.visual-diff next dev --port 3300",

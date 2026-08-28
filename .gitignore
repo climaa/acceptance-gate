@@ -21,6 +21,19 @@ storybook-static/
 # `.next/types/**/*.ts` entry both tsconfigs already carry in `include`.
 next-env.d.ts
 
+# fallow's churn cache, rewritten as a side effect of `fallow health` — which is
+# `pnpm health:check`, one of the eight required gate jobs. So the tracked copy
+# was dirtied by every local gate run and by every agent that ran the gate before
+# staging, and it went in as a side effect of PRs about something else. Two of
+# those raced in #405/#406: the first merged, the second went CONFLICTING with
+# auto-merge armed and stranded, and a binary conflict needs a human. Nothing
+# reads the committed copy — every run regenerates it from git history — so, as
+# with next-env.d.ts above, there was no correct value to commit. fallow writes
+# `.fallow/.gitignore` containing `*`, which already covers cache.bin and
+# graph-cache.bin; churn.bin predates it (#134) and tracking beat the ignore.
+# Rooted and explicit here so a fresh clone is covered before fallow first runs.
+/.fallow/
+
 # turbo
 .turbo/
 

@@ -1,6 +1,6 @@
 # Project Index: acceptance-gate
 
-Version 1.1.0 · generated 2026-08-27 (regenerate with `/sc:index-repo` — a stale date here
+Version 1.2.0 · generated 2026-08-28 (regenerate with `/sc:index-repo` — a stale date here
 means the index needs a refresh)
 
 ## 📁 Project Structure
@@ -21,11 +21,12 @@ apps/
   blog/                Next.js 16 App Router + MDX (English) — index, post, tag, about,
                        RSS, sitemap, OG images; Cache Components + Partial Prefetching on;
                        web analytics on the production deployment only; Bugsink error
-                       reporting wired in both realms, dormant without a DSN
-  storybook/           Storybook 10 + nextjs-vite — 26 stories, 16 docs pages
-  e2e/                 playwright-bdd — 42 acceptance scenarios across the blog and
-                       two seeded visual-diff worlds (:3200/:3201), plus a one-scenario
-                       local lane that runs against your own .visual-diff
+                       reporting live in both realms on the production deployment,
+                       inert anywhere the DSN is unset
+  storybook/           Storybook 10 + nextjs-vite — 26 stories, 18 docs pages
+  e2e/                 playwright-bdd — 44 acceptance scenarios across the blog and
+                       two seeded visual-diff worlds (:3200/:3201), plus a two-scenario
+                       local lane that runs against your own tree
   visual-diff-ui/      Next.js 16 console over the differ — zod-validated read path,
                        locked job runner + guarded mutations, sample fixtures,
                        the dashboard's sets/reports/history tables, the run
@@ -33,7 +34,8 @@ apps/
                        the report's tier sections, review loop and a11y
                        treatment, the three-up viewer and comparison modal;
                        web analytics on the production deployment only; Bugsink error
-                       reporting wired in both realms, dormant without a DSN
+                       reporting live in both realms on the production deployment,
+                       inert anywhere the DSN is unset
 packages/
   logger/              the shared error/warn/info logger: silent in production, and
                        `error()` always forwards to a reporter — with the Bugsink
@@ -75,7 +77,7 @@ scripts/               complexity-gate.mjs (the health gate) · apply-ruleset.mj
 
 ## 🔧 Configuration
 
-- `turbo.json` — `build`/`lint`/`typecheck`/`test` (+`dependsOn: ["^build"]`), `e2e` (dependsOn `@gate/blog#build` and `@gate/visual-diff-ui#build`, uncached), `health` (whose `inputs` include `$TURBO_ROOT$/scripts/complexity-gate.mjs`, so editing the gate script busts every cached result), `dev`, `clean`
+- `turbo.json` — `build`/`lint`/`typecheck`/`test` (+`dependsOn: ["^build"]`), `e2e` (dependsOn `@gate/blog#build` and `@gate/visual-diff-ui#build`, uncached), `health` (whose `inputs` include `$TURBO_ROOT$/scripts/complexity-gate.mjs`, so editing the gate script busts every cached result), `dev`, `clean`. `build.env` is `VERCEL_ENV` and `NEXT_PUBLIC_BUGSINK_DSN` — the two values inlined into a bundle at build time. `BUGSINK_DSN` is deliberately absent: the server reads it per request, so changing it must not invalidate a build
 - `pnpm-workspace.yaml` — apps/* + packages/*; `allowBuilds` for sharp, unrs-resolver
 - `package.json` — pnpm 11.20.0 pinned (sha512), Node `>=22.14.0 <23`, turbo ^2.10.11. `@types/node` is deliberately held on the `^22` line: it describes the runtime `engines` pins and `.sandcastle/Dockerfile` (`node:22-bookworm`) runs, so a newer major would type built-ins that do not exist here. It moves when the runtime moves, not when `ncu` says so
 - `.github/rulesets/main.json` — the branch ruleset as committed JSON: PR required, squash-only, `gate` the sole required status check, no bypass actors
@@ -95,8 +97,8 @@ scripts/               complexity-gate.mjs (the health gate) · apply-ruleset.mj
 ## 🧪 Tests
 
 - Orchestrator hermetic suite: 39 files / 654 tests (prompt contracts, merge flow, override grammar, worktree safety, provenance guard)
-- Workspace suites, all in the `test` gate job: `packages/ui` 34 files / 492 tests (70% coverage floor), `apps/blog` 18 / 359, `packages/visual-diff` 11 / 334, `apps/storybook` 5 / 121, `apps/visual-diff-ui` 53 / 825 (floors 93/87/92/94), `packages/logger` 2 / 20
-- `apps/e2e`: 42 acceptance scenarios across smoke, blog, axe a11y, the visual-diff console, sample mode, the report and its accessibility treatment — in `gate.needs`, blocking. A second lane, `features/local/`, is one scenario that captures, compares, reviews, accepts and cleans up against your own tree; it refuses to run under `CI` and gates nothing
+- Workspace suites, all in the `test` gate job: `packages/ui` 34 files / 492 tests (70% coverage floor), `apps/blog` 18 / 371 (3 skipped, one per draft post), `packages/visual-diff` 11 / 334, `apps/storybook` 5 / 125, `apps/visual-diff-ui` 53 / 829 (floors 93/87/92/94), `packages/logger` 2 / 20
+- `apps/e2e`: 44 acceptance scenarios across smoke, blog, axe a11y, the visual-diff console, sample mode, the report and its accessibility treatment — in `gate.needs`, blocking. `EXPECTED_SCENARIOS` in `apps/e2e/scripts/suite-integrity.mjs` is the count that must agree. A second lane, `features/local/`, is two scenarios that write to your own tree and clean up after themselves — one captures, compares, reviews and accepts against your `.visual-diff`, the other proves the dev server reflects `apps/blog/content/posts` as it is, which no built app can claim (`EXPECTED_LOCAL_SCENARIOS`). It refuses to run under `CI` and gates nothing
 - `packages/visual-diff`: 158 committed baselines; the capture/compare job runs on every PR but is deliberately never in `gate.needs` (see `packages/visual-diff/README.md#ci-status`)
 
 ## 🔗 Key Dependencies
