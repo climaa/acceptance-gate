@@ -130,10 +130,17 @@ const preview: Preview = {
             // The Gate first: it explains what `gate` is, which Dependency
             // Bumps then assumes when it talks about a bump PR waiting on it.
             // Logging next: its no-console rule runs inside the gate's lint
-            // job, so it stays with the checked half. Web Analytics last: the
-            // only one about what happens after a merge, and the only page
-            // whose subject no job in the gate runs.
-            ['The Gate', 'Dependency Bumps', 'Logging', 'Web Analytics'],
+            // job, so it stays with the checked half. Error Tracking follows
+            // Logging directly — the code path, then the tracker it reports
+            // to. Web Analytics last: the only one about what happens after a
+            // merge, and the only page whose subject no job in the gate runs.
+            [
+              'The Gate',
+              'Dependency Bumps',
+              'Logging',
+              'Error Tracking',
+              'Web Analytics',
+            ],
             'Skills',
             [
               'Overview',

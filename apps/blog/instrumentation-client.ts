@@ -4,10 +4,13 @@ import { installBugsink } from '@gate/logger/bugsink';
  * Browser realm — see `instrumentation.ts` for why this is a second file.
  *
  * The DSN is read as a bare literal here, not through the defaulted parameter
- * this repo reaches for everywhere else, and that is the whole point. Next
- * inlines `process.env.NEXT_PUBLIC_*` into the client bundle, so with no DSN
- * this compiles to `if (undefined)` and the bundler drops the branch — and with
- * it the ~430 KB `@sentry/browser` chunk behind the dynamic import. Behind a
+ * this repo reaches for everywhere else, and that is half the point — Next only
+ * inlines a `NEXT_PUBLIC_*` read it can see in the app's own source. The other
+ * half is next.config's `env` block, which normalises an unset variable to '':
+ * without it the read stays a live `process.env` lookup and nothing can be
+ * eliminated. Together they compile this guard to `if ('')`, and the bundler
+ * drops the branch — and with it the 438 KB `@sentry/browser` chunk behind the
+ * dynamic import. Behind a
  * function parameter the import stays reachable from an export, which is
  * measurably worse than it sounds: Turbopack chunks the SDK together with this
  * module, so every reader would download the whole SDK on every page to run a

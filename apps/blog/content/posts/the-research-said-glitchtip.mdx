@@ -6,8 +6,8 @@ tags: ['error tracking', 'logging', 'quality']
 draft: false
 ---
 
-Until yesterday, both production apps in this repo handled errors the same way: a themed
-fallback screen, rendered politely, reported to absolutely no one. The error boundaries
+Until this week, both production apps in this repo handled errors the same way: a themed
+fallback screen, rendered politely, reported to no one. The error boundaries
 [landed in #400](https://github.com/climaa/acceptance-gate/pull/400) and did their visual
 job. If one of them ever fired in production, the only person who could know was the
 visitor watching it happen.
@@ -32,16 +32,19 @@ still open. Call sites commit to `logger.error(error)`; they never learn where t
 goes. The tracker became a configuration detail instead of an architecture decision.
 
 The adapter that fills the slot ([#406](https://github.com/climaa/acceptance-gate/pull/406))
-keeps the same discipline. It takes a `load()` thunk instead of importing any SDK, reads
-the DSN from the environment, and **does nothing when the DSN is unset** — no SDK
-evaluates, no reporter installs. In the browser bundle this is stronger than a runtime
-check: the DSN read is a bare `process.env.NEXT_PUBLIC_*` literal, so a build without the
-variable compiles the whole branch to `if (undefined)` and the bundler drops the ~430 KB
-Sentry chunk behind the dynamic import. Local dev, CI, preview deploys, and the sandbox
-agents that wrote most of this code all run the identical source with zero configuration
-and zero behaviour change. Production, with the variable set, reports.
+keeps the same discipline. It takes a `load()` thunk instead of importing any SDK, is
+handed the DSN by the app rather than reading it itself, and **does nothing when the DSN
+is unset** — no SDK evaluates, no reporter installs. In the browser bundle that silence
+is stronger than a runtime check, and it takes two pieces, not one: the DSN read is a
+bare `process.env.NEXT_PUBLIC_*` literal in the app's own source, the only kind of read
+Next will inline — and `next.config.mjs` normalises an unset variable to the empty
+string, without which the read stays a live lookup and nothing can be eliminated.
+Together they compile the guard to `if ('')`. The 438 KB Sentry chunk sits behind a
+dynamic import, so the bundler drops it entirely. Local dev, CI, preview deploys, and
+the sandbox agents that wrote most of this code all run the identical source with zero
+configuration and zero behaviour change. Production, with the variable set, reports.
 
-One environment variable is the entire difference between "observability" and "inert".
+One environment variable is the entire difference between "observable" and "inert".
 That is the advantage of routing everything through the logger, and it is also what made
 the next section painless.
 
@@ -49,10 +52,11 @@ the next section painless.
 
 Six days before the decision I wrote a comparison doc, and its recommendation was
 GlitchTip, with reasons that still hold: it is MIT-licensed where Bugsink is
-source-available, it has the documented Next.js sourcemap story where Bugsink has two
-open issues ([#133](https://github.com/bugsink/bugsink/issues/133),
-[#157](https://github.com/bugsink/bugsink/issues/157), both dormant since mid-2025), and
-its supposed ops-weight disadvantage had mostly evaporated in recent releases.
+source-available, and it has the documented Next.js sourcemap story where Bugsink has
+two open issues ([#133](https://github.com/bugsink/bugsink/issues/133),
+[#157](https://github.com/bugsink/bugsink/issues/157), both dormant since mid-2025).
+GlitchTip's supposed ops-weight disadvantage has also mostly evaporated in recent
+releases.
 
 So why is this post not titled "GlitchTip"?
 
@@ -71,15 +75,19 @@ instance, paste the DSN into Vercel". For a single-maintainer repo whose error b
 measured in events per month, the ops surface going to zero beats the license difference
 and the sourcemap gap combined.
 
-The sourcemap gap I accepted with eyes open, and the screenshot below shows it honestly:
-the browser frame renders with *no code context available*, because Bugsink cannot yet
-resolve Next.js production sourcemaps. Server-side stacks are readable unminified, which
-is where the errors I care most about live. And if that trade stops being acceptable —
-this is the seam again — the reporter is Sentry-shaped, so the backend swaps behind one
-adapter without any call site noticing.
+The sourcemap gap I accepted with eyes open: the browser frame renders with *no code
+context available*, because Bugsink cannot yet resolve Next.js production sourcemaps.
+Server-side stacks are readable unminified, and that is where the errors that matter
+most here live — a route handler failing, a Server Component render blowing up
+mid-stream: the classes with real stacks and no adblocker in the path. The
+boundary-caught client errors are minified existence proofs, and for this blog that is
+enough. And if that trade stops being acceptable, the reporter is Sentry-shaped: the
+backend swaps behind one adapter without any call site noticing.
 
-The research doc still says GlitchTip on its first line, with a supersession note above
-it. I would rather keep the reversal on the record than pretend the process was tidy.
+The research doc's recommendation still reads GlitchTip; the supersession note sits
+above it rather than instead of it. I would rather keep the reversal on the record than
+pretend the process was tidy — a reversal earns its keep when new facts at decision time
+drive it, and the record is how you can tell.
 
 ## Shipping it, mostly unattended
 
@@ -91,7 +99,7 @@ Implementer and reviewer agents handled both; the wave ran just under two hours.
 
 One thing needed a human. The two PRs both touched a generated binary file, the first
 merge landed, and the second PR went `CONFLICTING` — with auto-merge armed, which means
-it would have sat there politely forever. The orchestrator had already exited; conflict
+it would have sat there quietly forever. The orchestrator had already exited; conflict
 resolution on a binary is exactly the kind of judgement call that stays attended. I merged
 main into the branch, took main's version of the generated file, and the gate did the
 rest.
@@ -117,6 +125,10 @@ errors will never arrive. For this blog the numbers are not the point — one re
 stack trace from the wild is worth more than a complete count of nothing, which is what I
 had before. But if you are making decisions off error *rates* rather than error
 *existence*, the blind spot is real and it is not evenly distributed across your users.
+The Sentry SDKs ship a `tunnel` option — proxy the envelopes through your own domain —
+built precisely to defeat these lists; I declined it, because it turns every error into
+a served route and a function invocation on a blog whose numbers are not the point. It
+is the noted fix if the existence proofs ever start getting eaten too.
 
 <img src="/images/bugsink/issue-detail-production.jpg" alt="The Bugsink issue detail page for the verification error: environment production, handled false, browser and OS tags populated, and a minified stack frame with no code context available." />
 
@@ -124,13 +136,13 @@ The detail view validates the whole chain: `environment: production`, `handled: 
 browser and OS tags filled in — and that honest minified frame, the sourcemap gap made
 visible, exactly as priced in.
 
-## Final thoughts
+## The seam was the decision
 
-The tracker was never the interesting decision. The seam was. Because `logger.error` is
+The tracker was never the interesting one. Because `logger.error` is
 the only door and the reporter is the only wiring, the expensive-sounding moves in this
 story were all cheap: adopting a logger before a tracker existed, reversing a written
-recommendation six days later, and — if the sourcemap issues stay dormant long enough to
-matter — swapping Bugsink out again someday. The call sites will not hear about it.
+recommendation six days later, and someday, if the sourcemap issues stay dormant long
+enough to matter, swapping Bugsink out again. The call sites will not hear about it.
 
 What the screenshots actually certify is narrower and better than "it works": a
 production error on this blog now becomes a stack trace somewhere I will see it, and the

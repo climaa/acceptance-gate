@@ -24,11 +24,14 @@ deployments and sandbox agents have no DSN, so
 [the adapter does nothing there](?path=/docs/docs-devops-logging--docs) — no SDK, no
 reporter, no behaviour change. There is no second switch to keep in sync.
 
-The volume maths is what makes the free tier honest rather than a trap. This blog's
-error budget is measured in events per month, not per minute; 15K is two orders of
-magnitude above anything plausible, and Bugsink's own per-project rate limits (1,000
-events per five minutes by default) cap what a misbehaving client — or someone abusing
-the public DSN, which is submit-only by design — can consume.
+This blog's error budget is measured in events per month, not per minute; 15K is two
+orders of magnitude above anything plausible. Be precise about what the per-project rate
+limits (1,000 events per five minutes by default) do and do not protect: they cap
+bursts, not the budget. A hostile client hammering the public, submit-only DSN could
+exhaust the monthly quota in under two hours; the blast radius is that ingestion answers
+`429` until the month rolls over and the tracker goes quiet — nothing is billed, since
+no card is on file. At this repo's stakes that is an accepted failure mode, not a gap to
+engineer against.
 
 ## Why Bugsink, and why hosted
 
@@ -44,14 +47,18 @@ operational reasoning:
   without being used.
 - **The hosted free tier moved the maths.** Self-hosting either tracker means a VPS, TLS,
   backups, and — Bugsink's release train is notably security-fix-heavy — a patching
-  obligation. The hosted tier makes all of that someone else's job at this volume for
-  exactly €0.
+  obligation. The hosted tier makes all of that someone else's job at this volume. Terms as
+  of 2026-08 — Bugsink names it an "evaluation" tier without publishing an expiry, so
+  treat its durability as unproven; if the terms ever change, the reporter seam is the
+  planned exit.
 - **The known gap is priced in.** Bugsink cannot resolve Next.js production sourcemaps
   ([bugsink#133](https://github.com/bugsink/bugsink/issues/133),
   [bugsink#157](https://github.com/bugsink/bugsink/issues/157), both open and dormant).
   Browser frames arrive minified with no code context; server-side stacks are readable
-  unminified, and those are the errors that matter most here. Do not invest in sourcemap
-  upload while those issues sleep.
+  unminified, and those are the errors that matter most here — route handlers and Server
+  Component renders fail server-side, while boundary-caught client errors serve as
+  minified existence proofs. Do not invest in sourcemap upload while those issues stay
+  open.
 - **The exit stays cheap.** Every call site talks to `logger.error`; only the adapter
   knows Bugsink exists, and the adapter is Sentry-shaped. If the sourcemap gap starts to
   bite, the backend swaps without any app code noticing.
@@ -70,7 +77,9 @@ The whole sequence, should the instance ever need recreating:
    `NEXT_PUBLIC_BUGSINK_DSN` and `BUGSINK_DSN`, marked Sensitive. The values are
    identical; the two names exist because the browser and server halves read different
    variables — see [Logging](?path=/docs/docs-devops-logging--docs) for why the public
-   one must also be defined (possibly empty) in `next.config.mjs`.
+   one must also be defined (possibly empty) in `next.config.mjs`. That define is
+   already committed in both apps: re-provisioning changes no code, and the Vercel
+   variables plus a redeploy are the whole procedure.
 4. **Redeploy.** The browser half is a build-time constant, so the DSN takes effect on
    the next production build, not the next request. On the Hobby plan, confirm that
    deploy actually ran — a day that exhausts the deploy budget fails silently.
@@ -86,22 +95,25 @@ reusing the blog's: per-project attribution and rate limits are the point of pro
 
 ## Verifying the path
 
-Three probes, in increasing order of realism. The first two isolate the instance from
-the app; the third is the real thing.
+Two probes in increasing order of realism, then the rule for reading a failure.
 
 **1. Ingestion, without the app.** A minimal event posted straight to the DSN proves the
 instance, project and key are alive:
 
 ```bash
-curl -X POST "https://climaa.bugsink.com/api/1/store/" \
+curl -X POST "https://climaa.bugsink.com/api/<project-id-from-DSN>/store/" \
   -H "Content-Type: application/json" \
   -H "X-Sentry-Auth: Sentry sentry_version=7, sentry_client=manual-test/1.0, sentry_key=<key-from-DSN>" \
   -d '{"event_id":"<32-hex>","timestamp":"<iso8601>","platform":"javascript",
        "level":"error","exception":{"values":[{"type":"WiringTest","value":"safe to resolve"}]}}'
 ```
 
-A `200` with an event id, and the issue in the dashboard seconds later. The SDKs use the
-newer `/api/1/envelope/` endpoint rather than `/store/`; both accept events.
+Both placeholders come from the DSN itself (`https://<key>@climaa.bugsink.com/<project-id>`):
+the key is the segment before the `@`, the project id is the path segment after the
+host. `event_id` is any 32 hex characters (`openssl rand -hex 16`), and the timestamp
+must be roughly current (`date -u +%FT%TZ`). Expect a `200` with an event id, and the
+issue in the dashboard seconds later. The SDKs use the newer `/api/<id>/envelope/`
+endpoint rather than `/store/`; both accept events.
 
 **2. The SDK, on the live page.** On the production blog, `window.__SENTRY__` existing
 is already evidence — without a DSN the entire SDK is eliminated from the bundle, so its
@@ -110,7 +122,7 @@ console (`setTimeout(() => { throw new Error('test') })` — it must be uncaught
 thrown inside the REPL's own try/catch) should produce a POST to `/api/1/envelope/` and
 an issue tagged `environment: production`, `handled: false`.
 
-**3. Believe failures selectively.** When step 2 fails, check _which side_ refused
+**3. When step 2 fails, believe it selectively.** Check _which side_ refused
 before blaming the wiring — which is the first caveat below.
 
 ## The two caveats verification taught
@@ -128,8 +140,9 @@ extensions delivered the identical event immediately. Two consequences:
   run the same blocklists. Treat the browser numbers as existence proofs, not rates;
   the server half has no such filter.
 
-**The last-tick flush can lose an event.** The server adapter starts a 2-second flush it
-cannot await; a Vercel function frozen immediately after responding can drop an event
+**The last-tick flush can lose an event.** The adapter starts a 2-second flush it
+cannot await — both realms run the identical code, but the loss scenario is
+server-specific: a Vercel function frozen immediately after responding can drop an event
 captured on the request's final tick. This is the documented cost of using the slim SDK
 pair instead of `@sentry/nextjs` — see
 [Logging](?path=/docs/docs-devops-logging--docs) — and it is the first suspect if server
@@ -140,9 +153,14 @@ events ever go missing.
 - **Quota:** 15K events/month on the free tier. The tracker going quiet mid-month with a
   `429` on ingestion is the symptom of hitting it — implausible at this volume, but that
   is where to look.
-- **Users:** single admin (the maintainer's account). The tier allows exactly one user,
-  which matches the repo.
+- **Users and access:** single admin (the maintainer's account — the tier allows exactly
+  one user, which matches the repo). The login credential lives in the maintainer's
+  password manager, never in the repo; the DSN itself is in Vercel's env settings and
+  the repo-local root `.env`, which is gitignored.
+- **Alerts:** Bugsink emails the admin on new issues by default — the project-membership
+  setting "Send email alerts" ships as "Default (Yes)", verified on this instance. The
+  dashboard is a second surface, not the only one.
 - **Test issues:** resolve them after verification so the open list stays a signal. The
   first verification's issues are kept under the Resolved tab as a record.
-- **Upgrades:** not this repo's job on the hosted tier — which, given Bugsink's
-  security-fix-heavy release cadence, is a feature of the tier rather than a footnote.
+- **Upgrades:** not this repo's job on the hosted tier — a feature of the tier rather
+  than a footnote, given how much of Bugsink's release cadence is security fixes.
