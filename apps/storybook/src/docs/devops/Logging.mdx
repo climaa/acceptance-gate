@@ -16,6 +16,11 @@ At the time this landed, shipped code contained zero `console.*` calls, so nothi
 migrated. The package exists for the next call, not the last one: the lint rule is the
 ratchet, the logger is the outlet.
 
+The first calls are the four error boundaries — `app/error.tsx` and `app/global-error.tsx`
+in each app. Every one of them already knew something had gone wrong and told nobody; each
+now runs `logger.error(error)` in an effect keyed on the `error` prop. The fallback is
+what the reader gets, and the report is what everybody else gets.
+
 ## Using it
 
 ```ts
