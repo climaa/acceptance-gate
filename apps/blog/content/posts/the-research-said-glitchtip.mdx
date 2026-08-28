@@ -20,29 +20,24 @@ The answer is a seam.
 ## The seam first
 
 Before any tracker existed, [#402](https://github.com/climaa/acceptance-gate/pull/402)
-landed `@gate/logger`: a console-shaped logger that prints nothing in production, with one
-exception — `logger.error()` always forwards to a pluggable reporter. The reporter lives
-in a `globalThis` slot keyed by a `Symbol.for`, because Next.js gives the RSC and SSR
-layers separate module instances and a plain module-level variable would not survive the
-crossing. The default reporter is a no-op.
-
-That ordering matters more than it looks. It meant the apps could adopt the logger — and
-an ESLint `no-console` rule over shipped source — while the "which tracker?" question was
-still open. Call sites commit to `logger.error(error)`; they never learn where the error
-goes. The tracker became a configuration detail instead of an architecture decision.
+landed `@gate/logger`: a console-shaped logger that prints nothing in production, with
+one exception — `logger.error()` always forwards to a pluggable reporter, and the
+default reporter is a no-op. That ordering matters more than it looks. It meant the apps
+could adopt the logger — and an ESLint `no-console` rule over shipped source — while the
+"which tracker?" question was still open. Call sites commit to `logger.error(error)`;
+they never learn where the error goes. The tracker became a configuration detail instead
+of an architecture decision.
 
 The adapter that fills the slot ([#406](https://github.com/climaa/acceptance-gate/pull/406))
-keeps the same discipline. It takes a `load()` thunk instead of importing any SDK, is
-handed the DSN by the app rather than reading it itself, and **does nothing when the DSN
-is unset** — no SDK evaluates, no reporter installs. In the browser bundle that silence
-is stronger than a runtime check, and it takes two pieces, not one: the DSN read is a
-bare `process.env.NEXT_PUBLIC_*` literal in the app's own source, the only kind of read
-Next will inline — and `next.config.mjs` normalises an unset variable to the empty
-string, without which the read stays a live lookup and nothing can be eliminated.
-Together they compile the guard to `if ('')`. The 438 KB Sentry chunk sits behind a
-dynamic import, so the bundler drops it entirely. Local dev, CI, preview deploys, and
-the sandbox agents that wrote most of this code all run the identical source with zero
-configuration and zero behaviour change. Production, with the variable set, reports.
+keeps the same discipline: **it does nothing when the DSN is unset** — no SDK evaluates,
+no reporter installs, and a production build without the variable ships no SDK at all.
+Local dev, CI, preview deploys, and the sandbox agents that wrote most of this code all
+run the identical source with zero configuration and zero behavior change. Production,
+with the variable set, reports. The mechanics that make all of that true — where the
+reporter actually lives, and the build trick that keeps 438 KB of Sentry SDK out of a
+bundle that would never use it — are the [Logging
+page](https://acceptance-gate-storybook.vercel.app/index.html?path=/docs/docs-devops-logging--docs)'s
+story.
 
 One environment variable is the entire difference between "observable" and "inert".
 That is the advantage of routing everything through the logger, and it is also what made
