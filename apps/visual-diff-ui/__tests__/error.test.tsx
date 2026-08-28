@@ -118,23 +118,43 @@ describe('app/error.tsx', () => {
     expect(report.mock.calls[0]?.[0]).toBe(thrown);
   });
 
-  // The dependency array, from both sides. Without one the effect reports on
-  // every render; with an empty one the second failure is never reported at all.
-  it('reports again only when the failure changes', () => {
+  // One side of the dependency array: without one, the effect reports on every
+  // render.
+  it('does not report again when the same failure re-renders', () => {
     const report = vi.fn();
     setReporter(report);
     const { rerender } = render(<ErrorBoundary error={thrown} retry={vi.fn()} />);
+
     rerender(<ErrorBoundary error={thrown} retry={vi.fn()} />);
+
+    expect(report).toHaveBeenCalledTimes(1);
+  });
+
+  // The other side: with an empty one, the second failure is never reported.
+  it('reports again when the failure changes', () => {
+    const report = vi.fn();
+    setReporter(report);
+    const { rerender } = render(<ErrorBoundary error={thrown} retry={vi.fn()} />);
 
     rerender(<ErrorBoundary error={other} retry={vi.fn()} />);
 
-    expect(report.mock.calls.map((args) => args[0])).toEqual([thrown, other]);
+    expect(report).toHaveBeenCalledTimes(2);
+    expect(report.mock.calls[1]?.[0]).toBe(other);
   });
 });
 
 describe('app/global-error.tsx', () => {
   const renderGlobal = () =>
     renderToStaticMarkup(<GlobalError error={thrown} retry={vi.fn()} />);
+
+  // The two cases below are about an effect, and an effect runs on commit — so
+  // they mount rather than read markup. Detached, because `<html>` cannot nest
+  // inside the one jsdom already has: under test is what the commit does, not
+  // where React parked the markup.
+  const mountGlobal = () =>
+    render(<GlobalError error={thrown} retry={vi.fn()} />, {
+      container: document.createElement('div'),
+    });
 
   // It replaces the root layout rather than rendering inside it, so anything the
   // layout supplied is gone unless this file restates it.
@@ -167,11 +187,7 @@ describe('app/global-error.tsx', () => {
   it('gives the document the theme the reader chose', () => {
     localStorage.setItem(THEME_STORAGE_KEY, 'dark');
 
-    render(<GlobalError error={thrown} retry={vi.fn()} />, {
-      // `<html>` cannot nest inside jsdom's own; the boundary's effect is what
-      // is under test here, not where React parked its markup.
-      container: document.createElement('div'),
-    });
+    mountGlobal();
 
     expect(document.documentElement.dataset.theme).toBe('dark');
   });
@@ -179,16 +195,13 @@ describe('app/global-error.tsx', () => {
   /**
    * The boundary for what nothing else in the app can catch — `SampleNotice`
    * awaits `resolveDataDir()`, which reads the filesystem — and so the one
-   * whose report matters most. Mounted rather than read as markup, for the same
-   * reason as the case above: an effect runs on commit.
+   * whose report matters most.
    */
   it('hands the reporter the Error object itself, once', () => {
     const report = vi.fn();
     setReporter(report);
 
-    render(<GlobalError error={thrown} retry={vi.fn()} />, {
-      container: document.createElement('div'),
-    });
+    mountGlobal();
 
     expect(report).toHaveBeenCalledTimes(1);
     expect(report.mock.calls[0]?.[0]).toBe(thrown);

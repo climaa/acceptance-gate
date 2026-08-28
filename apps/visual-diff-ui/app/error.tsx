@@ -30,9 +30,9 @@ import { ERROR_ACTION, ERROR_NOTE } from '@/lib/site';
  * `next dev` and, in a production build, prints nothing and hands the error to
  * the reporter instead: a no-op until an error tracker claims the slot, with
  * nothing here changing when one does. The `Error` goes over as itself rather
- * than as a formatted string, which the reporter recovers positionally and
- * which a string would cost its stack. Keyed on `error`, so a re-render reports
- * nothing and a second, different failure reports again.
+ * than as a formatted string: the reporter recovers it from the arguments
+ * positionally, and a string would cost it the stack. Keyed on `error`, so a
+ * re-render reports nothing and a second, different failure reports again.
  *
  * No `role="alert"`, and that is a constraint rather than a preference —
  * apps/e2e/pages/console.ts matches console refusals with a strict

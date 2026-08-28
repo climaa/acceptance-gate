@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { act, createElement, type ComponentType } from 'react';
-import { createRoot } from 'react-dom/client';
+import { createRoot, type Root } from 'react-dom/client';
 // Imported explicitly rather than relying on `globals: true` — same reason as
 // pages.test.ts: tsconfig's `**/*.ts` include means tsc typechecks this file.
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -46,13 +46,13 @@ const other = Object.assign(new Error('Invalid frontmatter: content/posts/two.md
   digest: '1180453992',
 });
 
-const renderBoundary = (retry: () => void) =>
-  renderToStaticMarkup(createElement(ErrorBoundary, { error: thrown, retry }));
+const renderBoundary = () =>
+  renderToStaticMarkup(createElement(ErrorBoundary, { error: thrown, retry: vi.fn() }));
 
-const renderGlobal = (retry: () => void) =>
-  renderToStaticMarkup(createElement(GlobalError, { error: thrown, retry }));
+const renderGlobal = () =>
+  renderToStaticMarkup(createElement(GlobalError, { error: thrown, retry: vi.fn() }));
 
-const mounted: Array<{ unmount: () => void }> = [];
+const mounted: Root[] = [];
 
 /** Mounts a boundary; `rerender` is how the effect's key gets exercised. */
 function mount(Boundary: Boundary, error: Error, retry: () => void = vi.fn()) {
@@ -94,7 +94,7 @@ afterEach(() => {
 
 describe('app/error.tsx', () => {
   it('names the failure and offers the way on', () => {
-    const html = renderBoundary(vi.fn());
+    const html = renderBoundary();
 
     expect(html).toContain(ERROR_TITLE);
     expect(html).toContain(ERROR_NOTE);
@@ -128,7 +128,7 @@ describe('app/error.tsx', () => {
   // development, where the real one is forwarded — so a boundary that printed
   // it would leak a filesystem path and pass its own test.
   it('prints neither the thrown message nor the digest', () => {
-    const html = renderBoundary(vi.fn());
+    const html = renderBoundary();
 
     expect(html).not.toContain('ENOENT');
     expect(html).not.toContain(thrown.digest);
@@ -148,17 +148,28 @@ describe('app/error.tsx', () => {
     expect(report.mock.calls[0]?.[0]).toBe(thrown);
   });
 
-  // The dependency array, from both sides. Without one the effect reports on
-  // every render; with an empty one the second failure is never reported at all.
-  it('reports again only when the failure changes', () => {
+  // One side of the dependency array: without one, the effect reports on every
+  // render.
+  it('does not report again when the same failure re-renders', () => {
     const report = vi.fn();
     setReporter(report);
     const { rerender } = mount(ErrorBoundary, thrown);
+
     rerender(thrown);
+
+    expect(report).toHaveBeenCalledTimes(1);
+  });
+
+  // The other side: with an empty one, the second failure is never reported.
+  it('reports again when the failure changes', () => {
+    const report = vi.fn();
+    setReporter(report);
+    const { rerender } = mount(ErrorBoundary, thrown);
 
     rerender(other);
 
-    expect(report.mock.calls.map((args) => args[0])).toEqual([thrown, other]);
+    expect(report).toHaveBeenCalledTimes(2);
+    expect(report.mock.calls[1]?.[0]).toBe(other);
   });
 });
 
@@ -166,7 +177,7 @@ describe('app/global-error.tsx', () => {
   // It replaces the root layout rather than rendering inside it, so anything
   // the layout supplied is gone unless this file restates it.
   it('rebuilds the document the root layout would have drawn', () => {
-    const html = renderGlobal(vi.fn());
+    const html = renderGlobal();
 
     expect(html).toContain('<html lang="en"');
     expect(html).toContain('<body>');
@@ -182,14 +193,14 @@ describe('app/global-error.tsx', () => {
    * the attribute a mounted boundary leaves behind.
    */
   it('ships no inline theme script, which could not run here', () => {
-    const html = renderGlobal(vi.fn());
+    const html = renderGlobal();
 
     expect(html).not.toContain(THEME_SCRIPT);
     expect(html).not.toContain('<script');
   });
 
   it('prints neither the thrown message nor the digest', () => {
-    const html = renderGlobal(vi.fn());
+    const html = renderGlobal();
 
     expect(html).not.toContain('ENOENT');
     expect(html).not.toContain(thrown.digest);
