@@ -119,8 +119,15 @@ td.ds-table__cell--numeric {
     border: 0;
   }
 
+  /* `auto-fit` rather than a single column: a card of one-line pairs wastes the
+     width it was given, and every pair it pushes below the fold is a scroll a
+     reader pays for. 11rem is the narrowest track that still holds a label and a
+     short value on one line; below that the pair wraps and the card is taller
+     than the single column it replaced. `auto-fit` collapses to one track when
+     the viewport cannot hold two, so the narrow case is the old behaviour. */
   .ds-table__row {
     display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
     gap: var(--space-3);
     padding: var(--space-4);
     border: 1px solid var(--color-border);
@@ -131,10 +138,19 @@ td.ds-table__cell--numeric {
     margin-top: var(--space-3);
   }
 
-  /* Label over value: the two lines the card is made of. */
+  /* Label beside value, not above it: stacking spends a line on a word that is
+     usually shorter than the value it names. `wrap` is the release valve — a
+     value too long to sit beside its label takes the line below rather than
+     widening the track and forcing the grid back to one column.
+     `min-width: 0` on every cell, not only the truncating one: each is a grid
+     item now, and an item's automatic minimum size is its content, which is what
+     would push a track past the 11rem the row asked for. */
   .ds-table__cell {
-    display: grid;
-    gap: var(--space-1);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--space-1) var(--space-2);
+    min-width: 0;
     padding: 0;
     border-bottom: 0;
     /* Right alignment is a relationship between the cells of a column, and at
@@ -144,8 +160,8 @@ td.ds-table__cell--numeric {
 
   /* A card has the width a column did not, so the value wraps in full rather
      than ellipsizing. It could not ellipsize here in any case: the cell is a
-     grid container at this width, and `text-overflow` clips a block container's
-     own inline content, never a child box's. */
+     flex container at this width, and `text-overflow` clips a block container's
+     own inline content, never a flex item's. */
   .ds-table__cell--truncate {
     overflow: visible;
     white-space: normal;
