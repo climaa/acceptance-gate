@@ -94,11 +94,11 @@ inlines `process.env.NODE_ENV` into client bundles and Vercel sets it on the ser
 Note the contrast with [Web Analytics](?path=/docs/docs-devops-web-analytics--docs),
 which cannot use `NODE_ENV` because preview deployments also set it to `production` and
 would pollute the production dataset. For logging that same property is the point:
-a preview should behave like production, and silence is production behaviour. Two gates,
+a preview should behave like production, and silence is production behavior. Two gates,
 two env vars, each right for its job.
 
 One honesty note: the silence is a runtime check, not dead code elimination. The `mode`
-that decides it is an injectable function parameter (that is what makes the behaviour
+that decides it is an injectable function parameter (that is what makes the behavior
 testable), so the minifier cannot prove the console branch dead and a few inert bytes of
 it ship in the client bundle. They never execute.
 
@@ -122,8 +122,11 @@ switch that silently missed half the errors.
 
 ## The tracker
 
-The reporter is wired to a self-hosted **Bugsink** instance, spoken to through a Sentry
-SDK — Bugsink is Sentry-compatible and has no SDK of its own. The adapter is
+The reporter is wired to a hosted **Bugsink** instance, spoken to through a Sentry
+SDK — Bugsink is Sentry-compatible and has no SDK of its own. Which tracker, which
+tier, how the instance is provisioned and how to verify the path are
+[Error Tracking](?path=/docs/docs-devops-error-tracking--docs)'s story; this page stays
+on the code. The adapter is
 `@gate/logger/bugsink`, and each app installs it once per realm:
 
 ```ts
@@ -176,7 +179,7 @@ Two things combine to cause it, and neither is visible in the source:
   rather than behind it. The built entry reads
   `Promise.all(['…/1k_kxzok50cio.js'].map(o.l)).then(() => t(299319))`: one 438 KB chunk
   (144 KB gzip) holding both the SDK and this module, fetched before the module runs.
-- **Next only inlines a `NEXT_PUBLIC_*` read when the variable exists.** An unset one
+- **Next only in lines a `NEXT_PUBLIC_*` read when the variable exists.** An unset one
   stays a live `process.env` lookup, so the `if` is a runtime branch and nothing can be
   eliminated. That is the opposite of the usual assumption about `NEXT_PUBLIC_`.
 

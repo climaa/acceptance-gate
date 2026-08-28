@@ -1,0 +1,52 @@
+---
+title: 'The research said GlitchTip. The decision was Bugsink.'
+description: 'Six days before choosing an error tracker, I wrote a research doc recommending the other one. On the seam that made reversing it cheap, the free tier that changed the maths, and the adblocker that ate my first production error.'
+date: '2026-08-28'
+tags: ['error tracking', 'logging', 'quality']
+draft: false
+---
+
+Until this week, both production apps handled errors with a themed fallback screen, politely rendered, and no reports. Error boundaries [landed in #400](https://github.com/climaa/acceptance-gate/pull/400) and did their visual job. If triggered in production, only the visitor knew.
+
+This post covers the two days that closed the gap—and the uncomfortable part: the written research recommended GlitchTip, but I chose Bugsink. The reversal was cheap because, before any tracker, [#402](https://github.com/climaa/acceptance-gate/pull/402) introduced `@gate/logger`, whose `logger.error()` forwards errors to a pluggable reporter. Call sites don't know where errors go, making the tracker a configuration detail, not an architecture decision. This seam is detailed on the [Logging page](https://acceptance-gate-storybook.vercel.app/index.html?path=/docs/docs-devops-logging--docs); the post discusses what it enabled.
+
+## The research said GlitchTip
+
+Six days before the decision, I wrote a comparison that favored GlitchTip because it is MIT-licensed, unlike Bugsink, which is only source-available. GlitchTip also has documented Next.js sourcemap support, whereas Bugsink has two unresolved issues ([#133](https://github.com/bugsink/bugsink/issues/133), [#157](https://github.com/bugsink/bugsink/issues/157)) that have been dormant since mid-2025. Its operational disadvantage has also lessened recently.
+
+So why is this post not titled "GlitchTip"?
+
+Two changes occurred between the doc and the decision. First is scope honesty: this repo needs only readable stack traces for production errors at low volume. GlitchTip's additional features like uptime monitoring and logs are extra capabilities I would host but not use. Bugsink's focus on errors isn't a limitation; it's the core. 
+
+Second, rechecking Bugsink revealed a misjudged detail: a free hosted tier with 15K events/month, a single user, simplifying deployment from setting up a VPS and managing security to just creating an instance and pasting the DSN into Vercel. For this one maintainer repo, operational simplicity outweighs licensing and sourcemap gaps.
+
+The sourcemap gap is accepted: Bugsink can't resolve Next.js production sourcemaps, so browser frames show no code context. Server-side stacks are readable and contain errors that matter — route failures, Server Component errors — with full stacks and no ad-blockers. Client errors are minified proofs, sufficient for this blog. If needed, the reporter is Sentry-shaped, so the backend can swap to any Sentry-compatible tracker without call sites noticing.
+
+The research document still recommends GlitchTip, with the reversal note above it, reflecting a decision driven by new facts rather than tidiness.
+
+## Shipping it, mostly unattended
+
+The implementation followed the usual pipeline: two issues released to [Sandcastle](/blog/what-is-sandcastle), handled in a single run. The first issue made error boundaries from #400 into the logger's first call sites using `useEffect` on the `error` prop. The second built the Bugsink adapter. Implementer and reviewer agents handled both; the wave took just under two hours.
+
+One thing needed a human: two PRs touched a generated binary file—the code analyzer's churn cache—and updated it as a side effect. The first merge succeeded, but the second PR went `CONFLICTING` with auto-merge enabled, leaving it unresolved. The orchestrator had exited; resolving a binary conflict requires judgment. I merged main into the branch, used main's version of the file, and the gate handled the rest.
+
+## The first error, and who ate it
+
+Once the DSN was live, verification should have been simple: throw an error on the blog and see it appear. Instead, the envelope request was refused five times, even though the same payload returned 200 via `curl`.
+
+The issue wasn't the server; it was my browser. Privacy blocklist blocked Sentry's ingestion URL, so my shields blocked telemetry before it left the machine. The root was reachable, but the ingestion path wasn't. A clean Chromium without extensions sent the identical error and it landed immediately.
+
+<img src="/images/bugsink/first-real-error-issues-list.jpg" alt="The Bugsink issues list for acceptance-gate-blog showing the first real production error at the top, above two direct-API probe events from earlier in the verification." />
+
+This is worth noting: **client-side error tracking undercounts, structurally.** Some visitors run the same blocklist I do, so their errors won't be recorded. For this blog, numbers aren't critical — one real stack trace beats counting nothing. But if decisions rely on error *rates* rather than *existence*, the blind spot is real and uneven among users. The Sentry SDKs offer a `tunnel` option to proxy envelopes through your domain, designed to bypass blocklist. I declined it, as it makes every error a served route and function call on a non-critical blog. It's a fix if error existence proofs are ever compromised.
+
+<img src="/images/bugsink/issue-detail-production.jpg" alt="The Bugsink issue detail page for the verification error: environment production, handled false, browser and OS tags populated, and a minified stack frame with no code context available." />
+
+The detail view confirms the entire chain: `environment: production`, `handled: false`, browser and OS tags are filled in — and it accurately exposes the honest minified frame, including the sourcemap gap, as expected.
+
+## The seam was the decision
+
+The pivotal decision was the seam. The tracker itself was never the focus; since `logger.error` is the only access point and the reporter is the sole wiring, the costly-looking changes in this story were actually cheap: setting up a logger before a tracker existed, reversing a recommendation six days later, and eventually, if the sourcemap issues remain unresolved long enough, replacing Bugsink again. The call sites won't be notified. What the screenshots truly confirm is more precise and useful than just "it works": a production error on this blog now results in a stack trace visible to me, following a path I've seen fail, diagnose, and succeed — including incidents where the observer's own browser is part of the problem.
+
+For the technical detail this post compresses — provisioning from scratch, the verification probes as commands, and the caveats written as operating rules — the runbook is [Error Tracking](https://acceptance-gate-storybook.vercel.app/index.html?path=/docs/docs-devops-error-tracking--docs) in the project's docs, next to the [Logging page](https://acceptance-gate-storybook.vercel.app/index.html?path=/docs/docs-devops-logging--docs) that owns the code half.
+
