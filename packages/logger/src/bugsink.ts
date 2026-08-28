@@ -74,11 +74,10 @@ export const toReport = (data: readonly unknown[]): Report => {
   const failure = data.find(isError);
   if (failure) return { error: failure, extra: data.filter((item) => item !== failure) };
 
+  if (data.length === 0) return { error: new Error(NO_ARGUMENTS), extra: [] };
+
   const [first, ...rest] = data;
-  return {
-    error: new Error(data.length === 0 ? NO_ARGUMENTS : messageOf(first)),
-    extra: rest,
-  };
+  return { error: new Error(messageOf(first)), extra: rest };
 };
 
 /**
@@ -95,6 +94,8 @@ export const createBugsinkReporter =
         error,
         extra.length > 0 ? { extra: { arguments: extra } } : undefined,
       );
+      // Swallowed rather than left dangling: an unhandled rejection from a
+      // tracker that cannot be reached is the same crash this catch prevents.
       tracker.flush?.(FLUSH_TIMEOUT_MS)?.then(undefined, () => {});
     } catch {
       // Nothing to report the failure to — this IS the reporter.

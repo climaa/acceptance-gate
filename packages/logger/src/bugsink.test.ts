@@ -165,7 +165,7 @@ describe('installBugsink', () => {
   });
 
   it('reports rather than throws when the SDK cannot be loaded', async () => {
-    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const printed = vi.spyOn(console, 'error').mockImplementation(() => {});
     const install = vi.fn();
 
     const installed = await installBugsink({
@@ -176,6 +176,10 @@ describe('installBugsink', () => {
 
     expect(installed).toBe(false);
     expect(install).not.toHaveBeenCalled();
+    expect(printed).toHaveBeenCalledWith(
+      'bugsink reporter not installed',
+      expect.any(Error),
+    );
   });
 });
 

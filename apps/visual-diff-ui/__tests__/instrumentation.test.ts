@@ -16,23 +16,27 @@ import type { Reporter } from '@gate/logger';
  * inside a unit test.
  */
 
-const sdk = () => ({
-  init: vi.fn(),
-  captureException: vi.fn(),
-  flush: vi.fn(() => Promise.resolve(true)),
+/**
+ * One shape, defined once: the mocked namespaces start as a fresh recording and
+ * `beforeEach` replaces them with another, so the two cannot drift apart. The
+ * objects themselves are reused rather than reassigned — they ARE the mocked
+ * module namespaces.
+ */
+const { sdk, nodeSdk, browserSdk } = vi.hoisted(() => {
+  const sdk = () => ({
+    init: vi.fn(),
+    captureException: vi.fn(),
+    flush: vi.fn(() => Promise.resolve(true)),
+  });
+  return { sdk, nodeSdk: sdk(), browserSdk: sdk() };
 });
-
-const { nodeSdk, browserSdk } = vi.hoisted(() => ({
-  nodeSdk: { init: vi.fn(), captureException: vi.fn(), flush: vi.fn() },
-  browserSdk: { init: vi.fn(), captureException: vi.fn(), flush: vi.fn() },
-}));
 
 vi.mock('@sentry/node', () => nodeSdk);
 vi.mock('@sentry/browser', () => browserSdk);
 
 const REPORTER_KEY = Symbol.for('@gate/logger.reporter');
-const installedReporter = () =>
-  (globalThis as { [key: symbol]: Reporter | undefined })[REPORTER_KEY];
+type ReporterSlot = { [key: symbol]: Reporter | undefined };
+const installedReporter = () => (globalThis as ReporterSlot)[REPORTER_KEY];
 
 const DSN = 'https://key@bugsink.example.com/1';
 
@@ -44,7 +48,7 @@ beforeEach(() => {
 afterEach(() => {
   vi.unstubAllEnvs();
   vi.resetModules();
-  delete (globalThis as { [key: symbol]: Reporter | undefined })[REPORTER_KEY];
+  delete (globalThis as ReporterSlot)[REPORTER_KEY];
 });
 
 describe('the server realm', () => {
