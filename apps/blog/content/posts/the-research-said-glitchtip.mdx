@@ -97,7 +97,8 @@ error boundaries from #400 into the logger's first real call sites — the App R
 pattern of a `useEffect` keyed on the `error` prop. The second built the Bugsink adapter.
 Implementer and reviewer agents handled both; the wave ran just under two hours.
 
-One thing needed a human. The two PRs both touched a generated binary file, the first
+One thing needed a human. The two PRs both touched a generated binary file — the code
+analyser's churn cache, which every PR here updates as a side effect — the first
 merge landed, and the second PR went `CONFLICTING` — with auto-merge armed, which means
 it would have sat there quietly forever. The orchestrator had already exited; conflict
 resolution on a binary is exactly the kind of judgement call that stays attended. I merged
