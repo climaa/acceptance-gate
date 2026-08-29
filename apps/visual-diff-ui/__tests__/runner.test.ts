@@ -137,6 +137,27 @@ beforeAll(() => {
   artifacts = artifactTree();
 });
 
+/**
+ * Why a cached `test` cannot answer for the guard below.
+ *
+ * `turbo.json`'s `test` task is cached, and the tree this guard watches is
+ * gitignored, so it is in no input set: a replay reports a pass for a state the
+ * digests never saw. Measured 2026-08-29 — the key is byte-identical across that
+ * tree going from absent to populated.
+ *
+ * That is a fact about the cache rather than a hazard. A cache hit means this
+ * suite did not run, so it wrote nothing and the claim holds vacuously. The
+ * cache only hits when the inputs are unchanged, and a write that was not there
+ * before needs changed behaviour, which needs changed source or dependencies,
+ * which moves the key.
+ *
+ * What the argument rests on is one line of this file: the suite fakes `spawn`,
+ * so the real differ never runs and nothing outside this app's own code can
+ * write there. Spawn it for real and the reasoning lapses — `test` would then
+ * want `cache: false`, because a writer that only sometimes fires can be locked
+ * into a green. `turbo.json` is strict JSON and takes no comments, which is why
+ * this one lives here.
+ */
 afterAll(() => {
   const after = committedTrees();
   const artifactsAfter = artifactTree();
