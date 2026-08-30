@@ -15,6 +15,7 @@ import {
   SITE_DESCRIPTION,
   SITE_TAGLINE,
   SITE_TITLE,
+  SITE_URL,
 } from '@/lib/site';
 import { THEME_SCRIPT } from '@/lib/theme';
 import './globals.css';
@@ -43,11 +44,19 @@ const FONT_PRELOAD = {
 } as const;
 
 export const metadata: Metadata = {
+  // Every absolute URL in the metadata below resolves against this, so it has to
+  // name a host that answers — see `lib/site.ts`.
+  metadataBase: SITE_URL,
   title: {
     default: `${SITE_TITLE} — ${SITE_TAGLINE}`,
     template: `%s · ${SITE_TITLE}`,
   },
   description: SITE_DESCRIPTION,
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    siteName: SITE_TITLE,
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

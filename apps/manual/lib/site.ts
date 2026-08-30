@@ -1,3 +1,23 @@
+/**
+ * Single source for the deployed origin. `app/layout.tsx` needs it for
+ * `metadataBase` and `app/sitemap.ts` to build absolute URLs — this is the one
+ * place the host is written literally.
+ *
+ * Aim it at somewhere real, always: a `metadataBase` pointing at a host that
+ * does not resolve breaks every absolute URL built on it. This one was earned
+ * rather than assumed. Vercel assigns a project's `.vercel.app` name once, at
+ * creation, and never regenerates it on rename — the project was created as
+ * `manual`, `manual.vercel.app` was already someone else's, so it was minted
+ * `manual-seven-kappa.vercel.app` and kept that through the rename. The name
+ * below had to be added to the project and aliased before it served anything.
+ * Verified against the live origin, not inferred from the project name.
+ */
+export const SITE_URL = new URL('https://acceptance-gate-manual.vercel.app');
+
+export function absoluteUrl(pathname: string): string {
+  return new URL(pathname, SITE_URL).toString();
+}
+
 export const SITE_TITLE = 'Visual-diff manual';
 
 export const SITE_TAGLINE = 'What the console does, taken from what it must do';

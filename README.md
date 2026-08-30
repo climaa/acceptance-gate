@@ -6,7 +6,8 @@
 Live: **[blog](https://acceptance-gate-blog.vercel.app)** — the argument ·
 **[Storybook](https://acceptance-gate-storybook.vercel.app)** — the evidence ·
 **[visual diff](https://acceptance-gate-visual-diff-ui.vercel.app)** — the tool,
-working.
+working · **[manual](https://acceptance-gate-manual.vercel.app)** — the tool's
+requirements, rendered.
 
 **The pipeline is the product.** A public portfolio monorepo where every pull
 request — including the ones that build the repo itself — walks through the
