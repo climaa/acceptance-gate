@@ -7,6 +7,7 @@ import { resolveDataDir } from '@/lib/data';
 import {
   APP_DESCRIPTION,
   APP_NAME,
+  MANUAL_NAV,
   APP_TAGLINE,
   SAMPLE_LABEL,
   SAMPLE_NOTE,
@@ -77,7 +78,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* `as={NextLink}` once, forwarded to the brand: the design system
             depends on no framework, so this is where the app names its router
             link. The header supplies the skip link and the theme toggle. */}
-        <SiteHeader brand={BRAND} as={NextLink} container="full" />
+        <SiteHeader brand={BRAND} nav={MANUAL_NAV} as={NextLink} container="full" />
 
         {/* The id is SkipLink's default target, and the landmark the header's
             first tab stop jumps to. */}

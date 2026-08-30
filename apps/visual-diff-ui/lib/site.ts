@@ -14,6 +14,19 @@ export const APP_DESCRIPTION =
 
 /** The sample notice's accessible name and its visible text — one string, so the
  *  two can never drift apart. */
+/**
+ * The manual, linked from the header.
+ *
+ * An absolute URL because it is a different deployment: the manual is its own
+ * Vercel project, so this cannot be a route. The sample-mode console is the
+ * manual's referrer by design — a reader judging the mechanism arrives at the
+ * console first and needs the way across. Storybook deliberately does not link
+ * it: that is developer documentation, and the manual is for end users.
+ */
+export const MANUAL_NAV = [
+  { label: 'Manual', href: 'https://acceptance-gate-manual.vercel.app' },
+];
+
 export const SAMPLE_LABEL = 'sample data';
 
 export const SAMPLE_NOTE =
