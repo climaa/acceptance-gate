@@ -5,7 +5,14 @@ const config = [
   { ignores: ['.next/**', '.turbo/**', 'next-env.d.ts'] },
   ...nextCoreWebVitals,
   {
-    files: ['app/**/*.{ts,tsx}', 'lib/**/*.{ts,tsx}', 'content/**/*.{ts,tsx}'],
+    files: [
+      'app/**/*.{ts,tsx}',
+      'lib/**/*.{ts,tsx}',
+      'content/**/*.{ts,tsx}',
+      // Root-level, and shipped: Next loads this entry point before any app
+      // code runs.
+      'proxy.ts',
+    ],
     rules: { 'no-console': 'error' },
   },
 ];

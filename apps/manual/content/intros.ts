@@ -13,13 +13,21 @@ import type { ManualSlug } from '@/lib/allowlist';
  * and this is where wording is free to be improved without touching a file that
  * is a product requirement.
  */
-export const INDEX_LEAD: readonly string[] = [
+/**
+ * At least one paragraph, stated in the type rather than only in a test.
+ * `noUncheckedIndexedAccess` makes `paragraphs[0]` `string | undefined` on a
+ * plain array, and the index page prints that first paragraph as each card's
+ * lede — an empty array would render an empty `<p>` and say nothing about it.
+ */
+type Paragraphs = readonly [string, ...string[]];
+
+export const INDEX_LEAD: Paragraphs = [
   'The visual-diff console captures screenshots of every component in this repository, compares one capture against another, and shows what moved. This is its manual.',
   'Every page here is built from the acceptance scenarios that decide whether a change may merge. They are not a description of the console written alongside it — they are the requirements themselves, rendered. A scenario cannot change without this manual changing in the same commit.',
   'That fixes the genre, so it is worth stating plainly: this is a behavioural reference with some task framing, not a promised how-to. The console is a local tool with one operator, and the instance linked below runs on committed sample data. If you are here to judge the mechanism rather than to operate the tool, you are the reader these pages expect.',
 ];
 
-export const INTROS: Record<ManualSlug, readonly string[]> = {
+export const INTROS: Record<ManualSlug, Paragraphs> = {
   console: [
     'The console is the front door. It lists the screenshot sets captured so far — each with the branch it came from, how many stories it holds and how large it is — and it starts the jobs that produce and compare them.',
     'The behaviour worth knowing is what happens at the edges. A set held by a registered worktree cannot be deleted, and the console says what holds it rather than failing quietly. Choosing two sets to compare fills the job form for you, and the tab you are on is part of the address, so a comparison you set up survives a reload and a link.',

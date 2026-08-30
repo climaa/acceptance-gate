@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { INTROS } from '@/content/intros';
 import { MANUAL_PAGES } from '@/lib/allowlist';
@@ -47,12 +49,21 @@ describe('the allowlist matches the published features', () => {
   });
 
   it('opens a source for every allowlisted page, and no other', () => {
-    // The literal paths in `lib/sources.ts` are what is actually read; the
-    // `featurePath` beside each page here is a label. This is the seam where the
-    // two lists could drift apart.
     const slugs: string[] = MANUAL_PAGES.map((page) => page.slug);
 
     expect(Object.keys(FEATURE_SOURCES).sort()).toEqual([...slugs].sort());
+  });
+
+  // The seam between the two encodings of the same three paths. `lib/sources.ts`
+  // holds the literals that are actually opened — they have to be literals or
+  // Turbopack traces the whole repository — and `featurePath` here is the label
+  // printed when parsing fails. Nothing but this makes them agree, and a
+  // `featurePath` that drifted would send a reader to the wrong file with no
+  // test going red.
+  it.each(MANUAL_PAGES)('$slug reads the file $featurePath names', (page) => {
+    const named = readFileSync(join('..', '..', page.featurePath), 'utf8');
+
+    expect(FEATURE_SOURCES[page.slug]).toBe(named);
   });
 });
 

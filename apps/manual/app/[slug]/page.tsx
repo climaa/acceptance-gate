@@ -28,6 +28,12 @@ export async function generateMetadata({
   return page ? { title: page.title } : {};
 }
 
+/**
+ * A route-local helper, and deliberately the only component this app defines.
+ * Stage 2 replaces it with a `packages/ui` molecule drawn on the design board
+ * first — which is where it belongs, because the capture pipeline photographs
+ * Storybook and nothing here.
+ */
 function StepList({ steps }: { steps: ManualStep[] }) {
   return (
     <ol className="manual-steps">
@@ -59,8 +65,8 @@ export default async function ManualPage({
       <Stack gap={4}>
         <h1 className="manual-title">{page.title}</h1>
         <Prose>
-          {INTROS[page.slug].map((paragraph) => (
-            <p key={paragraph}>{paragraph}</p>
+          {INTROS[page.slug].map((paragraph, index) => (
+            <p key={index}>{paragraph}</p>
           ))}
         </Prose>
       </Stack>
@@ -73,11 +79,14 @@ export default async function ManualPage({
               a distinction, and the label already says these are preconditions.
               The steps below keep theirs, where the Given/When/Then rhythm is
               what tells a reader which parts they perform. */}
-          <ol className="manual-steps">
+          {/* Unordered, unlike the steps below. These hold simultaneously; they
+              are not a sequence to work through, and numbering one precondition
+              "1." says otherwise. */}
+          <ul className="manual-steps manual-steps--plain">
             {feature.background.map((step, index) => (
               <li key={index}>{step.text}</li>
             ))}
-          </ol>
+          </ul>
         </div>
       )}
 
@@ -85,8 +94,10 @@ export default async function ManualPage({
         {/* Tags are parsed but never drawn. The only one in scope is `@desktop`,
             which tells the test runner which viewport to use — test
             infrastructure, not something a reader of this page does. */}
-        {feature.scenarios.map((scenario) => (
-          <Card key={scenario.name}>
+        {feature.scenarios.map((scenario, index) => (
+          // Position, not name: Gherkin permits two scenarios to share a name,
+          // and nothing in the source forbids it.
+          <Card key={index}>
             <CardTitle>{scenario.name}</CardTitle>
             <StepList steps={scenario.steps} />
           </Card>

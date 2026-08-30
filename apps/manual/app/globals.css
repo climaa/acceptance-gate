@@ -53,6 +53,13 @@ main {
   max-width: var(--width-prose);
 }
 
+/* Preconditions, which hold together rather than running in order — so the list
+   keeps the spacing and measure and drops the markers. */
+.manual-steps--plain {
+  list-style: none;
+  padding-left: 0;
+}
+
 .manual-steps__keyword {
   font-weight: var(--weight-semibold);
   color: var(--color-text-muted);

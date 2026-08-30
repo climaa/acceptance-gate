@@ -20,8 +20,10 @@ export default function IndexPage() {
       <Stack gap={4}>
         <h1 className="manual-title">{SITE_TITLE}</h1>
         <Prose>
-          {INDEX_LEAD.map((paragraph) => (
-            <p key={paragraph}>{paragraph}</p>
+          {INDEX_LEAD.map((paragraph, index) => (
+            // Position, not content: two identical paragraphs are legal prose
+            // and would collide as keys.
+            <p key={index}>{paragraph}</p>
           ))}
         </Prose>
       </Stack>
