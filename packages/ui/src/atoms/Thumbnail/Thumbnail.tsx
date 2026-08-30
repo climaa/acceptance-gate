@@ -13,6 +13,17 @@ export interface ThumbnailProps {
   /** What to draw when there is no image. Content comes from the consumer:
    *  copy like "not on this side" is the caller's vocabulary, not the system's. */
   fallback?: ReactNode;
+  /**
+   * The image's own pixel dimensions. Supply both and the frame reserves their
+   * ratio before any bytes arrive, so nothing below it moves when they do.
+   *
+   * Optional because a caller does not always know them — a diff shot named by a
+   * report, say. Without them the frame is the placeholder's height and the page
+   * shifts on load: measured at 66px growing to 708px on the manual's console
+   * page, which pushed every scenario card down the screen.
+   */
+  width?: number;
+  height?: number;
   className?: string;
 }
 
@@ -42,7 +53,14 @@ interface Observed {
  * before its handler existed is an event that never arrives, leaving the frame
  * showing its placeholder for an image that is sitting right there.
  */
-export function Thumbnail({ src, alt, fallback, className }: ThumbnailProps) {
+export function Thumbnail({
+  src,
+  alt,
+  fallback,
+  width,
+  height,
+  className,
+}: ThumbnailProps) {
   const [observed, setObserved] = useState<Observed | null>(null);
 
   /** What the element already knows, for the load that beat the listener.
@@ -71,11 +89,19 @@ export function Thumbnail({ src, alt, fallback, className }: ThumbnailProps) {
   };
 
   const status = src !== undefined && observed?.src === src ? observed.status : 'loading';
-  const frameClass = ['ds-thumbnail', className].filter(Boolean).join(' ');
+
+  /** Both or neither: one dimension cannot state a ratio. */
+  const reserved = width !== undefined && height !== undefined;
+  const frameClass = ['ds-thumbnail', reserved && 'ds-thumbnail--reserved', className]
+    .filter(Boolean)
+    .join(' ');
+  // `aspect-ratio` rather than a fixed height, so the frame still shrinks with
+  // the column and only its shape is fixed.
+  const frameStyle = reserved ? { aspectRatio: `${width} / ${height}` } : undefined;
 
   if (src === undefined || status === 'error') {
     return (
-      <span className={frameClass}>
+      <span className={frameClass} style={frameStyle}>
         <span className="ds-thumbnail__fallback">{fallback}</span>
       </span>
     );
@@ -84,9 +110,11 @@ export function Thumbnail({ src, alt, fallback, className }: ThumbnailProps) {
   const pending = status === 'loading';
 
   return (
-    <span className={frameClass}>
+    <span className={frameClass} style={frameStyle}>
       {pending && <Skeleton variant="block" />}
       <img
+        width={width}
+        height={height}
         className={['ds-thumbnail__img', pending && 'ds-thumbnail__img--pending']
           .filter(Boolean)
           .join(' ')}

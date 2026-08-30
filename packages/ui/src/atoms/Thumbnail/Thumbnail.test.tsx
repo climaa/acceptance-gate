@@ -172,4 +172,54 @@ describe('Thumbnail', () => {
     // than joined in as a trailing empty or `undefined` class.
     expect(container.firstElementChild?.className).toBe('ds-thumbnail u-mt-2');
   });
+
+  describe('reserved space', () => {
+    it('holds the image ratio before any bytes arrive', () => {
+      const { container } = render(
+        <Thumbnail src={SRC} alt="baseline" width={1280} height={820} />,
+      );
+
+      // The whole point: the frame is this shape while the skeleton is still
+      // showing, so nothing under it moves when the image lands.
+      const frame = container.firstElementChild as HTMLElement;
+
+      expect(frame.style.aspectRatio).toBe('1280 / 820');
+      expect(frame.className).toContain('ds-thumbnail--reserved');
+      expect(container.querySelector('.ds-skeleton')).not.toBeNull();
+    });
+
+    it('puts the dimensions on the image too', () => {
+      const { container } = render(
+        <Thumbnail src={SRC} alt="baseline" width={1280} height={820} />,
+      );
+
+      const img = container.querySelector('img');
+
+      expect(img?.getAttribute('width')).toBe('1280');
+      expect(img?.getAttribute('height')).toBe('820');
+    });
+
+    it('reserves nothing when only one dimension is given', () => {
+      // One number states no ratio, and guessing the other would reserve the
+      // wrong shape — which shifts the page exactly as much as reserving none.
+      const { container } = render(<Thumbnail src={SRC} alt="baseline" width={1280} />);
+
+      const frame = container.firstElementChild as HTMLElement;
+
+      expect(frame.style.aspectRatio).toBe('');
+      expect(frame.className).not.toContain('ds-thumbnail--reserved');
+    });
+
+    it('holds the ratio for the fallback as well', () => {
+      // A missing image is the case where a collapsing frame is most visible:
+      // the caller knows the shape, so the hole keeps it.
+      const { container } = render(
+        <Thumbnail alt="missing" fallback="not on this side" width={400} height={300} />,
+      );
+
+      expect((container.firstElementChild as HTMLElement).style.aspectRatio).toBe(
+        '400 / 300',
+      );
+    });
+  });
 });
