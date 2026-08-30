@@ -97,6 +97,26 @@ main {
   gap: var(--space-3);
 }
 
+/* One capture per theme, and the stylesheet picks. `display: none` rather than
+   an opacity or visibility hop because this must remove the wrong one from the
+   accessibility tree too — two images with the same alt is a duplicate figure to
+   anyone listening, not a styling detail.
+
+   Light is the unqualified rule because light is the unqualified page: the head
+   script only ever sets `data-theme="dark"`, so no attribute means light and a
+   `[data-theme="light"]` selector would match nothing on a first visit. */
+.manual-figure__shot--dark {
+  display: none;
+}
+
+[data-theme='dark'] .manual-figure__shot--light {
+  display: none;
+}
+
+[data-theme='dark'] .manual-figure__shot--dark {
+  display: block;
+}
+
 .manual-figure__caption {
   max-width: var(--width-prose);
   color: var(--color-text-muted);

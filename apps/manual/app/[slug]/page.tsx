@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { Card, CardTitle, Prose, Stack, StepList, Thumbnail } from '@gate/ui';
+import { Card, CardTitle, Prose, Stack, StepList, type Theme, Thumbnail } from '@gate/ui';
 import { INTROS } from '@/content/intros';
 import { SCREENSHOTS } from '@/content/screenshots';
 import { findManualPage, MANUAL_PAGES } from '@/lib/allowlist';
@@ -12,6 +12,28 @@ import { parseManualPage } from '@/lib/features';
 export function generateStaticParams() {
   return MANUAL_PAGES.map((page) => ({ slug: page.slug }));
 }
+
+/**
+ * The figure's two captures, in render order.
+ *
+ * `satisfies` rather than a bare literal so these stay the design system's
+ * themes: a typo, or a name this repo does not theme by, is a compile error
+ * here rather than a `<span>` no stylesheet ever matches.
+ */
+const THEMES = ['light', 'dark'] as const satisfies readonly Theme[];
+
+/**
+ * Written out per theme rather than composed from the loop variable. Both class
+ * names have to survive as literal text: `app/globals.css` is checked against
+ * the classes its consumers name — the sweep `apps/blog` and
+ * `apps/visual-diff-ui` both run to find rules nothing renders — and a template
+ * string would make these two rules read as orphans the day this app grows the
+ * same test.
+ */
+const SHOT_CLASS: Record<Theme, string> = {
+  light: 'manual-figure__shot manual-figure__shot--light',
+  dark: 'manual-figure__shot manual-figure__shot--dark',
+};
 
 // No `dynamicParams = false` to go with it, though the three above really are
 // the only pages there are: the segment config is refused outright under
@@ -56,13 +78,32 @@ export default async function ManualPage({
       {shot && (
         // A figure, not decoration: the caption says what to look at and the alt
         // says what is there, so neither has to carry both jobs.
+        //
+        // Both themes are in the DOM and CSS shows one, rather than the server
+        // or a hook choosing. The theme is a client fact this page is rendered
+        // without — `lib/theme.ts` writes `data-theme` from `<head>`, before the
+        // first paint — so picking here would mean rendering light and
+        // correcting it after hydration, which is the flash the head script
+        // exists to prevent. A stylesheet knows the answer at paint time and
+        // needs no render to act on it.
+        //
+        // The hidden half leaves the accessibility tree with its subtree, so a
+        // screen reader is offered one image and one alt, not two.
+        //
+        // Mapped rather than written twice, so the pair cannot drift: every
+        // prop but the source is shared by construction, and an alt or a
+        // dimension added to one half can no longer be forgotten on the other.
         <figure className="manual-figure">
-          <Thumbnail
-            src={shot.src}
-            alt={shot.alt}
-            width={shot.width}
-            height={shot.height}
-          />
+          {THEMES.map((theme) => (
+            <span key={theme} className={SHOT_CLASS[theme]}>
+              <Thumbnail
+                src={shot[theme]}
+                alt={shot.alt}
+                width={shot.width}
+                height={shot.height}
+              />
+            </span>
+          ))}
           <figcaption className="manual-figure__caption">{shot.caption}</figcaption>
         </figure>
       )}
