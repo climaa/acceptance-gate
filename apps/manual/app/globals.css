@@ -41,8 +41,9 @@ main {
   margin-bottom: var(--space-2);
 }
 
-/* A numbered list of things a reader does, deliberately not a code slab: the
-   sans face and ordinary prose sizing are what keep it from reading as source. */
+/* The precondition list only. The scenario steps are `@gate/ui`'s StepList now,
+   which brings its own sheet — what is left here is the plain, unnumbered list a
+   Background renders as. */
 .manual-steps {
   margin: 0;
   padding-left: var(--space-6);
@@ -58,11 +59,6 @@ main {
 .manual-steps--plain {
   list-style: none;
   padding-left: 0;
-}
-
-.manual-steps__keyword {
-  font-weight: var(--weight-semibold);
-  color: var(--color-text-muted);
 }
 
 /* The index's cards. `auto-fit` rather than a fixed column count so the three

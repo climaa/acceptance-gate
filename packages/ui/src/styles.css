@@ -36,6 +36,7 @@
 @import './atoms/SkipLink/SkipLink.css';
 @import './organisms/SiteHeader/SiteHeader.css';
 @import './molecules/TagList/TagList.css';
+@import './molecules/StepList/StepList.css';
 @import './templates/PostTemplate/PostTemplate.css';
 @import './organisms/SiteFooter/SiteFooter.css';
 @import './molecules/PostCard/PostCard.css';

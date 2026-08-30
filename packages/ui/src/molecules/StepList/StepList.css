@@ -1,0 +1,59 @@
+/* A numbered list of steps, sized as prose rather than as code — the sans face
+   and body sizing are what keep it from reading as a source listing, which is
+   the board's D4 ruling made visual. */
+.ds-step-list {
+  margin: 0;
+  padding-left: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  line-height: var(--leading-relaxed);
+  max-width: var(--width-prose);
+}
+
+/* The keyword is quieter than the step it introduces: it names the kind of thing
+   being done, and the sentence after it is what the reader acts on. */
+.ds-step-list__keyword {
+  /* --weight-bold, not --weight-semibold: the body face ships 400 and 700 and
+     has no 600, so a semibold keyword would be synthesized — per-engine, which
+     is the non-determinism a capture pipeline cannot have. tokens.test.ts holds
+     this. */
+  font-weight: var(--weight-bold);
+  color: var(--color-text-muted);
+}
+
+/* Typed: a rule runs beside each step, shared by a step and the conjunctions
+   continuing it, so consecutive items in one run read as a single block.
+   `list-style-position: inside` puts the number after the rule rather than
+   outside it, which is the order the board draws.
+
+   The rule is structural, not decorative. A conjunction says only "And", so
+   without the grouping its colour would be the sole carrier of whether it
+   continues an action or an outcome — colour alone, which WCAG 1.4.1 rules out.
+   Contiguous borders on adjacent items are what make a run visible; the hue only
+   reinforces it. */
+.ds-step-list--typed {
+  list-style-position: inside;
+  padding-left: 0;
+  gap: 0;
+}
+
+.ds-step-list--typed .ds-step-list__item {
+  border-left: 2px solid var(--color-border);
+  padding: var(--space-1) 0 var(--space-1) var(--space-4);
+}
+
+/* Roles borrowed rather than invented: a step's kind is not a status, so these
+   reuse the semantic roles nearest in meaning instead of adding three tokens
+   that would need their own dark-mode remapping. */
+.ds-step-list--typed .ds-step-list__item[data-run='context'] {
+  border-left-color: var(--color-border-strong);
+}
+
+.ds-step-list--typed .ds-step-list__item[data-run='action'] {
+  border-left-color: var(--color-accent);
+}
+
+.ds-step-list--typed .ds-step-list__item[data-run='outcome'] {
+  border-left-color: var(--color-success-fg);
+}
