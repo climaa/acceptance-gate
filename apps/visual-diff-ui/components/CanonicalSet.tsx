@@ -10,7 +10,7 @@ import { formatBytes } from '@/lib/outcome';
  * instance has captured nothing yet", and the corpus is precisely a thing it did
  * not capture: CI accepted it, a commit changed it, and every pull request is
  * compared against it. Putting it in the same rows would make the count in
- * `SNAPSHOT SETS (n)` mean two different things at once.
+ * `SCREENSHOT SETS (n)` mean two different things at once.
  *
  * What it is for is the compare pickers, which do list it: a reviewer who has
  * just captured wants to know how their shots differ from the corpus, not from

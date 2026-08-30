@@ -27,7 +27,7 @@ import { z } from 'zod';
  */
 
 /**
- * A snapshot-set label. No underscore, so `<a>__<b>` splits back into the two
+ * A screenshot-set label. No underscore, so `<a>__<b>` splits back into the two
  * labels it names — the same reason `policy.variantKey` can join on `__`.
  */
 export const SET_LABEL = /^[A-Za-z0-9][A-Za-z0-9.-]*$/;
@@ -69,7 +69,7 @@ export const REPORT_ID = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
 const JobModeSchema = z.enum(['capture', 'compare', 'run', 'accept']);
 export type JobMode = z.infer<typeof JobModeSchema>;
 
-export const SetLabelSchema = z.string().regex(SET_LABEL, 'not a snapshot-set label');
+export const SetLabelSchema = z.string().regex(SET_LABEL, 'not a screenshot-set label');
 export const ReportIdSchema = z.string().regex(REPORT_ID, 'not a report id');
 
 /**

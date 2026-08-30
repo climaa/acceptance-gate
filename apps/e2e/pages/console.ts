@@ -43,7 +43,7 @@ export class ConsolePage {
   readonly setsPanel: Locator;
 
   constructor(private readonly page: Page) {
-    this.setsTable = page.getByRole('table', { name: 'Snapshot sets' });
+    this.setsTable = page.getByRole('table', { name: 'Screenshot sets' });
     this.setRows = this.setsTable
       .getByRole('row')
       .filter({ has: page.getByRole('cell') });
@@ -88,7 +88,7 @@ export class ConsolePage {
     // landmark, so this is here whether the console holds captures or not — and
     // an empty console draws an `EmptyState` where the table would be, so
     // `setsTable` is absent exactly when the lane starts.
-    this.setsPanel = page.getByRole('region', { name: 'snapshot sets' });
+    this.setsPanel = page.getByRole('region', { name: 'screenshot sets' });
   }
 
   async open(world: VdWorld = 'seeded') {
