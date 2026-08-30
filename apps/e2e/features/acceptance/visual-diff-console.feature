@@ -1,11 +1,11 @@
 Feature: Visual-diff console
 
   Background:
-    Given the console has snapshot sets
+    Given the console has screenshot sets
 
-  Scenario: The console lists the snapshot sets
+  Scenario: The console lists the screenshot sets
     When I visit the console
-    Then I see each snapshot set with its branch, story count and size
+    Then I see each screenshot set with its branch, story count and size
     And a set captured from a dirty tree is marked as dirty
 
   Scenario: Comparing two sets pre-fills the job form
@@ -13,15 +13,15 @@ Feature: Visual-diff console
     And I choose two sets to compare
     Then the job form is set to compare those two sets
 
-  Scenario: Deleting a held snapshot set is refused with the reason
-    Given a snapshot set is held by a registered worktree
+  Scenario: Deleting a held screenshot set is refused with the reason
+    Given a screenshot set is held by a registered worktree
     When I delete the held set
     Then the deletion is refused naming what holds it
 
   Scenario: The console names the next capture set for me
     When I visit the console
     And I ask the console to name the capture set
-    Then the label field holds a set label no snapshot set already uses
+    Then the label field holds a set label no screenshot set already uses
 
   Scenario: The selected job tab is a link
     When I visit the console

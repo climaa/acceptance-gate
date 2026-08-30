@@ -41,7 +41,7 @@ const SEEDED_SETS = [BASELINE_SET, SPARE_SET, DIRTY_SET, UNHELD_SET, HELD_SET] a
 const COMPARE_A = BASELINE_SET.label;
 const COMPARE_B = DIRTY_SET.label;
 
-Given('the console has snapshot sets', async ({ console: consolePage }) => {
+Given('the console has screenshot sets', async ({ console: consolePage }) => {
   // The webServer seeded the data dir before boot (no test seeds).
   // This step only verifies the world is the one the scenario assumes.
   await consolePage.open();
@@ -49,7 +49,7 @@ Given('the console has snapshot sets', async ({ console: consolePage }) => {
 });
 
 Given(
-  'a snapshot set is held by a registered worktree',
+  'a screenshot set is held by a registered worktree',
   async ({ console: consolePage }) => {
     // The hold itself is seed-tree state (a registered worktree entry); the row's
     // presence is what this step can assert — the refusal Then proves the hold.
@@ -102,7 +102,7 @@ When('I delete the held set', async ({ console: consolePage }) => {
 });
 
 Then(
-  'I see each snapshot set with its branch, story count and size',
+  'I see each screenshot set with its branch, story count and size',
   async ({ console: consolePage }) => {
     for (const { label, branch } of SEEDED_SETS) {
       const row = consolePage.setRow(label);
@@ -191,7 +191,7 @@ Then(
  * where a clock can be handed in.
  */
 Then(
-  'the label field holds a set label no snapshot set already uses',
+  'the label field holds a set label no screenshot set already uses',
   async ({ console: consolePage }) => {
     const today = new Date();
     const day = [
