@@ -1,0 +1,133 @@
+import { renderToStaticMarkup } from 'react-dom/server';
+import { describe, expect, it } from 'vitest';
+import ManualPage from '@/app/[slug]/page';
+import { MANUAL_PAGES } from '@/lib/allowlist';
+import { parseManualPage } from '@/lib/features';
+
+/**
+ * That a reader actually sees the scenarios.
+ *
+ * `sync.test.ts` proves the data the pages are built from is the data in the
+ * `.feature` files. That is a different claim from this one, and only this one
+ * would notice `StepList` rendering an empty list: every other test in this
+ * workspace passes with nothing on the page at all.
+ *
+ * Deliberately a smoke test over visible text, not a comparison of rendered HTML
+ * against the source. `DESIGN.md` §7 rules that out and is right to — keywords
+ * become list markers, and that is rendering rather than drift. What is asserted
+ * here is presence and order, which is what "the page shows the requirement"
+ * means to someone reading it.
+ *
+ * `renderToStaticMarkup` rather than a DOM: the page is an async Server
+ * Component, so awaiting it yields an ordinary element tree, and none of what it
+ * renders needs a browser. That keeps this suite in a node environment with no
+ * jsdom to install.
+ */
+
+const ENTITIES: Record<string, string> = {
+  '&amp;': '&',
+  '&lt;': '<',
+  '&gt;': '>',
+  '&quot;': '"',
+  '&#x27;': "'",
+  '&#39;': "'",
+};
+
+/** The visible text of a page, markup and whitespace collapsed. */
+function textOf(html: string): string {
+  return html
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&(?:amp|lt|gt|quot|#x27|#39);/g, (entity) => ENTITIES[entity] ?? entity)
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+async function renderPage(slug: string): Promise<string> {
+  const element = await ManualPage({ params: Promise.resolve({ slug }) });
+
+  return textOf(renderToStaticMarkup(element));
+}
+
+describe.each(MANUAL_PAGES)('the $slug page', (page) => {
+  it('shows its title and every scenario name', async () => {
+    const text = await renderPage(page.slug);
+    const feature = parseManualPage(page);
+
+    expect(text).toContain(page.title);
+    const missing = feature.scenarios.filter((s) => !text.includes(s.name));
+    expect(missing.map((s) => s.name)).toEqual([]);
+  });
+
+  it('shows every step of every scenario', async () => {
+    const text = await renderPage(page.slug);
+    const steps = parseManualPage(page).scenarios.flatMap((s) => s.steps);
+
+    // Asserted rather than assumed: a feature that parsed to no steps would make
+    // the filter below empty and this case would pass having checked nothing.
+    expect(steps.length).toBeGreaterThan(0);
+    expect(steps.filter((step) => !text.includes(step.text)).map((s) => s.text)).toEqual(
+      [],
+    );
+  });
+
+  it('keeps the authored order of the steps it shows', async () => {
+    const text = await renderPage(page.slug);
+    const steps = parseManualPage(page).scenarios.flatMap((s) => s.steps);
+
+    // Walked with a moving cursor rather than compared as first-occurrence
+    // positions, because step text repeats heavily — `I visit the console`
+    // appears in six of seven console scenarios, so `indexOf` from zero returns
+    // the same early match for every one of them and order becomes
+    // unmeasurable. Searching onward from the last match asserts what is
+    // actually meant: the steps appear in sequence, which is the property a
+    // keyword-grouped renderer would quietly break.
+    let cursor = 0;
+    const outOfOrder = steps.filter((step) => {
+      const at = text.indexOf(step.text, cursor);
+      if (at === -1) return true;
+      cursor = at + step.text.length;
+      return false;
+    });
+
+    expect(outOfOrder.map((step) => step.text)).toEqual([]);
+  });
+
+  it('shows its Background once, above the scenarios', async () => {
+    const text = await renderPage(page.slug);
+    const { background } = parseManualPage(page);
+
+    if (background.length === 0) {
+      expect(text).not.toContain('Before each task');
+      return;
+    }
+
+    expect(text).toContain('Before each task');
+    for (const step of background) {
+      // Once, not once per scenario: repeating it is test-runner semantics
+      // leaking into a manual.
+      expect(text.split(step.text)).toHaveLength(2);
+    }
+  });
+
+  it('shows its authored intro above the generated body', async () => {
+    const text = await renderPage(page.slug);
+    const firstScenario = parseManualPage(page).scenarios[0];
+
+    expect(firstScenario).toBeDefined();
+    expect(text.indexOf(page.title)).toBeLessThan(text.indexOf(firstScenario!.name));
+  });
+});
+
+describe('tags are parsed but never drawn', () => {
+  it('shows no @desktop on the report page', async () => {
+    const text = await renderPage('report');
+    const tagged = parseManualPage(MANUAL_PAGES[1]!).scenarios.filter(
+      (s) => s.tags.length > 0,
+    );
+
+    // The fixture for this assertion is the live suite: if `@desktop` is ever
+    // removed from the report feature, this stops testing anything.
+    expect(tagged.length).toBeGreaterThan(0);
+    expect(text).not.toContain('@desktop');
+  });
+});

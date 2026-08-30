@@ -1,0 +1,158 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+import { Mermaid } from '../Mermaid';
+
+<Meta title="Docs/QA/The Manual" />
+
+# The manual, and why its pages cannot go stale
+
+`apps/manual` publishes the visual-diff console's end-user manual. Three pages — console,
+report, sample mode — and the body of each is the acceptance scenarios that already decide
+whether a change may merge, rendered.
+
+Two words that sound interchangeable are not, and `CONTEXT.md` rules on it: **manual** is
+the end-user thing, `apps/manual`. **Docs** — these pages, in Storybook — are for
+developers. This page is docs about the manual.
+
+For the scenarios themselves, see
+[Acceptance Suite Locally](?path=/docs/docs-qa-acceptance-suite-locally--docs); for the
+console those scenarios describe,
+[The Deployed Console](?path=/docs/docs-qa-the-deployed-console--docs).
+
+## The one idea
+
+> `apps/e2e/features/**` are product requirements, they are already written in publishable
+> prose, and the manual renders them at build time.
+
+_"Then the deletion is refused naming what holds it"_ needed no rewriting to be manual copy.
+And because the page is parsed from the `.feature` file during `next build`, a requirement
+and its documentation change in the same commit or not at all.
+
+## Two lanes
+
+<Mermaid
+  chart={`
+flowchart LR
+    F["apps/e2e/features/acceptance/*.feature<br/>(product requirements)"] -->|"read at build"| S["lib/sources.ts"]
+    S --> P["lib/features.ts<br/>parse to ManualFeature"]
+    A["lib/allowlist.ts<br/>which features, what order"] --> P
+    P -->|"generated lane"| PG["app/[slug]/page.tsx"]
+    I["content/intros.ts<br/>authored prose"] -->|"authored lane"| PG
+    UI["@gate/ui"] --> PG
+`}
+/>
+
+The **generated** lane is the scenarios and cannot drift. The **authored** lane — per-page
+intros, task framing — is where prose is free to be improved without touching a file that is
+a product requirement.
+
+That split is the whole design. Pure rendering cannot carry task framing; pure authoring
+deletes the guarantee.
+
+## What the check guarantees, and what it cannot
+
+This is the part worth reading twice, because the obvious version of this check guarantees
+nothing.
+
+Re-parsing the `.feature` sources in a test and comparing them against what the pages were
+built from **compares a value to itself**. The pages are parsed from those same files during
+the build, so a changed step changes the page in the same commit. Content drift is
+structurally impossible here — which is a stronger property than any check, and not one a
+test can add to.
+
+What _is_ possible is the inventory moving unnoticed: a scenario added or deleted, flowing
+onto a published page with nobody deciding whether the prose around it still reads true. So
+`__tests__/sync.test.ts` is a **pinned inventory**, modelled on `apps/e2e`'s own
+`suite-integrity.mjs`:
+
+| Assertion                                               | Catches                                    |
+| ------------------------------------------------------- | ------------------------------------------ |
+| `scenarios.length === expectedScenarios`, exact         | A scenario added or removed                |
+| Every allowlisted feature parses                        | A feature renamed or moved                 |
+| `featurePath` names the file `sources.ts` opens         | The two encodings of a path drifting apart |
+| Parser throws on Rule / Outline / DocString / DataTable | A construct silently dropped from a page   |
+| Every slug has intro prose, and no prose has no slug    | The authored lane drifting from routing    |
+
+When the count fails, **the fix is not to update the number.** It is to read the page the
+change lands on, decide whether the prose around it still tells the truth, and then update
+the number. That editorial coupling is deliberate: once scenarios are published, improving
+their wording is a product-requirement edit, and those are stop-and-ask.
+
+### And separately, that a reader sees them
+
+"The data is right" and "the reader sees it" are different claims, and the pinned inventory
+only makes the first. `__tests__/pages.test.ts` makes the second: it renders each page and
+asserts every scenario name and step text is present, in the authored order, with the
+Background drawn once rather than once per scenario.
+
+Without it `StepList` could render an empty list and every other test in the workspace would
+still pass. It is a smoke test over visible text, not a comparison of HTML against source —
+that surface is ruled out above, and for good reason.
+
+### What nothing checks: the authored lane
+
+`content/intros.ts` can say anything. An intro promising "four sample-mode behaviours"
+survives a scenario being deleted: the count pin fires, but only if whoever reads the failure
+connects it to a sentence two files away. Nothing verifies that the prose introducing a page
+still describes the page.
+
+That is inherent to the hybrid model rather than an oversight — prose freedom is the whole
+reason the authored lane exists — but it means the intros are yours to keep honest.
+
+## Three things the build forces
+
+Each is recorded where it applies, and each cost real time to find.
+
+**The feature paths are bare literals.** Composing one — `path.join(repoRoot, page.featurePath)` —
+reads far better and builds a measurably worse bundle: Turbopack cannot follow a computed
+path, assumes the read might happen in a deployed function, and traces _the entire
+repository_ into the output. It says so, as a build warning. `dynamicParams = false` would
+prove no request-time read exists, and is refused outright under `cacheComponents`.
+`new URL(…, import.meta.url)` and `fileURLToPath` of one both fail at runtime, because the
+bundled realm's `URL` is not the class `node:fs` accepts.
+
+**`turbo.json` names the feature glob.** `apps/manual` reads files in `apps/e2e`, and turbo's
+default inputs stop at the package directory — so a `.feature` edit would not invalidate this
+app's hash, and the pinned check would pass **from cache on the pull request that broke it**.
+`@gate/manual#build` and `#test` therefore declare
+`$TURBO_ROOT$/apps/e2e/features/acceptance/*.feature`, the way `health` already declares
+`complexity-gate.mjs`. Verified rather than assumed: cache hit, touch a feature, cache miss.
+
+**A miss answers 404 through `proxy.ts`.** `/[slug]` streams, so its shell is on the wire
+before `notFound()` runs and the status line is already sent — an unknown address answered
+`200` with a not-found body until the proxy closed it. Same defect, same remedy as
+`apps/blog`. One difference worth knowing: this matcher is a single segment, so root-level
+files look exactly like slugs, and a dot is what separates them.
+
+## Adding a page
+
+1. Add the feature to `lib/allowlist.ts` — slug, path, title, and the pinned scenario count.
+2. Add its literal read to `lib/sources.ts`. A literal, for the reason above.
+3. Write intro prose in `content/intros.ts`, keyed by the same slug.
+4. Run `pnpm --filter @gate/manual test`. The sync suite fails until all three agree.
+
+There is no step for the page component: `app/[slug]/page.tsx` covers every slug the
+allowlist names.
+
+## Deliberately absent
+
+**No Fumadocs.** Three known slugs are ten lines of `generateStaticParams`. The nav tree and
+static search that would justify a loader are a later stage, and `fumadocs-ui` never — it
+would bring Tailwind and a second component library.
+
+**No component defined in the app but one.** `StepList` is a route-local placeholder for a
+`packages/ui` molecule that gets drawn on the design board first. This matters more than it
+sounds: the capture pipeline photographs Storybook only, so anything bespoke living in
+`apps/manual` is photographed by nothing and no baseline would ever catch it moving.
+
+**Rules, not examples — and this one is structural.** There is not a single concrete value in
+the 26 published scenarios: _"I see each screenshot set with its branch, story count and
+size"_ names three fields and shows none. The Gherkin device that would fix that is an
+`Examples` table or a `DataTable`, and `lib/features.ts` **throws** on both. That refusal
+protects something real — a page silently publishing half a requirement — but it does settle
+the question by force. This is a manual of rules. If a worked example is ever wanted, it
+belongs in the authored lane, where prose is free, and not in a `.feature`.
+
+**No `next/font`, and a raw `<script>` for the theme.** The design system self-hosts woff2
+and must not depend on `next`; the theme must resolve before first paint, which `next/script`
+cannot promise. Both are repo-wide rules rather than choices this app made.
