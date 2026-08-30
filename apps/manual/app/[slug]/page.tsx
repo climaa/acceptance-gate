@@ -62,7 +62,7 @@ export default async function ManualPage({
           {/* Unordered, unlike the steps below. These hold simultaneously; they
               are not a sequence to work through, and numbering one precondition
               "1." says otherwise. */}
-          <ul className="manual-steps manual-steps--plain">
+          <ul className="manual-precondition__list">
             {feature.background.map((step, index) => (
               <li key={index}>{step.text}</li>
             ))}
