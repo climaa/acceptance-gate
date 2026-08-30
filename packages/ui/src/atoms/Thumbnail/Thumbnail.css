@@ -36,3 +36,14 @@
   font-size: var(--text-xs);
   text-align: center;
 }
+
+/* Given the image's own dimensions, the frame holds their ratio from the first
+   paint — the whole point being that nothing under it moves when the pixels
+   land. The children then fill that shape instead of stating heights of their
+   own: the skeleton would otherwise be its own `--space-16` block inside a much
+   taller frame, and the image would letterbox against `height: auto`. */
+.ds-thumbnail--reserved > .ds-skeleton,
+.ds-thumbnail--reserved > .ds-thumbnail__img {
+  height: 100%;
+  object-fit: cover;
+}

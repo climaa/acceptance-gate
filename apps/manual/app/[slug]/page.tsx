@@ -57,7 +57,12 @@ export default async function ManualPage({
         // A figure, not decoration: the caption says what to look at and the alt
         // says what is there, so neither has to carry both jobs.
         <figure className="manual-figure">
-          <Thumbnail src={shot.src} alt={shot.alt} />
+          <Thumbnail
+            src={shot.src}
+            alt={shot.alt}
+            width={shot.width}
+            height={shot.height}
+          />
           <figcaption className="manual-figure__caption">{shot.caption}</figcaption>
         </figure>
       )}
