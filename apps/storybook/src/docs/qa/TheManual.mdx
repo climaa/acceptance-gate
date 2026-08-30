@@ -78,6 +78,27 @@ change lands on, decide whether the prose around it still tells the truth, and t
 the number. That editorial coupling is deliberate: once scenarios are published, improving
 their wording is a product-requirement edit, and those are stop-and-ask.
 
+### And separately, that a reader sees them
+
+"The data is right" and "the reader sees it" are different claims, and the pinned inventory
+only makes the first. `__tests__/pages.test.ts` makes the second: it renders each page and
+asserts every scenario name and step text is present, in the authored order, with the
+Background drawn once rather than once per scenario.
+
+Without it `StepList` could render an empty list and every other test in the workspace would
+still pass. It is a smoke test over visible text, not a comparison of HTML against source —
+that surface is ruled out above, and for good reason.
+
+### What nothing checks: the authored lane
+
+`content/intros.ts` can say anything. An intro promising "four sample-mode behaviours"
+survives a scenario being deleted: the count pin fires, but only if whoever reads the failure
+connects it to a sentence two files away. Nothing verifies that the prose introducing a page
+still describes the page.
+
+That is inherent to the hybrid model rather than an oversight — prose freedom is the whole
+reason the authored lane exists — but it means the intros are yours to keep honest.
+
 ## Three things the build forces
 
 Each is recorded where it applies, and each cost real time to find.
@@ -123,6 +144,14 @@ would bring Tailwind and a second component library.
 `packages/ui` molecule that gets drawn on the design board first. This matters more than it
 sounds: the capture pipeline photographs Storybook only, so anything bespoke living in
 `apps/manual` is photographed by nothing and no baseline would ever catch it moving.
+
+**Rules, not examples — and this one is structural.** There is not a single concrete value in
+the 26 published scenarios: _"I see each screenshot set with its branch, story count and
+size"_ names three fields and shows none. The Gherkin device that would fix that is an
+`Examples` table or a `DataTable`, and `lib/features.ts` **throws** on both. That refusal
+protects something real — a page silently publishing half a requirement — but it does settle
+the question by force. This is a manual of rules. If a worked example is ever wanted, it
+belongs in the authored lane, where prose is free, and not in a `.feature`.
 
 **No `next/font`, and a raw `<script>` for the theme.** The design system self-hosts woff2
 and must not depend on `next`; the theme must resolve before first paint, which `next/script`
