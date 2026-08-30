@@ -79,7 +79,7 @@ export async function POST(request: Request): Promise<Response> {
  */
 function refusalFor(dataDir: string, label: string): string | null {
   if (!SetLabelSchema.safeParse(label).success) {
-    return `${label} is not a snapshot-set label — it names nothing this console can delete`;
+    return `${label} is not a screenshot-set label — it names nothing this console can delete`;
   }
 
   const holder = holderOf(dataDir, label);

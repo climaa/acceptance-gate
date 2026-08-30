@@ -144,7 +144,7 @@ export function DashboardTemplate({
   return (
     <div className="vd-console">
       <Stack gap={6} className="vd-console__column">
-        <Panel id="vd-sets" title="snapshot sets" count={sets.length}>
+        <Panel id="vd-sets" title="screenshot sets" count={sets.length}>
           {corpus && <CanonicalSet corpus={corpus} />}
 
           {sets.length === 0 ? (

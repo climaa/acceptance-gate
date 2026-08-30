@@ -180,19 +180,19 @@ const cellsOf = (row: HTMLElement) =>
     .getAllByRole('cell')
     .map((cell) => cell.textContent);
 
-describe('the snapshot sets panel', () => {
+describe('the screenshot sets panel', () => {
   it('names its table, so the page can hold more than one', () => {
     render(consoleWith());
 
-    expect(table('Snapshot sets')).toBeDefined();
+    expect(table('Screenshot sets')).toBeDefined();
   });
 
-  // The acceptance scenario, cell by cell: "I see each snapshot set with its
+  // The acceptance scenario, cell by cell: "I see each screenshot set with its
   // branch, story count and size".
   it('lists a set with its branch, story count and size', () => {
     render(consoleWith({ sets: [CLEAN] }));
 
-    const row = firstRowOf('Snapshot sets');
+    const row = firstRowOf('Screenshot sets');
 
     expect(cellsOf(row)).toEqual([
       'main-2026-08-17',
@@ -218,7 +218,7 @@ describe('the snapshot sets panel', () => {
   it('draws no delete on a console nobody is running locally', () => {
     render(consoleWith({ sets: [CLEAN], isLocal: false }));
 
-    const row = firstRowOf('Snapshot sets');
+    const row = firstRowOf('Screenshot sets');
 
     expect(cellsOf(row)).toEqual([
       'main-2026-08-17',
@@ -245,7 +245,7 @@ describe('the snapshot sets panel', () => {
   it('draws no delete on a local console showing the committed fixtures', () => {
     render(consoleWith({ sets: [CLEAN], isSample: true }));
 
-    expect(cellsOf(firstRowOf('Snapshot sets')).at(-1)).toBe('');
+    expect(cellsOf(firstRowOf('Screenshot sets')).at(-1)).toBe('');
   });
 
   /**
@@ -260,7 +260,7 @@ describe('the snapshot sets panel', () => {
   it('carries the story count with its unit, clipped rather than drawn', () => {
     render(consoleWith({ sets: [CLEAN] }));
 
-    const unit = within(firstRowOf('Snapshot sets')).getByText('stories');
+    const unit = within(firstRowOf('Screenshot sets')).getByText('stories');
 
     expect(unit.className).toBe('ds-visually-hidden');
   });
@@ -268,7 +268,7 @@ describe('the snapshot sets panel', () => {
   it('reports a set this instance holds no shots for as an unknown size', () => {
     render(consoleWith({ sets: [CLEAN], sizes: {} }));
 
-    const row = firstRowOf('Snapshot sets');
+    const row = firstRowOf('Screenshot sets');
 
     expect(cellsOf(row)).toContain('—');
   });
@@ -276,7 +276,7 @@ describe('the snapshot sets panel', () => {
   it('offers a delete button per set', () => {
     render(consoleWith());
 
-    const deletes = within(table('Snapshot sets')).getAllByRole('button', {
+    const deletes = within(table('Screenshot sets')).getAllByRole('button', {
       name: 'delete',
     });
 
@@ -286,7 +286,7 @@ describe('the snapshot sets panel', () => {
   it('shows an empty state instead of a table when nothing has been captured', () => {
     render(consoleWith({ sets: [] }));
 
-    expect(screen.queryByRole('table', { name: 'Snapshot sets' })).toBeNull();
+    expect(screen.queryByRole('table', { name: 'Screenshot sets' })).toBeNull();
     expect(screen.getByText(/captured nothing yet/i)).toBeDefined();
   });
 
@@ -720,13 +720,13 @@ describe('the table roles', () => {
   it('states the role of the table itself', () => {
     render(consoleWith());
 
-    expect(table('Snapshot sets').getAttribute('role')).toBe('table');
+    expect(table('Screenshot sets').getAttribute('role')).toBe('table');
   });
 
   it('states the role of both row groups', () => {
     render(consoleWith());
 
-    const groups = within(table('Snapshot sets')).getAllByRole('rowgroup');
+    const groups = within(table('Screenshot sets')).getAllByRole('rowgroup');
 
     expect(groups.map((group) => group.getAttribute('role'))).toEqual([
       'rowgroup',
@@ -737,7 +737,7 @@ describe('the table roles', () => {
   it('states the role of every row', () => {
     render(consoleWith());
 
-    const rows = within(table('Snapshot sets')).getAllByRole('row');
+    const rows = within(table('Screenshot sets')).getAllByRole('row');
 
     expect(rows.map((row) => row.getAttribute('role'))).toEqual(rows.map(() => 'row'));
   });
@@ -745,7 +745,7 @@ describe('the table roles', () => {
   it('states the role of every column header', () => {
     render(consoleWith());
 
-    const headers = within(table('Snapshot sets')).getAllByRole('columnheader');
+    const headers = within(table('Screenshot sets')).getAllByRole('columnheader');
 
     expect(headers.map((header) => header.getAttribute('role'))).toEqual(
       headers.map(() => 'columnheader'),
@@ -755,7 +755,7 @@ describe('the table roles', () => {
   it('states the role of every cell', () => {
     render(consoleWith());
 
-    const cells = within(table('Snapshot sets')).getAllByRole('cell');
+    const cells = within(table('Screenshot sets')).getAllByRole('cell');
 
     expect(cells.map((cell) => cell.getAttribute('role'))).toEqual(
       cells.map(() => 'cell'),
@@ -768,7 +768,7 @@ describe('the table roles', () => {
   it('keeps the header row in the document', () => {
     render(consoleWith());
 
-    const [head] = groupsOf('Snapshot sets');
+    const [head] = groupsOf('Screenshot sets');
 
     expect(within(head).getAllByRole('columnheader')).toHaveLength(7);
   });
@@ -784,8 +784,8 @@ describe('the numeric cells', () => {
   const NUMERIC: [string, string][] = [
     // The figure's own text node — the clipped unit beside it is a sibling
     // element, which `getByText` does not fold in.
-    ['Snapshot sets', '106'],
-    ['Snapshot sets', '95.5 MB'],
+    ['Screenshot sets', '106'],
+    ['Screenshot sets', '95.5 MB'],
     ['History', '1'],
     ['History', '1m 35s'],
   ];
@@ -852,17 +852,17 @@ describe('the canonical corpus', () => {
   it('is not something retention can prune', () => {
     render(consoleWith({ corpus: CORPUS }));
 
-    expect(screen.getByRole('table', { name: 'Snapshot sets' })).toBeDefined();
+    expect(screen.getByRole('table', { name: 'Screenshot sets' })).toBeDefined();
     expect(screen.getByRole('spinbutton', { name: 'keep latest' })).toBeDefined();
   });
 
   // The count in the panel title, and the rows under it, are captured sets — the
   // corpus adding to either would make one number mean two things.
-  it('does not become a row in the snapshot sets table', () => {
+  it('does not become a row in the screenshot sets table', () => {
     render(consoleWith({ corpus: CORPUS }));
 
     const rows = screen
-      .getByRole('table', { name: 'Snapshot sets' })
+      .getByRole('table', { name: 'Screenshot sets' })
       .querySelectorAll('tbody tr');
 
     expect(rows).toHaveLength(2);

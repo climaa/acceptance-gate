@@ -14,7 +14,7 @@ import { DeleteSetButton } from './ConfirmDialogs';
  */
 
 /** The name the acceptance scenario finds this table by. */
-const SETS_TABLE_LABEL = 'Snapshot sets';
+const SETS_TABLE_LABEL = 'Screenshot sets';
 
 /** What a set has no measured size for: this instance holds the registry entry
  *  but not the shot tree — a set captured elsewhere, or one whose directory a

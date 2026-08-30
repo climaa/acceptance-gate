@@ -121,7 +121,7 @@ function DeleteConfirmButton({
   /** Where the DELETE goes, already one segment. Built by the caller, because
    *  the REASON for encoding differs between the two — see `DeleteSetButton`. */
   url: string;
-  /** A noun phrase carrying its article: "the report", "the snapshot set". The
+  /** A noun phrase carrying its article: "the report", "the screenshot set". The
    *  sentence is `Delete {noun} {name}?` and nothing here adds an article, so a
    *  bare "report" would read `Delete report main-…?` and no test would catch it
    *  for the other twin.
@@ -224,7 +224,7 @@ export function DeleteSetButton({ label }: DeleteSetButtonProps) {
     <DeleteConfirmButton
       name={label}
       url={`/api/sets/${encodeURIComponent(label)}`}
-      noun="the snapshot set"
+      noun="the screenshot set"
       detail={SET_DETAIL}
     />
   );
@@ -284,7 +284,7 @@ export function PruneButton({ keep, labels }: PruneButtonProps) {
       url: '/api/prune',
       method: 'POST',
       body: { keep },
-      fallback: 'could not prune the snapshot sets',
+      fallback: 'could not prune the screenshot sets',
     });
 
     if (!result.ok) return;
@@ -313,7 +313,7 @@ export function PruneButton({ keep, labels }: PruneButtonProps) {
       <Dialog open={open} onClose={close} label="Confirm prune">
         <Stack gap={4}>
           <p className="vd-confirm__question">
-            Prune the snapshot sets, keeping the latest{' '}
+            Prune the screenshot sets, keeping the latest{' '}
             <strong className="vd-mono">{keep}</strong>?
           </p>
 

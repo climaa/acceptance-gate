@@ -19,7 +19,7 @@ import { holdPage } from '@/lib/page-refresh';
  *
  * What the hook deliberately does not know is what any of it means. The URL, the
  * method, the body and the sentence to fall back on all arrive as arguments, so
- * nothing here learns what a snapshot set or a job is. What each caller does
+ * nothing here learns what a screenshot set or a job is. What each caller does
  * *after* a success is also theirs — closing a dialog, reading a partial refusal
  * out of the body — which is why `run` hands the parsed body back rather than
  * growing a callback for each variation.
