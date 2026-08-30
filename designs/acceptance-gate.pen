@@ -4584,6 +4584,238 @@
                   ]
                 }
               ]
+            },
+            {
+              "type": "frame",
+              "id": "ZwSUG",
+              "name": "Tiles Row 2",
+              "width": "fill_container",
+              "gap": 16,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "A5U1l",
+                  "name": "Tile StepList",
+                  "width": 470,
+                  "fill": "#ffffff",
+                  "cornerRadius": 12,
+                  "stroke": "$note-border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 12,
+                  "padding": 18,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "o90I6",
+                      "name": "Cap",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "w7Yy5z",
+                          "name": "Name",
+                          "fill": "$ink",
+                          "content": "StepList",
+                          "fontFamily": "$font-mono",
+                          "fontSize": 13,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "DBJOA",
+                          "name": "Note",
+                          "fill": "$ink-muted",
+                          "content": "manual",
+                          "fontFamily": "$font-mono",
+                          "fontSize": 10,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "FUeMg",
+                      "name": "Stage",
+                      "clip": true,
+                      "width": "fill_container",
+                      "fill": "#fafaf8",
+                      "cornerRadius": 8,
+                      "layout": "vertical",
+                      "gap": 8,
+                      "padding": 14,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "LyIy9",
+                          "name": "scenario",
+                          "width": "fill_container",
+                          "fill": "$bg",
+                          "cornerRadius": 12,
+                          "stroke": "$border",
+                          "strokeWidth": 1,
+                          "layout": "vertical",
+                          "gap": 10,
+                          "padding": 16,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "YM6vK",
+                              "name": "title",
+                              "fill": "$text",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "The console lists the screenshot sets",
+                              "lineHeight": 1.3,
+                              "fontFamily": "$font-body",
+                              "fontSize": 13,
+                              "fontWeight": "700"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "BjqbJ",
+                              "name": "steps",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 7,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "FwvNw",
+                                  "name": "step 1.",
+                                  "width": "fill_container",
+                                  "gap": 6,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "xlmRI",
+                                      "name": "n",
+                                      "fill": "$text-muted",
+                                      "content": "1.",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "po7uQ",
+                                      "name": "kw",
+                                      "fill": "$text-muted",
+                                      "content": "When",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 11,
+                                      "fontWeight": "700"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "U6kjKU",
+                                      "name": "body",
+                                      "fill": "$text",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "I visit the console",
+                                      "lineHeight": 1.45,
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "TGiIN",
+                                  "name": "step 2.",
+                                  "width": "fill_container",
+                                  "gap": 6,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "Pag2N",
+                                      "name": "n",
+                                      "fill": "$text-muted",
+                                      "content": "2.",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "sfRF2",
+                                      "name": "kw",
+                                      "fill": "$text-muted",
+                                      "content": "Then",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 11,
+                                      "fontWeight": "700"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "oCV0Y",
+                                      "name": "body",
+                                      "fill": "$text",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "I see each screenshot set with its branch, story count and size",
+                                      "lineHeight": 1.45,
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "BPGYn",
+                                  "name": "step 3.",
+                                  "width": "fill_container",
+                                  "gap": 6,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "N7WoG",
+                                      "name": "n",
+                                      "fill": "$text-muted",
+                                      "content": "3.",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "iG0BA",
+                                      "name": "kw",
+                                      "fill": "$text-muted",
+                                      "content": "And",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 11,
+                                      "fontWeight": "700"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "QHzcN",
+                                      "name": "body",
+                                      "fill": "$text",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "a set captured from a dirty tree is marked as dirty",
+                                      "lineHeight": 1.45,
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
             }
           ]
         },
@@ -12402,6 +12634,309 @@
               ]
             }
           ]
+        },
+        {
+          "type": "frame",
+          "id": "F1lpi",
+          "name": "VD Decisions 2",
+          "width": "fill_container",
+          "gap": 12,
+          "children": [
+            {
+              "type": "frame",
+              "id": "ZL5qm",
+              "name": "VD D4",
+              "width": 958,
+              "fill": "#ffffff",
+              "cornerRadius": 12,
+              "stroke": "$note-border",
+              "strokeWidth": 1,
+              "layout": "vertical",
+              "gap": 12,
+              "padding": 20,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "PVuil",
+                  "name": "cap",
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "VIiv0",
+                      "name": "chip",
+                      "width": 22,
+                      "height": 22,
+                      "fill": "$ink",
+                      "cornerRadius": 9999,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "rYFZq",
+                          "name": "n",
+                          "fill": "#ffffff",
+                          "content": "D4",
+                          "fontFamily": "$font-mono",
+                          "fontSize": 12,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "G1rUO",
+                      "name": "t",
+                      "fill": "$ink",
+                      "content": "Steps read as steps, not as source",
+                      "fontFamily": "$font-body",
+                      "fontSize": 14,
+                      "fontWeight": "700"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "ifsSV",
+                  "name": "options",
+                  "width": "fill_container",
+                  "gap": 12,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "rdwZF",
+                      "name": "chosen",
+                      "theme": {
+                        "mode": "light"
+                      },
+                      "width": "fill_container",
+                      "fill": "$bg",
+                      "cornerRadius": 8,
+                      "stroke": "$border-strong",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "gap": 8,
+                      "padding": 12,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "c5Z4FF",
+                          "name": "hd",
+                          "gap": 6,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "eTUjM",
+                              "name": "dot",
+                              "width": 8,
+                              "height": 8,
+                              "fill": "$success-fg",
+                              "cornerRadius": 9999
+                            },
+                            {
+                              "type": "text",
+                              "id": "MwFKv",
+                              "name": "t",
+                              "fill": "$text",
+                              "content": "numbered list · chosen",
+                              "fontFamily": "$font-mono",
+                              "fontSize": 10,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "e8zot",
+                          "name": "step 1.",
+                          "width": "fill_container",
+                          "gap": 6,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "T0qk2",
+                              "name": "n",
+                              "fill": "$text-muted",
+                              "content": "1.",
+                              "fontFamily": "$font-body",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "t9Djmw",
+                              "name": "kw",
+                              "fill": "$text-muted",
+                              "content": "When",
+                              "fontFamily": "$font-body",
+                              "fontSize": 11,
+                              "fontWeight": "700"
+                            },
+                            {
+                              "type": "text",
+                              "id": "l9PfM",
+                              "name": "body",
+                              "fill": "$text",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "I visit the console",
+                              "lineHeight": 1.4,
+                              "fontFamily": "$font-body",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "N3W4GQ",
+                          "name": "step 2.",
+                          "width": "fill_container",
+                          "gap": 6,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "SFLRk",
+                              "name": "n",
+                              "fill": "$text-muted",
+                              "content": "2.",
+                              "fontFamily": "$font-body",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "P7A2m",
+                              "name": "kw",
+                              "fill": "$text-muted",
+                              "content": "Then",
+                              "fontFamily": "$font-body",
+                              "fontSize": 11,
+                              "fontWeight": "700"
+                            },
+                            {
+                              "type": "text",
+                              "id": "Vz3F0",
+                              "name": "body",
+                              "fill": "$text",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "I see each screenshot set with its branch",
+                              "lineHeight": 1.4,
+                              "fontFamily": "$font-body",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "SP4Xf",
+                      "name": "rejected",
+                      "theme": {
+                        "mode": "light"
+                      },
+                      "width": "fill_container",
+                      "fill": "$bg-subtle",
+                      "cornerRadius": 8,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "gap": 8,
+                      "padding": 12,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "jykaU",
+                          "name": "hd",
+                          "gap": 6,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "ttOUS",
+                              "name": "dot",
+                              "width": 8,
+                              "height": 8,
+                              "fill": "$danger-fg",
+                              "cornerRadius": 9999
+                            },
+                            {
+                              "type": "text",
+                              "id": "bGQ8L",
+                              "name": "t",
+                              "fill": "$text",
+                              "content": "```gherkin slab · rejected",
+                              "fontFamily": "$font-mono",
+                              "fontSize": 10,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "wliqo",
+                          "name": "line",
+                          "fill": "$text-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Scenario: The console lists…",
+                          "lineHeight": 1.4,
+                          "fontFamily": "$font-mono",
+                          "fontSize": 10,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "xEPUU",
+                          "name": "line",
+                          "fill": "$text-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "  When I visit the console",
+                          "lineHeight": 1.4,
+                          "fontFamily": "$font-mono",
+                          "fontSize": 10,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "laMBa",
+                          "name": "line",
+                          "fill": "$text-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "  Then I see each screenshot set",
+                          "lineHeight": 1.4,
+                          "fontFamily": "$font-mono",
+                          "fontSize": 10,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "U2mEL",
+                  "name": "why",
+                  "fill": "$ink-muted",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "A list keeps what a slab drops: ordinality, and the list semantics a screen reader announces as \"3 items\". It also reads as steps a reader performs rather than source to inspect, which is the manual's genre. The slab's one real advantage is fidelity — verbatim source, no rendering decisions — but CodeBlock highlights nothing on its own, so it needs shiki in a workspace whose dependency budget is one, and its unconditional tab stop would land on every scenario card.",
+                  "lineHeight": 1.45,
+                  "fontFamily": "$font-body",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
         }
       ]
     },
@@ -12409,7 +12944,7 @@
       "type": "frame",
       "id": "nNDeN",
       "x": 2154,
-      "y": 2130,
+      "y": 2431,
       "name": "Pages",
       "theme": {
         "mode": "light"
@@ -15312,8 +15847,8 @@
     {
       "type": "frame",
       "id": "RjikG",
-      "x": 5988,
-      "y": 2130,
+      "x": 5979,
+      "y": 2431,
       "name": "Pages — visual-diff-ui",
       "width": 3720,
       "fill": "$paper",
