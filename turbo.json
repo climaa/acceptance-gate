@@ -33,6 +33,22 @@
     "health": {
       "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/scripts/complexity-gate.mjs"],
       "outputs": []
+    },
+    "@gate/manual#build": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/apps/e2e/features/acceptance/*.feature"
+      ],
+      "outputs": [".next/**", "!.next/cache/**"]
+    },
+    "@gate/manual#test": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/.github/workflows/pr.yml",
+        "$TURBO_ROOT$/apps/e2e/features/acceptance/*.feature"
+      ]
     }
   }
 }

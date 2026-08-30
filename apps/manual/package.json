@@ -1,0 +1,32 @@
+{
+  "name": "@gate/manual",
+  "version": "1.2.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --port 3400",
+    "build": "next build",
+    "start": "next start --port 3400",
+    "lint": "eslint .",
+    "typecheck": "next typegen && tsc --noEmit",
+    "test": "vitest run",
+    "health": "node ../../scripts/complexity-gate.mjs",
+    "clean": "rm -rf .next .turbo node_modules"
+  },
+  "dependencies": {
+    "@gate/ui": "workspace:*",
+    "next": "^16.3.2",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@cucumber/gherkin": "^39.1.0",
+    "@gate/tsconfig": "workspace:*",
+    "@types/node": "^22.20.1",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.5",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^16.3.2",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.11"
+  }
+}
