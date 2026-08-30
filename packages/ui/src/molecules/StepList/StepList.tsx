@@ -81,7 +81,18 @@ export function StepList({ steps, className }: StepListProps) {
       {steps.map((step, index) => (
         // Keyed by position: the same step text may legitimately appear twice in
         // one scenario, and the order is the requirement.
-        <li key={index} className="ds-step-list__item" data-run={runs[index]}>
+        <li
+          key={index}
+          className="ds-step-list__item"
+          data-run={runs[index]}
+          // Marks where one run ends and the next begins, so the separation is
+          // drawn rather than left to colour. Without it the only thing telling
+          // an action run from an outcome run is hue, and in the dark palette
+          // `--color-accent` and `--color-success-fg` are both greens — measured
+          // at #80EE64 and #BFF9B4, indistinguishable across a 2px rule, so all
+          // three steps read as one run.
+          data-run-start={index === 0 || runs[index] !== runs[index - 1] ? '' : undefined}
+        >
           <span className="ds-step-list__keyword">{step.keyword}</span> {step.text}
         </li>
       ))}

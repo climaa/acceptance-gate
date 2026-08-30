@@ -43,6 +43,15 @@
   padding: var(--space-1) 0 var(--space-1) var(--space-4);
 }
 
+/* Where a run begins, drawn as a break in the rule rather than a change of
+   colour. This is the half that makes the grouping survive dark mode: there,
+   `--color-accent` and `--color-success-fg` are both greens (#80EE64 and
+   #BFF9B4), so a hue change across a 2px rule is invisible and every step reads
+   as one run. A gap is a gap in both palettes. */
+.ds-step-list--typed .ds-step-list__item[data-run-start]:not(:first-child) {
+  margin-top: var(--space-3);
+}
+
 /* Roles borrowed rather than invented: a step's kind is not a status, so these
    reuse the semantic roles nearest in meaning instead of adding three tokens
    that would need their own dark-mode remapping. */

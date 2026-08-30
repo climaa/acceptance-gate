@@ -163,3 +163,26 @@ describe('stories', () => {
     expect(Empty.tags).toContain(SKIP_TAG);
   });
 });
+
+describe('run boundaries', () => {
+  it('marks the first step of every run, and only those', () => {
+    render(
+      <StepList
+        steps={[
+          { keyword: 'When', meaning: 'Action', text: 'an act' },
+          { keyword: 'And', meaning: 'Conjunction', text: 'another act' },
+          { keyword: 'Then', meaning: 'Outcome', text: 'an outcome' },
+          { keyword: 'And', meaning: 'Conjunction', text: 'another outcome' },
+        ]}
+      />,
+    );
+
+    // Drawn as a break in the rule, because hue cannot carry it: in the dark
+    // palette both run colours are greens.
+    const starts = screen
+      .getAllByRole('listitem')
+      .map((item) => item.dataset.runStart !== undefined);
+
+    expect(starts).toEqual([true, false, true, false]);
+  });
+});
