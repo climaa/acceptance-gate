@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { Card, CardTitle, Prose, Stack, StepList } from '@gate/ui';
+import { Card, CardTitle, Prose, Stack, StepList, Thumbnail } from '@gate/ui';
 import { INTROS } from '@/content/intros';
+import { SCREENSHOTS } from '@/content/screenshots';
 import { findManualPage, MANUAL_PAGES } from '@/lib/allowlist';
 import { parseManualPage } from '@/lib/features';
 
@@ -39,6 +40,7 @@ export default async function ManualPage({
   if (!page) notFound();
 
   const feature = parseManualPage(page);
+  const shot = SCREENSHOTS[page.slug];
 
   return (
     <Stack gap={10}>
@@ -50,6 +52,15 @@ export default async function ManualPage({
           ))}
         </Prose>
       </Stack>
+
+      {shot && (
+        // A figure, not decoration: the caption says what to look at and the alt
+        // says what is there, so neither has to carry both jobs.
+        <figure className="manual-figure">
+          <Thumbnail src={shot.src} alt={shot.alt} />
+          <figcaption className="manual-figure__caption">{shot.caption}</figcaption>
+        </figure>
+      )}
 
       {feature.background.length > 0 && (
         <div className="manual-precondition">
