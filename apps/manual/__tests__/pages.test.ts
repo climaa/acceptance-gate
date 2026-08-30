@@ -1,4 +1,4 @@
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
@@ -135,23 +135,53 @@ describe('screenshots', () => {
       return;
     }
 
-    // The `src` and the alt both, because a `Thumbnail` with no alt is an
+    // Both sources and the alt, because a `Thumbnail` with no alt is an
     // illustration a screen reader cannot see past, and one with no src silently
     // renders its fallback instead.
-    expect(html).toContain(shot.src);
+    expect(html).toContain(shot.light);
+    expect(html).toContain(shot.dark);
     expect(html).toContain(shot.alt.slice(0, 40));
     expect(html).toContain(shot.caption.slice(0, 40));
   });
 
-  it('points every declared screenshot at a file that is committed', () => {
+  it('points every declared screenshot at files that are committed', () => {
     // A `Thumbnail` whose `src` 404s degrades to its fallback rather than
-    // failing, so nothing else here would notice a typo or a missing file.
-    const missing = Object.values(SCREENSHOTS).filter(
-      (shot) => !existsSync(join('public', shot.src.replace(/^\//, ''))),
+    // failing, so nothing else here would notice a typo or a missing file. Both
+    // themes, because the dark half is invisible to a reader in light — a broken
+    // path there survives every manual look at the page.
+    const declared = Object.values(SCREENSHOTS).flatMap((shot) => [
+      shot.light,
+      shot.dark,
+    ]);
+    const missing = declared.filter(
+      (src) => !existsSync(join('public', src.replace(/^\//, ''))),
     );
 
-    expect(missing.map((shot) => shot.src)).toEqual([]);
-    expect(Object.keys(SCREENSHOTS).length).toBeGreaterThan(0);
+    expect(missing).toEqual([]);
+    expect(declared.length).toBeGreaterThan(0);
+  });
+
+  it('gives each theme its own capture', () => {
+    // The failure this catches is a copy-paste that points both themes at one
+    // file. Everything above still passes: the paths resolve, the page renders,
+    // and the reader in dark mode gets the light screenshot back.
+    const shared = Object.entries(SCREENSHOTS).filter(
+      ([, shot]) => shot.light === shot.dark,
+    );
+
+    expect(shared.map(([slug]) => slug)).toEqual([]);
+  });
+
+  it('renders the light capture unconditionally and the dark one behind [data-theme]', () => {
+    // The swap is CSS, so nothing else in this suite can see it. What is
+    // asserted is the rule the head script makes necessary: light must be the
+    // unqualified state, because a first visit carries no `data-theme` at all
+    // and a `[data-theme="light"]` selector would match nothing.
+    const css = readFileSync(join('app', 'globals.css'), 'utf8');
+
+    expect(css).toContain('.manual-figure__shot--dark {\n  display: none;\n}');
+    expect(css).toContain("[data-theme='dark'] .manual-figure__shot--light");
+    expect(css).not.toContain("[data-theme='light'] .manual-figure__shot");
   });
 });
 

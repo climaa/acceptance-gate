@@ -56,13 +56,34 @@ export default async function ManualPage({
       {shot && (
         // A figure, not decoration: the caption says what to look at and the alt
         // says what is there, so neither has to carry both jobs.
+        //
+        // Both themes are in the DOM and CSS shows one, rather than the server
+        // or a hook choosing. The theme is a client fact this page is rendered
+        // without — `lib/theme.ts` writes `data-theme` from `<head>`, before the
+        // first paint — so picking here would mean rendering light and
+        // correcting it after hydration, which is the flash the head script
+        // exists to prevent. A stylesheet knows the answer at paint time and
+        // needs no render to act on it.
+        //
+        // The hidden half leaves the accessibility tree with its subtree, so a
+        // screen reader is offered one image and one alt, not two.
         <figure className="manual-figure">
-          <Thumbnail
-            src={shot.src}
-            alt={shot.alt}
-            width={shot.width}
-            height={shot.height}
-          />
+          <span className="manual-figure__shot manual-figure__shot--light">
+            <Thumbnail
+              src={shot.light}
+              alt={shot.alt}
+              width={shot.width}
+              height={shot.height}
+            />
+          </span>
+          <span className="manual-figure__shot manual-figure__shot--dark">
+            <Thumbnail
+              src={shot.dark}
+              alt={shot.alt}
+              width={shot.width}
+              height={shot.height}
+            />
+          </span>
           <figcaption className="manual-figure__caption">{shot.caption}</figcaption>
         </figure>
       )}
