@@ -1,3 +1,5 @@
+import { cache } from 'react';
+
 import { AstBuilder, GherkinClassicTokenMatcher, Parser } from '@cucumber/gherkin';
 
 import type { ManualPage } from '@/lib/allowlist';
@@ -141,7 +143,12 @@ export function parseFeatureSource(source: string, label: string): ManualFeature
  * it. `turbo.json` therefore names `apps/e2e/features/acceptance/*.feature` in
  * `@gate/manual#build` and `@gate/manual#test`. That file is strict JSON and
  * cannot say why, so it is said here: the two move together.
+ *
+ * `cache()` because `generateMetadata` and the page it belongs to both resolve
+ * the same feature, and the index resolves all three. Build-time work either
+ * way, so this buys little today — but it is the documented shape for a read two
+ * exports share, and it stops mattering only while the parse stays cheap.
  */
-export function parseManualPage(page: ManualPage): ManualFeature {
+export const parseManualPage = cache((page: ManualPage): ManualFeature => {
   return parseFeatureSource(FEATURE_SOURCES[page.slug], page.featurePath);
-}
+});

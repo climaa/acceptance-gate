@@ -28,11 +28,20 @@ export function proxy(request: NextRequest) {
   // one, and every static file does.
   if (!slug || slug.includes('.')) return NextResponse.next();
 
+  // `_not-found` is the target this file rewrites to, and a one-segment matcher
+  // matches it — so without this the rewritten request is refused a second time
+  // on its way to the same page. Next resolves it either way, measured: the
+  // reader gets `app/not-found.tsx` under a 404 with or without this line. It
+  // stays because a check that refuses its own destination is a trap for the
+  // next person to widen the matcher, not because it fixes a break today.
+  // `apps/blog` never meets it at all — its matcher is two segments deep.
+  if (slug.startsWith('_')) return NextResponse.next();
+
   if (findManualPage(slug)) return NextResponse.next();
 
-  // Rewritten rather than answered from here, so the reader still gets the
-  // site's own not-found page — header, footer, and the way back — under the
-  // status.
+  // Rewritten rather than answered from here, so the reader still gets
+  // `app/not-found.tsx` — this app's own type, the header and footer, and a way
+  // back to the index — under the status.
   return NextResponse.rewrite(new URL('/_not-found', request.url), { status: 404 });
 }
 

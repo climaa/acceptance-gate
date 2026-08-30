@@ -16,6 +16,37 @@ export const SITE_COPYRIGHT = 'Carlos Lima · Barcelona';
 export const SITE_COPYRIGHT_YEAR = 2026;
 
 /**
+ * The 404 page's heading, what it says under that, and the way on. Nobody
+ * arrives here on purpose: an address typed wrong, or a link to a page this
+ * manual has not grown yet. The copy names the situation without pretending the
+ * site is larger than it is — three pages, all of them on the index.
+ */
+export const NOT_FOUND_TITLE = 'Not found';
+
+export const NOT_FOUND_NOTE =
+  'Nothing at this address. This manual is three pages long, and the index lists every one of them.';
+
+export const NOT_FOUND_ACTION = 'All pages';
+
+/**
+ * What `app/error.tsx` and `app/global-error.tsx` say when a render throws.
+ *
+ * Separate copy from the 404's, because a reader can act on the difference: a
+ * miss means the address leads nowhere and the way on is elsewhere; this means
+ * the address was right and this end failed to serve it. So the way on here is
+ * the same page again — for a transient fault that is the whole fix.
+ *
+ * The copy names no cause. What threw is a server-side detail the reader cannot
+ * act on, and in production React redacts the message anyway.
+ */
+export const ERROR_TITLE = 'Something went wrong';
+
+export const ERROR_NOTE =
+  'This page could not be rendered. Nothing is wrong with the address you followed — the fault is on this end.';
+
+export const ERROR_ACTION = 'Try again';
+
+/**
  * The deployed console is the thing this manual describes, so it leads. It runs
  * in sample mode, which is why one of the three pages is about that.
  */

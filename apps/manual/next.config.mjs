@@ -21,7 +21,7 @@ const nextConfig = {
   // `generateStaticParams` and `findManualPage` both read, and `sync.test.ts`
   // asserts each one resolves to a feature that parses.
   // The design system ships as uncompiled TypeScript (source-direct).
-  transpilePackages: ['@gate/ui'],
+  transpilePackages: ['@gate/logger', '@gate/ui'],
   experimental: {
     optimizePackageImports: ['@gate/ui'],
   },

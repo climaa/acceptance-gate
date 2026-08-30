@@ -57,4 +57,11 @@ describe('proxy', () => {
   it('lets the index through', () => {
     expect(statusOf('/')).toBeNull();
   });
+
+  // This file rewrites to `/_not-found`, which a one-segment matcher also
+  // matches. Next renders the page either way, so this pins an invariant rather
+  // than a fix: a check must not refuse its own destination.
+  it('lets its own rewrite target through instead of refusing it again', () => {
+    expect(statusOf('/_not-found')).toBeNull();
+  });
 });
