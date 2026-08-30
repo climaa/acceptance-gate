@@ -30,12 +30,33 @@ describe('parseFeatureSource', () => {
     const feature = parseFixture();
 
     expect(feature.background).toEqual([
-      { keyword: 'Given', text: 'the world is prepared' },
+      { keyword: 'Given', keywordType: 'Context', text: 'the world is prepared' },
     ]);
     expect(feature.scenarios[0]?.steps[0]).toEqual({
       keyword: 'When',
+      keywordType: 'Action',
       text: 'I do the thing',
     });
+  });
+
+  it('keeps what each keyword means, which the word alone does not say', () => {
+    const feature = parseFixture();
+
+    // The distinction the pages were throwing away: `And` and `But` are
+    // Conjunction, so a renderer can tell a continuation from a fresh act — and
+    // it never has to match 'Given'/'When'/'Then' as English strings.
+    expect(feature.scenarios[0]?.steps.map((step) => step.keywordType)).toEqual([
+      'Action',
+      'Outcome',
+      'Conjunction',
+    ]);
+    expect(feature.scenarios[1]?.steps.map((step) => step.keywordType)).toEqual([
+      'Action',
+      'Outcome',
+      'Action',
+      'Outcome',
+      'Conjunction',
+    ]);
   });
 
   it('keeps steps flat and in authored order, including a return to When', () => {
@@ -57,6 +78,32 @@ describe('parseFeatureSource', () => {
 
     expect(feature.scenarios[0]?.tags).toEqual([]);
     expect(feature.scenarios[1]?.tags).toEqual(['@desktop']);
+  });
+});
+
+describe('keyword meaning', () => {
+  it('reports Unknown for the bullet keyword, which asserts nothing', () => {
+    const source = ['Feature: F', '  Scenario: S', '    * I act'].join('\n');
+
+    const step = parseFeatureSource(source, 'F.feature').scenarios[0]?.steps[0];
+
+    expect(step?.keyword).toBe('*');
+    expect(step?.keywordType).toBe('Unknown');
+  });
+
+  it('treats But as a continuation, exactly as And', () => {
+    const source = [
+      'Feature: F',
+      '  Scenario: S',
+      '    Given a thing',
+      '    But not that',
+    ].join('\n');
+
+    const types = parseFeatureSource(source, 'F.feature').scenarios[0]?.steps.map(
+      (step) => step.keywordType,
+    );
+
+    expect(types).toEqual(['Context', 'Conjunction']);
   });
 });
 

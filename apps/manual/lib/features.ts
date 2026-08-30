@@ -27,8 +27,40 @@ export type StepKeyword = 'Given' | 'When' | 'Then' | 'And' | 'But' | '*';
 
 const STEP_KEYWORDS: readonly string[] = ['Given', 'When', 'Then', 'And', 'But', '*'];
 
+/**
+ * What the keyword MEANS, as gherkin resolves it — a precondition, an act, an
+ * assertion, or a continuation of whichever came before.
+ *
+ * Not derivable from `keyword` without deciding two things this app should not
+ * decide. Matching `'Given' | 'When' | 'Then'` as strings assumes the English
+ * dialect, which gherkin does not; and `And` carries no meaning of its own at
+ * all, so a renderer that only sees the word cannot tell "another thing you do"
+ * from "another thing you see".
+ */
+export type StepKeywordType =
+  'Context' | 'Action' | 'Outcome' | 'Conjunction' | 'Unknown';
+
+const STEP_KEYWORD_TYPES: readonly string[] = [
+  'Context',
+  'Action',
+  'Outcome',
+  'Conjunction',
+  'Unknown',
+];
+
 export interface ManualStep {
   keyword: StepKeyword;
+  /**
+   * The keyword's meaning. `And` and `But` are always `Conjunction` — gherkin
+   * reports what the word is, not what it continues, so resolving that is a fold
+   * over the preceding steps and belongs to whatever renders them.
+   *
+   * Kept rather than dropped because it is the one thing the source carries that
+   * the pages were throwing away. Keeping it does not violate the rule that a
+   * keyword is never resolved to its antecedent: this is data gherkin computed,
+   * not an interpretation invented here.
+   */
+  keywordType: StepKeywordType;
   /** Step text with the keyword and surrounding whitespace stripped. */
   text: string;
 }
@@ -73,6 +105,18 @@ function isStepKeyword(keyword: string): keyword is StepKeyword {
   return STEP_KEYWORDS.includes(keyword);
 }
 
+/**
+ * Narrowed rather than trusted. `keywordType` is optional in gherkin's own type,
+ * and a value outside the five it documents would otherwise reach a renderer as
+ * a string nobody has a branch for. `Unknown` is one of the five, so an absent
+ * or unrecognised value lands on the case that already means "no idea".
+ */
+function toKeywordType(keywordType: string | undefined): StepKeywordType {
+  return keywordType && STEP_KEYWORD_TYPES.includes(keywordType)
+    ? (keywordType as StepKeywordType)
+    : 'Unknown';
+}
+
 function toStep(step: GherkinStep, featurePath: string): ManualStep {
   if (step.docString) throw unsupported('a DocString', featurePath, step.location.line);
   if (step.dataTable) throw unsupported('a DataTable', featurePath, step.location.line);
@@ -82,7 +126,7 @@ function toStep(step: GherkinStep, featurePath: string): ManualStep {
     throw unsupported(`the keyword "${keyword}"`, featurePath, step.location.line);
   }
 
-  return { keyword, text: step.text };
+  return { keyword, keywordType: toKeywordType(step.keywordType), text: step.text };
 }
 
 function toScenario(scenario: GherkinScenario, featurePath: string): ManualScenario {
