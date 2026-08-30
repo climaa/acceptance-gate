@@ -45,6 +45,31 @@ function textOf(html: string): string {
     .trim();
 }
 
+/**
+ * A stylesheet as its rules, whitespace collapsed and comments dropped — the
+ * same parse `apps/blog/__tests__/globals-css.test.ts` uses, for the same
+ * reason: matching formatted text asserts Prettier's output, so the test breaks
+ * on a reformat and holds nothing that a reordering could not slip past.
+ *
+ * Flat by design, which is safe only while this stylesheet is. A nested block —
+ * `@media`, `@supports`, `@layer` — would break the brace pairing below; today
+ * `globals.css` has none, and its one `@import` is stripped with the other
+ * at-statements before the pairing runs.
+ */
+function rulesOf(css: string): { selector: string; declarations: string }[] {
+  const collapse = (text: string) => text.trim().replace(/\s+/g, ' ');
+
+  return [
+    ...css
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/@[^;{]*;/g, '')
+      .matchAll(/([^{}]+)\{([^{}]*)\}/g),
+  ].map(([, selector, declarations]) => ({
+    selector: collapse(selector ?? ''),
+    declarations: collapse(declarations ?? ''),
+  }));
+}
+
 async function renderPageHtml(slug: string): Promise<string> {
   const element = await ManualPage({ params: Promise.resolve({ slug }) });
 
@@ -172,16 +197,35 @@ describe('screenshots', () => {
     expect(shared.map(([slug]) => slug)).toEqual([]);
   });
 
-  it('renders the light capture unconditionally and the dark one behind [data-theme]', () => {
-    // The swap is CSS, so nothing else in this suite can see it. What is
-    // asserted is the rule the head script makes necessary: light must be the
-    // unqualified state, because a first visit carries no `data-theme` at all
-    // and a `[data-theme="light"]` selector would match nothing.
-    const css = readFileSync(join('app', 'globals.css'), 'utf8');
+  it('hides the wrong capture in each theme, and never names a light theme', () => {
+    // The swap is CSS, so nothing else in this suite can see it — every other
+    // case here passes with both captures stacked on the page.
+    //
+    // The whole cascade, compared as an exact set rather than searched for a
+    // substring. Both directions matter: a missing rule stops the swap, and an
+    // *added* one is the actual trap — `[data-theme='light'] …` reads correctly
+    // in review and matches nothing on a first visit, because `lib/theme.ts`
+    // only ever sets `data-theme="dark"` and light is the absence of the
+    // attribute. An extra entry here fails the comparison.
+    //
+    // `display` rather than a colour or a ratio: whether the element is in the
+    // layout and the accessibility tree is structural, and it is the property
+    // under test. Appearance stays with visual-diff.
+    const swap = rulesOf(readFileSync(join('app', 'globals.css'), 'utf8')).filter(
+      (rule) => rule.selector.includes('manual-figure__shot'),
+    );
 
-    expect(css).toContain('.manual-figure__shot--dark {\n  display: none;\n}');
-    expect(css).toContain("[data-theme='dark'] .manual-figure__shot--light");
-    expect(css).not.toContain("[data-theme='light'] .manual-figure__shot");
+    expect(swap).toEqual([
+      { selector: '.manual-figure__shot--dark', declarations: 'display: none;' },
+      {
+        selector: "[data-theme='dark'] .manual-figure__shot--light",
+        declarations: 'display: none;',
+      },
+      {
+        selector: "[data-theme='dark'] .manual-figure__shot--dark",
+        declarations: 'display: block;',
+      },
+    ]);
   });
 });
 
