@@ -63,6 +63,9 @@ const EXPECTED_SKIPS: Readonly<Record<string, string>> = {
   // An empty tag array renders `null`, so there is no `#storybook-root` box.
   // `ThreeTags` and `OneTag` stay captured; TagList.test.tsx holds them there.
   'molecules/TagList/TagList.stories.tsx': 'no box: renders null',
+  // No steps renders `null` too, so the same applies. `Scenario` stays captured;
+  // StepList.test.tsx holds it there.
+  'molecules/StepList/StepList.stories.tsx': 'no box: renders null',
 };
 
 /** Every story module committed under src/, as paths relative to it. */

@@ -42,10 +42,14 @@ function textOf(html: string): string {
     .trim();
 }
 
-async function renderPage(slug: string): Promise<string> {
+async function renderPageHtml(slug: string): Promise<string> {
   const element = await ManualPage({ params: Promise.resolve({ slug }) });
 
-  return textOf(renderToStaticMarkup(element));
+  return renderToStaticMarkup(element);
+}
+
+async function renderPage(slug: string): Promise<string> {
+  return textOf(await renderPageHtml(slug));
 }
 
 describe.each(MANUAL_PAGES)('the $slug page', (page) => {
@@ -115,6 +119,39 @@ describe.each(MANUAL_PAGES)('the $slug page', (page) => {
 
     expect(firstScenario).toBeDefined();
     expect(text.indexOf(page.title)).toBeLessThan(text.indexOf(firstScenario!.name));
+  });
+});
+
+describe('the step meanings reach the rendered page', () => {
+  /**
+   * The seam nothing else covers. `app/[slug]/page.tsx` translates this app's
+   * `keywordType` into the design system's `meaning`, and every other test here
+   * reads visible text — so swapping `Action` for `Outcome` in that map would
+   * leave all of them green while the page grouped acts under outcomes.
+   */
+  it('renders each step in the run its keyword type implies', async () => {
+    const html = await renderPageHtml('console');
+    const feature = parseManualPage(MANUAL_PAGES[0]!);
+
+    const expected = feature.scenarios
+      .flatMap((scenario) => scenario.steps)
+      .reduce<(string | undefined)[]>((runs, step, index, steps) => {
+        const RUN: Record<string, string | undefined> = {
+          Context: 'context',
+          Action: 'action',
+          Outcome: 'outcome',
+        };
+        const previous = index > 0 ? runs[index - 1] : undefined;
+        runs.push(step.keywordType === 'Conjunction' ? previous : RUN[step.keywordType]);
+        return runs;
+      }, []);
+
+    const rendered = [...html.matchAll(/data-run="([a-z]+)"/g)].map(([, run]) => run);
+
+    // Only the steps that land in a run are drawn with one, so the rendered list
+    // is the expected one with the blanks removed.
+    expect(rendered).toEqual(expected.filter(Boolean));
+    expect(rendered.length).toBeGreaterThan(0);
   });
 });
 

@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { Card, CardTitle, Prose, Stack } from '@gate/ui';
+import { Card, CardTitle, Prose, Stack, StepList } from '@gate/ui';
 import { INTROS } from '@/content/intros';
 import { findManualPage, MANUAL_PAGES } from '@/lib/allowlist';
-import { parseManualPage, type ManualStep } from '@/lib/features';
+import { parseManualPage } from '@/lib/features';
 
 // Three known slugs, by hand. This is the whole of what a docs framework's
 // loader would buy at this size, which is why there is no docs framework here
@@ -26,26 +26,6 @@ export async function generateMetadata({
   const page = findManualPage(slug);
 
   return page ? { title: page.title } : {};
-}
-
-/**
- * A route-local helper, and deliberately the only component this app defines.
- * Stage 2 replaces it with a `packages/ui` molecule drawn on the design board
- * first — which is where it belongs, because the capture pipeline photographs
- * Storybook and nothing here.
- */
-function StepList({ steps }: { steps: ManualStep[] }) {
-  return (
-    <ol className="manual-steps">
-      {steps.map((step, index) => (
-        // Steps are identified by position: the same text can legitimately
-        // appear twice in one scenario, and the order is the requirement.
-        <li key={index}>
-          <span className="manual-steps__keyword">{step.keyword}</span> {step.text}
-        </li>
-      ))}
-    </ol>
-  );
 }
 
 export default async function ManualPage({
@@ -82,7 +62,7 @@ export default async function ManualPage({
           {/* Unordered, unlike the steps below. These hold simultaneously; they
               are not a sequence to work through, and numbering one precondition
               "1." says otherwise. */}
-          <ul className="manual-steps manual-steps--plain">
+          <ul className="manual-precondition__list">
             {feature.background.map((step, index) => (
               <li key={index}>{step.text}</li>
             ))}
@@ -99,7 +79,13 @@ export default async function ManualPage({
           // and nothing in the source forbids it.
           <Card key={index}>
             <CardTitle>{scenario.name}</CardTitle>
-            <StepList steps={scenario.steps} />
+            <StepList
+              steps={scenario.steps.map((step) => ({
+                keyword: step.keyword,
+                meaning: step.keywordType,
+                text: step.text,
+              }))}
+            />
           </Card>
         ))}
       </Stack>
