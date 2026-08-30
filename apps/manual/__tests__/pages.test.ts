@@ -1,6 +1,9 @@
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import ManualPage from '@/app/[slug]/page';
+import { SCREENSHOTS } from '@/content/screenshots';
 import { MANUAL_PAGES } from '@/lib/allowlist';
 import { parseManualPage } from '@/lib/features';
 
@@ -119,6 +122,36 @@ describe.each(MANUAL_PAGES)('the $slug page', (page) => {
 
     expect(firstScenario).toBeDefined();
     expect(text.indexOf(page.title)).toBeLessThan(text.indexOf(firstScenario!.name));
+  });
+});
+
+describe('screenshots', () => {
+  it.each(MANUAL_PAGES)('$slug renders a figure only when it has one', async (page) => {
+    const html = await renderPageHtml(page.slug);
+    const shot = SCREENSHOTS[page.slug];
+
+    if (!shot) {
+      expect(html).not.toContain('manual-figure');
+      return;
+    }
+
+    // The `src` and the alt both, because a `Thumbnail` with no alt is an
+    // illustration a screen reader cannot see past, and one with no src silently
+    // renders its fallback instead.
+    expect(html).toContain(shot.src);
+    expect(html).toContain(shot.alt.slice(0, 40));
+    expect(html).toContain(shot.caption.slice(0, 40));
+  });
+
+  it('points every declared screenshot at a file that is committed', () => {
+    // A `Thumbnail` whose `src` 404s degrades to its fallback rather than
+    // failing, so nothing else here would notice a typo or a missing file.
+    const missing = Object.values(SCREENSHOTS).filter(
+      (shot) => !existsSync(join('public', shot.src.replace(/^\//, ''))),
+    );
+
+    expect(missing.map((shot) => shot.src)).toEqual([]);
+    expect(Object.keys(SCREENSHOTS).length).toBeGreaterThan(0);
   });
 });
 

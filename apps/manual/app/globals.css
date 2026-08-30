@@ -79,3 +79,27 @@ main {
   align-items: center;
   gap: var(--space-3);
 }
+
+/* A screenshot and what to look at in it. The frame, border and radius come from
+   `Thumbnail`; what is left here is the figure's own spacing and the caption,
+   which no design-system component owns.
+
+   Deliberately NOT capped at the prose measure, unlike the paragraphs above it.
+   These are 1280px captures of a dense console, and inside a 65ch column the
+   panel headings and table cells stop being readable — a screenshot nobody can
+   read is decoration, and this one is meant to be looked at. The scenario cards
+   below already run the full container, so the figure matches them rather than
+   the prose. The caption stays at the prose measure, because it is text. */
+.manual-figure {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.manual-figure__caption {
+  max-width: var(--width-prose);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  line-height: var(--leading-relaxed);
+}
