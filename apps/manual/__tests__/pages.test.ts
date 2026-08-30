@@ -70,6 +70,65 @@ function rulesOf(css: string): { selector: string; declarations: string }[] {
   }));
 }
 
+/** Where a `/images/…` src actually lives, from this workspace's root. */
+function fileFor(src: string): string {
+  return join('public', src.replace(/^\//, ''));
+}
+
+/** Every declared capture, flattened, each labelled by the page and theme it
+ *  belongs to so a failure names which one is wrong rather than which index. */
+function captures(): { at: string; src: string; declared: string }[] {
+  return Object.entries(SCREENSHOTS).flatMap(([slug, shot]) =>
+    (['light', 'dark'] as const).map((theme) => ({
+      at: `${slug}.${theme}`,
+      src: shot[theme],
+      declared: `${shot.width}×${shot.height}`,
+    })),
+  );
+}
+
+/**
+ * Frame markers, which are the only segments carrying the image's size.
+ * `C4`, `C8` and `CC` sit in the same range and are not frames — a Huffman
+ * table, an extension and an arithmetic-coding table — so reading a size out of
+ * one would return two bytes of something else entirely.
+ */
+const SOF_MARKERS = new Set([
+  0xc0, 0xc1, 0xc2, 0xc3, 0xc5, 0xc6, 0xc7, 0xc9, 0xca, 0xcb, 0xcd, 0xce, 0xcf,
+]);
+
+/**
+ * A JPEG's intrinsic size, read from its own header.
+ *
+ * By hand rather than by dependency: this workspace's entire external budget is
+ * one package, and spending a second on four numbers a header states outright
+ * would be the wrong trade. The walk is the segment chain — each segment
+ * declares its own length — stopping at the first frame, which always precedes
+ * the scan data in a file a browser will render.
+ */
+function jpegSize(file: string): string {
+  const bytes = readFileSync(file);
+  let offset = 2; // past the start-of-image marker
+
+  while (offset + 9 <= bytes.length) {
+    // Padding between segments is legal and is always `0xff`, so anything else
+    // here means the chain is off — step a byte and look again rather than
+    // reading a length out of the middle of something.
+    if (bytes[offset] !== 0xff) {
+      offset += 1;
+      continue;
+    }
+
+    if (SOF_MARKERS.has(bytes[offset + 1]!)) {
+      return `${bytes.readUInt16BE(offset + 7)}×${bytes.readUInt16BE(offset + 5)}`;
+    }
+
+    offset += 2 + bytes.readUInt16BE(offset + 2);
+  }
+
+  throw new Error(`${file} carries no frame header — not a JPEG?`);
+}
+
 async function renderPageHtml(slug: string): Promise<string> {
   const element = await ManualPage({ params: Promise.resolve({ slug }) });
 
@@ -174,27 +233,42 @@ describe('screenshots', () => {
     // failing, so nothing else here would notice a typo or a missing file. Both
     // themes, because the dark half is invisible to a reader in light — a broken
     // path there survives every manual look at the page.
-    const declared = Object.values(SCREENSHOTS).flatMap((shot) => [
-      shot.light,
-      shot.dark,
-    ]);
-    const missing = declared.filter(
-      (src) => !existsSync(join('public', src.replace(/^\//, ''))),
-    );
+    const missing = captures().filter(({ src }) => !existsSync(fileFor(src)));
 
-    expect(missing).toEqual([]);
-    expect(declared.length).toBeGreaterThan(0);
+    expect(missing.map(({ at }) => at)).toEqual([]);
+    expect(captures().length).toBeGreaterThan(0);
   });
 
-  it('gives each theme its own capture', () => {
-    // The failure this catches is a copy-paste that points both themes at one
-    // file. Everything above still passes: the paths resolve, the page renders,
-    // and the reader in dark mode gets the light screenshot back.
-    const shared = Object.entries(SCREENSHOTS).filter(
-      ([, shot]) => shot.light === shot.dark,
+  it('gives each theme a capture of its own', () => {
+    // Compared as bytes, not as paths. Two names for one file is the copy-paste
+    // this catches, and it survives every other case here: the paths differ, both
+    // resolve, the page renders, and the reader in dark mode is handed the light
+    // screenshot. A path comparison alone would miss the other half of it —
+    // `cp console-light.jpg console-dark.jpg`, two real files with one picture in
+    // them.
+    const duplicated = Object.entries(SCREENSHOTS).filter(([, shot]) =>
+      readFileSync(fileFor(shot.light)).equals(readFileSync(fileFor(shot.dark))),
     );
 
-    expect(shared.map(([slug]) => slug)).toEqual([]);
+    expect(duplicated.map(([slug]) => slug)).toEqual([]);
+  });
+
+  it('declares the size both captures actually are', () => {
+    // The drift this catches is a re-shoot of one theme at a different viewport,
+    // which nothing else can see: the odd one out is invisible to anyone reading
+    // in the other theme, and both files still exist and still differ.
+    //
+    // It guards a second thing on the way past. `width`/`height` are declared
+    // once for the pair and reserve the figure's aspect before any bytes arrive
+    // — the fix that took a measured 642px of layout shift to 0 — so a declared
+    // size that no longer matches the file silently reintroduces the shift.
+    const wrong = captures()
+      .map((capture) => ({ ...capture, actual: jpegSize(fileFor(capture.src)) }))
+      .filter(({ actual, declared }) => actual !== declared);
+
+    expect(
+      wrong.map(({ at, declared, actual }) => `${at}: ${declared} ≠ ${actual}`),
+    ).toEqual([]);
   });
 
   it('hides the wrong capture in each theme, and never names a light theme', () => {
