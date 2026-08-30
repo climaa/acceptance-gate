@@ -106,6 +106,42 @@ describe('runs', () => {
     expect(screen.getByRole('listitem').dataset.run).toBeUndefined();
   });
 
+  // The case the all-typed and none-typed tests both miss, and the one that was
+  // wrong: a step with no meaning inherited the run above it, so an outcome read
+  // as a continuation of the act.
+  it('starts no run for a step whose meaning the caller did not supply', () => {
+    render(
+      <StepList
+        steps={[
+          { keyword: 'When', meaning: 'Action', text: 'an act' },
+          { keyword: 'Then', text: 'an outcome, meaning omitted' },
+        ]}
+      />,
+    );
+
+    const runs = screen.getAllByRole('listitem').map((item) => item.dataset.run);
+
+    expect(runs).toEqual(['action', undefined]);
+  });
+
+  it('breaks a run on a step it has no rule for', () => {
+    render(
+      <StepList
+        steps={[
+          { keyword: 'When', meaning: 'Action', text: 'an act' },
+          { keyword: '*', meaning: 'Unknown', text: 'something' },
+          { keyword: 'And', meaning: 'Conjunction', text: 'and something else' },
+        ]}
+      />,
+    );
+
+    const runs = screen.getAllByRole('listitem').map((item) => item.dataset.run);
+
+    // The conjunction continues the Unknown, which is itself in no run — it does
+    // not reach back past it to the action.
+    expect(runs).toEqual(['action', undefined, undefined]);
+  });
+
   it('assigns no runs at all when no step carries a meaning', () => {
     render(
       <StepList

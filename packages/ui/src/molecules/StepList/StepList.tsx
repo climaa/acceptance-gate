@@ -38,12 +38,19 @@ const RUN_OF: Partial<Record<StepMeaning, string>> = {
  *
  * A conjunction before any typed step inherits nothing and stays undefined,
  * which is correct: there is no run for it to continue.
+ *
+ * Only a conjunction inherits, and that is the whole of the rule. Anything else
+ * starts fresh — a keyword with its own meaning, an `Unknown`, and a caller that
+ * supplied no meaning at all. Carrying the run forward for that last case was a
+ * bug: a partially typed list rendered a `Then` with no meaning as a
+ * continuation of the `Action` above it, which is the exact misreading this
+ * component exists to prevent.
  */
 function runsOf(steps: StepListItem[]): (string | undefined)[] {
   let run: string | undefined;
 
   return steps.map((step) => {
-    run = (step.meaning && RUN_OF[step.meaning]) ?? run;
+    run = step.meaning === 'Conjunction' ? run : RUN_OF[step.meaning ?? 'Unknown'];
     return run;
   });
 }
