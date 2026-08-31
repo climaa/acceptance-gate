@@ -301,14 +301,13 @@ describe('check', () => {
   /** Order is asserted, not just membership: `summary.json` is written LAST because it
    *  is stamped with how long producing the others took. A writer that emitted it first
    *  would report a run that had not finished. */
-  it('writes summary.md, report.html, one PNG per failing variant, then the record', async () => {
+  it('writes summary.md, one PNG per failing variant, then the record', async () => {
     const gate = deps({ compare: () => changedRows() });
 
     await check(gate, { rootDir: ROOT });
 
     expect([...gate.fs.writes.keys()]).toEqual([
       at(PATHS.summaryMd),
-      at(PATHS.reportHtml),
       path.join(at(PATHS.diffs), `${KEYS[0]}.png`),
       at(PATHS.summaryJson),
     ]);

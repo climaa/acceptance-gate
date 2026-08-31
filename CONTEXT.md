@@ -97,8 +97,8 @@ A comparison's verdict: unchanged, changed, added, removed, errored, or a11y.
 
 **report**:
 The record of one comparison run — every comparison it produced, and the
-screenshots behind them. One concept with two renderings: the console's pages,
-and a standalone HTML file (deprecated, see below).
+screenshots behind them. Rendered by the console's pages; the differ's own
+standalone HTML rendering has been retired.
 
 **summary row**, **report card**:
 Stages downstream of a comparison, not synonyms for one. A _summary row_ is a
@@ -137,11 +137,6 @@ Job modes and comparison modes are always qualified.
 _Avoid_: the bare word for a job tab or a viewer mode.
 
 ## Deprecated
-
-**report.html**:
-The differ's standalone HTML rendering of a report. Deprecated in favour of the
-console's pages. Until it is removed, CI review reads the summary comment and
-the diff images.
 
 **snapshot**:
 Retired as a domain term. Use _screenshot_ for the image and _screenshot set_

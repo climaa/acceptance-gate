@@ -210,7 +210,6 @@ export const PATHS = {
   diffs: `${ARTIFACTS}/diffs`,
   summaryJson: `${ARTIFACTS}/summary.json`,
   summaryMd: `${ARTIFACTS}/summary.md`,
-  reportHtml: `${ARTIFACTS}/report.html`,
   storybookStatic: 'apps/storybook/storybook-static',
 };
 

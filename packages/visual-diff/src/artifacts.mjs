@@ -5,7 +5,7 @@
 // so the two can never disagree about what changed. Both functions are pure: no fs, no
 // clock. The command layer owns paths and writes the bytes this module returns.
 
-import { EXIT, THRESHOLDS } from './policy.mjs';
+import { EXIT, PATHS, THRESHOLDS } from './policy.mjs';
 
 /** @typedef {import('./compare.mjs').Comparison} Comparison */
 /** @typedef {import('./compare.mjs').Bucket} Bucket */
@@ -28,9 +28,9 @@ import { EXIT, THRESHOLDS } from './policy.mjs';
  *  file carrying it unchanged — verified against the console's own zod schema, which is
  *  not `.strict()` and drops what it does not name.
  *  `reportMs` covers everything after the comparison: building this object, collecting
- *  the images, rendering the page with every diff inlined, and writing one PNG per
- *  failing variant. It is near-zero on a green run and is the phase that grows on a red
- *  one, which is exactly when a reader wants to know where the time went.
+ *  the diffs, and writing one PNG per failing variant. It is near-zero on a green run
+ *  and is the phase that grows on a red one, which is exactly when a reader wants to
+ *  know where the time went.
  *  @typedef {{ captureMs: number, compareMs: number, reportMs: number,
  *              totalMs: number }} SummaryTiming */
 
@@ -45,11 +45,10 @@ import { EXIT, THRESHOLDS } from './policy.mjs';
  *  would have to change to keep parsing the file. */
 const SCHEMA_VERSION = 1;
 
-/** Canonical bucket order. Every count and grouping in this module — and
- *  `report-html.mjs`'s own bucket sections, so the two never disagree on section order
- *  — iterates this array rather than `Object.keys` on whatever buckets happen to appear
- *  in a run, so `summary.json`'s key order and the bucket-count line in the comment are
- *  the same for a clean run and a red one.
+/** Canonical bucket order. Every count and grouping in this module iterates this array
+ *  rather than `Object.keys` on whatever buckets happen to appear in a run, so
+ *  `summary.json`'s key order and the bucket-count line in the comment are the same for
+ *  a clean run and a red one.
  *  @type {readonly Bucket[]} */
 export const BUCKETS = ['unchanged', 'changed', 'added', 'removed', 'errored', 'a11y'];
 
@@ -126,8 +125,7 @@ export function buildSummary(results, env) {
 }
 
 /** An unescaped `|` silently truncates a GitHub table row; every cell goes through
- *  this before it is joined. Markdown-only: `report-html.mjs` escapes for HTML, which
- *  is a different alphabet and its own function.
+ *  this before it is joined.
  *  @param {string} value @returns {string} */
 function escapeCell(value) {
   return value.replaceAll('|', '\\|');
@@ -250,7 +248,7 @@ const CONTAINER_ACCEPT_STEP = [
 const REMEDIATION = [
   '### To fix',
   '',
-  "1. Review `report.html` for every failing variant's diff.",
+  `1. Review the diff image in \`${PATHS.diffs}/\` for every failing variant.`,
   `2. ${DISPATCH_ACCEPT_STEP}`,
   `3. ${CONTAINER_ACCEPT_STEP}`,
 ].join('\n');

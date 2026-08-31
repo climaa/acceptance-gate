@@ -25,14 +25,12 @@ import {
 } from './capture.mjs';
 import { compareAll } from './compare.mjs';
 import { EXIT, HOST, PATHS, SKIP_TAG, assertWithinBudget } from './policy.mjs';
-import { renderReport } from './report-html.mjs';
 import { LOOPBACK_HOST, createStaticServer } from './static-server.mjs';
 import { planCaptures, readIndex } from './storybook-index.mjs';
 
 /** @typedef {import('./artifacts.mjs').Summary} Summary */
 /** @typedef {import('./capture.mjs').CaptureResult} CaptureResult */
 /** @typedef {import('./compare.mjs').Comparison} Comparison */
-/** @typedef {import('./report-html.mjs').VariantImages} VariantImages */
 /** @typedef {import('./storybook-index.mjs').PlannedVariant} PlannedVariant */
 
 /** The permission to compare against baselines captured on another host. Read exactly
@@ -334,58 +332,53 @@ const skipWarnings = (skipped) =>
     ? []
     : [`${skipped.length} story(ies) skipped by ${SKIP_TAG}: ${skipped.join(', ')}`];
 
-/** The three PNGs a report card can show, per failing variant. `unchanged` rows never
- *  reach `summary.variants`, so nothing here inlines a shot nobody will look at.
+/** The diff PNG per failing variant, in `summary.variants`' own worst-first order.
+ *  `unchanged` rows never reach `summary.variants`, so nothing here carries a diff
+ *  nobody will look at; a variant judged without a pixel comparison (`added`,
+ *  `removed`, `errored`) has none to carry and is simply absent.
  *  @param {Summary} summary @param {readonly Comparison[]} results
- *  @param {readonly CaptureResult[]} captures
- *  @param {ReadonlyMap<string, Uint8Array>} baselines
- *  @returns {Map<string, VariantImages>} */
-function collectImages(summary, results, captures, baselines) {
-  const candidates = new Map(captures.map((result) => [result.key, result.bytes]));
-  const diffs = new Map(results.map((row) => [row.key, row.diff]));
+ *  @returns {Map<string, Uint8Array>} */
+function collectDiffs(summary, results) {
+  const byKey = new Map(results.map((row) => [row.key, row.diff]));
 
-  return new Map(
-    summary.variants.map((variant) => [
-      variant.key,
-      {
-        baseline: baselines.get(variant.key),
-        candidate: candidates.get(variant.key) ?? undefined,
-        diff: diffs.get(variant.key) ?? undefined,
-      },
-    ]),
-  );
+  /** @type {Map<string, Uint8Array>} */
+  const diffs = new Map();
+  for (const variant of summary.variants) {
+    const diff = byKey.get(variant.key);
+    if (diff) diffs.set(variant.key, diff);
+  }
+
+  return diffs;
 }
 
-/** The run's output: the comment, the review page, one diff PNG per failing variant,
- *  and — last — the record. Every path comes from `policy.PATHS`.
+/** The run's output: the comment, one diff PNG per failing variant, and — last — the
+ *  record. Every path comes from `policy.PATHS`.
  *
  *  `summary.json` is written last, not first, because it is the only artifact that
  *  describes the others: `stamp` is called immediately before it is serialised, which
- *  is what lets its `timing` cover rendering the page and writing the PNGs. Written
- *  first, as it once was, the run's own most expensive artifact-producing phase fell
- *  outside every number in it.
+ *  is what lets its `timing` cover writing the PNGs. Written first, as it once was, the
+ *  run's own most expensive artifact-producing phase fell outside every number in it.
  *  @param {GateFs} fs
  *  `stamp` is REQUIRED, not optional. There is one caller and it always passes one,
  *  so an optional parameter bought nothing but a branch no test could reach — and a
  *  way for a future writer to drop the timing silently, which is the one failure this
  *  function must not have.
  *  @param {{ rootDir: string, summary: Summary,
- *            images: ReadonlyMap<string, VariantImages>,
+ *            diffs: ReadonlyMap<string, Uint8Array>,
  *            stamp: () => void }} run
  *  @returns {Promise<void>} */
-async function writeArtifacts(fs, { rootDir, summary, images, stamp }) {
+async function writeArtifacts(fs, { rootDir, summary, diffs, stamp }) {
   const at = under(rootDir);
   await fs.mkdir(at(PATHS.diffs), { recursive: true });
 
-  // Both renderers see `summary` BEFORE `stamp` has run, so `summary.timing` is
-  // undefined to them. Neither reads it today. Anything added here that wants a
+  // `renderSummaryMd` sees `summary` BEFORE `stamp` has run, so `summary.timing` is
+  // undefined to it. It does not read the field today. Anything added here that wants a
   // timing must move below the stamp — the field is optional, so reading it early
   // yields `undefined` rather than an error, and would render a blank nobody notices.
   await fs.writeFile(at(PATHS.summaryMd), `${renderSummaryMd(summary)}\n`);
-  await fs.writeFile(at(PATHS.reportHtml), renderReport(summary, images));
 
-  for (const [key, { diff }] of images) {
-    if (diff) await fs.writeFile(path.join(at(PATHS.diffs), `${key}${PNG_SUFFIX}`), diff);
+  for (const [key, diff] of diffs) {
+    await fs.writeFile(path.join(at(PATHS.diffs), `${key}${PNG_SUFFIX}`), diff);
   }
 
   stamp();
@@ -407,7 +400,7 @@ const now = () => performance.now();
 const verdictOf = (summary) =>
   summary.exitCode === EXIT.ok
     ? `no visual change across ${summary.counts.unchanged} variant(s)`
-    : `${summary.variants.length} variant(s) need review — open ${PATHS.reportHtml}`;
+    : `${summary.variants.length} variant(s) need review — see the diffs in ${PATHS.diffs}`;
 
 /** Capture the corpus and compare it against the committed baselines.
  *  @param {Deps} [deps] @param {Options} [opts] @returns {Promise<CommandResult>} */
@@ -443,11 +436,11 @@ export async function check(deps = defaultDeps(), opts = {}) {
     await deps.writeArtifacts(deps.fs, {
       rootDir,
       summary,
-      images: collectImages(summary, results, captures, baselines),
+      diffs: collectDiffs(summary, results),
       // Stamped by the writer, immediately before the record is serialised, so the
       // numbers in it describe the run that produced it rather than the run up to
       // the point it happened to be written. `reportMs` runs from the compare mark
-      // because building the summary and collecting the images are report work too.
+      // because building the summary and collecting the diffs are report work too.
       stamp: () => {
         const reportedAt = now();
         summary.timing = {
