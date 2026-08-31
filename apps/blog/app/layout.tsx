@@ -43,6 +43,7 @@ const FONT_PRELOAD = {
 
 const NAV = [
   { label: 'Blog', href: '/blog' },
+  { label: 'Changelog', href: '/changelog' },
   { label: 'About', href: '/about' },
 ];
 

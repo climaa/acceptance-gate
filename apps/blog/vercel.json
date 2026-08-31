@@ -5,5 +5,5 @@
       "sandcastle/*": false
     }
   },
-  "ignoreCommand": "npx --yes turbo@^2.10.8 query affected --packages @gate/blog --base=${VERCEL_GIT_PREVIOUS_SHA:-HEAD^1} --exit-code"
+  "ignoreCommand": "if [ -n \"$VERCEL_GIT_PREVIOUS_SHA\" ] && [ \"$VERCEL_GIT_PREVIOUS_SHA\" = \"$VERCEL_GIT_COMMIT_SHA\" ]; then exit 1; fi; npx --yes turbo@^2.10.8 query affected --packages @gate/blog --base=${VERCEL_GIT_PREVIOUS_SHA:-HEAD^1} --exit-code"
 }

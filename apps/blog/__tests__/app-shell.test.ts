@@ -35,7 +35,20 @@ describe('the site header', () => {
     const links = linksIn(shell());
 
     expect(links).toContainEqual({ href: '/blog', text: 'Blog' });
+    expect(links).toContainEqual({ href: '/changelog', text: 'Changelog' });
     expect(links).toContainEqual({ href: '/about', text: 'About' });
+  });
+
+  // The order is the requirement, not an accident of the array: Changelog sits
+  // between the writing and the biography because it is more of the first than
+  // the second. `toContainEqual` above would pass with the sections in any
+  // arrangement, which is why this is asserted separately rather than folded in.
+  it('orders the nav Blog, Changelog, About', () => {
+    const sections = linksIn(shell())
+      .map((link) => link.text)
+      .filter((text) => ['Blog', 'Changelog', 'About'].includes(text));
+
+    expect(sections).toEqual(['Blog', 'Changelog', 'About']);
   });
 
   // First in the DOM is what makes it the first tab stop, which is the whole

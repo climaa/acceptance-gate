@@ -1,9 +1,15 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Every route here is built from the filesystem, so the whole site is
+  // Every route here is built before a request exists, so the whole site is
   // prerenderable and nothing reads request data. The flag makes that a checked
   // property rather than a description: a route that starts reading cookies or
   // headers fails the build instead of quietly becoming dynamic.
+  //
+  // "Built from the filesystem" was true of every route until /changelog, which
+  // is built from a GitHub fetch. That does not weaken the claim, it is held to
+  // it: under this flag an uncached fetch during a prerender is a build error,
+  // so the fetch had to go inside a `'use cache'` scope to exist at all, and the
+  // route prerenders as static like the rest. See lib/releases.ts.
   cacheComponents: true,
   // A link warms the shared App Shell rather than its whole destination, so the
   // index stops prefetching a full payload per post and per tag chip. Adopted

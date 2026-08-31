@@ -45,6 +45,15 @@ env:
   # PR token) if dispatch ever loosens.
   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
   TURBO_TEAM: ${{ vars.TURBO_TEAM }}
+  # /changelog is built from a network fetch, and a build is the one place a
+  # test cannot reach past: the e2e lane starts an already-built app, and the
+  # vitest alias that stubs next/cache never runs during `next build`. So the
+  # stub is the build's own — apps/blog/fixtures/releases.ts — and it is set
+  # here, workflow-wide, because every job that builds the blog must be covered,
+  # not just the one named `build`. Vercel leaves it unset and fetches for real.
+  # Declared in turbo.json's build.env, so it reaches next build and so a fixture
+  # build and a real one never share a cache entry.
+  BLOG_RELEASES_FIXTURE: '1'
 
 # Draft PRs do not run the gate. GitHub has no draft filter at the `on:` level
 # — a draft fires opened/synchronize like any other PR — so the guard has to sit

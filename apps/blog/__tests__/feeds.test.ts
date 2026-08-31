@@ -29,7 +29,7 @@ const DRAFT_SLUGS = fs
 
 // Duplicated from app/sitemap.ts on purpose: an expectation that imports the
 // value under test cannot catch that value being wrong.
-const STATIC_ROUTES = ['/', '/blog', '/about'];
+const STATIC_ROUTES = ['/', '/blog', '/changelog', '/about'];
 
 // Built with `new URL` rather than lib/site's absoluteUrl() for the same reason.
 function postUrl(slug: string): string {
