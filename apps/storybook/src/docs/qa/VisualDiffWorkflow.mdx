@@ -38,13 +38,13 @@ flowchart TD
     D -->|"baseline exists, nothing captured claims it"| H["removed"]
     D -->|"the capture itself failed"| I["errored"]
     D -->|"axe found a violation"| J["a11y"]
-    E --> K["report.html / summary.json / summary.md written"]
+    E --> K["summary.json / summary.md / diffs written"]
     F --> K
     G --> K
     H --> K
     I --> K
     J --> K
-    K --> L["CI posts summary.md as a sticky PR comment (plus report/run/dispatch links), uploads report.html"]
+    K --> L["CI posts summary.md as a sticky PR comment (plus diffs/run/dispatch links), uploads the diffs"]
     L --> M["Job fails loudly on anything but unchanged - visible, never a required check"]
     M --> N{"Developer reviews the report"}
     N -->|"intentional visual change"| O["dispatch accept-baselines, or pnpm visual-diff:accept locally"]
@@ -65,7 +65,7 @@ volume is high, and approving a baseline has to cost real attention or nobody lo
 
 ## What each section of the report means
 
-`report.html` groups every non-`unchanged` variant by bucket. This is the part that trips
+The console groups every non-`unchanged` variant by bucket. This is the part that trips
 people up on first read — a card with **"no baseline"** and **"no diff"** placeholders is
 not a broken report, it's telling you exactly what happened:
 
@@ -117,13 +117,14 @@ git commit -m "chore(visual-diff): accept baseline for <what changed>"
 1. Push your change. Wait for the `visual-diff` check on the PR (it's not required, but give
    it a minute — it runs alongside the rest of the pipeline).
 2. If it's green (`unchanged`), you're done — nothing else to read here.
-3. If it's red, open the sticky PR comment first. Its body is `report.html`'s text summary
+3. If it's red, open the sticky PR comment first. Its body is `summary.md`'s text summary
    — bucket counts, a worst-first table, capped at 20 rows — with a link footer the file
    itself does not carry.
-4. For the full picture (every variant, the actual images, the blink/onion-skin compare
-   tools), follow the comment's **report.html** link: it goes straight to the
-   `visual-diff-report` artifact for that run. Download it, unzip, untar, open the file —
-   no server needed, it's fully self-contained.
+4. For the full picture (every variant, the actual images), follow the comment's
+   **diffs** link: it goes straight to the `visual-diff-report` artifact for that run.
+   Download it, unzip, untar, and view the PNGs in `diffs/`. This CI artifact has no
+   candidate/blink/onion-skin view — those live in the console (`apps/visual-diff-ui`),
+   over reports it has ingested itself, not over an arbitrary PR's uploaded artifact.
 5. Triage by bucket, using the table above. `errored` first (nothing else can be accepted
    until it's clean), then `changed`/`a11y` (read the diff, decide if it's right), then
    `added`/`removed` (confirm the addition or removal is intentional).

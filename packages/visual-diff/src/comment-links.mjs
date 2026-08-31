@@ -28,8 +28,8 @@ export function codeSpan(value) {
  *  Three states, and the one that matters is the third. `remediated` is read from the
  *  rendered body (`### To fix` present), never from the job's outcome: a step outcome of
  *  `failure` covers a real diff (exit 1) and a broken run (exit 2) alike, and a broken
- *  run wrote no report and measured nothing — handing it a `report.html` link and an
- *  invitation to accept would be pointing at a file that does not exist.
+ *  run wrote no report and measured nothing — handing it a diffs link and an invitation
+ *  to accept would be pointing at an artifact that does not exist.
  *
  *  @param {object} run
  *  @param {boolean} run.remediated Body carries remediation — a real diff to review.
@@ -46,8 +46,8 @@ export function renderCommentFooter(run) {
   if (!run.remediated) return run.summarised ? '' : here;
 
   return [
-    `[**report.html**](${run.artifactUrl || run.runUrl}) — download the`,
-    `${codeSpan('visual-diff-report')} artifact, unzip, untar, open the file.`,
+    `[**diffs**](${run.artifactUrl || run.runUrl}) — download the`,
+    `${codeSpan('visual-diff-report')} artifact, unzip, untar, view the PNGs in \`diffs/\`.`,
     `Kept ${run.retentionDays} days.`,
     run.sameRepo
       ? `· [**dispatch ${codeSpan('accept-baselines')}**](${run.workflowUrl}) on ${codeSpan(run.branch)}`

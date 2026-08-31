@@ -50,7 +50,7 @@ describe('renderCommentFooter', () => {
   it('links the report, the dispatch and the run on a real diff', () => {
     const footer = renderCommentFooter(run());
 
-    expect(footer).toContain(`[**report.html**](${ARTIFACT})`);
+    expect(footer).toContain(`[**diffs**](${ARTIFACT})`);
     expect(footer).toContain(`[**dispatch \`accept-baselines\`**](${WORKFLOW})`);
     expect(footer).toContain('on `feat/label-wand`');
     expect(footer).toContain(`[this run](${RUN})`);
@@ -62,7 +62,7 @@ describe('renderCommentFooter', () => {
     // and a link to nowhere.
     const footer = renderCommentFooter(run({ artifactUrl: '' }));
 
-    expect(footer).toContain(`[**report.html**](${RUN})`);
+    expect(footer).toContain(`[**diffs**](${RUN})`);
     expect(footer).not.toContain('artifacts/9');
   });
 
@@ -70,7 +70,7 @@ describe('renderCommentFooter', () => {
     const footer = renderCommentFooter(run({ sameRepo: false }));
 
     expect(footer).not.toContain('accept-baselines');
-    expect(footer).toContain('[**report.html**]');
+    expect(footer).toContain('[**diffs**]');
     expect(footer).toContain(`[this run](${RUN})`);
   });
 
@@ -84,7 +84,7 @@ describe('renderCommentFooter', () => {
     const footer = renderCommentFooter(run({ remediated: false, summarised: false }));
 
     expect(footer).toBe(`[this run](${RUN})`);
-    expect(footer).not.toContain('report.html');
+    expect(footer).not.toContain('diffs');
     expect(footer).not.toContain('accept-baselines');
   });
 

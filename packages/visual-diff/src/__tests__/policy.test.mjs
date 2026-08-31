@@ -231,7 +231,7 @@ describe('PATHS', () => {
   });
 
   it('writes every per-run artifact under the artifacts directory', () => {
-    const perRun = [PATHS.diffs, PATHS.summaryJson, PATHS.summaryMd, PATHS.reportHtml];
+    const perRun = [PATHS.diffs, PATHS.summaryJson, PATHS.summaryMd];
 
     expect(perRun.every((entry) => entry.startsWith(`${PATHS.artifacts}/`))).toBe(true);
   });

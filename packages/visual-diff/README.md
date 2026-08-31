@@ -102,9 +102,10 @@ the substring):
 node packages/visual-diff/src/cli.mjs check --filter button
 ```
 
-Open `packages/visual-diff/.visual-diff/report.html` (works straight over `file://`, no
-server) to review every failing variant: baseline / candidate / diff side by side, a
-blink toggle, and an onion-skin opacity slider.
+Review `packages/visual-diff/.visual-diff/summary.md` for the worst-first table, and
+`packages/visual-diff/.visual-diff/diffs/` for a PNG per failing variant. The console
+(`apps/visual-diff-ui`) renders the fuller report — baseline/candidate/diff triptychs,
+blink and onion-skin compare tools — for a run it has ingested.
 
 **First run against a fresh clone**, before any baselines are accepted: `__baselines__`
 doesn't exist yet, so every capture reports `added` and `check` exits `1` — this is
@@ -127,7 +128,7 @@ container too:
 
 ```bash
 pnpm --filter @gate/storybook build   # host build first — static output, not platform-dependent
-pnpm visual-diff:container check      # review packages/visual-diff/.visual-diff/report.html
+pnpm visual-diff:container check      # review packages/visual-diff/.visual-diff/summary.md
 pnpm visual-diff:accept               # the container-run accept
 ```
 
@@ -203,7 +204,6 @@ and the only directory here that is.
 | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `summary.json`    | Schema-versioned machine output: counts, thresholds, host env, every non-unchanged variant, worst-first                                                                                                                          |
 | `summary.md`      | The diff body of the PR comment, rendered only from `summary.json` — never re-derived from raw rows, so the two can't disagree about what changed. Carries no run-specific links; `pr.yml` appends those to the comment it posts |
-| `report.html`     | Self-contained (no CDN, images inlined as `data:` URIs) review page — baseline/candidate/diff triptychs, blink + onion-skin compare tools                                                                                        |
 | `diffs/{key}.png` | One diff image per failing variant only — never generated for `unchanged`, to keep artifact size down                                                                                                                            |
 
 ## CI status
@@ -212,7 +212,8 @@ Wired, and deliberately not a required check. A `visual-diff` job in
 `.github/workflows/pr.yml` runs `pnpm visual-diff` on every non-draft PR — same pinned
 `mcr.microsoft.com/playwright:v1.62.1-noble` container, on the matching `arm64` runner —
 posts `summary.md` as a sticky PR comment (created once, updated in place on later
-pushes), and uploads `report.html` plus the diff PNGs as a workflow artifact. The job
+pushes), and uploads `summary.md`, `summary.json` and the diff PNGs as a workflow
+artifact. The job
 fails its own status on a real diff (a visible ❌ in the PR checks list), but it is never
 added to `gate.needs`, so it never blocks a merge on its own.
 
