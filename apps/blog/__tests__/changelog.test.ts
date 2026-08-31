@@ -9,7 +9,11 @@ import { compile, run } from '@mdx-js/mdx';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { changelogMdxOptions, mdxComponents } from '../lib/mdx';
 import { getReleases, narrativeTitle } from '../lib/releases';
-import { CHANGELOG_UNAVAILABLE_NOTE } from '../lib/site';
+import {
+  CHANGELOG_RELEASE_LINK_PREFIX,
+  CHANGELOG_UNAVAILABLE_NOTE,
+  SITE_URL,
+} from '../lib/site';
 
 /**
  * The changelog's build-time half: what the page is given, and what a release
@@ -152,6 +156,41 @@ describe('getReleases, when the build cannot establish the releases', () => {
     );
 
     expect(await getReleases()).toBeNull();
+  });
+});
+
+/**
+ * The token is the documented answer to a rate limit, which means it gets
+ * reached for under pressure — the worst moment to discover it was never
+ * exercised. Both branches, because the unauthenticated one is the default and
+ * a stray `authorization: Bearer undefined` would be a 401, not a fallback.
+ */
+describe('the optional token', () => {
+  function stubOk() {
+    const fetchSpy = vi.fn().mockResolvedValue({ ok: true, json: async () => [] });
+    vi.stubGlobal('fetch', fetchSpy);
+    return fetchSpy;
+  }
+
+  const headersOf = (spy: ReturnType<typeof vi.fn>) =>
+    (spy.mock.calls[0]?.[1] as { headers: Record<string, string> }).headers;
+
+  it('authenticates when one is in the environment', async () => {
+    vi.stubEnv('GITHUB_TOKEN', 'ghp_example');
+    const fetchSpy = stubOk();
+
+    await getReleases();
+
+    expect(headersOf(fetchSpy).authorization).toBe('Bearer ghp_example');
+  });
+
+  it('sends no authorization header when there is none', async () => {
+    vi.stubEnv('GITHUB_TOKEN', '');
+    const fetchSpy = stubOk();
+
+    await getReleases();
+
+    expect(headersOf(fetchSpy)).not.toHaveProperty('authorization');
   });
 });
 
@@ -332,20 +371,50 @@ describe('the changelog page, when the releases are unavailable', () => {
 });
 
 /**
- * The alarm and the copy it listens for are in different files and different
- * languages, so nothing but this test keeps them in step. Reword the note
- * without reading this and the workflow goes on passing while the page says the
- * releases could not be loaded.
+ * The scheduled check greps the deployed page for sentences that live in
+ * TypeScript, from a workflow written in YAML. Nothing but this test keeps the
+ * two in step, and the failure it prevents is the worst kind: reword the copy
+ * and the alarm goes on passing while the page says something else entirely.
+ *
+ * The origin is here for the same reason and a sharper one. Adding a custom
+ * domain leaves the `.vercel.app` alias resolving, so a workflow still pointed
+ * at it would keep polling a site nobody reads and keep reporting green.
+ * `lib/site.ts` promises `SITE_URL` is the only line to edit; these assertions
+ * are what make that true of the workflows too.
  */
-describe('the unavailable note and the workflow that watches for it', () => {
-  it('is the substring changelog-check.yml greps for', () => {
-    const workflow = fs.readFileSync(
-      path.join(process.cwd(), '..', '..', '.github', 'workflows', 'changelog-check.yml'),
+describe('the workflows that watch the deployed page', () => {
+  const workflow = (name: string) =>
+    fs.readFileSync(
+      path.join(process.cwd(), '..', '..', '.github', 'workflows', name),
       'utf8',
     );
-    const [, needle] = /UNAVAILABLE: '([^']+)'/.exec(workflow) ?? [];
+
+  /** A `KEY: value` or `KEY: 'value'` pair from a workflow's env block. */
+  const envValue = (yaml: string, key: string) => {
+    const [, quoted, bare] = new RegExp(`${key}: (?:'([^']+)'|(\\S+))`).exec(yaml) ?? [];
+    return quoted ?? bare;
+  };
+
+  it.each(['changelog-check.yml', 'changelog-deploy.yml'])(
+    '%s polls the origin lib/site.ts names',
+    (name) => {
+      expect(envValue(workflow(name), 'ORIGIN')).toBe(SITE_URL.origin);
+    },
+  );
+
+  it('changelog-check.yml greps for a substring of the unavailable note', () => {
+    const needle = envValue(workflow('changelog-check.yml'), 'UNAVAILABLE');
 
     expect(needle).toBeDefined();
     expect(CHANGELOG_UNAVAILABLE_NOTE).toContain(needle);
+  });
+
+  // The other half of that check: it also asserts the page shows releases, so a
+  // page rendering neither them nor the note is not mistaken for a healthy one.
+  it('changelog-check.yml greps for the text every release link opens with', () => {
+    const needle = envValue(workflow('changelog-check.yml'), 'RELEASES_PRESENT');
+
+    expect(needle).toBeDefined();
+    expect(CHANGELOG_RELEASE_LINK_PREFIX).toContain(needle);
   });
 });

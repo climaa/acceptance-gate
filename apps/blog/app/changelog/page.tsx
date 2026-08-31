@@ -7,6 +7,7 @@ import { changelogMdxOptions, mdxComponents } from '@/lib/mdx';
 import { getReleases, releaseDate, type Release } from '@/lib/releases';
 import {
   CHANGELOG_DESCRIPTION,
+  CHANGELOG_RELEASE_LINK_PREFIX,
   CHANGELOG_TITLE,
   CHANGELOG_UNAVAILABLE_ACTION,
   CHANGELOG_UNAVAILABLE_NOTE,
@@ -64,7 +65,9 @@ function ReleaseEntry({ release }: { release: Release }) {
         </Prose>
 
         <p>
-          <a href={release.url}>Release notes for {release.tag} on GitHub</a>
+          <a href={release.url}>
+            {CHANGELOG_RELEASE_LINK_PREFIX} {release.tag} on GitHub
+          </a>
         </p>
       </Stack>
     </article>

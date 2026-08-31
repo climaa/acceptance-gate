@@ -40,7 +40,10 @@ permissions:
 
 env:
   TAG: ${{ github.event.release.tag_name || inputs.tag }}
-  CHANGELOG_URL: https://acceptance-gate-blog.vercel.app/changelog
+  # SITE_URL's host, pinned by apps/blog/__tests__/changelog.test.ts for the
+  # reason changelog-check.yml gives at more length: a custom domain leaves this
+  # alias resolving, so a stale copy here polls an origin nobody reads.
+  ORIGIN: https://acceptance-gate-blog.vercel.app
 
 jobs:
   deploy-and-verify:
@@ -69,8 +72,9 @@ jobs:
       # requirement. The requirement is that a reader sees the release.
       - name: Wait for the release to appear on the changelog
         run: |
+          url="${ORIGIN}/changelog"
           for attempt in $(seq 1 40); do
-            if curl --fail --silent --show-error "$CHANGELOG_URL" | grep -qF "$TAG"; then
+            if curl --fail --silent --show-error "$url" | grep -qF "$TAG"; then
               echo "${TAG} is on the changelog (attempt ${attempt})."
               exit 0
             fi
@@ -78,6 +82,6 @@ jobs:
             sleep 15
           done
 
-          echo "::error::${TAG} never appeared on ${CHANGELOG_URL}." >&2
+          echo "::error::${TAG} never appeared on ${url}." >&2
           echo "The deploy was skipped, the build replayed a cache, or the fetch failed." >&2
           exit 1

@@ -15,7 +15,15 @@ import { remarkReleaseReferences, remarkShiftHeadings } from './remark-release-b
 import { CODE_GROUND, withAccessibleTokens } from './shiki-contrast';
 
 /**
- * The build-time MDX pipeline: highlighting, heading ids, heading anchors.
+ * The build-time markdown pipelines: highlighting, heading ids, heading anchors.
+ *
+ * Two of them, sharing the highlighter and disagreeing about everything else.
+ * `mdxRemoteOptions` compiles posts, which are MDX this repository wrote.
+ * `changelogMdxOptions` compiles release bodies, which are markdown written on
+ * github.com — a different format, a different plugin set, and the differences
+ * are argued where that constant is defined. They live in one file because the
+ * highlighter's theme repair is expensive to state twice, not because they are
+ * variations on one pipeline.
  *
  * Every plugin here runs once, at build time, and no client-side highlighter
  * exists to disagree with it. The one component that does reach the browser is

@@ -1,6 +1,6 @@
 import { cacheLife } from 'next/cache';
 import { z } from 'zod';
-import { RELEASES_FIXTURE, type RawRelease } from '../fixtures/releases';
+import { RELEASES_FIXTURE } from '../fixtures/releases';
 import { RELEASES_API_URL } from './github';
 import { formatDate } from './posts';
 
@@ -33,6 +33,16 @@ const RawReleaseSchema = z.object({
 });
 
 const ReleasesSchema = z.array(RawReleaseSchema);
+
+/**
+ * A release as GitHub sends it — inferred from the schema rather than written
+ * out beside it, so the fixture cannot describe a release this would reject.
+ *
+ * That was a real gap, not a tidy-up: the fixture is what every CI build and
+ * every test runs on, so a hand-written twin that drifted looser than the schema
+ * would have CI passing on shapes production refuses.
+ */
+export type RawRelease = z.infer<typeof RawReleaseSchema>;
 
 /** One release, as the page needs it. */
 export interface Release {

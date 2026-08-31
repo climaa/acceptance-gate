@@ -108,6 +108,17 @@ export const CHANGELOG_UNAVAILABLE_NOTE =
 
 export const CHANGELOG_UNAVAILABLE_ACTION = 'Releases on GitHub';
 
+/**
+ * How each entry links to its own release on github.com.
+ *
+ * A constant rather than a phrase inline in the page, because the scheduled
+ * check greps for it to decide the page is showing releases at all. The note
+ * above answers "did the fetch fail"; this answers "did anything render" — a
+ * page showing neither is broken in a third way, and greping for only the first
+ * would call that healthy.
+ */
+export const CHANGELOG_RELEASE_LINK_PREFIX = 'Release notes for';
+
 export function absoluteUrl(pathname: string): string {
   return new URL(pathname, SITE_URL).toString();
 }

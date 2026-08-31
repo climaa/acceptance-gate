@@ -25,19 +25,12 @@
  * fixture that mirrors production invites the assertion that production is
  * correct because the fixture was.
  */
-export interface RawRelease {
-  tag_name: string;
-  name: string | null;
-  html_url: string;
-  published_at: string | null;
-  body: string | null;
-  draft: boolean;
-  prerelease: boolean;
-}
-
+import type { RawRelease } from '../lib/releases';
 const REPO = 'https://github.com/climaa/acceptance-gate';
 
 export const RELEASES_FIXTURE: RawRelease[] = [
+  // Typed by the schema's own inferred type (imported above), so tightening the
+  // schema fails this file rather than quietly leaving CI on a looser shape.
   {
     tag_name: 'v0.3.0',
     name: 'v0.3.0 — the third fixture release, with a compare link',
