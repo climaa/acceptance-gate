@@ -100,11 +100,9 @@ docker run --rm --ipc=host -v "$(pwd)":/repo -w /repo \
   -e PLAYWRIGHT_BROWSERS_PATH=/ms-playwright \
   mcr.microsoft.com/playwright:v1.62.1-noble \
   node packages/visual-diff/src/cli.mjs check
-# then collect: __baselines__/<key>.png and .visual-diff/diffs/<key>.png. The
-# candidate shot itself is not written to disk by a normal `check` run — capture
-# it separately (e.g. a one-off script calling capture.mjs's captureAll and
-# writing the returned bytes) now that report.html, the one place it used to be
-# embedded, is retired.
+# then collect: __baselines__/<key>.png and .visual-diff/diffs/<key>.png. A normal
+# `check` run never writes the candidate shot to disk, so capture it separately —
+# a one-off script calling capture.mjs's captureAll and writing the returned bytes.
 ```
 
 The capture must run in the pinned container — a bare-metal capture renders with the

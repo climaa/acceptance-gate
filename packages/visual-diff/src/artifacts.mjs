@@ -5,7 +5,7 @@
 // so the two can never disagree about what changed. Both functions are pure: no fs, no
 // clock. The command layer owns paths and writes the bytes this module returns.
 
-import { EXIT, THRESHOLDS } from './policy.mjs';
+import { EXIT, PATHS, THRESHOLDS } from './policy.mjs';
 
 /** @typedef {import('./compare.mjs').Comparison} Comparison */
 /** @typedef {import('./compare.mjs').Bucket} Bucket */
@@ -20,12 +20,6 @@ import { EXIT, THRESHOLDS } from './policy.mjs';
  *              violations: Comparison['violations'],
  *              error: string | null }} SummaryVariant */
 
-/** The PNG buffers a caller can hold for a variant, keyed by the same `key` a
- *  `SummaryVariant` carries. A bucket that never had a baseline (`added`) or never had
- *  a candidate (`removed`) simply omits that field.
- *  @typedef {{ baseline?: Uint8Array, candidate?: Uint8Array,
- *              diff?: Uint8Array }} VariantImages */
-
 /** How long the run took, by phase, in milliseconds.
  *
  *  OPTIONAL, and that is what keeps `schemaVersion` at 1. `check()` attaches it; the
@@ -34,7 +28,7 @@ import { EXIT, THRESHOLDS } from './policy.mjs';
  *  file carrying it unchanged — verified against the console's own zod schema, which is
  *  not `.strict()` and drops what it does not name.
  *  `reportMs` covers everything after the comparison: building this object, collecting
- *  the images, and writing one PNG per failing variant. It is near-zero on a green run
+ *  the diffs, and writing one PNG per failing variant. It is near-zero on a green run
  *  and is the phase that grows on a red one, which is exactly when a reader wants to
  *  know where the time went.
  *  @typedef {{ captureMs: number, compareMs: number, reportMs: number,
@@ -254,7 +248,7 @@ const CONTAINER_ACCEPT_STEP = [
 const REMEDIATION = [
   '### To fix',
   '',
-  '1. Review the diff images in `packages/visual-diff/.visual-diff/diffs/` for every failing variant.',
+  `1. Review the diff image in \`${PATHS.diffs}/\` for every failing variant.`,
   `2. ${DISPATCH_ACCEPT_STEP}`,
   `3. ${CONTAINER_ACCEPT_STEP}`,
 ].join('\n');

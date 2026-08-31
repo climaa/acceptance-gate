@@ -213,9 +213,8 @@ Wired, and deliberately not a required check. A `visual-diff` job in
 `mcr.microsoft.com/playwright:v1.62.1-noble` container, on the matching `arm64` runner —
 posts `summary.md` as a sticky PR comment (created once, updated in place on later
 pushes), and uploads `summary.md`, `summary.json` and the diff PNGs as a workflow
-artifact. The job
-fails its own status on a real diff (a visible ❌ in the PR checks list), but it is never
-added to `gate.needs`, so it never blocks a merge on its own.
+artifact. The job fails its own status on a real diff (a visible ❌ in the PR checks
+list), but it is never added to `gate.needs`, so it never blocks a merge on its own.
 
 On a red run the comment carries a link footer the file itself cannot: the uploaded
 artifact, this run, and — on a same-repo PR — a dispatch link for `accept-baselines`
