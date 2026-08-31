@@ -9,6 +9,7 @@ import { CanonicalSet } from './CanonicalSet';
 import { ComparePickers } from './ComparePickers';
 import { CurrentJob, CurrentJobProvider } from './CurrentJob';
 import { HistoryTable } from './HistoryTable';
+import { Note } from './Note';
 import { ReportsTable } from './ReportsTable';
 import { RetentionControl } from './RetentionControl';
 import { RunPanel } from './RunPanel';
@@ -201,7 +202,19 @@ export function DashboardTemplate({
             {history.length === 0 ? (
               <EmptyState message="Nothing has run yet — this instance keeps a row per job." />
             ) : (
-              <HistoryTable runs={history} runningId={runningId} reportIds={reportIds} />
+              <>
+                <Note name="what a verdict means">
+                  status is the CLI&apos;s exit code said out loud: succeeded is clean,
+                  succeeded (diffs) is a report waiting for review, failed is the run
+                  itself breaking, interrupted is a job that never got the chance to
+                  report one
+                </Note>
+                <HistoryTable
+                  runs={history}
+                  runningId={runningId}
+                  reportIds={reportIds}
+                />
+              </>
             )}
           </Panel>
         </Stack>

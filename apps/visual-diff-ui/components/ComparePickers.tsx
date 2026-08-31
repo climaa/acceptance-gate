@@ -3,6 +3,7 @@
 import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Button, Stack } from '@gate/ui';
+import { Note } from './Note';
 
 /**
  * Pick two capture sets and ask for the comparison — the console's one client
@@ -124,12 +125,18 @@ export function ComparePickers({ labels }: ComparePickersProps) {
   };
 
   return (
-    <Stack direction="row" gap={3} align="center" wrap className="vd-compare">
-      <Picker name="A" value={baseline} labels={labels} onChange={setBaseline} />
-      <Picker name="B" value={candidate} labels={labels} onChange={setCandidate} />
-      <Button variant="secondary" onClick={compare}>
-        compare A ⇄ B
-      </Button>
+    <Stack gap={2} className="vd-compare">
+      <Note name="A and B">
+        A is the before, B is the after — compare judges B against A and buckets what
+        moved
+      </Note>
+      <Stack direction="row" gap={3} align="center" wrap>
+        <Picker name="A" value={baseline} labels={labels} onChange={setBaseline} />
+        <Picker name="B" value={candidate} labels={labels} onChange={setCandidate} />
+        <Button variant="secondary" onClick={compare}>
+          compare A ⇄ B
+        </Button>
+      </Stack>
     </Stack>
   );
 }
