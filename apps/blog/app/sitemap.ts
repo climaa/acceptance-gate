@@ -2,7 +2,7 @@ import type { MetadataRoute } from 'next';
 import { getAllPosts, getAllTags, tagPath } from '@/lib/posts';
 import { absoluteUrl } from '@/lib/site';
 
-const STATIC_ROUTES = ['/', '/blog', '/about'];
+const STATIC_ROUTES = ['/', '/blog', '/changelog', '/about'];
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const staticEntries = STATIC_ROUTES.map((pathname) => ({

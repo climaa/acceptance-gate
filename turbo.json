@@ -5,7 +5,12 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "env": ["VERCEL_ENV", "NEXT_PUBLIC_BUGSINK_DSN"],
+      "env": [
+        "VERCEL_ENV",
+        "NEXT_PUBLIC_BUGSINK_DSN",
+        "BLOG_RELEASES_FIXTURE",
+        "GITHUB_TOKEN"
+      ],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "outputs": [".next/**", "!.next/cache/**", "dist/**", "storybook-static/**"]
     },
@@ -24,7 +29,11 @@
     },
     "test": {
       "dependsOn": ["^build"],
-      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/.github/workflows/pr.yml"]
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/.github/workflows/pr.yml",
+        "$TURBO_ROOT$/.github/workflows/changelog-check.yml"
+      ]
     },
     "e2e": {
       "dependsOn": ["@gate/blog#build", "@gate/visual-diff-ui#build"],

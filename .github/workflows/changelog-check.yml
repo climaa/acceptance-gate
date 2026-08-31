@@ -1,0 +1,72 @@
+# /changelog fetches its releases at build time and fails open: when the fetch does not
+# succeed the build still succeeds and the page renders a written note saying the notes
+# could not be loaded. That trade is deliberate — a GitHub outage must not block a blog
+# deploy that has nothing to do with releases — and it has one cost, which is that the
+# failure is silent.
+#
+# It is silent for a reason that cannot be fixed where it happens. Next's prerender
+# workers never load instrumentation.ts, so no error reporter is installed during a
+# build; and @gate/logger goes silent under production, which is how `next build` runs.
+# A logger.error on that path would be a no-op that reads like diligence. So the alarm
+# is here instead, downstream of the whole thing: the deployed page states its own
+# outcome in its own copy, and this reads it back.
+#
+# The assertion is tied to CHANGELOG_UNAVAILABLE_NOTE in apps/blog/lib/site.ts. Reword
+# that constant and this grep stops matching — the page would keep saying it while this
+# workflow stayed green, which is the one failure mode this file exists to prevent.
+# The sentence below is a substring of it, chosen to survive rewrapping but not
+# rewording; apps/blog/__tests__/changelog.test.ts reads this file and pins the pair, so
+# a reword fails a test rather than silently disarming the alarm.
+name: changelog-check
+
+on:
+  schedule:
+    # Off the hour: GitHub delays and drops on-the-hour cron under load. Daily rather
+    # than hourly because the page only changes when a build happens, and a stale
+    # changelog is a thing to fix today, not within the hour.
+    - cron: '23 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  page-is-not-in-its-unavailable-state:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      # All three values below are copies of things that live in
+      # apps/blog/lib/site.ts, and every one of them is pinned by
+      # apps/blog/__tests__/changelog.test.ts, which reads this file. Editing one
+      # here without editing the source (or the reverse) fails `test`, which is a
+      # gate job — the alternative is an alarm that greps for a sentence the page
+      # no longer says and reports green forever.
+      - name: The changelog shows releases, not the unavailable note
+        env:
+          # SITE_URL's host. Pinned because a custom domain would leave this
+          # .vercel.app alias resolving, so an un-updated check would go on
+          # polling the old origin and passing while the real site was broken.
+          ORIGIN: https://acceptance-gate-blog.vercel.app
+          # A substring of CHANGELOG_UNAVAILABLE_NOTE.
+          UNAVAILABLE: 'could not be loaded when this page was built'
+          # CHANGELOG_RELEASE_LINK_PREFIX, which every entry's link opens with.
+          RELEASES_PRESENT: 'Release notes for'
+        run: |
+          url="${ORIGIN}/changelog"
+          body=$(curl --fail --silent --show-error "$url")
+
+          if printf '%s' "$body" | grep -qF "$UNAVAILABLE"; then
+            echo "::error::${url} is showing its unavailable note." >&2
+            echo "A build fetched the releases and did not get them. Redeploy the blog" >&2
+            echo "to rebuild the page; if it recurs, the fetch itself is the fault." >&2
+            exit 1
+          fi
+
+          # A page that renders neither releases nor the note would pass the check above
+          # while being just as broken, so the happy path is asserted rather than assumed.
+          if ! printf '%s' "$body" | grep -qF "$RELEASES_PRESENT"; then
+            echo "::error::${url} shows no releases and no unavailable note." >&2
+            exit 1
+          fi
+
+          echo "The changelog is showing releases."

@@ -11,10 +11,19 @@ import githubDarkDimmed from 'shiki/themes/github-dark-dimmed.mjs';
 import rosePineDawn from 'shiki/themes/rose-pine-dawn.mjs';
 import { CodeBlock } from '@gate/ui';
 import { MermaidDiagram } from '../components/MermaidDiagram';
+import { remarkReleaseReferences, remarkShiftHeadings } from './remark-release-body';
 import { CODE_GROUND, withAccessibleTokens } from './shiki-contrast';
 
 /**
- * The build-time MDX pipeline: highlighting, heading ids, heading anchors.
+ * The build-time markdown pipelines: highlighting, heading ids, heading anchors.
+ *
+ * Two of them, sharing the highlighter and disagreeing about everything else.
+ * `mdxRemoteOptions` compiles posts, which are MDX this repository wrote.
+ * `changelogMdxOptions` compiles release bodies, which are markdown written on
+ * github.com — a different format, a different plugin set, and the differences
+ * are argued where that constant is defined. They live in one file because the
+ * highlighter's theme repair is expensive to state twice, not because they are
+ * variations on one pipeline.
  *
  * Every plugin here runs once, at build time, and no client-side highlighter
  * exists to disagree with it. The one component that does reach the browser is
@@ -193,4 +202,32 @@ const remarkPlugins: NonNullable<MdxCompileOptions['remarkPlugins']> = [remarkGf
 
 export const mdxRemoteOptions: NonNullable<MDXRemoteProps['options']> = {
   mdxOptions: { remarkPlugins, rehypePlugins },
+};
+
+/**
+ * The same pipeline, retuned for prose this repository did not write.
+ *
+ * Three differences from the post options above, each forced by where release
+ * bodies come from:
+ *
+ * `format: 'md'` is the load-bearing one. Everything else here compiles MDX,
+ * where `{` opens an expression and `<` opens a tag — fine for authored posts,
+ * a build failure waiting for a release body written on github.com, which is
+ * outside every check in this repo. Markdown format turns both back into
+ * ordinary characters. Escaping the source instead was the alternative and it
+ * is wrong: entities are decoded in prose but stay literal inside code spans,
+ * so `` `<T>` `` would render as `&lt;T&gt;`.
+ *
+ * The reference and heading plugins are added, for the reasons named where they
+ * are defined. And `rehypeSlug`/`rehypeAutolinkHeadings` are dropped: each body
+ * is compiled on its own, so two releases whose bodies share a heading would
+ * mint the same id twice on one page. Nothing links into a release body — the
+ * anchor readers need is the release itself, which the page puts on the entry.
+ */
+export const changelogMdxOptions: NonNullable<MDXRemoteProps['options']> = {
+  mdxOptions: {
+    format: 'md',
+    remarkPlugins: [...remarkPlugins, remarkReleaseReferences, remarkShiftHeadings],
+    rehypePlugins: [[rehypePrettyCode, prettyCodeOptions]],
+  },
 };

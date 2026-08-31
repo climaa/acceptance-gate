@@ -73,6 +73,52 @@ export const ERROR_ACTION = 'Try again';
 export const SITE_DESCRIPTION =
   'Notes on Next.js, testing with Cypress and Gherkin, visual regression and coding agents.';
 
+/**
+ * The changelog's own heading, `<title>` and description.
+ *
+ * "Changelog" rather than "Releases" because it is the word a reader scanning a
+ * nav already knows, and the page is the story of what shipped rather than a
+ * list of artifacts to download.
+ */
+export const CHANGELOG_TITLE = 'Changelog';
+
+export const CHANGELOG_DESCRIPTION =
+  'What shipped in acceptance-gate, release by release, in the words the release notes were written in.';
+
+/**
+ * What the page says when the build could not establish what the releases are.
+ *
+ * A note on the page, not an error page: the route is fine, the nav still leads
+ * here, and everything else on the site is unaffected — so rendering a failure
+ * screen would overstate what went wrong. The copy follows the 404's and the
+ * error page's rule of naming no cause, for a sharper reason than theirs. A
+ * reader cannot tell a rate limit from an outage from a schema change, and by
+ * the time anyone reads this the build that failed is hours old. What they can
+ * use is the way on, so the way on is the whole of the second sentence.
+ *
+ * This string is also the alarm. Nothing reports from a prerender — no reporter
+ * is installed and the logger is silent under production — so the only evidence
+ * a fetch failed is this note on the deployed page, and
+ * `.github/workflows/changelog-check.yml` reads it back on a schedule. Change
+ * the wording and that workflow's assertion changes with it, or the alarm stops
+ * ringing while the page keeps saying this.
+ */
+export const CHANGELOG_UNAVAILABLE_NOTE =
+  'The release notes could not be loaded when this page was built. They are all on GitHub in the meantime, and this page will catch up on the next build.';
+
+export const CHANGELOG_UNAVAILABLE_ACTION = 'Releases on GitHub';
+
+/**
+ * How each entry links to its own release on github.com.
+ *
+ * A constant rather than a phrase inline in the page, because the scheduled
+ * check greps for it to decide the page is showing releases at all. The note
+ * above answers "did the fetch fail"; this answers "did anything render" — a
+ * page showing neither is broken in a third way, and greping for only the first
+ * would call that healthy.
+ */
+export const CHANGELOG_RELEASE_LINK_PREFIX = 'Release notes for';
+
 export function absoluteUrl(pathname: string): string {
   return new URL(pathname, SITE_URL).toString();
 }
