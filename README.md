@@ -26,12 +26,25 @@ blocking (or silently passing) a merge. See
 and the reasoning in
 [this post](apps/blog/content/posts/visual-regression-with-agents.mdx).
 
+Take a real row from the console's own sample report (deep-dived in
+[`apps/visual-diff-ui/fixtures/README.md`](apps/visual-diff-ui/fixtures/README.md)):
+`atoms__desktop__dark__atoms-prose--default` diffs by **65,944 pixels**. Only
+**16,024** of those come from pixel-comparing the shots' shared region — the
+other **49,920** is pure margin, counted by arithmetic where the box's size
+changed between shots (`1248×469 → 1248×429`), never pixel-compared at all. The
+two are summed for the verdict but sorted separately for review, so a story
+that simply changed size never outranks a genuine few-hundred-pixel repaint —
+see [_Comparing two shots_](packages/visual-diff/README.md#comparing-two-shots)
+for the full mechanism and the allowance that clears this row as `changed`
+rather than noise.
+
 And the part that raises the bar: **this repo is built by its own published
 agent pipeline.** The autonomous multi-agent orchestrator in
 [`.sandcastle/`](.sandcastle/) — which I built and ran across previous
 production work — plans, implements, reviews and merges GitHub issues through
 the CI this repo builds for itself. The PR history is the evidence: pipeline
-merges carry their model co-author trailer in the squashed commit.
+merges carry their model co-author trailer in the squashed commit — see
+[#426](https://github.com/climaa/acceptance-gate/pull/426) for one, end to end.
 
 > **Work in progress, in public — deliberately.** The
 > [project board](https://github.com/users/climaa/projects/1) is the live,

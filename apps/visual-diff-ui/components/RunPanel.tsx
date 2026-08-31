@@ -726,6 +726,10 @@ export function RunPanel({ isSample, isLocal }: RunPanelProps) {
 
   return (
     <Stack gap={4}>
+      <Note name="what a run is">
+        a run is one CLI invocation: capture takes new screenshots into a set, compare
+        judges two existing sets against each other and writes the report below
+      </Note>
       <ModeTabs
         mode={form.mode}
         onSelect={(mode) => {
