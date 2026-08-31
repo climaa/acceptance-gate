@@ -174,3 +174,22 @@ describe('app/sitemap', () => {
     expect(entries).toHaveLength(STATIC_ROUTES.length);
   });
 });
+
+describe('app/robots', () => {
+  async function renderRobots() {
+    const { default: robots } = await import('../app/robots');
+    return robots();
+  }
+
+  it('advertises the sitemap as an absolute URL at the site origin', async () => {
+    const { sitemap } = await renderRobots();
+
+    expect(sitemap).toBe(new URL('/sitemap.xml', SITE_URL).toString());
+  });
+
+  it('allows everything, so a future disallow cannot land silently', async () => {
+    const { rules } = await renderRobots();
+
+    expect(rules).toEqual({ userAgent: '*', allow: '/' });
+  });
+});
