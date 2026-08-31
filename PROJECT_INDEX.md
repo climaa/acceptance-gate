@@ -1,6 +1,6 @@
 # Project Index: acceptance-gate
 
-Version 1.2.0 · generated 2026-08-28 (regenerate with `/sc:index-repo` — a stale date here
+Version 1.3.0 · generated 2026-08-31 (regenerate with `/sc:index-repo` — a stale date here
 means the index needs a refresh)
 
 ## 📁 Project Structure
@@ -23,7 +23,7 @@ apps/
                        web analytics on the production deployment only; Bugsink error
                        reporting live in both realms on the production deployment,
                        inert anywhere the DSN is unset
-  storybook/           Storybook 10 + nextjs-vite — 26 stories, 18 docs pages
+  storybook/           Storybook 10 + nextjs-vite — 26 stories, 19 docs pages
   e2e/                 playwright-bdd — 44 acceptance scenarios across the blog and
                        two seeded visual-diff worlds (:3200/:3201), plus a two-scenario
                        local lane that runs against your own tree
@@ -36,12 +36,18 @@ apps/
                        web analytics on the production deployment only; Bugsink error
                        reporting live in both realms on the production deployment,
                        inert anywhere the DSN is unset
+  manual/              Next.js 16 — the console's end-user manual: three pages
+                       (console, report, sample) parsed at build time from the
+                       acceptance suite's own `.feature` files, so a scenario added
+                       or deleted flows straight to the published page rather than
+                       drifting from it; page views tracked on the same terms as
+                       the blog and the console
 packages/
   logger/              the shared error/warn/info logger: silent in production, and
                        `error()` always forwards to a reporter — with the Bugsink
                        adapter behind `@gate/logger/bugsink`, inert until a DSN exists
-  ui/                  design system: tokens.css + 27 components in 4 tiers
-                       (16 atoms · 5 molecules · 4 organisms · 2 templates); every
+  ui/                  design system: tokens.css + 28 components in 4 tiers
+                       (16 atoms · 6 molecules · 4 organisms · 2 templates); every
                        one storied but Stack, the layout primitive with nothing
                        of its own to capture
   visual-diff/         the self-built visual-regression CLI + 158 committed baselines
@@ -60,6 +66,7 @@ scripts/               complexity-gate.mjs (the health gate) · apply-ruleset.mj
 - Storybook: `pnpm --filter @gate/storybook dev` on :6006
 - Visual-diff console: `pnpm --filter @gate/visual-diff-ui dev` on :3300 — points `VISUAL_DIFF_DATA_DIR` at a gitignored `.visual-diff/` at the repo root and seeds it, so a local console is live rather than in sample mode. `capture`/`run` build Storybook on the host, then run the differ inside the pinned container (`lib/docker.ts` + `scripts/capture-set.mjs`), so **Docker must be running** — the panel says so and disables the button when it is not. Jobs are refused off localhost (`lib/local.ts`, and again in `POST /api/jobs`); `next start` sets no variable, so an instance without one serves the committed sample data
 - Acceptance suite: `pnpm turbo run e2e` (builds the blog and the visual-diff console first, seeds the three worlds, then runs the scenarios)
+- Manual: `pnpm --filter @gate/manual dev` on :3400
 - Visual diff: `pnpm visual-diff` / `pnpm visual-diff:accept`
 - CI: `.github/workflows/pr.yml` → `gate` aggregator (only required check)
 - Orchestrator tests: `pnpm test:sandcastle` → `vitest.sandcastle.config.mts`
@@ -97,7 +104,7 @@ scripts/               complexity-gate.mjs (the health gate) · apply-ruleset.mj
 ## 🧪 Tests
 
 - Orchestrator hermetic suite: 39 files / 654 tests (prompt contracts, merge flow, override grammar, worktree safety, provenance guard)
-- Workspace suites, all in the `test` gate job: `packages/ui` 34 files / 492 tests (70% coverage floor), `apps/blog` 18 / 371 (3 skipped, one per draft post), `packages/visual-diff` 11 / 334, `apps/storybook` 5 / 125, `apps/visual-diff-ui` 53 / 829 (floors 93/87/92/94), `packages/logger` 2 / 20
+- Workspace suites, all in the `test` gate job: `packages/ui` 35 files / 512 tests (70% coverage floor), `apps/blog` 18 / 378 (375 passed, 3 skipped — one per draft post), `packages/visual-diff` 10 / 327, `apps/storybook` 5 / 128, `apps/visual-diff-ui` 53 / 829 (floors 93/87/92/94), `packages/logger` 2 / 20, `apps/manual` 6 / 69
 - `apps/e2e`: 44 acceptance scenarios across smoke, blog, axe a11y, the visual-diff console, sample mode, the report and its accessibility treatment — in `gate.needs`, blocking. `EXPECTED_SCENARIOS` in `apps/e2e/scripts/suite-integrity.mjs` is the count that must agree. A second lane, `features/local/`, is two scenarios that write to your own tree and clean up after themselves — one captures, compares, reviews and accepts against your `.visual-diff`, the other proves the dev server reflects `apps/blog/content/posts` as it is, which no built app can claim (`EXPECTED_LOCAL_SCENARIOS`). It refuses to run under `CI` and gates nothing
 - `packages/visual-diff`: 158 committed baselines; the capture/compare job runs on every PR but is deliberately never in `gate.needs` (see `packages/visual-diff/README.md#ci-status`)
 
