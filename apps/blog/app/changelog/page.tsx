@@ -52,12 +52,16 @@ function ReleaseEntry({ release }: { release: Release }) {
       <Stack gap={3}>
         <Stack gap={2}>
           {/* Row, so the badge sizes to its text: a column stretches its
-              children, and a full-width version chip reads as a banner. */}
+              children, and a full-width version chip reads as a banner.
+
+              The badge is dropped when the release has no title of its own,
+              because the heading below is then the version itself and the two
+              would say the same word twice. */}
           <Stack direction="row" gap={3} align="center" wrap>
-            <Badge tone="accent">{release.tag}</Badge>
+            {release.title !== null && <Badge tone="accent">{release.tag}</Badge>}
             <time dateTime={release.date}>{releaseDate(release)}</time>
           </Stack>
-          <h2>{release.title}</h2>
+          <h2>{release.title ?? release.tag}</h2>
         </Stack>
 
         <Prose>

@@ -75,6 +75,18 @@ export const RELEASES_FIXTURE: RawRelease[] = [
     prerelease: false,
   },
   {
+    // Published with no title of its own, which is what GitHub's default name
+    // produces. The page must render the tag as the heading and drop the badge
+    // that would otherwise repeat it.
+    tag_name: 'v0.0.9',
+    name: 'v0.0.9',
+    html_url: `${REPO}/releases/tag/v0.0.9`,
+    published_at: '2025-12-20T11:00:00Z',
+    body: 'A release nobody wrote a title for.',
+    draft: false,
+    prerelease: false,
+  },
+  {
     tag_name: 'v0.4.0-rc.1',
     name: 'v0.4.0-rc.1 — a prerelease, which the page must not show',
     html_url: `${REPO}/releases/tag/v0.4.0-rc.1`,

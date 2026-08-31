@@ -54,8 +54,22 @@ describe('narrativeTitle', () => {
     );
   });
 
-  it('falls back to the tag when the release has no name', () => {
-    expect(narrativeTitle(null, 'v1.3.0')).toBe('v1.3.0');
+  it('reports no narrative when the release has no name', () => {
+    expect(narrativeTitle(null, 'v1.3.0')).toBeNull();
+  });
+
+  /**
+   * The case the whole function exists to prevent, reached from the other side.
+   * GitHub defaults a release's name to its tag, so a release published without
+   * a written title arrives as `name === tag` — and returning that would have
+   * the page print the version as both its badge and its heading.
+   */
+  it('reports no narrative when the name is only the tag', () => {
+    expect(narrativeTitle('v1.3.0', 'v1.3.0')).toBeNull();
+  });
+
+  it('reports no narrative when the name is a tag and an empty dash', () => {
+    expect(narrativeTitle('v1.3.0 — ', 'v1.3.0')).toBeNull();
   });
 });
 
@@ -73,7 +87,20 @@ describe('getReleases, built from the fixture', () => {
       'v0.3.0',
       'v0.2.0',
       'v0.1.0',
+      'v0.0.9',
     ]);
+  });
+
+  // The shape GitHub produces when nobody writes a title. It has to reach the
+  // page as a null title, which is what tells the page to render the tag as the
+  // heading rather than printing the version twice.
+  it('gives a release named only by its tag no title', async () => {
+    useFixture();
+
+    const untitled = (await getReleases())?.find((release) => release.tag === 'v0.0.9');
+
+    expect(untitled).toBeDefined();
+    expect(untitled?.title).toBeNull();
   });
 
   it('orders releases newest first', async () => {
@@ -81,7 +108,46 @@ describe('getReleases, built from the fixture', () => {
 
     const dates = (await getReleases())?.map((release) => release.date);
 
-    expect(dates).toEqual(['2026-03-14', '2026-02-08', '2026-01-05']);
+    expect(dates).toEqual(['2026-03-14', '2026-02-08', '2026-01-05', '2025-12-20']);
+  });
+
+  /**
+   * Ordering has to survive the date being trimmed for display. Two releases on
+   * one day are ordinary here — a fix follows its feature within the hour — and
+   * sorting the trimmed date would leave them in whatever order the API sent,
+   * which is not a guarantee the API makes.
+   */
+  it('orders two releases published on the same day by time', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => [
+          {
+            tag_name: 'v2.0.0',
+            name: 'v2.0.0 — the morning one',
+            html_url: 'https://example.test/2',
+            published_at: '2026-05-01T08:00:00Z',
+            body: '',
+            draft: false,
+            prerelease: false,
+          },
+          {
+            tag_name: 'v2.1.0',
+            name: 'v2.1.0 — the afternoon one',
+            html_url: 'https://example.test/21',
+            published_at: '2026-05-01T16:00:00Z',
+            body: '',
+            draft: false,
+            prerelease: false,
+          },
+        ],
+      }),
+    );
+
+    const tags = (await getReleases())?.map((release) => release.tag);
+
+    expect(tags).toEqual(['v2.1.0', 'v2.0.0']);
   });
 
   it('reduces a release to what the page renders', async () => {
@@ -172,8 +238,14 @@ describe('the optional token', () => {
     return fetchSpy;
   }
 
-  const headersOf = (spy: ReturnType<typeof vi.fn>) =>
-    (spy.mock.calls[0]?.[1] as { headers: Record<string, string> }).headers;
+  // Asserted rather than indexed into: if the fetch never happened, the failure
+  // should name that, not throw a TypeError from reading a header off undefined.
+  const headersOf = (spy: ReturnType<typeof vi.fn>) => {
+    expect(spy).toHaveBeenCalledOnce();
+    const [, init] = spy.mock.calls[0] as [string, RequestInit];
+
+    return init.headers as Record<string, string>;
+  };
 
   it('authenticates when one is in the environment', async () => {
     vi.stubEnv('GITHUB_TOKEN', 'ghp_example');

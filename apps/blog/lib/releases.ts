@@ -49,14 +49,15 @@ export interface Release {
   /** The tag, e.g. `v1.3.0` — also the entry's anchor. */
   tag: string;
   /**
-   * The narrative half of the release name, with the version removed.
+   * The narrative half of the release name, with the version removed, or `null`
+   * when the release was published without a title of its own.
    *
    * GitHub's `name` already begins with the tag: `v1.3.0 — the console gets a
    * manual`. Rendering the tag beside it unsplit would print the version twice,
    * so the em-dash is the seam. A name that does not follow the convention is
    * left whole rather than guessed at.
    */
-  title: string;
+  title: string | null;
   /** ISO date, no time — `formatDate` is the site's one date formatter. */
   date: string;
   /** The canonical release page on github.com. */
@@ -66,34 +67,59 @@ export interface Release {
 }
 
 /**
- * Split `v1.3.0 — the console gets a manual` into its version and its story.
+ * The story half of `v1.3.0 — the console gets a manual`, or `null` when the
+ * name carries no story.
  *
- * The separator is an em-dash surrounded by spaces, which is how every release
- * here is titled. Anything else — a name with no dash, or one that does not
- * start with its own tag — is returned whole, because a wrong guess would drop
- * words from a title and a missed split only repeats a version.
+ * The separator is an em-dash, which is how every release here is titled.
+ * Anything else — a name with no dash, or one that does not start with its own
+ * tag — is returned whole, because a wrong guess would drop words from a title
+ * and a missed split only repeats a version.
+ *
+ * `null` rather than the tag for the nameless cases, and that distinction is the
+ * point: GitHub defaults a release's name to its tag, so a release published
+ * without a written title arrives as `name === tag`. Handing that back as a
+ * title would print the version as both the entry's badge and its heading —
+ * the exact duplication this function exists to prevent, reached from the other
+ * direction. The page renders the tag as the heading instead, and drops the
+ * badge that would have repeated it.
  */
-export function narrativeTitle(name: string | null, tag: string): string {
-  if (!name) return tag;
+export function narrativeTitle(name: string | null, tag: string): string | null {
+  if (!name) return null;
   if (!name.startsWith(tag)) return name;
 
   const rest = name.slice(tag.length).trimStart();
-  return rest.startsWith('—') ? rest.slice(1).trim() || name : name;
+  if (!rest.startsWith('—')) return name === tag ? null : name;
+
+  return rest.slice(1).trim() || null;
+}
+
+/** A release that is actually published, and so has a date to sort and show. */
+type PublishedRelease = RawRelease & { published_at: string };
+
+function isPublished(release: RawRelease): release is PublishedRelease {
+  return !release.draft && !release.prerelease && release.published_at !== null;
 }
 
 /** Published releases only, newest first. */
 function toReleases(raw: RawRelease[]): Release[] {
-  return raw
-    .filter((release) => !release.draft && !release.prerelease && release.published_at)
-    .map((release) => ({
-      tag: release.tag_name,
-      title: narrativeTitle(release.name, release.tag_name),
-      // The API sends a full timestamp; `formatDate` takes a calendar date.
-      date: (release.published_at ?? '').slice(0, 10),
-      url: release.html_url,
-      body: release.body ?? '',
-    }))
-    .sort((a, b) => b.date.localeCompare(a.date));
+  return (
+    raw
+      .filter(isPublished)
+      // Sorted on the full timestamp, before the date is trimmed to a day for
+      // display. Two releases on one day are ordinary — a fix follows its
+      // feature within the hour — and sorting the trimmed date would leave them
+      // in whatever order the response happened to use, which is not something
+      // the API promises. ISO 8601 in UTC sorts chronologically as text.
+      .sort((a, b) => b.published_at.localeCompare(a.published_at))
+      .map((release) => ({
+        tag: release.tag_name,
+        title: narrativeTitle(release.name, release.tag_name),
+        // `formatDate` takes a calendar date, not a timestamp.
+        date: release.published_at.slice(0, 10),
+        url: release.html_url,
+        body: release.body ?? '',
+      }))
+  );
 }
 
 /** The formatted publish date, so the page never reaches for a second formatter. */
