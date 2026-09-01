@@ -2,9 +2,11 @@ import type { Response } from '@playwright/test';
 import { test as base } from 'playwright-bdd';
 
 import { BlogIndexPage } from '../../pages/blog-index';
+import { ChangelogPage } from '../../pages/changelog';
 import { Chrome } from '../../pages/chrome';
 import { ComparisonModal } from '../../pages/comparison-modal';
 import { ConsolePage } from '../../pages/console';
+import { Giscus } from '../../pages/giscus';
 import { PostPage } from '../../pages/post';
 import { ReportPage } from '../../pages/report';
 
@@ -21,6 +23,10 @@ export interface ScenarioState {
   /** What a navigation answered with, for the scenarios whose claim is the
    *  status code rather than anything on the page. */
   response?: Response | null;
+  /** Which release a changelog scenario is about — read off the page by the step
+   *  that selects it, never written into one, so the scenarios survive the next
+   *  release. */
+  releaseTag?: string;
 }
 
 /** Page objects reach the steps as fixtures, never as `new` inside a step: two steps
@@ -34,6 +40,8 @@ export interface ScenarioState {
  *  bind to the local lane's `test` (whose page objects point at the dev server on 3300). */
 export const test = base.extend<{
   blogIndex: BlogIndexPage;
+  changelog: ChangelogPage;
+  giscus: Giscus;
   post: PostPage;
   chrome: Chrome;
   console: ConsolePage;
@@ -43,6 +51,12 @@ export const test = base.extend<{
 }>({
   blogIndex: async ({ page }, use) => {
     await use(new BlogIndexPage(page));
+  },
+  changelog: async ({ page }, use) => {
+    await use(new ChangelogPage(page));
+  },
+  giscus: async ({ page }, use) => {
+    await use(new Giscus(page));
   },
   post: async ({ page }, use) => {
     await use(new PostPage(page));

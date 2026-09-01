@@ -18,6 +18,10 @@ Feature: Accessibility
     When I visit the first tag page
     Then the page has no accessibility violations
 
+  Scenario: The changelog has no accessibility violations
+    When I visit the changelog
+    Then the page has no accessibility violations
+
   Scenario: The dark theme has no accessibility violations
     When I visit the blog index
     And I switch to the dark theme

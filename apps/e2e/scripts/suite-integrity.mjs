@@ -56,6 +56,16 @@ const LANES = ['acceptance', 'local'];
  * requirement that cannot be met by a unit test, because everything below the
  * browser stubs the fetch the wand makes.
  *
+ * It was 44 until `/changelog` gained the control that opens a release's
+ * conversation. Six scenarios came with it: five for the control, and one more
+ * putting the page in front of axe. All six are requirements no unit test can
+ * meet — the control's whole subject is an embed from another origin, and what
+ * is being asserted is that a press mounts one, that a second press does not
+ * mount a second, and that a mount that fails ends somewhere a reader can act
+ * from and says so in writing. Every one of those claims is about a real
+ * cross-origin frame, which is why the comment service is faked at the network
+ * boundary rather than stubbed inside the page: see `pages/giscus.ts`.
+ *
  * It was 47 before that, until the six `@mutating` requirements were withdrawn
  * from this suite. They are not gone — they run in `features/local/`, against the tree on
  * the machine doing the running — but nothing gates them on a pull request any
@@ -75,7 +85,7 @@ const LANES = ['acceptance', 'local'];
  * scenario is a two-line diff; LOWERING it is a product decision and belongs in
  * its own hand-authored PR with the reason written down.
  */
-const EXPECTED_SCENARIOS = 44;
+const EXPECTED_SCENARIOS = 50;
 
 /** The two project selectors. Carrying both excludes a scenario from both. */
 const PROJECT_TAGS = ['@desktop', '@mobile'];
