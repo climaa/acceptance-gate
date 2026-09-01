@@ -10,6 +10,7 @@ import {
   STATE_FOR_STATUS,
   STATE_MACHINE,
   THEMES,
+  zoomVariables,
   type ThreadStatus,
 } from '@/lib/changelog-sync-asset';
 import { postGiscusTheme } from '@/lib/giscus';
@@ -252,10 +253,17 @@ export function ChangelogSyncButton({ releases }: ChangelogSyncButtonProps) {
   return (
     <div
       className="changelog-sync"
-      // Published to CSS so the note wraps to exactly the icon's width. The box
-      // itself is sized inline by `LottieBlock` — a second literal in the
-      // stylesheet is a second thing to forget when this number moves.
-      style={{ '--changelog-sync-size': `${ICON_SIZE}px` } as CSSProperties}
+      // Published to CSS: the width the note wraps to, and the crop that takes
+      // the artwork's baked-in margin off both the animation and the still. The
+      // box is sized inline by `LottieBlock` and the geometry comes from
+      // `changelog-sync-asset` — a literal repeated in the stylesheet is a
+      // second thing to forget when either moves.
+      style={
+        {
+          '--changelog-sync-size': `${ICON_SIZE}px`,
+          ...zoomVariables(),
+        } as CSSProperties
+      }
     >
       <button
         type="button"

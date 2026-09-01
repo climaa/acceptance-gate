@@ -103,6 +103,16 @@ function useNearViewport(host: React.RefObject<HTMLElement | null>): boolean {
  * and nothing about what the animation means. What the states stand for and
  * when they change is the caller's, through `onReady`.
  *
+ * A caller may magnify this block in CSS — `/changelog` does, to crop the margin
+ * its artwork bakes in — and that needs no help from here. The intuition says it
+ * should: a canvas is a bitmap, so scaling the element ought to enlarge pixels
+ * that are already drawn. The player's own resize observer reads the element's
+ * TRANSFORMED rectangle, though, so it sizes its backing buffer to what is
+ * actually on screen. Measured at both pixel ratios under a 1.5x crop: buffer
+ * 384 for 384 device pixels at dpr 1, 768 for 768 at dpr 2 — exactly 1.00x, no
+ * blur and nothing over-rendered. A `devicePixelRatio` multiplier here would
+ * only cost 2.25x the fill rate for no visible gain.
+ *
  * The still and the canvas are stacked rather than swapped, and the still is
  * hidden on the player's own `load` rather than on the chunk resolving: the
  * component being mounted says the code arrived, not that a frame has been

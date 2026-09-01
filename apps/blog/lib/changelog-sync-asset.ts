@@ -76,5 +76,60 @@ export const UNDRIVEN_STATES = ['s-hover'] as const;
 /** Every state the machine declares — the four the control drives, plus hover. */
 export const ALL_STATES = [...Object.values(STATE_FOR_STATUS), ...UNDRIVEN_STATES];
 
+/**
+ * Where the artwork actually sits inside the 512 artboard, in artboard units.
+ *
+ * It does not fill it: the drawing occupies 304 x 320 of 512 x 512 — about 38%
+ * by area — and its centre is 4 right and 14 below the artboard's. Left alone,
+ * three fifths of the icon box is margin baked into the file, which is why the
+ * control read as small at any size.
+ *
+ * MEASURED, not read off the file. A bounding box is the union of every drawn
+ * layer after its own transform, and the pencil is a precomposition with nine
+ * layers inside it — arithmetic worth doing once against the pixels the renderer
+ * actually paints rather than reimplementing. Re-measure after a re-export that
+ * moves the composition: render the icon, read back the canvas, and take the
+ * bounds of everything above alpha 8.
+ */
+export const ARTWORK = {
+  width: 304,
+  height: 320,
+  centreX: 260,
+  centreY: 270,
+} as const;
+
+/** The artboard the numbers above are expressed in. */
+export const ARTBOARD = 512;
+
+/**
+ * How much of that margin is cropped away.
+ *
+ * 1.60 is where the taller side would touch an edge, so this leaves a little
+ * air. Applied in CSS to the icon box's children — both of them — so the
+ * animation and the reduced-motion still are framed identically and nothing
+ * shifts when a reader turns that preference on.
+ */
+export const ZOOM = 1.5;
+
+/**
+ * The transform that crops the margin, as CSS custom properties.
+ *
+ * The translate re-centres the artwork on the box: its centre is off the
+ * artboard's by `ARTWORK.centre - ARTBOARD / 2`, and scaling about the box
+ * centre multiplies that offset by the zoom. Expressed as a percentage because
+ * a percentage in `translate` resolves against the element's own size, which is
+ * the box — so one set of values is correct at every icon size.
+ */
+export function zoomVariables(): Record<string, string> {
+  const shift = (centre: number) =>
+    `${(-ZOOM * ((centre - ARTBOARD / 2) / ARTBOARD) * 100).toFixed(3)}%`;
+
+  return {
+    '--changelog-sync-zoom': String(ZOOM),
+    '--changelog-sync-nudge-x': shift(ARTWORK.centreX),
+    '--changelog-sync-nudge-y': shift(ARTWORK.centreY),
+  };
+}
+
 /** One thread's state, as this app names it. */
 export type ThreadStatus = keyof typeof STATE_FOR_STATUS;
