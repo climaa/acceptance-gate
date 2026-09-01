@@ -77,25 +77,36 @@ export const UNDRIVEN_STATES = ['s-hover'] as const;
 export const ALL_STATES = [...Object.values(STATE_FOR_STATUS), ...UNDRIVEN_STATES];
 
 /**
- * Where the artwork actually sits inside the 512 artboard, in artboard units.
+ * Where the artwork sits inside the 512 artboard, in artboard units.
  *
- * It does not fill it: the drawing occupies 304 x 320 of 512 x 512 — about 38%
- * by area — and its centre is 4 right and 14 below the artboard's. Left alone,
- * three fifths of the icon box is margin baked into the file, which is why the
- * control read as small at any size.
+ * It does not fill it. At rest the drawing occupies 304 x 320 of 512 x 512 and
+ * its centre sits 4 right and 14 below the artboard's, so left alone most of the
+ * icon box is margin baked into the file.
+ *
+ * TWO extents, and the difference is the whole reason this is written down. The
+ * resting one is what the eye judges and what the crop is centred on. The moving
+ * one is the union across all 180 frames, and it is bigger — the pencil travels
+ * during the syncing segment, reaching 321 x 354 around frames 58 to 62. A crop
+ * sized from the resting frame alone fits until the animation plays and then
+ * clips it, which is exactly what happened at zoom 1.5: within the resting
+ * frame's limit of 1.60, past the moving one.
  *
  * MEASURED, not read off the file. A bounding box is the union of every drawn
- * layer after its own transform, and the pencil is a precomposition with nine
- * layers inside it — arithmetic worth doing once against the pixels the renderer
- * actually paints rather than reimplementing. Re-measure after a re-export that
- * moves the composition: render the icon, read back the canvas, and take the
- * bounds of everything above alpha 8.
+ * layer after its own transform AT A GIVEN FRAME, and the pencil is a
+ * precomposition of nine layers — arithmetic worth doing once against the pixels
+ * the renderer actually paints. Re-measure after a re-export that moves the
+ * composition: stop the state machine, step `setFrame` across the whole
+ * timeline, and take the union of everything above alpha 8.
  */
 export const ARTWORK = {
-  width: 304,
-  height: 320,
+  /** The resting frame, and the centre the crop aligns on. */
+  restWidth: 304,
+  restHeight: 320,
   centreX: 260,
   centreY: 270,
+  /** The widest and tallest the animation ever gets, across every frame. */
+  motionWidth: 321,
+  motionHeight: 354,
 } as const;
 
 /** The artboard the numbers above are expressed in. */
@@ -104,12 +115,47 @@ export const ARTBOARD = 512;
 /**
  * How much of that margin is cropped away.
  *
- * 1.60 is where the taller side would touch an edge, so this leaves a little
- * air. Applied in CSS to the icon box's children — both of them — so the
- * animation and the reduced-motion still are framed identically and nothing
- * shifts when a reader turns that preference on.
+ * Bounded by the MOVING extent, not the resting one. Scaling about the resting
+ * centre, the first edge the animation reaches is the bottom — 270 + z * (439 -
+ * 270) has to stay inside 512 — which caps this at 1.43. `zoomStaysInside`
+ * checks all four edges and `__tests__/changelog-sync-zoom.test.ts` fails if this
+ * ever exceeds them again.
+ *
+ * 1.3 rather than the limit: it leaves about 22px of air on the tightest edge at
+ * the animation's widest moment, and the resting composition — which is what is
+ * on screen almost all the time — sits at 81% of the box rather than pressed
+ * against it.
+ *
+ * Applied in CSS to the icon box's children, both of them, so the animation and
+ * the reduced-motion still are framed identically and nothing shifts when a
+ * reader turns that preference on.
  */
-export const ZOOM = 1.5;
+export const ZOOM = 1.3;
+
+/**
+ * Whether a zoom keeps the whole animation inside the artboard.
+ *
+ * The crop scales about the resting centre, so each edge has its own limit and
+ * the smallest one governs. Exported so a test can assert it rather than leaving
+ * the number above to be checked by eye — which is how 1.5 shipped.
+ */
+export function zoomStaysInside(zoom: number): boolean {
+  const halfW = ARTWORK.motionWidth / 2;
+  const halfH = ARTWORK.motionHeight / 2;
+  // The moving extent, centred on its own centre, expressed as edges relative
+  // to the resting centre the crop scales about.
+  const motionCentreX = ARTWORK.centreX + 9;
+  const motionCentreY = ARTWORK.centreY - 8;
+
+  const edges = [
+    ARTWORK.centreX + zoom * (motionCentreX + halfW - ARTWORK.centreX),
+    ARTWORK.centreX + zoom * (motionCentreX - halfW - ARTWORK.centreX),
+    ARTWORK.centreY + zoom * (motionCentreY + halfH - ARTWORK.centreY),
+    ARTWORK.centreY + zoom * (motionCentreY - halfH - ARTWORK.centreY),
+  ];
+
+  return edges.every((edge) => edge >= 0 && edge <= ARTBOARD);
+}
 
 /**
  * The transform that crops the margin, as CSS custom properties.
