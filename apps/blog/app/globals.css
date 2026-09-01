@@ -83,3 +83,106 @@ h3:hover > .heading-anchor,
      the diagram to the column and defeats the natural sizing above. */
   max-width: none;
 }
+
+/* /changelog: the releases, and the comment control beside them.
+
+   `align-items: start` is what makes the sticky column sticky at all. A grid
+   item stretches to its row by default, so the aside would be exactly as tall
+   as the release list and `position: sticky` would have nothing left to travel
+   against — it would compute, apply, and never move a pixel. */
+.changelog-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: var(--space-8);
+}
+
+.changelog-layout__aside {
+  position: sticky;
+  /* Clear of the header rather than flush to the viewport edge. */
+  top: var(--space-8);
+}
+
+/* Below this the aside goes above the releases and stops following. A sticky
+   element on a phone spends the whole scroll parked on top of the text it is
+   meant to be about, and the column it was sharing space with no longer exists
+   for it to sit beside. */
+@media (max-width: 60rem) {
+  .changelog-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .changelog-layout__aside {
+    position: static;
+    grid-row: 1;
+  }
+
+  /* Centred here, left-aligned beside the text on desktop. Stacked above the
+     releases the control is a header rather than a margin note, and a 256px
+     icon hugging the left edge of a full-width row reads as something that
+     failed to lay out. */
+  .changelog-sync {
+    margin-inline: auto;
+  }
+}
+
+.changelog-sync {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  align-items: center;
+  /* The note wraps to the icon's own width rather than widening the column past
+     it. The value comes from the component, which is also what sizes the box —
+     one number, so the two cannot drift. */
+  max-width: var(--changelog-sync-size);
+}
+
+/* The icon's own box: no chrome, because the artwork is the control. No focus
+   ring is declared here — base.css's `:where(:focus-visible)` is the site's one
+   ring and is never re-declared, per `packages/ui/src/atoms/Link/Link.css`. The
+   radius is set so that shared ring follows the button's corners. */
+.changelog-sync__button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  display: block;
+}
+
+/* Fixed square, with the still and the canvas stacked in it. The size is set
+   inline by LottieBlock so the box exists at its final size from the first
+   frame of markup — a box that gets its dimensions from a stylesheet is a box
+   that is 0×0 until the stylesheet lands. */
+.changelog-sync__icon {
+  position: relative;
+}
+
+.lottie-block__still,
+.lottie-block__player {
+  position: absolute;
+  inset: 0;
+}
+
+.changelog-sync__note {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+/* Deliberately NOT `.changelog-sync__note:empty { display: none }`. The note is
+   a live region, and it is in the markup from the first render precisely so
+   assistive tech is already watching it when the text arrives. `display: none`
+   takes an element out of the accessibility tree, so hiding it while empty
+   would leave nothing watching at the only moment it matters — the region would
+   appear and announce nothing. An empty block generates no line box, so it
+   already occupies no height and there is nothing to hide. */
+
+/* Where one release's giscus embed lands, when a reader asks for it. Empty and
+   zero-height until then — no reserved space, on purpose; see the container's
+   comment in app/changelog/page.tsx. */
+.release-comments:not(:empty) {
+  margin-block-start: var(--space-6);
+}

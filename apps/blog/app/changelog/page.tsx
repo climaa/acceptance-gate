@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import { cacheLife } from 'next/cache';
 import { MDXRemote } from 'next-mdx-remote/rsc';
 import { Badge, Prose, Stack } from '@gate/ui';
+import { ChangelogSyncButton } from '@/components/ChangelogSyncButton';
+import { GISCUS_CONFIGURED } from '@/lib/giscus';
 import { RELEASES_PAGE_URL } from '@/lib/github';
 import { changelogMdxOptions, mdxComponents } from '@/lib/mdx';
 import { getReleases, releaseDate, type Release } from '@/lib/releases';
@@ -73,6 +75,25 @@ function ReleaseEntry({ release }: { release: Release }) {
             {CHANGELOG_RELEASE_LINK_PREFIX} {release.tag} on GitHub
           </a>
         </p>
+
+        {/* Empty, and stays empty unless a reader asks for this release's
+            conversation — `ChangelogSyncButton` injects giscus's loader here on
+            the press. Rendered by the page rather than by that component
+            because the two live in different places in the tree: the control is
+            in the sticky column, the thread belongs under the release it is
+            about.
+
+            React never reconciles what goes inside it — there are no children
+            here for it to have an opinion about — so the iframe giscus writes
+            is not something React will later remove.
+
+            No reserved height. Holding 300px open under all four releases would
+            be a permanent hole on every visit, paid against a layout shift that
+            does not count: the mount happens within 500ms of the press that
+            asked for it, which is the window CLS excludes as user-initiated. */}
+        {GISCUS_CONFIGURED && (
+          <div className="release-comments" data-release-comments={release.tag} />
+        )}
       </Stack>
     </article>
   );
@@ -97,6 +118,39 @@ function Unavailable() {
   );
 }
 
+/**
+ * The releases, and the control that opens their conversations beside them.
+ *
+ * The control is rendered only when giscus has both of its ids — without them
+ * an embed builds an iframe that fails inside itself, and the icon would be
+ * animating a load that cannot finish. A page with no comment control is a
+ * page; a page with a control that always ends red is a defect.
+ *
+ * It is also skipped when the releases could not be fetched. There is nothing
+ * to comment on then, and a control offering to load the conversation for a
+ * release the page is not showing would be asking about something the reader
+ * cannot see.
+ */
+function ReleaseList({ releases }: { releases: Release[] }) {
+  const showComments = GISCUS_CONFIGURED && releases.length > 0;
+
+  return (
+    <div className="changelog-layout">
+      <Stack gap={10}>
+        {releases.map((release) => (
+          <ReleaseEntry key={release.tag} release={release} />
+        ))}
+      </Stack>
+
+      {showComments && (
+        <aside className="changelog-layout__aside">
+          <ChangelogSyncButton releases={releases.map(({ tag }) => ({ tag }))} />
+        </aside>
+      )}
+    </div>
+  );
+}
+
 export default async function ChangelogPage() {
   const releases = await getReleases();
 
@@ -104,15 +158,7 @@ export default async function ChangelogPage() {
     <Stack gap={8}>
       <h1 className="page-title">{CHANGELOG_TITLE}</h1>
 
-      {releases === null ? (
-        <Unavailable />
-      ) : (
-        <Stack gap={10}>
-          {releases.map((release) => (
-            <ReleaseEntry key={release.tag} release={release} />
-          ))}
-        </Stack>
-      )}
+      {releases === null ? <Unavailable /> : <ReleaseList releases={releases} />}
     </Stack>
   );
 }
