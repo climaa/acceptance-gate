@@ -12,6 +12,7 @@ Feature: Release conversations
   Scenario: Opening the conversation for the release on screen
     When I ask for the conversation about the newest release
     Then the conversation about that release is on the page
+    And I am taken to it
     And the control offers to take me to it
 
   Scenario: Asking twice in quick succession still opens one conversation

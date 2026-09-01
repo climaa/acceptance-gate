@@ -102,6 +102,22 @@ export class ChangelogPage {
     return this.page.locator(`[data-release-comments="${tag}"]`);
   }
 
+  /**
+   * How far down the viewport one release's conversation sits, as a share of
+   * the viewport height.
+   *
+   * A ratio rather than `toBeInViewport`, because that question is too easy to
+   * pass: measured on this page, the first release's container already sits at
+   * 0.77 before any press — inside the viewport, and so "in view" — and lands at
+   * 0.03 after. Being somewhere on screen does not distinguish having been
+   * taken there from happening to be there.
+   */
+  async commentsViewportTop(tag: string): Promise<number> {
+    return this.commentsFor(tag).evaluate(
+      (el) => el.getBoundingClientRect().top / window.innerHeight,
+    );
+  }
+
   /** The embed itself, once a press has mounted one. */
   threadFrameFor(tag: string): Locator {
     return this.commentsFor(tag).locator('iframe');

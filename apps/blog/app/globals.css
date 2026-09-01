@@ -235,4 +235,47 @@ h3:hover > .heading-anchor,
    comment in app/changelog/page.tsx. */
 .release-comments:not(:empty) {
   margin-block-start: var(--space-6);
+  /* Room above when the control scrolls the reader here, so the reactions row
+     giscus renders first does not sit flush against the viewport edge. */
+  scroll-margin-block-start: var(--space-6);
+}
+
+/* The mark left where a conversation just arrived.
+
+   Two short beats on the container's own outline, then gone. It rings the box
+   rather than the reactions row it points at, because that row is inside
+   giscus's iframe on another origin and nothing here can touch it — but it is
+   the first thing giscus draws, so the top of this ring is where the eye lands.
+
+   `outline` rather than `box-shadow`: it is drawn outside the box without
+   entering layout, so a thread that has just appeared does not also nudge the
+   text around it. The attribute is set by `ChangelogSyncButton` and removed on
+   `animationend`. */
+@keyframes release-comments-arrived {
+  0%,
+  100% {
+    outline-color: transparent;
+  }
+  25%,
+  75% {
+    outline-color: var(--color-accent);
+  }
+}
+
+.release-comments[data-arrived] {
+  outline: 2px solid transparent;
+  outline-offset: var(--space-2);
+  border-radius: var(--radius-md);
+  animation: release-comments-arrived 1.1s ease-in-out;
+}
+
+/* The pulse is an attention cue, and a reader who asked for less movement has
+   asked not to be nudged like this. The control skips setting the attribute at
+   all under that preference; this is the second lock, for a class left behind
+   by an interrupted animation or a preference changed mid-page. */
+@media (prefers-reduced-motion: reduce) {
+  .release-comments[data-arrived] {
+    animation: none;
+    outline-color: transparent;
+  }
 }

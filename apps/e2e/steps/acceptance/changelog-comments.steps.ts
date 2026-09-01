@@ -34,6 +34,17 @@ const { Given, When, Then } = createBdd(test);
  */
 const THREAD_TIMEOUT = 10_000;
 
+/**
+ * How near the top of the viewport a conversation has to sit to count as having
+ * been reached, as a share of the viewport height.
+ *
+ * A quarter, because the two states are not close: measured on this page, the
+ * container sits at 0.77 before any press and 0.03 after. Anything between is
+ * neither, so the threshold only has to be somewhere sensible in that gap —
+ * which is what stops this from being a pixel assertion in disguise.
+ */
+const TAKEN_THERE_RATIO = 0.25;
+
 Given('the changelog lists its releases', async ({ changelog, giscus }) => {
   // The service is stood up BEFORE the page is opened, so a route is never
   // added after the request it was meant to intercept.
@@ -156,6 +167,21 @@ Then(
     await expect(changelog.threadFrameFor(tag)).toBeAttached({ timeout: THREAD_TIMEOUT });
   },
 );
+
+/**
+ * The press asked for the conversation, so the reader ends up AT it — near the
+ * top of what they are looking at, not merely somewhere on the page.
+ *
+ * Polled because the scroll is smooth, so the position settles over a few
+ * hundred milliseconds rather than on the frame the thread mounted.
+ */
+Then('I am taken to it', async ({ changelog, scenarioState }) => {
+  const tag = recordedTag(scenarioState);
+
+  await expect
+    .poll(() => changelog.commentsViewportTop(tag), { timeout: THREAD_TIMEOUT })
+    .toBeLessThan(TAKEN_THERE_RATIO);
+});
 
 Then('no conversation has been loaded', async ({ giscus }) => {
   // The economy the whole design is for: four embeds on every visit would be

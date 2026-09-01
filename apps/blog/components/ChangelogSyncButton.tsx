@@ -65,6 +65,51 @@ function isDark(): boolean {
   return document.documentElement.dataset.theme === 'dark';
 }
 
+/** Whether this reader has asked for less movement. */
+function prefersReducedMotion(): boolean {
+  return matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+/**
+ * Takes the reader to a conversation, and marks where it landed.
+ *
+ * The press asked for the conversation, so arriving at it is what finishes the
+ * action — leaving the reader at the top of the page with a check mark and no
+ * idea the thread appeared five screens down is a control that reports success
+ * and delivers nothing.
+ *
+ * The mark is on the CONTAINER, not on the reactions row it draws the eye to.
+ * That row is inside giscus's iframe, on another origin: this page cannot style
+ * a pixel of it. What it can do is outline the box the embed sits in, which
+ * lands in the same place because the reactions are the first thing giscus
+ * renders.
+ *
+ * Under `prefers-reduced-motion` the scroll is instant and nothing pulses. The
+ * arrival is still announced — the reader is simply taken there without the page
+ * sliding or anything flashing, which is the whole of what that preference asks
+ * for.
+ */
+function revealThread(tag: string): void {
+  const container = threadContainer(tag);
+  if (!container) return;
+
+  const reduced = prefersReducedMotion();
+  container.scrollIntoView({ block: 'start', behavior: reduced ? 'auto' : 'smooth' });
+  if (reduced) return;
+
+  // Removed and re-added rather than just added, so a second press re-runs the
+  // pulse instead of doing nothing because the attribute is already there. The
+  // layout read between them is what forces the restart.
+  container.removeAttribute('data-arrived');
+  void container.offsetWidth;
+  container.setAttribute('data-arrived', '');
+  container.addEventListener(
+    'animationend',
+    () => container.removeAttribute('data-arrived'),
+    { once: true },
+  );
+}
+
 /**
  * Which release the reader is currently looking at.
  *
@@ -161,6 +206,12 @@ export function ChangelogSyncButton({ releases }: ChangelogSyncButtonProps) {
       if (tag === activeRef.current) {
         fire(outcome === 'ready' ? EVENTS.syncOk : EVENTS.syncFailed);
       }
+
+      // Only for the release the reader is looking at. A thread that settled
+      // for a version they have since scrolled away from must not yank the page
+      // back to it — they moved on, and the icon already stopped claiming that
+      // conversation on their behalf.
+      if (outcome === 'ready' && tag === activeRef.current) revealThread(tag);
     },
   });
 
@@ -243,7 +294,7 @@ export function ChangelogSyncButton({ releases }: ChangelogSyncButtonProps) {
     if (status === 'loading') return;
 
     if (status === 'ready') {
-      threadContainer(activeTag)?.scrollIntoView({ block: 'start' });
+      revealThread(activeTag);
       return;
     }
 
