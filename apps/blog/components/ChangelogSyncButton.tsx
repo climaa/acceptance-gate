@@ -2,14 +2,17 @@
 
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
 import type { DotLottie } from '@lottiefiles/dotlottie-react';
+import { threadContainer, useGiscusThreads } from '@/hooks/useGiscusThreads';
+import { useSyncedTheme } from '@/hooks/useSyncedTheme';
 import {
-  discussionTerm,
-  giscusScriptAttributes,
-  GISCUS_ORIGIN,
-  GISCUS_SCRIPT_URL,
-  isGiscusMetadataMessage,
-  postGiscusTheme,
-} from '@/lib/giscus';
+  EVENTS,
+  LOTTIE_SRC,
+  STATE_FOR_STATUS,
+  STATE_MACHINE,
+  THEMES,
+  type ThreadStatus,
+} from '@/lib/changelog-sync-asset';
+import { postGiscusTheme } from '@/lib/giscus';
 import {
   commentsGoToLabel,
   commentsLoadingLabel,
@@ -19,11 +22,6 @@ import {
 } from '@/lib/site';
 import { ChangelogSyncStill } from './ChangelogSyncStill';
 import { LottieBlock } from './LottieBlock';
-
-const LOTTIE_SRC = '/lottie/changelog-sync.lottie';
-
-/** The machine inside the file — see the manifest's `stateMachines`. */
-const STATE_MACHINE = 'changelog-sync';
 
 /**
  * The icon's box, in pixels. Square and fixed — nothing on this page reflows
@@ -43,32 +41,6 @@ const STATE_MACHINE = 'changelog-sync';
  * 705px before and after, on a 1280 viewport.
  */
 const ICON_SIZE = 256;
-
-/**
- * How long a mount is given before it is called a failure.
- *
- * The only timeout this control is allowed to have, and it can only ever
- * conclude the negative. A timer that concluded success would be the icon
- * showing a green check over a conversation that never arrived — which is the
- * exact lie the whole design is arranged to prevent, reached by the laziest
- * possible route.
- *
- * Fifteen seconds because the signal being waited on is a third-party iframe
- * doing its own network work: a slow phone on a bad connection is ordinary and
- * should not be told it failed, while a reader watching a spinner past this
- * point has already concluded the same thing the timer is about to.
- */
-const MOUNT_TIMEOUT_MS = 15_000;
-
-type ThreadStatus = 'idle' | 'loading' | 'ready' | 'failed';
-
-/** The machine's state for each status. The names are the file's, not ours. */
-const STATE_FOR_STATUS: Record<ThreadStatus, string> = {
-  idle: 's-idle',
-  loading: 's-syncing',
-  ready: 's-synced',
-  failed: 's-failed',
-};
 
 const LABEL_FOR_STATUS: Record<ThreadStatus, (tag: string) => string> = {
   idle: commentsLoadLabel,
@@ -90,40 +62,6 @@ export interface ChangelogSyncButtonProps {
 /** Whether the document is in the dark theme. The attribute decides — its absence is light. */
 function isDark(): boolean {
   return document.documentElement.dataset.theme === 'dark';
-}
-
-/** The container the page rendered under one release, or null when that release is not on the page. */
-function threadContainer(tag: string): HTMLElement | null {
-  const containers = document.querySelectorAll<HTMLElement>('[data-release-comments]');
-  for (const container of containers) {
-    if (container.dataset.releaseComments === tag) return container;
-  }
-  return null;
-}
-
-/**
- * Injects giscus's loader into one release's container.
- *
- * The script is created on the press rather than rendered with the page, which
- * is the whole economy of this feature: four embeds mounted on every visit
- * would be four iframes, four sets of requests and four thread renders, paid
- * for by every reader including the ones who never open a conversation.
- */
-function mountThread(container: HTMLElement, tag: string, onError: () => void): void {
-  const script = document.createElement('script');
-  script.src = GISCUS_SCRIPT_URL;
-  script.async = true;
-
-  const attributes = giscusScriptAttributes(discussionTerm(tag), isDark());
-  for (const [name, value] of Object.entries(attributes)) {
-    script.setAttribute(name, value);
-  }
-
-  // The script failing to load is the one failure that reports itself. Every
-  // other way this can go wrong is silent from out here, which is what the
-  // timeout is for.
-  script.addEventListener('error', onError);
-  container.append(script);
 }
 
 /**
@@ -180,138 +118,72 @@ function useActiveRelease(tags: string[]): string {
  * else. Every state machine input is fired from this button's own handlers,
  * which is also why the keyboard gets the same affordance as the pointer rather
  * than a second implementation of it.
+ *
+ * The giscus mechanics — the script, the cross-origin channel and the races
+ * between a message and a timer — live in `useGiscusThreads`. What is left here
+ * is the part that is genuinely about an icon: which release it is aimed at,
+ * what it is called, and which state it should be showing.
  */
 export function ChangelogSyncButton({ releases }: ChangelogSyncButtonProps) {
   const tags = releases.map((release) => release.tag);
   const activeTag = useActiveRelease(tags);
-
-  const [statuses, setStatuses] = useState<Record<string, ThreadStatus>>({});
   const lottie = useRef<DotLottie | null>(null);
-
-  /** In-flight mounts, by tag. A reader can start one, scroll on, and start another. */
-  const pending = useRef(new Map<string, ReturnType<typeof setTimeout>>());
-
-  // Read inside handlers and observers that must not be rebuilt when these
-  // change: the current statuses and the active release are answered at the
-  // moment a message or a timer arrives, not when the listener was installed.
-  //
-  // Written in an effect rather than during render — writing a ref while
-  // rendering is a side effect in a function React is allowed to call twice and
-  // throw one result away, and the lint rule that says so is right. Nothing
-  // reads these during a render either: every reader is a message handler, a
-  // timer or the player's own callback, all of which run after the commit that
-  // updated them. Declared FIRST so it runs before the effects below, which do
-  // read them.
-  const statusesRef = useRef(statuses);
-  const activeRef = useRef(activeTag);
-
-  useEffect(() => {
-    statusesRef.current = statuses;
-    activeRef.current = activeTag;
-  });
-
-  const status = statuses[activeTag] ?? 'idle';
 
   const fire = useCallback((event: string) => {
     lottie.current?.stateMachineFireEvent(event);
   }, []);
 
   /**
-   * Ends one mount, once.
+   * The release on screen, for the two callbacks below.
    *
-   * Guarded on the tag still being pending, which is what makes the two racing
-   * answers — the metadata message and the timer — settle to whichever arrived
-   * first, instead of the timer overwriting a thread that landed at 14.9
-   * seconds with a failure.
-   *
-   * The machine is told only when the settled release is the one on screen. If
-   * the reader has scrolled to another version the icon is about that version
-   * now, and playing this one's check over it would be a green tick attached to
-   * a conversation they are not looking at.
+   * A ref because both fire from outside a render — a timer, or a cross-origin
+   * message — long after the commit that installed them. Written in an effect,
+   * never during render: a ref write is a side effect, and React may call a
+   * render twice and discard one result.
    */
-  const settle = useCallback(
-    (tag: string, outcome: 'ready' | 'failed') => {
-      const timer = pending.current.get(tag);
-      if (timer === undefined) return;
-
-      clearTimeout(timer);
-      pending.current.delete(tag);
-      setStatuses((previous) => ({ ...previous, [tag]: outcome }));
-
-      if (tag === activeRef.current) fire(outcome === 'ready' ? 'syncOk' : 'syncFailed');
-    },
-    [fire],
-  );
+  const activeRef = useRef(activeTag);
+  useEffect(() => {
+    activeRef.current = activeTag;
+  });
 
   /**
-   * The metadata message, filtered three ways.
-   *
-   * Origin, then shape, then — the one that is not obvious — that it came from
-   * THIS container's own frame. Every embed already open keeps posting on this
-   * channel for as long as it is on the page, so origin and shape alone would
-   * let an older thread's traffic answer for a mount still in flight: a check
-   * mark over a conversation that never rendered, which is the failure this
-   * control exists not to have.
+   * The machine hears about a mount only when the settled release is the one on
+   * screen. If the reader has scrolled to another version the icon is about
+   * that version now, and playing this one's check over it would be a green
+   * tick attached to a conversation they are not looking at.
    */
-  useEffect(() => {
-    const onMessage = (event: MessageEvent) => {
-      if (event.origin !== GISCUS_ORIGIN) return;
-      if (!isGiscusMetadataMessage(event.data)) return;
-
-      for (const tag of pending.current.keys()) {
-        const frame = threadContainer(tag)?.querySelector('iframe');
-        if (frame && event.source === frame.contentWindow) {
-          settle(tag, 'ready');
-          return;
-        }
+  const { statuses, open } = useGiscusThreads({
+    onStarted: (tag) => {
+      if (tag === activeRef.current) fire(EVENTS.click);
+    },
+    onSettled: (tag, outcome) => {
+      if (tag === activeRef.current) {
+        fire(outcome === 'ready' ? EVENTS.syncOk : EVENTS.syncFailed);
       }
-    };
+    },
+  });
 
-    addEventListener('message', onMessage);
-    return () => removeEventListener('message', onMessage);
-  }, [settle]);
-
-  /** Nothing left running when the page goes away. */
-  useEffect(() => {
-    const timers = pending.current;
-    return () => {
-      for (const timer of timers.values()) clearTimeout(timer);
-      timers.clear();
-    };
-  }, []);
+  const status = statuses[activeTag] ?? 'idle';
 
   /**
    * The theme, on the icon and on every thread already open.
    *
-   * `[data-theme]` on the root element is what decides — never
-   * `prefers-color-scheme` — and light is the attribute's ABSENCE, so the
-   * observer watches the attribute itself and add, change and remove all reach
-   * here. The embeds are re-themed in the same callback because there is no
-   * "the giscus on the page": there is one per release that has been opened,
-   * and a flip has to reach all of them or the ones already open keep the old
+   * The embeds are re-themed in the same callback because there is no "the
+   * giscus on the page": there is one per release that has been opened, and a
+   * flip has to reach all of them or the ones already open keep the old
    * palette.
    */
-  useEffect(() => {
-    const apply = () => {
-      const dark = isDark();
-      lottie.current?.setTheme(dark ? 'gate-dark' : 'gate-light');
+  const applyTheme = useCallback(() => {
+    const dark = isDark();
+    lottie.current?.setTheme(dark ? THEMES.dark : THEMES.light);
 
-      const frames = document.querySelectorAll<HTMLIFrameElement>(
-        '[data-release-comments] iframe',
-      );
-      for (const frame of frames) postGiscusTheme(frame, dark);
-    };
-
-    apply();
-
-    const observer = new MutationObserver(apply);
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['data-theme'],
-    });
-
-    return () => observer.disconnect();
+    const frames = document.querySelectorAll<HTMLIFrameElement>(
+      '[data-release-comments] iframe',
+    );
+    for (const frame of frames) postGiscusTheme(frame, dark);
   }, []);
+
+  useSyncedTheme(applyTheme);
 
   /**
    * The icon follows the release, not the reader's last press.
@@ -321,43 +193,40 @@ export function ChangelogSyncButton({ releases }: ChangelogSyncButtonProps) {
    * release nobody has asked about. An override rather than an event because
    * this is a jump, not a transition: there is no press, and nothing for the
    * machine to play through.
+   *
+   * The guard on `shownFor` is what makes this independent of effect ordering.
+   * `status` is read from render scope, so it is always this render's answer for
+   * this render's `activeTag`. Reading it from a ref instead would have made
+   * correctness depend on this effect being declared after the one that writes
+   * that ref — an invariant nothing but a comment could enforce, whose failure
+   * mode is the icon showing the previous release's state and no check noticing.
    */
+  const shownFor = useRef(activeTag);
   useEffect(() => {
-    const current = statusesRef.current[activeTag] ?? 'idle';
-    lottie.current?.stateMachineOverrideState(STATE_FOR_STATUS[current], true);
-  }, [activeTag]);
+    if (shownFor.current === activeTag) return;
 
-  const onLottieReady = useCallback((instance: DotLottie) => {
-    lottie.current = instance;
-    instance.setTheme(isDark() ? 'gate-dark' : 'gate-light');
+    shownFor.current = activeTag;
+    lottie.current?.stateMachineOverrideState(STATE_FOR_STATUS[status], true);
+  }, [activeTag, status]);
 
-    // The reader may have opened this release's thread before the player
-    // finished loading — a fresh machine starts at `s-idle`, which would be the
-    // icon contradicting what the page already shows.
-    const current = statusesRef.current[activeRef.current] ?? 'idle';
-    if (current !== 'idle') {
-      instance.stateMachineOverrideState(STATE_FOR_STATUS[current], true);
-    }
-  }, []);
+  const onLottieReady = useCallback(
+    (instance: DotLottie) => {
+      lottie.current = instance;
+      instance.setTheme(isDark() ? THEMES.dark : THEMES.light);
+
+      // The reader may have opened this release's thread before the player
+      // finished loading — a fresh machine starts at `s-idle`, which would be
+      // the icon contradicting what the page already shows.
+      if (status !== 'idle') {
+        instance.stateMachineOverrideState(STATE_FOR_STATUS[status], true);
+      }
+    },
+    [status],
+  );
 
   const onLottieTeardown = useCallback(() => {
     lottie.current = null;
   }, []);
-
-  const startMount = (tag: string) => {
-    const container = threadContainer(tag);
-    if (!container) return;
-
-    setStatuses((previous) => ({ ...previous, [tag]: 'loading' }));
-    fire('click');
-
-    pending.current.set(
-      tag,
-      setTimeout(() => settle(tag, 'failed'), MOUNT_TIMEOUT_MS),
-    );
-
-    mountThread(container, tag, () => settle(tag, 'failed'));
-  };
 
   /**
    * What a press means, which is not one thing.
@@ -377,7 +246,7 @@ export function ChangelogSyncButton({ releases }: ChangelogSyncButtonProps) {
       return;
     }
 
-    startMount(activeTag);
+    open(activeTag);
   };
 
   return (
@@ -395,10 +264,10 @@ export function ChangelogSyncButton({ releases }: ChangelogSyncButtonProps) {
         // Hover and focus drive the same two inputs, so the machine cannot tell
         // a pointer from a tab key — which is the point. The file's own pointer
         // interactions never run: the canvas takes no pointer events.
-        onPointerEnter={() => fire('pointerEnter')}
-        onPointerLeave={() => fire('pointerExit')}
-        onFocus={() => fire('pointerEnter')}
-        onBlur={() => fire('pointerExit')}
+        onPointerEnter={() => fire(EVENTS.pointerEnter)}
+        onPointerLeave={() => fire(EVENTS.pointerExit)}
+        onFocus={() => fire(EVENTS.pointerEnter)}
+        onBlur={() => fire(EVENTS.pointerExit)}
         aria-label={LABEL_FOR_STATUS[status](activeTag)}
         aria-busy={status === 'loading'}
         data-status={status}

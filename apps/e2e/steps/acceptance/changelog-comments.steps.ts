@@ -132,12 +132,33 @@ Then('only one conversation has been loaded', async ({ giscus }) => {
   expect(await giscus.mountedThreadCount()).toBe(1);
 });
 
-Then('the control offers to take me to it', async ({ changelog, scenarioState }) => {
-  const tag = recordedTag(scenarioState);
-
+/**
+ * The control's accessible name, waited for rather than read once.
+ *
+ * The name is what the control promises a press will DO, so every claim about
+ * which state it has reached is a claim about this string. Polled because the
+ * states these scenarios wait on arrive by a network round trip or by a timer,
+ * neither of which has landed when the step begins.
+ */
+async function expectOffer(
+  changelog: { syncButtonName(tag: string): Promise<string> },
+  tag: string,
+  offer: RegExp,
+) {
   await expect
     .poll(() => changelog.syncButtonName(tag), { timeout: THREAD_TIMEOUT })
-    .toMatch(/^Go to the conversation/);
+    .toMatch(offer);
+}
+
+/** What the control calls itself in each state a scenario asserts on. */
+const OFFERS = {
+  load: /^Load the conversation/,
+  goTo: /^Go to the conversation/,
+  retry: /^Retry loading the conversation/,
+};
+
+Then('the control offers to take me to it', async ({ changelog, scenarioState }) => {
+  await expectOffer(changelog, recordedTag(scenarioState), OFFERS.goTo);
 });
 
 Then(
@@ -149,18 +170,14 @@ Then(
     // load. A control that went back to "Loading" here would be animating work it
     // is not doing.
     await expect(changelog.syncButtonFor(tag)).toHaveAttribute('data-status', 'ready');
-    expect(await changelog.syncButtonName(tag)).toMatch(/^Go to the conversation/);
+    expect(await changelog.syncButtonName(tag)).toMatch(OFFERS.goTo);
   },
 );
 
 Then('the control offers to retry', async ({ changelog, scenarioState }) => {
-  const tag = recordedTag(scenarioState);
-
   // Retry, never the check mark. The failure has to end somewhere a reader can
   // act from, and it must never end anywhere that claims success.
-  await expect
-    .poll(() => changelog.syncButtonName(tag), { timeout: THREAD_TIMEOUT })
-    .toMatch(/^Retry loading the conversation/);
+  await expectOffer(changelog, recordedTag(scenarioState), OFFERS.retry);
 });
 
 Then(
@@ -183,14 +200,10 @@ Then('the control names that release', async ({ changelog, scenarioState }) => {
 Then(
   'the control offers to load its conversation',
   async ({ changelog, scenarioState }) => {
-    const tag = recordedTag(scenarioState);
-
     // Scrolling to a release nobody has asked about must not inherit another
     // release's state — a check mark that survived the scroll would be claiming a
     // thread is open for a version that has never been asked for.
-    await expect
-      .poll(() => changelog.syncButtonName(tag))
-      .toMatch(/^Load the conversation/);
+    await expectOffer(changelog, recordedTag(scenarioState), OFFERS.load);
   },
 );
 

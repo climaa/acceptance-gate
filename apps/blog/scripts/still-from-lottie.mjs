@@ -105,7 +105,7 @@ const JOINS = { 1: 'miter', 2: 'round', 3: 'bevel' };
  * data descriptor, and the central directory always has the real ones.
  *
  * @param {Buffer} archive @param {string} name @returns {string} */
-function unzipEntry(archive, name) {
+export function unzipEntry(archive, name) {
   const end = archive.lastIndexOf('PK\x05\x06', archive.length, 'latin1');
   if (end < 0) throw new Error(`${LOTTIE} is not a zip archive.`);
 
@@ -379,6 +379,21 @@ ${layers.join('\n')}
 
 /** The file this generator writes, so the check can read the same path. */
 export const STILL_PATH = OUT;
+
+/** The archive this generator reads, so the asset-contract check reads the same one. */
+export const LOTTIE_PATH = LOTTIE;
+
+/**
+ * One JSON entry out of the shipped `.lottie`.
+ *
+ * Exported alongside `build()` because `unzipEntry` is the only zip reader in
+ * this app, and the asset-contract check needs the state machine and the
+ * manifest out of the same archive the still is drawn from.
+ *
+ * @param {string} name @returns {any} */
+export function readArchiveJson(name) {
+  return JSON.parse(unzipEntry(readFileSync(LOTTIE), name));
+}
 
 function write() {
   writeFileSync(OUT, build());
