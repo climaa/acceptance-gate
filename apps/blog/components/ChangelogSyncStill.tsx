@@ -1,9 +1,12 @@
 /* GENERATED FILE — do not edit.
  *
  * Frame 0 of public/lottie/changelog-sync.lottie, which is what a reader
- * with `prefers-reduced-motion: reduce` sees in place of the animation. Colours
- * are the design tokens the animation's own theme slots map to, so this follows
- * `[data-theme]` without a second palette to keep in step.
+ * with `prefers-reduced-motion: reduce` sees in place of the animation.
+ *
+ * Colours follow `[data-theme]` with no second palette to keep in step: slots the
+ * design system has a role for become that token, and slots it does not — the
+ * artwork's own colours — become variables defined from the .lottie's own theme
+ * entries in the style block below. Either way the file is the source.
  *
  * Regenerate after every re-export of the .lottie:
  *   node apps/blog/scripts/still-from-lottie.mjs
@@ -13,6 +16,7 @@
 export function ChangelogSyncStill() {
   return (
     <svg
+      className="changelog-sync-still"
       viewBox="0 0 512 512"
       width="100%"
       height="100%"

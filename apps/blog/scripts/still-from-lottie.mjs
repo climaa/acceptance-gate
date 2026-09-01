@@ -56,6 +56,24 @@ const TOKENS = {
   'gate-danger': '--color-danger-fg',
 };
 
+/**
+ * A slot the design system has no role for gets a variable of its own.
+ *
+ * The pencil is the case this exists for: a realistic yellow body and a pink
+ * eraser are not `--color-accent` or anything else in `tokens.css`, and forcing
+ * them into a role that does not fit would be worse than admitting they are the
+ * artwork's own colours. What they are NOT is hardcoded — the file defines them
+ * per theme, so they still follow `[data-theme]`, and the values below are read
+ * out of the file rather than written here.
+ */
+const CUSTOM_PREFIX = '--lottie-';
+
+/** The class the generated style block hangs its variables on. */
+const STILL_CLASS = 'changelog-sync-still';
+
+/** The two theme entries, by the `[data-theme]` value each one answers to. */
+const THEME_FILES = { light: 't/gate-light.json', dark: 't/gate-dark.json' };
+
 /** The layer that exists only to catch pointer events — never drawn. */
 const HIT_AREA = 'hit-area';
 
@@ -184,6 +202,26 @@ function scalarAt(property, fallback) {
   return Array.isArray(value) ? value[0] : value;
 }
 
+/** Slots with no design-system role, collected while drawing.
+ *  @type {Set<string>} */
+const customSlots = new Set();
+
+/** Layers painting a colour bound to nothing, collected while drawing.
+ *  @type {string[]} */
+const unslotted = [];
+
+/** An RGB triple in 0..1, as the six hex digits a person recognises.
+ *  @param {number[]} rgb @returns {string} */
+function hex(rgb) {
+  return rgb
+    .map((c) =>
+      Math.round(c * 255)
+        .toString(16)
+        .padStart(2, '0'),
+    )
+    .join('');
+}
+
 /** `1.5` not `1.5000000000000002` — the SVG is read by people. */
 /** @param {number} n @returns {number} */
 function round(n) {
@@ -224,23 +262,21 @@ function at(points, index) {
  * @returns {string} */
 function token(sid, layer, rgb) {
   if (!sid) {
-    const hex = rgb
-      .map((c) =>
-        Math.round(c * 255)
-          .toString(16)
-          .padStart(2, '0'),
-      )
-      .join('');
-    throw new Error(
-      `Layer "${layer}" paints #${hex} with no theme slot. ` +
-        'A slotless colour cannot follow [data-theme] in the animation either — ' +
-        'bind it to a slot in Creator and re-export.',
-    );
+    unslotted.push(`${layer} (#${hex(rgb)})`);
+    // Recorded rather than thrown one at a time: a re-export usually leaves
+    // several shapes unbound at once, and reporting the first sends the reader
+    // back to Creator once per shape. `build()` raises them together.
+    return 'none';
   }
 
   const name = TOKENS[sid];
-  if (!name) throw new Error(`Layer "${layer}" uses an unmapped theme slot: ${sid}`);
-  return `var(${name})`;
+  if (name) return `var(${name})`;
+
+  // A slot the design system has no role for. It still themes — the file
+  // carries a value per theme — so it becomes a variable of its own, defined by
+  // the generated style block from those values.
+  customSlots.add(sid);
+  return `var(${CUSTOM_PREFIX}${sid})`;
 }
 
 /**
@@ -431,16 +467,99 @@ function drawLayers(layers, animation) {
  * in a comment into something the suite enforces.
  *
  * @returns {string} */
+/**
+ * One theme's slot values, by slot id.
+ *
+ * @param {string} entry @returns {Record<string, number[]>} */
+function themeValues(entry) {
+  const { rules } = JSON.parse(unzipEntry(readFileSync(LOTTIE), entry));
+  return Object.fromEntries(
+    rules.map((/** @type {{id: string, value: number[]}} */ rule) => [
+      rule.id,
+      rule.value,
+    ]),
+  );
+}
+
+/**
+ * The style block defining every custom slot's variable, per theme.
+ *
+ * Read out of the `.lottie`'s own theme entries, so the still and the animation
+ * cannot disagree about what colour the pencil is — there is one source and it
+ * is the file. Light is the bare selector and dark is the attribute, which is
+ * this site's rule everywhere: `[data-theme]` decides, and light is the
+ * attribute's absence.
+ *
+ * Empty string when the artwork uses only design-system slots, so a file that
+ * needs none of this emits none of it.
+ *
+ * @returns {string} */
+function customSlotStyles() {
+  if (customSlots.size === 0) return '';
+
+  const themes = {
+    light: themeValues(THEME_FILES.light),
+    dark: themeValues(THEME_FILES.dark),
+  };
+
+  const declarations = (/** @type {Record<string, number[]>} */ values) =>
+    [...customSlots]
+      .sort()
+      .map((slot) => {
+        const value = values[slot];
+        if (!value) {
+          throw new Error(
+            `Slot "${slot}" is painted but one of the themes does not define it, ` +
+              'so it would not follow [data-theme]. Give it a value in both themes.',
+          );
+        }
+        return `          ${CUSTOM_PREFIX}${slot}: #${hex(value)};`;
+      })
+      .join('\n');
+
+  return `
+      {/* The artwork's own colours — slots the design system has no role for.
+          Read out of the .lottie's theme entries, never written here, so the
+          still and the animation cannot disagree about them. */}
+      <style>{\`
+        .${STILL_CLASS} {
+${declarations(themes.light)}
+        }
+        :root[data-theme='dark'] .${STILL_CLASS} {
+${declarations(themes.dark)}
+        }
+      \`}</style>
+`;
+}
+
 export function build() {
+  customSlots.clear();
+  unslotted.length = 0;
+
   const animation = readAnimation();
   const layers = drawLayers(animation.layers, animation);
+
+  // Raised together, after every layer has been visited, so one trip to Creator
+  // fixes all of them.
+  if (unslotted.length > 0) {
+    throw new Error(
+      `These layers paint a colour bound to no theme slot, so they cannot follow ` +
+        `[data-theme] in the animation either:\n  ${unslotted.join('\n  ')}\n` +
+        'Bind each to a slot in Creator and re-export.',
+    );
+  }
+
+  const styles = customSlotStyles();
 
   return `/* GENERATED FILE — do not edit.
  *
  * Frame ${FRAME} of public/lottie/changelog-sync.lottie, which is what a reader
- * with \`prefers-reduced-motion: reduce\` sees in place of the animation. Colours
- * are the design tokens the animation's own theme slots map to, so this follows
- * \`[data-theme]\` without a second palette to keep in step.
+ * with \`prefers-reduced-motion: reduce\` sees in place of the animation.
+ *
+ * Colours follow \`[data-theme]\` with no second palette to keep in step: slots the
+ * design system has a role for become that token, and slots it does not — the
+ * artwork's own colours — become variables defined from the .lottie's own theme
+ * entries in the style block below. Either way the file is the source.
  *
  * Regenerate after every re-export of the .lottie:
  *   node apps/blog/scripts/still-from-lottie.mjs
@@ -449,7 +568,9 @@ export function build() {
 /** The resting frame of the changelog sync icon, drawn rather than played. */
 export function ChangelogSyncStill() {
   return (
+    ${styles ? '<>' : ''}${styles}
     <svg
+      className="${STILL_CLASS}"
       viewBox="0 0 ${animation.w} ${animation.h}"
       width="100%"
       height="100%"
@@ -459,6 +580,7 @@ export function ChangelogSyncStill() {
     >
 ${layers.join('\n')}
     </svg>
+    ${styles ? '</>' : ''}
   );
 }
 `;
