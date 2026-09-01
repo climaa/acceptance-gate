@@ -4,10 +4,10 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ThreadStatus } from '@/lib/changelog-sync-asset';
 import {
   discussionTerm,
+  giscusOutcome,
   giscusScriptAttributes,
   GISCUS_ORIGIN,
   GISCUS_SCRIPT_URL,
-  isGiscusMetadataMessage,
 } from '@/lib/giscus';
 
 /**
@@ -130,23 +130,30 @@ export function useGiscusThreads(events: ThreadEvents): GiscusThreads {
   }, []);
 
   /**
-   * The metadata message, filtered three ways.
+   * What giscus says about a mount, filtered three ways.
    *
-   * Origin, then shape, then — the one that is not obvious — that it came from
+   * Origin, then meaning, then — the one that is not obvious — that it came from
    * THIS container's own frame. Every embed already open keeps posting on this
    * channel for as long as it is on the page, so origin and shape alone would
    * let an older thread's traffic answer for a mount still in flight: a check
    * mark over a conversation that never rendered.
+   *
+   * Both outcomes are acted on. A failure giscus reports is settled here rather
+   * than left to the timeout, because the timeout exists for SILENCE — when the
+   * service says it will not be rendering a thread, waiting another fifteen
+   * seconds to agree with it is the control being slower than the truth.
    */
   useEffect(() => {
     const onMessage = (event: MessageEvent) => {
       if (event.origin !== GISCUS_ORIGIN) return;
-      if (!isGiscusMetadataMessage(event.data)) return;
+
+      const outcome = giscusOutcome(event.data);
+      if (!outcome) return;
 
       for (const tag of pending.current.keys()) {
         const frame = threadContainer(tag)?.querySelector('iframe');
         if (frame && event.source === frame.contentWindow) {
-          settle(tag, 'ready');
+          settle(tag, outcome === 'mounted' ? 'ready' : 'failed');
           return;
         }
       }
@@ -167,8 +174,29 @@ export function useGiscusThreads(events: ThreadEvents): GiscusThreads {
 
   const open = useCallback(
     (tag: string) => {
+      // Already in flight, and this guard is not belt-and-braces. The caller
+      // checks the rendered status, but that status is React state: two presses
+      // inside one task both read `idle` and both arrive here. Measured before
+      // this line existed — three clicks in a single task mounted three scripts
+      // and three iframes for one release, which is the whole economy of this
+      // feature inverted by a reader double-clicking a control that looked slow.
+      // It also leaked timers: the `set` below would overwrite the previous
+      // entry without clearing it, leaving an orphan to fire `failed` at a mount
+      // that was working.
+      if (pending.current.has(tag)) return;
+
       const container = threadContainer(tag);
       if (!container) return;
+
+      // Whatever an earlier attempt left goes first: a dead script from a load
+      // that errored, or — the case that shows — an embed that mounted and never
+      // announced itself, timed out, and is still sitting there. Without this a
+      // retry stacks a second conversation under the first and the reader reads
+      // the same thread twice.
+      //
+      // Safe to clear: the page renders this container with no children of its
+      // own, so React has no child list here to reconcile against.
+      container.replaceChildren();
 
       setStatuses((previous) => ({ ...previous, [tag]: 'loading' }));
       latest.current.onStarted(tag);

@@ -50,13 +50,12 @@ const CLIENT_JS = `
 `;
 
 /**
- * Stands in for the embed.
+ * Stands in for an embed whose release already has comments.
  *
- * Posts the metadata message — the signal that means a discussion rendered, the
- * one `data-emit-metadata="1"` asks for and the only thing the control accepts
- * as success. `'*'` as the target because the blog's origin differs between a
- * local run and CI, and the check that matters is the one the PARENT makes
- * about this frame, not one this frame makes about the parent.
+ * Posts the metadata message that `data-emit-metadata="1"` asks for. `'*'` as
+ * the target because the blog's origin differs between a local run and CI, and
+ * the check that matters is the one the PARENT makes about this frame, not one
+ * this frame makes about the parent.
  */
 const THREAD_HTML = `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><title>Comments</title></head>
@@ -67,17 +66,54 @@ const THREAD_HTML = `<!doctype html>
 </script>
 </body></html>`;
 
+/**
+ * Stands in for an embed whose release has NO comments yet — which is every
+ * release until someone writes the first one, and so the ordinary case rather
+ * than the edge one.
+ *
+ * giscus renders the whole embed here — reactions, a Write box, a sign-in link —
+ * and reports `Discussion not found`, because with `mapping=specific` it has no
+ * discussion to point at until the first comment creates one. Verified against
+ * the real service. The distinction matters enough to fake separately: reading
+ * that error as a failure put a red cross over a working conversation on every
+ * release, and only a scenario driving THIS shape can keep it from coming back.
+ */
+const EMPTY_THREAD_HTML = `<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Comments</title></head>
+<body>
+<p>0 comments</p><textarea aria-label="Write"></textarea>
+<script>
+  parent.postMessage({ giscus: { error: 'Discussion not found' } }, '*');
+</script>
+</body></html>`;
+
 export class Giscus {
   constructor(private readonly page: Page) {}
 
-  /** The service, up: a press mounts a thread and the thread announces itself. */
+  /** The service, up, on a release that already has comments. */
   async serveWorkingEmbed() {
-    await this.page.route(SCRIPT_URL, (route) =>
-      route.fulfill({ contentType: 'application/javascript', body: CLIENT_JS }),
-    );
-
+    await this.serveLoader();
     await this.page.route(`${ORIGIN}${THREAD_PATH}*`, (route) =>
       route.fulfill({ contentType: 'text/html', body: THREAD_HTML }),
+    );
+  }
+
+  /**
+   * The service, up, on a release nobody has commented on yet.
+   *
+   * The embed is there and usable; it just has nothing in it. The control must
+   * read that as the conversation having arrived, because it has.
+   */
+  async serveEmptyThread() {
+    await this.serveLoader();
+    await this.page.route(`${ORIGIN}${THREAD_PATH}*`, (route) =>
+      route.fulfill({ contentType: 'text/html', body: EMPTY_THREAD_HTML }),
+    );
+  }
+
+  private async serveLoader() {
+    await this.page.route(SCRIPT_URL, (route) =>
+      route.fulfill({ contentType: 'application/javascript', body: CLIENT_JS }),
     );
   }
 

@@ -68,6 +68,23 @@ export class ChangelogPage {
     });
   }
 
+  /**
+   * Two presses inside ONE task, before the app can re-render between them.
+   *
+   * Two `click()` calls would not do it: Playwright drives each as its own
+   * step, React flushes in between, and the second press reads the state the
+   * first produced — which is the case the scenario beside this one already
+   * covers. The interaction being reproduced here is a reader double-clicking a
+   * control that looks unresponsive, where both presses land before anything has
+   * had a chance to update.
+   */
+  async pressTwiceInOneTask(tag: string) {
+    await this.syncButtonFor(tag).evaluate((button) => {
+      (button as HTMLButtonElement).click();
+      (button as HTMLButtonElement).click();
+    });
+  }
+
   /** What the control currently calls itself — the whole accessible name. */
   async syncButtonName(tag: string): Promise<string> {
     const name = await this.syncButtonFor(tag).getAttribute('aria-label');

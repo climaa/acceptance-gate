@@ -22,7 +22,16 @@ const { Given, When, Then } = createBdd(test);
  * animation is how it is narrated.
  */
 
-/** How long a mounted embed is given to announce itself. Well inside the app's own 15s. */
+/**
+ * How long a mounted embed is given to announce itself.
+ *
+ * MUST stay below `MOUNT_TIMEOUT_MS` in `apps/blog/hooks/useGiscusThreads.ts`
+ * (15s). Nothing enforces that — the two workspaces share no dependency — so it
+ * is written here as a rule a grep can find. Raise this above the app's timeout
+ * and the failure scenario stops proving anything: the app would settle to
+ * `failed` on its own before this ever gave up, and the step would pass whether
+ * or not the control did the right thing.
+ */
 const THREAD_TIMEOUT = 10_000;
 
 Given('the changelog lists its releases', async ({ changelog, giscus }) => {
@@ -32,6 +41,15 @@ Given('the changelog lists its releases', async ({ changelog, giscus }) => {
   await changelog.open();
 
   await expect(changelog.releases.first()).toBeVisible();
+});
+
+/**
+ * The ordinary case, not the edge one: with `mapping=specific` giscus has no
+ * discussion for a release until somebody posts the first comment, so this is
+ * how every release starts and how most of them stay.
+ */
+Given('no one has commented on any release yet', async ({ giscus }) => {
+  await giscus.serveEmptyThread();
 });
 
 Given('the comment service cannot be reached', async ({ page, giscus }) => {
@@ -78,6 +96,24 @@ Given(
     // flight is a different scenario from pressing again after it landed, and
     // without this the two would be decided by a race.
     await expect(changelog.syncButtonFor(tag)).toHaveAttribute('data-status', 'ready', {
+      timeout: THREAD_TIMEOUT,
+    });
+  },
+);
+
+When(
+  'I ask for the conversation about the newest release twice in quick succession',
+  async ({ changelog, scenarioState }) => {
+    const tag = await newestTag(changelog);
+    scenarioState.releaseTag = tag;
+
+    await changelog.pressTwiceInOneTask(tag);
+
+    // `.first()` deliberately. The claim of this scenario is the COUNT, made by
+    // the step below; a strict locator here would fail on "two elements matched"
+    // instead, which reports the defect as a broken test rather than as the
+    // duplicate conversation it is.
+    await expect(changelog.threadFrameFor(tag).first()).toBeAttached({
       timeout: THREAD_TIMEOUT,
     });
   },

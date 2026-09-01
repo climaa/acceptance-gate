@@ -17,6 +17,16 @@
  */
 export const GISCUS_ORIGIN = 'https://giscus.app';
 
+/**
+ * The loader, injected on a press.
+ *
+ * No `integrity` attribute, and that is a decision rather than an oversight:
+ * giscus publishes no subresource-integrity hash and rolls `client.js` in place,
+ * so a pinned hash would break the feature on their next deploy rather than
+ * secure it. What that leaves is a third-party script with full access to this
+ * page, which is the standing cost of the embed — bounded here by loading it
+ * only on a press, and only on `/changelog`.
+ */
 export const GISCUS_SCRIPT_URL = `${GISCUS_ORIGIN}/client.js`;
 
 /** The repository the discussions live in — the same one this blog is built from. */
@@ -124,33 +134,69 @@ export function giscusScriptAttributes(
   };
 }
 
-/** The shape of the metadata message, once it has been established to be one. */
-export interface GiscusMetadataMessage {
-  giscus: { discussion: unknown };
-}
+/**
+ * The error giscus reports for a release nobody has commented on yet.
+ *
+ * It is NOT a failure, and getting that wrong is a live bug rather than a
+ * hypothetical: with `mapping=specific`, giscus only has a discussion once
+ * someone posts the first comment. Until then the embed renders completely — 0
+ * reactions, 0 comments, a Write/Preview box and a sign-in link — and reports
+ * this. Measured against the real service on this repository: a usable textarea
+ * and no `discussion` metadata, ever.
+ *
+ * So waiting for `discussion` means waiting for something that never comes on
+ * an empty release, and every release is empty until its first comment. The
+ * control would have spun for fifteen seconds and then shown a red cross over a
+ * conversation sitting right there, working.
+ *
+ * Matched on the string because it is the only thing that crosses the frame
+ * boundary — `data-lang` is pinned to `en` so the wording is at least stable
+ * per locale, and `__tests__/giscus.test.ts` records the exact literal.
+ */
+export const EMPTY_THREAD_ERROR = 'Discussion not found';
+
+/** What one message from a giscus frame says about the mount it belongs to. */
+export type GiscusOutcome = 'mounted' | 'failed';
 
 /**
- * Whether a `message` payload is giscus announcing that a discussion rendered.
+ * What a `message` payload from giscus means, or null when it means nothing.
  *
- * A mounted embed posts several shapes on this channel — resize heights most
- * often — and only the metadata one means the thread is actually there. This
- * checks for the discussion key rather than for the absence of the others, so a
- * shape giscus adds later cannot be mistaken for this one.
+ * A mounted embed posts several shapes and most of them answer nothing — resize
+ * heights, chiefly — so the common case is null and the caller keeps waiting.
+ *
+ * Two shapes end a mount. A `discussion` key is the thread arriving with its
+ * contents. An `error` is giscus telling us it will not be rendering one, EXCEPT
+ * for the empty-thread case above, which is a rendered embed with nothing in it
+ * yet and therefore the same success as a full one: the conversation is there,
+ * and that is what the control claims.
+ *
+ * Reading the error at all is worth its own note. Before this, an embed that
+ * failed outright — the app not installed on the repository, say — posted its
+ * error, was ignored as "not the metadata shape", and left the reader watching a
+ * spinner until the timeout fifteen seconds later. The timeout is for silence.
+ * When giscus tells us it failed, believing it is both faster and more honest.
  *
  * Being from the right origin is checked separately and is not enough on its
  * own: every embed already on the page keeps posting from that origin, so origin
- * plus shape would let an OLDER thread's resize traffic answer for the mount
- * currently being waited on. The third filter — the message's `source` against
- * the pending container's own frame — is in the component, because only the
- * component knows which container is pending.
+ * plus shape would let an OLDER thread's traffic answer for the mount currently
+ * being waited on. The third filter — the message's `source` against the pending
+ * container's own frame — is in the hook, because only it knows which container
+ * is pending.
  */
-export function isGiscusMetadataMessage(data: unknown): data is GiscusMetadataMessage {
-  if (typeof data !== 'object' || data === null) return false;
+export function giscusOutcome(data: unknown): GiscusOutcome | null {
+  if (typeof data !== 'object' || data === null) return null;
 
   const { giscus } = data as { giscus?: unknown };
-  if (typeof giscus !== 'object' || giscus === null) return false;
+  if (typeof giscus !== 'object' || giscus === null) return null;
 
-  return 'discussion' in giscus;
+  if ('discussion' in giscus) return 'mounted';
+
+  if ('error' in giscus) {
+    const { error } = giscus as { error?: unknown };
+    return error === EMPTY_THREAD_ERROR ? 'mounted' : 'failed';
+  }
+
+  return null;
 }
 
 /**

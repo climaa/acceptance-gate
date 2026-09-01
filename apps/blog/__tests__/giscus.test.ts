@@ -8,7 +8,8 @@ import {
   GISCUS_CONFIGURED,
   GISCUS_ORIGIN,
   GISCUS_REPO_ID,
-  isGiscusMetadataMessage,
+  giscusOutcome,
+  EMPTY_THREAD_ERROR,
 } from '../lib/giscus';
 
 /**
@@ -43,27 +44,54 @@ describe('discussionTerm', () => {
   });
 });
 
-describe('isGiscusMetadataMessage', () => {
-  it('accepts the message that means a discussion rendered', () => {
-    expect(isGiscusMetadataMessage({ giscus: { discussion: { id: 'D_1' } } })).toBe(true);
+describe('giscusOutcome', () => {
+  it('reads a discussion as the thread having arrived', () => {
+    expect(giscusOutcome({ giscus: { discussion: { id: 'D_1' } } })).toBe('mounted');
   });
 
   /**
-   * The refusal that carries the weight. A mounted embed posts its resize
-   * height continuously for as long as it is on the page, so a guard that
-   * accepted any giscus-shaped message would let an already-open thread's
-   * traffic answer for a mount still in flight — the check mark over a
-   * conversation that never loaded.
+   * The case that was a live bug, not a hypothesis.
+   *
+   * With `mapping=specific` giscus has no discussion until somebody posts the
+   * first comment, so on an empty release it renders the whole embed — 0
+   * comments, a Write box, a sign-in link — and reports this error. Measured
+   * against the real service: a usable textarea and no `discussion` metadata,
+   * ever. Treating it as a failure meant the control spun for fifteen seconds
+   * and then put a red cross over a working conversation, on every release,
+   * because every release starts empty.
    */
-  it('refuses a giscus message that is not the metadata one', () => {
-    expect(isGiscusMetadataMessage({ giscus: { resizeHeight: 420 } })).toBe(false);
+  it('reads an empty thread as mounted, because the conversation IS there', () => {
+    expect(giscusOutcome({ giscus: { error: EMPTY_THREAD_ERROR } })).toBe('mounted');
   });
 
-  it('refuses anything that is not a giscus message at all', () => {
+  it('pins the exact string, because it is matched literally', () => {
+    // giscus sends this as prose. `data-lang` is pinned to `en` so the wording
+    // is stable per locale, but a reword upstream silently reinstates the bug
+    // above — this is the line that has to be edited when that happens.
+    expect(EMPTY_THREAD_ERROR).toBe('Discussion not found');
+  });
+
+  it('reads any other error as a failure', () => {
+    expect(
+      giscusOutcome({ giscus: { error: 'giscus is not installed on this repository' } }),
+    ).toBe('failed');
+  });
+
+  /**
+   * A mounted embed posts its resize height continuously for as long as it is on
+   * the page. Answering with an outcome would let an already-open thread's
+   * traffic settle a mount still in flight — the check mark over a conversation
+   * that never rendered.
+   */
+  it('says nothing about a message that is neither', () => {
+    expect(giscusOutcome({ giscus: { resizeHeight: 420 } })).toBeNull();
+  });
+
+  it('says nothing about anything that is not a giscus message', () => {
     // `null` explicitly: `typeof null === 'object'`, so a guard written as a
     // bare typeof check passes it and then throws on the property read.
     for (const data of [null, undefined, 'giscus', 42, {}, { giscus: null }]) {
-      expect(isGiscusMetadataMessage(data)).toBe(false);
+      expect(giscusOutcome(data)).toBeNull();
     }
   });
 });

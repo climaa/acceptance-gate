@@ -56,6 +56,23 @@ const LANES = ['acceptance', 'local'];
  * requirement that cannot be met by a unit test, because everything below the
  * browser stubs the fetch the wand makes.
  *
+ * It was 51 until the real giscus service was driven for the first time, which
+ * showed the success signal was wrong. With `mapping=specific` there is no
+ * discussion until someone posts the first comment, so an empty release renders
+ * the whole embed — comment box and all — and reports `Discussion not found`,
+ * never any metadata. The control read that as failure, so it would have spun
+ * for fifteen seconds and shown a red cross over a working conversation, on
+ * every release, because every release starts empty. The scenario added with it
+ * drives that exact shape.
+ *
+ * It was 50 until a quality pass measured what a double-press actually did:
+ * three clicks inside one task mounted three scripts and three iframes for one
+ * release. The rendered status is React state, so two presses in the same task
+ * both read "nothing loaded yet" and both started a mount. The scenario added
+ * with it presses twice in ONE task on purpose — two ordinary clicks let React
+ * settle in between and prove nothing, which is what the neighbouring
+ * "asking again" scenario already covers.
+ *
  * It was 44 until `/changelog` gained the control that opens a release's
  * conversation. Six scenarios came with it: five for the control, and one more
  * putting the page in front of axe. All six are requirements no unit test can
@@ -85,7 +102,7 @@ const LANES = ['acceptance', 'local'];
  * scenario is a two-line diff; LOWERING it is a product decision and belongs in
  * its own hand-authored PR with the reason written down.
  */
-const EXPECTED_SCENARIOS = 50;
+const EXPECTED_SCENARIOS = 52;
 
 /** The two project selectors. Carrying both excludes a scenario from both. */
 const PROJECT_TAGS = ['@desktop', '@mobile'];

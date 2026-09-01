@@ -146,9 +146,18 @@ export function LottieBlock({
       // `stateMachineId` prop: that prop's effect is guarded on `isLoaded` and
       // runs on mount, which for a file still being fetched is a no-op that
       // never retries. This runs on the event that means the file is in.
+      //
+      // Both answers are READ, and that is the difference between `drawn`
+      // meaning "the file arrived" and meaning "the animation is running". They
+      // are the same thing almost always, and when they are not — a machine that
+      // failed to start — hiding the still would swap a correct, themed drawing
+      // for a canvas frozen on whatever frame it happened to hold. The still is
+      // the better answer in that case, so it stays and the caller is never
+      // handed an instance it cannot drive.
       if (stateMachineId) {
-        dotLottie.stateMachineLoad(stateMachineId);
-        dotLottie.stateMachineStart();
+        const running =
+          dotLottie.stateMachineLoad(stateMachineId) && dotLottie.stateMachineStart();
+        if (!running) return;
       }
 
       setDrawn(true);
