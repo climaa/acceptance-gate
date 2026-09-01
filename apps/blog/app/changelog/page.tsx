@@ -119,46 +119,54 @@ function Unavailable() {
 }
 
 /**
- * The releases, and the control that opens their conversations beside them.
+ * The page: its title, the releases, and the control that opens their
+ * conversations beside them.
+ *
+ * All three are children of one grid rather than the title sitting above it,
+ * and that is what lets the control start level with the heading instead of
+ * below the first release's date. The alternative — pulling the aside up with a
+ * negative margin — sets the icon's position from the rendered height of a
+ * display heading, which is a number no stylesheet should be asked to know.
+ *
+ * Each child is placed by row explicitly, because the two layouts disagree
+ * about where the control goes and only one of them matches source order. Beside
+ * the text it spans both rows so it can start at the top of the first; stacked,
+ * it sits between the title and the releases — a control that is about the
+ * release you are reading belongs above them, and the title still comes first.
  *
  * The control is rendered only when giscus has both of its ids — without them
  * an embed builds an iframe that fails inside itself, and the icon would be
  * animating a load that cannot finish. A page with no comment control is a
- * page; a page with a control that always ends red is a defect.
- *
- * It is also skipped when the releases could not be fetched. There is nothing
- * to comment on then, and a control offering to load the conversation for a
- * release the page is not showing would be asking about something the reader
- * cannot see.
+ * page; a page with a control that always ends red is a defect. It is skipped
+ * for the fail-open state too: there is nothing to comment on, and offering to
+ * load the conversation for a release the page is not showing would be asking
+ * about something the reader cannot see.
  */
-function ReleaseList({ releases }: { releases: Release[] }) {
-  const showComments = GISCUS_CONFIGURED && releases.length > 0;
+export default async function ChangelogPage() {
+  const releases = await getReleases();
+  const showComments = GISCUS_CONFIGURED && releases !== null && releases.length > 0;
 
   return (
     <div className="changelog-layout">
-      <Stack gap={10}>
-        {releases.map((release) => (
-          <ReleaseEntry key={release.tag} release={release} />
-        ))}
-      </Stack>
+      <h1 className="page-title changelog-layout__title">{CHANGELOG_TITLE}</h1>
 
       {showComments && (
         <aside className="changelog-layout__aside">
           <ChangelogSyncButton releases={releases.map(({ tag }) => ({ tag }))} />
         </aside>
       )}
+
+      <div className="changelog-layout__main">
+        {releases === null ? (
+          <Unavailable />
+        ) : (
+          <Stack gap={10}>
+            {releases.map((release) => (
+              <ReleaseEntry key={release.tag} release={release} />
+            ))}
+          </Stack>
+        )}
+      </div>
     </div>
-  );
-}
-
-export default async function ChangelogPage() {
-  const releases = await getReleases();
-
-  return (
-    <Stack gap={8}>
-      <h1 className="page-title">{CHANGELOG_TITLE}</h1>
-
-      {releases === null ? <Unavailable /> : <ReleaseList releases={releases} />}
-    </Stack>
   );
 }

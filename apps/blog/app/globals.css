@@ -84,45 +84,69 @@ h3:hover > .heading-anchor,
   max-width: none;
 }
 
-/* /changelog: the releases, and the comment control beside them.
+/* /changelog: the title, the releases, and the comment control beside them.
 
-   `align-items: start` is what makes the sticky column sticky at all. A grid
-   item stretches to its row by default, so the aside would be exactly as tall
-   as the release list and `position: sticky` would have nothing left to travel
-   against — it would compute, apply, and never move a pixel. */
+   Three children of one grid, each placed by row, rather than a title stacked
+   above a two-column block. That is what lets the control start level with the
+   heading — spanning both rows and pinned to the top of the first by
+   `align-items: start`.
+
+   `align-items: start` is also what makes the column sticky at all: a grid item
+   stretches to its row by default, so the aside would be exactly as tall as
+   what it sits beside and `position: sticky` would compute, apply, and never
+   move a pixel. */
 .changelog-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: start;
-  gap: var(--space-8);
+  row-gap: var(--space-8);
+  /* The separation between the columns is the aside's own margin, not a
+     column-gap. A gap is charged between the two tracks whether or not the
+     second holds anything, so on the fail-open page — which renders no aside —
+     it would inset the note by a column's worth of nothing. */
+  column-gap: 0;
+}
+
+.changelog-layout__title {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.changelog-layout__main {
+  grid-column: 1;
+  grid-row: 2;
 }
 
 .changelog-layout__aside {
+  grid-column: 2;
+  /* Both rows, so it can begin at the top of the first — beside the heading
+     rather than below it. */
+  grid-row: 1 / span 2;
+  margin-inline-start: var(--space-8);
   position: sticky;
   /* Clear of the header rather than flush to the viewport edge. */
   top: var(--space-8);
 }
 
-/* Below this the aside goes above the releases and stops following. A sticky
-   element on a phone spends the whole scroll parked on top of the text it is
-   meant to be about, and the column it was sharing space with no longer exists
-   for it to sit beside. */
+/* Below this the control stops following and takes a row of its own, between
+   the title and the releases. A sticky element on a phone spends the whole
+   scroll parked on top of the text it is meant to be about, and the column it
+   was sharing space with no longer exists for it to sit beside. The title
+   stays first: the control is about the releases, so it belongs with them. */
 @media (max-width: 60rem) {
   .changelog-layout {
     grid-template-columns: minmax(0, 1fr);
   }
 
   .changelog-layout__aside {
+    grid-column: 1;
+    grid-row: 2;
+    margin-inline: auto;
     position: static;
-    grid-row: 1;
   }
 
-  /* Centred here, left-aligned beside the text on desktop. Stacked above the
-     releases the control is a header rather than a margin note, and a 256px
-     icon hugging the left edge of a full-width row reads as something that
-     failed to lay out. */
-  .changelog-sync {
-    margin-inline: auto;
+  .changelog-layout__main {
+    grid-row: 3;
   }
 }
 
