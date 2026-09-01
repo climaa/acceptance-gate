@@ -208,11 +208,15 @@ export function LottieBlock({
 
                So every input arrives through the button instead, which is also
                what makes the keyboard path and the mouse path one path rather
-               than two that have to be kept in step. Re-exporting the asset
-               without its `Click` interaction is still worth doing — the file
-               and the component should say the same thing — but it is a
-               tidiness item, not a correctness one, and this component stays
-               correct against either version of the file. */
+               than two that have to be kept in step.
+
+               The asset has since been re-exported without its `Click`
+               interaction, and this stays. It is not a workaround for that one
+               interaction: it is what makes this component the ONLY thing
+               driving the machine, so a future export that declares a pointer
+               interaction again cannot quietly take the wheel. `PointerEnter`
+               and `PointerExit` are still declared today and are fired from the
+               button, which is why the keyboard gets them too. */
             style={{ pointerEvents: 'none' }}
             aria-hidden="true"
           />

@@ -104,21 +104,4 @@ describe('the state machine', () => {
   it('accepts exactly the five inputs the control fires', () => {
     expect(sorted(declaredInputs)).toEqual(sorted(Object.values(EVENTS)));
   });
-
-  /**
-   * Not a requirement — a record of a known gap.
-   *
-   * The file still declares a `Click` pointer interaction, which is why
-   * `LottieBlock` makes the canvas inert: the player wires a canvas listener for
-   * every declared interaction, so a press would otherwise drive the machine
-   * behind the component's back. When the asset is re-exported without it, this
-   * expectation fails and is deleted — which is the point. It fails LOUDLY at
-   * the moment the workaround stops being necessary, rather than leaving the
-   * `pointer-events: none` in place forever with nothing left to explain it.
-   */
-  it('still declares the Click interaction the inert canvas exists to neutralise', () => {
-    const interactions = machine.interactions.map((i: { type: string }) => i.type);
-
-    expect(interactions).toContain('Click');
-  });
 });
