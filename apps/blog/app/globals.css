@@ -215,11 +215,20 @@ h3:hover > .heading-anchor,
   transform-origin: center;
 }
 
+/* The invitation, and the failure that replaces it. One is prose and the other
+   is a live region — see the components — but they occupy the same place under
+   the icon and read as one line of supporting text, so they are styled together
+   rather than drifting apart. */
+.changelog-sync__invite,
 .changelog-sync__note {
   margin: 0;
   font-size: var(--text-sm);
+  line-height: var(--leading-normal);
   color: var(--color-text-muted);
   text-align: center;
+  /* Wraps to the icon's width — set from the same number that sizes the box, so
+     the column cannot grow wider than the thing it is about. */
+  max-width: var(--changelog-sync-size);
 }
 
 /* Deliberately NOT `.changelog-sync__note:empty { display: none }`. The note is

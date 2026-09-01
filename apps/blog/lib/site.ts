@@ -154,6 +154,27 @@ export function commentsRetryLabel(tag: string): string {
 }
 
 /**
+ * The invitation under the icon.
+ *
+ * The control is an unlabelled drawing. Its accessible name says what a press
+ * does, so assistive tech has always been told; a sighted reader had a document
+ * and a pencil and no reason to think either was a button. This is the visible
+ * half of that name.
+ *
+ * It says what is on offer rather than what to do — "react or comment" is the
+ * thing a reader might want, where "open the conversation" is the mechanism they
+ * would have to already care about. The second sentence is not decoration: the
+ * thread is a GitHub discussion and commenting needs an account, and a reader
+ * who finds that out only after pressing has been led somewhere under a false
+ * impression.
+ *
+ * "this release" rather than a version, because the control follows whichever
+ * release is on screen and the version is already in the button's name.
+ */
+export const COMMENTS_INVITE =
+  'React or comment on this release. The conversation is a GitHub discussion, so commenting needs a GitHub account.';
+
+/**
  * What the page says when a thread could not be loaded.
  *
  * The red ring is not the message. A reader who cannot see the icon, or who has

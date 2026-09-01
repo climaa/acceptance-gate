@@ -1,6 +1,13 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type CSSProperties,
+} from 'react';
 import type { DotLottie } from '@lottiefiles/dotlottie-react';
 import { threadContainer, useGiscusThreads } from '@/hooks/useGiscusThreads';
 import { useSyncedTheme } from '@/hooks/useSyncedTheme';
@@ -20,6 +27,7 @@ import {
   commentsLoadLabel,
   commentsRetryLabel,
   COMMENTS_FAILED_NOTE,
+  COMMENTS_INVITE,
 } from '@/lib/site';
 import { ChangelogSyncStill } from './ChangelogSyncStill';
 import { LottieBlock } from './LottieBlock';
@@ -173,6 +181,8 @@ function useActiveRelease(tags: string[]): string {
 export function ChangelogSyncButton({ releases }: ChangelogSyncButtonProps) {
   const tags = releases.map((release) => release.tag);
   const activeTag = useActiveRelease(tags);
+  const inviteId = useId();
+  const noteId = useId();
   const lottie = useRef<DotLottie | null>(null);
 
   const fire = useCallback((event: string) => {
@@ -328,6 +338,15 @@ export function ChangelogSyncButton({ releases }: ChangelogSyncButtonProps) {
         onFocus={() => fire(EVENTS.pointerEnter)}
         onBlur={() => fire(EVENTS.pointerExit)}
         aria-label={LABEL_FOR_STATUS[status](activeTag)}
+        // The name says which release and what a press does; the description
+        // adds what is on offer, or what went wrong — whichever of the two lines
+        // below is currently on the page.
+        //
+        // It follows that swap rather than naming one of them, because a
+        // description pointing at an element that is not rendered is a broken
+        // reference: assistive tech resolves the id, finds nothing, and the
+        // button loses the explanation the sighted reader can still see.
+        aria-describedby={status === 'failed' ? noteId : inviteId}
         aria-busy={status === 'loading'}
         data-status={status}
       >
@@ -342,10 +361,26 @@ export function ChangelogSyncButton({ releases }: ChangelogSyncButtonProps) {
         />
       </button>
 
+      {/* Two elements, and they are not interchangeable.
+
+          The invitation is static prose: it is the visible label an unlabelled
+          drawing does not have, and it belongs in the document where a reader
+          meets it in order. Putting it in the live region below would make
+          assistive tech re-announce it on every state change, which is what a
+          live region is for and what an invitation is not.
+
+          It gives way to the failure, because a control that has just failed
+          should say so rather than keep inviting. */}
+      {status !== 'failed' && (
+        <p className="changelog-sync__invite" id={inviteId}>
+          {COMMENTS_INVITE}
+        </p>
+      )}
+
       {/* Always in the tree, empty until there is something to say: a live
           region added to the page at the moment its text appears is a region
           assistive tech was not watching when the text appeared. */}
-      <p className="changelog-sync__note" role="status">
+      <p className="changelog-sync__note" id={noteId} role="status">
         {status === 'failed' ? COMMENTS_FAILED_NOTE : ''}
       </p>
     </div>
