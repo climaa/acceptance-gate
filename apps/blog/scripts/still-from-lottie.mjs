@@ -59,6 +59,10 @@ const TOKENS = {
 /** The layer that exists only to catch pointer events — never drawn. */
 const HIT_AREA = 'hit-area';
 
+/** Lottie's layer types. 4 draws shapes; 0 draws another layer list by reference. */
+const SHAPE_LAYER = 4;
+const PRECOMP_LAYER = 0;
+
 /** An [x, y] pair, which is how Lottie writes every position, size and tangent.
  *  @typedef {[number, number]} Pair */
 
@@ -71,15 +75,22 @@ const HIT_AREA = 'hit-area';
 /** One entry in a layer's `shapes`: a geometry (`sh`/`el`/`rc`) or a paint (`fl`/`st`).
  *  @typedef {{ ty: string, ks?: Property, s?: Property, p?: Property, r?: Property,
  *              w?: Property, lc?: number, lj?: number,
- *              c?: { sid?: string } }} Shape */
+ *              c?: { sid?: string, k?: number[] } }} Shape */
 
 /** One layer of the composition.
- *  @typedef {{ nm: string, hd?: boolean, shapes?: Shape[],
+ *  `ty` is the layer type: 4 is a shape layer, 0 a precomposition that draws
+ *  another layer list through `refId`. Anything else this generator refuses.
+ *  @typedef {{ nm: string, ty?: number, hd?: boolean, refId?: string,
+ *              shapes?: Shape[],
  *              ks: { p: Property, a: Property, s: Property, r: Property,
  *                    o: Property } }} Layer */
 
+/** A precomposition: a named layer list another layer draws.
+ *  @typedef {{ id: string, layers: Layer[] }} PrecompAsset */
+
 /** The animation document.
- *  @typedef {{ w: number, h: number, layers: Layer[] }} Animation */
+ *  @typedef {{ w: number, h: number, layers: Layer[],
+ *              assets?: PrecompAsset[] }} Animation */
 
 /** The SVG attributes one shape list paints with.
  *  @typedef {Record<string, string | number>} Paint */
@@ -199,11 +210,36 @@ function at(points, index) {
   return found;
 }
 
-/** @param {string | undefined} sid @returns {string} */
-function token(sid) {
-  if (!sid) throw new Error('A shape carries a colour with no theme slot.');
+/**
+ * The design token a theme slot maps to.
+ *
+ * Throws on a shape with no slot rather than emitting the hex beside it, and
+ * that refusal is the point. A slotless colour is a colour the animation cannot
+ * re-theme either — `setTheme` only rewrites slots — so it is not a gap in this
+ * generator, it is a shape that will look the same in both themes. Baking its
+ * hex into the still would make the still faithful to a bug and remove the only
+ * thing that reports it.
+ *
+ * @param {string | undefined} sid @param {string} layer @param {number[]} rgb
+ * @returns {string} */
+function token(sid, layer, rgb) {
+  if (!sid) {
+    const hex = rgb
+      .map((c) =>
+        Math.round(c * 255)
+          .toString(16)
+          .padStart(2, '0'),
+      )
+      .join('');
+    throw new Error(
+      `Layer "${layer}" paints #${hex} with no theme slot. ` +
+        'A slotless colour cannot follow [data-theme] in the animation either — ' +
+        'bind it to a slot in Creator and re-export.',
+    );
+  }
+
   const name = TOKENS[sid];
-  if (!name) throw new Error(`Unmapped theme slot: ${sid}`);
+  if (!name) throw new Error(`Layer "${layer}" uses an unmapped theme slot: ${sid}`);
   return `var(${name})`;
 }
 
@@ -239,17 +275,17 @@ function pathData({ v, i, o, c }) {
 }
 
 /** The paint attributes a shape list applies to every geometry in it.
- *  @param {Shape[]} shapes @returns {Paint} */
-function paintOf(shapes) {
+ *  @param {Shape[]} shapes @param {string} layer @returns {Paint} */
+function paintOf(shapes, layer) {
   const fill = shapes.find((s) => s.ty === 'fl');
   const stroke = shapes.find((s) => s.ty === 'st');
 
-  const paint = { fill: fill ? token(fill.c?.sid) : 'none' };
+  const paint = { fill: fill ? token(fill.c?.sid, layer, fill.c?.k ?? []) : 'none' };
   if (!stroke) return paint;
 
   return {
     ...paint,
-    stroke: token(stroke.c?.sid),
+    stroke: token(stroke.c?.sid, layer, stroke.c?.k ?? []),
     // React's own spelling for these. The hyphenated SVG names render, but React
     // warns on each one, and a generated file that prints a console warning per
     // shape on every reduced-motion render is noise nobody can act on.
@@ -310,26 +346,81 @@ function layerTransform(ks) {
   return parts.join(' ');
 }
 
-/** One drawn layer, or null when nothing of it is visible at this frame.
- *  @param {Layer} layer @returns {string | null} */
-function layerMarkup(layer) {
-  if (layer.nm === HIT_AREA || layer.hd) return null;
-
-  const opacity = scalarAt(layer.ks.o, 100);
-  if (opacity <= 0) return null;
-
-  const shapes = layer.shapes ?? [];
-  const paint = paintOf(shapes);
-  const drawn = shapes.map((shape) => geometry(shape, paint)).filter(Boolean);
-  if (drawn.length === 0) return null;
-
+/** Wraps drawn children in the layer's own transform and opacity.
+ *  @param {Layer} layer @param {number} opacity @param {string[]} children
+ *  @returns {string} */
+function groupMarkup(layer, opacity, children) {
   const group = {
     ...(layerTransform(layer.ks) ? { transform: layerTransform(layer.ks) } : {}),
     ...(opacity < 100 ? { opacity: round(opacity / 100) } : {}),
   };
 
   const open = Object.keys(group).length ? `<g ${attributes(group)}>` : '<g>';
-  return `      {/* ${layer.nm} */}\n      ${open}\n        ${drawn.join('\n        ')}\n      </g>`;
+  return `      {/* ${layer.nm} */}\n      ${open}\n        ${children.join('\n        ')}\n      </g>`;
+}
+
+/**
+ * One drawn layer, or null when nothing of it is visible at this frame.
+ *
+ * A layer this cannot draw is a THROW, never a skip, and that distinction is the
+ * whole reliability of the still. The pencil became a precomposition in a
+ * re-export; a generator that quietly ignored layer types it did not understand
+ * would have emitted a pencil-less still, regenerated cleanly, and PASSED its own
+ * drift check — because that check compares this output against the committed
+ * file, and both would have been wrong together. Failing loudly is the only way
+ * that class of change reaches a person.
+ *
+ * @param {Layer} layer @param {Animation} animation @returns {string | null} */
+function layerMarkup(layer, animation) {
+  if (layer.nm === HIT_AREA || layer.hd) return null;
+
+  const opacity = scalarAt(layer.ks.o, 100);
+  if (opacity <= 0) return null;
+
+  const type = layer.ty ?? SHAPE_LAYER;
+
+  if (type === PRECOMP_LAYER) {
+    const asset = (animation.assets ?? []).find((entry) => entry.id === layer.refId);
+    if (!asset) {
+      throw new Error(`Layer ${layer.nm} references a missing precomp: ${layer.refId}.`);
+    }
+
+    // The precomp's layers carry their own transforms; this layer's transform
+    // composes over all of them, which is what the wrapping group is for.
+    const inner = drawLayers(asset.layers, animation);
+    return inner.length === 0 ? null : groupMarkup(layer, opacity, inner);
+  }
+
+  if (type !== SHAPE_LAYER) {
+    throw new Error(
+      `Layer ${layer.nm} is type ${type}, which this generator cannot draw. ` +
+        'Teach it that type rather than letting the still lose the layer silently.',
+    );
+  }
+
+  const shapes = layer.shapes ?? [];
+  const paint = paintOf(shapes, layer.nm);
+  const drawn = shapes.map((shape) => geometry(shape, paint)).filter(Boolean);
+  if (drawn.length === 0) return null;
+
+  return groupMarkup(layer, opacity, /** @type {string[]} */ (drawn));
+}
+
+/**
+ * A layer list, back to front.
+ *
+ * Lottie paints the LAST layer first; SVG paints in document order. Reversed
+ * here rather than in the reader, so the emitted file reads back-to-front the
+ * way an illustration does.
+ *
+ * @param {Layer[]} layers @param {Animation} animation @returns {string[]} */
+function drawLayers(layers, animation) {
+  return /** @type {string[]} */ (
+    [...layers]
+      .reverse()
+      .map((layer) => layerMarkup(layer, animation))
+      .filter(Boolean)
+  );
 }
 
 /**
@@ -342,11 +433,7 @@ function layerMarkup(layer) {
  * @returns {string} */
 export function build() {
   const animation = readAnimation();
-
-  // Lottie paints the LAST layer first; SVG paints in document order. Reversed
-  // here rather than in the reader, so the emitted file reads back-to-front the
-  // way an illustration does.
-  const layers = [...animation.layers].reverse().map(layerMarkup).filter(Boolean);
+  const layers = drawLayers(animation.layers, animation);
 
   return `/* GENERATED FILE — do not edit.
  *
