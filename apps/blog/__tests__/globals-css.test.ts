@@ -102,3 +102,43 @@ describe('the design system’s markup', () => {
     expect(survivors).toEqual([]);
   });
 });
+
+/**
+ * Every timing arrives through a token, the way every colour already does in
+ * `packages/ui`'s own sheets. Still structural rather than appearance: what is
+ * read here is the SHAPE of the declaration — a literal where a `var()` belongs
+ * — never how long the animation is or whether that length looks right. The
+ * duration a reader sees is the token's business, and the token is one edit.
+ *
+ * A hardcoded duration is the kind of thing that survives review indefinitely:
+ * it is invisible to the differ, which photographs frozen frames and so cannot
+ * see time at all, and it is invisible to lint. This is the only check in the
+ * repo that would catch one.
+ */
+const TIME_LITERAL = /(?<![\w.-])\d+(?:\.\d+)?m?s(?![\w-])/;
+
+/** Every declaration the stylesheet makes, comments already stripped. */
+const declarations = [...css.matchAll(/\{([^{}]*)\}/g)]
+  .flatMap(([, body]) => (body ?? '').split(';'))
+  .map((text) => text.trim())
+  .filter((text) => text.includes(':'))
+  .map((text) => ({
+    prop: text.slice(0, text.indexOf(':')).trim(),
+    value: text.slice(text.indexOf(':') + 1).trim(),
+  }));
+
+describe('app/globals.css timings', () => {
+  // The same sweep guard as above: a parse that found nothing would pass
+  // forever while protecting nothing.
+  it('finds declarations to check', () => {
+    expect(declarations.length).toBeGreaterThan(0);
+  });
+
+  it('states no literal duration — every timing arrives through a token', () => {
+    const literals = declarations
+      .filter(({ value }) => TIME_LITERAL.test(value))
+      .map(({ prop, value }) => `${prop}: ${value}`);
+
+    expect(literals).toEqual([]);
+  });
+});

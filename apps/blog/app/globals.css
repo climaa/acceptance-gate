@@ -83,3 +83,213 @@ h3:hover > .heading-anchor,
      the diagram to the column and defeats the natural sizing above. */
   max-width: none;
 }
+
+/* /changelog: the title, the releases, and the comment control beside them.
+
+   Three children of one grid, each placed by row, rather than a title stacked
+   above a two-column block. That is what lets the control start level with the
+   heading — spanning both rows and pinned to the top of the first by
+   `align-items: start`.
+
+   `align-items: start` is also what makes the column sticky at all: a grid item
+   stretches to its row by default, so the aside would be exactly as tall as
+   what it sits beside and `position: sticky` would compute, apply, and never
+   move a pixel. */
+.changelog-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  row-gap: var(--space-8);
+  /* The separation between the columns is the aside's own margin, not a
+     column-gap. A gap is charged between the two tracks whether or not the
+     second holds anything, so on the fail-open page — which renders no aside —
+     it would inset the note by a column's worth of nothing. */
+  column-gap: 0;
+}
+
+.changelog-layout__title {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.changelog-layout__main {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.changelog-layout__aside {
+  grid-column: 2;
+  /* Both rows, so it can begin at the top of the first — beside the heading
+     rather than below it. */
+  grid-row: 1 / span 2;
+  margin-inline-start: var(--space-8);
+  position: sticky;
+  /* Clear of the header rather than flush to the viewport edge. */
+  top: var(--space-8);
+}
+
+/* Below this the control stops following and takes a row of its own, between
+   the title and the releases. A sticky element on a phone spends the whole
+   scroll parked on top of the text it is meant to be about, and the column it
+   was sharing space with no longer exists for it to sit beside. The title
+   stays first: the control is about the releases, so it belongs with them. */
+@media (max-width: 60rem) {
+  .changelog-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .changelog-layout__aside {
+    grid-column: 1;
+    grid-row: 2;
+    margin-inline: auto;
+    position: static;
+  }
+
+  .changelog-layout__main {
+    grid-row: 3;
+  }
+}
+
+.changelog-sync {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  align-items: center;
+  /* The note wraps to the icon's own width rather than widening the column past
+     it. The value comes from the component, which is also what sizes the box —
+     one number, so the two cannot drift. */
+  max-width: var(--changelog-sync-size);
+}
+
+/* The icon's own box: no chrome, because the artwork is the control. No focus
+   ring is declared here — base.css's `:where(:focus-visible)` is the site's one
+   ring and is never re-declared, per `packages/ui/src/atoms/Link/Link.css`. The
+   radius is set so that shared ring follows the button's corners. */
+.changelog-sync__button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  display: block;
+}
+
+/* Fixed square, with the still and the canvas stacked in it. The size is set
+   inline by LottieBlock so the box exists at its final size from the first
+   frame of markup — a box that gets its dimensions from a stylesheet is a box
+   that is 0×0 until the stylesheet lands.
+
+   It clips, because the artwork inside is magnified past the box to crop the
+   margin the .lottie bakes in — see below. `contain: paint` says the same thing
+   to the compositor and buys the promise that nothing inside can paint outside,
+   which on a sticky element beside a text column is worth stating. */
+.changelog-sync__icon {
+  position: relative;
+  overflow: hidden;
+  contain: paint;
+}
+
+/* The crop.
+
+   The artwork occupies 304×320 of the file's 512 artboard — about 38% by area —
+   so three fifths of this box would otherwise be margin baked into the asset.
+   Scaling up and clipping takes it back. The translate re-centres: the artwork's
+   centre sits 4 right and 14 below the artboard's, and scaling about the box
+   centre multiplies that offset by the zoom.
+
+   Both children, deliberately. The canvas and the reduced-motion still are
+   framed by one rule, so the icon does not change size when a reader turns that
+   preference on — a fallback that reframes the artwork is a fallback that
+   announces itself.
+
+   Every value comes from `lib/changelog-sync-asset.ts`, which is also where the
+   geometry it derives from is recorded. Percentages resolve against the
+   element's own size, so one set of numbers is correct at any icon size. */
+.lottie-block__still,
+.lottie-block__player {
+  position: absolute;
+  inset: 0;
+  transform: translate(var(--changelog-sync-nudge-x), var(--changelog-sync-nudge-y))
+    scale(var(--changelog-sync-zoom));
+  transform-origin: center;
+}
+
+/* The invitation, and the failure that replaces it. One is prose and the other
+   is a live region — see the components — but they occupy the same place under
+   the icon and read as one line of supporting text, so they are styled together
+   rather than drifting apart. */
+.changelog-sync__invite,
+.changelog-sync__note {
+  margin: 0;
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  color: var(--color-text-muted);
+  text-align: center;
+  /* Wraps to the icon's width — set from the same number that sizes the box, so
+     the column cannot grow wider than the thing it is about. */
+  max-width: var(--changelog-sync-size);
+}
+
+/* Deliberately NOT `.changelog-sync__note:empty { display: none }`. The note is
+   a live region, and it is in the markup from the first render precisely so
+   assistive tech is already watching it when the text arrives. `display: none`
+   takes an element out of the accessibility tree, so hiding it while empty
+   would leave nothing watching at the only moment it matters — the region would
+   appear and announce nothing. An empty block generates no line box, so it
+   already occupies no height and there is nothing to hide. */
+
+/* Where one release's giscus embed lands, when a reader asks for it. Empty and
+   zero-height until then — no reserved space, on purpose; see the container's
+   comment in app/changelog/page.tsx. */
+.release-comments:not(:empty) {
+  margin-block-start: var(--space-6);
+  /* Room above when the control scrolls the reader here, so the reactions row
+     giscus renders first does not sit flush against the viewport edge. */
+  scroll-margin-block-start: var(--space-6);
+}
+
+/* The mark left where a conversation just arrived.
+
+   Two short beats on the container's own outline, then gone. It rings the box
+   rather than the reactions row it points at, because that row is inside
+   giscus's iframe on another origin and nothing here can touch it — but it is
+   the first thing giscus draws, so the top of this ring is where the eye lands.
+
+   `outline` rather than `box-shadow`: it is drawn outside the box without
+   entering layout, so a thread that has just appeared does not also nudge the
+   text around it. The attribute is set by `ChangelogSyncButton` and removed on
+   `animationend`. */
+@keyframes release-comments-arrived {
+  0%,
+  100% {
+    outline-color: transparent;
+  }
+  25%,
+  75% {
+    outline-color: var(--color-accent);
+  }
+}
+
+.release-comments[data-arrived] {
+  outline: 2px solid transparent;
+  outline-offset: var(--space-2);
+  border-radius: var(--radius-md);
+  /* The keyword rather than var(--ease-out), for the reason Skeleton and
+     Spinner both state for `linear`: the shape of the curve carries the
+     meaning. This one gesture is played forward and then in reverse, so it
+     has to be symmetric — --ease-out is an entrance easing, and it would
+     decelerate the rise into place and then drop the fall off a cliff. */
+  animation: release-comments-arrived var(--duration-pulse) ease-in-out;
+}
+
+/* The pulse is an attention cue, and a reader who asked for less movement has
+   asked not to be nudged like this. The control skips setting the attribute at
+   all under that preference; this is the second lock, for a class left behind
+   by an interrupted animation or a preference changed mid-page. */
+@media (prefers-reduced-motion: reduce) {
+  .release-comments[data-arrived] {
+    animation: none;
+    outline-color: transparent;
+  }
+}

@@ -49,6 +49,16 @@ When(
   },
 );
 
+/**
+ * The changelog carries the one control on this site that is an icon and
+ * nothing else — no text, no border, no background. Everything that gives it a
+ * name and a role is markup axe can read, which is exactly why it is worth
+ * putting in front of axe rather than trusting the review that put it there.
+ */
+When('I visit the changelog', async ({ changelog }) => {
+  await changelog.open();
+});
+
 When('I visit the first tag page', async ({ blogIndex }) => {
   await blogIndex.open();
   await blogIndex.openFirstTag();

@@ -212,6 +212,13 @@
   --duration-shimmer: 1600ms;
   /* One full turn of the Spinner ring. */
   --duration-spin: 800ms;
+  /* One arrival pulse: an outline that rises, holds and falls once, marking
+   * where something the reader asked for has just landed. A one-shot and not a
+   * loop, so it sits apart from the two above — and still not a step on the
+   * transition scale either, for the same reason they are not: that scale
+   * measures how fast a control answers a press, where this measures how long
+   * a thing that has already arrived goes on saying so. */
+  --duration-pulse: 1100ms;
 
   /* ---- Layout ---- */
   --width-prose: 68ch;

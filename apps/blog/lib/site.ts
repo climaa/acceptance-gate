@@ -122,3 +122,77 @@ export const CHANGELOG_RELEASE_LINK_PREFIX = 'Release notes for';
 export function absoluteUrl(pathname: string): string {
   return new URL(pathname, SITE_URL).toString();
 }
+
+/**
+ * The comment control's accessible names, and the note that stands beside a
+ * failure.
+ *
+ * The name says what the press will DO, and it changes with what the control is
+ * currently able to do — load, wait, arrive, retry. An icon that animates
+ * through four states and calls itself one thing throughout would be a control
+ * a screen reader reads as inert while a sighted reader watches it work.
+ *
+ * The tag is in every one of them because the page carries every release at
+ * once: "Load the conversation" names four different actions on this page, and
+ * only the version tells them apart.
+ */
+export function commentsLoadLabel(tag: string): string {
+  return `Load the conversation for ${tag}`;
+}
+
+export function commentsLoadingLabel(tag: string): string {
+  return `Loading the conversation for ${tag}`;
+}
+
+/** The name once the thread is mounted — a press then MOVES, and says so. */
+export function commentsGoToLabel(tag: string): string {
+  return `Go to the conversation for ${tag}`;
+}
+
+export function commentsRetryLabel(tag: string): string {
+  return `Retry loading the conversation for ${tag}`;
+}
+
+/**
+ * The invitation under the icon.
+ *
+ * The control is an unlabelled drawing. Its accessible name says what a press
+ * does, so assistive tech has always been told; a sighted reader had a document
+ * and a pencil and no reason to think either was a button. This is the visible
+ * half of that name.
+ *
+ * It says what is on offer rather than what to do — "react or comment" is the
+ * thing a reader might want, where "open the conversation" is the mechanism they
+ * would have to already care about. The second sentence is not decoration: the
+ * thread is a GitHub discussion and commenting needs an account, and a reader
+ * who finds that out only after pressing has been led somewhere under a false
+ * impression.
+ *
+ * "this release" rather than a version, because the control follows whichever
+ * release is on screen and the version is already in the button's name.
+ */
+export const COMMENTS_INVITE =
+  'React or comment on this release. The conversation is a GitHub discussion, so commenting needs a GitHub account.';
+
+/**
+ * What the page says when a thread could not be loaded.
+ *
+ * The red ring is not the message. A reader who cannot see the icon, or who has
+ * reduced motion on and is looking at a still, gets nothing from a colour — so
+ * the failure is written down, in a live region, every time.
+ *
+ * It names no cause for the reason `CHANGELOG_UNAVAILABLE_NOTE` names none:
+ * from out here a blocked third-party frame, an extension, an outage and a
+ * network drop are the same event, and the reader can act on none of them. What
+ * they can act on is the retry, so the retry is the second sentence.
+ *
+ * It points nowhere else, deliberately. The obvious closing offer — read it on
+ * GitHub — would have to say WHERE, and the two candidates are both wrong: the
+ * release entry's own link goes to the release, which is not the discussion,
+ * and a link to the discussion cannot be built without the id that only a
+ * mounted embed knows. A sentence naming a way out that this control cannot
+ * actually open is the same class of lie as a check mark over a thread that
+ * never loaded.
+ */
+export const COMMENTS_FAILED_NOTE =
+  'The conversation for this release could not be loaded. Press again to retry — nothing else on this page is affected.';
