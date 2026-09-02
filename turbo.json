@@ -58,6 +58,15 @@
         "$TURBO_ROOT$/.github/workflows/pr.yml",
         "$TURBO_ROOT$/apps/e2e/features/acceptance/*.feature"
       ]
+    },
+    "@gate/visual-diff-ui#test": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/.github/workflows/pr.yml",
+        "$TURBO_ROOT$/.github/workflows/changelog-check.yml",
+        "$TURBO_ROOT$/packages/ui/src/atoms/IconButton/IconButton.stories.tsx"
+      ]
     }
   }
 }

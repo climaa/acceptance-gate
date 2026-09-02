@@ -15,7 +15,7 @@ const Wand = () => (
   // The twin of this block is `WandGlyph` in the visual-diff console's
   // `RunPanel.tsx`; the comment above says why the two stay apart. Line-scoped
   // rather than `fallow-ignore-file`, so a real clone in this file still reports.
-  // fallow-ignore-next-line code-duplication
+  // fallow-ignore-next-line code-duplication -- deliberate split from the console's WandGlyph, see docblock above; asserted equal by apps/visual-diff-ui's wand-glyph test
   <svg
     viewBox="0 0 24 24"
     fill="none"
