@@ -47,6 +47,22 @@ export const SAMPLE_DATA =
 export const NOT_LOCAL =
   'this console is deployed, and a job needs the checkout it compares — start one from the console on your own machine (`pnpm --filter @gate/visual-diff-ui dev`)';
 
+/** The provenance case, and the only one of these a browser can be made to ask
+ *  for on a reviewer's behalf. A page on another origin can POST here without a
+ *  preflight — `Content-Type: text/plain` is a CORS-simple request — and the
+ *  browser attaches this machine's own `Host`, so the local gate has nothing to
+ *  say about it. This names the site rather than the header, because the header
+ *  is not something the person reading this can do anything about. */
+export const NOT_SAME_ORIGIN =
+  'this request came from another site rather than from this console — only pages served by this console may change what is on this machine';
+
+/** The other half of that answer, for the body a CORS-simple request has to
+ *  send. Phrased as what to send instead, because a client this refuses is a
+ *  client someone is writing: a mutation with no body at all is fine, and the
+ *  two deletes send none. */
+export const NOT_JSON =
+  'this mutation carries a body this console will not read — send it as `Content-Type: application/json`, or send no body at all';
+
 /** The belt to that braces: a console that passed the local gate but is not in a
  *  checkout after all. Reached only by a runner started from outside the repo,
  *  and it says what is missing rather than reporting an empty Storybook build. */
