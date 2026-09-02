@@ -27,8 +27,8 @@ import {
  * state would leave the control mute, the animation frozen on its first frame,
  * and the entire gate green.
  *
- * That is the likeliest change to this asset, too: re-exporting it without its
- * `Click` interaction is already an open item.
+ * That is the likeliest change to this asset, too — it is rewritten whenever
+ * the artwork or its theme slots move.
  *
  * Read out of the shipped archive rather than a fixture, for the reason
  * `changelog-sync-still.test.ts` reads the same file: a fixture is a second
