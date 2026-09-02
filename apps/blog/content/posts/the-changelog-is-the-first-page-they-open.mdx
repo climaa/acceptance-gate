@@ -1,0 +1,76 @@
+---
+title: 'The changelog is the first page they open'
+description: 'Recruiters, leads, engineers, the people who use the thing and the person accountable for it all arrive at a portfolio through the same link, and the changelog is the one page that answers each of them without a line of code. What v1.3.0 shows, and why the release page itself is the point.'
+date: '2026-09-02'
+tags: ['changelog', 'releases', 'quality', 'hiring']
+draft: false
+---
+
+When someone opens this repository link, it's rarely to read code. Some readers are assessing me — a recruiter verifying a CV line, a tech lead deciding if a call is worth thirty minutes. Others depend on the work itself — an engineer who has to change it, someone who has to operate it, someone accountable for whether it was worth doing. Different questions, different patience, one URL.
+
+The honest answer to "where should that link point" was the README or the blog. Since last week, with releases having their own page, the answer is the [changelog](/changelog). This post explains why a release page — not a landing or demo page — works for all of them.
+
+## What v1.3.0 shipped
+
+The headline of the **latest** release is short: **the visual-diff console has an end-user manual, and it cannot drift from what it describes.**
+
+The console runs this repo, captures and compares Storybook screenshot sets, then renders a report for review. Its behavior is detailed in Gherkin files under `apps/e2e/features/acceptance/`, executed by Playwright via `playwright-bdd` on pull requests. One scenario is shown here, verbatim.
+
+```gherkin
+Scenario: Deleting a held screenshot set is refused with the reason
+  Given a screenshot set is held by a registered worktree
+  When I delete the held set
+  Then the deletion is refused naming what holds it
+```
+
+v1.3.0 introduces `apps/manual`: three pages—console, report, sample mode—derived from `.feature` files at build time. The manual is rendered to reflect actual scenarios tested on the deployed console. Changes to scenarios update the manual automatically; deletions shrink pages. An allowlist defines published files and scenario counts, ensuring failed tests catch silent disappearances. The step renderer, shared with the console, standardizes explanations across interfaces. This feature is valuable, but not the focus of this post.
+
+## What the release page is for
+
+Open [v1.3.0 on the changelog](/changelog#v1.3.0) and look at its shape rather than its content. Every release since 1.0.0 has the same four parts, in the same order.
+
+- **A thesis line.** One sentence saying what the release is, before any version number or PR list. For v1.3.0: _the console gets a manual, generated from what it already tests_. A reader with fifteen seconds gets the story from this line alone, and a reader with fifteen minutes gets the frame everything below hangs on.
+
+- **What earned the version.** A table of layers against pull requests: seventeen PRs grouped into the eleven things they were actually for. This is the part that took me longest to learn to write. A commit log is a record of what happened; this table is a claim about why it mattered, and the version number is only justified if the claim holds. "Minor" means the table has a row that adds behavior. "Patch" means it does not.
+
+- **Index corrections.** The repository keeps a `PROJECT_INDEX.md` with file and test counts per workspace. Every release lists which of those numbers were wrong at the previous release and what they are now — `packages/ui` went from 492 to 512 tests, `apps/manual` went from missing entirely to six files and sixty-nine tests. It is a small, boring table and it is the most honest thing on the page: the documentation is treated as something that can be wrong, and the release is where that gets audited.
+
+- **Known gaps.** What did not land. v1.3.0 says plainly that the design board for phase 5 was not updated before the console copy shipped, and why. A release that only lists wins is marketing. A release that names the miss is a record.
+
+None of this is novel. It is what a good release note looks like in any well-run open source project. What was new to me was noticing which reader each part serves.
+
+## Five readers, one page
+
+Two of them are assessing me. Two of them depend on the work. The engineer does both, which is why that paragraph sits in the middle. The page does not change; the part they stop on does.
+
+**The recruiter** checks one thing: is this person real, and do they ship. They cannot evaluate `@gate/manual` and should not have to. What they can see is a date on every release, a cadence between them, a thesis line readable without vocabulary, and a section that admits a miss — the soft signals a CV claims and cannot demonstrate. The changelog shows them in under a minute, without a single sentence written for the recruiter's benefit. That is a side effect of writing the release for myself.
+
+**The tech lead** reads the table. They are asking whether I understand what a version is for, whether I can group work into a narrative instead of a dump, and whether I separate what changed from why. The index corrections answer a question they might not ask aloud: does this person audit their own documentation, or only write it.
+
+**The engineer** uses the page as a map. PR numbers are cross-references, the compare link is the escape hatch to the real diff, and the known gaps are a lightweight roadmap. The page tells them the repository is safe to explore, because the description matches the territory.
+
+**The end user** — whoever actually runs the console — asks something narrower than all three: did anything I depend on move, and do I have to relearn it. They do not care which PR did it. They care that `accept` still means what it meant last week, that a refusal still explains itself, and that the words on screen still match the words in the manual. This is the reader a changelog was invented for, and the one a portfolio repository forgets first, because for a long time the only user was me. v1.3.0 is where that showed: alongside the manual, the console gained a plain explanation of what a run is, what A and B mean, and what a verdict is — on the console itself, not in the docs. Writing for someone who has to operate the thing is what makes that kind of gap visible.
+
+**The stakeholder** is the reader this repository does not have. Nobody funds it and nobody's quarter depends on it. But it is the reader I would have on any real project, and the release page is the artifact I would hand them, so it is worth naming what they would actually read — which is not the feature list. They read for exposure. Cadence tells them whether delivery is predictable. What earned the version tells them whether seventeen PRs bought eleven things or one. Known gaps tells them the thing that really matters: am I hearing the bad news now, or discovering it in three weeks. A release that lists only wins is not merely marketing — it is a status report that has to be independently verified, which costs more than the release saved. The index corrections are the same instrument turned inward: numbers that were wrong, named as wrong, by the person who published them. That kind of trust is never built by one release. It is built by the fifth one in a row that still admits something.
+
+| Reader      | What they stop on                  | What its absence costs them            |
+| ----------- | ---------------------------------- | -------------------------------------- |
+| Recruiter   | Dates, cadence, the thesis line    | A CV claim with nothing behind it      |
+| Tech lead   | The layers-against-PRs table       | A commit dump they have to interpret   |
+| Engineer    | PR links, compare link, known gaps | Reading the diff to recover the intent |
+| End user    | Behavior changes and their wording | Relearning the tool by surprise        |
+| Stakeholder | Known gaps, index corrections      | Bad news that arrives late             |
+
+There is a sixth reader, and it is me in six months, wondering why `.fallow/churn.bin` was untracked in v1.2.0. The release says. That is the reason to keep writing these in the months when nobody is hiring, nobody is using it and nobody is asking.
+
+Not one of those four parts was written for the reader who needs it most. That is the argument for the format: a release page written honestly for yourself happens to answer everyone else.
+
+## The part I got wrong
+
+Until this week, the page opened with `v1.3.0`. A reader arriving cold — and the recruiter always arrives cold — met a version number before they met the product, and had to infer what acceptance-gate is from its release notes. That is backward, and it took writing this post to see it.
+
+The fix is two short paragraphs above the first release: what the repository is, and how to read the entries below. Nothing in them is a version or a date, so they will not rot. It is the smallest change in the repo this month and probably the one with the highest return per line, which is a sentence I would not have believed before I started keeping a changelog that people actually open.
+
+If you keep a portfolio repository, write the release notes as if the release page is the front door. On the evidence of this one, it already is.
+
+Full changelog: https://github.com/climaa/acceptance-gate/compare/v1.2.0...v1.3.0
