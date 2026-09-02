@@ -26,8 +26,8 @@ import { revalidateTag } from 'next/cache';
  *
  * Ahead of both, `guardMutation` — including the local gate every mutation on
  * this console keeps, in one place now rather than in four. The argument for it
- * is strongest here: `next dev` listens on every interface, so a console started
- * against a real data directory is reachable from the network it is on — and a
+ * is strongest here: a console started against a real data directory holds the
+ * only copy of what is in it — and a
  * capture set is a Storybook build and a containerised capture that cannot be
  * taken again without the checkout it came from. A report is a summary and its
  * shots; this is the thing on the console that cannot be remade.

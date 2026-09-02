@@ -259,3 +259,31 @@ describe('cache invalidation', () => {
     expect(callers).toEqual([]);
   });
 });
+
+/**
+ * Where the dev server listens, which is a security property and not a
+ * convenience.
+ *
+ * `next dev` with no `-H` binds every interface, so a console started against a
+ * real data directory answers the whole LAN — the café wifi, the tailnet — and
+ * `Host` is a header a non-browser client writes for itself. `curl -H 'Host:
+ * localhost' -X POST http://<dev-machine-ip>:3300/api/prune -d '{"keep":0}'`
+ * therefore passed the local gate and deleted every capture set, and no unit
+ * test could see it: `isLocalHost` was answering exactly as designed about a
+ * header that was a lie.
+ *
+ * Pinned structurally because nothing else can hold it. It is one flag in one
+ * script, it looks like noise in a diff, and the failure it prevents is
+ * invisible from inside the process — `guardMutation` gets the same request
+ * either way. lib/provenance.ts is the other half of that fix and closes the
+ * browser half; this is the half that closes this one.
+ */
+describe('the dev server address', () => {
+  it('binds the dev server to loopback rather than to every interface', () => {
+    const { scripts } = JSON.parse(read('package.json')) as {
+      scripts: Record<string, string>;
+    };
+
+    expect(scripts.dev).toContain('next dev -H 127.0.0.1');
+  });
+});

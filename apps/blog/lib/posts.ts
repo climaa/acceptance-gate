@@ -92,6 +92,12 @@ export function getAllPosts(): PostSummary[] {
 }
 
 export function getPostBySlug(slug: string): Post | null {
+  // Resolved against the known post set rather than handed straight to disk —
+  // the same defence `/tags/[tag]` already uses via getTagLabel(). A slug this
+  // rejects, including a `../` traversal or a NUL byte, never reaches
+  // fs.existsSync or fs.readFileSync at all.
+  if (!getAllPosts().some((post) => post.slug === slug)) return null;
+
   const candidates = [`${slug}.mdx`, `${slug}.md`];
   const fileName = candidates.find((file) => fs.existsSync(path.join(POSTS_DIR, file)));
   if (!fileName) return null;

@@ -5,18 +5,30 @@ import * as path from 'node:path';
 // `**/*.ts` include means tsc typechecks this file.
 import { afterEach, describe, expect, it } from 'vitest';
 import { guardMutation } from '../lib/guard';
-import { JOB_RUNNING, NOT_LOCAL, SAMPLE_DATA } from '../lib/refusals';
-import { resetRequestHost, setRequestHost } from './stubs/next-headers';
+import {
+  JOB_RUNNING,
+  NOT_JSON,
+  NOT_LOCAL,
+  NOT_SAME_ORIGIN,
+  SAMPLE_DATA,
+} from '../lib/refusals';
+import {
+  resetRequestHeaders,
+  setRequestHeaders,
+  setRequestHost,
+} from './stubs/next-headers';
 
 /**
- * The order the mutation guard asks its three questions in.
+ * The order the mutation guard asks its four questions in.
  *
- * Every one of the three is already asserted through the routes — a sample
+ * Three of the four are already asserted through the routes — a sample
  * instance is refused, a remote `Host` is refused, a held lock is refused — and
  * none of those cases pins the ORDER, because each sets up exactly one of the
  * three conditions at a time. Swapping `isSample` and the host check left all
  * 653 tests green, which is what this file is for: the sequence was stated in
- * four route comments and enforced nowhere.
+ * four route comments and enforced nowhere. The fourth — where the request came
+ * from — is asserted here and nowhere else, because no route can be reached from
+ * another origin under vitest and the header that says so is the whole of it.
  *
  * It matters because the conditions overlap in production rather than in the
  * suite. A deployment is BOTH serving sample data and reachable from off the
@@ -67,7 +79,7 @@ const refusalOf = async (gate: Awaited<ReturnType<typeof guardMutation>>) => {
 };
 
 afterEach(() => {
-  resetRequestHost();
+  resetRequestHeaders();
   delete process.env.VISUAL_DIFF_DATA_DIR;
   for (const dir of temporaryDirs.splice(0))
     fs.rmSync(dir, { recursive: true, force: true });
@@ -124,5 +136,190 @@ describe('guardMutation', () => {
     setRequestHost(REMOTE);
 
     expect((await refusalOf(await guardMutation())).error).toBe(NOT_LOCAL);
+  });
+});
+
+/**
+ * The question asked before the other three: who asked for this.
+ *
+ * A cross-origin `POST` with `Content-Type: text/plain` is a CORS-simple
+ * request — no preflight — and the browser attaches this machine's own `Host`,
+ * so every one of the three questions below it answered "yes" for a page the
+ * reviewer merely had open in another tab. `POST /api/prune` with `{"keep":0}`
+ * deletes every capture set; `POST /api/jobs` runs a build and a container.
+ * The `DELETE` routes were never reachable that way — a `DELETE` forces a
+ * preflight, and this repo sets no `Access-Control-*` header anywhere — which
+ * is why the body question below has to be asked only of requests that carry
+ * one.
+ *
+ * The rule and its one deliberate hole are argued once, in lib/provenance.ts: a
+ * client stating neither `Sec-Fetch-Site` nor `Origin` is let through, because
+ * only a non-browser can omit both and the loopback bind is what answers that.
+ * Not restated here — what is here is the pinning, every case that decision is
+ * made of, the pass included.
+ */
+describe('guardMutation: where the request came from', () => {
+  it('refuses a mutation another site asked for, and says which', async () => {
+    process.env.VISUAL_DIFF_DATA_DIR = realDataDir();
+    setRequestHeaders({ 'sec-fetch-site': 'cross-site' });
+
+    expect(await refusalOf(await guardMutation())).toEqual({
+      status: 409,
+      error: NOT_SAME_ORIGIN,
+    });
+  });
+
+  // `same-site` is a neighbouring origin, not this one: every port on localhost
+  // shares the registrable domain, so the blog's dev server is `same-site` to
+  // this console. Only the console's own pages may change what is on the disk.
+  it('refuses a neighbour on the same site as firmly as a stranger', async () => {
+    process.env.VISUAL_DIFF_DATA_DIR = realDataDir();
+    setRequestHeaders({ 'sec-fetch-site': 'same-site' });
+
+    expect((await refusalOf(await guardMutation())).error).toBe(NOT_SAME_ORIGIN);
+  });
+
+  it("hands the directory to a JSON mutation from the console's own pages", async () => {
+    const dir = realDataDir();
+    process.env.VISUAL_DIFF_DATA_DIR = dir;
+    setRequestHeaders({
+      'sec-fetch-site': 'same-origin',
+      'content-type': 'application/json',
+    });
+
+    expect(await guardMutation()).toEqual({ dir });
+  });
+
+  // `none` is the address bar: a request the reviewer made themselves, with no
+  // page behind it. There is no origin to be foreign to.
+  it("reads a request typed at the address bar as the console's own", async () => {
+    const dir = realDataDir();
+    process.env.VISUAL_DIFF_DATA_DIR = dir;
+    setRequestHeaders({ 'sec-fetch-site': 'none' });
+
+    expect(await guardMutation()).toEqual({ dir });
+  });
+
+  it('falls back to a matching Origin when no Sec-Fetch-Site was sent', async () => {
+    const dir = realDataDir();
+    process.env.VISUAL_DIFF_DATA_DIR = dir;
+    setRequestHeaders({
+      'sec-fetch-site': null,
+      origin: 'http://localhost:3300',
+      host: 'localhost:3300',
+    });
+
+    expect(await guardMutation()).toEqual({ dir });
+  });
+
+  it('refuses a foreign Origin when no Sec-Fetch-Site was sent', async () => {
+    process.env.VISUAL_DIFF_DATA_DIR = realDataDir();
+    setRequestHeaders({
+      'sec-fetch-site': null,
+      origin: 'https://attacker.example.com',
+      host: 'localhost:3300',
+    });
+
+    expect((await refusalOf(await guardMutation())).error).toBe(NOT_SAME_ORIGIN);
+  });
+
+  // `Origin: null` is what a sandboxed iframe and a few redirect chains send.
+  // It parses as no URL at all, so it matches no host and is not this console.
+  it('refuses an Origin that names nothing', async () => {
+    process.env.VISUAL_DIFF_DATA_DIR = realDataDir();
+    setRequestHeaders({ 'sec-fetch-site': null, origin: 'null' });
+
+    expect((await refusalOf(await guardMutation())).error).toBe(NOT_SAME_ORIGIN);
+  });
+
+  // The `Host` half of the fallback fails closed, exactly as `isLocalHost`
+  // does: an `Origin` with no address to be compared against is nobody's.
+  it('refuses an Origin when the request states no address it arrived on', async () => {
+    process.env.VISUAL_DIFF_DATA_DIR = realDataDir();
+    setRequestHeaders({
+      'sec-fetch-site': null,
+      origin: 'http://localhost:3300',
+      host: null,
+    });
+
+    expect((await refusalOf(await guardMutation())).error).toBe(NOT_SAME_ORIGIN);
+  });
+
+  // A prefix is not a media type. `application/jsonp` is a different body, and
+  // the check that reads the type must not let one in by the first ten letters.
+  it('refuses a media type that merely starts like JSON', async () => {
+    process.env.VISUAL_DIFF_DATA_DIR = realDataDir();
+    setRequestHeaders({ 'content-type': 'application/jsonp' });
+
+    expect((await refusalOf(await guardMutation())).error).toBe(NOT_JSON);
+  });
+
+  // The pass lib/provenance.ts argues for, pinned so that changing it is a
+  // change to a test rather than a silent one.
+  it('lets a client that states neither through, which the loopback bind answers', async () => {
+    const dir = realDataDir();
+    process.env.VISUAL_DIFF_DATA_DIR = dir;
+    setRequestHeaders({ 'sec-fetch-site': null, origin: null });
+
+    expect(await guardMutation()).toEqual({ dir });
+  });
+
+  // The CORS-simple path, and the whole reason this question is asked: a
+  // `text/plain` body is what a form post and a no-preflight `fetch` send. Same
+  // origin or not, this console reads a mutation body as JSON.
+  it("refuses a body sent as text/plain even from the console's own pages", async () => {
+    process.env.VISUAL_DIFF_DATA_DIR = realDataDir();
+    setRequestHeaders({
+      'sec-fetch-site': 'same-origin',
+      'content-type': 'text/plain;charset=UTF-8',
+    });
+
+    expect(await refusalOf(await guardMutation())).toEqual({
+      status: 409,
+      error: NOT_JSON,
+    });
+  });
+
+  // The parameter is not the media type. `application/json; charset=utf-8` is
+  // the same body as `application/json`, and refusing it would refuse a client
+  // that spelled out what the default already is.
+  it('reads a charset on the media type as the same JSON body', async () => {
+    const dir = realDataDir();
+    process.env.VISUAL_DIFF_DATA_DIR = dir;
+    setRequestHeaders({ 'content-type': 'application/json; charset=utf-8' });
+
+    expect(await guardMutation()).toEqual({ dir });
+  });
+
+  // The two `DELETE` routes. They send no body and therefore no content type,
+  // and a blanket check would refuse the two routes this fix leaves alone.
+  it('asks nothing about the body of a request that carries none', async () => {
+    const dir = realDataDir();
+    process.env.VISUAL_DIFF_DATA_DIR = dir;
+    setRequestHeaders({ 'content-type': null });
+
+    expect(await guardMutation()).toEqual({ dir });
+  });
+
+  /**
+   * The order, in the one shape that shows it: a deployed console is serving
+   * sample data AND is off the machine AND may be holding a lock, and a
+   * cross-site request to it hears about none of those. `resolveDataDir` does
+   * filesystem work, and a request that should never have been honoured does
+   * not get to cause any.
+   */
+  it('says nothing about the data or the address to a caller from another site', async () => {
+    const dir = realDataDir();
+    holdLock(dir);
+    process.env.VISUAL_DIFF_DATA_DIR = dir;
+    setRequestHeaders({ host: REMOTE, 'sec-fetch-site': 'cross-site' });
+
+    expect((await refusalOf(await guardMutation())).error).toBe(NOT_SAME_ORIGIN);
+  });
+
+  it('refuses a cross-site caller before it decides the console is sample', async () => {
+    setRequestHeaders({ 'sec-fetch-site': 'cross-site' });
+
+    expect((await refusalOf(await guardMutation())).error).toBe(NOT_SAME_ORIGIN);
   });
 });
