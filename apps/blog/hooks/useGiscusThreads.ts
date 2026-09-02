@@ -6,6 +6,7 @@ import {
   discussionTerm,
   giscusOutcome,
   giscusScriptAttributes,
+  GISCUS_CONTAINER_CLASS,
   GISCUS_ORIGIN,
   GISCUS_SCRIPT_URL,
 } from '@/lib/giscus';
@@ -62,14 +63,44 @@ export function threadContainer(tag: string): HTMLElement | null {
 }
 
 /**
+ * Hands back the class the loader placed this mount by, so that the next press
+ * cannot be captured by a thread that is already open.
+ *
+ * Why it has to happen at all is `GISCUS_CONTAINER_CLASS`. Why it happens HERE
+ * is timing: the HTML spec fires a script's `load` at the end of the same task
+ * that ran it, so the div is released before any other script can execute. That
+ * is what makes two presses racing each other — a reader who starts one thread,
+ * scrolls on and starts another before the first has landed — still mount into
+ * their own containers, in either order. Sweeping stale divs before injecting
+ * instead would fix only the sequential case: the second press would sweep
+ * while the first loader had not run yet, find nothing, and be captured anyway.
+ *
+ * Nothing on this page reads the class, so releasing it costs no layout. The
+ * width and the minimum height that size an embed are giscus's own, and they
+ * are on the iframe under `giscus-frame`, which this leaves alone.
+ */
+function releaseMountedThread(container: HTMLElement): void {
+  const [thread] = container.getElementsByClassName(GISCUS_CONTAINER_CLASS);
+  thread?.classList.remove(GISCUS_CONTAINER_CLASS);
+}
+
+/**
  * Injects giscus's loader into one release's container.
  *
  * The script is created by the press rather than rendered with the page, which
  * is the whole economy of this feature: four embeds mounted on every visit
  * would be four iframes, four sets of requests and four thread renders, paid
  * for by every reader including the ones who never open a conversation.
+ *
+ * Exported for `__tests__/giscus-threads.test.ts`, which drives it against a
+ * transcription of the loader's own placement rule — the one thing about this
+ * function that a test can catch and a reader cannot see.
  */
-function injectLoader(container: HTMLElement, tag: string, onError: () => void): void {
+export function injectLoader(
+  container: HTMLElement,
+  tag: string,
+  onError: () => void,
+): void {
   const script = document.createElement('script');
   script.src = GISCUS_SCRIPT_URL;
   script.async = true;
@@ -83,6 +114,13 @@ function injectLoader(container: HTMLElement, tag: string, onError: () => void):
   // other way this can go wrong is silent from out here, which is what the
   // timeout is for.
   script.addEventListener('error', onError);
+
+  // Not a success signal — the script having run says nothing about whether a
+  // thread rendered, which is what the metadata message is for. It is the
+  // moment the div exists, and therefore the moment to take it out of the way
+  // of the next release's press.
+  script.addEventListener('load', () => releaseMountedThread(container));
+
   container.append(script);
 }
 

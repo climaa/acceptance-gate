@@ -29,6 +29,30 @@ export const GISCUS_ORIGIN = 'https://giscus.app';
  */
 export const GISCUS_SCRIPT_URL = `${GISCUS_ORIGIN}/client.js`;
 
+/**
+ * The class giscus's loader puts on the div it wraps its iframe in — and, the
+ * part that matters here, the class it looks for BEFORE it makes one.
+ *
+ * `client.js` opens its placement with `document.querySelector('.giscus')`. If
+ * that finds an element anywhere in the document it empties that element and
+ * appends the iframe there; only when it finds nothing does it build a div of
+ * its own beside the script tag. One page, one embed — reasonable for a post,
+ * and wrong for `/changelog`, where every release has a thread of its own.
+ *
+ * Left alone, that made the second press a silent three-way failure. The
+ * release that was asked about stayed empty, so the hook waited on an iframe
+ * that was never going to be in the container it was watching and settled on
+ * the timeout as `failed`. The release opened FIRST had its conversation
+ * emptied out and replaced by the second one's, so a reader scrolling back up
+ * found another version's thread under the wrong heading. And no press after
+ * the first could ever succeed, because the div doing the capturing was still
+ * there.
+ *
+ * So a mounted thread stops answering to this name the moment it is mounted —
+ * `releaseMountedThread` in `hooks/useGiscusThreads.ts`.
+ */
+export const GISCUS_CONTAINER_CLASS = 'giscus';
+
 /** The repository the discussions live in — the same one this blog is built from. */
 export const GISCUS_REPO = 'climaa/acceptance-gate';
 
