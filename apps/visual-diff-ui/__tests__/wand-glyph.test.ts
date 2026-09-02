@@ -29,22 +29,35 @@ const STORY = path.join(
   'IconButton.stories.tsx',
 );
 
-/** Every `<path d="...">` value inside `source`, in document order. */
-function pathDs(source: string): string[] {
-  return [...source.matchAll(/<path d="([^"]+)"/g)].map((match) => match[1] ?? '');
-}
+const SIDES = [
+  { side: 'RunPanel', file: RUN_PANEL },
+  { side: 'the IconButton story', file: STORY },
+];
 
-/** The `<svg viewBox="...">` value in `source`. */
-function viewBox(source: string): string | undefined {
-  return source.match(/<svg\s[^>]*viewBox="([^"]+)"/)?.[1];
+/** The glyph one source file draws: its `<svg viewBox>` and every `<path d>`,
+ *  in document order. Each of the two files holds exactly one `<svg>`, which is
+ *  what lets the scan be whole-file rather than scoped to the glyph block. */
+function glyph(file: string): { viewBox: string | undefined; paths: string[] } {
+  const source = fs.readFileSync(file, 'utf8');
+
+  return {
+    viewBox: source.match(/<svg\s[^>]*viewBox="([^"]+)"/)?.[1],
+    paths: [...source.matchAll(/<path d="([^"]+)"/g)].map((match) => match[1] ?? ''),
+  };
 }
 
 describe('the wand glyph', () => {
-  it('draws the same paths and viewBox in RunPanel and the IconButton story', () => {
-    const runPanel = fs.readFileSync(RUN_PANEL, 'utf8');
-    const story = fs.readFileSync(STORY, 'utf8');
+  // Without this, a rename or a reformat that stopped either side matching would
+  // leave two empty scans comparing equal — green while asserting nothing, which
+  // is the exact blindness the parity case below exists to end.
+  it.each(SIDES)('is found in $side', ({ file }) => {
+    const { viewBox, paths } = glyph(file);
 
-    expect(viewBox(runPanel)).toBe(viewBox(story));
-    expect(pathDs(runPanel)).toEqual(pathDs(story));
+    expect(viewBox).toBeDefined();
+    expect(paths.length).toBeGreaterThan(0);
+  });
+
+  it('draws the same paths and viewBox in RunPanel and the IconButton story', () => {
+    expect(glyph(RUN_PANEL)).toEqual(glyph(STORY));
   });
 });
