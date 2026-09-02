@@ -42,13 +42,44 @@ describe('the reduced-motion still', () => {
    * observer and no second copy of the palette. A generator change that started
    * writing literals would still pass the comparison above — both sides would
    * be wrong together — so this asks the question separately.
+   *
+   * The style block is the ONE place a hex belongs, and only to define a
+   * `--lottie-*` variable. Those are the artwork's own colours — a pencil's
+   * yellow is not a design-system role and forcing it into one would be worse
+   * than admitting what it is — and the block is READ OUT OF the `.lottie`'s
+   * theme entries at generation time, so it is not a second copy of anything:
+   * the file stays the single source and the still cannot drift from the
+   * animation about what colour the pencil is.
+   *
+   * So the question is asked by position rather than by presence. A baked
+   * colour in the drawing and a variable definition in the block are both
+   * `#rrggbb` to a blanket search; only one of them is a defect.
    */
   it('paints with design tokens rather than baked colour', () => {
     const svg = build();
 
     expect(svg).toMatch(/var\(--color-/);
-    expect(svg).not.toMatch(/#[0-9a-f]{3,8}\b/i);
     expect(svg).not.toMatch(/rgba?\(/);
+
+    // Every painted attribute resolves through a variable. `none` is not a
+    // colour — it is the absence of one, and a shape that paints nothing is
+    // exactly what it says.
+    const painted = [...svg.matchAll(/\b(?:fill|stroke)="([^"]*)"/g)].map(
+      ([, value]) => value ?? '',
+    );
+
+    expect(painted.length).toBeGreaterThan(0);
+    expect(
+      painted.filter((value) => value !== 'none' && !value.startsWith('var(--')),
+    ).toEqual([]);
+
+    // And every hex in the file is one of those variables being defined.
+    const hexLines = svg
+      .split('\n')
+      .filter((line) => /#[0-9a-f]{3,8}\b/i.test(line))
+      .filter((line) => !/^\s*--lottie-[\w-]+: #[0-9a-f]{3,8};$/i.test(line));
+
+    expect(hexLines).toEqual([]);
   });
 
   /** The pointer-catching rectangle is the full canvas. Drawn, it would be a slab over everything. */
