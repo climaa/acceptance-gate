@@ -30,8 +30,10 @@ import { NOT_LOCAL, SAMPLE_DATA, conflict, refuseWhileRunning } from './refusals
  *     machine's own `Host`, so the three questions below it all answered "yes"
  *     for a page the reviewer merely had open in another tab. `resolveDataDir`
  *     does filesystem work; a request that should never have been honoured does
- *     not get to cause any. See lib/provenance.ts, including what this does not
- *     close and which half of the fix does.
+ *     not get to cause any. The same leaf refuses a body this console will not
+ *     read, because a `text/plain` body is how that page reaches here at all —
+ *     see lib/provenance.ts, including what this does not close and which half
+ *     of the fix does.
  *  2. Sample data next. An instance with no data directory behind it is serving
  *     the committed fixtures — this repo's files, not an instance's state. It is
  *     also the state every deployment is in, so asking it ahead of the host is
@@ -74,8 +76,8 @@ export interface Mutable {
 export async function guardMutation(): Promise<Mutable | Response> {
   const head = await headers();
 
-  const foreign = provenanceRefusal(head);
-  if (foreign) return conflict(foreign);
+  const unwelcome = provenanceRefusal(head);
+  if (unwelcome) return conflict(unwelcome);
 
   const { dir, isSample } = await resolveDataDir();
   if (isSample) return conflict(SAMPLE_DATA);

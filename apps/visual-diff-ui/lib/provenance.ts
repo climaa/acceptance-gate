@@ -85,8 +85,10 @@ function fromOwnPages(head: RequestHeaders): boolean {
   if (site) return OWN_PAGES.has(site.trim().toLowerCase());
 
   const origin = head.get('origin');
+  // Neither header: the pass argued for above, which the loopback bind answers.
+  if (!origin) return true;
 
-  return origin ? originMatchesHost(origin, head.get('host')) : true;
+  return originMatchesHost(origin, head.get('host'));
 }
 
 /** Whether that `Origin` names the same host:port the request arrived on. A

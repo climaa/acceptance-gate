@@ -152,19 +152,11 @@ describe('guardMutation', () => {
  * is why the body question below has to be asked only of requests that carry
  * one.
  *
- * WHAT THIS DOES NOT CLOSE, stated rather than implied: a client that sends
- * neither `Sec-Fetch-Site` nor `Origin` is let through. `curl` is such a
- * client, so `curl -H 'Host: localhost' -X POST http://<lan-ip>:3300/api/prune`
- * is not answered here. It is answered by binding the dev server to loopback —
- * `next dev -H 127.0.0.1` in this workspace's package.json — and that is the
- * half of this fix that closes it. Refusing absent-both instead would lock out
- * every non-browser client to catch an attacker who can simply omit a header,
- * which buys nothing the bind does not already buy outright.
- *
- * A browser cannot omit both: `fetch` and `XMLHttpRequest` always set `Origin`
- * cross-origin, form submissions have set it for years, and every current
- * engine sends `Sec-Fetch-Site` on everything. So the pass above describes a
- * client that is not a browser, and the CSRF this exists to stop needs one.
+ * The rule and its one deliberate hole are argued once, in lib/provenance.ts: a
+ * client stating neither `Sec-Fetch-Site` nor `Origin` is let through, because
+ * only a non-browser can omit both and the loopback bind is what answers that.
+ * Not restated here — what is here is the pinning, every case that decision is
+ * made of, the pass included.
  */
 describe('guardMutation: where the request came from', () => {
   it('refuses a mutation another site asked for, and says which', async () => {
@@ -187,7 +179,7 @@ describe('guardMutation: where the request came from', () => {
     expect((await refusalOf(await guardMutation())).error).toBe(NOT_SAME_ORIGIN);
   });
 
-  it('hands the directory to a JSON mutation from the console own pages', async () => {
+  it("hands the directory to a JSON mutation from the console's own pages", async () => {
     const dir = realDataDir();
     process.env.VISUAL_DIFF_DATA_DIR = dir;
     setRequestHeaders({
@@ -200,7 +192,7 @@ describe('guardMutation: where the request came from', () => {
 
   // `none` is the address bar: a request the reviewer made themselves, with no
   // page behind it. There is no origin to be foreign to.
-  it('reads a request typed at the address bar as the console own', async () => {
+  it("reads a request typed at the address bar as the console's own", async () => {
     const dir = realDataDir();
     process.env.VISUAL_DIFF_DATA_DIR = dir;
     setRequestHeaders({ 'sec-fetch-site': 'none' });
@@ -262,8 +254,8 @@ describe('guardMutation: where the request came from', () => {
     expect((await refusalOf(await guardMutation())).error).toBe(NOT_JSON);
   });
 
-  // The decision written down at the top of this block, pinned so that changing
-  // it is a change to a test rather than a silent one.
+  // The pass lib/provenance.ts argues for, pinned so that changing it is a
+  // change to a test rather than a silent one.
   it('lets a client that states neither through, which the loopback bind answers', async () => {
     const dir = realDataDir();
     process.env.VISUAL_DIFF_DATA_DIR = dir;
@@ -275,7 +267,7 @@ describe('guardMutation: where the request came from', () => {
   // The CORS-simple path, and the whole reason this question is asked: a
   // `text/plain` body is what a form post and a no-preflight `fetch` send. Same
   // origin or not, this console reads a mutation body as JSON.
-  it('refuses a body sent as text/plain even from the console own pages', async () => {
+  it("refuses a body sent as text/plain even from the console's own pages", async () => {
     process.env.VISUAL_DIFF_DATA_DIR = realDataDir();
     setRequestHeaders({
       'sec-fetch-site': 'same-origin',
@@ -320,8 +312,7 @@ describe('guardMutation: where the request came from', () => {
     const dir = realDataDir();
     holdLock(dir);
     process.env.VISUAL_DIFF_DATA_DIR = dir;
-    setRequestHost(REMOTE);
-    setRequestHeaders({ 'sec-fetch-site': 'cross-site' });
+    setRequestHeaders({ host: REMOTE, 'sec-fetch-site': 'cross-site' });
 
     expect((await refusalOf(await guardMutation())).error).toBe(NOT_SAME_ORIGIN);
   });

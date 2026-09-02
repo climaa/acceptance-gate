@@ -32,8 +32,8 @@ let sent: Record<string, string | null> = { ...DEFAULTS };
 /** Whatever this request carried, over the defaults. `null` stands for a header
  *  it did not carry at all — which is a different case from every one of these
  *  headers, and the case each of them has to decide about. */
-export function setRequestHeaders(headers: Record<string, string | null>): void {
-  for (const [name, value] of Object.entries(headers)) sent[name.toLowerCase()] = value;
+export function setRequestHeaders(carried: Record<string, string | null>): void {
+  for (const [name, value] of Object.entries(carried)) sent[name.toLowerCase()] = value;
 }
 
 /** The `Host` this render or request arrived with. `null` stands for a request
