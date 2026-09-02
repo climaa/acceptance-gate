@@ -10,6 +10,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { changelogMdxOptions, mdxComponents } from '../lib/mdx';
 import { getReleases, narrativeTitle } from '../lib/releases';
 import {
+  CHANGELOG_INTRO_HOW,
+  CHANGELOG_INTRO_WHAT,
   CHANGELOG_RELEASE_LINK_PREFIX,
   CHANGELOG_UNAVAILABLE_NOTE,
   SITE_URL,
@@ -439,6 +441,59 @@ describe('the changelog page, when the releases are unavailable', () => {
     const html = await renderPage([]);
 
     expect(html).not.toContain(CHANGELOG_UNAVAILABLE_NOTE);
+  });
+});
+
+/**
+ * The intro is for the reader who arrived cold, and that reader arrives on
+ * every branch of the page — so it is asserted on the fail-open branch as well
+ * as the ordinary one, and asserted to sit between the title and whatever the
+ * column holds rather than merely to be present somewhere on the page.
+ *
+ * The ordinary branch is rendered with no releases, for the reason the
+ * fail-open tests above give: a release body is a cache boundary that
+ * suspends, and the synchronous renderer cannot wait for it. Where the intro
+ * lands relative to a release is decided by the same JSX either way.
+ */
+describe('the changelog page, before the first release', () => {
+  async function renderPage(releases: Awaited<ReturnType<typeof getReleases>>) {
+    vi.doMock('../lib/releases', async (importOriginal) => ({
+      ...(await importOriginal<typeof import('../lib/releases')>()),
+      getReleases: async () => releases,
+    }));
+    const { default: ChangelogPage } = await import('../app/changelog/page');
+
+    return renderToStaticMarkup(await ChangelogPage());
+  }
+
+  afterEach(() => {
+    vi.doUnmock('../lib/releases');
+    vi.resetModules();
+  });
+
+  it('says what the repository is, after the title and inside the column', async () => {
+    const html = await renderPage([]);
+
+    const intro = html.indexOf(CHANGELOG_INTRO_WHAT);
+    expect(intro).toBeGreaterThan(html.indexOf('Changelog'));
+    expect(intro).toBeGreaterThan(html.indexOf('changelog-layout__main'));
+  });
+
+  it('says how to read the entries', async () => {
+    const html = await renderPage([]);
+
+    expect(html).toContain(CHANGELOG_INTRO_HOW);
+  });
+
+  // The fail-open note sends the reader to GitHub for "the release notes";
+  // without the intro they would not know whose.
+  it('keeps the intro when the releases are unavailable', async () => {
+    const html = await renderPage(null);
+
+    expect(html.indexOf(CHANGELOG_INTRO_WHAT)).toBeGreaterThan(-1);
+    expect(html.indexOf(CHANGELOG_INTRO_WHAT)).toBeLessThan(
+      html.indexOf(CHANGELOG_UNAVAILABLE_NOTE),
+    );
   });
 });
 

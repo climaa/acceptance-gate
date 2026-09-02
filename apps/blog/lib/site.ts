@@ -86,6 +86,26 @@ export const CHANGELOG_DESCRIPTION =
   'What shipped in acceptance-gate, release by release, in the words the release notes were written in.';
 
 /**
+ * The two sentences a reader gets before the first version number.
+ *
+ * The changelog is the link most often opened cold — from a CV, a profile, a
+ * message — by someone who has not seen the home page and may never write
+ * code. Without these, the first thing they meet is `v1.3.0`, and the page
+ * asks them to infer the product from its release notes. The first sentence
+ * says what the repository is; the second says how to read what follows, in
+ * the terms every entry below is written in. Nothing here is a version or a
+ * date, so it does not go stale when the next release lands.
+ *
+ * Two constants rather than one paragraph, so the page can render them as two
+ * `<p>` without splitting prose in JSX.
+ */
+export const CHANGELOG_INTRO_WHAT =
+  'acceptance-gate is a public portfolio monorepo where every pull request — including the ones that build the repository itself — passes the same gate: lint, typecheck, build, test, format, health, and an acceptance suite written in Gherkin and run by Playwright.';
+
+export const CHANGELOG_INTRO_HOW =
+  'Each release below says what earned its version, corrects the numbers the previous one got wrong, and names what did not land.';
+
+/**
  * What the page says when the build could not establish what the releases are.
  *
  * A note on the page, not an error page: the route is fine, the nav still leads

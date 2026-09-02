@@ -9,6 +9,8 @@ import { changelogMdxOptions, mdxComponents } from '@/lib/mdx';
 import { getReleases, releaseDate, type Release } from '@/lib/releases';
 import {
   CHANGELOG_DESCRIPTION,
+  CHANGELOG_INTRO_HOW,
+  CHANGELOG_INTRO_WHAT,
   CHANGELOG_RELEASE_LINK_PREFIX,
   CHANGELOG_TITLE,
   CHANGELOG_UNAVAILABLE_ACTION,
@@ -100,7 +102,31 @@ function ReleaseEntry({ release }: { release: Release }) {
 }
 
 /**
- * The fail-open state, and the only thing on the page that is not a release.
+ * What the repository is and how to read the entries, before the first one.
+ *
+ * Above the releases and above the fail-open note alike: a reader who arrived
+ * cold needs the context whether or not the build could fetch the releases, and
+ * the note's "they are all on GitHub" is a stranger sentence without it.
+ *
+ * Its own `Prose` outside the releases' `Stack` rather than a first item in it,
+ * because that stack's gap is the distance between two releases and the intro
+ * is not a release. The outer stack's gap is the page's section gap — the same
+ * `--space-8` the layout puts between the title and this column — so the intro
+ * reads as the column's opening and the first version badge still reads as
+ * where the list begins.
+ */
+function Intro() {
+  return (
+    <Prose>
+      <p>{CHANGELOG_INTRO_WHAT}</p>
+      <p>{CHANGELOG_INTRO_HOW}</p>
+    </Prose>
+  );
+}
+
+/**
+ * The fail-open state, and the only thing on the page that is not a release
+ * or the intro.
  *
  * `role` is deliberately absent. The page rendered, the route works, and a
  * reader who arrived here is not being interrupted — announcing this as an
@@ -157,15 +183,18 @@ export default async function ChangelogPage() {
       )}
 
       <div className="changelog-layout__main">
-        {releases === null ? (
-          <Unavailable />
-        ) : (
-          <Stack gap={10}>
-            {releases.map((release) => (
-              <ReleaseEntry key={release.tag} release={release} />
-            ))}
-          </Stack>
-        )}
+        <Stack gap={8}>
+          <Intro />
+          {releases === null ? (
+            <Unavailable />
+          ) : (
+            <Stack gap={10}>
+              {releases.map((release) => (
+                <ReleaseEntry key={release.tag} release={release} />
+              ))}
+            </Stack>
+          )}
+        </Stack>
       </div>
     </div>
   );
