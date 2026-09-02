@@ -27,7 +27,7 @@ import {
 import { within } from '../lib/paths';
 import { CANONICAL_LABEL } from '../lib/baselines';
 import { NOT_LOCAL } from '../lib/refusals';
-import { resetRequestHost, setRequestHost } from './stubs/next-headers';
+import { resetRequestHeaders, setRequestHost } from './stubs/next-headers';
 
 /**
  * The job system: one job at a time (D1), a log whose last line is the exit
@@ -108,7 +108,7 @@ async function waitForIdle(dir: string): Promise<void> {
 }
 
 afterEach(() => {
-  resetRequestHost();
+  resetRequestHeaders();
   vi.unstubAllEnvs();
   delete process.env.VISUAL_DIFF_DATA_DIR;
   delete process.env.VISUAL_DIFF_FAKE_HOST_FINGERPRINT;
