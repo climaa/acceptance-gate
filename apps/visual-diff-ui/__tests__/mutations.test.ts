@@ -13,7 +13,7 @@ import { CANONICAL_IS_COMMITTED, NOT_LOCAL } from '../lib/refusals';
 import { startJob } from '../lib/jobs';
 import { JobRequestSchema } from '../lib/job-contract';
 import { revalidateTagCalls } from './stubs/next-cache';
-import { resetRequestHost, setRequestHost } from './stubs/next-headers';
+import { resetRequestHeaders, setRequestHost } from './stubs/next-headers';
 
 /**
  * The two guarded deletions (D2): nothing is deleted implicitly, a held set is
@@ -144,7 +144,7 @@ beforeAll(() => {
 
 afterEach(() => {
   revalidateTagCalls.length = 0;
-  resetRequestHost();
+  resetRequestHeaders();
   delete process.env.VISUAL_DIFF_DATA_DIR;
 });
 
@@ -289,8 +289,11 @@ describe('DELETE /api/sets/[label]', () => {
    * rule. It is the stronger argument here than it is for a report: a set is a
    * Storybook build and a containerised capture that cannot be taken again
    * without the checkout it came from, where a report is a summary and its
-   * shots. `next dev` listens on every interface, so "the machine running the
-   * console" is a claim about the request rather than about the process.
+   * shots. "The machine running the console" stays a claim about the REQUEST
+   * rather than about the process: `Host` is a header, and a client that is not
+   * a browser writes it for itself. The dev server binds loopback now (#434), so
+   * this gate is the second wall rather than the only one — but it is still the
+   * wall a request that reached the process has to meet.
    */
   it('refuses a delete that did not come from the machine running the console', async () => {
     const dir = seedDataDir();

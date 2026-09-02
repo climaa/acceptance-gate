@@ -1,10 +1,11 @@
 import { headers } from 'next/headers';
 import { resolveDataDir } from './data';
 import { isLocalHost } from './local';
+import { provenanceRefusal } from './provenance';
 import { NOT_LOCAL, SAMPLE_DATA, conflict, refuseWhileRunning } from './refusals';
 
 /**
- * The three questions every mutation on this console answers before it does
+ * The four questions every mutation on this console answers before it does
  * anything, in the order it must answer them.
  *
  * Written four times before this module existed — once in each of `POST
@@ -12,7 +13,8 @@ import { NOT_LOCAL, SAMPLE_DATA, conflict, refuseWhileRunning } from './refusals
  * /api/sets/[label]` — and the fourth copy is how the policy stopped being one.
  * `DELETE /api/sets/[label]` and `POST /api/prune` landed in #292 with no host
  * check, #305 and #321 added it to the other two, and nothing brought it back
- * to those. `next dev` binds every interface, so for that stretch anyone on the
+ * to those. `next dev` bound every interface then — it binds loopback now, see
+ * this workspace's `dev` script and #434 — so for that stretch anyone on the
  * network could delete every capture set on a console pointed at a real data
  * directory. A policy stated in four places is a policy three places can drift
  * from; stated here it is one function, and a new mutation gets it by calling
@@ -21,19 +23,30 @@ import { NOT_LOCAL, SAMPLE_DATA, conflict, refuseWhileRunning } from './refusals
  * THE ORDER IS THE POLICY, not a style. Each question is asked only because the
  * one before it was answered:
  *
- *  1. Sample data first. An instance with no data directory behind it is serving
+ *  1. Where the request came from, first of all — and first because it is the
+ *     only one of the four that is asked without reading anything. A page on
+ *     another origin can POST here with no preflight (`Content-Type:
+ *     text/plain` is a CORS-simple request) and the browser attaches this
+ *     machine's own `Host`, so the three questions below it all answered "yes"
+ *     for a page the reviewer merely had open in another tab. `resolveDataDir`
+ *     does filesystem work; a request that should never have been honoured does
+ *     not get to cause any. The same leaf refuses a body this console will not
+ *     read, because a `text/plain` body is how that page reaches here at all —
+ *     see lib/provenance.ts, including what this does not close and which half
+ *     of the fix does.
+ *  2. Sample data next. An instance with no data directory behind it is serving
  *     the committed fixtures — this repo's files, not an instance's state. It is
- *     also the state every deployment is in, so asking this first is what makes
- *     a deployed console answer "there is nothing here to change" rather than
- *     "start one from your own machine": true of it, and the sentence a reviewer
- *     can act on.
- *  2. Then the host. A console reachable from off the machine must not be able
+ *     also the state every deployment is in, so asking it ahead of the host is
+ *     what makes a deployed console answer "there is nothing here to change"
+ *     rather than "start one from your own machine": true of it, and the
+ *     sentence a reviewer can act on.
+ *  3. Then the host. A console reachable from off the machine must not be able
  *     to destroy what is on it. Read from the request's own `Host` so one
  *     instance answers a loopback caller and a proxied one correctly.
- *  3. Then the lock. D1: a run in flight holds the whole data directory, so a
+ *  4. Then the lock. D1: a run in flight holds the whole data directory, so a
  *     delete or a prune that raced it would pull a set out from under the job
- *     reading it. Last of the three because it is the only one that reads the
- *     disk, and the two above it are cheaper and more absolute.
+ *     reading it. Last of the four because it is the only one that reads the
+ *     disk, and the three above it are cheaper and more absolute.
  *
  * Deliberately NOT in lib/refusals.ts, where the sentences it returns live. That
  * module is imported by lib/runner.ts for two constants, and it is reached from
@@ -61,10 +74,15 @@ export interface Mutable {
  * has no `dir`, so a handler that skips the check cannot reach the directory.
  */
 export async function guardMutation(): Promise<Mutable | Response> {
+  const head = await headers();
+
+  const unwelcome = provenanceRefusal(head);
+  if (unwelcome) return conflict(unwelcome);
+
   const { dir, isSample } = await resolveDataDir();
   if (isSample) return conflict(SAMPLE_DATA);
 
-  if (!isLocalHost((await headers()).get('host'))) return conflict(NOT_LOCAL);
+  if (!isLocalHost(head.get('host'))) return conflict(NOT_LOCAL);
 
   return refuseWhileRunning(dir) ?? { dir };
 }
