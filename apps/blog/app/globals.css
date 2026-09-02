@@ -275,7 +275,12 @@ h3:hover > .heading-anchor,
   outline: 2px solid transparent;
   outline-offset: var(--space-2);
   border-radius: var(--radius-md);
-  animation: release-comments-arrived 1.1s ease-in-out;
+  /* The keyword rather than var(--ease-out), for the reason Skeleton and
+     Spinner both state for `linear`: the shape of the curve carries the
+     meaning. This one gesture is played forward and then in reverse, so it
+     has to be symmetric — --ease-out is an entrance easing, and it would
+     decelerate the rise into place and then drop the fall off a cliff. */
+  animation: release-comments-arrived var(--duration-pulse) ease-in-out;
 }
 
 /* The pulse is an attention cue, and a reader who asked for less movement has
