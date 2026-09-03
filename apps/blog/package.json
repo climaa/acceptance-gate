@@ -16,12 +16,12 @@
     "@gate/logger": "workspace:*",
     "@gate/ui": "workspace:*",
     "@lottiefiles/dotlottie-react": "0.19.16",
-    "@sentry/browser": "^10.71.0",
-    "@sentry/node": "^10.71.0",
+    "@sentry/browser": "^10.72.0",
+    "@sentry/node": "^10.72.0",
     "@vercel/analytics": "^2.0.1",
     "gray-matter": "^4.0.3",
-    "mermaid": "11.17.0",
-    "next": "^16.3.2",
+    "mermaid": "11.17.2",
+    "next": "^16.3.3",
     "next-mdx-remote": "^6.0.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
@@ -30,7 +30,7 @@
     "rehype-slug": "6.0.0",
     "remark-gfm": "^4.0.1",
     "shiki": "4.4.3",
-    "zod": "^4.4.3"
+    "zod": "^4.5.4"
   },
   "devDependencies": {
     "@gate/tsconfig": "workspace:*",
@@ -39,7 +39,7 @@
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.5",
     "eslint": "^9.39.5",
-    "eslint-config-next": "^16.3.2",
+    "eslint-config-next": "^16.3.3",
     "jsdom": "^30.0.1",
     "typescript": "^5.9.3",
     "vitest": "^4.1.11"

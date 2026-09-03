@@ -21,7 +21,7 @@
     "@gate/tsconfig": "workspace:*",
     "@gate/visual-diff": "workspace:*",
     "@playwright/test": "1.62.1",
-    "@typescript-eslint/parser": "^8.67.0",
+    "@typescript-eslint/parser": "^8.68.0",
     "eslint": "^9.39.5",
     "playwright-bdd": "^9.2.0",
     "typescript": "^5.9.3"
