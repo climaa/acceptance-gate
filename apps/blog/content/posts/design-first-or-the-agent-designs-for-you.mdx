@@ -13,17 +13,17 @@ docs(design):  IconButton in the normative inventory, and the wand beside the la
 feat(ui):      IconButton — an icon-only button whose accessible name cannot be forgotten
 feat(visual-diff-ui): a wand that names the next capture set
 test(e2e):     the console names the next capture set (EXPECTED_SCENARIOS 41 → 42)
-docs(e2e):     the scenario counts the guards actually enforce
+docs(e2e):     the scenario counts the guards actually enforced
 chore(visual-diff): accept baselines from the pinned container
 ```
 
-The first commit renders nothing. It puts a rectangle on a design board, gives it a name, and assigns it a tier. Only after that does a line of component code exist.
+The first commit renders nothing. It puts a rectangle on a design board, names it, and assigns it a tier. Only after that does a line of component code exist.
 
 That order is the whole subject of this post. It used to be a matter of taste. It stopped being one the moment an agent started writing the second commit.
 
 ## What an agent can infer, and what it cannot
 
-Point a competent agent at this repository and it works out most of the rules without being told. It is a pnpm monorepo. It is Next.js. Tests are arranged AAA, acceptance lives in Gherkin executed by Playwright, styling resolves through tokens rather than literals. None of that has to be explained, because all of it leaves fingerprints on every file.
+Point a competent agent at this repository, and it works out most of the rules without being told. It is a pnpm monorepo. It is Next.js. Tests are arranged AAA; acceptance lives in Gherkin executed by Playwright; styling resolves through tokens rather than literals. None of that needs explaining, because it leaves fingerprints on every file.
 
 The inventory leaves no fingerprints.
 
@@ -43,7 +43,7 @@ The design for this project is `designs/acceptance-gate.pen`, a [Pencil](https:/
 
 The word doing the work in that paragraph is *committed*. The `.pen` file moves with the branch. It shows up in the pull request. It is present in any checkout the agent is given, including a sandbox with no network and no browser. A Figma URL is none of those things — it cannot be opened from inside the box the agent runs in, it does not travel with the branch, and it never appears in `git log`.
 
-I still use Figma, and it still wins where it wins: exploration, motion work, anything I want to show a person rather than a machine. But **the artefact an agent is expected to obey has to be inside the checkout.** That is not a preference between tools; it is a property of where the agent can reach.
+I still use Figma, and it still wins where it wins: exploration, motion work, anything I want to show a person rather than a machine. But **the artifact an agent is expected to obey has to be inside the checkout.** That is not a preference between tools; it is a property of where the agent can reach.
 
 There is an honest cost. A `.pen` is a binary blob to git — the design commit above reports `Bin 1236097 -> 1227491 bytes` and not one word more. That is exactly why the PNG exports are committed alongside it: the review happens on the export, which is diffable enough to argue with.
 
@@ -51,16 +51,16 @@ There is an honest cost. A `.pen` is a binary blob to git — the design commit 
 
 A design that nobody is required to read is a mood board. `AGENTS.md` at the repo root is a routing table — *read this before touching that* — and four of its rows point at the design:
 
-| Before touching…              | Read first                            | Why                                                                                     |
-| ----------------------------- | ------------------------------------- | --------------------------------------------------------------------------------------- |
-| `packages/ui` components      | `designs/exports/component-library.png` | The normative inventory — names, tiers, variants are decided there, **never re-decided in code** |
-| Anything visual               | `packages/ui/src/tokens.css`            | Token-only styling                                                                        |
-| Page layouts                  | `designs/exports/pages.png`             | Index / post / tag in all four capture variants                                           |
-| Design rationale              | `designs/exports/flows-decisions.png`   | Typography and dark-mode decisions with their whys, plus the console's flows and decisions |
+| Before touching…         | Read first                              | Why                                                                                              |
+| ------------------------ | --------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `packages/ui` components | [`designs/exports/component-library.png`](https://github.com/climaa/acceptance-gate/blob/main/designs/exports/component-library.png) | The normative inventory — names, tiers, variants are decided there, **never re-decided in code** |
+| Anything visual          | [`packages/ui/src/tokens.css`](https://github.com/climaa/acceptance-gate/blob/main/packages/ui/src/tokens.css)            | Token-only styling                                                                               |
+| Page layouts             | [`designs/exports/pages.png`](https://github.com/climaa/acceptance-gate/blob/main/designs/exports/pages.png)             | Index/post/tag in all four capture variants                                                      |
+| Design rationale         | [`designs/exports/flows-decisions.png`](https://github.com/climaa/acceptance-gate/blob/main/designs/exports/flows-decisions.png)   | Typography and dark-mode decisions with their whys, plus the console's flows and decisions       |
 
-*Never re-decided in code.* An issue body in this repo transcribes the board; it does not reopen it. When the agent needs a name, the name already exists, and it exists in one place.
+*Never re-decided in code.* An issue body in this repo transcribes the board; it does not reopen it. When the agent needs a name, the name already exists in one place.
 
-<img src="/images/designs/board-02-decisions.jpg" alt="Board 02 decision tiles D1 and D2: the typography decision showing Fraunces for display, Atkinson Hyperlegible for body and JetBrains Mono for code with the reasoning underneath, and the dark-mode decision as a table mapping six semantic colour roles to their light and dark values." />
+<img src="/images/designs/board-02-decisions.jpg" alt="Board 02 decision tiles D1 and D2: the typography decision showing Fraunces for display, Atkinson Hyperlegible for body and JetBrains Mono for code with the reasoning underneath, and the dark-mode decision as a table mapping six semantic color roles to their light and dark values." />
 
 ## The most useful thing a board produces is a refusal
 
@@ -70,13 +70,13 @@ Board 01's header carries a note that is worth more than any tile on it:
 
 Two open issues — [#365](https://github.com/climaa/acceptance-gate/issues/365) and [#339](https://github.com/climaa/acceptance-gate/issues/339) — were closed by a commit that changed no rendered output. Both had been deferred to "a design task" that nobody had done, and the board's own rule answered both: one consumer is not a design system component.
 
-That refusal has a price attached, which is why it needs deciding somewhere visible. Admitting a component to `packages/ui` costs a tile on the board, a story in Storybook, and two committed screenshots per variant that CI compares on every pull request, forever. An agent optimising for "make the button work" will never weigh that. It is not being careless — it simply cannot see the bill.
+That refusal has a price attached, which is why it needs to be decided somewhere visible. Admitting a component to `packages/ui` costs a tile on the board, a story in Storybook, and two committed screenshots per variant that CI compares on every pull request, forever. An agent optimizing for "make the button work" will never weigh that. It is not being careless — it simply cannot see the bill.
 
 Boards decay too, and pretending otherwise would be dishonest. The same commit deleted a `viewports` field and a `--skip-build` checkbox that Board 04 had drawn for a CLI that never had them. A board row is a claim about the codebase, and claims rot when a fix rides along with unrelated work. The answer is to audit the board against the repo periodically — not to stop keeping one.
 
 ## "Atom" is an import rule, not a size
 
-Atomic Design gets dismissed as vocabulary — a nicer word for *small*. In this repo it is a constraint with teeth, because the tier list exists exactly once:
+Atomic Design gets dismissed as vocabulary — a nicer word for *small*. In this repo, it is a constraint with teeth, because the tier list exists exactly once:
 
 ```js
 // packages/visual-diff/src/policy.mjs
@@ -85,7 +85,7 @@ export const TIERS = ['atoms', 'molecules', 'organisms', 'templates'];
 
 Three consumers import that one array:
 
-1. **`eslint-plugin-boundaries`**, which turns the layering rule into a lint error — an atom that imports a molecule fails `pnpm lint`, it does not merely violate a convention.
+1. **`eslint-plugin-boundaries`**, which turns the layering rule into a lint error — an atom that imports a molecule fails `pnpm lint`; it does not merely violate a convention.
 2. **The Storybook layering page**, which renders the tiers from the same list rather than restating them in prose that can drift.
 3. **The visual-diff capture matrix** — twelve modes of tier × viewport × theme. Atoms and molecules are captured at desktop only, because they do not reflow; organisms and templates are captured at both.
 
@@ -97,6 +97,6 @@ So when the board writes *atom* above a tile, it is not describing a size. It is
 
 The board decides what exists and what it is called. The issue transcribes it. The agent implements it. Playwright captures it. The differ compares it against what was committed.
 
-Every step after the first is checkable by a machine, which is why every one of them is automated here. The first step is the one that isn't — and that is precisely why it is still mine to do.
+Every step after the first is machine-checkable, which is why every one of them is automated here. The first step is the one that isn't — and that is precisely why it is still mine to do.
 
 An agent can read this repository and infer nearly everything about it: the framework, the conventions, the shape of a test, the way a component is styled. **What it cannot infer is what you decided not to build.** That part still has to be drawn by someone, before the first line of code — and it has to be drawn somewhere the agent can actually reach.
