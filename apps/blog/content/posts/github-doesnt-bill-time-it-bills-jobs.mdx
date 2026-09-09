@@ -1,7 +1,7 @@
 ---
 title: "GitHub doesn't bill time, it bills jobs"
 description: 'I seeded a private repo from this one and burned a monthly Actions quota in forty-eight hours. The pipeline had not changed; the repository had. The multiplier that did it is the same thing that makes the gate fast — twelve parallel jobs, each rounded up to a full minute, green in three and a half minutes of wall clock and billed for twelve.'
-date: '2026-09-08'
+date: '2026-09-09'
 tags: ['ci', 'github-actions', 'agents', 'cost']
 draft: false
 ---
@@ -92,7 +92,7 @@ Broken down by workflow:
 
 The gate is eighty-four percent of the jobs. Its 1,972 jobs took 531 minutes of real time — a 3.7× multiplier, which is what "twelve jobs, most of them short" looks like on an invoice.
 
-And the number I find hardest to look at: of those 189 gate runs, **35 were green.** A hundred and forty failed, twelve were canceled, two skipped. The overwhelming majority of a month's compute went into telling an agent that its last commit did not work, which is a completely legitimate thing to spend a gate on — right up until you notice you are buying it twelve minutes at a time.
+And the number I find hardest to look at: of those 189 gate runs, **35 were green.** A hundred and forty failed, twelve were cancelled, two skipped. The overwhelming majority of a month's compute went into telling an agent that its last commit did not work, which is a completely legitimate thing to spend a gate on — right up until you notice you are buying it twelve minutes at a time.
 
 The daily shape says the rest:
 
@@ -175,7 +175,7 @@ The repository is private, so there is nothing to link. The workflow it was copi
 
 Not *get a DevOps person*, and not *budget for CI*. The fix cost nothing; it was one line in an `on:` block, and it took forty-one minutes to find once I was looking.
 
-It is this. A pipeline encodes decisions about speed, thoroughness and cost, and only two of the three are visible in the file. Splitting a job to go faster, leaving cancellation off to warm a cache, running a matrix wide instead of deep — every one of those has a price attached, and in a public repository the price is multiplied by zero, so you can make hundreds of them without ever forming an opinion about any of them.
+It is this. A pipeline encodes decisions about speed, thoroughness and cost, and only two of the three are visible in the file. Splitting a job to go faster, letting a trunk run finish so the next one starts warm, running a matrix wide instead of deep — every one of those has a price attached, and in a public repository the price is multiplied by zero, so you can make hundreds of them without ever forming an opinion about any of them.
 
 Copy that repository into a private one, and the multiplier turns on. Not gradually. All at once, on every decision at the same time, including the ones you made so long ago you no longer remember making them.
 
