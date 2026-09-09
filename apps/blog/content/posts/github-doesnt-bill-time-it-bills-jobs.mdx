@@ -19,7 +19,7 @@ Here is the whole story as a `git log`, in the order it happened:
 
 Two thousand minutes, which is a month, spent in a little under forty-eight hours. The second email adds that usage resets on October 1st, which at that point is twenty-seven days away.
 
-Nobody wrote a bad workflow. The workflow was this repository's workflow, copied verbatim, and it has run here for months at no cost.
+Nobody wrote a bad workflow. What the new repository started from was this repository's workflow, unchanged, and it has run here for months at no cost.
 
 ## The copy was the change
 
@@ -39,7 +39,7 @@ That framing is true, and for about a day it was my whole conclusion. But that's
 
 GitHub does not meter wall-clock time. It meters **jobs**, and it rounds each one up to the next whole minute.
 
-The `pr` workflow copied into the new repo is one gate made of twelve jobs. Seven of them are a matrix:
+By the end of the 3rd, the `pr` workflow in the new repo was one gate made of twelve jobs — ten came over with the copy, and the two commits above added the eleventh and twelfth. Seven of them are a matrix:
 
 ```yaml
 strategy:
