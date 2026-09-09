@@ -31,6 +31,20 @@ const DRAFT_SLUGS = fs
 // value under test cannot catch that value being wrong.
 const STATIC_ROUTES = ['/', '/blog', '/changelog', '/about'];
 
+// Duplicated from app/rss.xml/route.ts for the reason above: importing the
+// escaper under test would make every expectation below agree with it by
+// construction, including when it is wrong. A title carrying an apostrophe
+// reaches the feed as `&apos;`, so an assertion written against the raw
+// frontmatter string fails on correct output.
+function escapeXml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+}
+
 // Built with `new URL` rather than lib/site's absoluteUrl() for the same reason.
 function postUrl(slug: string): string {
   return new URL(`/blog/${slug}`, SITE_URL).toString();
@@ -74,7 +88,7 @@ describe('app/rss.xml', () => {
 
     expect(posts.length).toBeGreaterThan(0);
     posts.forEach((post) => {
-      expect(xml).toContain(`<title>${post.title}</title>`);
+      expect(xml).toContain(`<title>${escapeXml(post.title)}</title>`);
     });
   });
 
@@ -123,6 +137,36 @@ describe('app/rss.xml', () => {
     expect(xml).toContain('<rss version="2.0">');
     expect(xml).toContain('</rss>');
     expect(xml).not.toContain('<item>');
+  });
+
+  // A title is author prose, so every character XML reserves will eventually
+  // appear in one — `doesn't` is the first, and `&` in a title is the one that
+  // would produce a feed no reader can parse. Mocked rather than read from disk
+  // so the guard survives the day no published post happens to carry them.
+  it('escapes XML metacharacters in a title and description', async () => {
+    vi.doMock('../lib/posts', () => ({
+      getAllPosts: () => [
+        {
+          slug: 'metacharacters',
+          title: `Tom & Jerry's <b>"quoted"</b> title`,
+          description: `A & B's <i>"description"</i>`,
+          date: '2026-09-08',
+          tags: [],
+          readingMinutes: 1,
+        },
+      ],
+      getAllTags: () => [],
+    }));
+
+    const xml = await renderFeed();
+
+    expect(xml).toContain(
+      '<title>Tom &amp; Jerry&apos;s &lt;b&gt;&quot;quoted&quot;&lt;/b&gt; title</title>',
+    );
+    expect(xml).toContain(
+      '<description>A &amp; B&apos;s &lt;i&gt;&quot;description&quot;&lt;/i&gt;</description>',
+    );
+    expect(xml).not.toContain('<b>');
   });
 
   it('serves application/rss+xml', async () => {

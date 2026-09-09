@@ -1,0 +1,182 @@
+---
+title: "GitHub doesn't bill time, it bills jobs"
+description: 'I seeded a private repo from this one and burned a monthly Actions quota in forty-eight hours. The pipeline had not changed; the repository had. The multiplier that did it is the same thing that makes the gate fast — twelve parallel jobs, each rounded up to a full minute, green in three and a half minutes of wall clock and billed for twelve.'
+date: '2026-09-09'
+tags: ['ci', 'github-actions', 'agents', 'cost']
+draft: false
+---
+
+Here is the whole story as a `git log`, in the order it happened:
+
+```text
+09-02 21:03  chore: seed the new repo from acceptance-gate 6492d3b
+09-03 12:07  ci: add content:validate turbo task and gate entry
+09-03 13:15  ci: run the sidecar's lint and contract tests as their own gate job
+09-04 08:07  ← "You have used 90% of the Actions minutes included"
+09-04 12:00  ← "You have used 100% of the Actions minutes included"
+09-04 12:41  ci: run on main only — the gate moved to the machine that makes the commit
+```
+
+Two thousand minutes, which is a month, spent in a little under forty-eight hours. The second email adds that usage resets on October 1st, which at that point is twenty-seven days away.
+
+Nobody wrote a bad workflow. The workflow was this repository's workflow, copied verbatim, and it has run here for months at no cost.
+
+## The copy was the change
+
+`acceptance-gate` — this repo, the one you are reading — is public. Public repositories get GitHub-hosted standard runners for free, with no minute accounting. I made every design decision for this pipeline under that condition, and I never once had to price it.
+
+The new project is private. It is a reading-fluency app I am building for my own kids, with their recorded voices in the fixtures, so it won't stop being private. On day one, I seeded it as a fresh copy of this repo, single commit, because the conventions are the point — that is why they exist.
+
+Those conventions also carried a pricing assumption that isn't a property of the pipeline at all.
+
+> Free CI is not a property of your workflow. It is a property of your repository.
+
+Same YAML, same runners, same steps. One bit of repository metadata flipped, and every minute went from costing nothing to costing a minute.
+
+That framing is true, and for about a day it was my whole conclusion. But that's not the interesting part.
+
+## Parallel is the thing you pay for
+
+GitHub does not meter wall-clock time. It meters **jobs**, and it rounds each one up to the next whole minute.
+
+The `pr` workflow copied into the new repo is one gate made of twelve jobs. Seven of them are a matrix:
+
+```yaml
+strategy:
+  fail-fast: false
+  matrix:
+    include:
+      - { name: lint,      run: pnpm turbo run lint }
+      - { name: typecheck, run: pnpm turbo run typecheck }
+      - { name: build,     run: pnpm turbo run build }
+      - { name: test,      run: pnpm turbo run test }
+      - { name: format,    run: pnpm format:check }
+      - { name: health,    run: pnpm health:check }
+      - { name: content,   run: pnpm turbo run content:validate }
+```
+
+The other five are `sandcastle`, `e2e`, `visual-diff`, `sidecar`, and the `gate` job that fails if any of the others do.
+
+They all run at once. That is the design, and the design works: a full green gate reports back in about three and a half minutes of wall clock. The `format` job inside it finishes in well under sixty seconds.
+
+It is billed for a minute anyway. So is every other job that finished early. Twelve jobs is twelve minutes, floor, no matter how fast the repo gets.
+
+**Parallelism isn't incidental to the cost. It is the cost.** Every time I split a slow job in two to speed up the gate — and I did exactly that on the 3rd, twice, adding content:validate and giving the sidecar its own job — I made the gate faster and the bill bigger in the same commit. Under a public repo, those two commits were pure profit. Under a private one, they were two more billed minutes on every run from then on — a twenty percent raise on the gate, and the commit messages don't mention it, because at the time it wasn't a thing.
+
+## The numbers
+
+Four hundred and forty workflow runs between the seed commit and the evening of the 5th. Job counts come from `/repos/{owner}/{repo}/actions/runs/{id}/timing`, one call per run:
+
+| | |
+| --- | --- |
+| Runs | 440 |
+| Jobs | **2,351** |
+| Jobs on the 2nd, 3rd and 4th | **2,048** |
+| Included quota | 2,000 |
+| Wall-clock time, all runs | **11.7 hours** (702 minutes) |
+
+Seven hundred minutes of computers actually computing. Two thousand minutes billed. The gap is not waste in any conventional sense — no job ran long, nothing hung, the twenty-minute timeouts never fired. The gap is rounding, applied 2,351 times.
+
+Every minute figure here is a floor, not an invoice: one minute per job, which is the billing minimum. The `timing` endpoint returned a zero duration for every run in this window, and these are ARM runners, whose rate against the included allowance I have not verified. [How these numbers were measured](#how-these-numbers-were-measured) has the full accounting. The relationship the post is about — jobs, not seconds — survives either correction.
+
+Broken down by workflow:
+
+| Workflow | Runs | Jobs | Wall clock |
+| --- | --- | --- | --- |
+| `pr` | 189 | **1,972** | 531 min |
+| `dependabot-auto-merge` | 132 | 260 | 22 min |
+| `cache-cleanup` | 98 | 98 | 23 min |
+| Dependabot's own update runs | 14 | 14 | 105 min |
+| `accept-baselines` | 4 | 4 | 10 min |
+| `nightly-determinism` | 3 | 3 | 11 min |
+
+The gate is eighty-four percent of the jobs. Its 1,972 jobs took 531 minutes of real time — a 3.7× multiplier, which is what "twelve jobs, most of them short" looks like on an invoice.
+
+And the number I find hardest to look at: of those 189 gate runs, **35 were green.** A hundred and forty failed, twelve were cancelled, two skipped. The overwhelming majority of a month's compute went into telling an agent that its last commit did not work, which is a completely legitimate thing to spend a gate on — right up until you notice you are buying it twelve minutes at a time.
+
+The daily shape says the rest:
+
+| Day | Jobs |
+| --- | --- |
+| Sep 2 (from 21:11) | 244 |
+| Sep 3 | **1,261** |
+| Sep 4 (until the wall) | 543 |
+| Sep 5 (after the wall — free, because nothing ran) | 303 |
+
+Sixty-three percent of a monthly quota on a single Thursday.
+
+## The condition that used to be free
+
+Cancellation of superseded runs was never a flat on or off in the workflow I copied. It was a condition — cancel a run when the event that started it was a pull request, and otherwise let it finish, because a run on the trunk is seeding caches that everything downstream reads.
+
+That is a good rule, and in this repository it is still the right one. What it quietly depends on is that the runs you want collapsed arrive as the event the condition names. Move the same file somewhere the traffic arrives as a different event, and the condition keeps evaluating — correctly, to the answer you did not want — while cancelling nothing.
+
+An agent working through a task pushes corrections in bursts — four pushes inside eleven seconds, in one case. Nothing superseded anything: that is four complete gates, forty-eight jobs, forty-eight minutes of floor time, and three of the four were obsolete before they finished.
+
+The measurement that gives it away is in the run list. Twelve of 189 gate runs were cancelled, and all twelve were cancelled by hand. A pipeline that was actually collapsing superseded runs would show a far larger number there, and it does not.
+
+I want to be precise about what went wrong here, because "you forgot `cancel-in-progress`" is not it. I did not forget, and the line was not wrong — it was a condition whose premise stopped holding. I made the decision for a reason I can still defend, in a context where it was free and where it did what it said. The failure was that it moved to a context that satisfied its letter and broke its intent, **and nothing in the copy asked me to re-read it.** Conventions travel as text. The conditions that justified them do not travel at all.
+
+## Forty-one minutes
+
+The 100% email arrived at 12:00. The fix is timestamped 12:41:
+
+```text
+ci: run on main only — the gate moved to the machine that makes the commit
+```
+
+`pr.yml` now has exactly one trigger:
+
+```yaml
+on:
+  # For re-running a merge's checks, and for a branch someone wants a second
+  # opinion on without paying for every push to it.
+  workflow_dispatch:
+```
+
+No `push`. No `pull_request`. The gate runs when a human asks it to, and the rest of the time it runs on the machine that makes the commit — a pre-push hook, locally, where the twelve jobs are twelve processes on hardware I already own and the rounding does not exist.
+
+That trade has a real cost, and the workflow says so in a comment I left next to the removal: a skipped required check counts as *passing*, so dropping `pull_request` also meant dropping the draft guards that existed to stop a draft PR from reporting a green gate it never earned. They were a matched pair. Restoring one means restoring both, and the trap is still there waiting.
+
+Three days later, a second pass — `ci: stop paying eighteen minutes for every merge`.
+
+## What I have not fixed
+
+Three workflows still fire on their own schedule, and I have not touched them:
+
+- `cache-cleanup`, on every closed pull request — 98 runs, 98 jobs
+- `dependabot-auto-merge`, on every opened, synchronized or reopened PR — 132 runs, 260 jobs, and almost all of them skip immediately
+- `nightly-determinism`, on `cron: '17 3 * * *'`, which fired every morning of the outage into a quota of zero
+
+Two hundred and sixty jobs in three days, from a workflow whose job is to decide it has nothing to do. That burst is inflated — a freshly seeded repo means every dependency is out of date at once — but I do not yet know the steady-state number, and October 1st is when I find out. The measurement is the next piece of work, not the guess.
+
+## How these numbers were measured
+
+Everything above is counted, not estimated. The run list:
+
+```bash
+gh run list -R OWNER/REPO --created 2026-09-01..2026-09-05 --limit 500 \
+  --json databaseId,name,event,createdAt,conclusion > runs.json
+```
+
+Then count per-run jobs from the timing endpoint, which reports `billable.UBUNTU.jobs` alongside `run_duration_ms`:
+
+```bash
+jq -r '.[].databaseId' runs.json | xargs -P 8 -I{} \
+  gh api /repos/OWNER/REPO/actions/runs/{}/timing \
+    --jq '{id:{}, jobs:(.billable.UBUNTU.jobs // 0), dur:(.run_duration_ms // 0)}'
+```
+
+Two caveats I will not paper over. `total_ms` on that endpoint came back as `0` for every run in this window, so the minute figures here are **job counts used as a floor** — one minute per job, which is the billing minimum, not the billing total. Any job that overran a minute cost more than I credited. And these runners are `ubuntu-24.04-arm`; if ARM standard runners meter against the included allowance at a rate other than 1×, the floor moves with it. The account-level page is the source of truth for what was actually charged. The relationship this post is about — jobs, not seconds — does not move either way.
+
+The repository is private, so there is nothing to link. The workflow it was copied from is [in this one](https://github.com/climaa/acceptance-gate/tree/main/.github/workflows).
+
+## The line I would tell myself on the 2nd
+
+Not *get a DevOps person*, and not *budget for CI*. The fix cost nothing; it was one line in an `on:` block, and it took forty-one minutes to find once I was looking.
+
+It is this. A pipeline encodes decisions about speed, thoroughness and cost, and only two of the three are visible in the file. Splitting a job to go faster, letting a trunk run finish so the next one starts warm, running a matrix wide instead of deep — every one of those has a price attached, and in a public repository the price is multiplied by zero, so you can make hundreds of them without ever forming an opinion about any of them.
+
+Copy that repository into a private one, and the multiplier turns on. Not gradually. All at once, on every decision at the same time, including the ones you made so long ago you no longer remember making them.
+
+Point an agent at it, and you find out in about forty-eight hours.
