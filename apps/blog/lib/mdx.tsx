@@ -190,9 +190,33 @@ function Figure({ children, ...props }: ComponentPropsWithoutRef<'figure'>) {
   return <figure {...props}>{children}</figure>;
 }
 
+/**
+ * A pipe table is the one element an author can write whose width the prose
+ * column does not get to decide: enough columns and it is wider than the
+ * measure, and with nothing to scroll it, the overflow pushes the whole page
+ * sideways rather than the table.
+ *
+ * The wrapper, not `overflow-x` on the table itself, for the reason recorded on
+ * `.ds-scroll-x`: a table only scrolls once it is `display: block`, and that
+ * costs every table that already fits.
+ *
+ * `tabIndex={0}` because a scroll container reachable only by mouse is not
+ * reachable at all — this is the one WCAG 2.1.1 obligation the wrapper brings
+ * with it. `role="region"` and the label follow from the tabstop: an unnamed
+ * one is a stop with nothing to announce.
+ */
+function Table({ children, ...props }: ComponentPropsWithoutRef<'table'>) {
+  return (
+    <div className="ds-scroll-x" tabIndex={0} role="region" aria-label="Table">
+      <table {...props}>{children}</table>
+    </div>
+  );
+}
+
 export const mdxComponents = {
   pre: Pre,
   figure: Figure,
+  table: Table,
 } satisfies MDXRemoteProps['components'];
 
 // GFM (tables, strikethrough, task lists, autolinks) is not CommonMark — without

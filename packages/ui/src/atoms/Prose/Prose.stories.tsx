@@ -5,12 +5,16 @@ import { Prose } from './Prose';
 const meta: Meta<typeof Prose> = {
   title: 'Atoms/Prose',
   component: Prose,
-  // `.ds-prose` gives its tables `overflow-x: auto`, which is a rule about what
-  // happens when the content is wider than the box — and at the desktop-only
-  // viewport its tier captures, it never is. The narrow width is the only one
-  // where this atom's scroll container is doing anything, so it is the only one
-  // where a regression in it would show. See the note on SegmentedControl for
-  // why the tag is a literal.
+  // Captured narrow as well as wide because this is the atom whose whole job is
+  // reflow: the measure, the heading rhythm and the table all resolve to
+  // different shapes at a phone width, and a desktop-only capture photographs
+  // none of it. See the note on SegmentedControl for why the tag is a literal.
+  //
+  // It does not photograph a scroll container. `.ds-prose` has `overflow-x` on
+  // `pre` and on nothing else — a `<table>` cannot scroll without becoming
+  // `display: block`, which would shrink every table that already fits. The
+  // wrapper that does the job lives on the consumer, over `.ds-scroll-x`, so a
+  // bare `<table>` in this story overflows here exactly as it would anywhere.
   tags: ['visual-diff:all-viewports'],
 };
 
