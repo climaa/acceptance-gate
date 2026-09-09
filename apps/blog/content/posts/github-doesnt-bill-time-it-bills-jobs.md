@@ -77,6 +77,8 @@ Four hundred and forty workflow runs between the seed commit and the evening of 
 
 Seven hundred minutes of computers actually computing. Two thousand minutes billed. The gap is not waste in any conventional sense — no job ran long, nothing hung, the twenty-minute timeouts never fired. The gap is rounding, applied 2,351 times.
 
+Every minute figure here is a floor, not an invoice: one minute per job, which is the billing minimum. The `timing` endpoint returned a zero duration for every run in this window, and these are ARM runners, whose rate against the included allowance I have not verified. [How these numbers were measured](#how-these-numbers-were-measured) has the full accounting. The relationship the post is about — jobs, not seconds — survives either correction.
+
 Broken down by workflow:
 
 | Workflow | Runs | Jobs | Wall clock |
