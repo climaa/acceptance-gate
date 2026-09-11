@@ -172,7 +172,7 @@ check that is green against a live site says nothing about the commit under revi
 It never applies to the visual-diff console. The three world URLs are constants in
 `pages/visual-diff-hosts.ts`, and the worlds are trees on disk that the config itself
 seeds and serves: a deployed instance cannot host them. The deployed console at
-`acceptance-gate-visual-diff-ui.vercel.app` has an empty data directory, no Docker and
+`visual-diff-ui.carloslima.dev` has an empty data directory, no Docker and
 no capture host — which is precisely the state the **sample** world reproduces locally,
 on purpose. So "validate what's on `main`" means checking out `main` and running
 `turbo run e2e` against it: same commit, the acceptance lane's full coverage, including

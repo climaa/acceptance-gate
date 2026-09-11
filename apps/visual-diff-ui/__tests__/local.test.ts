@@ -25,7 +25,7 @@ describe('isLocalHost', () => {
   });
 
   it.each([
-    ['acceptance-gate-visual-diff-ui.vercel.app', 'the deployment'],
+    ['visual-diff-ui.carloslima.dev', 'the deployment'],
     ['localhost.evil.com', 'a domain that merely starts with the word'],
     ['evil.com:3300', 'the right port on the wrong machine'],
     ['', 'a header that carried nothing'],

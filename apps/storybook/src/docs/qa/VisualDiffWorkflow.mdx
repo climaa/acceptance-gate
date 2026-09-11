@@ -59,7 +59,7 @@ The job runs on every non-draft PR and is deliberately **not** a required check 
 its own status loudly on anything but `unchanged` (a real ❌ in the PR's checks list), but
 nothing about that blocks a merge. A person reviewing the report decides whether the change
 is correct, the same as reviewing a code diff. See
-[Visual regression with agents](https://acceptance-gate-blog.vercel.app/blog/visual-regression-with-agents)
+[Visual regression with agents](https://blog.carloslima.dev/blog/visual-regression-with-agents)
 for the reasoning: a numeric pixel threshold stops being a safety net the moment change
 volume is high, and approving a baseline has to cost real attention or nobody looks at it.
 
@@ -151,7 +151,7 @@ had nothing to push.
 
 The two ways in are the ones in step 6, and both end in a commit a person reviews. That is
 the design, not a gap: per
-[Visual regression with agents](https://acceptance-gate-blog.vercel.app/blog/visual-regression-with-agents),
+[Visual regression with agents](https://blog.carloslima.dev/blog/visual-regression-with-agents),
 approving a baseline has to cost the same as reviewing a code diff.
 
 It also removes a trap the tab set. `promote.mjs` refused a promote that omitted

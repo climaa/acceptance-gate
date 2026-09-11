@@ -168,7 +168,7 @@ describe('a pixel card', () => {
       'http://localhost:6006/index.html?path=/story/atoms-badge--tones&globals=colorScheme:dark',
     );
     expect(published.getAttribute('href')).toBe(
-      'https://acceptance-gate-storybook.vercel.app/index.html?path=/story/atoms-badge--tones&globals=colorScheme:dark',
+      'https://storybook.carloslima.dev/index.html?path=/story/atoms-badge--tones&globals=colorScheme:dark',
     );
   });
 

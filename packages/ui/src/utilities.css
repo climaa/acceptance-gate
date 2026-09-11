@@ -37,3 +37,18 @@
 .ds-container--full {
   max-width: none;
 }
+
+/* A scroll container for content with an intrinsic minimum width — a wide table
+   is the case that forces it. `overflow-x` cannot do this job on the element
+   itself: a `<table>` only scrolls once it is `display: block`, and a block
+   table stops stretching its columns to the full measure, so the fix would
+   change every table that already fits in order to rescue the few that do not.
+   Wrapping leaves the table a table.
+
+   `tabindex` belongs on the consumer, not here: a scroll container that only a
+   mouse can reach is unreachable by keyboard, and whether the element is
+   focusable is a decision about the content, not about the overflow. */
+.ds-scroll-x {
+  overflow-x: auto;
+  max-width: 100%;
+}
