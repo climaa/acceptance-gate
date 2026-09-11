@@ -23,9 +23,7 @@ export const APP_DESCRIPTION =
  * console first and needs the way across. Storybook deliberately does not link
  * it: that is developer documentation, and the manual is for end users.
  */
-export const MANUAL_NAV = [
-  { label: 'Manual', href: 'https://acceptance-gate-manual.vercel.app' },
-];
+export const MANUAL_NAV = [{ label: 'Manual', href: 'https://manual.carloslima.dev' }];
 
 export const SAMPLE_LABEL = 'sample data';
 

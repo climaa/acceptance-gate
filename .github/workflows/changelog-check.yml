@@ -43,10 +43,10 @@ jobs:
       # no longer says and reports green forever.
       - name: The changelog shows releases, not the unavailable note
         env:
-          # SITE_URL's host. Pinned because a custom domain would leave this
-          # .vercel.app alias resolving, so an un-updated check would go on
-          # polling the old origin and passing while the real site was broken.
-          ORIGIN: https://acceptance-gate-blog.vercel.app
+          # SITE_URL's host. Pinned because the old .vercel.app alias still
+          # resolves (it 307s here), so an un-updated check would go on
+          # polling a redirect and passing while the real site was broken.
+          ORIGIN: https://blog.carloslima.dev
           # A substring of CHANGELOG_UNAVAILABLE_NOTE.
           UNAVAILABLE: 'could not be loaded when this page was built'
           # CHANGELOG_RELEASE_LINK_PREFIX, which every entry's link opens with.

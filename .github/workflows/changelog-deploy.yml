@@ -41,9 +41,9 @@ permissions:
 env:
   TAG: ${{ github.event.release.tag_name || inputs.tag }}
   # SITE_URL's host, pinned by apps/blog/__tests__/changelog.test.ts for the
-  # reason changelog-check.yml gives at more length: a custom domain leaves this
-  # alias resolving, so a stale copy here polls an origin nobody reads.
-  ORIGIN: https://acceptance-gate-blog.vercel.app
+  # reason changelog-check.yml gives at more length: the old .vercel.app alias
+  # still resolves, so a stale copy here polls an origin nobody reads.
+  ORIGIN: https://blog.carloslima.dev
 
 jobs:
   deploy-and-verify:
