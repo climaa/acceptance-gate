@@ -8,11 +8,13 @@
  * rather than assumed. Vercel assigns a project's `.vercel.app` name once, at
  * creation, and never regenerates it on rename — the project was created as
  * `manual`, `manual.vercel.app` was already someone else's, so it was minted
- * `manual-seven-kappa.vercel.app` and kept that through the rename. The name
- * below had to be added to the project and aliased before it served anything.
- * Verified against the live origin, not inferred from the project name.
+ * `manual-seven-kappa.vercel.app` and kept that through the rename. The tidy
+ * `.vercel.app` name had to be added to the project and aliased before it
+ * served anything; the custom domain below went through the same step, and the
+ * `.vercel.app` names now 307 to it. Verified against the live origin, not
+ * inferred from the project name.
  */
-export const SITE_URL = new URL('https://acceptance-gate-manual.vercel.app');
+export const SITE_URL = new URL('https://manual.carloslima.dev');
 
 export function absoluteUrl(pathname: string): string {
   return new URL(pathname, SITE_URL).toString();
@@ -71,8 +73,8 @@ export const ERROR_ACTION = 'Try again';
  * in sample mode, which is why one of the three pages is about that.
  */
 export const FOOTER_LINKS = [
-  { label: 'The console', href: 'https://acceptance-gate-visual-diff-ui.vercel.app' },
-  { label: 'Storybook', href: 'https://acceptance-gate-storybook.vercel.app' },
-  { label: 'Blog', href: 'https://acceptance-gate-blog.vercel.app' },
+  { label: 'The console', href: 'https://visual-diff-ui.carloslima.dev' },
+  { label: 'Storybook', href: 'https://storybook.carloslima.dev' },
+  { label: 'Blog', href: 'https://blog.carloslima.dev' },
   { label: 'GitHub', href: 'https://github.com/climaa/acceptance-gate' },
 ];

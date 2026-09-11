@@ -352,7 +352,7 @@ export const formatPixels = (pixels: number) => pixels.toLocaleString('en-US');
 
 /** The published Storybook — the one a reviewer can open from a phone, and the
  *  one the baselines were built from. */
-export const PUBLISHED_STORYBOOK = 'https://acceptance-gate-storybook.vercel.app';
+export const PUBLISHED_STORYBOOK = 'https://storybook.carloslima.dev';
 
 /** The Storybook a developer has running beside the console. */
 export const DEV_STORYBOOK = 'http://localhost:6006';
