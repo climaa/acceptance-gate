@@ -503,11 +503,11 @@ describe('the changelog page, before the first release', () => {
  * two in step, and the failure it prevents is the worst kind: reword the copy
  * and the alarm goes on passing while the page says something else entirely.
  *
- * The origin is here for the same reason and a sharper one. Adding a custom
- * domain leaves the `.vercel.app` alias resolving, so a workflow still pointed
- * at it would keep polling a site nobody reads and keep reporting green.
- * `lib/site.ts` promises `SITE_URL` is the only line to edit; these assertions
- * are what make that true of the workflows too.
+ * The origin is here for the same reason and a sharper one. The custom domain
+ * left the `.vercel.app` alias resolving, so a workflow still pointed at it
+ * would keep polling a site nobody reads and keep reporting green. `lib/site.ts`
+ * says changing `SITE_URL` is three edits; these assertions are what make the
+ * other two impossible to forget.
  */
 describe('the workflows that watch the deployed page', () => {
   const workflow = (name: string) =>

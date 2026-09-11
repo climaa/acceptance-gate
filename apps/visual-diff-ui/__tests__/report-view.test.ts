@@ -277,7 +277,7 @@ describe('the dev Storybook link', () => {
 });
 
 describe('a Storybook deep link', () => {
-  const BASE = 'https://acceptance-gate-storybook.vercel.app';
+  const BASE = 'https://storybook.carloslima.dev';
 
   // Asserted here rather than only through a rendered `href`, which is three
   // layers above the string being built.

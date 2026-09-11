@@ -115,7 +115,7 @@ describe('the site footer', () => {
     const links = linksIn(shell());
 
     expect(links).toContainEqual({
-      href: 'https://acceptance-gate-storybook.vercel.app',
+      href: 'https://storybook.carloslima.dev',
       text: 'Storybook',
     });
   });
@@ -128,7 +128,7 @@ describe('the site footer', () => {
     const storybookIndex = links.findIndex((link) => link.text === 'Storybook');
 
     expect(links[storybookIndex + 1]).toEqual({
-      href: 'https://acceptance-gate-visual-diff-ui.vercel.app',
+      href: 'https://visual-diff-ui.carloslima.dev',
       text: 'Visual diff',
     });
   });

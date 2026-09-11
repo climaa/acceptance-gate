@@ -419,7 +419,7 @@ describe('POST /api/jobs', () => {
   // deployment could stop a local console from ever starting a job again.
   it('refuses a job asked for by anything but the machine running it', async () => {
     const dir = configuredDataDir();
-    setRequestHost('acceptance-gate-visual-diff-ui.vercel.app');
+    setRequestHost('visual-diff-ui.carloslima.dev');
 
     const response = await postJob(
       jobRequest({ mode: 'compare', baseline: 'set-a', candidate: 'set-b' }),

@@ -3,17 +3,20 @@
  * `metadataBase`, `app/rss.xml/route.ts` and `app/sitemap.ts` need it to build
  * absolute URLs — this is the one place the domain is written literally.
  *
- * The Vercel origin rather than a custom domain, because there is no registered
- * domain yet. That distinction is not cosmetic: a `metadataBase` pointing at a
- * host that does not resolve breaks every absolute URL built on it — the OG
- * image the card fetches, the `<link>` in every RSS item, every sitemap
- * `<loc>`. Aim it at somewhere real, always.
+ * Aim it at somewhere real, always. That is not cosmetic: a `metadataBase`
+ * pointing at a host that does not resolve breaks every absolute URL built on
+ * it — the OG image the card fetches, the `<link>` in every RSS item, every
+ * sitemap `<loc>`. The blog spent its first weeks on a typo'd host for exactly
+ * that reason, then on the `.vercel.app` name, which still resolves and now
+ * 307s here — so a stale absolute URL is a redirect, not a break.
  *
- * `lib/og.tsx` also prints this host on every social card, which is the visible
- * argument for registering a domain. When one exists, this line is the only
- * edit — the feed tests derive their expectations from this constant.
+ * `lib/og.tsx` prints this host on every social card. Changing it is three
+ * edits, not one: the two changelog workflows carry a copy as `ORIGIN`, and
+ * `__tests__/changelog.test.ts` pins them to this constant so a stale copy
+ * fails `test` instead of polling an origin nobody reads. The feed tests derive
+ * their expectations from this constant.
  */
-export const SITE_URL = new URL('https://acceptance-gate-blog.vercel.app');
+export const SITE_URL = new URL('https://blog.carloslima.dev');
 
 export const SITE_TITLE = 'Carlos Lima';
 
