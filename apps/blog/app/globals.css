@@ -47,6 +47,15 @@ main {
   letter-spacing: -0.02em;
 }
 
+/* The line under that <h1>, for the same reason the rule above exists: /about
+   has no template to take a lead from. NOT `.hero__lead`, which is muted in the
+   same way and would have saved a rule — it names the home page's hero, and a
+   class that lies about where it belongs is how one page's restyle silently
+   moves another. */
+.page-lead {
+  color: var(--color-text-muted);
+}
+
 /* Appended to every MDX heading by rehype-autolink-headings (lib/mdx.tsx). The
    "#" is decoration — the anchor's name comes from the visually hidden label
    beside it — so it stays quiet until the heading is hovered or the link takes
