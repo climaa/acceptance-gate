@@ -1,6 +1,7 @@
 import type { Response } from '@playwright/test';
 import { test as base } from 'playwright-bdd';
 
+import { AboutPage } from '../../pages/about';
 import { BlogIndexPage } from '../../pages/blog-index';
 import { ChangelogPage } from '../../pages/changelog';
 import { Chrome } from '../../pages/chrome';
@@ -39,6 +40,7 @@ export interface ScenarioState {
  *  it scans, and it names the lane rather than the layer root so these specs can never
  *  bind to the local lane's `test` (whose page objects point at the dev server on 3300). */
 export const test = base.extend<{
+  about: AboutPage;
   blogIndex: BlogIndexPage;
   changelog: ChangelogPage;
   giscus: Giscus;
@@ -49,6 +51,9 @@ export const test = base.extend<{
   modal: ComparisonModal;
   scenarioState: ScenarioState;
 }>({
+  about: async ({ page }, use) => {
+    await use(new AboutPage(page));
+  },
   blogIndex: async ({ page }, use) => {
     await use(new BlogIndexPage(page));
   },

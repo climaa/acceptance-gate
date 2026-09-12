@@ -55,6 +55,7 @@ const FOOTER_LINKS = [
     label: 'Visual diff',
     href: 'https://visual-diff-ui.carloslima.dev',
   },
+  { label: 'Portfolio', href: 'https://carloslima.dev' },
 ];
 
 export const metadata: Metadata = {

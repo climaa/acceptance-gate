@@ -11,6 +11,14 @@ export default function AboutPage() {
     <Stack gap={8}>
       <h1 className="page-title">About</h1>
       <Prose>
+        {/* For the reader who arrived from a CV or a job post rather than from
+            the blog: this page is the long argument, and it says so before the
+            first paragraph rather than after the last. A link, never a redirect —
+            /about is this site's authorship page and stays indexed as one. */}
+        <p className="page-lead">
+          If you got here from a CV or a job post, the 30-second version is at{' '}
+          <a href="https://carloslima.dev">carloslima.dev</a>. This page is the long one.
+        </p>
         <p>
           I am Carlos Lima, a senior frontend engineer in Barcelona. I work mostly with
           Next.js and TypeScript, on the part a lot of people find boring: making sure
@@ -40,6 +48,10 @@ export default function AboutPage() {
         <p>
           <a href="https://github.com/climaa">GitHub</a> ·{' '}
           <a href="https://www.linkedin.com/in/carlos-lima-frontend/">LinkedIn</a>
+        </p>
+        <p>
+          Portfolio → <a href="https://carloslima.dev">carloslima.dev</a> — two projects,
+          the proof for each, and the CV.
         </p>
       </Prose>
     </Stack>

@@ -97,12 +97,23 @@ const LANES = ['acceptance', 'local'];
  * the status code is the entire claim, and only something that speaks HTTP can
  * read it back.
  *
+ * It was 52 until /about started pointing at the author's portfolio. The
+ * scenario added with it is the one claim no unit test can make: half of it is
+ * that the address on the page is one that answers, and only something that
+ * speaks HTTP to the real host can say so. It is also the ONLY request this
+ * suite makes to a host it does not start itself — every other outside service,
+ * giscus included, is faked at the network boundary — so it is the one scenario
+ * here that can go red because someone else's site is down. That is the trade
+ * it was filed for: a dead link on the page a recruiter opens is worth a
+ * blocking check, and a link is not verified by asserting that it is spelled
+ * the way it was spelled.
+ *
  * Exact equality, not a floor: a floor decays, and after ten more scenarios a
  * floor of 47 would permit deleting ten of them. Raising this alongside a new
  * scenario is a two-line diff; LOWERING it is a product decision and belongs in
  * its own hand-authored PR with the reason written down.
  */
-const EXPECTED_SCENARIOS = 52;
+const EXPECTED_SCENARIOS = 53;
 
 /** The two project selectors. Carrying both excludes a scenario from both. */
 const PROJECT_TAGS = ['@desktop', '@mobile'];
