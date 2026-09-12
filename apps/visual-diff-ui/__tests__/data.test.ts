@@ -115,6 +115,7 @@ describe('readSets', () => {
     const { sets } = await readSets(FIXTURES_DIR);
 
     expect(sets.map((set) => set.label)).toEqual([
+      'main-2026-08-30',
       'main-2026-08-24',
       'main-2026-08-17',
       'main-2026-08-13',

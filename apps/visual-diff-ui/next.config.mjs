@@ -49,7 +49,10 @@ const nextConfig = {
     '/api/sets': ['./fixtures/**'],
     '/api/reports': ['./fixtures/**'],
     '/api/reports/[id]': ['./fixtures/**'],
+    '/api/label': ['./fixtures/**'],
     '/api/shots/[report]/[file]': ['./fixtures/**'],
+    '/set/[label]': ['./fixtures/**'],
+    '/api/sets/[label]/shots/[file]': ['./fixtures/**'],
   },
 };
 

@@ -287,3 +287,57 @@ describe('the dev server address', () => {
     expect(scripts.dev).toContain('next dev -H 127.0.0.1');
   });
 });
+
+/**
+ * The third trap, and it shipped: `/set/[label]` and its shot route read
+ * `fixtures/` at request time and were not named in `outputFileTracingIncludes`,
+ * so a deployed function would have shipped without the files it reads. Every
+ * unit suite, the typecheck, the build and a full green gate all passed — the
+ * failure only exists on a deployment, which is the same shape as the two traps
+ * above.
+ *
+ * Derived rather than pinned: a list asserting the config equals itself proves
+ * nothing. The rule is that a route reading fixture data must say so, and the
+ * readers are the functions that open those files.
+ */
+describe('fixture tracing', () => {
+  /** Everything in lib/data.ts and lib/set-shots.ts that opens a file under the
+   *  data directory. A route mentioning one of these reads fixtures in sample
+   *  mode, and a deployed function without them answers from a tree that is not
+   *  there. */
+  const READERS = [
+    'readSets',
+    'readSetSizes',
+    'readReports',
+    'readReport',
+    'readSetShots',
+    'readCanonicalSet',
+    'resolveShotPath',
+    'resolveSetShotPath',
+    'freeLabel',
+  ];
+
+  /** `app/report/[id]/page.tsx` is the route `/report/[id]`, and `app/page.tsx`
+   *  is `/` — the shape `outputFileTracingIncludes` is keyed by. */
+  const routeOf = (file: string) =>
+    `/${file.replace(/^app\//, '').replace(/\/?(page|route)\.tsx?$/, '')}`.replace(
+      /\/$/,
+      '',
+    ) || '/';
+
+  it('names every route that reads the fixtures', () => {
+    const routes = sourceFiles()
+      .filter((file) => /(?:page|route)\.tsx?$/.test(file))
+      .filter((file) => READERS.some((reader) => read(file).includes(reader)))
+      .map(routeOf)
+      .sort();
+
+    const config = fs.readFileSync(path.join(APP_ROOT, 'next.config.mjs'), 'utf8');
+    const block = config.slice(config.indexOf('outputFileTracingIncludes'));
+    const traced = [...block.matchAll(/'(\/[^']*)':\s*\['\.\/fixtures/g)]
+      .map((match) => match[1])
+      .sort();
+
+    expect(traced).toEqual(routes);
+  });
+});

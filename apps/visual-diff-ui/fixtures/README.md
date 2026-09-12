@@ -68,11 +68,47 @@ demoing.
 **Still not demoed: `removed`, `errored`, `a11y`.** No corpus event has produced
 them, and, as above, none is fabricated to fill the gap.
 
+## What the sets are
+
+Three of the four are registry rows and nothing else: `sets.json` names them so the
+console has something to list and the compare pickers have something to offer, and
+none of them ships the shots it claims. That is not an omission — it is the state
+a real instance is in when it holds the record of a capture taken somewhere else,
+and it is what the size column's em dash means. The set viewer draws no link for
+them, on purpose.
+
+`main-2026-08-30` is the exception, and the only reason it exists: a deployed
+console had no way to OPEN a set, so the page that exists to show screenshots
+could not be seen anywhere but a developer's own machine.
+
+Its shots are real bytes — the committed `__baselines__` corpus at `d9d8e96`,
+captured in the pinned container like everything else here. It is a slice rather
+than the whole corpus, which is a `--filter`ed capture, a mode the run panel has a
+field for. Fourteen shots, chosen to exercise the shapes the viewer has to survive
+rather than to flatter it:
+
+| story                             | cells | why it is here                                |
+| --------------------------------- | ----- | --------------------------------------------- |
+| `atoms-skeleton--line`            | 2     | 1248x12 — the thinnest thing in the corpus    |
+| `atoms-badge--accent`             | 2     | 1248x25 — a component on mostly empty canvas  |
+| `molecules-postcard--default`     | 2     | an ordinary desktop-only card                 |
+| `organisms-siteheader--default`   | 4     | both viewports, both themes — the full matrix |
+| `templates-posttemplate--default` | 4     | both viewports, and the tallest pair          |
+
+So the demo shows the ragged matrix (three of the five stories have no mobile row,
+because the corpus has none for them), the aspect ratios that drove the layout, and
+all four tiers. What it does not show is a set big enough to need the tier nav —
+the corpus has 160 shots and this has 14, and inflating it would cost a megabyte of
+committed PNGs to demonstrate scrolling.
+
 ## Layout
 
 ```bash
 fixtures/
-├── sets.json                     # the three capture sets the console lists
+├── sets.json                     # the four capture sets the console lists
+├── sets/
+│   └── main-2026-08-30/          # the one set that ships its shots
+│       └── <variantKey>.png      # real corpus bytes, --filter'd to 14
 └── reports/
     ├── main-2026-08-17__main-2026-08-13/
     │   ├── summary.json          # schema of packages/visual-diff, plus isSample: true
