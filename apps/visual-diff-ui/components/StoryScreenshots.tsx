@@ -39,6 +39,12 @@ function VariantCell({ label, shot }: { label: string; shot: SetShot }) {
   return (
     <figure
       className="vd-cell"
+      // What the filter bar selects on. NOT `data-theme`: that attribute is the
+      // app's theme mechanism, and `tokens.css` remaps every colour role under a
+      // bare `[data-theme='dark']` selector — putting it here would re-theme this
+      // cell's own caption, links and border rather than label it.
+      data-shot-theme={shot.theme}
+      data-shot-viewport={shot.viewport}
       // The shot's own width, so nothing is ever drawn larger than it was
       // captured. Derived from the file, not a chosen visual value.
       style={dimensions ? { maxWidth: `${shot.width}px` } : undefined}
@@ -125,7 +131,7 @@ export function StoryScreenshots({ label, group }: StoryScreenshotsProps) {
       </header>
 
       {group.viewports.map((viewport) => (
-        <div className="vd-story__viewport" key={viewport}>
+        <div className="vd-story__viewport" data-shot-viewport={viewport} key={viewport}>
           <span className="vd-mono vd-story__viewport-label">{viewport}</span>
           <div className="vd-story__cells">
             {group.shots

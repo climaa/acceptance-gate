@@ -2,7 +2,13 @@ import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
-import { groupShots, parseShotName, readSetShots, type SetShot } from '../lib/set-shots';
+import {
+  filterCounts,
+  groupShots,
+  parseShotName,
+  readSetShots,
+  type SetShot,
+} from '../lib/set-shots';
 
 /**
  * What a screenshot set holds, read off its filenames and its PNG headers.
@@ -291,5 +297,58 @@ describe('readSetShots', () => {
     const shots = await readSetShots(dir, null, 'main-2026-08-17');
 
     expect(shots).toBeNull();
+  });
+});
+
+/**
+ * The nine answers the bar renders and CSS reveals one of.
+ *
+ * Precomputed because `:checked` can hide a screenshot but cannot count what is
+ * left, so the alternative was a client island on a page that deliberately has
+ * none.
+ */
+describe('filterCounts', () => {
+  const corpus = groupShots([
+    // Desktop-only, both themes — 37 of the corpus's atoms look like this.
+    shot('atoms__desktop__light__atoms-badge--accent'),
+    shot('atoms__desktop__dark__atoms-badge--accent'),
+    // All four cells — only 17 of 63 stories have a mobile screenshot.
+    shot('organisms__desktop__light__organisms-siteheader--default'),
+    shot('organisms__desktop__dark__organisms-siteheader--default'),
+    shot('organisms__mobile__light__organisms-siteheader--default'),
+    shot('organisms__mobile__dark__organisms-siteheader--default'),
+  ]);
+
+  it('counts everything when neither axis is narrowed', () => {
+    const counts = filterCounts(corpus);
+
+    expect(counts['both|both']).toEqual({ shots: 6, stories: 2 });
+  });
+
+  it('halves the screenshots but keeps every story when a theme is chosen', () => {
+    const counts = filterCounts(corpus);
+
+    expect(counts['dark|both']).toEqual({ shots: 3, stories: 2 });
+  });
+
+  /** The case the count exists for: a viewport filter drops whole stories, and a
+   *  page saying "2 stories" while showing one would be worse than saying
+   *  nothing. */
+  it('drops a story a viewport filter leaves with nothing', () => {
+    const counts = filterCounts(corpus);
+
+    expect(counts['both|mobile']).toEqual({ shots: 2, stories: 1 });
+  });
+
+  it('narrows on both axes at once', () => {
+    const counts = filterCounts(corpus);
+
+    expect(counts['light|mobile']).toEqual({ shots: 1, stories: 1 });
+  });
+
+  it('answers every cell of the matrix, so no choice renders a gap', () => {
+    const counts = filterCounts(corpus);
+
+    expect(Object.keys(counts)).toHaveLength(9);
   });
 });

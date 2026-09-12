@@ -2,9 +2,10 @@ import NextLink from 'next/link';
 import { Badge, Stack } from '@gate/ui';
 import type { CanonicalSet } from '@/lib/baselines';
 import { UNKNOWN, formatBytes, shortSha } from '@/lib/outcome';
-import type { SetShots } from '@/lib/set-shots';
+import { filterCounts, type SetShots, tierFilterCounts } from '@/lib/set-shots';
 import type { CaptureSet } from '@/lib/summary';
 import { Field } from './Field';
+import { Filtered, SetFilterBar } from './SetFilterBar';
 import { Note } from './Note';
 import { StoryScreenshots } from './StoryScreenshots';
 
@@ -87,8 +88,16 @@ export interface SetTemplateProps {
 }
 
 export function SetTemplate({ shots, corpus, set }: SetTemplateProps) {
+  // Once, not per tier: the same nine numbers feed the bar's jump links and every
+  // tier heading below.
+  const perTier = tierFilterCounts(shots.sections);
+
   return (
-    <Stack gap={5}>
+    // What every filter rule in set.css hangs off: the bar's radios are inside
+    // this subtree, so `:has()` can read a checked one from here. NOT `vd-set` —
+    // console.css already owns that for the sets table's label cell, and a page
+    // root wearing it inherits an inline-flex meant for one word.
+    <Stack className="vd-set-view" gap={5}>
       <header role="region" aria-label={HEADER_LABEL} className="vd-set__header">
         <Stack gap={3}>
           <Stack direction="row" gap={3} align="center" wrap>
@@ -102,18 +111,6 @@ export function SetTemplate({ shots, corpus, set }: SetTemplateProps) {
           {corpus && <CorpusFacts corpus={corpus} shots={shots} />}
           {!corpus && set && <CaptureFacts set={set} shots={shots} />}
 
-          <Stack direction="row" gap={3} align="center" wrap className="vd-set__nav">
-            {shots.sections.map((section) => (
-              <a
-                className="vd-set__jump vd-mono"
-                href={`#vd-tier-${section.tier}`}
-                key={section.tier}
-              >
-                {section.tier} {section.stories} · {section.shots}
-              </a>
-            ))}
-          </Stack>
-
           {shots.ignored.length > 0 && (
             <Note name="unreadable files">
               {shots.ignored.length} file(s) in this set name no cell of the capture
@@ -122,6 +119,15 @@ export function SetTemplate({ shots, corpus, set }: SetTemplateProps) {
           )}
         </Stack>
       </header>
+
+      {/* A SIBLING of the header, not a child of it: `position: sticky` is
+          clipped by its own parent's box, so a bar inside a header that scrolls
+          away goes with it. */}
+      <SetFilterBar
+        counts={filterCounts(shots.sections)}
+        perTier={perTier}
+        sections={shots.sections}
+      />
 
       {shots.sections.map((section) => (
         <section
@@ -133,7 +139,15 @@ export function SetTemplate({ shots, corpus, set }: SetTemplateProps) {
             <h2 className="vd-tier__title" id={`vd-tier-${section.tier}`}>
               {section.tier}{' '}
               <span className="vd-count vd-mono">
-                {section.stories} stories · {section.shots} screenshots
+                {/* Follows the filter for the reason the bar's count does: a
+                    heading claiming 37 stories over three of them is the page
+                    contradicting itself. */}
+                <Filtered
+                  counts={perTier[section.tier]}
+                  render={(count) =>
+                    `${count.stories} stories · ${count.shots} screenshots`
+                  }
+                />
               </span>
             </h2>
 
