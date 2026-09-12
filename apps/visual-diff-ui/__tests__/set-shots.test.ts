@@ -216,6 +216,59 @@ describe('readSetShots', () => {
     });
   });
 
+  /**
+   * There and unreadable is not the same as gone. A directory standing where a
+   * screenshot should be `stat`s fine and refuses to be read, which is the
+   * shape of a truncated capture or a half-written file — the shot is still on
+   * disk, so it is still counted and still drawn, with no size in its caption.
+   */
+  it('still shows a shot that is on disk but will not answer', async () => {
+    const dir = setDirWith({});
+    fs.mkdirSync(
+      path.join(
+        dir,
+        'sets',
+        'main-2026-08-17',
+        'atoms__desktop__light__atoms-badge--accent.png',
+      ),
+    );
+
+    const shots = await readSetShots(dir, null, 'main-2026-08-17');
+
+    expect({
+      count: shots?.shots,
+      first: shots?.sections[0]?.groups[0]?.shots[0],
+    }).toMatchObject({
+      count: 1,
+      first: { width: null, height: null },
+    });
+  });
+
+  /** Gone between the listing and the read, which a broken symlink reproduces
+   *  exactly. Nothing to show, so nothing is claimed — and it is not named as an
+   *  unreadable file either, because it named a cell perfectly well. */
+  it('drops a shot whose file is no longer there, without counting it', async () => {
+    const dir = setDirWith({
+      'atoms__desktop__light__atoms-badge--accent.png': pngBytes(1248, 25),
+    });
+    fs.symlinkSync(
+      path.join(dir, 'sets', 'main-2026-08-17', 'nothing-here.png'),
+      path.join(
+        dir,
+        'sets',
+        'main-2026-08-17',
+        'atoms__desktop__dark__atoms-badge--accent.png',
+      ),
+    );
+
+    const shots = await readSetShots(dir, null, 'main-2026-08-17');
+
+    expect({ count: shots?.shots, ignored: shots?.ignored }).toEqual({
+      count: 1,
+      ignored: [],
+    });
+  });
+
   it('answers null for a label this instance holds no directory for', async () => {
     const dir = setDirWith({});
 

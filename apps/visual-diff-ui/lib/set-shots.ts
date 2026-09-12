@@ -186,25 +186,53 @@ export function groupShots(shots: readonly SetShot[]): ShotSection[] {
   }).filter((section) => section.groups.length > 0);
 }
 
-/** One shot's size on disk and in pixels. The header alone is read; a file that
- *  cannot answer reports null dimensions rather than throwing. */
-async function measure(dir: string, name: string): Promise<ShotSize | null> {
-  const file = path.join(dir, name);
+/**
+ * A shot's pixel dimensions, or nulls for a file that is there and will not say.
+ *
+ * A truncated capture, a half-written file, something that is not a regular file
+ * at all: the shot still EXISTS, so it is still shown, with the caption stating
+ * no size. Reporting it as absent would be the failure `ignored` exists to
+ * prevent one level up — a screenshot that is on disk must never read as a story
+ * that went missing.
+ */
+async function headerSize(file: string): Promise<Omit<ShotSize, 'bytes'>> {
   let handle: fs.promises.FileHandle | undefined;
 
   try {
-    const stat = await fs.promises.stat(file);
     handle = await fs.promises.open(file, 'r');
     const header = new Uint8Array(HEADER_BYTES);
     const { bytesRead } = await handle.read(header, 0, HEADER_BYTES, 0);
     const size = bytesRead === HEADER_BYTES ? pngSize(header) : null;
 
-    return { bytes: stat.size, width: size?.width ?? null, height: size?.height ?? null };
+    return { width: size?.width ?? null, height: size?.height ?? null };
   } catch {
-    return null;
+    return { width: null, height: null };
   } finally {
     await handle?.close();
   }
+}
+
+/**
+ * One shot's size on disk and in pixels, or null when there is no file to
+ * measure.
+ *
+ * The two failures are deliberately not the same. `stat` failing means the file
+ * went away between the listing and the read, and dropping it is right: there is
+ * no screenshot to show. Everything after that is a file that IS there, and is
+ * shown — see `headerSize`. Collapsing both into one `catch` is what made an
+ * unreadable shot vanish from the page AND from the counts, silently.
+ */
+async function measure(dir: string, name: string): Promise<ShotSize | null> {
+  const file = path.join(dir, name);
+
+  let bytes: number;
+  try {
+    bytes = (await fs.promises.stat(file)).size;
+  } catch {
+    return null;
+  }
+
+  return { bytes, ...(await headerSize(file)) };
 }
 
 /** The corpus's host stamp, or null where there is none to read. A capture set
