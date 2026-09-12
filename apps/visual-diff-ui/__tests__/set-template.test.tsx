@@ -163,3 +163,143 @@ describe('SetTemplate', () => {
     );
   });
 });
+
+/**
+ * The pinned bar.
+ *
+ * What these can prove is the MARKUP — the radios exist, they are grouped, the
+ * default is `both`, every cell is labelled for the selector. What they cannot
+ * prove is the filtering, because it is `display: none` driven by `:has()` and
+ * jsdom does not lay out. That half is a browser pass, and this file should not
+ * pretend otherwise: appearance belongs to visual-diff, and no app page is ever
+ * captured.
+ */
+describe('SetFilterBar', () => {
+  const render4 = () =>
+    render(<SetTemplate corpus={corpus} set={null} shots={shots([BADGE, ...HEADER])} />);
+
+  it('groups each axis so a screen reader can name it', () => {
+    render4();
+
+    expect(screen.getByRole('group', { name: 'theme' })).toBeTruthy();
+    expect(screen.getByRole('group', { name: 'viewport' })).toBeTruthy();
+  });
+
+  /** Both axes, because either one left narrowed would open the page already
+   *  hiding screenshots without having been asked to. */
+  it('starts on both for each axis, so the page opens unfiltered', () => {
+    render4();
+
+    expect(screen.getAllByRole('radio', { name: 'both', checked: true })).toHaveLength(2);
+    // Not `auto`: opening already narrowed would hide half the screenshots
+    // without having been asked, and on a phone it would hide 46 of 63 stories.
+    expect(screen.getAllByRole('radio', { name: 'auto', checked: false })).toHaveLength(
+      2,
+    );
+    expect(screen.getAllByRole('radio', { checked: false })).toHaveLength(6);
+  });
+
+  it('offers a radio per choice on each axis', () => {
+    render4();
+
+    expect(screen.getAllByRole('radio').map((node) => node.getAttribute('id'))).toEqual([
+      'vd-theme-auto',
+      'vd-theme-both',
+      'vd-theme-light',
+      'vd-theme-dark',
+      'vd-viewport-auto',
+      'vd-viewport-both',
+      'vd-viewport-desktop',
+      'vd-viewport-mobile',
+    ]);
+  });
+
+  /** CSS selects the checked input by id, so the ids are a contract between the
+   *  component and the stylesheet rather than an implementation detail. */
+  it('renders every cell of the count matrix, since CSS reveals one', () => {
+    render4();
+
+    expect(document.querySelectorAll('.vd-set__counts .vd-filtered')).toHaveLength(9);
+  });
+
+  /**
+   * The jump links and the tier headings follow the filter too. A heading
+   * claiming 37 stories over three of them is the page contradicting itself —
+   * found in the browser, because no test here can see a CSS filter.
+   */
+  it('gives every figure that moves with the filter all nine answers', () => {
+    render4();
+
+    const figures = [...document.querySelectorAll('.vd-filtered')];
+    expect(figures.every((node) => node.getAttribute('data-for'))).toBe(true);
+    // One set of nine for the bar, and one for each tier's jump link and heading.
+    expect(figures).toHaveLength(9 * (1 + 2 * 2));
+  });
+
+  it('labels each screenshot with the axes a filter selects on', () => {
+    render4();
+
+    const cell = document.querySelector('.vd-cell');
+    expect({
+      theme: cell?.getAttribute('data-shot-theme'),
+      viewport: cell?.getAttribute('data-shot-viewport'),
+    }).toEqual({ theme: 'light', viewport: 'desktop' });
+  });
+
+  /**
+   * The one half of the filtering a test here CAN reach.
+   *
+   * A tier a filter empties is hidden, heading and all, so the link still
+   * offering it would be a dead press — and `:target` would mark it as the place
+   * you went. set.css drops the link by asking what its tier holds, which makes
+   * the attribute a contract between the component and the stylesheet rather
+   * than decoration. Asserted from a fixture whose two tiers differ, because the
+   * corpus has both viewports in every tier and could not tell them apart.
+   */
+  it('says what each tier holds, so a link to an emptied one can be dropped', () => {
+    render(
+      <SetTemplate
+        corpus={corpus}
+        set={null}
+        shots={shots([
+          BADGE,
+          ...HEADER,
+          'organisms__mobile__dark__organisms-siteheader--default',
+        ])}
+      />,
+    );
+
+    const held = (tier: string) =>
+      screen
+        .getByRole('link', { name: new RegExp(`^${tier}`) })
+        .getAttribute('data-shot-viewports');
+
+    expect(held('atoms')).toBe('desktop');
+    expect(held('organisms')).toBe('desktop mobile');
+  });
+
+  /** `data-theme` would have been the obvious name and would have re-themed the
+   *  cell: tokens.css remaps every colour role under a bare `[data-theme='dark']`. */
+  it('does not mark a cell with the attribute that drives the app theme', () => {
+    render4();
+
+    expect(document.querySelector('.vd-cell[data-theme]')).toBeNull();
+  });
+
+  /** `position: sticky` is clipped by its own parent's box, so a bar inside the
+   *  header would scroll away with it. */
+  it('puts the bar outside the header, not within it', () => {
+    render4();
+
+    const header = screen.getByRole('region', { name: 'set' });
+    expect(header.querySelector('.vd-set__bar')).toBeNull();
+    expect(document.querySelector('.vd-set__bar')).toBeTruthy();
+  });
+
+  it('keeps the tier jump-nav, now inside the bar', () => {
+    render4();
+
+    const nav = screen.getByRole('navigation', { name: 'tiers' });
+    expect(nav.querySelectorAll('a')).toHaveLength(2);
+  });
+});

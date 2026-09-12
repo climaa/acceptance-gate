@@ -310,3 +310,119 @@ export async function readSetShots(
     env: await readEnv(dir),
   };
 }
+
+/* ---- What a filter would leave ------------------------------------------- */
+
+/** The axes the set viewer counts on. `both` is named rather than implied so a
+ *  key always has two parts. `auto` is absent on purpose: it resolves to one of
+ *  these at render time, in CSS, so it needs no count of its own. */
+export const THEME_CHOICES = ['both', ...THEMES] as const;
+export const VIEWPORT_CHOICES = ['both', ...VIEWPORT_ORDER] as const;
+
+/** What each strip DRAWS. `auto` leads, because it is the one choice that reads
+ *  the page you are on rather than asking you to describe it. */
+export const THEME_SEGMENTS = ['auto', ...THEME_CHOICES] as const;
+export const VIEWPORT_SEGMENTS = ['auto', ...VIEWPORT_CHOICES] as const;
+
+export type ThemeChoice = (typeof THEME_CHOICES)[number];
+export type ViewportChoice = (typeof VIEWPORT_CHOICES)[number];
+
+/** `${theme}|${viewport}` — the nine cells of the filter matrix. */
+export type FilterKey = `${ThemeChoice}|${ViewportChoice}`;
+
+export interface FilterCount {
+  shots: number;
+  /** Stories with at least one surviving screenshot. A story a filter empties is
+   *  hidden rather than drawn empty, so it must not be counted either. */
+  stories: number;
+}
+
+const keeps = (shot: SetShot, theme: ThemeChoice, viewport: ViewportChoice) =>
+  (theme === 'both' || shot.theme === theme) &&
+  (viewport === 'both' || shot.viewport === viewport);
+
+/**
+ * What each of the nine filter combinations would leave.
+ *
+ * Precomputed because the page states the count in words and the filtering
+ * itself is CSS — `:checked` can hide a cell but it cannot count what is left,
+ * so every answer is rendered and the matching one revealed. Nine small numbers
+ * is a cheaper price than the client island that would otherwise be needed to
+ * say "showing 80 of 160".
+ */
+export function filterCounts(
+  sections: readonly ShotSection[],
+): Record<FilterKey, FilterCount> {
+  const groups = sections.flatMap((section) => section.groups);
+  const counts = {} as Record<FilterKey, FilterCount>;
+
+  for (const theme of THEME_CHOICES) {
+    for (const viewport of VIEWPORT_CHOICES) {
+      let shots = 0;
+      let stories = 0;
+      for (const group of groups) {
+        const kept = group.shots.filter((shot) => keeps(shot, theme, viewport)).length;
+        shots += kept;
+        if (kept > 0) stories += 1;
+      }
+      counts[`${theme}|${viewport}`] = { shots, stories };
+    }
+  }
+
+  return counts;
+}
+
+/**
+ * The same nine answers, per tier.
+ *
+ * The bar's count describes the page; a tier's heading and its jump link describe
+ * a tier, and a heading reading "37 stories" over three of them is the page
+ * disagreeing with itself. Measured in the browser, which is the only place a
+ * CSS filter can be seen at all.
+ */
+export type TierCounts = Record<Tier, Record<FilterKey, FilterCount>>;
+
+export function tierFilterCounts(sections: readonly ShotSection[]): TierCounts {
+  return Object.fromEntries(
+    sections.map((section) => [section.tier, filterCounts([section])]),
+  ) as TierCounts;
+}
+
+/**
+ * Which themes and viewports a tier actually holds.
+ *
+ * For the jump link that offers it. A tier a filter empties is hidden above,
+ * heading and all, so a link still pointing at it is a dead press — and worse
+ * than dead, because `:target` matches an element `display: none` never drew, so
+ * the "you jumped here" mark lights up on a click that moved nothing.
+ *
+ * The corpus never reaches that state, and the reason is worth writing down
+ * because `TIER_VIEWPORTS` reads like it should: atoms and molecules are
+ * desktop-only BY DEFAULT, but `visual-diff:all-viewports` opts individual
+ * stories past it, and three atoms and three molecules are opted past — so every
+ * tier survives a mobile filter. A partial set is what reaches it: a capture run
+ * under a `--filter` can leave a tier holding one viewport, and the console opens
+ * a captured set at the same route the corpus uses.
+ *
+ * Defensive, then, in exactly the way the tier's own rules already are — the
+ * `:not(:has([data-shot-theme=…]))` guards cannot fire on the corpus either.
+ *
+ * Two lists rather than the nine counts above, because a tier's own hide rules
+ * are per axis and independent — a link testing the nine combinations instead
+ * would disagree with the section it points at about what an empty tier is.
+ */
+export interface TierAxes {
+  themes: readonly Theme[];
+  viewports: readonly ViewportName[];
+}
+
+export function tierAxes(section: ShotSection): TierAxes {
+  const shots = section.groups.flatMap((group) => group.shots);
+
+  return {
+    themes: THEMES.filter((theme) => shots.some((shot) => shot.theme === theme)),
+    viewports: VIEWPORT_ORDER.filter((viewport) =>
+      shots.some((shot) => shot.viewport === viewport),
+    ),
+  };
+}

@@ -47,8 +47,44 @@
   font-size: var(--text-xs);
 }
 
+/* A badge rather than a bare link, so the row reads as one bar of controls
+   instead of prose beside two strips. Separate from `.vd-strip__label` on
+   purpose: these are links, not segments of an exclusive choice, so they stay
+   individually rounded and never collapse their shared edges. */
 .vd-set__jump {
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-subtle);
   color: var(--color-accent);
+  text-decoration: none;
+}
+
+.vd-set__jump:hover {
+  border-color: var(--color-accent);
+}
+
+.vd-set__jump:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+/* The tier you jumped to, marked on its own badge.
+   `:target` lands on the HEADING — that is where the id is — so `:has()` reads
+   which one is targeted from the root and matches the badge by the href that
+   points at it. Four rules, one per tier, for the same reason the nine counts
+   are nine: CSS relates elements, it does not compute over them.
+
+   This is the zero-JavaScript half of "activate the one you are in": it answers
+   a CLICK, which is what a jump-nav is for, and it survives a reload and a
+   shared link. It does not follow free scrolling — no selector can observe
+   that — so the mark means "the one you asked for", not "the one on screen". */
+.vd-set-view:has(#vd-tier-atoms:target) .vd-set__jump[href='#vd-tier-atoms'],
+.vd-set-view:has(#vd-tier-molecules:target) .vd-set__jump[href='#vd-tier-molecules'],
+.vd-set-view:has(#vd-tier-organisms:target) .vd-set__jump[href='#vd-tier-organisms'],
+.vd-set-view:has(#vd-tier-templates:target) .vd-set__jump[href='#vd-tier-templates'] {
+  border-color: var(--color-accent);
+  background: var(--color-accent-subtle);
 }
 
 .vd-set__open {
@@ -165,4 +201,452 @@
 
 .vd-cell__link {
   color: var(--color-accent);
+}
+
+/* ---- The pinned bar ------------------------------------------------------ */
+
+/* Static here; `wide.css` is where it pins, beside the two bars that already do.
+   Opaque, because screenshots scroll underneath it. */
+.vd-set__bar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-block: var(--space-2);
+  background: var(--color-bg);
+  border-block-end: 1px solid var(--color-border);
+}
+
+.vd-set__nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  font-size: var(--text-xs);
+}
+
+/* ---- One filter axis, drawn as a connected strip -------------------------- */
+
+/* No `gap`: the segments share their edges, which is what makes this read as one
+   control rather than three buttons. The legend carries its own spacing. */
+.vd-strip {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.vd-strip__legend {
+  float: inline-start;
+  padding-inline-end: var(--space-2);
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+}
+
+.vd-strip__segment {
+  display: inline-flex;
+}
+
+/* On the page, not hidden from it: `display: none` would take the radio out of
+   the tab order and off the accessibility tree, and this control has no other
+   keyboard affordance. Sized to nothing and covered by its own label instead,
+   so the focus ring is drawn on the label below. */
+.vd-strip__input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.vd-strip__label {
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  cursor: pointer;
+}
+
+/* One connected strip rather than three buttons: only the ends are rounded, and
+   the shared edges collapse. */
+.vd-strip__segment:not(:first-of-type) .vd-strip__label {
+  margin-inline-start: -1px;
+}
+
+.vd-strip__segment:first-of-type .vd-strip__label {
+  border-start-start-radius: var(--radius-md);
+  border-end-start-radius: var(--radius-md);
+}
+
+.vd-strip__segment:last-of-type .vd-strip__label {
+  border-start-end-radius: var(--radius-md);
+  border-end-end-radius: var(--radius-md);
+}
+
+/* Every visual state read off the input's own state rather than a modifier
+   class, the argument TriStateCheckbox.css already makes: what the control looks
+   like and what it IS cannot drift apart if only one of them exists. */
+.vd-strip__input:checked + .vd-strip__label {
+  z-index: 1;
+  border-color: var(--color-accent);
+  background: var(--color-accent-subtle);
+  color: var(--color-accent);
+}
+
+.vd-strip__input:focus-visible + .vd-strip__label {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+/* ---- What is showing ------------------------------------------------------ */
+
+/* Any figure that changes with the filter: the bar's count, a tier badge, a tier
+   heading. All nine are rendered and one revealed, because CSS can hide a
+   screenshot but cannot count what is left. */
+.vd-filtered {
+  display: none;
+}
+
+/* `auto` has no count of its own — it RESOLVES to a concrete pair, so it reveals
+   the same nine. The theme it resolves to is readable because this app writes
+   `data-theme` only for a stored dark choice and never consults
+   `prefers-color-scheme` (lib/theme.ts says why); the viewport it resolves to is
+   the same 768px the sticky rules use. Generated rather than hand-written: five
+   ways to mean a theme times five to mean a viewport is not a list anyone should
+   maintain by eye. */
+.vd-set-view:has(#vd-theme-both:checked):has(#vd-viewport-both:checked)
+  .vd-filtered[data-for='both|both'] {
+  display: inline;
+}
+
+.vd-set-view:has(#vd-theme-both:checked):has(#vd-viewport-desktop:checked)
+  .vd-filtered[data-for='both|desktop'] {
+  display: inline;
+}
+
+.vd-set-view:has(#vd-theme-both:checked):has(#vd-viewport-mobile:checked)
+  .vd-filtered[data-for='both|mobile'] {
+  display: inline;
+}
+
+.vd-set-view:has(#vd-theme-light:checked):has(#vd-viewport-both:checked)
+  .vd-filtered[data-for='light|both'] {
+  display: inline;
+}
+
+html:not([data-theme='dark'])
+  .vd-set-view:has(#vd-theme-auto:checked):has(#vd-viewport-both:checked)
+  .vd-filtered[data-for='light|both'] {
+  display: inline;
+}
+
+.vd-set-view:has(#vd-theme-light:checked):has(#vd-viewport-desktop:checked)
+  .vd-filtered[data-for='light|desktop'] {
+  display: inline;
+}
+
+html:not([data-theme='dark'])
+  .vd-set-view:has(#vd-theme-auto:checked):has(#vd-viewport-desktop:checked)
+  .vd-filtered[data-for='light|desktop'] {
+  display: inline;
+}
+
+.vd-set-view:has(#vd-theme-light:checked):has(#vd-viewport-mobile:checked)
+  .vd-filtered[data-for='light|mobile'] {
+  display: inline;
+}
+
+html:not([data-theme='dark'])
+  .vd-set-view:has(#vd-theme-auto:checked):has(#vd-viewport-mobile:checked)
+  .vd-filtered[data-for='light|mobile'] {
+  display: inline;
+}
+
+.vd-set-view:has(#vd-theme-dark:checked):has(#vd-viewport-both:checked)
+  .vd-filtered[data-for='dark|both'] {
+  display: inline;
+}
+
+html[data-theme='dark']
+  .vd-set-view:has(#vd-theme-auto:checked):has(#vd-viewport-both:checked)
+  .vd-filtered[data-for='dark|both'] {
+  display: inline;
+}
+
+.vd-set-view:has(#vd-theme-dark:checked):has(#vd-viewport-desktop:checked)
+  .vd-filtered[data-for='dark|desktop'] {
+  display: inline;
+}
+
+html[data-theme='dark']
+  .vd-set-view:has(#vd-theme-auto:checked):has(#vd-viewport-desktop:checked)
+  .vd-filtered[data-for='dark|desktop'] {
+  display: inline;
+}
+
+.vd-set-view:has(#vd-theme-dark:checked):has(#vd-viewport-mobile:checked)
+  .vd-filtered[data-for='dark|mobile'] {
+  display: inline;
+}
+
+html[data-theme='dark']
+  .vd-set-view:has(#vd-theme-auto:checked):has(#vd-viewport-mobile:checked)
+  .vd-filtered[data-for='dark|mobile'] {
+  display: inline;
+}
+
+@media (max-width: 767.98px) {
+  .vd-set-view:has(#vd-theme-both:checked):has(#vd-viewport-auto:checked)
+    .vd-filtered[data-for='both|mobile'] {
+    display: inline;
+  }
+
+  .vd-set-view:has(#vd-theme-light:checked):has(#vd-viewport-auto:checked)
+    .vd-filtered[data-for='light|mobile'] {
+    display: inline;
+  }
+
+  html:not([data-theme='dark'])
+    .vd-set-view:has(#vd-theme-auto:checked):has(#vd-viewport-auto:checked)
+    .vd-filtered[data-for='light|mobile'] {
+    display: inline;
+  }
+
+  .vd-set-view:has(#vd-theme-dark:checked):has(#vd-viewport-auto:checked)
+    .vd-filtered[data-for='dark|mobile'] {
+    display: inline;
+  }
+
+  html[data-theme='dark']
+    .vd-set-view:has(#vd-theme-auto:checked):has(#vd-viewport-auto:checked)
+    .vd-filtered[data-for='dark|mobile'] {
+    display: inline;
+  }
+}
+
+@media (min-width: 768px) {
+  .vd-set-view:has(#vd-theme-both:checked):has(#vd-viewport-auto:checked)
+    .vd-filtered[data-for='both|desktop'] {
+    display: inline;
+  }
+
+  .vd-set-view:has(#vd-theme-light:checked):has(#vd-viewport-auto:checked)
+    .vd-filtered[data-for='light|desktop'] {
+    display: inline;
+  }
+
+  html:not([data-theme='dark'])
+    .vd-set-view:has(#vd-theme-auto:checked):has(#vd-viewport-auto:checked)
+    .vd-filtered[data-for='light|desktop'] {
+    display: inline;
+  }
+
+  .vd-set-view:has(#vd-theme-dark:checked):has(#vd-viewport-auto:checked)
+    .vd-filtered[data-for='dark|desktop'] {
+    display: inline;
+  }
+
+  html[data-theme='dark']
+    .vd-set-view:has(#vd-theme-auto:checked):has(#vd-viewport-auto:checked)
+    .vd-filtered[data-for='dark|desktop'] {
+    display: inline;
+  }
+}
+
+/* ---- The filtering itself ------------------------------------------------- */
+
+/* Per axis and independent, so `auto` on one does not have to know about the
+   other. A viewport row keeps its label, so hiding only its cells would leave
+   "mobile" standing over nothing; a story a filter empties goes rather than
+   standing as an empty card — only 17 of the 63 have a mobile screenshot, so
+   that is the common case; and a tier left holding no stories takes its heading
+   with it. Stated as "has nothing of what was asked for" rather than "all its
+   cells are hidden", because a hidden element still matches `:has()`. */
+.vd-set-view:has(#vd-theme-light:checked) .vd-cell[data-shot-theme='dark'] {
+  display: none;
+}
+
+.vd-set-view:has(#vd-theme-light:checked) .vd-story:not(:has([data-shot-theme='light'])) {
+  display: none;
+}
+
+.vd-set-view:has(#vd-theme-light:checked) .vd-tier:not(:has([data-shot-theme='light'])) {
+  display: none;
+}
+
+html:not([data-theme='dark'])
+  .vd-set-view:has(#vd-theme-auto:checked)
+  .vd-cell[data-shot-theme='dark'] {
+  display: none;
+}
+
+html:not([data-theme='dark'])
+  .vd-set-view:has(#vd-theme-auto:checked)
+  .vd-story:not(:has([data-shot-theme='light'])) {
+  display: none;
+}
+
+html:not([data-theme='dark'])
+  .vd-set-view:has(#vd-theme-auto:checked)
+  .vd-tier:not(:has([data-shot-theme='light'])) {
+  display: none;
+}
+
+.vd-set-view:has(#vd-theme-dark:checked) .vd-cell[data-shot-theme='light'] {
+  display: none;
+}
+
+.vd-set-view:has(#vd-theme-dark:checked) .vd-story:not(:has([data-shot-theme='dark'])) {
+  display: none;
+}
+
+.vd-set-view:has(#vd-theme-dark:checked) .vd-tier:not(:has([data-shot-theme='dark'])) {
+  display: none;
+}
+
+html[data-theme='dark']
+  .vd-set-view:has(#vd-theme-auto:checked)
+  .vd-cell[data-shot-theme='light'] {
+  display: none;
+}
+
+html[data-theme='dark']
+  .vd-set-view:has(#vd-theme-auto:checked)
+  .vd-story:not(:has([data-shot-theme='dark'])) {
+  display: none;
+}
+
+html[data-theme='dark']
+  .vd-set-view:has(#vd-theme-auto:checked)
+  .vd-tier:not(:has([data-shot-theme='dark'])) {
+  display: none;
+}
+
+.vd-set-view:has(#vd-viewport-desktop:checked)
+  .vd-story__viewport[data-shot-viewport='mobile'] {
+  display: none;
+}
+
+.vd-set-view:has(#vd-viewport-desktop:checked)
+  .vd-story:not(:has([data-shot-viewport='desktop'])) {
+  display: none;
+}
+
+.vd-set-view:has(#vd-viewport-desktop:checked)
+  .vd-tier:not(:has([data-shot-viewport='desktop'])) {
+  display: none;
+}
+
+.vd-set-view:has(#vd-viewport-mobile:checked)
+  .vd-story__viewport[data-shot-viewport='desktop'] {
+  display: none;
+}
+
+.vd-set-view:has(#vd-viewport-mobile:checked)
+  .vd-story:not(:has([data-shot-viewport='mobile'])) {
+  display: none;
+}
+
+.vd-set-view:has(#vd-viewport-mobile:checked)
+  .vd-tier:not(:has([data-shot-viewport='mobile'])) {
+  display: none;
+}
+
+@media (max-width: 767.98px) {
+  .vd-set-view:has(#vd-viewport-auto:checked)
+    .vd-story__viewport[data-shot-viewport='desktop'] {
+    display: none;
+  }
+
+  .vd-set-view:has(#vd-viewport-auto:checked)
+    .vd-story:not(:has([data-shot-viewport='mobile'])) {
+    display: none;
+  }
+
+  .vd-set-view:has(#vd-viewport-auto:checked)
+    .vd-tier:not(:has([data-shot-viewport='mobile'])) {
+    display: none;
+  }
+}
+
+@media (min-width: 768px) {
+  .vd-set-view:has(#vd-viewport-auto:checked)
+    .vd-story__viewport[data-shot-viewport='mobile'] {
+    display: none;
+  }
+
+  .vd-set-view:has(#vd-viewport-auto:checked)
+    .vd-story:not(:has([data-shot-viewport='desktop'])) {
+    display: none;
+  }
+
+  .vd-set-view:has(#vd-viewport-auto:checked)
+    .vd-tier:not(:has([data-shot-viewport='desktop'])) {
+    display: none;
+  }
+}
+
+/* ---- …and the link that offered it ---------------------------------------- */
+
+/* A tier a filter empties is hidden above, heading and all, so the jump link
+   still offering it is a dead press. Worse than dead: `:target` matches an
+   element `display: none` never drew, so the "you jumped here" mark at the top
+   of this file lights up on a click that moved the page nowhere.
+
+   Not reachable on the corpus — every tier has mobile screenshots, because
+   `visual-diff:all-viewports` opts stories past the desktop-only default that
+   `TIER_VIEWPORTS` sets for atoms and molecules. A partial set reaches it: a
+   capture run under a `--filter` can leave a tier holding one viewport, and the
+   console opens a captured set at this same route. So these are defensive in
+   the way the tier rules above already are, and are here so the nav and the
+   sections cannot disagree about what an empty tier is.
+
+   Eight rules rather than the twenty-five above, and hand-written rather than
+   generated, because these mirror the TIER's hide rules exactly: those are per
+   axis and independent, and a link testing the nine combinations instead would
+   disagree with the section it points at about what an empty tier is. `both`
+   needs no rule on either axis — it removes nothing to be left empty of. */
+
+.vd-set-view:has(#vd-theme-light:checked) .vd-set__jump:not([data-shot-themes~='light']) {
+  display: none;
+}
+
+html:not([data-theme='dark'])
+  .vd-set-view:has(#vd-theme-auto:checked)
+  .vd-set__jump:not([data-shot-themes~='light']) {
+  display: none;
+}
+
+.vd-set-view:has(#vd-theme-dark:checked) .vd-set__jump:not([data-shot-themes~='dark']) {
+  display: none;
+}
+
+html[data-theme='dark']
+  .vd-set-view:has(#vd-theme-auto:checked)
+  .vd-set__jump:not([data-shot-themes~='dark']) {
+  display: none;
+}
+
+.vd-set-view:has(#vd-viewport-desktop:checked)
+  .vd-set__jump:not([data-shot-viewports~='desktop']) {
+  display: none;
+}
+
+.vd-set-view:has(#vd-viewport-mobile:checked)
+  .vd-set__jump:not([data-shot-viewports~='mobile']) {
+  display: none;
+}
+
+@media (max-width: 767.98px) {
+  .vd-set-view:has(#vd-viewport-auto:checked)
+    .vd-set__jump:not([data-shot-viewports~='mobile']) {
+    display: none;
+  }
+}
+
+@media (min-width: 768px) {
+  .vd-set-view:has(#vd-viewport-auto:checked)
+    .vd-set__jump:not([data-shot-viewports~='desktop']) {
+    display: none;
+  }
 }

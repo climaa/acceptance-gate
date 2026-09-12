@@ -2,7 +2,14 @@ import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
-import { groupShots, parseShotName, readSetShots, type SetShot } from '../lib/set-shots';
+import {
+  filterCounts,
+  groupShots,
+  parseShotName,
+  readSetShots,
+  type SetShot,
+  tierAxes,
+} from '../lib/set-shots';
 
 /**
  * What a screenshot set holds, read off its filenames and its PNG headers.
@@ -291,5 +298,118 @@ describe('readSetShots', () => {
     const shots = await readSetShots(dir, null, 'main-2026-08-17');
 
     expect(shots).toBeNull();
+  });
+});
+
+/**
+ * The nine answers the bar renders and CSS reveals one of.
+ *
+ * Precomputed because `:checked` can hide a screenshot but cannot count what is
+ * left, so the alternative was a client island on a page that deliberately has
+ * none.
+ */
+describe('filterCounts', () => {
+  const corpus = groupShots([
+    // Desktop-only, both themes — 37 of the corpus's atoms look like this.
+    shot('atoms__desktop__light__atoms-badge--accent'),
+    shot('atoms__desktop__dark__atoms-badge--accent'),
+    // All four cells — only 17 of 63 stories have a mobile screenshot.
+    shot('organisms__desktop__light__organisms-siteheader--default'),
+    shot('organisms__desktop__dark__organisms-siteheader--default'),
+    shot('organisms__mobile__light__organisms-siteheader--default'),
+    shot('organisms__mobile__dark__organisms-siteheader--default'),
+  ]);
+
+  it('counts everything when neither axis is narrowed', () => {
+    const counts = filterCounts(corpus);
+
+    expect(counts['both|both']).toEqual({ shots: 6, stories: 2 });
+  });
+
+  it('halves the screenshots but keeps every story when a theme is chosen', () => {
+    const counts = filterCounts(corpus);
+
+    expect(counts['dark|both']).toEqual({ shots: 3, stories: 2 });
+  });
+
+  /** The case the count exists for: a viewport filter drops whole stories, and a
+   *  page saying "2 stories" while showing one would be worse than saying
+   *  nothing. */
+  it('drops a story a viewport filter leaves with nothing', () => {
+    const counts = filterCounts(corpus);
+
+    expect(counts['both|mobile']).toEqual({ shots: 2, stories: 1 });
+  });
+
+  it('narrows on both axes at once', () => {
+    const counts = filterCounts(corpus);
+
+    expect(counts['light|mobile']).toEqual({ shots: 1, stories: 1 });
+  });
+
+  it('answers every cell of the matrix, so no choice renders a gap', () => {
+    const counts = filterCounts(corpus);
+
+    expect(Object.keys(counts)).toHaveLength(9);
+  });
+});
+
+/**
+ * What a tier holds, for the link that offers it.
+ *
+ * The jump link is the one part of the bar a filter can strand: the tier's own
+ * rules hide the section, and a link left pointing into a `display: none`
+ * heading is a press that does nothing while `:target` still marks it as the
+ * place you went. Unlike the filtering, this half IS markup, so it is asserted
+ * here rather than left to a browser pass.
+ */
+describe('tierAxes', () => {
+  const section = (keys: readonly string[]) => {
+    const [only] = groupShots(keys.map((key) => shot(key)));
+    if (!only) throw new Error('every fixture here names one tier');
+
+    return only;
+  };
+
+  /** The case a partial set reaches: a capture run under a `--filter` can leave a
+   *  tier holding one viewport. The corpus does not — `visual-diff:all-viewports`
+   *  opts three atoms past the desktop-only default — so this is asserted from
+   *  literal names rather than from the real set, which cannot show it. */
+  it('reports only the viewports a tier was really captured at', () => {
+    const axes = tierAxes(
+      section([
+        'atoms__desktop__light__atoms-badge--accent',
+        'atoms__desktop__dark__atoms-badge--accent',
+      ]),
+    );
+
+    expect(axes).toEqual({ themes: ['light', 'dark'], viewports: ['desktop'] });
+  });
+
+  it('reports both viewports for a tier that has them', () => {
+    const axes = tierAxes(
+      section([
+        'organisms__desktop__light__organisms-siteheader--default',
+        'organisms__mobile__light__organisms-siteheader--default',
+      ]),
+    );
+
+    expect(axes.viewports).toEqual(['desktop', 'mobile']);
+    expect(axes.themes).toEqual(['light']);
+  });
+
+  /** Capture order is not read order: the page draws desktop before mobile and
+   *  light before dark however `readdir` returned them, and the attribute a
+   *  stylesheet matches on must not depend on that either. */
+  it('answers in the capture order, never the order the files came back in', () => {
+    const axes = tierAxes(
+      section([
+        'templates__mobile__dark__templates-post--default',
+        'templates__desktop__light__templates-post--default',
+      ]),
+    );
+
+    expect(axes.themes).toEqual(['light', 'dark']);
+    expect(axes.viewports).toEqual(['desktop', 'mobile']);
   });
 });
