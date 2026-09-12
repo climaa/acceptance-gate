@@ -9,6 +9,7 @@ import {
   reportDirOf,
   reportsRoot,
   setDir,
+  setDirOf,
   setsFilePath,
   setsRoot,
   shotUnder,
@@ -153,5 +154,40 @@ describe('the layout', () => {
     expect(shotUnder(dir, 'k.diff.png')).toBe(path.join(dir, 'shots', 'k.diff.png'));
     expect(shotUnder(dir, '../../../etc/passwd')).toBeNull();
     expect(shotUnder(dir, '/etc/passwd')).toBeNull();
+  });
+});
+
+/**
+ * The read-side half of `setDir`, and the reason it exists at all: `setDir` is
+ * `within`, which THROWS, and the route that serves a set's screenshots owes a
+ * 404 rather than a 500. Same pairing as `reportDir` and `reportDirOf`.
+ */
+describe('setDirOf', () => {
+  it('builds one capture set directory', () => {
+    expect(setDirOf(BASE, 'main-2026-08-17')).toBe(
+      path.join(BASE, 'sets', 'main-2026-08-17'),
+    );
+  });
+
+  it.each([
+    ['a label that climbs', '../../etc'],
+    ['an absolute segment', '/etc/passwd'],
+    ['a NUL, which reaches readFile as an error rather than a miss', 'a\0b'],
+    ['a leading dot, which is not a label', '.hidden'],
+    ['the empty segment, which names no entry', ''],
+    ['the current directory, which names no entry either', '.'],
+  ])('answers null for %s', (_case, label) => {
+    expect(setDirOf(BASE, label)).toBeNull();
+  });
+
+  /** The sibling-prefix case `contains` exists for: `<base>-old` starts with
+   *  `<base>` and is not inside it. */
+  it('answers null for a sibling that merely shares the base prefix', () => {
+    expect(setDirOf(BASE, '../sets-old')).toBeNull();
+  });
+
+  it('never throws where setDir would', () => {
+    expect(() => setDir(BASE, '../../etc')).toThrow(ConfinementError);
+    expect(setDirOf(BASE, '../../etc')).toBeNull();
   });
 });

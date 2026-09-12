@@ -1,0 +1,168 @@
+/* The set viewer: one screenshot set, grouped by story.
+   Token-only, like every sheet beside it. The one computed value on this page is
+   each figure's `max-width`, which is the shot's own pixel width and is set
+   inline from the data — a measurement, never a chosen visual value. */
+
+.vd-set__header {
+  padding-block-end: var(--space-4);
+  border-block-end: 1px solid var(--color-border);
+}
+
+.vd-set__back {
+  color: var(--color-accent);
+  font-size: var(--text-xs);
+}
+
+.vd-set__facts {
+  color: var(--color-text);
+  font-size: var(--text-sm);
+}
+
+/* The container stamp, as one line of pairs rather than a browser default
+   definition list — five stacked key/value rows pushed the first screenshot
+   below the fold, and the stamp is context for the shots, not the subject. */
+.vd-set__env {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
+  margin: 0;
+  font-size: var(--text-xs);
+}
+
+.vd-set__env-pair {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.vd-set__env-key {
+  color: var(--color-text-muted);
+}
+
+.vd-set__env-value {
+  margin: 0;
+  color: var(--color-text);
+}
+
+.vd-set__nav {
+  font-size: var(--text-xs);
+}
+
+.vd-set__jump {
+  color: var(--color-accent);
+}
+
+.vd-set__open {
+  color: var(--color-accent);
+  font-size: var(--text-xs);
+}
+
+/* The heading carries the id the tier nav jumps to, so the scroll margin belongs
+   here and not on the section around it — landing on `#vd-tier-atoms` otherwise
+   puts the heading flush against the top of the viewport. */
+.vd-tier__title {
+  margin: 0;
+  scroll-margin-block-start: var(--space-4);
+  font-size: var(--text-base);
+}
+
+.vd-story {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-subtle);
+}
+
+.vd-story__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.vd-story__title {
+  margin: 0;
+  font-size: var(--text-sm);
+}
+
+.vd-story__id {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+}
+
+.vd-story__count {
+  color: var(--color-text);
+  font-size: var(--text-xs);
+}
+
+.vd-story__viewport {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.vd-story__viewport-label {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+}
+
+/* One column below 768px, whatever the shot's own width allows: two 1248px
+   screenshots do not sit side by side on a phone, and `wide.css` is where the
+   pair comes back. */
+.vd-story__cells {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.vd-cell {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin: 0;
+  min-width: 0;
+}
+
+/* The frame reads as a frame even when the shot inside it is twelve pixels tall,
+   which several atoms are. Without a border a 1248x12 screenshot is
+   indistinguishable from a gap in the layout. */
+.vd-cell__open {
+  display: block;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-muted);
+  overflow: hidden;
+}
+
+.vd-cell__open:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+/* Never upscaled — the figure's own `max-width` is the capture's width, so this
+   fills the column only down to it — and never cropped, because `height: auto`
+   keeps the ratio the `width`/`height` attributes already reserved. */
+.vd-cell__img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.vd-cell__caption {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+}
+
+.vd-cell__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+}
+
+.vd-cell__link {
+  color: var(--color-accent);
+}

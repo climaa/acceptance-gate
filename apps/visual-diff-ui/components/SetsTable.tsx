@@ -1,5 +1,7 @@
+import NextLink from 'next/link';
 import { Badge, Table, type TableColumn, type TableRow } from '@gate/ui';
-import { formatBytes } from '@/lib/outcome';
+import { UNKNOWN, formatBytes, shortSha } from '@/lib/outcome';
+import { setHref } from '@/lib/shots';
 import type { CaptureSet } from '@/lib/summary';
 import { DeleteSetButton } from './ConfirmDialogs';
 
@@ -15,14 +17,6 @@ import { DeleteSetButton } from './ConfirmDialogs';
 
 /** The name the acceptance scenario finds this table by. */
 const SETS_TABLE_LABEL = 'Screenshot sets';
-
-/** What a set has no measured size for: this instance holds the registry entry
- *  but not the shot tree — a set captured elsewhere, or one whose directory a
- *  human moved. Zero would claim it holds nothing. */
-const UNKNOWN = '—';
-
-/** What `git rev-parse --short` gives by default, and what the board draws. */
-const SHORT_SHA = 7;
 
 const SET_COLUMNS: readonly TableColumn[] = [
   { header: 'label', truncate: true },
@@ -46,9 +40,23 @@ function setRow(set: CaptureSet, bytes: number | undefined, frozen: boolean): Ta
         // and the badge is a mark beside the name rather than part of it. The
         // label gives up its width to the badge rather than the other way
         // round — see `.vd-set` in globals.css.
+        // The label opens the set viewer, but only where this instance actually
+        // holds the shots. `bytes` is the measured tree, not the registry's
+        // claim — the same signal the size column draws `—` for — so a set
+        // captured elsewhere, one whose directory a human moved, and sample mode
+        // (which lists sets and ships no `sets/` tree at all) are covered by one
+        // rule. `lib/report-view.ts` states the principle for the other pair of
+        // links on this console: a dead link beside a live one is worse than no
+        // link.
         content: (
           <span className="vd-set">
-            <span className="vd-set__label">{set.label}</span>
+            {bytes === undefined ? (
+              <span className="vd-set__label">{set.label}</span>
+            ) : (
+              <NextLink className="vd-set__label" href={setHref(set.label)}>
+                {set.label}
+              </NextLink>
+            )}
             {set.dirty && <Badge tone="warning">dirty</Badge>}
           </span>
         ),
@@ -58,7 +66,7 @@ function setRow(set: CaptureSet, bytes: number | undefined, frozen: boolean): Ta
         // The board's column is a short sha, and a `sets.json` written with a
         // full one would widen the column past everything beside it. The whole
         // sha stays on `title`, which is what a reviewer copies out.
-        content: <span className="vd-mono">{set.sha.slice(0, SHORT_SHA)}</span>,
+        content: <span className="vd-mono">{shortSha(set.sha)}</span>,
         title: set.sha,
       },
       { content: set.branch, title: set.branch },
