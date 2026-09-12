@@ -9,6 +9,7 @@ import {
   formatDay,
   formatDuration,
   outcomeOf,
+  shortSha,
   outcomeTone,
 } from '../lib/outcome';
 
@@ -248,5 +249,32 @@ describe('formatBytes', () => {
   // hold nothing.
   it('reports an empty set as zero bytes', () => {
     expect(formatBytes(0)).toBe('0 B');
+  });
+});
+
+/**
+ * The three surfaces that render a commit — the corpus row, the sets table and
+ * the set viewer — each used to slice their own. Seven in two places and eight in
+ * a third is the drift lib/paths.ts was written about, so the slice lives here
+ * and the length is stated once.
+ */
+describe('shortSha', () => {
+  it('gives what `git rev-parse --short` gives', () => {
+    expect(shortSha('d9d8e9612345678')).toBe('d9d8e96');
+  });
+
+  it('leaves a sha already that short alone', () => {
+    expect(shortSha('d9d8e96')).toBe('d9d8e96');
+  });
+
+  // A corpus git could not describe — an instance outside a checkout, or a
+  // `git log` that failed. The dash is a claim that nothing is recorded; a blank
+  // reads as forgotten and a zero would say the corpus is empty.
+  it.each([
+    ['a corpus git could not name', null],
+    ['a field that was never written', undefined],
+    ['an empty string, which names no commit', ''],
+  ])('answers the dash for %s', (_case, sha) => {
+    expect(shortSha(sha)).toBe('—');
   });
 });

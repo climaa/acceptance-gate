@@ -1,8 +1,9 @@
 import NextLink from 'next/link';
 import { Badge, Button, Stack } from '@gate/ui';
+import { Field } from './Field';
 import { Note } from './Note';
 import type { CanonicalSet as Corpus } from '@/lib/baselines';
-import { formatBytes } from '@/lib/outcome';
+import { UNKNOWN, formatBytes, shortSha } from '@/lib/outcome';
 import { setHref } from '@/lib/shots';
 
 /**
@@ -24,24 +25,8 @@ import { setHref } from '@/lib/shots';
  * omission instead of as a rule.
  */
 
-/** What `git rev-parse --short` gives by default, and what `SetsTable` draws. */
-const SHORT_SHA = 7;
-
-/** What git could not say. The same dash the sets table uses for a size it has
- *  no measurement for, and for the same reason: blank reads as forgotten. */
-const UNKNOWN = '—';
-
 export interface CanonicalSetProps {
   corpus: Corpus;
-}
-
-function Field({ label, value }: { label: string; value: string }) {
-  return (
-    <Stack direction="row" gap={2} align="center">
-      <span className="vd-field__label">{label}</span>
-      <span className="vd-mono">{value}</span>
-    </Stack>
-  );
 }
 
 export function CanonicalSet({ corpus }: CanonicalSetProps) {
@@ -57,10 +42,7 @@ export function CanonicalSet({ corpus }: CanonicalSetProps) {
             has. No branch: a commit does not record the one it was made on, and
             naming the branch currently checked out would credit the corpus to
             whoever happens to be looking at it. */}
-        <Field
-          label="accepted"
-          value={corpus.sha ? corpus.sha.slice(0, SHORT_SHA) : UNKNOWN}
-        />
+        <Field label="accepted" value={shortSha(corpus.sha)} />
         <Field label="date" value={corpus.acceptedAt ?? UNKNOWN} />
         <Field label="stories" value={String(corpus.stories)} />
         <Field label="size" value={formatBytes(corpus.bytes)} />

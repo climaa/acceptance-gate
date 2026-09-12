@@ -1,6 +1,6 @@
 import NextLink from 'next/link';
 import { Badge, Table, type TableColumn, type TableRow } from '@gate/ui';
-import { formatBytes } from '@/lib/outcome';
+import { UNKNOWN, formatBytes, shortSha } from '@/lib/outcome';
 import { setHref } from '@/lib/shots';
 import type { CaptureSet } from '@/lib/summary';
 import { DeleteSetButton } from './ConfirmDialogs';
@@ -17,14 +17,6 @@ import { DeleteSetButton } from './ConfirmDialogs';
 
 /** The name the acceptance scenario finds this table by. */
 const SETS_TABLE_LABEL = 'Screenshot sets';
-
-/** What a set has no measured size for: this instance holds the registry entry
- *  but not the shot tree — a set captured elsewhere, or one whose directory a
- *  human moved. Zero would claim it holds nothing. */
-const UNKNOWN = '—';
-
-/** What `git rev-parse --short` gives by default, and what the board draws. */
-const SHORT_SHA = 7;
 
 const SET_COLUMNS: readonly TableColumn[] = [
   { header: 'label', truncate: true },
@@ -74,7 +66,7 @@ function setRow(set: CaptureSet, bytes: number | undefined, frozen: boolean): Ta
         // The board's column is a short sha, and a `sets.json` written with a
         // full one would widen the column past everything beside it. The whole
         // sha stays on `title`, which is what a reviewer copies out.
-        content: <span className="vd-mono">{set.sha.slice(0, SHORT_SHA)}</span>,
+        content: <span className="vd-mono">{shortSha(set.sha)}</span>,
         title: set.sha,
       },
       { content: set.branch, title: set.branch },

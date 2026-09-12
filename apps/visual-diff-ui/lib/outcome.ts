@@ -234,3 +234,28 @@ export function formatBytes(bytes: number): string {
 
   return `${bytes} B`;
 }
+
+/**
+ * What a value the console has no record of reads as.
+ *
+ * Blank reads as forgotten and a zero is a claim — an unattributed corpus is not
+ * an empty one, and a set this instance holds no shots for does not hold zero
+ * bytes of them. Shared because three surfaces answer the same question, and a
+ * dash in one place beside an em dash in another is the drift lib/paths.ts was
+ * written about.
+ */
+export const UNKNOWN = '—';
+
+/** What `git rev-parse --short` gives by default, and what the boards draw. */
+const SHORT_SHA = 7;
+
+/**
+ * A commit as the console shows it: seven characters, or the dash for a commit
+ * git could not name.
+ *
+ * The slice is here rather than at each call site so the three that render a sha
+ * cannot disagree about its length — the whole sha stays on `title`, which is
+ * what a reviewer copies out.
+ */
+export const shortSha = (sha: string | null | undefined): string =>
+  sha ? sha.slice(0, SHORT_SHA) : UNKNOWN;

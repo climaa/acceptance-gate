@@ -1,9 +1,10 @@
 import NextLink from 'next/link';
 import { Badge, Stack } from '@gate/ui';
 import type { CanonicalSet } from '@/lib/baselines';
-import { formatBytes } from '@/lib/outcome';
+import { UNKNOWN, formatBytes, shortSha } from '@/lib/outcome';
 import type { SetShots } from '@/lib/set-shots';
 import type { CaptureSet } from '@/lib/summary';
+import { Field } from './Field';
 import { Note } from './Note';
 import { StoryScreenshots } from './StoryScreenshots';
 
@@ -25,21 +26,6 @@ import { StoryScreenshots } from './StoryScreenshots';
  *  shell's `SiteHeader` rather than preserve this element's own semantics. */
 const HEADER_LABEL = 'set';
 
-/** What git could not say, and the dash the sets table draws for the same
- *  reason: blank reads as forgotten. */
-const UNKNOWN = '—';
-
-const SHORT_SHA = 7;
-
-function Field({ label, value }: { label: string; value: string }) {
-  return (
-    <Stack direction="row" gap={2} align="center">
-      <span className="vd-field__label">{label}</span>
-      <span className="vd-mono">{value}</span>
-    </Stack>
-  );
-}
-
 /** The corpus's provenance: the commit that accepted it, and the host that drew
  *  it. The stamp is the whole reason this page answers "what did the container
  *  render" — local Storybook shows the component as THIS machine's font stack
@@ -48,10 +34,7 @@ function CorpusFacts({ corpus, shots }: { corpus: CanonicalSet; shots: SetShots 
   return (
     <Stack gap={2}>
       <Stack direction="row" gap={4} align="center" wrap className="vd-set__facts">
-        <Field
-          label="accepted"
-          value={corpus.sha ? corpus.sha.slice(0, SHORT_SHA) : UNKNOWN}
-        />
+        <Field label="accepted" value={shortSha(corpus.sha)} />
         <Field label="date" value={corpus.acceptedAt ?? UNKNOWN} />
         <Field label="screenshots" value={String(shots.shots)} />
         <Field label="size" value={formatBytes(shots.bytes)} />
@@ -79,7 +62,7 @@ function CaptureFacts({ set, shots }: { set: CaptureSet; shots: SetShots }) {
   return (
     <Stack gap={2}>
       <Stack direction="row" gap={4} align="center" wrap className="vd-set__facts">
-        <Field label="sha" value={set.sha.slice(0, SHORT_SHA)} />
+        <Field label="sha" value={shortSha(set.sha)} />
         <Field label="branch" value={set.branch} />
         <Field label="captured" value={set.capturedAt} />
         <Field label="screenshots" value={String(shots.shots)} />

@@ -63,6 +63,23 @@ describe('SetTemplate', () => {
     expect(screen.getByText('mcr.microsoft.com/playwright:v1.62.1-noble')).toBeTruthy();
   });
 
+  /** The same fallback `canonical-set.test.tsx` proves on the console's card:
+   *  an instance outside a checkout has a corpus git cannot date, and the row
+   *  says so rather than leaving the field blank. */
+  it('shows a dash for a corpus git could not describe', () => {
+    const set = shots([BADGE]);
+
+    render(
+      <SetTemplate
+        corpus={{ ...corpus, sha: null, acceptedAt: null }}
+        set={null}
+        shots={set}
+      />,
+    );
+
+    expect(screen.getAllByText('—')).toHaveLength(2);
+  });
+
   it('says a captured set records a checkout rather than a host', () => {
     const set = shots([BADGE], { label: 'main-2026-08-17', isCanonical: false });
 
