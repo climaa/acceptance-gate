@@ -56,13 +56,13 @@
   font-size: var(--text-xs);
 }
 
+/* The heading carries the id the tier nav jumps to, so the scroll margin belongs
+   here and not on the section around it — landing on `#vd-tier-atoms` otherwise
+   puts the heading flush against the top of the viewport. */
 .vd-tier__title {
   margin: 0;
-  font-size: var(--text-base);
-}
-
-.vd-tier {
   scroll-margin-block-start: var(--space-4);
+  font-size: var(--text-base);
 }
 
 .vd-story {
