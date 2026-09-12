@@ -313,10 +313,16 @@ export async function readSetShots(
 
 /* ---- What a filter would leave ------------------------------------------- */
 
-/** The axes the set viewer filters on. `both` is the default on each, and is
- *  named rather than implied so a key always has two parts. */
+/** The axes the set viewer counts on. `both` is named rather than implied so a
+ *  key always has two parts. `auto` is absent on purpose: it resolves to one of
+ *  these at render time, in CSS, so it needs no count of its own. */
 export const THEME_CHOICES = ['both', ...THEMES] as const;
 export const VIEWPORT_CHOICES = ['both', ...VIEWPORT_ORDER] as const;
+
+/** What each strip DRAWS. `auto` leads, because it is the one choice that reads
+ *  the page you are on rather than asking you to describe it. */
+export const THEME_SEGMENTS = ['auto', ...THEME_CHOICES] as const;
+export const VIEWPORT_SEGMENTS = ['auto', ...VIEWPORT_CHOICES] as const;
 
 export type ThemeChoice = (typeof THEME_CHOICES)[number];
 export type ViewportChoice = (typeof VIEWPORT_CHOICES)[number];

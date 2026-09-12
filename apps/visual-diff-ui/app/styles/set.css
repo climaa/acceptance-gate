@@ -300,95 +300,288 @@
 
 /* ---- What is showing ------------------------------------------------------ */
 
-/* All nine answers are rendered and one is revealed — CSS can hide a screenshot
-   but cannot count what is left. */
-.vd-set__counts {
-  margin: 0;
-  color: var(--color-text-muted);
-  font-size: var(--text-xs);
-}
-
-/* Any figure that changes with the filter: the bar's count, a tier's jump link,
-   a tier heading. All nine are rendered and one revealed, because CSS can hide a
+/* Any figure that changes with the filter: the bar's count, a tier badge, a tier
+   heading. All nine are rendered and one revealed, because CSS can hide a
    screenshot but cannot count what is left. */
 .vd-filtered {
   display: none;
 }
 
+/* `auto` has no count of its own — it RESOLVES to a concrete pair, so it reveals
+   the same nine. The theme it resolves to is readable because this app writes
+   `data-theme` only for a stored dark choice and never consults
+   `prefers-color-scheme` (lib/theme.ts says why); the viewport it resolves to is
+   the same 768px the sticky rules use. Generated rather than hand-written: five
+   ways to mean a theme times five to mean a viewport is not a list anyone should
+   maintain by eye. */
 .vd-set-view:has(#vd-theme-both:checked):has(#vd-viewport-both:checked)
   .vd-filtered[data-for='both|both'] {
   display: inline;
 }
+
 .vd-set-view:has(#vd-theme-both:checked):has(#vd-viewport-desktop:checked)
   .vd-filtered[data-for='both|desktop'] {
   display: inline;
 }
+
 .vd-set-view:has(#vd-theme-both:checked):has(#vd-viewport-mobile:checked)
   .vd-filtered[data-for='both|mobile'] {
   display: inline;
 }
+
 .vd-set-view:has(#vd-theme-light:checked):has(#vd-viewport-both:checked)
   .vd-filtered[data-for='light|both'] {
   display: inline;
 }
+
+html:not([data-theme='dark'])
+  .vd-set-view:has(#vd-theme-auto:checked):has(#vd-viewport-both:checked)
+  .vd-filtered[data-for='light|both'] {
+  display: inline;
+}
+
 .vd-set-view:has(#vd-theme-light:checked):has(#vd-viewport-desktop:checked)
   .vd-filtered[data-for='light|desktop'] {
   display: inline;
 }
+
+html:not([data-theme='dark'])
+  .vd-set-view:has(#vd-theme-auto:checked):has(#vd-viewport-desktop:checked)
+  .vd-filtered[data-for='light|desktop'] {
+  display: inline;
+}
+
 .vd-set-view:has(#vd-theme-light:checked):has(#vd-viewport-mobile:checked)
   .vd-filtered[data-for='light|mobile'] {
   display: inline;
 }
+
+html:not([data-theme='dark'])
+  .vd-set-view:has(#vd-theme-auto:checked):has(#vd-viewport-mobile:checked)
+  .vd-filtered[data-for='light|mobile'] {
+  display: inline;
+}
+
 .vd-set-view:has(#vd-theme-dark:checked):has(#vd-viewport-both:checked)
   .vd-filtered[data-for='dark|both'] {
   display: inline;
 }
+
+html[data-theme='dark']
+  .vd-set-view:has(#vd-theme-auto:checked):has(#vd-viewport-both:checked)
+  .vd-filtered[data-for='dark|both'] {
+  display: inline;
+}
+
 .vd-set-view:has(#vd-theme-dark:checked):has(#vd-viewport-desktop:checked)
   .vd-filtered[data-for='dark|desktop'] {
   display: inline;
 }
+
+html[data-theme='dark']
+  .vd-set-view:has(#vd-theme-auto:checked):has(#vd-viewport-desktop:checked)
+  .vd-filtered[data-for='dark|desktop'] {
+  display: inline;
+}
+
 .vd-set-view:has(#vd-theme-dark:checked):has(#vd-viewport-mobile:checked)
   .vd-filtered[data-for='dark|mobile'] {
   display: inline;
 }
 
+html[data-theme='dark']
+  .vd-set-view:has(#vd-theme-auto:checked):has(#vd-viewport-mobile:checked)
+  .vd-filtered[data-for='dark|mobile'] {
+  display: inline;
+}
+
+@media (max-width: 767.98px) {
+  .vd-set-view:has(#vd-theme-both:checked):has(#vd-viewport-auto:checked)
+    .vd-filtered[data-for='both|mobile'] {
+    display: inline;
+  }
+
+  .vd-set-view:has(#vd-theme-light:checked):has(#vd-viewport-auto:checked)
+    .vd-filtered[data-for='light|mobile'] {
+    display: inline;
+  }
+
+  html:not([data-theme='dark'])
+    .vd-set-view:has(#vd-theme-auto:checked):has(#vd-viewport-auto:checked)
+    .vd-filtered[data-for='light|mobile'] {
+    display: inline;
+  }
+
+  .vd-set-view:has(#vd-theme-dark:checked):has(#vd-viewport-auto:checked)
+    .vd-filtered[data-for='dark|mobile'] {
+    display: inline;
+  }
+
+  html[data-theme='dark']
+    .vd-set-view:has(#vd-theme-auto:checked):has(#vd-viewport-auto:checked)
+    .vd-filtered[data-for='dark|mobile'] {
+    display: inline;
+  }
+}
+
+@media (min-width: 768px) {
+  .vd-set-view:has(#vd-theme-both:checked):has(#vd-viewport-auto:checked)
+    .vd-filtered[data-for='both|desktop'] {
+    display: inline;
+  }
+
+  .vd-set-view:has(#vd-theme-light:checked):has(#vd-viewport-auto:checked)
+    .vd-filtered[data-for='light|desktop'] {
+    display: inline;
+  }
+
+  html:not([data-theme='dark'])
+    .vd-set-view:has(#vd-theme-auto:checked):has(#vd-viewport-auto:checked)
+    .vd-filtered[data-for='light|desktop'] {
+    display: inline;
+  }
+
+  .vd-set-view:has(#vd-theme-dark:checked):has(#vd-viewport-auto:checked)
+    .vd-filtered[data-for='dark|desktop'] {
+    display: inline;
+  }
+
+  html[data-theme='dark']
+    .vd-set-view:has(#vd-theme-auto:checked):has(#vd-viewport-auto:checked)
+    .vd-filtered[data-for='dark|desktop'] {
+    display: inline;
+  }
+}
+
 /* ---- The filtering itself ------------------------------------------------- */
 
-/* A screenshot the chosen theme excludes. */
-.vd-set-view:has(#vd-theme-light:checked) .vd-cell[data-shot-theme='dark'],
+/* Per axis and independent, so `auto` on one does not have to know about the
+   other. A viewport row keeps its label, so hiding only its cells would leave
+   "mobile" standing over nothing; a story a filter empties goes rather than
+   standing as an empty card — only 17 of the 63 have a mobile screenshot, so
+   that is the common case; and a tier left holding no stories takes its heading
+   with it. Stated as "has nothing of what was asked for" rather than "all its
+   cells are hidden", because a hidden element still matches `:has()`. */
+.vd-set-view:has(#vd-theme-light:checked) .vd-cell[data-shot-theme='dark'] {
+  display: none;
+}
+
+.vd-set-view:has(#vd-theme-light:checked) .vd-story:not(:has([data-shot-theme='light'])) {
+  display: none;
+}
+
+.vd-set-view:has(#vd-theme-light:checked) .vd-tier:not(:has([data-shot-theme='light'])) {
+  display: none;
+}
+
+html:not([data-theme='dark'])
+  .vd-set-view:has(#vd-theme-auto:checked)
+  .vd-cell[data-shot-theme='dark'] {
+  display: none;
+}
+
+html:not([data-theme='dark'])
+  .vd-set-view:has(#vd-theme-auto:checked)
+  .vd-story:not(:has([data-shot-theme='light'])) {
+  display: none;
+}
+
+html:not([data-theme='dark'])
+  .vd-set-view:has(#vd-theme-auto:checked)
+  .vd-tier:not(:has([data-shot-theme='light'])) {
+  display: none;
+}
+
 .vd-set-view:has(#vd-theme-dark:checked) .vd-cell[data-shot-theme='light'] {
   display: none;
 }
 
-/* A whole viewport row the chosen viewport excludes — the row carries a label,
-   so hiding only its cells would leave "mobile" standing over nothing. */
+.vd-set-view:has(#vd-theme-dark:checked) .vd-story:not(:has([data-shot-theme='dark'])) {
+  display: none;
+}
+
+.vd-set-view:has(#vd-theme-dark:checked) .vd-tier:not(:has([data-shot-theme='dark'])) {
+  display: none;
+}
+
+html[data-theme='dark']
+  .vd-set-view:has(#vd-theme-auto:checked)
+  .vd-cell[data-shot-theme='light'] {
+  display: none;
+}
+
+html[data-theme='dark']
+  .vd-set-view:has(#vd-theme-auto:checked)
+  .vd-story:not(:has([data-shot-theme='dark'])) {
+  display: none;
+}
+
+html[data-theme='dark']
+  .vd-set-view:has(#vd-theme-auto:checked)
+  .vd-tier:not(:has([data-shot-theme='dark'])) {
+  display: none;
+}
+
 .vd-set-view:has(#vd-viewport-desktop:checked)
-  .vd-story__viewport[data-shot-viewport='mobile'],
+  .vd-story__viewport[data-shot-viewport='mobile'] {
+  display: none;
+}
+
+.vd-set-view:has(#vd-viewport-desktop:checked)
+  .vd-story:not(:has([data-shot-viewport='desktop'])) {
+  display: none;
+}
+
+.vd-set-view:has(#vd-viewport-desktop:checked)
+  .vd-tier:not(:has([data-shot-viewport='desktop'])) {
+  display: none;
+}
+
 .vd-set-view:has(#vd-viewport-mobile:checked)
   .vd-story__viewport[data-shot-viewport='desktop'] {
   display: none;
 }
 
-/* A story a filter empties goes, rather than standing as an empty card. Stated
-   as "has nothing of what was asked for" rather than as "all its cells are
-   hidden", because a hidden element still matches `:has()`. Only 17 of the 63
-   stories have a mobile screenshot, so this is the common case and not the edge
-   one. */
 .vd-set-view:has(#vd-viewport-mobile:checked)
-  .vd-story:not(:has([data-shot-viewport='mobile'])),
-.vd-set-view:has(#vd-viewport-desktop:checked)
-  .vd-story:not(:has([data-shot-viewport='desktop'])),
-.vd-set-view:has(#vd-theme-light:checked) .vd-story:not(:has([data-shot-theme='light'])),
-.vd-set-view:has(#vd-theme-dark:checked) .vd-story:not(:has([data-shot-theme='dark'])) {
+  .vd-story:not(:has([data-shot-viewport='mobile'])) {
   display: none;
 }
 
-/* And a tier left holding no stories takes its heading with it. */
 .vd-set-view:has(#vd-viewport-mobile:checked)
-  .vd-tier:not(:has([data-shot-viewport='mobile'])),
-.vd-set-view:has(#vd-viewport-desktop:checked)
-  .vd-tier:not(:has([data-shot-viewport='desktop'])),
-.vd-set-view:has(#vd-theme-light:checked) .vd-tier:not(:has([data-shot-theme='light'])),
-.vd-set-view:has(#vd-theme-dark:checked) .vd-tier:not(:has([data-shot-theme='dark'])) {
+  .vd-tier:not(:has([data-shot-viewport='mobile'])) {
   display: none;
+}
+
+@media (max-width: 767.98px) {
+  .vd-set-view:has(#vd-viewport-auto:checked)
+    .vd-story__viewport[data-shot-viewport='desktop'] {
+    display: none;
+  }
+
+  .vd-set-view:has(#vd-viewport-auto:checked)
+    .vd-story:not(:has([data-shot-viewport='mobile'])) {
+    display: none;
+  }
+
+  .vd-set-view:has(#vd-viewport-auto:checked)
+    .vd-tier:not(:has([data-shot-viewport='mobile'])) {
+    display: none;
+  }
+}
+
+@media (min-width: 768px) {
+  .vd-set-view:has(#vd-viewport-auto:checked)
+    .vd-story__viewport[data-shot-viewport='mobile'] {
+    display: none;
+  }
+
+  .vd-set-view:has(#vd-viewport-auto:checked)
+    .vd-story:not(:has([data-shot-viewport='desktop'])) {
+    display: none;
+  }
+
+  .vd-set-view:has(#vd-viewport-auto:checked)
+    .vd-tier:not(:has([data-shot-viewport='desktop'])) {
+    display: none;
+  }
 }

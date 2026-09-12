@@ -191,16 +191,23 @@ describe('SetFilterBar', () => {
     render4();
 
     expect(screen.getAllByRole('radio', { name: 'both', checked: true })).toHaveLength(2);
-    expect(screen.getAllByRole('radio', { checked: false })).toHaveLength(4);
+    // Not `auto`: opening already narrowed would hide half the screenshots
+    // without having been asked, and on a phone it would hide 46 of 63 stories.
+    expect(screen.getAllByRole('radio', { name: 'auto', checked: false })).toHaveLength(
+      2,
+    );
+    expect(screen.getAllByRole('radio', { checked: false })).toHaveLength(6);
   });
 
   it('offers a radio per choice on each axis', () => {
     render4();
 
     expect(screen.getAllByRole('radio').map((node) => node.getAttribute('id'))).toEqual([
+      'vd-theme-auto',
       'vd-theme-both',
       'vd-theme-light',
       'vd-theme-dark',
+      'vd-viewport-auto',
       'vd-viewport-both',
       'vd-viewport-desktop',
       'vd-viewport-mobile',

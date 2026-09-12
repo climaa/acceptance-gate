@@ -2,9 +2,11 @@ import {
   type FilterCount,
   type FilterKey,
   THEME_CHOICES,
+  THEME_SEGMENTS,
   type ShotSection,
   type TierCounts,
   VIEWPORT_CHOICES,
+  VIEWPORT_SEGMENTS,
 } from '@/lib/set-shots';
 
 /** Every cell of the filter matrix, in a stable order. */
@@ -127,8 +129,8 @@ export function SetFilterBar({ sections, counts, perTier }: SetFilterBarProps) {
         ))}
       </nav>
 
-      <Strip axis="theme" choices={THEME_CHOICES} />
-      <Strip axis="viewport" choices={VIEWPORT_CHOICES} />
+      <Strip axis="theme" choices={THEME_SEGMENTS} />
+      <Strip axis="viewport" choices={VIEWPORT_SEGMENTS} />
 
       {/* All nine answers, one revealed. CSS can hide a screenshot but it cannot
           count what is left, so the alternative to rendering these was a client
