@@ -585,3 +585,68 @@ html[data-theme='dark']
     display: none;
   }
 }
+
+/* ---- …and the link that offered it ---------------------------------------- */
+
+/* A tier a filter empties is hidden above, heading and all, so the jump link
+   still offering it is a dead press. Worse than dead: `:target` matches an
+   element `display: none` never drew, so the "you jumped here" mark at the top
+   of this file lights up on a click that moved the page nowhere.
+
+   Not reachable on the corpus — every tier has mobile screenshots, because
+   `visual-diff:all-viewports` opts stories past the desktop-only default that
+   `TIER_VIEWPORTS` sets for atoms and molecules. A partial set reaches it: a
+   capture run under a `--filter` can leave a tier holding one viewport, and the
+   console opens a captured set at this same route. So these are defensive in
+   the way the tier rules above already are, and are here so the nav and the
+   sections cannot disagree about what an empty tier is.
+
+   Eight rules rather than the twenty-five above, and hand-written rather than
+   generated, because these mirror the TIER's hide rules exactly: those are per
+   axis and independent, and a link testing the nine combinations instead would
+   disagree with the section it points at about what an empty tier is. `both`
+   needs no rule on either axis — it removes nothing to be left empty of. */
+
+.vd-set-view:has(#vd-theme-light:checked) .vd-set__jump:not([data-shot-themes~='light']) {
+  display: none;
+}
+
+html:not([data-theme='dark'])
+  .vd-set-view:has(#vd-theme-auto:checked)
+  .vd-set__jump:not([data-shot-themes~='light']) {
+  display: none;
+}
+
+.vd-set-view:has(#vd-theme-dark:checked) .vd-set__jump:not([data-shot-themes~='dark']) {
+  display: none;
+}
+
+html[data-theme='dark']
+  .vd-set-view:has(#vd-theme-auto:checked)
+  .vd-set__jump:not([data-shot-themes~='dark']) {
+  display: none;
+}
+
+.vd-set-view:has(#vd-viewport-desktop:checked)
+  .vd-set__jump:not([data-shot-viewports~='desktop']) {
+  display: none;
+}
+
+.vd-set-view:has(#vd-viewport-mobile:checked)
+  .vd-set__jump:not([data-shot-viewports~='mobile']) {
+  display: none;
+}
+
+@media (max-width: 767.98px) {
+  .vd-set-view:has(#vd-viewport-auto:checked)
+    .vd-set__jump:not([data-shot-viewports~='mobile']) {
+    display: none;
+  }
+}
+
+@media (min-width: 768px) {
+  .vd-set-view:has(#vd-viewport-auto:checked)
+    .vd-set__jump:not([data-shot-viewports~='desktop']) {
+    display: none;
+  }
+}

@@ -8,6 +8,7 @@ import {
   parseShotName,
   readSetShots,
   type SetShot,
+  tierAxes,
 } from '../lib/set-shots';
 
 /**
@@ -350,5 +351,65 @@ describe('filterCounts', () => {
     const counts = filterCounts(corpus);
 
     expect(Object.keys(counts)).toHaveLength(9);
+  });
+});
+
+/**
+ * What a tier holds, for the link that offers it.
+ *
+ * The jump link is the one part of the bar a filter can strand: the tier's own
+ * rules hide the section, and a link left pointing into a `display: none`
+ * heading is a press that does nothing while `:target` still marks it as the
+ * place you went. Unlike the filtering, this half IS markup, so it is asserted
+ * here rather than left to a browser pass.
+ */
+describe('tierAxes', () => {
+  const section = (keys: readonly string[]) => {
+    const [only] = groupShots(keys.map((key) => shot(key)));
+    if (!only) throw new Error('every fixture here names one tier');
+
+    return only;
+  };
+
+  /** The case a partial set reaches: a capture run under a `--filter` can leave a
+   *  tier holding one viewport. The corpus does not — `visual-diff:all-viewports`
+   *  opts three atoms past the desktop-only default — so this is asserted from
+   *  literal names rather than from the real set, which cannot show it. */
+  it('reports only the viewports a tier was really captured at', () => {
+    const axes = tierAxes(
+      section([
+        'atoms__desktop__light__atoms-badge--accent',
+        'atoms__desktop__dark__atoms-badge--accent',
+      ]),
+    );
+
+    expect(axes).toEqual({ themes: ['light', 'dark'], viewports: ['desktop'] });
+  });
+
+  it('reports both viewports for a tier that has them', () => {
+    const axes = tierAxes(
+      section([
+        'organisms__desktop__light__organisms-siteheader--default',
+        'organisms__mobile__light__organisms-siteheader--default',
+      ]),
+    );
+
+    expect(axes.viewports).toEqual(['desktop', 'mobile']);
+    expect(axes.themes).toEqual(['light']);
+  });
+
+  /** Capture order is not read order: the page draws desktop before mobile and
+   *  light before dark however `readdir` returned them, and the attribute a
+   *  stylesheet matches on must not depend on that either. */
+  it('answers in the capture order, never the order the files came back in', () => {
+    const axes = tierAxes(
+      section([
+        'templates__mobile__dark__templates-post--default',
+        'templates__desktop__light__templates-post--default',
+      ]),
+    );
+
+    expect(axes.themes).toEqual(['light', 'dark']);
+    expect(axes.viewports).toEqual(['desktop', 'mobile']);
   });
 });

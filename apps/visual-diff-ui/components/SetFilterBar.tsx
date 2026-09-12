@@ -5,6 +5,7 @@ import {
   THEME_SEGMENTS,
   type ShotSection,
   type TierCounts,
+  tierAxes,
   VIEWPORT_CHOICES,
   VIEWPORT_SEGMENTS,
 } from '@/lib/set-shots';
@@ -101,6 +102,16 @@ function Strip({ axis, choices }: StripProps) {
   );
 }
 
+/** The two attributes the nav's hide rules select on, from what the tier holds. */
+const axes = (section: ShotSection) => {
+  const { themes, viewports } = tierAxes(section);
+
+  return {
+    'data-shot-themes': themes.join(' '),
+    'data-shot-viewports': viewports.join(' '),
+  };
+};
+
 export interface SetFilterBarProps {
   sections: readonly ShotSection[];
   counts: Record<FilterKey, FilterCount>;
@@ -115,6 +126,11 @@ export function SetFilterBar({ sections, counts, perTier }: SetFilterBarProps) {
         {sections.map((section) => (
           <a
             className="vd-set__jump vd-mono"
+            /* What the tier HOLDS, so set.css can drop the link when a filter
+               empties the section it points at. Per axis and plural, matching
+               the tier's own hide rules; a cell's singular `data-shot-theme`
+               says what one screenshot IS. */
+            {...axes(section)}
             href={`#vd-tier-${section.tier}`}
             key={section.tier}
           >

@@ -387,3 +387,42 @@ export function tierFilterCounts(sections: readonly ShotSection[]): TierCounts {
     sections.map((section) => [section.tier, filterCounts([section])]),
   ) as TierCounts;
 }
+
+/**
+ * Which themes and viewports a tier actually holds.
+ *
+ * For the jump link that offers it. A tier a filter empties is hidden above,
+ * heading and all, so a link still pointing at it is a dead press — and worse
+ * than dead, because `:target` matches an element `display: none` never drew, so
+ * the "you jumped here" mark lights up on a click that moved nothing.
+ *
+ * The corpus never reaches that state, and the reason is worth writing down
+ * because `TIER_VIEWPORTS` reads like it should: atoms and molecules are
+ * desktop-only BY DEFAULT, but `visual-diff:all-viewports` opts individual
+ * stories past it, and three atoms and three molecules are opted past — so every
+ * tier survives a mobile filter. A partial set is what reaches it: a capture run
+ * under a `--filter` can leave a tier holding one viewport, and the console opens
+ * a captured set at the same route the corpus uses.
+ *
+ * Defensive, then, in exactly the way the tier's own rules already are — the
+ * `:not(:has([data-shot-theme=…]))` guards cannot fire on the corpus either.
+ *
+ * Two lists rather than the nine counts above, because a tier's own hide rules
+ * are per axis and independent — a link testing the nine combinations instead
+ * would disagree with the section it points at about what an empty tier is.
+ */
+export interface TierAxes {
+  themes: readonly Theme[];
+  viewports: readonly ViewportName[];
+}
+
+export function tierAxes(section: ShotSection): TierAxes {
+  const shots = section.groups.flatMap((group) => group.shots);
+
+  return {
+    themes: THEMES.filter((theme) => shots.some((shot) => shot.theme === theme)),
+    viewports: VIEWPORT_ORDER.filter((viewport) =>
+      shots.some((shot) => shot.viewport === viewport),
+    ),
+  };
+}

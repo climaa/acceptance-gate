@@ -246,6 +246,38 @@ describe('SetFilterBar', () => {
     }).toEqual({ theme: 'light', viewport: 'desktop' });
   });
 
+  /**
+   * The one half of the filtering a test here CAN reach.
+   *
+   * A tier a filter empties is hidden, heading and all, so the link still
+   * offering it would be a dead press — and `:target` would mark it as the place
+   * you went. set.css drops the link by asking what its tier holds, which makes
+   * the attribute a contract between the component and the stylesheet rather
+   * than decoration. Asserted from a fixture whose two tiers differ, because the
+   * corpus has both viewports in every tier and could not tell them apart.
+   */
+  it('says what each tier holds, so a link to an emptied one can be dropped', () => {
+    render(
+      <SetTemplate
+        corpus={corpus}
+        set={null}
+        shots={shots([
+          BADGE,
+          ...HEADER,
+          'organisms__mobile__dark__organisms-siteheader--default',
+        ])}
+      />,
+    );
+
+    const held = (tier: string) =>
+      screen
+        .getByRole('link', { name: new RegExp(`^${tier}`) })
+        .getAttribute('data-shot-viewports');
+
+    expect(held('atoms')).toBe('desktop');
+    expect(held('organisms')).toBe('desktop mobile');
+  });
+
   /** `data-theme` would have been the obvious name and would have re-themed the
    *  cell: tokens.css remaps every colour role under a bare `[data-theme='dark']`. */
   it('does not mark a cell with the attribute that drives the app theme', () => {
