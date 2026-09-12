@@ -2,12 +2,20 @@
   "isSample": true,
   "sets": [
     {
+      "label": "main-2026-08-30",
+      "sha": "d9d8e96",
+      "branch": "main",
+      "capturedAt": "2026-08-30",
+      "stories": 14,
+      "note": "a --filter slice of the committed __baselines__ corpus at this sha — the one set here that ships its shots, so a deployed console can open a set rather than only list one"
+    },
+    {
       "label": "main-2026-08-24",
       "sha": "0edf94f8c719c6645aeb0f27446ebe023d38b7c2",
       "branch": "feat/local-accept-loop",
       "capturedAt": "2026-08-24",
       "stories": 154,
-      "note": "the corpus after the IconButton stories landed \u2014 side B of the added report"
+      "note": "the corpus after the IconButton stories landed — side B of the added report"
     },
     {
       "label": "main-2026-08-17",

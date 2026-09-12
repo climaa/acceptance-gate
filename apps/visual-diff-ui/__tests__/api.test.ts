@@ -52,7 +52,7 @@ describe('GET /api/sets', () => {
 
     const body = (await response.json()) as { isSample: boolean; sets: unknown[] };
     expect(body.isSample).toBe(true);
-    expect(body.sets).toHaveLength(3);
+    expect(body.sets).toHaveLength(4);
   });
 
   // The reader behind it is cached with `cacheLife('seconds')` and a tag a

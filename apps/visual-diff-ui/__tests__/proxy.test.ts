@@ -154,6 +154,7 @@ describe('the set proxy', () => {
   it('refuses a segment that is not a label, with no data directory to read', () => {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'vd-proxy-set-'));
     temporaryDirs.push(dir);
+    fs.writeFileSync(path.join(dir, 'sets.json'), '{"sets":[]}');
     process.env.VISUAL_DIFF_DATA_DIR = dir;
 
     const answer = isMissingSet('/set/..%2F..%2Fetc');
@@ -178,6 +179,10 @@ describe('the set proxy', () => {
   it('stays out of the way when there is no sets tree to read', () => {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'vd-proxy-set-'));
     temporaryDirs.push(dir);
+    // Populated, or `dataDirFrom` calls it "no data here" and resolves to the
+    // committed fixtures instead — which have a `sets/` tree, so the assertion
+    // below would be about the wrong directory entirely.
+    fs.writeFileSync(path.join(dir, 'sets.json'), '{"sets":[]}');
     process.env.VISUAL_DIFF_DATA_DIR = dir;
 
     const answer = isMissingSet('/set/never-captured');
