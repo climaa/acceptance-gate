@@ -185,3 +185,32 @@ describe('the set proxy', () => {
     expect(answer).toBe(false);
   });
 });
+
+/**
+ * A segment that will not decode at all.
+ *
+ * `decodeURIComponent('%')` throws `URIError`, and both checks decoded before
+ * anything caught it — so `/report/%` and `/set/%` answered 500, on the one path
+ * that exists to answer 404. Measured against a running server, both routes,
+ * before the guard went in.
+ */
+describe('a segment that is not even a string', () => {
+  it.each([
+    ['a bare percent', '%'],
+    ['a truncated escape', '%E0%A4%A'],
+  ])('answers a set with %s as a miss rather than throwing', (_case, segment) => {
+    setsDirWith('main-2026-08-17');
+
+    const answer = isMissingSet(`/set/${segment}`);
+
+    expect(answer).toBe(true);
+  });
+
+  it('answers a report with a malformed escape as a miss rather than throwing', () => {
+    dataDirWith(REPORT);
+
+    const answer = isMissingReport('/report/%');
+
+    expect(answer).toBe(true);
+  });
+});

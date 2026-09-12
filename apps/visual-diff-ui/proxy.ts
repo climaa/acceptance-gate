@@ -48,6 +48,23 @@ const REPORT_PREFIX = '/report/';
 const SET_PREFIX = '/set/';
 
 /**
+ * The segment after `prefix`, decoded, or null for one that will not decode.
+ *
+ * `decodeURIComponent('%')` throws `URIError`, and a throw from here is a 500 on
+ * the one path whose entire job is to produce a 404 — measured: `/report/%` and
+ * `/set/%` both answered 500 before this existed. Null rather than a throw, so
+ * each caller decides what an undecodable segment means to it, the same shape
+ * lib/paths.ts uses for a path it will not build.
+ */
+function segmentAfter(pathname: string, prefix: string): string | null {
+  try {
+    return decodeURIComponent(pathname.slice(prefix.length));
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Whether that path names a report this instance does not have.
  *
  * The decision, kept apart from the response so it can be tested as one. The
@@ -60,7 +77,8 @@ export function isMissingReport(pathname: string): boolean {
   const { dir } = dataDirFrom();
   if (!canSeeReports(dir)) return false;
 
-  const id = decodeURIComponent(pathname.slice(REPORT_PREFIX.length));
+  const id = segmentAfter(pathname, REPORT_PREFIX);
+  if (id === null) return true;
 
   // Shape first, as every other reader of an id does: `hasReport` answers a
   // climb by throwing, and a throw here is a 500 on a path whose whole job is
@@ -86,8 +104,8 @@ export function isMissingReport(pathname: string): boolean {
  *    second opinion about what a set is.
  */
 export function isMissingSet(pathname: string): boolean {
-  const label = decodeURIComponent(pathname.slice(SET_PREFIX.length));
-  if (!SetLabelSchema.safeParse(label).success) return true;
+  const label = segmentAfter(pathname, SET_PREFIX);
+  if (label === null || !SetLabelSchema.safeParse(label).success) return true;
   if (label === CANONICAL_LABEL) return false;
 
   const { dir } = dataDirFrom();
