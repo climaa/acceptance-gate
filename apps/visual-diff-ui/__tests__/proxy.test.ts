@@ -4,7 +4,7 @@ import * as path from 'node:path';
 // Imported explicitly rather than relying on `globals: true` — tsconfig's
 // `**/*.ts` include means tsc typechecks this file.
 import { afterEach, describe, expect, it } from 'vitest';
-import { isMissingReport } from '../proxy';
+import { isMissingReport, isMissingSet } from '../proxy';
 import { within } from '../lib/paths';
 
 /**
@@ -108,6 +108,79 @@ describe('the report proxy', () => {
     process.env.VISUAL_DIFF_DATA_DIR = dir;
 
     const answer = ask('/report/never-ran__never-ran');
+
+    expect(answer).toBe(false);
+  });
+});
+
+/** A configured data directory holding exactly the capture sets named. */
+function setsDirWith(...labels: string[]): string {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'vd-proxy-set-'));
+  temporaryDirs.push(dir);
+  fs.mkdirSync(path.join(dir, 'sets'), { recursive: true });
+  fs.writeFileSync(path.join(dir, 'sets.json'), '{"sets":[]}');
+
+  for (const label of labels) {
+    fs.mkdirSync(within(dir, 'sets', label), { recursive: true });
+  }
+
+  process.env.VISUAL_DIFF_DATA_DIR = dir;
+
+  return dir;
+}
+
+describe('the set proxy', () => {
+  it('lets a set this instance holds through untouched', () => {
+    setsDirWith('main-2026-08-17');
+
+    const answer = isMissingSet('/set/main-2026-08-17');
+
+    expect(answer).toBe(false);
+  });
+
+  it('answers a set this instance never captured with a 404', () => {
+    setsDirWith('main-2026-08-17');
+
+    const answer = isMissingSet('/set/never-captured');
+
+    expect(answer).toBe(true);
+  });
+
+  /**
+   * The one branch that needs no tree at all. "Not a label" is a fact about the
+   * string, so this answers even where the report half would have to stay quiet
+   * — and it is what keeps a climbing segment from reaching the route.
+   */
+  it('refuses a segment that is not a label, with no data directory to read', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'vd-proxy-set-'));
+    temporaryDirs.push(dir);
+    process.env.VISUAL_DIFF_DATA_DIR = dir;
+
+    const answer = isMissingSet('/set/..%2F..%2Fetc');
+
+    expect(answer).toBe(true);
+  });
+
+  /**
+   * The corpus lives in the checkout, not the data directory, and a proxy is
+   * bundled as its own function — so "no corpus" and "shipped without the
+   * checkout" are one answer here. It says nothing, and the page tells the two
+   * apart with an empty state at 200.
+   */
+  it('never calls the corpus a miss', () => {
+    setsDirWith();
+
+    const answer = isMissingSet('/set/baselines');
+
+    expect(answer).toBe(false);
+  });
+
+  it('stays out of the way when there is no sets tree to read', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'vd-proxy-set-'));
+    temporaryDirs.push(dir);
+    process.env.VISUAL_DIFF_DATA_DIR = dir;
+
+    const answer = isMissingSet('/set/never-captured');
 
     expect(answer).toBe(false);
   });

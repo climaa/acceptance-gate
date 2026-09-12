@@ -181,4 +181,24 @@
   .vd-compare__stage {
     block-size: 70dvh;
   }
+
+  /* The themes of one viewport, side by side, which is the comparison a reviewer
+     makes when checking a capture in both. `flex-start` so a 12px atom and a
+     482px template in the same row align at the top rather than floating. */
+  .vd-story__cells {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  /* The themes SHARE the row rather than each claiming its capture width. Two
+     1248px figures do not fit side by side in this column, so left to their
+     natural size they wrapped — which put the dark shot under the light one and
+     left half the row empty. `flex-basis: 0` makes the pair split what there is;
+     each figure's own `max-width` is still its capture width, so a 358px mobile
+     shot stops at 358 and is never blown up to fill half a desktop column. */
+  .vd-cell {
+    flex: 1 1 0;
+    min-width: 0;
+  }
 }

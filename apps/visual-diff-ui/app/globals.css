@@ -38,4 +38,6 @@
 /* The comparison modal and its scrubber. */
 @import './styles/modal.css';
 /* From 768 px. Last on purpose — see above. */
+@import './styles/set.css';
+
 @import './styles/wide.css';

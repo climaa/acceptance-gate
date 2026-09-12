@@ -1,5 +1,7 @@
+import NextLink from 'next/link';
 import { Badge, Table, type TableColumn, type TableRow } from '@gate/ui';
 import { formatBytes } from '@/lib/outcome';
+import { setHref } from '@/lib/shots';
 import type { CaptureSet } from '@/lib/summary';
 import { DeleteSetButton } from './ConfirmDialogs';
 
@@ -46,9 +48,23 @@ function setRow(set: CaptureSet, bytes: number | undefined, frozen: boolean): Ta
         // and the badge is a mark beside the name rather than part of it. The
         // label gives up its width to the badge rather than the other way
         // round — see `.vd-set` in globals.css.
+        // The label opens the set viewer, but only where this instance actually
+        // holds the shots. `bytes` is the measured tree, not the registry's
+        // claim — the same signal the size column draws `—` for — so a set
+        // captured elsewhere, one whose directory a human moved, and sample mode
+        // (which lists sets and ships no `sets/` tree at all) are covered by one
+        // rule. `lib/report-view.ts` states the principle for the other pair of
+        // links on this console: a dead link beside a live one is worse than no
+        // link.
         content: (
           <span className="vd-set">
-            <span className="vd-set__label">{set.label}</span>
+            {bytes === undefined ? (
+              <span className="vd-set__label">{set.label}</span>
+            ) : (
+              <NextLink className="vd-set__label" href={setHref(set.label)}>
+                {set.label}
+              </NextLink>
+            )}
             {set.dirty && <Badge tone="warning">dirty</Badge>}
           </span>
         ),

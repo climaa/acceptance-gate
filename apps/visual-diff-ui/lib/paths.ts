@@ -4,7 +4,7 @@ import * as path from 'node:path';
 // `entryUnder` rather than instead of it: confinement catches the climb, and this
 // catches what confinement has no opinion about — a NUL reaches `readFile` as a
 // read error rather than a miss, and answers 500 where a 404 is owed.
-import { REPORT_ID } from './job-contract';
+import { REPORT_ID, SET_LABEL } from './job-contract';
 
 /**
  * The data directory's layout, and the one check that keeps every path inside it.
@@ -129,6 +129,21 @@ export const setDir = (dataDir: string, label: string) =>
  *  because what is read out of it is `readdir`'s own names rather than anything
  *  that arrived in a URL. */
 export const setsRoot = (dataDir: string) => within(dataDir, SETS_DIR);
+
+/**
+ * One capture set's directory as a reader asks for it: shape first, then
+ * confinement, and null for either refusal.
+ *
+ * The read-side half of `setDir`, and the difference is the whole reason it
+ * exists: `setDir` is `within`, which THROWS, and a route that answers a shot
+ * owes a 404 rather than a 500. Same pairing, same argument, as `reportDir` and
+ * `reportDirOf` above.
+ */
+export function setDirOf(dataDir: string, label: string): string | null {
+  if (!SET_LABEL.test(label)) return null;
+
+  return entryUnder(setsRoot(dataDir), label);
+}
 
 /** One comparison report's directory, for a caller that has already decided the
  *  id is one. Throws on a climb — see `reportDirOf` for the reader's half. */

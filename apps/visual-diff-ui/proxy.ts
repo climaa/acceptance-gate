@@ -2,8 +2,9 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { NextResponse, type NextRequest } from 'next/server';
 import { dataDirFrom } from '@/lib/data-dir';
-import { hasReport } from '@/lib/jobs';
-import { ReportIdSchema } from '@/lib/job-contract';
+import { hasReport, hasSet } from '@/lib/jobs';
+import { ReportIdSchema, SetLabelSchema } from '@/lib/job-contract';
+import { CANONICAL_LABEL } from '@/lib/baselines';
 
 /**
  * The one thing the report route cannot do for itself: answer a miss with a
@@ -39,11 +40,12 @@ import { ReportIdSchema } from '@/lib/job-contract';
  * existed. Wrong-but-harmless beats confidently wrong.
  */
 
-/** Only the report route. Every other path — the console, the API, the assets —
- *  reaches the router without this file running at all. */
-export const config = { matcher: '/report/:id' };
+/** Only the two routes that can miss. Every other path — the console, the API,
+ *  the assets — reaches the router without this file running at all. */
+export const config = { matcher: ['/report/:id', '/set/:label'] };
 
 const REPORT_PREFIX = '/report/';
+const SET_PREFIX = '/set/';
 
 /**
  * Whether that path names a report this instance does not have.
@@ -66,8 +68,40 @@ export function isMissingReport(pathname: string): boolean {
   return !ReportIdSchema.safeParse(id).success || !hasReport(dir, id);
 }
 
+/**
+ * Whether that path names a screenshot set this instance cannot show.
+ *
+ * Three answers, in the order that needs the least to decide:
+ *
+ *  - a segment that is not a label is a miss with no tree consulted at all. The
+ *    report route has to look first; this one does not, because "not a label" is
+ *    a fact about the string.
+ *  - `baselines` is never a miss FROM HERE. The corpus lives in the checkout,
+ *    not the data directory, and a proxy is bundled as its own function — so "no
+ *    corpus" and "this function shipped without the checkout" are the same
+ *    answer here, and the page has an empty state that tells them apart at 200.
+ *    Deciding otherwise would also pull lib/git.ts, and `node:child_process`,
+ *    into this bundle for the first time.
+ *  - otherwise the same pair the delete route uses, so the proxy never holds a
+ *    second opinion about what a set is.
+ */
+export function isMissingSet(pathname: string): boolean {
+  const label = decodeURIComponent(pathname.slice(SET_PREFIX.length));
+  if (!SetLabelSchema.safeParse(label).success) return true;
+  if (label === CANONICAL_LABEL) return false;
+
+  const { dir } = dataDirFrom();
+
+  return canSeeSets(dir) && !hasSet(dir, label);
+}
+
 export function proxy(request: NextRequest): NextResponse | undefined {
-  if (!isMissingReport(request.nextUrl.pathname)) return undefined;
+  const { pathname } = request.nextUrl;
+  const missing = pathname.startsWith(SET_PREFIX)
+    ? isMissingSet(pathname)
+    : isMissingReport(pathname);
+
+  if (!missing) return undefined;
 
   // Rewritten rather than redirected: the address a reviewer followed is the
   // address they should still be looking at when they read what is wrong with
@@ -83,6 +117,15 @@ export function proxy(request: NextRequest): NextResponse | undefined {
 function canSeeReports(dir: string): boolean {
   try {
     return fs.statSync(path.join(dir, 'reports')).isDirectory();
+  } catch {
+    return false;
+  }
+}
+
+/** The same question for `sets/`, and the same reason for asking it. */
+function canSeeSets(dir: string): boolean {
+  try {
+    return fs.statSync(path.join(dir, 'sets')).isDirectory();
   } catch {
     return false;
   }

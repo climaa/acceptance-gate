@@ -1,7 +1,9 @@
+import NextLink from 'next/link';
 import { Badge, Button, Stack } from '@gate/ui';
 import { Note } from './Note';
 import type { CanonicalSet as Corpus } from '@/lib/baselines';
 import { formatBytes } from '@/lib/outcome';
+import { setHref } from '@/lib/shots';
 
 /**
  * The committed baseline corpus, above the sets this instance captured.
@@ -69,6 +71,12 @@ export function CanonicalSet({ corpus }: CanonicalSetProps) {
           what CI compares every pull request against — compare a capture with this to see
           what a change did to the corpus
         </Note>
+        {/* The corpus is the one set that is always here to be read: the card is
+            drawn only when `readCanonicalSet` found one, so this link can never
+            be the dead one the sets table guards against. */}
+        <NextLink className="vd-set__open" href={setHref(corpus.label)}>
+          browse screenshots →
+        </NextLink>
         <Button variant="danger" size="sm" disabled>
           delete
         </Button>

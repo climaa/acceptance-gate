@@ -2,6 +2,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { cacheLife } from 'next/cache';
 import { lastCommit } from './git';
+import { setDirOf } from './paths';
 
 /**
  * The committed baseline corpus, offered as something to compare against.
@@ -45,6 +46,31 @@ const BASELINES = path.join('packages', 'visual-diff', '__baselines__');
 export const BASELINE_ENV = 'BASELINE_ENV.json';
 
 export const baselinesPath = (root: string): string => path.join(root, BASELINES);
+
+/**
+ * Where one label's shots are, for a reader that has only a URL segment.
+ *
+ * The corpus is the one label whose shots do not live in the data directory, and
+ * this is the single place that knows it — `lib/runner.ts`'s compare path reads
+ * the same answer through here rather than keeping a second copy of the rule.
+ *
+ * `root` is an argument rather than a `repoRoot()` call inside, for the reason
+ * `readCanonicalSet` states: a cached reader keys on what it is passed, and a
+ * directory resolved in here would not join that key.
+ *
+ * Null rather than a throw, because both callers on the read path owe a 404 —
+ * a label that is not one, a label that climbed out of the data directory, and
+ * a corpus with no checkout behind it are all "no such set" to a reader.
+ */
+export function setShotsDir(
+  dataDir: string,
+  root: string | null,
+  label: string,
+): string | null {
+  if (label !== CANONICAL_LABEL) return setDirOf(dataDir, label);
+
+  return root ? baselinesPath(root) : null;
+}
 
 export interface CanonicalSet {
   label: string;

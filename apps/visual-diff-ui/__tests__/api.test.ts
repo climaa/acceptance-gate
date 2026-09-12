@@ -11,6 +11,7 @@ import { GET as getReport } from '../app/api/reports/[id]/route';
 import { GET as getReports } from '../app/api/reports/route';
 import { GET as getSets } from '../app/api/sets/route';
 import { GET as getShot } from '../app/api/shots/[report]/[file]/route';
+import { GET as getSetShot } from '../app/api/sets/[label]/shots/[file]/route';
 import { GET as getStories } from '../app/api/stories/route';
 import {
   CurrentJobResponseSchema,
@@ -337,5 +338,73 @@ describe('every answer the console parses', () => {
     // stops polling on.
     expect(body.isSample).toBe(true);
     expect(body.running).toBe(false);
+  });
+});
+
+/**
+ * A set's own screenshots, which no other route can serve.
+ *
+ * The fixture tree ships no `sets/` directory — sample mode lists sets it holds
+ * no shots for, which is exactly why the console draws no link for them — so the
+ * positive cases here point at the corpus, read out of the checkout.
+ */
+describe('GET /api/sets/[label]/shots/[file]', () => {
+  const CORPUS_SHOT = 'atoms__desktop__light__atoms-badge--accent.png';
+
+  it('serves a corpus screenshot as a revalidated PNG', async () => {
+    const response = await getSetShot(
+      request,
+      context({ label: 'baselines', file: CORPUS_SHOT }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get('Content-Type')).toBe('image/png');
+    // NOT `immutable`, unlike the report route: a set label names a directory
+    // that gets rewritten — the corpus changes on every accept — so a browser
+    // that never revalidated would show yesterday's pixels during exactly the
+    // review this page exists for.
+    expect(response.headers.get('Cache-Control')).toBe('no-cache');
+    expect(response.headers.get('ETag')).toBeTruthy();
+  });
+
+  it('answers a revisit with 304 and no body', async () => {
+    const first = await getSetShot(
+      request,
+      context({ label: 'baselines', file: CORPUS_SHOT }),
+    );
+    const etag = first.headers.get('ETag') ?? '';
+
+    const second = await getSetShot(
+      new Request('http://localhost:3300/', { headers: { 'if-none-match': etag } }),
+      context({ label: 'baselines', file: CORPUS_SHOT }),
+    );
+
+    expect(second.status).toBe(304);
+  });
+
+  it('serves the bytes on disk', async () => {
+    const response = await getSetShot(
+      request,
+      context({ label: 'baselines', file: CORPUS_SHOT }),
+    );
+
+    const bytes = new Uint8Array(await response.arrayBuffer());
+    expect([...bytes.slice(0, 4)]).toEqual([0x89, 0x50, 0x4e, 0x47]);
+  });
+
+  // Every refusal is the same 404 a miss is: nothing here confirms what is on
+  // the disk above the data directory or beside the checkout.
+  it.each([
+    ['a relative climb in the filename', 'baselines', '../../sets.json'],
+    ['an absolute path', 'baselines', '/etc/passwd'],
+    ['a file that is not a PNG', 'baselines', 'BASELINE_ENV.json'],
+    ['a climbing label', '../..', CORPUS_SHOT],
+    ['a label that is not one', 'a/b', CORPUS_SHOT],
+    ['a set this instance does not hold', 'never-captured', CORPUS_SHOT],
+    ['a screenshot that is not there', 'baselines', 'atoms__desktop__light__nope.png'],
+  ])('refuses %s with a 404', async (_case, label, file) => {
+    const response = await getSetShot(request, context({ label, file }));
+
+    expect(response.status).toBe(404);
   });
 });

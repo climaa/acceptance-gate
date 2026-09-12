@@ -7,6 +7,7 @@ import { REPORTS_TAG, SETS_TAG, reportTag } from './tags';
 // The layout, the shapes and the confinement check. This module had its own copy
 // of all three — see lib/paths.ts for what that cost and why it is one now.
 import {
+  entryUnder,
   reportDirOf,
   reportsRoot,
   setsFilePath,
@@ -14,6 +15,7 @@ import {
   shotUnder,
   summaryFile,
 } from './paths';
+import { setShotsDir } from './baselines';
 import {
   type Bucket,
   type SetsFile,
@@ -266,4 +268,34 @@ export function resolveShotPath(
   if (!dir) return null;
 
   return shotUnder(dir, file);
+}
+
+/**
+ * The absolute path of one screenshot inside a SET, or null for anything that is
+ * not one.
+ *
+ * The set counterpart of `resolveShotPath`, and the differences are both in the
+ * data rather than in the check. A set holds one PNG per cell, so the name is
+ * `<variantKey>.png` with no `.<kind>` infix; and the corpus's shots live in the
+ * checkout rather than under `dataDir`, which is why `root` is passed and why
+ * `setShotsDir` — not `setDirOf` — answers where to look.
+ *
+ * Three gates, three nulls, no throw: not a PNG name, not a label (or one that
+ * climbed), or a corpus with no checkout behind it. The caller cannot tell which,
+ * and that is deliberate — see lib/paths.ts. Confinement still applies to the
+ * corpus branch: `entryUnder` re-checks the resolved file against whichever
+ * directory was chosen, so a `..` in the filename is refused on both.
+ */
+export function resolveSetShotPath(
+  dataDir: string,
+  root: string | null,
+  label: string,
+  file: string,
+): string | null {
+  if (!SHOT_FILE.test(file)) return null;
+
+  const dir = setShotsDir(dataDir, root, label);
+  if (!dir) return null;
+
+  return entryUnder(dir, file);
 }

@@ -108,3 +108,18 @@ export function absentShotCopy(variant: Variant, kind: ShotKind): string {
 
   return NOT_ON_THIS_SIDE;
 }
+
+/** The set viewer's address for one label. */
+export const setHref = (label: string) => `/set/${encodeURIComponent(label)}`;
+
+/**
+ * One screenshot of a capture set, on the route that serves a set's own tree.
+ *
+ * Here rather than in lib/set-shots.ts for a boundary reason: that module reads
+ * the filesystem and is server-only, while this one is a leaf with no `node:*`
+ * import and is already pulled into client components. A URL builder living
+ * beside the reader would drag `node:fs` across that line the first time a client
+ * component wanted a link.
+ */
+export const setShotUrl = (label: string, file: string) =>
+  `/api/sets/${encodeURIComponent(label)}/shots/${encodeURIComponent(file)}`;
