@@ -10,10 +10,6 @@ working · **[manual](https://manual.carloslima.dev)** — the tool's
 requirements, rendered · **[changelog](https://blog.carloslima.dev/changelog)** —
 every release, and what it cost.
 
-Start at the [changelog](https://blog.carloslima.dev/changelog) if you only open
-one page: each release leads with what it is, the table of what earned the
-version, the index numbers that were wrong last time, and what did not land.
-
 **The pipeline is the product.** A public portfolio monorepo where every pull
 request — including the ones that build the repo itself — walks through the
 same gate:
