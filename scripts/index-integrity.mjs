@@ -59,11 +59,27 @@ function statedBaselines(index) {
   }));
 }
 
+// git, not readdir: the claim is about what the repository CARRIES, and a local
+// run leaves untracked PNGs under __baselines__ that a directory listing would
+// count. Reading the index rather than the worktree also means a half-staged
+// accept cannot make this pass.
 function trackedBaselines() {
-  const out = execFileSync('git', ['ls-files', 'packages/visual-diff/__baselines__'], {
-    cwd: ROOT,
-    encoding: 'utf8',
-  });
+  let out;
+
+  try {
+    out = execFileSync('git', ['ls-files', 'packages/visual-diff/__baselines__'], {
+      cwd: ROOT,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+  } catch (cause) {
+    throw new Error(
+      `could not ask git what it tracks under packages/visual-diff/__baselines__ ` +
+        `(this check reads the git index, so it needs a repository and a git binary): ` +
+        `${cause.message}`,
+      { cause },
+    );
+  }
 
   return out.split('\n').filter((f) => f.endsWith('.png')).length;
 }
@@ -74,14 +90,20 @@ const problems = [];
 const stamp = statedVersion(index);
 const manifest = JSON.parse(read('package.json')).version;
 
-if (!stamp) {
+if (!manifest) {
+  problems.push('package.json has no `version`, so the stamp has nothing to agree with');
+} else if (!stamp) {
   problems.push(`${INDEX} — no \`Version X.Y.Z · generated YYYY-MM-DD\` stamp found`);
 } else if (stamp.version !== manifest) {
+  // The remedy names files and a document, not a slash command: this text is read
+  // in a CI log by whoever is holding the failure, and telling them to run
+  // something only an agent has is telling them nothing.
   problems.push(
-    `${INDEX}:${stamp.line} — stamped ${stamp.version}, package.json says ${manifest}. ` +
-      `Refresh the index (\`/sc:index-repo\`) rather than editing the stamp alone; ` +
-      `its measured before/after is the release body's index-corrections section. ` +
-      `See RELEASING.md.`,
+    `${INDEX}:${stamp.line} — stamped ${stamp.version}, package.json says ${manifest}.\n` +
+      `      Re-measure the index against the tree and correct every number that moved,\n` +
+      `      then stamp it ${manifest}. Editing the stamp alone defeats the point: its\n` +
+      `      measured before/after is the release body's index-corrections section.\n` +
+      `      RELEASING.md step 4 lists the commands.`,
   );
 }
 
