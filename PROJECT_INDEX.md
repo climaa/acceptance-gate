@@ -58,7 +58,8 @@ packages/
   visual-diff/         the self-built visual-regression CLI + 160 committed baselines
   tsconfig/            shared TS configs
 designs/               acceptance-gate.pen (Pencil source) + exports/*.png
-scripts/               complexity-gate.mjs (the health gate) · apply-ruleset.mjs
+scripts/               complexity-gate.mjs (the health gate) · index-integrity.mjs
+                       (this file, checked against the repo it describes) · apply-ruleset.mjs
 .claude/skills/        four committed Next.js agent skills (+ PROVENANCE.md)
 .github/               pr.yml (the gate) · changelog-deploy.yml + changelog-check.yml
                        (the release → /changelog edge, and the alarm that reads the

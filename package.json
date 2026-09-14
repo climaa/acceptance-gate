@@ -24,7 +24,7 @@
     "visual-diff:container": "node scripts/visual-diff-container.mjs",
     "typecheck:sandcastle": "tsc --noEmit -p .sandcastle/tsconfig.json",
     "test:sandcastle": "vitest run --config vitest.sandcastle.config.mts",
-    "health:check": "turbo run health && node scripts/complexity-gate.mjs --scope .sandcastle/"
+    "health:check": "turbo run health && node scripts/complexity-gate.mjs --scope .sandcastle/ && node scripts/index-integrity.mjs"
   },
   "devDependencies": {
     "@ai-hero/sandcastle": "0.12.0",
