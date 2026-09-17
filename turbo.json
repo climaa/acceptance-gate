@@ -7,6 +7,7 @@
       "dependsOn": ["^build"],
       "env": [
         "VERCEL_ENV",
+        "VERCEL_OBSERVABILITY_CLIENT_CONFIG",
         "NEXT_PUBLIC_BUGSINK_DSN",
         "BLOG_RELEASES_FIXTURE",
         "GITHUB_TOKEN"
