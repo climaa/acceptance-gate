@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { describe, expect, it } from 'vitest';
-import { MANUAL_PAGES } from '@/lib/allowlist';
+import { MANUAL_PAGES, PUBLISHED_SLUGS, TOUR_SLUG } from '@/lib/allowlist';
 import { proxy } from '../proxy';
 
 /**
@@ -31,6 +31,24 @@ describe('proxy', () => {
     const refused = MANUAL_PAGES.filter((page) => statusOf(`/${page.slug}`) !== null);
 
     expect(refused.map((page) => page.slug)).toEqual([]);
+  });
+
+  /**
+   * The trap this check sprang the day a page arrived that no `.feature`
+   * backs. `/start` renders perfectly and was still rewritten to `/_not-found`
+   * under a 404, because the allowlist was `findManualPage` and the tour is
+   * not a manual page. Named explicitly rather than folded into the loop
+   * above: a loop over the same set the proxy consults proves nothing about
+   * whether that set is complete.
+   */
+  it('lets the tour through', () => {
+    expect(statusOf(`/${TOUR_SLUG}`)).toBeNull();
+  });
+
+  it('lets every address the app publishes through', () => {
+    const refused = [...PUBLISHED_SLUGS].filter((slug) => statusOf(`/${slug}`) !== null);
+
+    expect(refused).toEqual([]);
   });
 
   it('refuses a slug that names no page', () => {

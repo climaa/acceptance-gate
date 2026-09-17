@@ -64,6 +64,31 @@ export const MANUAL_PAGES: readonly ManualPage[] = [
   },
 ];
 
+/**
+ * The on-boarding tour's slug, which is not a feature page.
+ *
+ * `MANUAL_PAGES` is the generated lane — one entry per published `.feature` —
+ * and `/start` belongs to neither that lane nor its guards: it has no source
+ * file to parse and no scenario count to pin. It is written here anyway,
+ * because the proxy below has to know it, and a second list of addresses kept
+ * somewhere else is how a working page comes to be answered with a 404.
+ */
+export const TOUR_SLUG = 'start';
+
+/**
+ * Every one-segment address this app answers.
+ *
+ * The proxy's allowlist. It was `findManualPage` alone, which was exactly right
+ * while every page came from a feature file and became a silent trap the moment
+ * one did not: `/start` renders perfectly and was still rewritten to
+ * `/_not-found` under a 404, because the check that let addresses through had
+ * never heard of it.
+ */
+export const PUBLISHED_SLUGS: ReadonlySet<string> = new Set([
+  ...MANUAL_PAGES.map((page) => page.slug),
+  TOUR_SLUG,
+]);
+
 export function findManualPage(slug: string): ManualPage | undefined {
   return MANUAL_PAGES.find((page) => page.slug === slug);
 }

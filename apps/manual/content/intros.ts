@@ -70,8 +70,8 @@ export const ABOUT_MANUAL: Paragraphs = [
 export const START_HERE = {
   title: 'Start here',
   lede: 'The console is deployed and runs on committed sample data — nothing you click there can start a job or delete anything.',
+  tour: 'Take the five-step tour',
   console: 'Open the console',
-  reference: 'What the console does',
 } as const;
 
 export const INTROS: Record<ManualSlug, Paragraphs> = {

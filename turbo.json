@@ -57,7 +57,8 @@
       "inputs": [
         "$TURBO_DEFAULT$",
         "$TURBO_ROOT$/.github/workflows/pr.yml",
-        "$TURBO_ROOT$/apps/e2e/features/acceptance/*.feature"
+        "$TURBO_ROOT$/apps/e2e/features/acceptance/*.feature",
+        "$TURBO_ROOT$/apps/visual-diff-ui/fixtures/reports/*/summary.json"
       ]
     },
     "@gate/visual-diff-ui#test": {
