@@ -28,10 +28,10 @@
   },
   "devDependencies": {
     "@ai-hero/sandcastle": "0.12.0",
-    "@types/node": "^22.20.1",
+    "@types/node": "^22.20.2",
     "dotenv": "^17.4.2",
     "dotenv-cli": "^11.0.0",
-    "fallow": "3.22.0",
+    "fallow": "3.25.0",
     "prettier": "^3.9.6",
     "tsx": "^4.23.13",
     "turbo": "^2.10.12",
