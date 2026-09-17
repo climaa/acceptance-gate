@@ -164,3 +164,59 @@ main {
   line-height: var(--leading-tight);
   color: var(--color-text);
 }
+
+/* The tour's steps. An `<ol>` because they run in order, unstyled of its own
+   markers because the counter below draws them — a native marker sits outside
+   the card and scrolls away from the heading it numbers. */
+.manual-tour {
+  counter-reset: manual-tour;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.manual-tour__step {
+  counter-increment: manual-tour;
+}
+
+.manual-tour__card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* The number, drawn before the step's heading rather than beside the card.
+   `attr()` cannot read a counter, so the content is the counter itself; the
+   full stop is what keeps it from being read as part of the title. */
+.manual-tour__card .ds-card__title::before {
+  content: counter(manual-tour) '. ';
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The requirement standing behind the sentence above it. Inset and muted: it is
+   evidence a reader may skip, not a second set of instructions. */
+.manual-tour__scenario {
+  padding-left: var(--space-4);
+  border-left: 2px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.manual-tour__scenario-label {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+}
+
+/* Last in the card and on its own line, so the step ends on the thing the step
+   asks the reader to do. */
+.manual-tour__action {
+  align-self: flex-start;
+}

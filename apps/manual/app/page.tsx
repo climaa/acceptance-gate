@@ -1,17 +1,9 @@
 import NextLink from 'next/link';
 import { Badge, Card, CardTitle, Link, Prose, Stack } from '@gate/ui';
 import { ABOUT_MANUAL, INDEX_LEAD, INTROS, START_HERE } from '@/content/intros';
-import { MANUAL_PAGES } from '@/lib/allowlist';
+import { MANUAL_PAGES, TOUR_SLUG } from '@/lib/allowlist';
 import { parseManualPage } from '@/lib/features';
 import { CONSOLE_URL, SITE_TITLE } from '@/lib/site';
-
-/**
- * The reference page a reader who wants to read before clicking is sent to
- * first. The console is the subject of the whole manual, so its page is the one
- * worth naming by hand here rather than sending them to the index they are
- * already on.
- */
-const REFERENCE_SLUG = 'console';
 
 export default function IndexPage() {
   // The count comes from the source, not from `expectedScenarios`. The pin is a
@@ -48,12 +40,14 @@ export default function IndexPage() {
             a second unnamed one is noise to anyone listing them — these two are
             a call to action inside the prose, not a section of the site. */}
         <div className="manual-start__links">
+          {/* The tour leads. Both destinations are the console in the end, and
+              this is the one that arrives there knowing what to look at. */}
+          <Link as={NextLink} href={`/${TOUR_SLUG}`}>
+            {START_HERE.tour}
+          </Link>
           {/* No `as`: a different deployment, so this is a real anchor and
               `next/link` would be prefetching an origin it cannot route to. */}
           <Link href={CONSOLE_URL}>{START_HERE.console}</Link>
-          <Link as={NextLink} href={`/${REFERENCE_SLUG}`}>
-            {START_HERE.reference}
-          </Link>
         </div>
       </Card>
 

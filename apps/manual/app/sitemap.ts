@@ -1,5 +1,5 @@
 import type { MetadataRoute } from 'next';
-import { MANUAL_PAGES } from '@/lib/allowlist';
+import { MANUAL_PAGES, TOUR_SLUG } from '@/lib/allowlist';
 import { absoluteUrl } from '@/lib/site';
 
 /**
@@ -15,6 +15,9 @@ import { absoluteUrl } from '@/lib/site';
 export default function sitemap(): MetadataRoute.Sitemap {
   return [
     { url: absoluteUrl('/') },
+    // Listed by hand, unlike the pages below it: the tour has no `.feature`
+    // behind it, so there is no array it could be derived from.
+    { url: absoluteUrl(`/${TOUR_SLUG}`) },
     ...MANUAL_PAGES.map((page) => ({ url: absoluteUrl(`/${page.slug}`) })),
   ];
 }

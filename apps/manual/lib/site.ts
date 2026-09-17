@@ -46,7 +46,7 @@ export const SITE_COPYRIGHT_YEAR = 2026;
 export const NOT_FOUND_TITLE = 'Not found';
 
 export const NOT_FOUND_NOTE =
-  'Nothing at this address. This manual is three pages long, and the index lists every one of them.';
+  'Nothing at this address. This manual is a short one, and the index lists every page it has.';
 
 export const NOT_FOUND_ACTION = 'All pages';
 

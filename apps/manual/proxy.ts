@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
-import { findManualPage } from '@/lib/allowlist';
+import { PUBLISHED_SLUGS } from '@/lib/allowlist';
 
 /**
  * The one thing a route under `cacheComponents` cannot do for itself: answer a
@@ -37,7 +37,7 @@ export function proxy(request: NextRequest) {
   // `apps/blog` never meets it at all — its matcher is two segments deep.
   if (slug.startsWith('_')) return NextResponse.next();
 
-  if (findManualPage(slug)) return NextResponse.next();
+  if (PUBLISHED_SLUGS.has(slug)) return NextResponse.next();
 
   // Rewritten rather than answered from here, so the reader still gets
   // `app/not-found.tsx` — this app's own type, the header and footer, and a way
