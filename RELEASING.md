@@ -78,6 +78,12 @@ that rendered as an unbroken wall of text.
    release body, and it cannot be reconstructed after the fact. Skipping this step is how
    v1.4.0 shipped without index corrections.
 
+   `scripts/index-integrity.mjs`, run by `health:check`, holds two of those numbers to the
+   tree — the version stamp against the root manifest, and the committed baseline count
+   against the PNGs git tracks — so forgetting this step now fails a gate job rather than
+   going quiet. It deliberately does not check the per-workspace test counts: deriving
+   those means running every suite. Those are still yours to measure.
+
 5. PR titled `release: X.Y.Z — <headline>`, with the release notes as the body. Gate green,
    then **squash**-merge; every release commit on `main` has a single parent and `(#NNN)`
    in its subject.
