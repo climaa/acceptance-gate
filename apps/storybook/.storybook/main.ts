@@ -1,6 +1,8 @@
 import type { StorybookConfig } from '@storybook/nextjs-vite';
 import remarkGfm from 'remark-gfm';
 
+import { analyticsHead } from './analytics-head';
+
 const config: StorybookConfig = {
   // Resolved against this directory, not the workspace root: three levels up is
   // the repo. The design system's stories, then this app's own docs pages.
@@ -41,6 +43,18 @@ const config: StorybookConfig = {
   // Playwright container. A per-build call to an external endpoint is a network
   // dependency the gate gains nothing from.
   core: { disableTelemetry: true },
+  // The page-view beacon, and the only thing this build ever loads from off-site
+  // — which is why it sits next to the telemetry switch above rather than
+  // anywhere else. It emits nothing at all unless `VERCEL_ENV` says production,
+  // so the promise that line makes still holds locally, in CI and inside the
+  // differ's container. Manager, never preview: analytics-head.ts argues that,
+  // and the docs page (Docs/DevOps/Web Analytics) carries the rest.
+  //
+  // `head` is typed `string | undefined`: Storybook passes the head accumulated
+  // so far, but the preset signature permits its absence. A bare template
+  // literal type-checks against that and then writes the seven characters
+  // "undefined" into the manager's <head>, where they render as page text.
+  managerHead: (head) => `${head ?? ''}${analyticsHead(process.env)}`,
   // GFM (tables, strikethrough, task lists) is not CommonMark — without this,
   // a pipe table in a docs page silently renders as one run-on paragraph of
   // literal pipe characters instead of a <table>, same failure mode the blog's
