@@ -24,14 +24,14 @@
     "visual-diff:container": "node scripts/visual-diff-container.mjs",
     "typecheck:sandcastle": "tsc --noEmit -p .sandcastle/tsconfig.json",
     "test:sandcastle": "vitest run --config vitest.sandcastle.config.mts",
-    "health:check": "turbo run health && node scripts/complexity-gate.mjs --scope .sandcastle/"
+    "health:check": "turbo run health && node scripts/complexity-gate.mjs --scope .sandcastle/ && node scripts/index-integrity.mjs"
   },
   "devDependencies": {
     "@ai-hero/sandcastle": "0.12.0",
-    "@types/node": "^22.20.1",
+    "@types/node": "^22.20.2",
     "dotenv": "^17.4.2",
     "dotenv-cli": "^11.0.0",
-    "fallow": "3.22.0",
+    "fallow": "3.25.0",
     "prettier": "^3.9.6",
     "tsx": "^4.23.13",
     "turbo": "^2.10.12",
