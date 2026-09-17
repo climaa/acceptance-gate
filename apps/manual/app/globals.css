@@ -123,3 +123,44 @@ main {
   font-size: var(--text-sm);
   line-height: var(--leading-relaxed);
 }
+
+/* The way in, directly under the lead. Sized off the card it sits in rather
+   than capped at the prose measure: it is two links and a sentence, and a 65ch
+   column would leave the second link stranded on a line of its own at desktop
+   while the card ran the full container around it. */
+.manual-start {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-width: var(--width-prose);
+}
+
+/* `wrap` so the pair stacks on a narrow viewport instead of overflowing. The
+   row is two text links, not a button group — `column-gap` carries the
+   separation at desktop and `row-gap` takes over once they wrap, which is why
+   both are set rather than the shorthand's single value. */
+.manual-start__links {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: var(--space-5);
+  row-gap: var(--space-2);
+}
+
+/* What this manual is, last on the page. Muted and at the prose measure: it is
+   the section a reader arrives at by choosing to keep reading, so it is allowed
+   to look like the aside it is. */
+.manual-about {
+  max-width: var(--width-prose);
+  color: var(--color-text-muted);
+}
+
+/* Smaller than `.manual-title` by a step and in the body face, not the display
+   one. This heading closes the page rather than opening it, and matching the
+   `h1` would make the two read as siblings. */
+.manual-about__title {
+  margin: 0;
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
+  color: var(--color-text);
+}

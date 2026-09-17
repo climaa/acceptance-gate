@@ -1,9 +1,17 @@
 import NextLink from 'next/link';
 import { Badge, Card, CardTitle, Link, Prose, Stack } from '@gate/ui';
-import { INDEX_LEAD, INTROS } from '@/content/intros';
+import { ABOUT_MANUAL, INDEX_LEAD, INTROS, START_HERE } from '@/content/intros';
 import { MANUAL_PAGES } from '@/lib/allowlist';
 import { parseManualPage } from '@/lib/features';
-import { SITE_TITLE } from '@/lib/site';
+import { CONSOLE_URL, SITE_TITLE } from '@/lib/site';
+
+/**
+ * The reference page a reader who wants to read before clicking is sent to
+ * first. The console is the subject of the whole manual, so its page is the one
+ * worth naming by hand here rather than sending them to the index they are
+ * already on.
+ */
+const REFERENCE_SLUG = 'console';
 
 export default function IndexPage() {
   // The count comes from the source, not from `expectedScenarios`. The pin is a
@@ -27,6 +35,27 @@ export default function IndexPage() {
           ))}
         </Prose>
       </Stack>
+
+      {/* Above the cards, and that is the whole point of the block. The three
+          cards are a table of contents, which is what a reader wants second;
+          what they want first is the thing the contents are about. */}
+      <Card className="manual-start">
+        <CardTitle>{START_HERE.title}</CardTitle>
+
+        <p>{START_HERE.lede}</p>
+
+        {/* Not a `nav`. The page already has one navigation landmark below, and
+            a second unnamed one is noise to anyone listing them — these two are
+            a call to action inside the prose, not a section of the site. */}
+        <div className="manual-start__links">
+          {/* No `as`: a different deployment, so this is a real anchor and
+              `next/link` would be prefetching an origin it cannot route to. */}
+          <Link href={CONSOLE_URL}>{START_HERE.console}</Link>
+          <Link as={NextLink} href={`/${REFERENCE_SLUG}`}>
+            {START_HERE.reference}
+          </Link>
+        </div>
+      </Card>
 
       {/* A plain landmark rather than `<Stack as="nav">`: Stack forwards no rest
           props, so an `aria-label` on it is dropped without a word from either
@@ -52,6 +81,18 @@ export default function IndexPage() {
           ))}
         </div>
       </nav>
+
+      {/* Last, and a section rather than more lead. What this manual is answers
+          a question the arriving reader does not have yet; the ones who do have
+          it have scrolled past everything above to find it. */}
+      <Stack as="section" gap={3} className="manual-about">
+        <h2 className="manual-about__title">About this manual</h2>
+        <Prose>
+          {ABOUT_MANUAL.map((paragraph, index) => (
+            <p key={index}>{paragraph}</p>
+          ))}
+        </Prose>
+      </Stack>
     </Stack>
   );
 }
