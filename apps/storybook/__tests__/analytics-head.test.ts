@@ -173,23 +173,49 @@ describe('the loader the injected config chooses', () => {
     expect(loaderOf(head)?.getAttribute('src')).toBe('/_vercel/insights/script.js');
   });
 
+  it('roots a relative endpoint the same way it roots the loader', () => {
+    const head = analyticsHead(configured({ viewEndpoint: 'proxy/view' }));
+
+    expect(loaderOf(head)?.getAttribute('data-view-endpoint')).toBe('/proxy/view');
+  });
+
   // Why this module escapes for HTML rather than reaching for JSON.stringify:
   // `JSON.stringify('a"b')` is `"a\"b"`, and pasted into an attribute the HTML
   // tokenizer ends the value at the backslash-quote and reads the rest as
-  // attributes. The third assertion is the real one — after a parse round-trip
-  // the value comes back identical, which is only true if it was escaped rather
-  // than truncated.
-  it.each([
-    ['an attribute break-out', '/x" onload="alert(1)'],
-    ['an element break-out', '/x"></script><script>alert(1)</script><script src="'],
-  ])('cannot be escaped from by %s', (_name, scriptSrc) => {
-    const head = analyticsHead(configured({ scriptSrc }));
+  // attributes.
+  //
+  // Crossed over all three attributes rather than asserted on `scriptSrc`
+  // alone, because all three come out of the same untrusted-shaped JSON and
+  // each is written by a different line. An earlier revision tested only the
+  // loader's `src`: stripping the escaping from the endpoint attributes left
+  // the suite entirely green.
+  //
+  // Both payloads start with `/`, so `makeAbsolute` leaves them alone and the
+  // last assertion can demand the value back byte for byte — which is true only
+  // if it was escaped rather than truncated at the quote.
+  it.each(
+    (
+      [
+        ['scriptSrc', 'src'],
+        ['viewEndpoint', 'data-view-endpoint'],
+        ['eventEndpoint', 'data-event-endpoint'],
+      ] as const
+    ).flatMap(([field, attribute]) =>
+      (
+        [
+          ['an attribute break-out', '/x" onload="alert(1)'],
+          ['an element break-out', '/x"></script><script>alert(1)</script><script src="'],
+        ] as const
+      ).map(([attack, payload]) => ({ field, attribute, attack, payload })),
+    ),
+  )('cannot be escaped from by $attack in $field', ({ field, attribute, payload }) => {
+    const head = analyticsHead(configured({ [field]: payload }));
 
     const parsed = parseHead(head);
 
     expect(parsed.querySelectorAll('script')).toHaveLength(2);
     expect(parsed.querySelector('script[src]')?.hasAttribute('onload')).toBe(false);
-    expect(parsed.querySelector('script[src]')?.getAttribute('src')).toBe(scriptSrc);
+    expect(parsed.querySelector('script[src]')?.getAttribute(attribute)).toBe(payload);
   });
 });
 
@@ -213,6 +239,20 @@ const REWRITES = [
     name: 'a URL with no path param is not ours to rename',
     url: 'https://sb.example.com/iframe.html?id=atoms-badge--default',
     expected: 'https://sb.example.com/iframe.html?id=atoms-badge--default',
+  },
+  // The parameter is reader-controllable through a crafted link, and the rewrite
+  // concatenates it onto an origin. Unrooted, it would report the malformed
+  // `https://sb.example.comdocs/a--docs`; protocol-relative, a row reading as
+  // somebody else's domain. Refused rather than reported.
+  {
+    name: 'an unrooted path param is refused rather than joined onto the host',
+    url: 'https://sb.example.com/index.html?path=docs/a--docs',
+    expected: 'https://sb.example.com/index.html?path=docs/a--docs',
+  },
+  {
+    name: 'a protocol-relative path param is refused',
+    url: 'https://sb.example.com/index.html?path=//elsewhere.example/x',
+    expected: 'https://sb.example.com/index.html?path=//elsewhere.example/x',
   },
   {
     name: 'a url the URL parser rejects is passed through rather than thrown on',

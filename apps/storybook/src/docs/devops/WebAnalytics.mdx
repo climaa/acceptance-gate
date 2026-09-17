@@ -208,6 +208,14 @@ path, so you are looking for `/<hex>/script.js` and a `POST /<hex>/view` beside 
 Filtering a production network log for `_vercel` finds nothing and looks exactly like a
 broken gate.
 
+**On Storybook, the network log is only half the check.** Requests firing proves the
+beacon; it says nothing about the `?path=` rewrite, which is the part that depends on
+`beforeSend` being invoked for page views and not only for custom events. Those two fail
+independently: if the rewrite is never applied, every request still arrives and the Pages
+panel still collapses to a single `/index.html` row. Confirm the panel shows one row per
+docs page once traffic has landed — that, and not the request count, is what says the
+rewrite works.
+
 Then repeat with `VERCEL_ENV` unset and confirm the request is absent. Without that second
 half, the first proves only that something loaded.
 

@@ -76,7 +76,14 @@ export function rewriteAnalyticsUrl<E extends { url: string }>(event: E): E {
     const parsed = new URL(event.url);
     const path = parsed.searchParams.get('path');
 
-    if (!path) return event;
+    // Rooted, and not protocol-relative. The parameter is reader-controllable
+    // through a crafted link, and this concatenates it onto an origin: `?path=`
+    // holding `docs/x` would report `https://hostdocs/x`, and `//elsewhere/x`
+    // would report a row that reads as somebody else's domain. Neither reaches
+    // markup — this value is only ever a string in our own dashboard — but a
+    // row nobody can account for is worth more than the two comparisons it
+    // costs to refuse.
+    if (!path?.startsWith('/') || path.startsWith('//')) return event;
 
     return { ...event, url: parsed.origin + path };
   } catch {
