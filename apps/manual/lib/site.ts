@@ -69,11 +69,22 @@ export const ERROR_NOTE =
 export const ERROR_ACTION = 'Try again';
 
 /**
+ * The deployed console, written once.
+ *
+ * Two places need it now — the footer below and the index's Start-here block —
+ * and they must not drift: a footer pointing at a live instance while the
+ * in-body call to action points at a dead one is the kind of break nobody
+ * notices, because the reader who follows the broken one never comes back to
+ * report it.
+ */
+export const CONSOLE_URL = 'https://visual-diff-ui.carloslima.dev';
+
+/**
  * The deployed console is the thing this manual describes, so it leads. It runs
  * in sample mode, which is why one of the three pages is about that.
  */
 export const FOOTER_LINKS = [
-  { label: 'The console', href: 'https://visual-diff-ui.carloslima.dev' },
+  { label: 'The console', href: CONSOLE_URL },
   { label: 'Storybook', href: 'https://storybook.carloslima.dev' },
   { label: 'Blog', href: 'https://blog.carloslima.dev' },
   { label: 'GitHub', href: 'https://github.com/climaa/acceptance-gate' },

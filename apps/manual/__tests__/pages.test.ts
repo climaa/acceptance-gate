@@ -3,9 +3,12 @@ import { join } from 'node:path';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import ManualPage from '@/app/[slug]/page';
+import IndexPage from '@/app/page';
+import { ABOUT_MANUAL, INDEX_LEAD, START_HERE } from '@/content/intros';
 import { SCREENSHOTS } from '@/content/screenshots';
 import { MANUAL_PAGES } from '@/lib/allowlist';
 import { parseManualPage } from '@/lib/features';
+import { CONSOLE_URL } from '@/lib/site';
 
 /**
  * That a reader actually sees the scenarios.
@@ -347,5 +350,78 @@ describe('tags are parsed but never drawn', () => {
     // removed from the report feature, this stops testing anything.
     expect(tagged.length).toBeGreaterThan(0);
     expect(text).not.toContain('@desktop');
+  });
+});
+
+/**
+ * The index's running order, which is the whole of the change that made this
+ * block necessary.
+ *
+ * What is asserted is sequence, not wording. The copy above the fold is going
+ * to be rewritten again — that is what copy is for — but the reason it was
+ * reordered is structural and must not be undone by accident: the reader
+ * arriving from the console's own header meets a way back to the console before
+ * they meet an essay about the genre. A test on the prose itself would break on
+ * every edit and hold none of that.
+ *
+ * `IndexPage` is synchronous, unlike `ManualPage` — it awaits no params — so it
+ * is called rather than awaited.
+ */
+describe('the index', () => {
+  const render = () => textOf(renderToStaticMarkup(IndexPage()));
+
+  it('leads with one paragraph', () => {
+    expect(INDEX_LEAD).toHaveLength(1);
+  });
+
+  it('offers the console before it describes itself', () => {
+    const text = render();
+
+    expect(text.indexOf(START_HERE.title)).toBeGreaterThan(-1);
+    expect(text.indexOf(START_HERE.title)).toBeLessThan(text.indexOf(ABOUT_MANUAL[0]));
+  });
+
+  it('puts the way in above the table of contents', () => {
+    const text = render();
+    const firstCard = MANUAL_PAGES[0]!.title;
+
+    expect(text.indexOf(START_HERE.console)).toBeLessThan(text.indexOf(firstCard));
+  });
+
+  it('demotes the prose about the manual below the cards', () => {
+    const text = render();
+    const lastCard = MANUAL_PAGES[MANUAL_PAGES.length - 1]!.title;
+
+    for (const paragraph of ABOUT_MANUAL) {
+      expect(text.indexOf(lastCard)).toBeLessThan(text.indexOf(paragraph));
+    }
+  });
+
+  /**
+   * The defect the reorder was for. The old third paragraph said "the instance
+   * linked below" while the console was linked from the footer alone, which
+   * this page does not render — so the sentence pointed at nothing a reader on
+   * this page could see.
+   */
+  it('links the console from the page body, not only the footer', () => {
+    expect(renderToStaticMarkup(IndexPage())).toContain(`href="${CONSOLE_URL}"`);
+  });
+
+  /** A real anchor, because the console is a different deployment: a
+   *  `next/link` would prefetch an origin this app cannot route to. */
+  it('sends the reader to the console without client routing', () => {
+    const html = renderToStaticMarkup(IndexPage());
+    const anchor = new RegExp(`<a[^>]*href="${CONSOLE_URL}"[^>]*>`).exec(html);
+
+    expect(anchor?.[0]).toBeDefined();
+    expect(anchor![0]).not.toContain('prefetch');
+  });
+
+  it('still lists every published page', () => {
+    const text = render();
+
+    const missing = MANUAL_PAGES.filter((page) => !text.includes(page.title));
+
+    expect(missing.map((page) => page.slug)).toEqual([]);
   });
 });

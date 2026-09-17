@@ -21,11 +21,58 @@ import type { ManualSlug } from '@/lib/allowlist';
  */
 type Paragraphs = readonly [string, ...string[]];
 
+/**
+ * One sentence, and it is a budget rather than a preference.
+ *
+ * This was three paragraphs and about 170 words. Most arrivals come through the
+ * `Manual` link in the console's own header — `apps/visual-diff-ui/lib/site.ts`
+ * — so the reader is someone who just opened the console and wants to be shown
+ * it. Three paragraphs of genre-setting pushed the first link below the fold on
+ * a phone and spent the third one telling that reader the page was not for
+ * them. The prose still exists; `ABOUT_MANUAL` says it, under the cards, to
+ * whoever is still reading by then.
+ */
 export const INDEX_LEAD: Paragraphs = [
-  'The visual-diff console captures screenshots of every component in this repository, compares one capture against another, and shows what moved. This is its manual.',
-  'Every page here is built from the acceptance scenarios that decide whether a change may merge. They are not a description of the console written alongside it — they are the requirements themselves, rendered. A scenario cannot change without this manual changing in the same commit.',
-  'That fixes the genre, so it is worth stating plainly: this is a behavioural reference with some task framing, not a promised how-to. The console is a local tool with one operator, and the instance linked below runs on committed sample data. If you are here to judge the mechanism rather than to operate the tool, you are the reader these pages expect.',
+  'The visual-diff console captures a screenshot of every component in this repository, compares one capture against another, and shows what moved — this is its manual.',
 ];
+
+/**
+ * What this manual is, for the reader who wants to know before they click.
+ *
+ * Below the cards on purpose. It answers a question nobody has on arrival, and
+ * the two paragraphs are the price of the honesty: the genre really is a
+ * reference, and saying so early cost more readers than it saved.
+ *
+ * Positional words inside it — "above", "the top of this page" — are load-bearing
+ * and were wrong before: the old third paragraph said "the instance linked
+ * below" while the console was linked only from the footer. It is now linked
+ * from the block directly under the lead.
+ */
+export const ABOUT_MANUAL: Paragraphs = [
+  'Every page here is built from the acceptance scenarios that decide whether a change may merge. They are not a description of the console written alongside it — they are the requirements themselves, rendered. A scenario cannot change without this manual changing in the same commit.',
+  'That fixes the genre, so it is worth stating plainly: the pages above are a behavioural reference with some task framing, not a promised how-to. The console is a local tool with one operator, and the instance linked at the top of this page runs on committed sample data. If you are here to judge the mechanism rather than to operate the tool, those pages are written for you.',
+];
+
+/**
+ * The way in, directly under the lead.
+ *
+ * Two links rather than one, because the arriving reader splits two ways and
+ * guessing wrong costs the visit: someone sent here by the console's header
+ * wants to go back and touch it, someone sent here by a link wants to know what
+ * it is first. Naming both is cheaper than ranking them.
+ *
+ * The console entry says the instance is safe to click before the reader has to
+ * wonder. Nothing on a deployed console can start a job or delete anything —
+ * `apps/visual-diff-ui/lib/guard.ts` refuses every mutation — and the reader who
+ * does not know that hesitates over exactly the controls this manual wants them
+ * to try.
+ */
+export const START_HERE = {
+  title: 'Start here',
+  lede: 'The console is deployed and runs on committed sample data — nothing you click there can start a job or delete anything.',
+  console: 'Open the console',
+  reference: 'What the console does',
+} as const;
 
 export const INTROS: Record<ManualSlug, Paragraphs> = {
   console: [
