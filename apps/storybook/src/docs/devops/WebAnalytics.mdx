@@ -180,8 +180,21 @@ configs naming different script paths:
 | `/a`   | `46a7f388c5c54544` | `cce5bbfc371dccc3` |
 | `/b`   | `46a7f388c5c54544` | `3999199efde3cd2b` |
 
-Its marginal cost is zero, because `VERCEL_ENV` has already put production in a bucket of
-its own.
+Its cost is not zero, and the shape of it is worth writing down because it looks alarming
+and is not. `build.env` is the **shared** task, so naming a variable there moves the build
+hash of every workspace — the three Next apps and `@gate/ui` included, none of which read
+this one. Two consequences follow, and only one is ongoing:
+
+- Editing `turbo.json` at all marks every package affected, so all four Vercel projects
+  redeploy once. That is the edit and not the variable: any change to this file does it.
+- Were the intake path ever rotated, every workspace's next build would be a cache miss
+  rather than only Storybook's. Affected-ness is computed from changed files and never from
+  environment values, so nothing redeploys on that account — the cost lands on a build that
+  was going to run regardless, and it is one cold build.
+
+A `@gate/storybook#build` override would confine the second. It is deliberately not taken:
+it would buy back a few cold builds of workspaces that were rebuilding anyway, at the price
+of a second place where this task's configuration lives and can drift from the first.
 
 Absent or unparseable, it falls back to `/_vercel/insights/script.js`, which Vercel's edge
 still serves. That path is merely easier for a content blocker to recognise, so a fallback
