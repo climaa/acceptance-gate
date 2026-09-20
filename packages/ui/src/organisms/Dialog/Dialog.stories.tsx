@@ -59,12 +59,14 @@ type Story = StoryObj<typeof meta>;
  * two controls that answer it. Both are the caller's — the primitive contributes
  * the close button and nothing else — which is what the pair is here to show.
  *
- * The pair is `danger` + `ghost` in a row, which is `ConfirmActions` in the
- * visual-diff console written out: this story is the only drawing of a dialog's
- * body in the corpus, so what it draws is what a consumer copies. A bare
- * `<button>` here was drawing the user agent's — grey chrome that ignores
- * `[data-theme]` outright and so stayed light in the dark baseline, photographed
- * at every accept as if it were the system's.
+ * `danger` + `ghost` in a row is `ConfirmActions` in the visual-diff console
+ * written out, rather than a second pairing invented here.
+ *
+ * Both are `Button`s, and the only story in the corpus that draws a dialog's
+ * controls may not reach for a bare `<button>`: the user agent's chrome does not
+ * follow `[data-theme]`, and the differ catches change rather than correctness,
+ * so a control this system never styled would sit in the baselines light in both
+ * themes and stay green forever.
  */
 export const Open: Story = {
   args: {
