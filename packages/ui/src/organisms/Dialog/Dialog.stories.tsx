@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
+import { Button, Stack } from '../../atoms';
 import { Dialog } from './Dialog';
 
 /**
@@ -57,6 +58,15 @@ type Story = StoryObj<typeof meta>;
  * The shape a dialog most often has: a heading, a sentence of consequence, and the
  * two controls that answer it. Both are the caller's — the primitive contributes
  * the close button and nothing else — which is what the pair is here to show.
+ *
+ * `danger` + `ghost` in a row is `ConfirmActions` in the visual-diff console
+ * written out, rather than a second pairing invented here.
+ *
+ * Both are `Button`s, and the only story in the corpus that draws a dialog's
+ * controls may not reach for a bare `<button>`: the user agent's chrome does not
+ * follow `[data-theme]`, and the differ catches change rather than correctness,
+ * so a control this system never styled would sit in the baselines light in both
+ * themes and stay green forever.
  */
 export const Open: Story = {
   args: {
@@ -68,7 +78,10 @@ export const Open: Story = {
           The two captures stay where they are. Only the side-by-side view you opened from
           the report is closed.
         </p>
-        <button type="button">Keep it open</button>
+        <Stack direction="row" gap={3} wrap>
+          <Button variant="danger">Discard</Button>
+          <Button variant="ghost">Keep it open</Button>
+        </Stack>
       </>
     ),
   },
