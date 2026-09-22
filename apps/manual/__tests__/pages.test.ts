@@ -8,7 +8,9 @@ import { ABOUT_MANUAL, INDEX_LEAD, START_HERE } from '@/content/intros';
 import { SCREENSHOTS } from '@/content/screenshots';
 import { MANUAL_PAGES } from '@/lib/allowlist';
 import { parseManualPage } from '@/lib/features';
-import { CONSOLE_URL } from '@/lib/site';
+import { CONSOLE_LINK } from '@/lib/site';
+
+const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 /**
  * That a reader actually sees the scenarios.
@@ -404,14 +406,19 @@ describe('the index', () => {
    * this page could see.
    */
   it('links the console from the page body, not only the footer', () => {
-    expect(renderToStaticMarkup(IndexPage())).toContain(`href="${CONSOLE_URL}"`);
+    expect(renderToStaticMarkup(IndexPage())).toContain(`href="${CONSOLE_LINK}"`);
   });
 
   /** A real anchor, because the console is a different deployment: a
    *  `next/link` would prefetch an origin this app cannot route to. */
   it('sends the reader to the console without client routing', () => {
     const html = renderToStaticMarkup(IndexPage());
-    const anchor = new RegExp(`<a[^>]*href="${CONSOLE_URL}"[^>]*>`).exec(html);
+    // Escaped: the tagged link carries a `?`, which is a quantifier in a regex
+    // and made this pattern silently match nothing. The dots were already
+    // unescaped and passing by luck.
+    const anchor = new RegExp(`<a[^>]*href="${escapeRegExp(CONSOLE_LINK)}"[^>]*>`).exec(
+      html,
+    );
 
     expect(anchor?.[0]).toBeDefined();
     expect(anchor![0]).not.toContain('prefetch');

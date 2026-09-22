@@ -122,14 +122,45 @@ describe('the site footer', () => {
 
   // The console is the third published surface, and it sits beside Storybook
   // rather than anywhere else in the footer: static evidence, then the tool
-  // that produced it.
+  // that produced it. The claim here is the ORDER; what each href carries is
+  // the test below, so a change to the tag cannot silently rewrite this one.
   it('links out to the visual-diff console, beside Storybook', () => {
     const links = linksIn(shell());
     const storybookIndex = links.findIndex((link) => link.text === 'Storybook');
 
-    expect(links[storybookIndex + 1]).toEqual({
-      href: 'https://visual-diff-ui.carloslima.dev',
-      text: 'Visual diff',
+    expect(links[storybookIndex + 1]?.text).toBe('Visual diff');
+  });
+
+  /**
+   * Which of these carry a campaign tag, and which are bare on purpose.
+   *
+   * Asserted as one object so the bare ones are as loud as the tagged ones: a
+   * tag that appears on `GitHub` or `Storybook` is a defect, not an omission.
+   * GitHub shows its owner no `utm_source`, and Storybook's beacon rewrites the
+   * reported URL to `origin + path` and drops the rest of the query before
+   * recording it — so both would travel for nothing and be visible in the
+   * address bar of every reader who followed them.
+   *
+   * Written literally rather than through `tagOutbound`, because a test that
+   * calls the function it is checking agrees with any spelling that function
+   * happens to produce.
+   */
+  it('tags the console and the portfolio, and leaves the rest bare', () => {
+    const links = linksIn(shell());
+    const href = (text: string) => links.find((link) => link.text === text)?.href;
+
+    expect({
+      console: href('Visual diff'),
+      portfolio: href('Portfolio'),
+      storybook: href('Storybook'),
+      github: href('GitHub'),
+      rss: href('RSS'),
+    }).toEqual({
+      console: 'https://visual-diff-ui.carloslima.dev?utm_source=blog',
+      portfolio: 'https://carloslima.dev?utm_source=blog',
+      storybook: 'https://storybook.carloslima.dev',
+      github: 'https://github.com/climaa',
+      rss: '/rss.xml',
     });
   });
 });

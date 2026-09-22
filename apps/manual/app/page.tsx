@@ -3,7 +3,7 @@ import { Badge, Card, CardTitle, Link, Prose, Stack } from '@gate/ui';
 import { ABOUT_MANUAL, INDEX_LEAD, INTROS, START_HERE } from '@/content/intros';
 import { MANUAL_PAGES, TOUR_SLUG } from '@/lib/allowlist';
 import { parseManualPage } from '@/lib/features';
-import { CONSOLE_URL, SITE_TITLE } from '@/lib/site';
+import { CONSOLE_LINK, SITE_TITLE } from '@/lib/site';
 
 export default function IndexPage() {
   // The count comes from the source, not from `expectedScenarios`. The pin is a
@@ -47,7 +47,7 @@ export default function IndexPage() {
           </Link>
           {/* No `as`: a different deployment, so this is a real anchor and
               `next/link` would be prefetching an origin it cannot route to. */}
-          <Link href={CONSOLE_URL}>{START_HERE.console}</Link>
+          <Link href={CONSOLE_LINK}>{START_HERE.console}</Link>
         </div>
       </Card>
 

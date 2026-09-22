@@ -4,6 +4,7 @@ import { preload } from 'react-dom';
 import { SiteFooter, SiteHeader } from '@gate/ui';
 import { Analytics } from '@vercel/analytics/next';
 import {
+  FOOTER_LINKS,
   SITE_COPYRIGHT,
   SITE_COPYRIGHT_YEAR,
   SITE_DESCRIPTION,
@@ -45,17 +46,6 @@ const NAV = [
   { label: 'Blog', href: '/blog' },
   { label: 'Changelog', href: '/changelog' },
   { label: 'About', href: '/about' },
-];
-
-const FOOTER_LINKS = [
-  { label: 'RSS', href: '/rss.xml' },
-  { label: 'GitHub', href: 'https://github.com/climaa' },
-  { label: 'Storybook', href: 'https://storybook.carloslima.dev' },
-  {
-    label: 'Visual diff',
-    href: 'https://visual-diff-ui.carloslima.dev',
-  },
-  { label: 'Portfolio', href: 'https://carloslima.dev' },
 ];
 
 export const metadata: Metadata = {

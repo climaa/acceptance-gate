@@ -1,3 +1,5 @@
+import { tagOutbound } from '@gate/links';
+
 /**
  * The console's own copy, in one place: the shell writes it, the tests assert
  * it, and later issues reuse the sample wording where a control has to explain
@@ -23,7 +25,12 @@ export const APP_DESCRIPTION =
  * console first and needs the way across. Storybook deliberately does not link
  * it: that is developer documentation, and the manual is for end users.
  */
-export const MANUAL_NAV = [{ label: 'Manual', href: 'https://manual.carloslima.dev' }];
+export const MANUAL_NAV = [
+  {
+    label: 'Manual',
+    href: tagOutbound('https://manual.carloslima.dev', 'visual-diff-ui'),
+  },
+];
 
 export const SAMPLE_LABEL = 'sample data';
 

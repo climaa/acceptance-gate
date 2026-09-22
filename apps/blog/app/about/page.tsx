@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { Prose, Stack } from '@gate/ui';
 
+import { PORTFOLIO_LINK } from '@/lib/site';
+
 export const metadata: Metadata = {
   title: 'About',
   description: 'Carlos Lima — senior frontend engineer in Barcelona.',
@@ -17,7 +19,7 @@ export default function AboutPage() {
             /about is this site's authorship page and stays indexed as one. */}
         <p className="page-lead">
           If you got here from a CV or a job post, the 30-second version is at{' '}
-          <a href="https://carloslima.dev">carloslima.dev</a>. This page is the long one.
+          <a href={PORTFOLIO_LINK}>carloslima.dev</a>. This page is the long one.
         </p>
         <p>
           I am Carlos Lima, a senior frontend engineer in Barcelona. I work mostly with
@@ -50,8 +52,8 @@ export default function AboutPage() {
           <a href="https://www.linkedin.com/in/carlos-lima-frontend/">LinkedIn</a>
         </p>
         <p>
-          Portfolio → <a href="https://carloslima.dev">carloslima.dev</a> — two projects,
-          the proof for each, and the CV.
+          Portfolio → <a href={PORTFOLIO_LINK}>carloslima.dev</a> — two projects, the
+          proof for each, and the CV.
         </p>
       </Prose>
     </Stack>
