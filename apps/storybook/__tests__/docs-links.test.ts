@@ -100,3 +100,53 @@ describe('the sidebar order and the docs pages on disk agree', () => {
     expect(orderedDocs.filter((entry) => !titles.includes(entry))).toEqual([]);
   });
 });
+
+/**
+ * Every link this repository writes in prose to one of its own properties
+ * carries the tag naming the surface it left.
+ *
+ * WHY A TEST AND NOT A HELPER. These links are markdown inside `.mdx` — prose,
+ * not code, so no call site can import `tagOutbound` to get this right. The tag
+ * is typed by hand, which means it is forgotten by hand; this is the only thing
+ * that makes it enforceable. It is also why Storybook can be an origin at all.
+ *
+ * `storybook.carloslima.dev` IS DELIBERATELY EXEMPT as a destination. Its beacon
+ * rewrites the reported URL to `origin + <the path param>` and drops the rest of
+ * the query before recording it (`.storybook/analytics-head.ts`), so a tag
+ * arriving there dies one step short of the dashboard. Tagging it anyway would
+ * put a parameter in the address bar of every reader who followed it in exchange
+ * for nothing — the same trade this repo declines for `github.com`.
+ *
+ * Anchored on `](https://…)` so it matches link TARGETS only. Bare hostnames in
+ * prose are not links — `qa/AcceptanceSuiteLocally.mdx` names one inside a code
+ * span, and `qa/DeployedConsole.mdx` uses one as the visible label of a link
+ * whose target is the same host. Rewriting on the host rather than the target
+ * would corrupt that label.
+ */
+const OWN_PROPERTY_LINK = /\]\((https:\/\/(?:[a-z-]+\.)?carloslima\.dev[^)]*)\)/g;
+const EXEMPT_HOST = 'storybook.carloslima.dev';
+
+const proseLinks = [
+  { dir: DOCS_DIR, source: 'storybook' },
+  { dir: BLOG_POSTS_DIR, source: 'blog' },
+].flatMap(({ dir, source }) =>
+  mdxFilesIn(dir).flatMap((file) =>
+    [...fs.readFileSync(file, 'utf8').matchAll(OWN_PROPERTY_LINK)]
+      .map(([, url]) => ({
+        file: path.relative(REPO_ROOT, file),
+        url: url ?? '',
+        source,
+      }))
+      .filter(({ url }) => !url.includes(EXEMPT_HOST)),
+  ),
+);
+
+describe('every outbound link to an own property says where it came from', () => {
+  it('found some to check', () => {
+    expect(proseLinks.length).toBeGreaterThan(0);
+  });
+
+  it.each(proseLinks)('$file → $url', ({ url, source }) => {
+    expect(new URL(url).searchParams.get('utm_source')).toBe(source);
+  });
+});
