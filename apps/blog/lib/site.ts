@@ -1,3 +1,5 @@
+import { tagOutbound } from '@gate/links';
+
 /**
  * Single source for the deployed origin. `app/layout.tsx` needs it for
  * `metadataBase`, `app/rss.xml/route.ts` and `app/sitemap.ts` need it to build
@@ -17,6 +19,49 @@
  * their expectations from this constant.
  */
 export const SITE_URL = new URL('https://blog.carloslima.dev');
+
+/**
+ * The other published surfaces, and what a link to each one carries.
+ *
+ * HERE RATHER THAN AT THE JSX, because `/about` and the footer both link the
+ * portfolio and were each calling `tagOutbound` for themselves — two
+ * independent spellings of one address, which is how the pair drifts. This is
+ * the same shape `apps/manual/lib/site.ts` and `apps/visual-diff-ui/lib/site.ts`
+ * already use; the blog was the one app still keeping its outbound addresses in
+ * the components that render them.
+ *
+ * `STORYBOOK_URL` IS BARE, and is a constant anyway so the exemption has
+ * somewhere to be written down. Storybook's beacon rewrites the reported URL to
+ * `origin + <the path param>` and drops the rest of the query before recording
+ * it, so a tag would arrive and die one step short of the dashboard — the same
+ * trade this repo declines for `github.com`. If `rewriteAnalyticsUrl` ever
+ * preserves `utm_source`, this is the line that changes.
+ */
+export const PORTFOLIO_LINK = tagOutbound('https://carloslima.dev', 'blog');
+
+/** The visual-diff console, as a referral from here. */
+export const CONSOLE_LINK = tagOutbound('https://visual-diff-ui.carloslima.dev', 'blog');
+
+/** The published design system. Bare — see {@link PORTFOLIO_LINK}. */
+export const STORYBOOK_URL = 'https://storybook.carloslima.dev';
+
+/**
+ * The footer's outbound links, in the order they are read: the feed, the
+ * source, then the three published surfaces. The console sits immediately
+ * after Storybook rather than anywhere else — static evidence, then the tool
+ * that produced it — and `__tests__/app-shell.test.ts` holds that claim.
+ *
+ * `GitHub` is bare because GitHub shows its owner no `utm_source`: the tag
+ * would travel for nothing and show in the address bar of every reader who
+ * followed it.
+ */
+export const FOOTER_LINKS = [
+  { label: 'RSS', href: '/rss.xml' },
+  { label: 'GitHub', href: 'https://github.com/climaa' },
+  { label: 'Storybook', href: STORYBOOK_URL },
+  { label: 'Visual diff', href: CONSOLE_LINK },
+  { label: 'Portfolio', href: PORTFOLIO_LINK },
+];
 
 export const SITE_TITLE = 'Carlos Lima';
 
