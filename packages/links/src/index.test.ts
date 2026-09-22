@@ -91,4 +91,17 @@ describe('tagOutbound', () => {
   it('throws on an address that is not absolute', () => {
     expect(() => tagOutbound('/rss.xml', 'blog')).toThrow(TypeError);
   });
+
+  /**
+   * The other error path, and the one `new URL` will not refuse for us: it
+   * parses `javascript:` happily, so "absolute" is not the property that makes
+   * an address safe to write into an `href`. Nothing here builds a link from
+   * reader input today; this is what keeps that true if something ever does.
+   */
+  it.each(['javascript:alert(1)', 'data:text/html,<script>alert(1)</script>'])(
+    'refuses %s, which is absolute but not an address',
+    (hostile) => {
+      expect(() => tagOutbound(hostile, 'blog')).toThrow(TypeError);
+    },
+  );
 });

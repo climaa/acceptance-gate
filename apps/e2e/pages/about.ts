@@ -12,6 +12,12 @@ export const PORTFOLIO_URL = 'https://carloslima.dev';
  * different hosts — only the tag differs, which is exactly the difference this
  * suite needs. `/about` links out as a referral and says so; `dialPortfolio()`
  * below must not, and the comment there says why.
+ *
+ * THE TAG IS SPELLED OUT RATHER THAN BUILT WITH `@gate/links`. A suite that
+ * composes the expected value with the same function the page used agrees with
+ * whatever that function happens to produce, including a change nobody
+ * intended. This is the address a reader's browser should actually receive, and
+ * it is written here so that a change to `tagOutbound` has to come past it.
  */
 export const PORTFOLIO_LINK = `${PORTFOLIO_URL}?utm_source=blog`;
 

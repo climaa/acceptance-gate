@@ -75,11 +75,22 @@ export type Source = (typeof SOURCES)[number];
  * it. The same is true today of `storybook.carloslima.dev`, whose beacon drops
  * every parameter but `path` before reporting.
  *
- * @throws {TypeError} if `url` is not absolute — `new URL` does the refusing,
- *   and a relative href was never a referral in the first place.
+ * HTTP AND HTTPS ONLY, and that is a guard rather than a formality. Everything
+ * this function returns is written into an `href`, and `new URL` treats
+ * `javascript:alert(1)` as a perfectly good absolute address — so "absolute"
+ * alone is not the property worth checking. Every call site here passes a
+ * literal today and none of them could reach that, but the day one of these is
+ * built from something a reader supplies, the refusal should already be here.
+ *
+ * @throws {TypeError} if `url` is not absolute, or is not an http(s) address.
+ *   A relative href was never a referral in the first place.
  */
 export function tagOutbound(url: string, source: Source): string {
-  new URL(url);
+  const { protocol } = new URL(url);
+
+  if (protocol !== 'https:' && protocol !== 'http:') {
+    throw new TypeError(`tagOutbound expects an http(s) address, got ${protocol}`);
+  }
 
   const hashAt = url.indexOf('#');
   const address = hashAt === -1 ? url : url.slice(0, hashAt);
