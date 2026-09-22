@@ -1,0 +1,22 @@
+{
+  "name": "@gate/links",
+  "version": "1.4.0",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "health": "node ../../scripts/complexity-gate.mjs",
+    "clean": "rm -rf .turbo node_modules"
+  },
+  "devDependencies": {
+    "@gate/tsconfig": "workspace:*",
+    "@types/node": "^22.20.2",
+    "typescript": "^5.9.3",
+    "vitest": "^5.0.0"
+  }
+}

@@ -103,7 +103,7 @@ scripts/               complexity-gate.mjs (the health gate) · index-integrity.
 
 - `README.md` — thesis, status table, the autonomous loop
 - `AGENTS.md` — the routing table agents read first
-- `RELEASING.md` — the ten manifests, the index/README refresh that belongs in the same PR, and the four-part shape every release body has carried since 1.0.0
+- `RELEASING.md` — the eleven manifests, the index/README refresh that belongs in the same PR, and the four-part shape every release body has carried since 1.0.0
 - `.sandcastle/agent-docs/CODING_STANDARDS.md` — the review contract (testing conventions, scope discipline)
 - `apps/storybook/src/docs/` — the published written half: System Design, Atomic Design, QA, DevOps, Skills
 - `packages/visual-diff/README.md` — capture matrix, determinism controls, exit codes, and why the job never joins `gate.needs`
@@ -113,7 +113,7 @@ scripts/               complexity-gate.mjs (the health gate) · index-integrity.
 ## 🧪 Tests
 
 - Orchestrator hermetic suite: 39 files / 654 tests (prompt contracts, merge flow, override grammar, worktree safety, provenance guard)
-- Workspace suites, all in the `test` gate job: `packages/ui` 35 files / 512 tests (70% coverage floor), `apps/blog` 26 / 513 (510 passed, 3 skipped — one per draft post), `packages/visual-diff` 10 / 327, `apps/storybook` 5 / 131, `apps/visual-diff-ui` 56 / 928 (floors 93/87/92/94), `packages/logger` 2 / 20, `apps/manual` 6 / 69
+- Workspace suites, all in the `test` gate job: `packages/ui` 35 files / 512 tests (70% coverage floor), `apps/blog` 26 / 514 (511 passed, 3 skipped — one per draft post), `packages/visual-diff` 10 / 327, `apps/storybook` 6 / 186, `apps/visual-diff-ui` 56 / 928 (floors 93/87/92/94), `packages/logger` 2 / 20, `apps/manual` 7 / 92, `packages/links` 1 / 8
 - `apps/e2e`: 53 acceptance scenarios across smoke, blog, the changelog's release conversations, /about, axe a11y, the visual-diff console, sample mode, the report and its accessibility treatment — in `gate.needs`, blocking. `EXPECTED_SCENARIOS` in `apps/e2e/scripts/suite-integrity.mjs` is the count that must agree. A second lane, `features/local/`, is two scenarios that write to your own tree and clean up after themselves — one captures, compares, reviews and accepts against your `.visual-diff`, the other proves the dev server reflects `apps/blog/content/posts` as it is, which no built app can claim (`EXPECTED_LOCAL_SCENARIOS`). It refuses to run under `CI` and gates nothing
 - `packages/visual-diff`: 160 committed baselines; the capture/compare job runs on every PR but is deliberately never in `gate.needs` (see `packages/visual-diff/README.md#ci-status`)
 

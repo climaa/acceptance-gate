@@ -41,6 +41,9 @@ importers:
 
   apps/blog:
     dependencies:
+      '@gate/links':
+        specifier: workspace:*
+        version: link:../../packages/links
       '@gate/logger':
         specifier: workspace:*
         version: link:../../packages/logger
@@ -156,6 +159,9 @@ importers:
 
   apps/manual:
     dependencies:
+      '@gate/links':
+        specifier: workspace:*
+        version: link:../../packages/links
       '@gate/logger':
         specifier: workspace:*
         version: link:../../packages/logger
@@ -275,6 +281,9 @@ importers:
 
   apps/visual-diff-ui:
     dependencies:
+      '@gate/links':
+        specifier: workspace:*
+        version: link:../../packages/links
       '@gate/logger':
         specifier: workspace:*
         version: link:../../packages/logger
@@ -336,6 +345,21 @@ importers:
       jsdom:
         specifier: ^30.0.1
         version: 30.0.1
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+      vitest:
+        specifier: ^5.0.0
+        version: 5.0.0(@opentelemetry/api@1.9.1)(@types/node@22.20.2)(@vitest/coverage-v8@5.0.0)(jsdom@30.0.1)(vite@8.3.0(@types/node@22.20.2)(esbuild@0.28.2)(tsx@4.23.13)(yaml@2.9.0))
+
+  packages/links:
+    devDependencies:
+      '@gate/tsconfig':
+        specifier: workspace:*
+        version: link:../tsconfig
+      '@types/node':
+        specifier: ^22.20.2
+        version: 22.20.2
       typescript:
         specifier: ^5.9.3
         version: 5.9.3

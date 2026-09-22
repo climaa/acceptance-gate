@@ -2,7 +2,7 @@
 
 Nothing here publishes to npm. Every workspace is `private: true`, so the version is a
 coherence marker rather than a distribution fact: the repo is the product, and it carries
-one version across all ten manifests.
+one version across all eleven manifests.
 
 There is no `CHANGELOG.md` and there are no changesets. **"Add a changelog entry" means
 "write it into the release notes at tag time."** `/changelog` on the blog fetches the
@@ -53,8 +53,8 @@ that rendered as an unbroken wall of text.
 
 1. Branch `release/X.Y.Z` off `main`.
 
-2. Bump **ten** manifests in lockstep — the root, `apps/{blog,e2e,manual,storybook,visual-diff-ui}`
-   and `packages/{logger,tsconfig,ui,visual-diff}`. Nothing else in the tree carries the
+2. Bump **eleven** manifests in lockstep — the root, `apps/{blog,e2e,manual,storybook,visual-diff-ui}`
+   and `packages/{links,logger,tsconfig,ui,visual-diff}`. Nothing else in the tree carries the
    version: the version strings in `apps/blog/app/changelog/page.tsx`'s comments and in
    `apps/blog/__tests__/giscus-threads.test.ts` are illustrative examples and fixtures, and
    are **not** bumped.

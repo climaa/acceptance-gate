@@ -1,0 +1,4 @@
+{
+  "extends": "@gate/tsconfig/base.json",
+  "include": ["src", "vitest.config.ts"]
+}
