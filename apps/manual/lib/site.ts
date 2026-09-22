@@ -1,3 +1,5 @@
+import { tagOutbound } from '@gate/links';
+
 /**
  * Single source for the deployed origin. `app/layout.tsx` needs it for
  * `metadataBase` and `app/sitemap.ts` to build absolute URLs — this is the one
@@ -71,21 +73,37 @@ export const ERROR_ACTION = 'Try again';
 /**
  * The deployed console, written once.
  *
- * Two places need it now — the footer below and the index's Start-here block —
- * and they must not drift: a footer pointing at a live instance while the
- * in-body call to action points at a dead one is the kind of break nobody
- * notices, because the reader who follows the broken one never comes back to
- * report it.
+ * Three places need it now and they must not drift: a footer pointing at a live
+ * instance while the in-body call to action points at a dead one is the kind of
+ * break nobody notices, because the reader who follows the broken one never
+ * comes back to report it.
+ *
+ * THIS ONE IS BARE, and {@link CONSOLE_LINK} is the tagged spelling. The
+ * difference is what the address is for. `lib/tour.ts` resolves its steps
+ * against this constant, and a tour step is a console ADDRESS — it spells a
+ * position, `?story=`, `?mode=slider`, `?bucket=changed`, and
+ * `__tests__/tour.test.ts` enforces that it carries no parameter the console
+ * does not read. `utm_source` is read by the beacon, not the console, so it
+ * belongs on the two links a reader follows as a referral and on neither of the
+ * five the tour resolves.
  */
 export const CONSOLE_URL = 'https://visual-diff-ui.carloslima.dev';
+
+/** The console as a referral: the footer and the index's Start-here block, which
+ *  are the two links a reader follows to leave this manual for it. */
+export const CONSOLE_LINK = tagOutbound(CONSOLE_URL, 'manual');
 
 /**
  * The deployed console is the thing this manual describes, so it leads. It runs
  * in sample mode, which is why one of the three pages is about that.
+ *
+ * Storybook and GitHub stay bare: GitHub shows its owner no `utm_source`, and
+ * Storybook's beacon drops every parameter but `path` before recording, so both
+ * tags would travel for nothing and show in the reader's address bar.
  */
 export const FOOTER_LINKS = [
-  { label: 'The console', href: CONSOLE_URL },
+  { label: 'The console', href: CONSOLE_LINK },
   { label: 'Storybook', href: 'https://storybook.carloslima.dev' },
-  { label: 'Blog', href: 'https://blog.carloslima.dev' },
+  { label: 'Blog', href: tagOutbound('https://blog.carloslima.dev', 'manual') },
   { label: 'GitHub', href: 'https://github.com/climaa/acceptance-gate' },
 ];

@@ -1,7 +1,7 @@
 import { expect } from '@playwright/test';
 import { createBdd } from 'playwright-bdd';
 
-import { PORTFOLIO_URL } from '../../pages/about';
+import { PORTFOLIO_LINK } from '../../pages/about';
 import { test } from './fixtures';
 
 const { When, Then } = createBdd(test);
@@ -21,7 +21,7 @@ Then('the about page links to the portfolio', async ({ about }) => {
   const hrefs = await links.evaluateAll((nodes) =>
     nodes.map((node) => node.getAttribute('href')),
   );
-  expect(hrefs).toContain(PORTFOLIO_URL);
+  expect(hrefs).toContain(PORTFOLIO_LINK);
 
   // Same tab. It is the author's own site, so a new window would be the browser
   // deciding something the reader did not ask for, and the back button is the

@@ -5,6 +5,16 @@ import type { Locator, Page } from '@playwright/test';
  *  can never drift into checking two different sites. */
 export const PORTFOLIO_URL = 'https://carloslima.dev';
 
+/**
+ * The same site, as `/about` actually spells it.
+ *
+ * DERIVED AND NOT RETYPED, so the pair above still cannot drift onto two
+ * different hosts — only the tag differs, which is exactly the difference this
+ * suite needs. `/about` links out as a referral and says so; `dialPortfolio()`
+ * below must not, and the comment there says why.
+ */
+export const PORTFOLIO_LINK = `${PORTFOLIO_URL}?utm_source=blog`;
+
 /** The authorship page. Located by href rather than by link text: the claim is
  *  that this page points a reader at the portfolio, and the wording around the
  *  link is prose the author may rewrite without the requirement changing. */
@@ -22,6 +32,12 @@ export class AboutPage {
   }
 
   /** What the portfolio address actually answers, followed to its end.
+   *
+   *  THE BARE ADDRESS, never {@link PORTFOLIO_LINK}. This is a `page.request.get`
+   *  today, so no script runs and no beacon is posted — but this suite runs on
+   *  every pull request, and the day somebody turns it into a `page.goto` a
+   *  tagged URL would post a synthetic visit into the live dashboard from CI,
+   *  once per run, indistinguishable from a reader.
    *
    *  `https://carloslima.dev` does not answer 200 itself — it is a 307 to
    *  `/en`, measured — so a request that refused redirects would fail on a site

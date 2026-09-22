@@ -1,5 +1,17 @@
 import type { Metadata } from 'next';
+import { tagOutbound } from '@gate/links';
 import { Prose, Stack } from '@gate/ui';
+
+/**
+ * Both anchors on this page, one constant.
+ *
+ * The page carries the portfolio link twice on purpose — a lead-in under the
+ * heading and an entry under Contact — and both share their visible text as
+ * well as their href. `apps/e2e/pages/about.ts` locates them by accessible
+ * name, which matches both, so tagging only one would make that locator
+ * ambiguous for no gain.
+ */
+const PORTFOLIO = tagOutbound('https://carloslima.dev', 'blog');
 
 export const metadata: Metadata = {
   title: 'About',
@@ -17,7 +29,7 @@ export default function AboutPage() {
             /about is this site's authorship page and stays indexed as one. */}
         <p className="page-lead">
           If you got here from a CV or a job post, the 30-second version is at{' '}
-          <a href="https://carloslima.dev">carloslima.dev</a>. This page is the long one.
+          <a href={PORTFOLIO}>carloslima.dev</a>. This page is the long one.
         </p>
         <p>
           I am Carlos Lima, a senior frontend engineer in Barcelona. I work mostly with
@@ -50,8 +62,8 @@ export default function AboutPage() {
           <a href="https://www.linkedin.com/in/carlos-lima-frontend/">LinkedIn</a>
         </p>
         <p>
-          Portfolio → <a href="https://carloslima.dev">carloslima.dev</a> — two projects,
-          the proof for each, and the CV.
+          Portfolio → <a href={PORTFOLIO}>carloslima.dev</a> — two projects, the proof for
+          each, and the CV.
         </p>
       </Prose>
     </Stack>

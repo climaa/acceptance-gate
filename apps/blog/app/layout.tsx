@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import NextLink from 'next/link';
 import { preload } from 'react-dom';
+import { tagOutbound } from '@gate/links';
 import { SiteFooter, SiteHeader } from '@gate/ui';
 import { Analytics } from '@vercel/analytics/next';
 import {
@@ -47,15 +48,25 @@ const NAV = [
   { label: 'About', href: '/about' },
 ];
 
+/**
+ * Three of these are bare on purpose.
+ *
+ * `RSS` is relative, and `GitHub` is not ours — GitHub shows its owner no
+ * `utm_source`, so a tag there travels for nothing and is visible in the
+ * address bar of every reader who follows it. `Storybook` is ours and is still
+ * bare, because its beacon rewrites the reported URL to `origin + path` and
+ * drops the rest of the query before recording it: the tag would arrive and die
+ * one step short of the dashboard. See `.storybook/analytics-head.ts`.
+ */
 const FOOTER_LINKS = [
   { label: 'RSS', href: '/rss.xml' },
   { label: 'GitHub', href: 'https://github.com/climaa' },
   { label: 'Storybook', href: 'https://storybook.carloslima.dev' },
   {
     label: 'Visual diff',
-    href: 'https://visual-diff-ui.carloslima.dev',
+    href: tagOutbound('https://visual-diff-ui.carloslima.dev', 'blog'),
   },
-  { label: 'Portfolio', href: 'https://carloslima.dev' },
+  { label: 'Portfolio', href: tagOutbound('https://carloslima.dev', 'blog') },
 ];
 
 export const metadata: Metadata = {
