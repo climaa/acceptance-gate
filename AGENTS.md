@@ -32,7 +32,7 @@ and each rests on the frame a frozen capture photographs).
 
 ## Labels that route you
 
-`sc:{implementer,reviewer}:{opus-5,sonnet-5}` and
+`sc:{implementer,reviewer}:{opus-5-5,opus-5,sonnet-5}` and
 `sc:{implementer,reviewer}:effort:{low,medium,high,xhigh,max}` — set at issue
 authoring time. They route model and effort; they never gate dispatch.
 

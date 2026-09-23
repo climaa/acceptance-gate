@@ -54,7 +54,7 @@ gh issue edit 2079 --add-label "sc:implementer:sonnet-5"   # per issue
 SC_PLANNER_MODEL=sonnet-5 SC_MERGER_EFFORT=medium pnpm sandcastle   # per run
 ```
 
-Accepted models are `opus-5` / `sonnet-5` (aliases or canonical ids); efforts are
+Accepted models are `opus-5-5` / `opus-5` / `sonnet-5` (aliases or canonical ids); efforts are
 `low|medium|high|xhigh|max`, with `max` Opus-only. Anything else **fails the run
 before a sandbox is created** — a typo must never silently fall back to the
 expensive default. `gh issue edit --add-label` also refuses labels that do not

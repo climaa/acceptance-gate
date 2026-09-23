@@ -19,9 +19,10 @@ import {
  */
 
 const OPUS = 'claude-opus-5';
+const OPUS_5_5 = 'claude-opus-5-5';
 const SONNET = 'claude-sonnet-5';
 // Mirrors PROFILES.implementer without importing it (that module pulls in the SDK).
-const BASE = { model: OPUS, effort: 'high' as const };
+const BASE = { model: OPUS_5_5, effort: 'medium' as const };
 
 describe('parseOverrideLabels', () => {
   it('ignores labels that are not sc:-prefixed', () => {
@@ -43,6 +44,19 @@ describe('parseOverrideLabels', () => {
     // Assert
     expect(errors).toEqual([]);
     expect(overrides.implementer).toEqual({ model: SONNET });
+  });
+
+  it('keeps opus-5 as a per-issue rollback beside the opus-5-5 default', () => {
+    // Arrange & Act
+    const { overrides, errors } = parseOverrideLabels([
+      'sc:implementer:opus-5',
+      'sc:reviewer:opus-5-5',
+    ]);
+
+    // Assert
+    expect(errors).toEqual([]);
+    expect(overrides.implementer).toEqual({ model: OPUS });
+    expect(overrides.reviewer).toEqual({ model: OPUS_5_5 });
   });
 
   it('reads an effort override independently of the model', () => {
@@ -186,6 +200,17 @@ describe('envOverride', () => {
     expect(reviewer.override).toEqual({});
   });
 
+  it('resolves the opus-5-5 alias for a run-level role', () => {
+    // Arrange & Act
+    const { override, errors } = envOverride('planner', {
+      SC_PLANNER_MODEL: 'opus-5-5',
+    });
+
+    // Assert
+    expect(errors).toEqual([]);
+    expect(override).toEqual({ model: OPUS_5_5 });
+  });
+
   it('reports an unusable value instead of silently ignoring it', () => {
     // Arrange & Act
     const { override, errors } = envOverride('merger', {
@@ -224,7 +249,7 @@ describe('mergeProfile — precedence is PROFILES < env < label', () => {
     const { profile } = mergeProfile(BASE, { model: SONNET });
 
     // Assert
-    expect(profile).toEqual({ model: SONNET, effort: 'high' });
+    expect(profile).toEqual({ model: SONNET, effort: 'medium' });
   });
 
   it('lets a label beat env', () => {
@@ -258,7 +283,7 @@ describe('mergeProfile — precedence is PROFILES < env < label', () => {
 
     // Assert
     expect(errors).toEqual([]);
-    expect(profile).toEqual({ model: OPUS, effort: 'max' });
+    expect(profile).toEqual({ model: OPUS_5_5, effort: 'max' });
   });
 });
 
@@ -284,12 +309,12 @@ describe('describeOverride', () => {
 });
 
 describe('allowlist shape', () => {
-  it('exposes exactly the two models this pipeline is cleared for', () => {
+  it('exposes exactly the three models this pipeline is cleared for', () => {
     // Arrange & Act
     const models = Object.values(MODEL_ALIASES).sort();
 
     // Assert — fable-5 is excluded on quota grounds (see the module header)
-    expect(models).toEqual([OPUS, SONNET]);
+    expect(models).toEqual([OPUS, OPUS_5_5, SONNET]);
   });
 
   it("matches the SDK's five effort levels", () => {
