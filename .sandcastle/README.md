@@ -25,12 +25,12 @@ Both forms run `main.mts` and iterate until the backlog is clear (or
 
 Each iteration executes in order:
 
-| Phase       | Agent          | Prompt file                      | What it does                                                                              |
-| ----------- | -------------- | -------------------------------- | ----------------------------------------------------------------------------------------- |
-| 1 Plan      | Opus 5 · high  | `agent-docs/plan-prompt.md`      | Reads open issues, builds a dependency graph, outputs a `<plan>` JSON of unblocked issues |
-| 2 Implement | Opus 5 · high  | `agent-docs/implement-prompt.md` | Writes code, tests, and commits on the issue branch                                       |
-| 3 Review    | Opus 5 · high  | `agent-docs/review-prompt.md`    | Checks the branch for correctness/style; may push fixup commits                           |
-| 4 Merge     | Sonnet 5 · low | `agent-docs/merge-prompt.md`     | Opens a PR per branch, enables squash auto-merge, waits for CI, closes the issue          |
+| Phase       | Agent             | Prompt file                      | What it does                                                                              |
+| ----------- | ----------------- | -------------------------------- | ----------------------------------------------------------------------------------------- |
+| 1 Plan      | Opus 5.5 · medium | `agent-docs/plan-prompt.md`      | Reads open issues, builds a dependency graph, outputs a `<plan>` JSON of unblocked issues |
+| 2 Implement | Opus 5.5 · medium | `agent-docs/implement-prompt.md` | Writes code, tests, and commits on the issue branch                                       |
+| 3 Review    | Opus 5.5 · medium | `agent-docs/review-prompt.md`    | Checks the branch for correctness/style; may push fixup commits                           |
+| 4 Merge     | Sonnet 5 · low    | `agent-docs/merge-prompt.md`     | Opens a PR per branch, enables squash auto-merge, waits for CI, closes the issue          |
 
 Model and effort per role are pinned in `sandcastle-agent-profiles.mts` — that
 file is the source of truth; this table mirrors it.
@@ -51,10 +51,12 @@ bind **per run**, for any role:
 
 ```bash
 gh issue edit 2079 --add-label "sc:implementer:sonnet-5"   # per issue
+gh issue edit 2079 --add-label "sc:implementer:effort:high"  # weak at medium: effort first,
+gh issue edit 2079 --add-label "sc:implementer:opus-5"       # then the previous default model
 SC_PLANNER_MODEL=sonnet-5 SC_MERGER_EFFORT=medium pnpm sandcastle   # per run
 ```
 
-Accepted models are `opus-5` / `sonnet-5` (aliases or canonical ids); efforts are
+Accepted models are `opus-5-5` / `opus-5` / `sonnet-5` (aliases or canonical ids); efforts are
 `low|medium|high|xhigh|max`, with `max` Opus-only. Anything else **fails the run
 before a sandbox is created** — a typo must never silently fall back to the
 expensive default. `gh issue edit --add-label` also refuses labels that do not

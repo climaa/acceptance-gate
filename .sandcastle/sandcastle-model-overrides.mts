@@ -3,9 +3,9 @@
 // `sandcastle-agent-profiles.mts` pins one model+effort per role for every run,
 // which is right as a default but all-or-nothing: there is no way to say "this
 // one issue is mechanical, run it on Sonnet" without editing a checked-in file.
-// Opus 5 draws from its own rate-limit bucket and this repo has already
-// exhausted a model's weekly quota on sandcastle runs (production quota exhaustion), so the
-// ability to spend the cheap model on cheap issues is worth a little plumbing.
+// This repo has already exhausted a model's weekly quota on sandcastle runs
+// (production quota exhaustion), so the ability to spend the cheap model on
+// cheap issues is worth a little plumbing.
 //
 // Resolution order, least to most specific:  PROFILES  <  env  <  issue label
 //
@@ -38,6 +38,7 @@ export type ProfileOverride = { model?: string; effort?: Effort };
  */
 export const MODEL_ALIASES: Readonly<Record<string, string>> = {
   'opus-5': 'claude-opus-5',
+  'opus-5-5': 'claude-opus-5-5',
   'sonnet-5': 'claude-sonnet-5',
 };
 

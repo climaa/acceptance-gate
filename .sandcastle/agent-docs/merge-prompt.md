@@ -139,7 +139,7 @@ Produce one descriptive line per file, e.g. `packages/ui/src/atoms/Button/Button
 The `implementer: …` and `reviewer: …` values in the footer below come from
 this pair's line in the branches list above — copy them verbatim, do not
 recompute or guess them. They are already resolved host-side, e.g.
-`implementer: claude-sonnet-5·low, reviewer: claude-opus-5·high`.
+`implementer: claude-sonnet-5·low, reviewer: claude-opus-5-5·medium`.
 
 Use this template (omit any section whose source was missing in the issue):
 

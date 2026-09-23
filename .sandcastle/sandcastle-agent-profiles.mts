@@ -5,18 +5,20 @@
 // model and effort per role makes cost and capability per phase explicit.
 //
 // Rationale per role:
-//   planner/implementer/reviewer — the judgment-heavy roles → Opus 5 · high.
-//     Opus 5 is a drop-in upgrade from Opus 4.8 at the same per-token price
-//     with a higher intelligence ceiling; it draws from its OWN rate-limit
-//     bucket rather than the combined Opus 4.x pool, so moving here neither
-//     frees 4.x headroom nor inherits it. Fable 5 stays off the table
-//     deliberately: it bills against a separate weekly quota that sandcastle
-//     runs exhausted on their own (seen as production quota exhaustion).
-//     Effort is "high" everywhere rather than the documented "xhigh" coding
-//     default: the implementer runs up to 100 iterations, and this repo has
-//     already traded xhigh away for quota headroom once. Raise the
-//     implementer to "xhigh" only for a run where implementation quality is
-//     the demonstrable bottleneck.
+//   planner/implementer/reviewer — the judgment-heavy roles → Opus 5.5 ·
+//     medium. Opus 5.5 is priced below Opus 5 ($4/$20 vs $5/$25 per MTok),
+//     and Anthropic's launch figures (2026-09-22) put it at ~40% less cost
+//     per task than Opus 5 at its default effort, with >30% faster output.
+//     That default is "medium" (one level below Opus 5's "high"); it is
+//     pinned here rather than left to the CLI so a changed default can never
+//     move cost silently.
+//     Fable 5 stays off the table deliberately: it bills against a separate
+//     weekly quota that sandcastle runs exhausted on their own (seen as
+//     production quota exhaustion). The previous default stays one label
+//     away: `sc:implementer:opus-5` (or SC_IMPLEMENTER_MODEL=opus-5 for a
+//     whole run) rolls one issue back, and `sc:implementer:effort:high` raises
+//     one issue whose implementation quality is the demonstrable bottleneck —
+//     raise the default only once that has happened more than once.
 //   merger — mechanical gh PR/auto-merge plus a 20-min CI poll loop. Sonnet
 //     5 · low keeps the polling cheap.
 //
@@ -43,9 +45,9 @@ export type AgentProfile = {
 };
 
 export const PROFILES = {
-  planner: { model: 'claude-opus-5', effort: 'high' },
-  implementer: { model: 'claude-opus-5', effort: 'high' },
-  reviewer: { model: 'claude-opus-5', effort: 'high' },
+  planner: { model: 'claude-opus-5-5', effort: 'medium' },
+  implementer: { model: 'claude-opus-5-5', effort: 'medium' },
+  reviewer: { model: 'claude-opus-5-5', effort: 'medium' },
   merger: { model: 'claude-sonnet-5', effort: 'low' },
 } as const satisfies Record<string, AgentProfile>;
 
