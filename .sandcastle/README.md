@@ -25,12 +25,12 @@ Both forms run `main.mts` and iterate until the backlog is clear (or
 
 Each iteration executes in order:
 
-| Phase       | Agent          | Prompt file                      | What it does                                                                              |
-| ----------- | -------------- | -------------------------------- | ----------------------------------------------------------------------------------------- |
-| 1 Plan      | Opus 5 · high  | `agent-docs/plan-prompt.md`      | Reads open issues, builds a dependency graph, outputs a `<plan>` JSON of unblocked issues |
-| 2 Implement | Opus 5 · high  | `agent-docs/implement-prompt.md` | Writes code, tests, and commits on the issue branch                                       |
-| 3 Review    | Opus 5 · high  | `agent-docs/review-prompt.md`    | Checks the branch for correctness/style; may push fixup commits                           |
-| 4 Merge     | Sonnet 5 · low | `agent-docs/merge-prompt.md`     | Opens a PR per branch, enables squash auto-merge, waits for CI, closes the issue          |
+| Phase       | Agent             | Prompt file                      | What it does                                                                              |
+| ----------- | ----------------- | -------------------------------- | ----------------------------------------------------------------------------------------- |
+| 1 Plan      | Opus 5.5 · medium | `agent-docs/plan-prompt.md`      | Reads open issues, builds a dependency graph, outputs a `<plan>` JSON of unblocked issues |
+| 2 Implement | Opus 5.5 · medium | `agent-docs/implement-prompt.md` | Writes code, tests, and commits on the issue branch                                       |
+| 3 Review    | Opus 5.5 · medium | `agent-docs/review-prompt.md`    | Checks the branch for correctness/style; may push fixup commits                           |
+| 4 Merge     | Sonnet 5 · low    | `agent-docs/merge-prompt.md`     | Opens a PR per branch, enables squash auto-merge, waits for CI, closes the issue          |
 
 Model and effort per role are pinned in `sandcastle-agent-profiles.mts` — that
 file is the source of truth; this table mirrors it.

@@ -4,8 +4,8 @@
 // which is right as a default but all-or-nothing: there is no way to say "this
 // one issue is mechanical, run it on Sonnet" without editing a checked-in file.
 // This repo has already exhausted a model's weekly quota on sandcastle runs
-// (production quota exhaustion), so the
-// ability to spend the cheap model on cheap issues is worth a little plumbing.
+// (production quota exhaustion), so the ability to spend the cheap model on
+// cheap issues is worth a little plumbing.
 //
 // Resolution order, least to most specific:  PROFILES  <  env  <  issue label
 //

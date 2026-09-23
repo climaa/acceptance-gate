@@ -7,10 +7,11 @@
 // Rationale per role:
 //   planner/implementer/reviewer — the judgment-heavy roles → Opus 5.5 ·
 //     medium. Opus 5.5 is priced below Opus 5 ($4/$20 vs $5/$25 per MTok),
-//     and Anthropic's launch measurements put it at ~40% less cost per task
-//     than Opus 5 at its default effort, with >30% faster output. That default
-//     is "medium" (one level below Opus 5's "high"); it is pinned here rather
-//     than left to the CLI so a changed default can never move cost silently.
+//     and Anthropic's launch figures (2026-09-22) put it at ~40% less cost
+//     per task than Opus 5 at its default effort, with >30% faster output.
+//     That default is "medium" (one level below Opus 5's "high"); it is
+//     pinned here rather than left to the CLI so a changed default can never
+//     move cost silently.
 //     Fable 5 stays off the table deliberately: it bills against a separate
 //     weekly quota that sandcastle runs exhausted on their own (seen as
 //     production quota exhaustion). The previous default stays one label

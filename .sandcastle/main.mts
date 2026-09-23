@@ -163,9 +163,8 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
         // One iteration is enough: the planner just needs to read and reason,
         // not write code.
         maxIterations: 1,
-        // Model + effort live in PROFILES.planner — judgment-heavy reasoning at
-        // effort "high" (xhigh would draw more thinking tokens from the shared
-        // Max quota for no measurable plan-quality gain).
+        // Model + effort live in PROFILES.planner — the rationale for the
+        // pinned effort lives there too, so it is stated once.
         agent: agentFor('planner'),
         promptFile: './.sandcastle/agent-docs/plan-prompt.md',
       }),
