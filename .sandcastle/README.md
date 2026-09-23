@@ -67,8 +67,29 @@ for r in implementer reviewer; do
   for e in low medium high xhigh max; do
     gh label create "sc:${r}:effort:${e}" --color D4C5F9 --description "Sandcastle effort override"
   done
+  for m in opus-5-5 opus-5 sonnet-5; do
+    gh label create "sc:${r}:${m}" --color 1d76db --description "Route ${r} to ${m} for this issue"
+  done
 done
 ```
+
+### When `medium` is not enough
+
+The judgment roles default to Opus 5.5 at `medium`, the model's own default,
+chosen for cost (the rationale is in the `sandcastle-agent-profiles.mts`
+header). If one issue comes back weak, escalate **that issue**, one step at a
+time, before touching the default:
+
+```bash
+gh issue edit 2079 --add-label "sc:implementer:effort:high"   # 1. more thinking, same model
+gh issue edit 2079 --add-label "sc:implementer:opus-5"        # 2. the previous default model
+SC_IMPLEMENTER_MODEL=opus-5 SC_IMPLEMENTER_EFFORT=high pnpm sandcastle   # a whole run, as before #462
+```
+
+Model and effort labels combine, so steps 1 and 2 together reproduce the
+pre-Opus-5.5 profile for one issue. Raise the default in `PROFILES` only once
+escalation has been needed on more than one issue — a single weak issue is a
+label, not a policy.
 
 ---
 
