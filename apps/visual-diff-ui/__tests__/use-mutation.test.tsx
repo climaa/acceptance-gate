@@ -3,7 +3,8 @@ import { act, cleanup, render } from '@testing-library/react';
 // Imported explicitly rather than relying on `globals: true` — tsconfig's
 // `**/*.ts` include means tsc typechecks this file.
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { UNREACHABLE, refusalOf, useMutation } from '../hooks/useMutation';
+import { TIMED_OUT, UNREACHABLE, refusalOf, useMutation } from '../hooks/useMutation';
+import { NETWORK_TIMEOUT_MS } from '../lib/network';
 import { refreshCalls } from './stubs/next-navigation';
 
 /**
@@ -160,6 +161,62 @@ describe('a mutation that never landed', () => {
     });
 
     expect(hook.current.busy).toBe(false);
+  });
+});
+
+/** A fetch that neither lands nor fails until its signal gives up — what a
+ *  connection that drops packets without closing looks like from the page. */
+const stalled = () =>
+  vi.fn(
+    (_url: string, init?: RequestInit) =>
+      new Promise<Response>((_resolve, reject) => {
+        init?.signal?.addEventListener('abort', () => reject(init.signal?.reason));
+      }),
+  );
+
+/**
+ * A request that stalls. It may have reached the server and done its work before
+ * the answer was lost, so the refusal says so and the page is read again.
+ */
+describe('a mutation that ran out of time', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('gives up, says the connection is slow and re-reads the page', async () => {
+    vi.useFakeTimers();
+    vi.stubGlobal('fetch', stalled());
+    const hook = harness();
+
+    let result;
+    await act(async () => {
+      const pending = hook.current.run({
+        url: '/api/x',
+        method: 'DELETE',
+        fallback: 'f',
+      });
+      await vi.advanceTimersByTimeAsync(NETWORK_TIMEOUT_MS);
+      result = await pending;
+    });
+
+    expect(result).toEqual({ ok: false });
+    expect(hook.current.refusals).toEqual([TIMED_OUT]);
+    expect(hook.current.busy).toBe(false);
+    expect(refreshCalls).toHaveLength(1);
+  });
+
+  it('is still waiting a moment before the limit', async () => {
+    vi.useFakeTimers();
+    vi.stubGlobal('fetch', stalled());
+    const hook = harness();
+
+    await act(async () => {
+      void hook.current.run({ url: '/api/x', method: 'DELETE', fallback: 'f' });
+      await vi.advanceTimersByTimeAsync(NETWORK_TIMEOUT_MS - 1);
+    });
+
+    expect(hook.current.busy).toBe(true);
+    expect(hook.current.refusals).toEqual([]);
   });
 });
 

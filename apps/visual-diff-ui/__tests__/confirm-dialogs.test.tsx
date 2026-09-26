@@ -90,10 +90,13 @@ describe('the delete confirmation', () => {
 
     fireEvent.click(screen.getByRole('button', { name: `delete ${SET}` }));
 
-    expect(fetchMock).toHaveBeenCalledWith(`/api/sets/${SET}`, {
-      method: 'DELETE',
-      cache: 'no-store',
-    });
+    expect(fetchMock).toHaveBeenCalledWith(
+      `/api/sets/${SET}`,
+      expect.objectContaining({
+        method: 'DELETE',
+        cache: 'no-store',
+      }),
+    );
     // The sets table beside this is server-rendered, so the row only goes once
     // the page is re-read.
     await vi.waitFor(() => expect(refreshCalls).toEqual(['refresh']));
@@ -192,10 +195,13 @@ describe('the delete confirmation', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'delete ../etc' }));
 
-    expect(fetchMock).toHaveBeenCalledWith('/api/sets/..%2Fetc', {
-      method: 'DELETE',
-      cache: 'no-store',
-    });
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/sets/..%2Fetc',
+      expect.objectContaining({
+        method: 'DELETE',
+        cache: 'no-store',
+      }),
+    );
   });
 
   /**
@@ -233,10 +239,13 @@ describe('the delete confirmation', () => {
 
     fireEvent.click(screen.getByRole('button', { name: `delete ${REPORT}` }));
 
-    expect(fetchMock).toHaveBeenCalledWith(`/api/reports/${REPORT}`, {
-      method: 'DELETE',
-      cache: 'no-store',
-    });
+    expect(fetchMock).toHaveBeenCalledWith(
+      `/api/reports/${REPORT}`,
+      expect.objectContaining({
+        method: 'DELETE',
+        cache: 'no-store',
+      }),
+    );
   });
 });
 
@@ -280,12 +289,15 @@ describe('the prune confirmation', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'prune 1 set' }));
 
-    expect(fetchMock).toHaveBeenCalledWith('/api/prune', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      cache: 'no-store',
-      body: JSON.stringify({ keep: 3 }),
-    });
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/prune',
+      expect.objectContaining({
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        cache: 'no-store',
+        body: JSON.stringify({ keep: 3 }),
+      }),
+    );
     await vi.waitFor(() => expect(refreshCalls).toEqual(['refresh']));
   });
 
