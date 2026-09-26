@@ -1,6 +1,6 @@
 # Project Index: acceptance-gate
 
-Version 1.4.0 · generated 2026-09-14 (regenerate with `/sc:index-repo` — a stale date here
+Version 1.5.0 · generated 2026-09-26 (regenerate with `/sc:index-repo` — a stale date here
 means the index needs a refresh)
 
 ## 📁 Project Structure
@@ -16,7 +16,7 @@ means the index needs a refresh)
                        plan-parse · pr-queue (+ gh) · sandbox hooks · turbo cache ·
                        variables · orchestrator
   agent-docs/          the four phase prompts + CODING_STANDARDS.md
-  __tests__/           39 hermetic vitest files (654 tests) guarding the contracts
+  __tests__/           39 hermetic vitest files (656 tests) guarding the contracts
 apps/
   blog/                Next.js 16 App Router + MDX (English) — index, post, tag, about,
                        changelog (the GitHub releases, fetched at build time, each with
@@ -31,13 +31,18 @@ apps/
                        local lane that runs against your own tree
   visual-diff-ui/      Next.js 16 console over the differ — zod-validated read path,
                        locked job runner + guarded mutations, sample fixtures,
-                       the dashboard's sets/reports/history tables, the run
+                       the dashboard's sets/reports/history tables — a report row
+                       carries its bucket chips, each opening the report filtered
+                       to it, and a set repeating an older set's sha is marked
+                       `same sha` — the run
                        panel with its live log, current job and accept gate,
                        the report's tier sections, review loop and a11y
                        treatment, the three-up viewer and comparison modal, the
                        set viewer at `/set/[label]` — every screenshot grouped by
                        story under its tier, at its own ratio, behind a pinned
                        theme/viewport filter bar that hydrates nothing;
+                       every browser request bounded at 30 s (`lib/network.ts`), so
+                       a stalled link fails with a sentence instead of hanging;
                        web analytics on the production deployment only; Bugsink error
                        reporting live in both realms on the production deployment,
                        inert anywhere the DSN is unset
@@ -112,18 +117,19 @@ scripts/               complexity-gate.mjs (the health gate) · index-integrity.
 
 ## 🧪 Tests
 
-- Orchestrator hermetic suite: 39 files / 654 tests (prompt contracts, merge flow, override grammar, worktree safety, provenance guard)
-- Workspace suites, all in the `test` gate job: `packages/ui` 35 files / 512 tests (70% coverage floor), `apps/blog` 26 / 514 (511 passed, 3 skipped — one per draft post), `packages/visual-diff` 10 / 327, `apps/storybook` 6 / 186, `apps/visual-diff-ui` 56 / 928 (floors 93/87/92/94), `packages/logger` 2 / 20, `apps/manual` 7 / 92, `packages/links` 1 / 10
+- Orchestrator hermetic suite: 39 files / 656 tests (prompt contracts, merge flow, override grammar, worktree safety, provenance guard)
+- Workspace suites, all in the `test` gate job: `packages/ui` 35 files / 512 tests (70% coverage floor), `apps/blog` 26 / 514 (511 passed, 3 skipped — one per draft post), `packages/visual-diff` 10 / 327, `apps/storybook` 6 / 186, `apps/visual-diff-ui` 56 / 938 (floors 93/87/92/94), `packages/logger` 2 / 20, `apps/manual` 7 / 92, `packages/links` 1 / 10
 - `apps/e2e`: 53 acceptance scenarios across smoke, blog, the changelog's release conversations, /about, axe a11y, the visual-diff console, sample mode, the report and its accessibility treatment — in `gate.needs`, blocking. `EXPECTED_SCENARIOS` in `apps/e2e/scripts/suite-integrity.mjs` is the count that must agree. A second lane, `features/local/`, is two scenarios that write to your own tree and clean up after themselves — one captures, compares, reviews and accepts against your `.visual-diff`, the other proves the dev server reflects `apps/blog/content/posts` as it is, which no built app can claim (`EXPECTED_LOCAL_SCENARIOS`). It refuses to run under `CI` and gates nothing
 - `packages/visual-diff`: 160 committed baselines; the capture/compare job runs on every PR but is deliberately never in `gate.needs` (see `packages/visual-diff/README.md#ci-status`)
 
 ## 🔗 Key Dependencies
 
 - `@ai-hero/sandcastle` 0.12.0 — sandbox engine under `.sandcastle/`
-- `next` ^16.3.2 / `react` ^19.2.8 — blog and storybook
+- `next` ^16.3.5 / `react` ^19.3.0 — blog, storybook, the console and the manual
 - `storybook` 10 with `nextjs-vite` — the visual single source of truth
+- `dotenv` 18 — its own CLI wraps every root turbo script (`dotenv run -q --override --`); `dotenv-cli` is gone, because the two install one command
 - `playwright` 1.62.1 (exact) — acceptance suite and pixel capture
-- `turbo` ^2.10.11 — task graph + remote cache (team-ID-scoped)
+- `turbo` ^2.11.2 — task graph + remote cache (team-ID-scoped)
 
 ## 📝 Quick Start
 
