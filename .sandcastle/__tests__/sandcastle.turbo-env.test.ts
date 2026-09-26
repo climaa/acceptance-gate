@@ -221,12 +221,12 @@ describe('sandcastle turbo-env passthrough', () => {
     const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
 
     // turbo is a binary we do not control and cannot read .env itself, so the
-    // scripts must inject it. Without -o, an exported TURBO_TEAM from a shell
+    // scripts must inject it. Without --override, an exported TURBO_TEAM from a shell
     // profile still wins and the leak returns silently.
     const turboScripts = ['dev', 'build', 'lint', 'typecheck', 'test'] as const;
 
-    it.each(turboScripts)('%s wraps turbo in dotenv with -o', (name) => {
-      expect(pkg.scripts[name]).toMatch(/dotenv -e \.env -o -- turbo run/);
+    it.each(turboScripts)('%s wraps turbo in dotenv with --override', (name) => {
+      expect(pkg.scripts[name]).toMatch(/dotenv run -q --override -- turbo run/);
     });
 
     // This one reads .env itself via dotenv.parse — wrapping it would put the
@@ -235,9 +235,12 @@ describe('sandcastle turbo-env passthrough', () => {
       expect(pkg.scripts.sandcastle).not.toMatch(/dotenv/);
     });
 
-    it('depends on dotenv and dotenv-cli', () => {
+    // dotenv ships its own `dotenv` command from v18. dotenv-cli installs one
+    // under the same name with a different syntax, and whichever pnpm links
+    // last wins — so the two cannot both be installed.
+    it('depends on dotenv and not on dotenv-cli', () => {
       expect(pkg.devDependencies).toHaveProperty('dotenv');
-      expect(pkg.devDependencies).toHaveProperty('dotenv-cli');
+      expect(pkg.devDependencies).not.toHaveProperty('dotenv-cli');
     });
   });
 });
