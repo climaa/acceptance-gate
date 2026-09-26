@@ -17529,7 +17529,7 @@
               "fill": "$ink-muted",
               "textGrowth": "fixed-width",
               "width": 1000,
-              "content": "CURRENT JOB carries a ghost IconButton that dismisses the run on the card — the panel answers with the LAST run when nothing is running, so this is the only way back to the empty state drawn here. It is present only while a FINISHED run is showing: absent on a fresh instance, and absent while a job is running. A dismissal is browser-only and keyed on the job id — the history row, the log and the report are untouched, and the next run brings the card back. REPORTS rows carry the report page's bucket chip row under the id, every bucket and total, zeros included, a11y first when non-empty. A chip opens the report filtered to that bucket; total opens it unfiltered. The chips only navigate, so they stay on a console that draws no delete.",
+              "content": "CURRENT JOB carries a ghost IconButton that dismisses the run on the card — the panel answers with the LAST run when nothing is running, so this is the only way back to the empty state drawn here. It is present only while a FINISHED run is showing: absent on a fresh instance, and absent while a job is running. A dismissal is browser-only and keyed on the job id — the history row, the log and the report are untouched, and the next run brings the card back. REPORTS rows carry the report page's bucket chip row under the id, every bucket and total, zeros included, a11y first when non-empty. A chip opens the report filtered to that bucket; total opens it unfiltered. The chips only navigate, so they stay on a console that draws no delete. SCREENSHOT SETS marks a set captured from a sha an older set already holds with a neutral same-sha badge beside its label, on every repeat but the oldest, so a second capture of one commit reads as a repeat rather than as a change.",
               "lineHeight": 1.5,
               "fontFamily": "$font-body",
               "fontSize": 13,
@@ -18150,6 +18150,184 @@
                                             {
                                               "type": "text",
                                               "id": "n012y",
+                                              "name": "t",
+                                              "fill": "$danger-fg",
+                                              "content": "delete",
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 9,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "PS6Mr",
+                                      "name": "tr",
+                                      "width": "fill_container",
+                                      "stroke": "$border",
+                                      "strokeWidth": {
+                                        "bottom": 1
+                                      },
+                                      "gap": 10,
+                                      "padding": [
+                                        0,
+                                        0,
+                                        7,
+                                        0
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "PfUEN",
+                                          "name": "td",
+                                          "width": 150,
+                                          "gap": 5,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "hY9ab",
+                                              "name": "t",
+                                              "fill": "$text",
+                                              "content": "main-08-17-2",
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 10,
+                                              "fontWeight": "700"
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "N6xsmq",
+                                              "name": "chip same sha",
+                                              "fill": "$bg-muted",
+                                              "cornerRadius": 9999,
+                                              "padding": [
+                                                2,
+                                                8
+                                              ],
+                                              "children": [
+                                                {
+                                                  "type": "text",
+                                                  "id": "iY5A9",
+                                                  "name": "t",
+                                                  "fill": "$text-muted",
+                                                  "content": "same sha",
+                                                  "fontFamily": "$font-mono",
+                                                  "fontSize": 10,
+                                                  "fontWeight": "700"
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "swlsz",
+                                          "name": "td",
+                                          "width": 60,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "m08kW",
+                                              "name": "t",
+                                              "fill": "$text-muted",
+                                              "content": "5eb0b8b",
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 10,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "Orf08",
+                                          "name": "td",
+                                          "width": 90,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "y6HV8",
+                                              "name": "t",
+                                              "fill": "$text-muted",
+                                              "content": "main",
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 10,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "NUaat",
+                                          "name": "td",
+                                          "width": 55,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "XCKSD",
+                                              "name": "t",
+                                              "fill": "$text-muted",
+                                              "content": "08-17",
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 10,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "T8l7Z",
+                                          "name": "td",
+                                          "width": 45,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "WPWTx",
+                                              "name": "t",
+                                              "fill": "$text-muted",
+                                              "content": "1021",
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 10,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "mhmkH",
+                                          "name": "td",
+                                          "width": 50,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "WZv2U",
+                                              "name": "t",
+                                              "fill": "$text-muted",
+                                              "content": "102.9 MB",
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 10,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "tbwxG",
+                                          "name": "del",
+                                          "fill": "$bg",
+                                          "cornerRadius": 5,
+                                          "stroke": "$border-strong",
+                                          "strokeWidth": 1,
+                                          "padding": [
+                                            2,
+                                            8
+                                          ],
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "DQ0QY",
                                               "name": "t",
                                               "fill": "$danger-fg",
                                               "content": "delete",
@@ -21047,6 +21225,184 @@
                                             {
                                               "type": "text",
                                               "id": "uq8Ey",
+                                              "name": "t",
+                                              "fill": "$danger-fg",
+                                              "content": "delete",
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 9,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "j27YT",
+                                      "name": "tr",
+                                      "width": "fill_container",
+                                      "stroke": "$border",
+                                      "strokeWidth": {
+                                        "bottom": 1
+                                      },
+                                      "gap": 10,
+                                      "padding": [
+                                        0,
+                                        0,
+                                        7,
+                                        0
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "Nipkn",
+                                          "name": "td",
+                                          "width": 150,
+                                          "gap": 5,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "Pk19w",
+                                              "name": "t",
+                                              "fill": "$text",
+                                              "content": "main-08-17-2",
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 10,
+                                              "fontWeight": "700"
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "XTQp9",
+                                              "name": "chip same sha",
+                                              "fill": "$bg-muted",
+                                              "cornerRadius": 9999,
+                                              "padding": [
+                                                2,
+                                                8
+                                              ],
+                                              "children": [
+                                                {
+                                                  "type": "text",
+                                                  "id": "iy2jA",
+                                                  "name": "t",
+                                                  "fill": "$text-muted",
+                                                  "content": "same sha",
+                                                  "fontFamily": "$font-mono",
+                                                  "fontSize": 10,
+                                                  "fontWeight": "700"
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "iHz6P",
+                                          "name": "td",
+                                          "width": 60,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "Sm78r",
+                                              "name": "t",
+                                              "fill": "$text-muted",
+                                              "content": "5eb0b8b",
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 10,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "H5eBTv",
+                                          "name": "td",
+                                          "width": 90,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "VFYed",
+                                              "name": "t",
+                                              "fill": "$text-muted",
+                                              "content": "main",
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 10,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "xPRXS",
+                                          "name": "td",
+                                          "width": 55,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "Uu4Ln",
+                                              "name": "t",
+                                              "fill": "$text-muted",
+                                              "content": "08-17",
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 10,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "A3sys",
+                                          "name": "td",
+                                          "width": 45,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "y3hYE",
+                                              "name": "t",
+                                              "fill": "$text-muted",
+                                              "content": "1021",
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 10,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "bVBRJ",
+                                          "name": "td",
+                                          "width": 50,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "Vvdg0",
+                                              "name": "t",
+                                              "fill": "$text-muted",
+                                              "content": "102.9 MB",
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 10,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "QnIFa",
+                                          "name": "del",
+                                          "fill": "$bg",
+                                          "cornerRadius": 5,
+                                          "stroke": "$border-strong",
+                                          "strokeWidth": 1,
+                                          "padding": [
+                                            2,
+                                            8
+                                          ],
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "FaVVw",
                                               "name": "t",
                                               "fill": "$danger-fg",
                                               "content": "delete",
