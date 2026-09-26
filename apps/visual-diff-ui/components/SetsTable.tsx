@@ -31,7 +31,31 @@ const SET_COLUMNS: readonly TableColumn[] = [
   { header: '', width: '6rem' },
 ];
 
-function setRow(set: CaptureSet, bytes: number | undefined, frozen: boolean): TableRow {
+/**
+ * The sets that repeat a capture of a commit an older set already holds.
+ *
+ * The list is newest first, so a set is a repeat when its sha appears again
+ * further down. The oldest capture of a sha stays unmarked — it is the one the
+ * others repeat — and every later one is marked, however many there are.
+ */
+export function repeatedCaptures(sets: readonly CaptureSet[]): ReadonlySet<string> {
+  const seen = new Set<string>();
+  const repeated = new Set<string>();
+
+  for (const set of [...sets].reverse()) {
+    if (seen.has(set.sha)) repeated.add(set.label);
+    seen.add(set.sha);
+  }
+
+  return repeated;
+}
+
+function setRow(
+  set: CaptureSet,
+  bytes: number | undefined,
+  frozen: boolean,
+  repeat: boolean,
+): TableRow {
   return {
     key: set.label,
     cells: [
@@ -58,6 +82,7 @@ function setRow(set: CaptureSet, bytes: number | undefined, frozen: boolean): Ta
               </NextLink>
             )}
             {set.dirty && <Badge tone="warning">dirty</Badge>}
+            {repeat && <Badge>same sha</Badge>}
           </span>
         ),
         title: set.label,
@@ -107,11 +132,15 @@ export interface SetsTableProps {
 }
 
 export function SetsTable({ sets, sizes, frozen }: SetsTableProps) {
+  const repeated = repeatedCaptures(sets);
+
   return (
     <Table
       label={SETS_TABLE_LABEL}
       columns={SET_COLUMNS}
-      rows={sets.map((set) => setRow(set, sizes[set.label], frozen))}
+      rows={sets.map((set) =>
+        setRow(set, sizes[set.label], frozen, repeated.has(set.label)),
+      )}
     />
   );
 }
