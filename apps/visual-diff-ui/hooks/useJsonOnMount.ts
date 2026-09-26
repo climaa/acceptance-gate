@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { fetchWithin } from '@/lib/network';
 
 /**
  * The one lifecycle every read this console does on mount runs.
@@ -55,7 +56,7 @@ export function useJsonOnMount<T>(
 
     void (async () => {
       try {
-        const response = await fetch(url, { cache: 'no-store' });
+        const response = await fetchWithin(url, { cache: 'no-store' });
         const next = read((await response.json()) as unknown);
         if (live) setValue(next);
       } catch {

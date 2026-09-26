@@ -16,6 +16,7 @@ import { useDismissedJob } from '@/hooks/useDismissedJob';
 import { type CurrentJobResponse, CurrentJobResponseSchema } from '@/lib/api-contract';
 import type { HistoryRecord } from '@/lib/job-contract';
 import { durationOf, formatDuration, jobState } from '@/lib/outcome';
+import { fetchWithin } from '@/lib/network';
 import { requestRefresh } from '@/lib/page-refresh';
 import { LogTail } from './LogTail';
 import { OutcomeWord } from './OutcomeWord';
@@ -161,7 +162,7 @@ async function readCurrent(): Promise<{
   isSample: boolean;
 } | null> {
   try {
-    const response = await fetch(CURRENT_ENDPOINT, { cache: 'no-store' });
+    const response = await fetchWithin(CURRENT_ENDPOINT, { cache: 'no-store' });
     if (!response.ok) return null;
 
     // Parsed, not read field by field with a default under each: an answer that

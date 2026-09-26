@@ -19,6 +19,7 @@ import {
   usePollNow,
 } from '../components/CurrentJob';
 import { DISMISS_STORAGE_KEY } from '../lib/dismiss-state';
+import { NETWORK_TIMEOUT_MS } from '../lib/network';
 import type { HistoryRecord } from '../lib/job-contract';
 import { refreshCalls } from './stubs/next-navigation';
 
@@ -151,7 +152,10 @@ describe('the current-job region', () => {
     renderCurrentJob();
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalled());
-    expect(fetchMock.mock.calls[0]).toEqual(['/api/jobs/current', { cache: 'no-store' }]);
+    expect(fetchMock.mock.calls[0]).toEqual([
+      '/api/jobs/current',
+      expect.objectContaining({ cache: 'no-store' }),
+    ]);
   });
 
   /**
@@ -448,6 +452,23 @@ describe('a poll it cannot parse', () => {
     await vi.advanceTimersByTimeAsync(3_000);
 
     expect(refreshCalls).toEqual([]);
+  });
+
+  it('goes on polling after a poll that never answers', async () => {
+    vi.useFakeTimers();
+    const fetchMock = vi.fn(
+      (_url: string, init?: RequestInit) =>
+        new Promise((_resolve, reject) => {
+          init?.signal?.addEventListener('abort', () => reject(init.signal?.reason));
+        }) as never,
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    renderCurrentJob();
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+
+    await vi.advanceTimersByTimeAsync(NETWORK_TIMEOUT_MS + 3_000);
+
+    expect(fetchMock.mock.calls.length).toBeGreaterThan(1);
   });
 
   it('goes on polling, because the next answer may be readable', async () => {
