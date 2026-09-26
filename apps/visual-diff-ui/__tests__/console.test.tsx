@@ -7,7 +7,7 @@ import { DashboardTemplate } from '../components/DashboardTemplate';
 import type { HistoryRecord } from '../lib/job-contract';
 import type { CaptureSet } from '../lib/summary';
 import type { ReportListEntry } from '../lib/data';
-import { replaceCalls } from './stubs/next-navigation';
+import { pushCalls, replaceCalls } from './stubs/next-navigation';
 
 /**
  * The console's read surface: three tables, the compare seam, and the retention
@@ -29,6 +29,7 @@ import { replaceCalls } from './stubs/next-navigation';
 afterEach(() => {
   cleanup();
   replaceCalls.length = 0;
+  pushCalls.length = 0;
   vi.unstubAllEnvs();
 });
 
@@ -67,6 +68,10 @@ const REPORT: ReportListEntry = {
   exitCode: 1,
   counts: { unchanged: 100, changed: 6, added: 0, removed: 0, errored: 0, a11y: 0 },
 };
+
+/** {@link REPORT}'s chip row as a cell reads: every bucket and its count, in
+ *  the report page's own order, then the total. */
+const REPORT_BUCKETS = 'changed6added0removed0errored0a11y0unchanged100total106';
 
 const RUN: HistoryRecord = {
   id: '2026-08-17T08-00-00Z-compare',
@@ -630,7 +635,7 @@ describe('the reports panel', () => {
 
     const row = firstRowOf('Reports');
 
-    expect(cellsOf(row)).toEqual([REPORT.id, '2026-08-17', 'delete']);
+    expect(cellsOf(row)).toEqual([REPORT.id, '2026-08-17', REPORT_BUCKETS, 'delete']);
   });
 
   /**
@@ -647,7 +652,7 @@ describe('the reports panel', () => {
 
     const row = firstRowOf('Reports');
 
-    expect(cellsOf(row)).toEqual([REPORT.id, '2026-08-17', '']);
+    expect(cellsOf(row)).toEqual([REPORT.id, '2026-08-17', REPORT_BUCKETS, '']);
   });
 
   /** And on a local console with no data directory behind it, for the same
@@ -656,7 +661,49 @@ describe('the reports panel', () => {
   it('draws no delete on a local console showing the committed fixtures', () => {
     render(consoleWith({ isSample: true }));
 
-    expect(cellsOf(firstRowOf('Reports'))).toEqual([REPORT.id, '2026-08-17', '']);
+    expect(cellsOf(firstRowOf('Reports'))).toEqual([
+      REPORT.id,
+      '2026-08-17',
+      REPORT_BUCKETS,
+      '',
+    ]);
+  });
+
+  it('shows how many variants fell in each bucket', () => {
+    render(consoleWith());
+
+    const chips = within(firstRowOf('Reports')).getByRole('group', { name: 'Buckets' });
+
+    expect(within(chips).getByRole('button', { name: 'changed' }).textContent).toBe(
+      'changed6',
+    );
+  });
+
+  it('opens the report filtered to the bucket a chip names', () => {
+    render(consoleWith());
+    const chips = within(firstRowOf('Reports')).getByRole('group', { name: 'Buckets' });
+
+    fireEvent.click(within(chips).getByRole('button', { name: 'changed' }));
+
+    expect(pushCalls).toEqual([`/report/${REPORT.id}?bucket=changed`]);
+  });
+
+  it('opens the whole report from the total chip', () => {
+    render(consoleWith());
+    const chips = within(firstRowOf('Reports')).getByRole('group', { name: 'Buckets' });
+
+    fireEvent.click(within(chips).getByRole('button', { name: 'total' }));
+
+    expect(pushCalls).toEqual([`/report/${REPORT.id}`]);
+  });
+
+  /** Reading a report changes nothing, so the chips stay where the delete goes. */
+  it('keeps the chips on a console nobody is running locally', () => {
+    render(consoleWith({ isLocal: false }));
+
+    const chips = within(firstRowOf('Reports')).getByRole('group', { name: 'Buckets' });
+
+    expect(within(chips).getAllByRole('button')).toHaveLength(7);
   });
 
   it('has no date for a report no run in this history claims', () => {
@@ -664,7 +711,7 @@ describe('the reports panel', () => {
 
     const row = firstRowOf('Reports');
 
-    expect(cellsOf(row)).toEqual([REPORT.id, '—', 'delete']);
+    expect(cellsOf(row)).toEqual([REPORT.id, '—', REPORT_BUCKETS, 'delete']);
   });
 
   it('offers a delete button per report', () => {

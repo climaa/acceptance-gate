@@ -29,6 +29,9 @@ export interface RouterCall {
 /** Every `router.replace` this render performed, in call order. Clear it between tests. */
 export const replaceCalls: RouterCall[] = [];
 
+/** Every `router.push` this render performed, in call order. Clear it between tests. */
+export const pushCalls: string[] = [];
+
 /** Every `router.refresh()` — one entry per call, since a refresh carries no
  *  arguments and it is how many times the console re-read the server that a
  *  test has anything to say about. Clear it between tests. */
@@ -38,6 +41,9 @@ export function useRouter() {
   return {
     replace(url: string, options?: NavigationOptions): void {
       replaceCalls.push({ url, options });
+    },
+    push(url: string): void {
+      pushCalls.push(url);
     },
     refresh(): void {
       refreshCalls.push('refresh');
