@@ -417,12 +417,15 @@ describe('starting a job', () => {
     fireEvent.click(screen.getByRole('button', { name: 'start capture' }));
 
     await waitFor(() =>
-      expect(fetchMock).toHaveBeenCalledWith('/api/jobs', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        cache: 'no-store',
-        body: JSON.stringify({ mode: 'capture', label: 'main-2026-08-17' }),
-      }),
+      expect(fetchMock).toHaveBeenCalledWith(
+        '/api/jobs',
+        expect.objectContaining({
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          cache: 'no-store',
+          body: JSON.stringify({ mode: 'capture', label: 'main-2026-08-17' }),
+        }),
+      ),
     );
   });
 

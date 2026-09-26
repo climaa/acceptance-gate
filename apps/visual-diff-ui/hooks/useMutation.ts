@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { RefusalSchema } from '@/lib/api-contract';
+import { NETWORK_TIMEOUT_MS, fetchWithin, isNetworkTimeout } from '@/lib/network';
 import { holdPage } from '@/lib/page-refresh';
 
 /**
@@ -30,6 +31,11 @@ import { holdPage } from '@/lib/page-refresh';
  *  empty dialog that looks like it worked. */
 export const UNREACHABLE =
   'the console could not reach the job API — is the server still up?';
+
+/** What a mutation that ran out of time comes back as. Unlike {@link UNREACHABLE},
+ *  the request may have reached the server and done its work before the answer
+ *  was lost, so the page is read again rather than left showing the old state. */
+export const TIMED_OUT = `no answer within ${NETWORK_TIMEOUT_MS / 1000} seconds — the connection is slow, and the change may still have gone through, so the page has been read again`;
 
 /**
  * The sentence a refused mutation answered with.
@@ -93,7 +99,7 @@ export function useMutation(): Mutation {
     let changed = false;
 
     try {
-      const response = await fetch(url, {
+      const response = await fetchWithin(url, {
         method,
         cache: 'no-store',
         ...(body === undefined
@@ -116,8 +122,10 @@ export function useMutation(): Mutation {
       changed = true;
 
       return { ok: true, body: await response.json().catch(() => ({})) };
-    } catch {
-      setRefusals([UNREACHABLE]);
+    } catch (error) {
+      const timedOut = isNetworkTimeout(error);
+      setRefusals([timedOut ? TIMED_OUT : UNREACHABLE]);
+      changed = timedOut;
       return { ok: false };
     } finally {
       setBusy(false);

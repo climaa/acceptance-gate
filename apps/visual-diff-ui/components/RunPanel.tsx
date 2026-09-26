@@ -22,6 +22,7 @@ import { HOST } from '@gate/visual-diff/policy';
  * the button it sits above is disabled, so the reviewer starts Docker instead of a
  * job.
  */
+import { fetchWithin } from '@/lib/network';
 import { DOCKER_DOWN, JOB_RUNNING, NOT_LOCAL } from '@/lib/refusal-copy';
 import {
   LabelResponseSchema,
@@ -368,7 +369,7 @@ function useLabelSuggestion(apply: (label: string) => void) {
     setRefused(false);
 
     try {
-      const response = await fetch('/api/label', { cache: 'no-store' });
+      const response = await fetchWithin('/api/label', { cache: 'no-store' });
       const { label } = LabelResponseSchema.parse(await response.json());
 
       if (label) apply(label);
