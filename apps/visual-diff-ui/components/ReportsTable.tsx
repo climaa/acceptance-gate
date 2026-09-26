@@ -1,12 +1,14 @@
 import NextLink from 'next/link';
 import { Link, Table, type TableColumn, type TableRow } from '@gate/ui';
 import { DeleteReportButton } from './ConfirmDialogs';
+import { ReportBuckets } from './ReportBuckets';
 import type { ReportListEntry } from '@/lib/data';
 
 /**
  * The comparisons this instance has written, newest first.
  *
- * A row is the id, when the run that produced it finished, and a delete. Built
+ * A row is the id, when the run that produced it finished, its bucket counts and
+ * a delete. Built
  * as data rather than as a component — see SetsTable.tsx for why.
  *
  * The delete was drawn here disabled long before it was wired, on the argument
@@ -34,6 +36,7 @@ const UNDATED = '—';
 const REPORT_COLUMNS: readonly TableColumn[] = [
   { header: 'report', truncate: true },
   { header: 'date' },
+  { header: 'buckets' },
   // Sized to the button it holds; see SetsTable for why a share of the table is
   // not enough.
   { header: '', width: '6rem' },
@@ -56,6 +59,7 @@ function reportRow(
         title: report.id,
       },
       date ?? UNDATED,
+      <ReportBuckets id={report.id} counts={report.counts} key="buckets" />,
       frozen ? null : <DeleteReportButton id={report.id} key="delete" />,
     ],
   };
