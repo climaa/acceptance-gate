@@ -63,7 +63,7 @@ function readIfPresent(file: string): string | null {
 //
 //  - The `turbo` binary cannot read `.env` itself ("Turborepo does not
 //    natively load .env files into a task's runtime"), so package.json wraps
-//    the turbo scripts in `dotenv -e .env -o --`. This module needs no such
+//    the turbo scripts in `dotenv run -q --override --`. This module needs no such
 //    wrapper — do not "simplify" it back onto process.env.
 //  - `turbo` REWRITES `.turbo/config.json` from whatever TURBO_TEAM it sees, so
 //    a bare `turbo run ...` with a foreign team exported would re-point the

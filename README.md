@@ -128,7 +128,7 @@ writing, is in [`apps/e2e/README.md`](apps/e2e/README.md#the-local-lane) and the
 Storybook page _Docs/QA/Acceptance Suite Locally_.
 
 Run turbo through the `pnpm` scripts rather than `pnpm turbo run ...` directly.
-The scripts wrap turbo in `dotenv -e .env -o --` so its credentials come from
+The scripts wrap turbo in `dotenv run -q --override --` so its credentials come from
 this repo's `.env` and never from your shell — a `TURBO_TEAM` exported in a
 shell profile would otherwise apply to every repo on the machine.
 
