@@ -1,7 +1,10 @@
 import type { StorybookConfig } from '@storybook/nextjs-vite';
 import remarkGfm from 'remark-gfm';
 
-import { analyticsHead } from './analytics-head';
+// The extension is explicit because Storybook loads this file with its own
+// loader, which warns on an extensionless relative import (storybook.js.org
+// FAQ, "extensionless imports in storybook/main.ts"); tsconfig.json allows it.
+import { analyticsHead } from './analytics-head.ts';
 
 const config: StorybookConfig = {
   // Resolved against this directory, not the workspace root: three levels up is
@@ -72,31 +75,45 @@ const config: StorybookConfig = {
     },
   },
   // @gate/ui's client components carry `'use client'` for the Next.js/webpack
-  // RSC pipeline the consuming apps need (apps/blog, apps/visual-diff-ui); this
-  // plain Rollup build has no RSC concept, drops the directive, and renders them
-  // as client components either way — the drop is correct, not a bug. Rollup
-  // still emits two warnings per module (the directive itself, and a sourcemap
-  // warning from trying to locate it), so both are silenced by module id rather
-  // than by message text, which would also catch an unrelated future warning
-  // that happens to mention the same words. Scoped to the package and not to a
-  // filename deliberately: the predicate this replaced named ThemeToggle.tsx
-  // outright, and went silently stale the day a second client atom landed.
+  // RSC pipeline the consuming apps need (apps/blog, apps/visual-diff-ui), and
+  // so do the `next/dist` client modules `@storybook/nextjs-vite` pulls in.
+  // This plain bundle has no RSC concept, drops the directive, and renders them
+  // as client components either way — the drop is correct, not a bug. The
+  // bundler still emits two warnings per module (the directive itself, and a
+  // sourcemap warning from trying to locate it), so both are silenced by module
+  // id rather than by message text, which would also catch an unrelated future
+  // warning that happens to mention the same words. Scoped to the two sources
+  // and not to a filename deliberately: the predicate this replaced named
+  // ThemeToggle.tsx outright, and went silently stale the day a second client
+  // atom landed.
+  //
+  // `rolldownOptions`, not `rollupOptions`: Vite 8 bundles with Rolldown, and
+  // when both are set the deprecated `rollupOptions` alias loses — a hook put
+  // there is never called. Vite 8.3.1 is where that started to show.
   viteFinal: async (viteConfig) => {
-    const previousOnwarn = viteConfig.build?.rollupOptions?.onwarn;
+    const previousOnwarn = viteConfig.build?.rolldownOptions?.onwarn;
 
     return {
       ...viteConfig,
       build: {
         ...viteConfig.build,
-        rollupOptions: {
-          ...viteConfig.build?.rollupOptions,
+        // Vite's 500 kB default is a budget for pages a visitor waits on. This
+        // is an internal static tool, and its biggest chunks are lazy or
+        // inherent: elk (mermaid's layout engine, loaded only by docs pages that
+        // draw a diagram), Storybook's own preview runtime, axe. The limit sits
+        // just above them, so the warning still fires when something new and
+        // large lands.
+        chunkSizeWarningLimit: 1600,
+        rolldownOptions: {
+          ...viteConfig.build?.rolldownOptions,
           onwarn(warning, warn) {
-            const fromDesignSystemDirective =
-              warning.id?.includes('/packages/ui/src/') &&
+            const fromClientDirective =
+              (warning.id?.includes('/packages/ui/src/') ||
+                warning.id?.includes('/node_modules/next/dist/')) &&
               (warning.code === 'MODULE_LEVEL_DIRECTIVE' ||
                 warning.code === 'SOURCEMAP_ERROR');
 
-            if (fromDesignSystemDirective) return;
+            if (fromClientDirective) return;
 
             (previousOnwarn ?? warn)(warning, warn);
           },
