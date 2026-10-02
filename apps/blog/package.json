@@ -17,7 +17,7 @@
     "@gate/logger": "workspace:*",
     "@gate/ui": "workspace:*",
     "@lottiefiles/dotlottie-react": "0.19.16",
-    "@sentry/browser": "^10.75.0",
+    "@sentry/browser": "^11.1.0",
     "@sentry/node": "^11.1.0",
     "@vercel/analytics": "^2.0.1",
     "gray-matter": "^4.0.3",
