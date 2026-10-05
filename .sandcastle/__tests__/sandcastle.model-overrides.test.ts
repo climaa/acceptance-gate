@@ -21,6 +21,7 @@ import {
 const OPUS = 'claude-opus-5';
 const OPUS_5_5 = 'claude-opus-5-5';
 const SONNET = 'claude-sonnet-5';
+const SONNET_5_5 = 'claude-sonnet-5-5';
 // Mirrors PROFILES.implementer without importing it (that module pulls in the SDK).
 const BASE = { model: OPUS_5_5, effort: 'medium' as const };
 
@@ -200,6 +201,16 @@ describe('envOverride', () => {
     expect(reviewer.override).toEqual({});
   });
 
+  it('resolves the sonnet-5-5 alias for the merger and keeps sonnet-5 as its rollback', () => {
+    // Arrange & Act
+    const current = envOverride('merger', { SC_MERGER_MODEL: 'sonnet-5-5' });
+    const rollback = envOverride('merger', { SC_MERGER_MODEL: 'sonnet-5' });
+
+    // Assert
+    expect(current).toEqual({ override: { model: SONNET_5_5 }, errors: [] });
+    expect(rollback).toEqual({ override: { model: SONNET }, errors: [] });
+  });
+
   it('resolves the opus-5-5 alias for a run-level role', () => {
     // Arrange & Act
     const { override, errors } = envOverride('planner', {
@@ -309,12 +320,12 @@ describe('describeOverride', () => {
 });
 
 describe('allowlist shape', () => {
-  it('exposes exactly the three models this pipeline is cleared for', () => {
+  it('exposes exactly the four models this pipeline is cleared for', () => {
     // Arrange & Act
     const models = Object.values(MODEL_ALIASES).sort();
 
     // Assert — fable-5 is excluded on quota grounds (see the module header)
-    expect(models).toEqual([OPUS, OPUS_5_5, SONNET]);
+    expect(models).toEqual([OPUS, OPUS_5_5, SONNET, SONNET_5_5]);
   });
 
   it("matches the SDK's five effort levels", () => {
