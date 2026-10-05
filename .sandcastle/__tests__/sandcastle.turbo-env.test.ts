@@ -152,6 +152,23 @@ describe('sandcastle turbo-env passthrough', () => {
     });
   });
 
+  // Not turbo, but the same call: the library's 10s default for each git setup
+  // command killed a reviewer's sandbox on 5 Oct 2026 while the host ran a push
+  // gate, and that branch merged unreviewed.
+  describe('createSandbox git setup timeout — the shared worktree-sandbox helper', () => {
+    it('sets gitSetupMs from SANDBOX_GIT_SETUP_TIMEOUT_MS', () => {
+      expect(createSandboxCall).toMatch(
+        /timeouts\s*:\s*\{\s*gitSetupMs\s*:\s*SANDBOX_GIT_SETUP_TIMEOUT_MS\s*\}/,
+      );
+    });
+
+    it('allows well over the library default of 10s', async () => {
+      const { SANDBOX_GIT_SETUP_TIMEOUT_MS } =
+        await import('../sandcastle-variables.mts');
+      expect(SANDBOX_GIT_SETUP_TIMEOUT_MS).toBeGreaterThanOrEqual(60_000);
+    });
+  });
+
   describe('createSandbox docker uid mapping — the shared worktree-sandbox helper', () => {
     it('docker() in createSandbox passes containerUid so container writes bind-mounts as host uid', () => {
       expect(createSandboxCall).toMatch(/containerUid/);
