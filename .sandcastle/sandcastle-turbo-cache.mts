@@ -97,3 +97,28 @@ export function describeTurboCache(cache: TurboCache): string {
       return `[turbo] remote cache disabled — .env TURBO_TEAM="${cache.team}" is not this repo's scope; refusing to write to a foreign team cache`;
   }
 }
+
+/**
+ * Where turbo keeps its local cache inside a worktree sandbox.
+ *
+ * Not turbo's default. The sandbox's worktree resolves its git directory to
+ * the host's path, so turbo puts its cache under a `/Users/...` directory the
+ * container cannot create. From 3 to 5 Oct 2026 every implementer's first
+ * `git push` failed the gate's turbo checks this way, and each agent recovered
+ * by pushing again with this variable set. `BUILD_VERIFY_COMMAND` already set
+ * it inline for its own build; this puts it in the sandbox's environment, so
+ * the agents' own `pnpm gate` and pre-push runs get it too.
+ */
+export const SANDBOX_TURBO_CACHE_DIR = '/tmp/turbo-cache';
+
+/**
+ * The turbo variables a worktree sandbox runs with: the local cache directory
+ * always, the remote-cache credentials only when both were resolved (an empty
+ * value is `resolveTurboCache`'s "disabled").
+ */
+export function sandboxTurboEnv(token: string, team: string): Record<string, string> {
+  return {
+    TURBO_CACHE_DIR: SANDBOX_TURBO_CACHE_DIR,
+    ...(token && team ? { TURBO_TOKEN: token, TURBO_TEAM: team } : {}),
+  };
+}

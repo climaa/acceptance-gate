@@ -9,6 +9,7 @@ import * as sandcastle from '@ai-hero/sandcastle';
 import { docker } from '@ai-hero/sandcastle/sandboxes/docker';
 import { BASE_BRANCH, turboToken, turboTeam } from './sandcastle-config.mts';
 import { worktreeHooks } from './sandcastle-sandbox-hooks.mts';
+import { sandboxTurboEnv } from './sandcastle-turbo-cache.mts';
 import { withRetry } from './sandcastle-lifecycle.mts';
 import { isRetryableGitError } from './sandcastle-git-probe.mts';
 
@@ -55,9 +56,7 @@ export async function createWorktreeSandbox(branch: string) {
         sandbox: docker({
           containerUid: process.getuid?.() ?? 1000,
           containerGid: process.getgid?.() ?? 1000,
-          ...(turboToken && turboTeam
-            ? { env: { TURBO_TOKEN: turboToken, TURBO_TEAM: turboTeam } }
-            : {}),
+          env: sandboxTurboEnv(turboToken, turboTeam),
         }),
         // worktreeHooks: this mount is a fresh worktree under
         // .sandcastle/worktrees/ with no node_modules of its own, so the startup
