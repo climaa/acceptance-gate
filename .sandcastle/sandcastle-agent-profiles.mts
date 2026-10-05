@@ -20,7 +20,11 @@
 //     one issue whose implementation quality is the demonstrable bottleneck —
 //     raise the default only once that has happened more than once.
 //   merger — mechanical gh PR/auto-merge plus a 20-min CI poll loop. Sonnet
-//     5 · low keeps the polling cheap.
+//     5.5 · low keeps the polling cheap. Sonnet 5.5 is priced as Sonnet 5
+//     ($2/$10 per MTok) and its launch figures (2026-09-28) put it at 30%+
+//     faster for fewer tokens per task, so the swap costs nothing. Its effort
+//     levels are recalibrated rather than renamed; low stays right for a loop
+//     with no judgment content. `SC_MERGER_MODEL=sonnet-5` rolls a run back.
 //
 // Build-verify (`pnpm build`) is NOT an agent role — it runs directly via
 // runBuildVerify()/sandbox.exec() (@ai-hero/sandcastle 0.12.0), which is
@@ -48,7 +52,7 @@ export const PROFILES = {
   planner: { model: 'claude-opus-5-5', effort: 'medium' },
   implementer: { model: 'claude-opus-5-5', effort: 'medium' },
   reviewer: { model: 'claude-opus-5-5', effort: 'medium' },
-  merger: { model: 'claude-sonnet-5', effort: 'low' },
+  merger: { model: 'claude-sonnet-5-5', effort: 'low' },
 } as const satisfies Record<string, AgentProfile>;
 
 /**
@@ -75,7 +79,7 @@ export function effectiveProfile(role: Role, label: ProfileOverride = {}): Agent
  * Fail the run before it starts if any SC_*_MODEL / SC_*_EFFORT is unusable.
  * Checks the merged result too, not just each value in isolation — e.g.
  * `SC_IMPLEMENTER_EFFORT=max` is fine on the Opus default but not once
- * `SC_IMPLEMENTER_MODEL=sonnet-5` is also set.
+ * `SC_IMPLEMENTER_MODEL=sonnet-5-5` is also set.
  */
 export function assertEnvOverridesValid(
   env: Record<string, string | undefined> = process.env,

@@ -35,11 +35,17 @@ export type ProfileOverride = { model?: string; effort?: Effort };
  * `fable-5` is absent on purpose — see the header of
  * sandcastle-agent-profiles.mts: it bills against a separate weekly quota that
  * sandcastle runs exhausted on their own.
+ *
+ * Retiring an alias: a superseded model (today `opus-5`, `sonnet-5`) stays
+ * while it is the documented rollback for a default, and leaves together with
+ * its `sc:*:<alias>` GitHub labels once no default has needed it for a release.
+ * Without that rule this list only ever grows.
  */
 export const MODEL_ALIASES: Readonly<Record<string, string>> = {
   'opus-5': 'claude-opus-5',
   'opus-5-5': 'claude-opus-5-5',
   'sonnet-5': 'claude-sonnet-5',
+  'sonnet-5-5': 'claude-sonnet-5-5',
 };
 
 export const EFFORTS: readonly Effort[] = ['low', 'medium', 'high', 'xhigh', 'max'];
@@ -53,7 +59,7 @@ export const LABEL_PREFIX = 'sc:';
 
 const canonicalModels = new Set(Object.values(MODEL_ALIASES));
 
-/** Accepts either an alias (`sonnet-5`) or a canonical id (`claude-sonnet-5`). */
+/** Accepts either an alias (`sonnet-5-5`) or a canonical id (`claude-sonnet-5-5`). */
 function canonicalModel(value: string): string | null {
   if (MODEL_ALIASES[value]) return MODEL_ALIASES[value];
   return canonicalModels.has(value) ? value : null;
@@ -80,7 +86,7 @@ function effortModelConflict(model: string, effort?: Effort): string | null {
  * Parse `sc:`-prefixed labels into per-role overrides.
  *
  * Grammar:
- *   sc:<role>:<model-alias>        e.g. sc:implementer:sonnet-5
+ *   sc:<role>:<model-alias>        e.g. sc:implementer:sonnet-5-5
  *   sc:<role>:effort:<effort>      e.g. sc:reviewer:effort:xhigh
  *
  * Non-`sc:` labels are ignored. Every malformed control label produces an
