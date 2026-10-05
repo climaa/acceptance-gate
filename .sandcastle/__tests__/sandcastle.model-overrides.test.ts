@@ -47,6 +47,15 @@ describe('parseOverrideLabels', () => {
     expect(overrides.implementer).toEqual({ model: SONNET });
   });
 
+  it('resolves sonnet-5-5 exactly, never as its sonnet-5 prefix', () => {
+    // Arrange & Act
+    const { overrides, errors } = parseOverrideLabels(['sc:implementer:sonnet-5-5']);
+
+    // Assert
+    expect(errors).toEqual([]);
+    expect(overrides.implementer).toEqual({ model: SONNET_5_5 });
+  });
+
   it('keeps opus-5 as a per-issue rollback beside the opus-5-5 default', () => {
     // Arrange & Act
     const { overrides, errors } = parseOverrideLabels([
@@ -201,14 +210,20 @@ describe('envOverride', () => {
     expect(reviewer.override).toEqual({});
   });
 
-  it('resolves the sonnet-5-5 alias for the merger and keeps sonnet-5 as its rollback', () => {
+  it('resolves the sonnet-5-5 alias for the merger', () => {
     // Arrange & Act
-    const current = envOverride('merger', { SC_MERGER_MODEL: 'sonnet-5-5' });
-    const rollback = envOverride('merger', { SC_MERGER_MODEL: 'sonnet-5' });
+    const result = envOverride('merger', { SC_MERGER_MODEL: 'sonnet-5-5' });
 
     // Assert
-    expect(current).toEqual({ override: { model: SONNET_5_5 }, errors: [] });
-    expect(rollback).toEqual({ override: { model: SONNET }, errors: [] });
+    expect(result).toEqual({ override: { model: SONNET_5_5 }, errors: [] });
+  });
+
+  it('keeps sonnet-5 as the merger rollback', () => {
+    // Arrange & Act
+    const result = envOverride('merger', { SC_MERGER_MODEL: 'sonnet-5' });
+
+    // Assert
+    expect(result).toEqual({ override: { model: SONNET }, errors: [] });
   });
 
   it('resolves the opus-5-5 alias for a run-level role', () => {

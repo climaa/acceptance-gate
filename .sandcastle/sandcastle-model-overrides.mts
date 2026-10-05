@@ -35,6 +35,11 @@ export type ProfileOverride = { model?: string; effort?: Effort };
  * `fable-5` is absent on purpose — see the header of
  * sandcastle-agent-profiles.mts: it bills against a separate weekly quota that
  * sandcastle runs exhausted on their own.
+ *
+ * Retiring an alias: a superseded model (today `opus-5`, `sonnet-5`) stays
+ * while it is the documented rollback for a default, and leaves together with
+ * its `sc:*:<alias>` GitHub labels once no default has needed it for a release.
+ * Without that rule this list only ever grows.
  */
 export const MODEL_ALIASES: Readonly<Record<string, string>> = {
   'opus-5': 'claude-opus-5',

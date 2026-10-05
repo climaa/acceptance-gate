@@ -50,19 +50,19 @@ runs once before any issue exists and the merger runs once for all branches, so
 bind **per run**, for any role:
 
 ```bash
-gh issue edit 2079 --add-label "sc:implementer:sonnet-5-5" # per issue
-gh issue edit 2079 --add-label "sc:implementer:effort:high"  # weak at medium: effort first,
-gh issue edit 2079 --add-label "sc:implementer:opus-5"       # then the previous default model
-SC_PLANNER_MODEL=sonnet-5-5 SC_MERGER_EFFORT=medium pnpm sandcastle   # per run
+gh issue edit 2079 --add-label "sc:implementer:sonnet-5-5"    # per issue
+gh issue edit 2079 --add-label "sc:implementer:effort:high"   # weak at medium: effort first,
+gh issue edit 2079 --add-label "sc:implementer:opus-5"        # then the previous default model
+SC_MERGER_MODEL=sonnet-5 SC_MERGER_EFFORT=medium pnpm sandcastle   # per run: merger rollback
 ```
 
-Accepted models are `opus-5-5` / `opus-5` / `sonnet-5-5` / `sonnet-5` (aliases or canonical ids); efforts are
-`low|medium|high|xhigh|max`, with `max` Opus-only. Anything else **fails the run
-before a sandbox is created** — a typo must never silently fall back to the
-expensive default. `gh issue edit --add-label` also refuses labels that do not
-exist, which is a second, free typo guard. The vocabulary is already created; to
-recreate it, note the braces — in zsh `"$r:effort"` is parsed as a `:e` modifier
-and silently produces `sc:ffort:…`:
+Accepted models are `opus-5-5` / `opus-5` / `sonnet-5-5` / `sonnet-5` (aliases or
+canonical ids); efforts are `low|medium|high|xhigh|max`, with `max` Opus-only. Anything
+else **fails the run before a sandbox is created** — a typo must never silently fall
+back to the expensive default. `gh issue edit --add-label` also refuses labels that do
+not exist, which is a second, free typo guard. The vocabulary is already created; to
+recreate it, note the braces — in zsh `"$r:effort"` is parsed as a `:e` modifier and
+silently produces `sc:ffort:…`:
 
 ```bash
 for r in implementer reviewer; do
