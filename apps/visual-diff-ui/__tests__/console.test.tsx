@@ -348,26 +348,19 @@ describe('the same-sha badge', () => {
   const AGAIN: CaptureSet = { ...CLEAN, label: 'main-2026-08-17-2' };
   const THIRD: CaptureSet = { ...CLEAN, label: 'main-2026-08-17-3' };
 
-  it('marks the older of two sets captured from the same sha', () => {
+  it('marks the older of two sets captured from the same sha, under its sha', () => {
     render(consoleWith({ sets: [AGAIN, CLEAN] }));
 
-    const [newer, older] = rowsOf('Screenshot sets');
+    const [newer, older] = rowsOf('Screenshot sets') as [HTMLElement, HTMLElement];
+    const sha = within(older).getByTitle(CLEAN.sha);
 
-    expect(within(older as HTMLElement).getByText('same sha').className).toBe(
+    expect(within(sha).getByText('same sha').className).toBe(
       'ds-badge ds-badge--neutral',
     );
-    expect(within(newer as HTMLElement).queryByText('same sha')).toBeNull();
-  });
-
-  it('sits in the sha cell rather than beside the label', () => {
-    render(consoleWith({ sets: [AGAIN, CLEAN] }));
-
-    const [, older] = rowsOf('Screenshot sets');
-    const sha = within(older as HTMLElement).getByTitle(CLEAN.sha);
-    const label = within(older as HTMLElement).getByTitle(CLEAN.label);
-
-    expect(within(sha).getByText('same sha')).toBeTruthy();
-    expect(within(label).queryByText('same sha')).toBeNull();
+    expect(
+      within(within(older).getByTitle(CLEAN.label)).queryByText('same sha'),
+    ).toBeNull();
+    expect(within(newer).queryByText('same sha')).toBeNull();
   });
 
   it('marks every capture but the newest', () => {

@@ -47,11 +47,11 @@
 }
 
 /* A value and the badge that qualifies it, stacked: the label over its dirty
-   badge, the sha over its same-sha badge. Side by side, the label gave its width
-   up to the badges until a dirty repeat drew no name at all; underneath, each
-   has the whole column. The row is two lines tall already — the date wraps —
-   so the second line costs no height. Its own block rather than `vd-set`: the
-   sha is not a set, and `vd-set__*` belongs to the set viewer. */
+   badge, the sha over its same-sha badge. Stacked, neither shares the column's
+   width, so a fixed-layout cell never trades a long label for its mark. The row
+   is two lines tall already — the date wraps — so the second costs no height.
+   Its own block rather than `vd-set`: the sha is not a set, and `vd-set__*`
+   belongs to the set viewer. */
 .vd-qualified {
   display: flex;
   flex-direction: column;
