@@ -23,5 +23,5 @@
     // so describe/it/expect are ambient rather than imported.
     "types": ["vitest/globals", "node"]
   },
-  "include": ["*.mts", "__tests__/**/*.ts"]
+  "include": ["*.mts", "__tests__/**/*.ts", "../scripts/__tests__/**/*.ts"]
 }

@@ -186,11 +186,24 @@ Rules:
 
 ## Step 3 — Enable squash auto-merge
 
+First let GitHub finish computing the PR's mergeability. Right after
+`gh pr create` it reports `UNKNOWN`, and `--auto` then tries to _arm_
+auto-merge instead of merging. This repository allows auto-merge, so the
+arming takes. In one that does not (a private repository on a plan without
+rulesets, like climaa/mape-tournament) it is refused and the request is
+silently lost, which stranded two PRs there on 5 Oct 2026.
+
 ```bash
+for i in $(seq 1 10); do
+  MERGE_STATE=$(gh pr view <PR_NUMBER> --json mergeStateStatus --jq '.mergeStateStatus')
+  [ "$MERGE_STATE" != "UNKNOWN" ] && break
+  sleep 3
+done
 gh pr merge <PR_NUMBER> --squash --auto
 ```
 
-This queues the merge to execute automatically once all required CI checks pass.
+On a PR that is already `CLEAN`, this merges at once. On one whose checks are
+still running, it queues the merge for when they pass.
 
 ---
 
@@ -211,10 +224,15 @@ for i in $(seq 1 40); do
   PR_STATE=$(gh pr view <PR_NUMBER> --json state --jq '.state')
   if [ "$PR_STATE" = "MERGED" ] || [ "$PR_STATE" = "CLOSED" ]; then break; fi
   MERGE_STATE=$(gh pr view <PR_NUMBER> --json mergeStateStatus --jq '.mergeStateStatus')
-  echo "poll $i: state=$PR_STATE merge_state=$MERGE_STATE"
+  ARMED=$(gh pr view <PR_NUMBER> --json autoMergeRequest --jq '.autoMergeRequest != null')
+  echo "poll $i: state=$PR_STATE merge_state=$MERGE_STATE armed=$ARMED"
   case "$MERGE_STATE" in
     BEHIND) gh pr update-branch <PR_NUMBER> || echo "update-branch failed; retrying next poll" ;;
     DIRTY) echo "PR <PR_NUMBER> has a real conflict — leaving it for a human"; break ;;
+    CLEAN|HAS_HOOKS|UNSTABLE)
+      if [ "$ARMED" = "false" ]; then
+        gh pr merge <PR_NUMBER> --squash --auto || echo "merge failed; retrying next poll"
+      fi ;;
   esac
   sleep 30
 done
@@ -226,9 +244,12 @@ done
 - `DIRTY` → a genuine conflict. **Do not resolve it, do not rebase, do not merge
   `main` locally.** Break out of the poll loop and take the not-merged path in
   Step 5 — a human owns this one.
-- Anything else (`BLOCKED`, `UNSTABLE`, `CLEAN`, `UNKNOWN`) → checks are still
-  running or GitHub has not computed mergeability yet. Keep polling; there is
-  nothing to fix.
+- `CLEAN` (or `HAS_HOOKS`, `UNSTABLE`) **with no auto-merge armed** → the
+  arming was lost, or never took (see Step 3). Nothing else will merge it, so
+  run `gh pr merge --squash --auto` again: on a mergeable PR it merges at once.
+  Once armed, a `CLEAN` PR is GitHub's to land; leave it.
+- Anything else (`BLOCKED`, `UNKNOWN`) → checks are still running or GitHub
+  has not computed mergeability yet. Keep polling; there is nothing to fix.
 
 The orchestrator runs the same reconciliation host-side after you finish
 (`sandcastle-pr-queue.mts`), so a PR you leave open and up to date still lands.

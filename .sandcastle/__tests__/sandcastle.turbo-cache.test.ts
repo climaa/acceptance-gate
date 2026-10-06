@@ -1,8 +1,12 @@
 import {
+  SANDBOX_TURBO_CACHE_DIR,
   describeTurboCache,
   parseTurboLink,
   resolveTurboCache,
+  sandboxTurboEnv,
 } from '../sandcastle-turbo-cache.mts';
+import { BUILD_VERIFY_COMMAND } from '../sandcastle-variables.mts';
+import { read, stripComments } from './helpers';
 
 /**
  * REAL unit tests, not source-text assertions — sandcastle-turbo-cache.mts
@@ -153,5 +157,70 @@ describe('describeTurboCache', () => {
     const message = describeTurboCache(cache);
     expect(message).toContain('remote cache disabled');
     expect(message).not.toContain(TOKEN);
+  });
+});
+
+/**
+ * The local cache, not the remote one. Inside a worktree sandbox turbo's
+ * default cache directory resolves under the host's path, which the container
+ * cannot create, so every agent's first push failed the gate (3–5 Oct 2026).
+ * The directory must reach the sandbox's environment, not only the
+ * build-verify command line.
+ */
+describe('sandboxTurboEnv', () => {
+  it('always points the local cache inside the container', () => {
+    // Arrange
+    const disabled = { token: '', team: '' };
+
+    // Act
+    const env = sandboxTurboEnv(disabled.token, disabled.team);
+
+    // Assert
+    expect(env).toEqual({ TURBO_CACHE_DIR: '/tmp/turbo-cache' });
+  });
+
+  it('adds the remote-cache credentials when both were resolved', () => {
+    // Arrange
+    const enabled = { token: TOKEN, team: TEAM };
+
+    // Act
+    const env = sandboxTurboEnv(enabled.token, enabled.team);
+
+    // Assert
+    expect(env).toEqual({
+      TURBO_CACHE_DIR: SANDBOX_TURBO_CACHE_DIR,
+      TURBO_TOKEN: TOKEN,
+      TURBO_TEAM: TEAM,
+    });
+  });
+
+  it.each([
+    ['a token without a team', TOKEN, ''],
+    ['a team without a token', '', TEAM],
+  ])('passes no credential for %s', (_case, token, team) => {
+    // Act
+    const env = sandboxTurboEnv(token, team);
+
+    // Assert
+    expect(Object.keys(env)).toEqual(['TURBO_CACHE_DIR']);
+  });
+
+  it('names the same directory the build-verify command does', () => {
+    // Act
+    const inline = BUILD_VERIFY_COMMAND.match(/TURBO_CACHE_DIR=(\S+)/)?.[1];
+
+    // Assert
+    expect(inline).toBe(SANDBOX_TURBO_CACHE_DIR);
+  });
+
+  it('is what the worktree sandbox passes to docker', () => {
+    // Arrange
+    const code = stripComments(read('sandcastle-worktree-sandbox.mts'));
+
+    // Act
+    const env = code.match(/env:\s*(.+),\s*$/m)?.[1];
+
+    // Assert
+    expect(env).toBe('sandboxTurboEnv(turboToken, turboTeam)');
   });
 });

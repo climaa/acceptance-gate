@@ -131,16 +131,41 @@ describe('sandcastle turbo-env passthrough', () => {
       expect(createSandboxCall).toMatch(/env\s*:/);
     });
 
-    it('createSandbox env includes TURBO_TOKEN', () => {
-      expect(createSandboxCall).toMatch(/TURBO_TOKEN/);
+    // The credentials and the local cache directory are built by
+    // sandboxTurboEnv(), whose cases sandcastle.turbo-cache.test.ts holds as
+    // unit tests. Here: the worktree sandbox passes exactly that, with the
+    // resolved credentials.
+    it('createSandbox env is sandboxTurboEnv(turboToken, turboTeam)', () => {
+      expect(createSandboxCall).toMatch(
+        /env\s*:\s*sandboxTurboEnv\(turboToken,\s*turboTeam\)/,
+      );
     });
 
-    it('createSandbox env includes TURBO_TEAM', () => {
-      expect(createSandboxCall).toMatch(/TURBO_TEAM/);
+    // This used to assert the opposite ("Turbo v2 ignores it"), a premise from
+    // the seed. turbo 2.11.5 documents TURBO_CACHE_DIR
+    // (docs/reference/system-environment-variables.mdx), and from 3 to 5 Oct
+    // 2026 every agent's first push failed until it was set.
+    it('the sandbox env sets TURBO_CACHE_DIR, through sandboxTurboEnv', () => {
+      expect(stripComments(read('sandcastle-turbo-cache.mts'))).toMatch(
+        /TURBO_CACHE_DIR:/,
+      );
+    });
+  });
+
+  // Not turbo, but the same call: the library's 10s default for each git setup
+  // command killed a reviewer's sandbox on 5 Oct 2026 while the host ran a push
+  // gate, and that branch merged unreviewed.
+  describe('createSandbox git setup timeout — the shared worktree-sandbox helper', () => {
+    it('sets gitSetupMs from SANDBOX_GIT_SETUP_TIMEOUT_MS', () => {
+      expect(createSandboxCall).toMatch(
+        /timeouts\s*:\s*\{\s*gitSetupMs\s*:\s*SANDBOX_GIT_SETUP_TIMEOUT_MS\s*\}/,
+      );
     });
 
-    it('createSandbox env does NOT include dead TURBO_CACHE_DIR (Turbo v2 ignores it)', () => {
-      expect(createSandboxCall).not.toMatch(/TURBO_CACHE_DIR/);
+    it('allows well over the library default of 10s', async () => {
+      const { SANDBOX_GIT_SETUP_TIMEOUT_MS } =
+        await import('../sandcastle-variables.mts');
+      expect(SANDBOX_GIT_SETUP_TIMEOUT_MS).toBeGreaterThanOrEqual(60_000);
     });
   });
 
