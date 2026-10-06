@@ -127,10 +127,15 @@ through `scripts/visual-diff-container.mjs`, and the same wrapper runs `check` i
 container too:
 
 ```bash
-pnpm --filter @gate/storybook build   # host build first — static output, not platform-dependent
 pnpm visual-diff:container check      # review packages/visual-diff/.visual-diff/summary.md
 pnpm visual-diff:accept               # the container-run accept
 ```
+
+The wrapper brings the Storybook build up to date on the host first, with
+`pnpm turbo run build --filter=@gate/storybook`. The static output is not
+platform-dependent, and turbo hashes `@gate/ui`'s sources into it, so an unchanged
+tree is a cache hit and a changed one rebuilds. A capture never reads a build from
+before the latest component change. If the build fails, nothing is captured.
 
 What the wrapper composes (further arguments — `--filter`, say — pass to the CLI
 verbatim):

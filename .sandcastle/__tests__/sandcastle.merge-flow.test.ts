@@ -19,6 +19,44 @@ describe('sandcastle PR-based merge flow', () => {
       );
     });
 
+    // 5 Oct 2026, downstream in climaa/mape-tournament: two PRs stayed CLEAN
+    // and unmerged for the whole poll. `--auto` straight after `gh pr create` met an UNKNOWN merge state,
+    // tried to arm auto-merge in a repo that does not allow it, and the loop
+    // then treated CLEAN as "keep polling".
+    it('lets GitHub compute mergeability before the first --auto', () => {
+      const step3 = content.slice(
+        content.indexOf('## Step 3'),
+        content.indexOf('## Step 4'),
+      );
+      const wait = step3.indexOf('"UNKNOWN"');
+      const merge = step3.indexOf('gh pr merge <PR_NUMBER> --squash --auto');
+      expect(wait).toBeGreaterThan(-1);
+      expect(merge).toBeGreaterThan(wait);
+    });
+
+    it('re-merges a CLEAN PR whose auto-merge is not armed, inside the poll', () => {
+      const step4 = content.slice(
+        content.indexOf('## Step 4'),
+        content.indexOf('## Step 5'),
+      );
+      expect(step4).toMatch(/autoMergeRequest/);
+      expect(step4).toMatch(
+        /CLEAN[^)]*\)\s*\n\s*if \[ "\$ARMED" = "false" \]; then\s*\n\s*gh pr merge <PR_NUMBER> --squash --auto/,
+      );
+    });
+
+    it('no longer lists CLEAN among the states that only wait', () => {
+      const step4 = content.slice(
+        content.indexOf('## Step 4'),
+        content.indexOf('## Step 5'),
+      );
+      const waitLine = step4
+        .split('\n')
+        .find((line) => line.startsWith('- Anything else'));
+      expect(waitLine).toBeDefined();
+      expect(waitLine).not.toMatch(/CLEAN/);
+    });
+
     it('waits for PR state via gh pr view', () => {
       expect(content).toMatch(/gh pr view/);
     });

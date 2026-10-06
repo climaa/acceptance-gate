@@ -9,6 +9,8 @@ import * as sandcastle from '@ai-hero/sandcastle';
 import { docker } from '@ai-hero/sandcastle/sandboxes/docker';
 import { BASE_BRANCH, turboToken, turboTeam } from './sandcastle-config.mts';
 import { worktreeHooks } from './sandcastle-sandbox-hooks.mts';
+import { sandboxTurboEnv } from './sandcastle-turbo-cache.mts';
+import { SANDBOX_GIT_SETUP_TIMEOUT_MS } from './sandcastle-variables.mts';
 import { withRetry } from './sandcastle-lifecycle.mts';
 import { isRetryableGitError } from './sandcastle-git-probe.mts';
 
@@ -55,10 +57,9 @@ export async function createWorktreeSandbox(branch: string) {
         sandbox: docker({
           containerUid: process.getuid?.() ?? 1000,
           containerGid: process.getgid?.() ?? 1000,
-          ...(turboToken && turboTeam
-            ? { env: { TURBO_TOKEN: turboToken, TURBO_TEAM: turboTeam } }
-            : {}),
+          env: sandboxTurboEnv(turboToken, turboTeam),
         }),
+        timeouts: { gitSetupMs: SANDBOX_GIT_SETUP_TIMEOUT_MS },
         // worktreeHooks: this mount is a fresh worktree under
         // .sandcastle/worktrees/ with no node_modules of its own, so the startup
         // `pnpm install` both belongs here and stays inside the worktree.

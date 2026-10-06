@@ -321,35 +321,43 @@ describe('compareSets against the committed corpus', () => {
 
   // `BASELINE_ENV.json` sits beside the shots. Reporting it as an ignored file
   // every time the corpus is compared would name a file that belongs there.
-  it('says nothing about the host stamp beside the shots', async () => {
-    const dir = makeDataDir();
-    const lines: string[] = [];
-    seedSet(dir, 'candidate-set', fixtureShots('candidate'));
+  it(
+    'says nothing about the host stamp beside the shots',
+    async () => {
+      const dir = makeDataDir();
+      const lines: string[] = [];
+      seedSet(dir, 'candidate-set', fixtureShots('candidate'));
 
-    await compareSets(
-      dir,
-      { mode: 'compare', baseline: CANONICAL_LABEL, candidate: 'candidate-set' },
-      (line) => lines.push(line),
-    );
+      await compareSets(
+        dir,
+        { mode: 'compare', baseline: CANONICAL_LABEL, candidate: 'candidate-set' },
+        (line) => lines.push(line),
+      );
 
-    expect(lines.join('\n')).not.toContain(BASELINE_ENV);
-  });
+      expect(lines.join('\n')).not.toContain(BASELINE_ENV);
+    },
+    PIXEL_WORK_MS,
+  );
 });
 
 describe('runJob', () => {
-  it('routes a compare request to the comparer', async () => {
-    const dir = makeDataDir();
-    seedSet(dir, 'set-a', fixtureShots('baseline'));
-    seedSet(dir, 'set-b', fixtureShots('candidate'));
+  it(
+    'routes a compare request to the comparer',
+    async () => {
+      const dir = makeDataDir();
+      seedSet(dir, 'set-a', fixtureShots('baseline'));
+      seedSet(dir, 'set-b', fixtureShots('candidate'));
 
-    const outcome = await runJob(
-      dir,
-      { mode: 'compare', baseline: 'set-a', candidate: 'set-b' },
-      silent,
-    );
+      const outcome = await runJob(
+        dir,
+        { mode: 'compare', baseline: 'set-a', candidate: 'set-b' },
+        silent,
+      );
 
-    expect(outcome.reportId).toBe('set-a__set-b');
-  });
+      expect(outcome.reportId).toBe('set-a__set-b');
+    },
+    PIXEL_WORK_MS,
+  );
 });
 
 /**
@@ -579,31 +587,35 @@ describe('runCheck', () => {
 });
 
 describe('confinement', () => {
-  it('lands a whole compare inside the data dir, leaving the repo untouched', async () => {
-    const dir = makeDataDir();
-    seedSet(dir, 'set-a', fixtureShots('baseline'));
-    seedSet(dir, 'set-b', fixtureShots('candidate'));
-    const before = committedTrees();
-    const artifactsBefore = artifactTree();
+  it(
+    'lands a whole compare inside the data dir, leaving the repo untouched',
+    async () => {
+      const dir = makeDataDir();
+      seedSet(dir, 'set-a', fixtureShots('baseline'));
+      seedSet(dir, 'set-b', fixtureShots('candidate'));
+      const before = committedTrees();
+      const artifactsBefore = artifactTree();
 
-    await compareSets(
-      dir,
-      { mode: 'compare', baseline: 'set-a', candidate: 'set-b' },
-      silent,
-    );
+      await compareSets(
+        dir,
+        { mode: 'compare', baseline: 'set-a', candidate: 'set-b' },
+        silent,
+      );
 
-    // The effect is visible, and it is inside the temporary directory: the
-    // report the compare wrote.
-    expect(fs.existsSync(path.join(dir, 'reports', 'set-a__set-b', 'summary.json'))).toBe(
-      true,
-    );
-    expect(committedTrees()).toBe(before);
-    // Unchanged rather than absent, for the reason `artifactTree` gives: the
-    // differ's own artifacts are gitignored and a reviewer who ran a capture an
-    // hour ago still has some. What this case is about is whether THIS run put
-    // anything there.
-    expect(artifactTree()).toBe(artifactsBefore);
-  });
+      // The effect is visible, and it is inside the temporary directory: the
+      // report the compare wrote.
+      expect(
+        fs.existsSync(path.join(dir, 'reports', 'set-a__set-b', 'summary.json')),
+      ).toBe(true);
+      expect(committedTrees()).toBe(before);
+      // Unchanged rather than absent, for the reason `artifactTree` gives: the
+      // differ's own artifacts are gitignored and a reviewer who ran a capture an
+      // hour ago still has some. What this case is about is whether THIS run put
+      // anything there.
+      expect(artifactTree()).toBe(artifactsBefore);
+    },
+    PIXEL_WORK_MS,
+  );
 
   /**
    * The one compare that reaches outside the data directory, pinned as read-only.
@@ -619,24 +631,28 @@ describe('confinement', () => {
    * subcommand is gone with the console's accept tab, and this is what is left
    * worth guarding — the read that still happens.
    */
-  it('reads the committed corpus for a compare without writing a byte of it', async () => {
-    const dir = makeDataDir();
-    seedSet(dir, 'candidate-set', fixtureShots('candidate'));
-    const before = committedTrees();
-    const artifactsBefore = artifactTree();
+  it(
+    'reads the committed corpus for a compare without writing a byte of it',
+    async () => {
+      const dir = makeDataDir();
+      seedSet(dir, 'candidate-set', fixtureShots('candidate'));
+      const before = committedTrees();
+      const artifactsBefore = artifactTree();
 
-    const outcome = await compareSets(
-      dir,
-      { mode: 'compare', baseline: CANONICAL_LABEL, candidate: 'candidate-set' },
-      silent,
-    );
+      const outcome = await compareSets(
+        dir,
+        { mode: 'compare', baseline: CANONICAL_LABEL, candidate: 'candidate-set' },
+        silent,
+      );
 
-    // Non-vacuous: the compare has to have actually read the corpus and written
-    // its report, or "nothing changed" would hold for a run that did nothing.
-    expect(outcome.reportId).toBe(`${CANONICAL_LABEL}__candidate-set`);
-    expect(committedTrees()).toBe(before);
-    expect(artifactTree()).toBe(artifactsBefore);
-  });
+      // Non-vacuous: the compare has to have actually read the corpus and written
+      // its report, or "nothing changed" would hold for a run that did nothing.
+      expect(outcome.reportId).toBe(`${CANONICAL_LABEL}__candidate-set`);
+      expect(committedTrees()).toBe(before);
+      expect(artifactTree()).toBe(artifactsBefore);
+    },
+    PIXEL_WORK_MS,
+  );
 
   it('refuses a set label that climbs out of the data directory', async () => {
     const dir = makeDataDir();
