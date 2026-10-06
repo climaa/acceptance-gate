@@ -94,9 +94,7 @@ export function SetTemplate({ shots, corpus, set }: SetTemplateProps) {
 
   return (
     // What every filter rule in set.css hangs off: the bar's radios are inside
-    // this subtree, so `:has()` can read a checked one from here. NOT `vd-set` —
-    // console.css already owns that for the sets table's label cell, and a page
-    // root wearing it inherits an inline-flex meant for one word.
+    // this subtree, so `:has()` can read a checked one from here.
     <Stack className="vd-set-view" gap={5}>
       <header role="region" aria-label={HEADER_LABEL} className="vd-set__header">
         <Stack gap={3}>

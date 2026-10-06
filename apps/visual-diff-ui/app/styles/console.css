@@ -46,14 +46,26 @@
   background: var(--color-accent);
 }
 
-/* The label and its dirty badge share a cell: the label gives up its width, the
-   badge never does — a set captured from a dirty tree must not lose the mark
-   that says so to a long name. */
-.vd-set {
+/* A value and the badge that qualifies it, stacked: the label over its dirty
+   badge, the sha over its same-sha badge. Stacked, neither shares the column's
+   width, so a fixed-layout cell never trades a long label for its mark. The row
+   is two lines tall already — the date wraps — so the second costs no height.
+   Its own block rather than `vd-set`: the sha is not a set, and `vd-set__*`
+   belongs to the set viewer. */
+.vd-qualified {
   display: flex;
-  align-items: center;
-  gap: var(--space-2);
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
   min-width: 0;
+}
+
+/* A column flexbox that does not stretch sizes a child to its content, and a
+   label that wide has nothing left to ellipsise against. On the child, not on
+   `.vd-set__label`, which the canonical card and the set viewer's heading wear
+   too. */
+.vd-qualified > * {
+  max-width: 100%;
 }
 
 .vd-set__label {

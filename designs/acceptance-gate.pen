@@ -1,5 +1,5 @@
 {
-  "version": "2.19",
+  "version": "2.20",
   "children": [
     {
       "type": "frame",
@@ -7406,35 +7406,44 @@
                               "alignItems": "center",
                               "children": [
                                 {
-                                  "type": "text",
-                                  "id": "o1Qybr",
-                                  "name": "l",
-                                  "fill": "$text",
-                                  "content": "main-08-17",
-                                  "fontFamily": "$font-mono",
-                                  "fontSize": 9,
-                                  "fontWeight": "700"
-                                },
-                                {
                                   "type": "frame",
-                                  "id": "tjxh5",
-                                  "name": "dirty",
-                                  "fill": "$warning-surface",
-                                  "cornerRadius": 9999,
-                                  "padding": [
-                                    1,
-                                    6
-                                  ],
+                                  "id": "JfDzw",
+                                  "name": "label",
+                                  "layout": "vertical",
+                                  "gap": 3,
                                   "children": [
                                     {
                                       "type": "text",
-                                      "id": "zXaOV",
+                                      "id": "blj1x",
                                       "name": "t",
-                                      "fill": "$warning-fg",
-                                      "content": "dirty",
+                                      "fill": "$text",
+                                      "content": "main-08-17",
                                       "fontFamily": "$font-mono",
-                                      "fontSize": 8,
+                                      "fontSize": 9,
                                       "fontWeight": "700"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "cY9cG",
+                                      "name": "chip",
+                                      "fill": "$warning-surface",
+                                      "cornerRadius": 9999,
+                                      "padding": [
+                                        1,
+                                        6
+                                      ],
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "Fwc41",
+                                          "name": "t",
+                                          "fill": "$warning-fg",
+                                          "content": "dirty",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 8,
+                                          "fontWeight": "700"
+                                        }
+                                      ]
                                     }
                                   ]
                                 },
@@ -7457,7 +7466,7 @@
                               "fill": "$ink-muted",
                               "textGrowth": "fixed-width",
                               "width": "fill_container",
-                              "content": "label + dirty Badge + sha · branch · screenshots · size · delete. The label is a link to the set viewer wherever this instance holds the screenshots, and plain text where it does not. Reflows to a two-line card on mobile.",
+                              "content": "label with its dirty Badge under it + sha with its same-sha Badge under it · branch · screenshots · size · delete. Each Badge sits under the value it qualifies, so neither costs the label its width. The label is a link to the set viewer wherever this instance holds the screenshots, and plain text where it does not. Reflows to a two-line card on mobile.",
                               "lineHeight": 1.4,
                               "fontFamily": "$font-body",
                               "fontSize": 11,
@@ -17529,7 +17538,7 @@
               "fill": "$ink-muted",
               "textGrowth": "fixed-width",
               "width": 1000,
-              "content": "CURRENT JOB carries a ghost IconButton that dismisses the run on the card — the panel answers with the LAST run when nothing is running, so this is the only way back to the empty state drawn here. It is present only while a FINISHED run is showing: absent on a fresh instance, and absent while a job is running. A dismissal is browser-only and keyed on the job id — the history row, the log and the report are untouched, and the next run brings the card back. REPORTS rows carry the report page's bucket chip row under the id, every bucket and total, zeros included, a11y first when non-empty. A chip opens the report filtered to that bucket; total opens it unfiltered. The chips only navigate, so they stay on a console that draws no delete. SCREENSHOT SETS marks a set captured from a sha an older set already holds with a neutral same-sha badge beside its label, on every repeat but the oldest, so a second capture of one commit reads as a repeat rather than as a change.",
+              "content": "CURRENT JOB carries a ghost IconButton that dismisses the run on the card — the panel answers with the LAST run when nothing is running, so this is the only way back to the empty state drawn here. It is present only while a FINISHED run is showing: absent on a fresh instance, and absent while a job is running. A dismissal is browser-only and keyed on the job id — the history row, the log and the report are untouched, and the next run brings the card back. REPORTS rows carry the report page's bucket chip row under the id, every bucket and total, zeros included, a11y first when non-empty. A chip opens the report filtered to that bucket; total opens it unfiltered. The chips only navigate, so they stay on a console that draws no delete. SCREENSHOT SETS marks a set whose sha a newer set has captured again with a neutral same-sha badge under its sha, on every capture but the newest, so a second capture of one commit reads as a repeat rather than as a change; a set captured from a dirty tree carries its warning dirty badge under its label. Each mark sits under the value it qualifies, so neither costs the label its width.",
               "lineHeight": 1.5,
               "fontFamily": "$font-body",
               "fontSize": 13,
@@ -17722,7 +17731,7 @@
                                           "type": "frame",
                                           "id": "qkSZs",
                                           "name": "th",
-                                          "width": 150,
+                                          "width": 140,
                                           "children": [
                                             {
                                               "type": "text",
@@ -17740,7 +17749,7 @@
                                           "type": "frame",
                                           "id": "ob4ph",
                                           "name": "th",
-                                          "width": 60,
+                                          "width": 70,
                                           "children": [
                                             {
                                               "type": "text",
@@ -17850,9 +17859,9 @@
                                           "type": "frame",
                                           "id": "swrXJ",
                                           "name": "td",
-                                          "width": 150,
-                                          "gap": 5,
-                                          "alignItems": "center",
+                                          "width": 140,
+                                          "layout": "vertical",
+                                          "gap": 4,
                                           "children": [
                                             {
                                               "type": "text",
@@ -17893,7 +17902,7 @@
                                           "type": "frame",
                                           "id": "k9Huo8",
                                           "name": "td",
-                                          "width": 60,
+                                          "width": 70,
                                           "children": [
                                             {
                                               "type": "text",
@@ -18028,7 +18037,7 @@
                                           "type": "frame",
                                           "id": "j28PY",
                                           "name": "td",
-                                          "width": 150,
+                                          "width": 140,
                                           "gap": 5,
                                           "alignItems": "center",
                                           "children": [
@@ -18048,7 +18057,7 @@
                                           "type": "frame",
                                           "id": "xvBtG",
                                           "name": "td",
-                                          "width": 60,
+                                          "width": 70,
                                           "children": [
                                             {
                                               "type": "text",
@@ -18183,7 +18192,7 @@
                                           "type": "frame",
                                           "id": "PfUEN",
                                           "name": "td",
-                                          "width": 150,
+                                          "width": 140,
                                           "gap": 5,
                                           "alignItems": "center",
                                           "children": [
@@ -18196,29 +18205,6 @@
                                               "fontFamily": "$font-mono",
                                               "fontSize": 10,
                                               "fontWeight": "700"
-                                            },
-                                            {
-                                              "type": "frame",
-                                              "id": "N6xsmq",
-                                              "name": "chip same sha",
-                                              "fill": "$bg-muted",
-                                              "cornerRadius": 9999,
-                                              "padding": [
-                                                2,
-                                                8
-                                              ],
-                                              "children": [
-                                                {
-                                                  "type": "text",
-                                                  "id": "iY5A9",
-                                                  "name": "t",
-                                                  "fill": "$text-muted",
-                                                  "content": "same sha",
-                                                  "fontFamily": "$font-mono",
-                                                  "fontSize": 10,
-                                                  "fontWeight": "700"
-                                                }
-                                              ]
                                             }
                                           ]
                                         },
@@ -18226,7 +18212,7 @@
                                           "type": "frame",
                                           "id": "swlsz",
                                           "name": "td",
-                                          "width": 60,
+                                          "width": 70,
                                           "children": [
                                             {
                                               "type": "text",
@@ -18361,7 +18347,7 @@
                                           "type": "frame",
                                           "id": "CYrYV",
                                           "name": "td",
-                                          "width": 150,
+                                          "width": 140,
                                           "gap": 5,
                                           "alignItems": "center",
                                           "children": [
@@ -18381,7 +18367,9 @@
                                           "type": "frame",
                                           "id": "iDrcE",
                                           "name": "td",
-                                          "width": 60,
+                                          "width": 70,
+                                          "layout": "vertical",
+                                          "gap": 4,
                                           "children": [
                                             {
                                               "type": "text",
@@ -18392,6 +18380,29 @@
                                               "fontFamily": "$font-mono",
                                               "fontSize": 10,
                                               "fontWeight": "normal"
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "N6xsmq",
+                                              "name": "chip same sha",
+                                              "fill": "$bg-muted",
+                                              "cornerRadius": 9999,
+                                              "padding": [
+                                                2,
+                                                8
+                                              ],
+                                              "children": [
+                                                {
+                                                  "type": "text",
+                                                  "id": "iY5A9",
+                                                  "name": "t",
+                                                  "fill": "$text-muted",
+                                                  "content": "same sha",
+                                                  "fontFamily": "$font-mono",
+                                                  "fontSize": 10,
+                                                  "fontWeight": "700"
+                                                }
+                                              ]
                                             }
                                           ]
                                         },
@@ -20797,7 +20808,7 @@
                                           "type": "frame",
                                           "id": "YwOUp",
                                           "name": "th",
-                                          "width": 150,
+                                          "width": 140,
                                           "children": [
                                             {
                                               "type": "text",
@@ -20815,7 +20826,7 @@
                                           "type": "frame",
                                           "id": "XqCkq",
                                           "name": "th",
-                                          "width": 60,
+                                          "width": 70,
                                           "children": [
                                             {
                                               "type": "text",
@@ -20925,9 +20936,9 @@
                                           "type": "frame",
                                           "id": "I3LBB",
                                           "name": "td",
-                                          "width": 150,
-                                          "gap": 5,
-                                          "alignItems": "center",
+                                          "width": 140,
+                                          "layout": "vertical",
+                                          "gap": 4,
                                           "children": [
                                             {
                                               "type": "text",
@@ -20968,7 +20979,7 @@
                                           "type": "frame",
                                           "id": "pjcwW",
                                           "name": "td",
-                                          "width": 60,
+                                          "width": 70,
                                           "children": [
                                             {
                                               "type": "text",
@@ -21103,7 +21114,7 @@
                                           "type": "frame",
                                           "id": "hKzbZ",
                                           "name": "td",
-                                          "width": 150,
+                                          "width": 140,
                                           "gap": 5,
                                           "alignItems": "center",
                                           "children": [
@@ -21123,7 +21134,7 @@
                                           "type": "frame",
                                           "id": "XCtoj",
                                           "name": "td",
-                                          "width": 60,
+                                          "width": 70,
                                           "children": [
                                             {
                                               "type": "text",
@@ -21258,7 +21269,7 @@
                                           "type": "frame",
                                           "id": "Nipkn",
                                           "name": "td",
-                                          "width": 150,
+                                          "width": 140,
                                           "gap": 5,
                                           "alignItems": "center",
                                           "children": [
@@ -21271,29 +21282,6 @@
                                               "fontFamily": "$font-mono",
                                               "fontSize": 10,
                                               "fontWeight": "700"
-                                            },
-                                            {
-                                              "type": "frame",
-                                              "id": "XTQp9",
-                                              "name": "chip same sha",
-                                              "fill": "$bg-muted",
-                                              "cornerRadius": 9999,
-                                              "padding": [
-                                                2,
-                                                8
-                                              ],
-                                              "children": [
-                                                {
-                                                  "type": "text",
-                                                  "id": "iy2jA",
-                                                  "name": "t",
-                                                  "fill": "$text-muted",
-                                                  "content": "same sha",
-                                                  "fontFamily": "$font-mono",
-                                                  "fontSize": 10,
-                                                  "fontWeight": "700"
-                                                }
-                                              ]
                                             }
                                           ]
                                         },
@@ -21301,7 +21289,7 @@
                                           "type": "frame",
                                           "id": "iHz6P",
                                           "name": "td",
-                                          "width": 60,
+                                          "width": 70,
                                           "children": [
                                             {
                                               "type": "text",
@@ -21436,7 +21424,7 @@
                                           "type": "frame",
                                           "id": "x2M7EM",
                                           "name": "td",
-                                          "width": 150,
+                                          "width": 140,
                                           "gap": 5,
                                           "alignItems": "center",
                                           "children": [
@@ -21456,7 +21444,9 @@
                                           "type": "frame",
                                           "id": "lYa4A",
                                           "name": "td",
-                                          "width": 60,
+                                          "width": 70,
+                                          "layout": "vertical",
+                                          "gap": 4,
                                           "children": [
                                             {
                                               "type": "text",
@@ -21467,6 +21457,29 @@
                                               "fontFamily": "$font-mono",
                                               "fontSize": 10,
                                               "fontWeight": "normal"
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "XTQp9",
+                                              "name": "chip same sha",
+                                              "fill": "$bg-muted",
+                                              "cornerRadius": 9999,
+                                              "padding": [
+                                                2,
+                                                8
+                                              ],
+                                              "children": [
+                                                {
+                                                  "type": "text",
+                                                  "id": "iy2jA",
+                                                  "name": "t",
+                                                  "fill": "$text-muted",
+                                                  "content": "same sha",
+                                                  "fontFamily": "$font-mono",
+                                                  "fontSize": 10,
+                                                  "fontWeight": "700"
+                                                }
+                                              ]
                                             }
                                           ]
                                         },
@@ -23867,8 +23880,8 @@
                                       "type": "frame",
                                       "id": "n0Fr37",
                                       "name": "h",
-                                      "gap": 5,
-                                      "alignItems": "center",
+                                      "layout": "vertical",
+                                      "gap": 3,
                                       "children": [
                                         {
                                           "type": "text",
@@ -24319,8 +24332,8 @@
                                       "type": "frame",
                                       "id": "UwBzm",
                                       "name": "h",
-                                      "gap": 5,
-                                      "alignItems": "center",
+                                      "layout": "vertical",
+                                      "gap": 3,
                                       "children": [
                                         {
                                           "type": "text",

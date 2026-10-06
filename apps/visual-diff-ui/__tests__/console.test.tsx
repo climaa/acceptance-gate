@@ -330,35 +330,47 @@ describe('the dirty badge', () => {
 
     expect(screen.queryByText('dirty')).toBeNull();
   });
+
+  it('sits in the label cell, the value it qualifies', () => {
+    render(consoleWith({ sets: [DIRTY] }));
+
+    const label = screen.getByTitle(DIRTY.label);
+
+    expect(within(label).getByText('dirty')).toBeTruthy();
+  });
 });
 
 /**
  * A second capture of a commit an older set already holds. The list is newest
- * first, so the mark goes on the upper one and the oldest stays unmarked.
+ * first, so the mark goes on the lower one and the newest stays unmarked.
  */
 describe('the same-sha badge', () => {
   const AGAIN: CaptureSet = { ...CLEAN, label: 'main-2026-08-17-2' };
   const THIRD: CaptureSet = { ...CLEAN, label: 'main-2026-08-17-3' };
 
-  it('marks the newer of two sets captured from the same sha', () => {
+  it('marks the older of two sets captured from the same sha, under its sha', () => {
     render(consoleWith({ sets: [AGAIN, CLEAN] }));
 
-    const [newer, older] = rowsOf('Screenshot sets');
+    const [newer, older] = rowsOf('Screenshot sets') as [HTMLElement, HTMLElement];
+    const sha = within(older).getByTitle(CLEAN.sha);
 
-    expect(within(newer as HTMLElement).getByText('same sha').className).toBe(
+    expect(within(sha).getByText('same sha').className).toBe(
       'ds-badge ds-badge--neutral',
     );
-    expect(within(older as HTMLElement).queryByText('same sha')).toBeNull();
+    expect(
+      within(within(older).getByTitle(CLEAN.label)).queryByText('same sha'),
+    ).toBeNull();
+    expect(within(newer).queryByText('same sha')).toBeNull();
   });
 
-  it('marks every repeat but the oldest', () => {
+  it('marks every capture but the newest', () => {
     render(consoleWith({ sets: [THIRD, AGAIN, CLEAN] }));
 
     const marked = rowsOf('Screenshot sets').map(
       (row) => within(row).queryByText('same sha') !== null,
     );
 
-    expect(marked).toEqual([true, true, false]);
+    expect(marked).toEqual([false, true, true]);
   });
 
   it('is absent when every set has its own sha', () => {
