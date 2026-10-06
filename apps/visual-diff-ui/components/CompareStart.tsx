@@ -26,7 +26,9 @@ import {
  * A ref, not state: nothing renders differently because a handler exists, so
  * registering one must not re-render the console. Before the panel registers —
  * or on a console that has none — a press only pre-fills, which is what it did
- * before the start was added.
+ * before the start was added. Outside a provider both hooks do nothing: the
+ * default is null rather than a ref, because a default ref would be one object
+ * shared by every tree that forgot the provider.
  */
 
 /** The pair a press asks to compare, in the run panel's own vocabulary. */
@@ -37,9 +39,7 @@ export interface ComparePair {
 
 type StartCompare = (pair: ComparePair) => void;
 
-const CompareStartContext = createContext<RefObject<StartCompare | null>>({
-  current: null,
-});
+const CompareStartContext = createContext<RefObject<StartCompare | null> | null>(null);
 
 export function CompareStartProvider({ children }: { children: ReactNode }) {
   const handlerRef = useRef<StartCompare | null>(null);
@@ -55,7 +55,7 @@ export function CompareStartProvider({ children }: { children: ReactNode }) {
 export function useCompareStart(): StartCompare {
   const handlerRef = useContext(CompareStartContext);
 
-  return (pair) => handlerRef.current?.(pair);
+  return (pair) => handlerRef?.current?.(pair);
 }
 
 /** The run panel's half: how a press is started. Re-registered every render, so
@@ -64,6 +64,7 @@ export function useHandleCompareStart(start: StartCompare): void {
   const handlerRef = useContext(CompareStartContext);
 
   useEffect(() => {
+    if (handlerRef === null) return;
     handlerRef.current = start;
 
     return () => {

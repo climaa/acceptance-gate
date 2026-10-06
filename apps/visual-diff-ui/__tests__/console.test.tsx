@@ -11,6 +11,7 @@ import {
 // `**/*.tsx` include means tsc typechecks this file.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DashboardTemplate } from '../components/DashboardTemplate';
+import { HISTORY_ANCHOR } from '../lib/anchors';
 import type { HistoryRecord } from '../lib/job-contract';
 import type { CaptureSet } from '../lib/summary';
 import type { ReportListEntry } from '../lib/data';
@@ -610,6 +611,20 @@ describe('the compare press', () => {
     expect(posts()).toEqual([]);
   });
 
+  // The lock would refuse a second start anyway; the press does not ask, because
+  // its refusal would flash beside D1's alert for a pre-fill that already landed.
+  it('only pre-fills while a job is running', async () => {
+    const { posts } = stubRunner({ running: true, job: STARTED });
+    render(consoleWith());
+    await screen.findByText(/follow the running job below/);
+
+    fireEvent.click(screen.getByRole('button', { name: 'compare A ⇄ B' }));
+
+    expect(replaceCalls).toHaveLength(1);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(posts()).toEqual([]);
+  });
+
   it('brings History into view when the job it started finishes', async () => {
     const { state } = stubRunner({ running: false, job: null });
     render(consoleWith());
@@ -618,7 +633,7 @@ describe('the compare press', () => {
     fireEvent.click(screen.getByRole('button', { name: 'compare A ⇄ B' }));
 
     await waitFor(() => expect(scrollIntoView).toHaveBeenCalledTimes(1));
-    expect(scrollIntoView.mock.contexts[0]).toBe(document.getElementById('vd-history'));
+    expect(scrollIntoView.mock.contexts[0]).toBe(document.getElementById(HISTORY_ANCHOR));
   });
 
   // The poll reports the LAST run while nothing is running, so the previous

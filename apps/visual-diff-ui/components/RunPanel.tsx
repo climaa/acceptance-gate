@@ -461,15 +461,20 @@ function jobRequest(form: JobForm): Record<string, unknown> {
  *  `useMutation`'s; this names the endpoint and keeps the panel's vocabulary —
  *  one refusal rather than a list, and `starting` rather than `busy`.
  *
- *  `start` resolves to the started job's id, or null when nothing started — the
- *  compare press needs it to know which finish to bring History into view for. */
+ *  `onStarted` hears the started job's id — the compare press needs it to know
+ *  which finish to bring History into view for. It runs BEFORE the poll is
+ *  poked: a compare can finish inside that poll, and an id learned after its
+ *  answer would wait for a change the next, identical, answer never makes. */
 function useStartJob() {
   const { run, refusals, busy, clear } = useMutation();
   const pollNow = usePollNow();
   const { job } = useCurrentJob();
   const { dismiss } = useDismissedJob();
 
-  const start = async (request: Record<string, unknown>): Promise<string | null> => {
+  const start = async (
+    request: Record<string, unknown>,
+    onStarted?: (jobId: string) => void,
+  ) => {
     /* The card is cleared on the CLICK rather than on the answer, which is the
        same thing its own × does. `POST /api/jobs` runs a synchronous `docker
        info` before it answers a capture or an accept — up to three seconds
@@ -493,20 +498,19 @@ function useStartJob() {
       // above the button — the run the reviewer was reading is not the price of
       // being told no.
       undoDismissal?.();
-      return null;
+      return;
     }
+
+    // A 202 whose body is not the job is a handler that has drifted; the job is
+    // still running, so nothing is refused — there is just no id to wait for.
+    const started = StartJobResponseSchema.safeParse(result.body);
+    if (started.success) onStarted?.(started.data.job.id);
 
     // The panel below polls, and backs off while the console is idle — which is
     // exactly what it was a moment ago. Without this poke the job just started
     // would not appear until that backed-off timer came round, and the reviewer
     // would be watching a region that says nothing is running.
     pollNow();
-
-    // A 202 whose body is not the job is a handler that has drifted; the job is
-    // still running, so nothing is refused — there is just no id to wait for.
-    const started = StartJobResponseSchema.safeParse(result.body);
-
-    return started.success ? started.data.job.id : null;
   };
 
   // `clear` is handed back for the same reason both `ConfirmDialogs` call sites
@@ -774,11 +778,15 @@ export function RunPanel({ isSample, isLocal }: RunPanelProps) {
   // A `compare A ⇄ B` press, started here so its refusal, the disabled button and
   // D1's running alert are this panel's as for any other start. The pair comes
   // with the press rather than from the form: the URL pre-fill is still in flight.
+  //
+  // Not while a job runs or a start is out — the same two states that take
+  // `start compare` away. The lock would refuse it anyway, but the refusal would
+  // flash beside D1's alert for a press whose pre-fill already landed.
   useHandleCompareStart((pair) => {
+    if (running || starting) return;
+
     clear();
-    void start({ mode: 'compare', ...pair }).then((id) => {
-      if (id !== null) historyWhenFinished(id);
-    });
+    void start({ mode: 'compare', ...pair }, historyWhenFinished);
   });
 
   // One word for the two reasons a composer is inert. They are different

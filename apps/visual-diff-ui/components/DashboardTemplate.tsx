@@ -160,19 +160,19 @@ export function DashboardTemplate({
             )}
 
             {/* The pickers list the corpus alongside the captured sets, which is what
-              it is there for. `RetentionControl` does not: pruning is about what
-              this instance accumulated, and the corpus is not prunable — the
-              delete route refuses it by name.
+                it is there for. `RetentionControl` does not: pruning is about what
+                this instance accumulated, and the corpus is not prunable — the
+                delete route refuses it by name.
 
-              The pickers stay wherever there is something to compare — comparing
-              is reading, and that is what a deployed or sample console is for.
-              The prune does not: `POST /api/prune` refuses both, and this is the
-              only bulk destruction here, so rather than a disabled button the
-              whole control goes — a keep-latest number with no prune behind it
-              states a retention policy the console cannot carry out.
+                The pickers stay wherever there is something to compare — comparing
+                is reading, and that is what a deployed or sample console is for.
+                The prune does not: `POST /api/prune` refuses both, and this is the
+                only bulk destruction here, so rather than a disabled button the
+                whole control goes — a keep-latest number with no prune behind it
+                states a retention policy the console cannot carry out.
 
-              Where a job can start, the press starts the comparison too, and only
-              there: `canStart` is the same `frozen` the prune reads. */}
+                Where a job can start, the press starts the comparison too, and only
+                there: `canStart` is the same `frozen` the prune reads. */}
             {compareLabels.length > 1 && (
               <ComparePickers labels={compareLabels} canStart={!frozen} />
             )}
@@ -195,8 +195,8 @@ export function DashboardTemplate({
         </Stack>
 
         {/* One poller for the column: the run panel and the current-job region ask
-          the same endpoint the same question, and two of them would be two
-          consoles disagreeing about whether anything is running. */}
+            the same endpoint the same question, and two of them would be two
+            consoles disagreeing about whether anything is running. */}
         <CurrentJobProvider>
           <Stack gap={6} className="vd-console__column">
             <Panel id="vd-run" title="start a job">
@@ -204,8 +204,8 @@ export function DashboardTemplate({
             </Panel>
 
             {/* Not wrapped in `Panel`: this region owns a live region and an
-              accessible name the acceptance scenarios pin, so it brings its own
-              section — see CurrentJob.tsx. */}
+                accessible name the acceptance scenarios pin, so it brings its own
+                section — see CurrentJob.tsx. */}
             <CurrentJob />
 
             <Panel id={HISTORY_ANCHOR} title="history" count={history.length}>
