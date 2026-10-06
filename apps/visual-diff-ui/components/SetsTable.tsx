@@ -34,28 +34,28 @@ const SET_COLUMNS: readonly TableColumn[] = [
 /**
  * The sets whose commit a newer set has captured again.
  *
- * The list is newest first, so a set is repeated when its sha already appeared
+ * The list is newest first, so a set is superseded when its sha already appeared
  * further up. The newest capture of a sha stays unmarked — it is the one a
  * reader reaches first and compares with — and every older one below it is
  * marked, however many there are.
  */
-export function repeatedCaptures(sets: readonly CaptureSet[]): ReadonlySet<string> {
+export function supersededCaptures(sets: readonly CaptureSet[]): ReadonlySet<string> {
   const seen = new Set<string>();
-  const repeated = new Set<string>();
+  const superseded = new Set<string>();
 
   for (const set of sets) {
-    if (seen.has(set.sha)) repeated.add(set.label);
+    if (seen.has(set.sha)) superseded.add(set.label);
     seen.add(set.sha);
   }
 
-  return repeated;
+  return superseded;
 }
 
 function setRow(
   set: CaptureSet,
   bytes: number | undefined,
   frozen: boolean,
-  repeat: boolean,
+  superseded: boolean,
 ): TableRow {
   return {
     key: set.label,
@@ -63,7 +63,7 @@ function setRow(
       {
         // Two text nodes, never interpolated: a label is not "main-08-11dirty",
         // and the badge is a mark under the name rather than part of it — see
-        // `.vd-set` in console.css.
+        // `.vd-qualified` in console.css.
         // The label opens the set viewer, but only where this instance actually
         // holds the shots. `bytes` is the measured tree, not the registry's
         // claim — the same signal the size column draws `—` for — so a set
@@ -73,7 +73,7 @@ function setRow(
         // links on this console: a dead link beside a live one is worse than no
         // link.
         content: (
-          <span className="vd-set">
+          <span className="vd-qualified">
             {bytes === undefined ? (
               <span className="vd-set__label">{set.label}</span>
             ) : (
@@ -93,9 +93,9 @@ function setRow(
         // same-sha badge sits under it, because it qualifies the sha rather than
         // the label.
         content: (
-          <span className="vd-set">
+          <span className="vd-qualified">
             <span className="vd-mono">{shortSha(set.sha)}</span>
-            {repeat && <Badge>same sha</Badge>}
+            {superseded && <Badge>same sha</Badge>}
           </span>
         ),
         title: set.sha,
@@ -138,14 +138,14 @@ export interface SetsTableProps {
 }
 
 export function SetsTable({ sets, sizes, frozen }: SetsTableProps) {
-  const repeated = repeatedCaptures(sets);
+  const superseded = supersededCaptures(sets);
 
   return (
     <Table
       label={SETS_TABLE_LABEL}
       columns={SET_COLUMNS}
       rows={sets.map((set) =>
-        setRow(set, sizes[set.label], frozen, repeated.has(set.label)),
+        setRow(set, sizes[set.label], frozen, superseded.has(set.label)),
       )}
     />
   );

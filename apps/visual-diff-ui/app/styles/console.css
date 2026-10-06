@@ -50,8 +50,9 @@
    badge, the sha over its same-sha badge. Side by side, the label gave its width
    up to the badges until a dirty repeat drew no name at all; underneath, each
    has the whole column. The row is two lines tall already — the date wraps —
-   so the second line costs no height. */
-.vd-set {
+   so the second line costs no height. Its own block rather than `vd-set`: the
+   sha is not a set, and `vd-set__*` belongs to the set viewer. */
+.vd-qualified {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -59,10 +60,15 @@
   min-width: 0;
 }
 
-/* `max-width` because a column flexbox that does not stretch sizes a child to
-   its content, and a label that wide has nothing left to ellipsise against. */
-.vd-set__label {
+/* A column flexbox that does not stretch sizes a child to its content, and a
+   label that wide has nothing left to ellipsise against. On the child, not on
+   `.vd-set__label`, which the canonical card and the set viewer's heading wear
+   too. */
+.vd-qualified > * {
   max-width: 100%;
+}
+
+.vd-set__label {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
