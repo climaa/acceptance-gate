@@ -46,17 +46,23 @@
   background: var(--color-accent);
 }
 
-/* The label and its dirty badge share a cell: the label gives up its width, the
-   badge never does — a set captured from a dirty tree must not lose the mark
-   that says so to a long name. */
+/* A value and the badge that qualifies it, stacked: the label over its dirty
+   badge, the sha over its same-sha badge. Side by side, the label gave its width
+   up to the badges until a dirty repeat drew no name at all; underneath, each
+   has the whole column. The row is two lines tall already — the date wraps —
+   so the second line costs no height. */
 .vd-set {
   display: flex;
-  align-items: center;
-  gap: var(--space-2);
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
   min-width: 0;
 }
 
+/* `max-width` because a column flexbox that does not stretch sizes a child to
+   its content, and a label that wide has nothing left to ellipsise against. */
 .vd-set__label {
+  max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

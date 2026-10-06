@@ -32,17 +32,18 @@ const SET_COLUMNS: readonly TableColumn[] = [
 ];
 
 /**
- * The sets that repeat a capture of a commit an older set already holds.
+ * The sets whose commit a newer set has captured again.
  *
- * The list is newest first, so a set is a repeat when its sha appears again
- * further down. The oldest capture of a sha stays unmarked — it is the one the
- * others repeat — and every later one is marked, however many there are.
+ * The list is newest first, so a set is repeated when its sha already appeared
+ * further up. The newest capture of a sha stays unmarked — it is the one a
+ * reader reaches first and compares with — and every older one below it is
+ * marked, however many there are.
  */
 export function repeatedCaptures(sets: readonly CaptureSet[]): ReadonlySet<string> {
   const seen = new Set<string>();
   const repeated = new Set<string>();
 
-  for (const set of [...sets].reverse()) {
+  for (const set of sets) {
     if (seen.has(set.sha)) repeated.add(set.label);
     seen.add(set.sha);
   }
@@ -61,9 +62,8 @@ function setRow(
     cells: [
       {
         // Two text nodes, never interpolated: a label is not "main-08-11dirty",
-        // and the badge is a mark beside the name rather than part of it. The
-        // label gives up its width to the badge rather than the other way
-        // round — see `.vd-set` in globals.css.
+        // and the badge is a mark under the name rather than part of it — see
+        // `.vd-set` in console.css.
         // The label opens the set viewer, but only where this instance actually
         // holds the shots. `bytes` is the measured tree, not the registry's
         // claim — the same signal the size column draws `—` for — so a set
@@ -82,7 +82,6 @@ function setRow(
               </NextLink>
             )}
             {set.dirty && <Badge tone="warning">dirty</Badge>}
-            {repeat && <Badge>same sha</Badge>}
           </span>
         ),
         title: set.label,
@@ -90,8 +89,15 @@ function setRow(
       {
         // The board's column is a short sha, and a `sets.json` written with a
         // full one would widen the column past everything beside it. The whole
-        // sha stays on `title`, which is what a reviewer copies out.
-        content: <span className="vd-mono">{shortSha(set.sha)}</span>,
+        // sha stays on `title`, which is what a reviewer copies out. The
+        // same-sha badge sits under it, because it qualifies the sha rather than
+        // the label.
+        content: (
+          <span className="vd-set">
+            <span className="vd-mono">{shortSha(set.sha)}</span>
+            {repeat && <Badge>same sha</Badge>}
+          </span>
+        ),
         title: set.sha,
       },
       { content: set.branch, title: set.branch },
