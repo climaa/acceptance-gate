@@ -1,4 +1,4 @@
-import { expect } from '@playwright/test';
+import { type Page, expect } from '@playwright/test';
 import { createBdd } from 'playwright-bdd';
 
 import { test } from './fixtures';
@@ -62,7 +62,25 @@ When('I visit the console', async ({ console: consolePage }) => {
   await consolePage.open();
 });
 
-When('I choose two sets to compare', async ({ console: consolePage }) => {
+/**
+ * The press also STARTS the comparison on a console that can start jobs (Board
+ * F2), and this world is one — local, with a data directory. These scenarios are
+ * about the pre-fill, and the world is read-only by contract (README, "The two
+ * visual-diff worlds"): a job here would write a report and a history row every
+ * other scenario then reads. So the start is answered with a refusal before it
+ * reaches the server, in the shape the server's own refusals take. That the press
+ * starts a real job is the local lane's claim, where writing is the point.
+ */
+async function refuseJobStarts(page: Page) {
+  await page.route('**/api/jobs', (route) =>
+    route.request().method() === 'POST'
+      ? route.fulfill({ status: 409, json: { error: 'this world is read-only' } })
+      : route.fallback(),
+  );
+}
+
+When('I choose two sets to compare', async ({ console: consolePage, page }) => {
+  await refuseJobStarts(page);
   await consolePage.chooseCompare(COMPARE_A, COMPARE_B);
 });
 
@@ -71,7 +89,8 @@ When('I choose two sets to compare', async ({ console: consolePage }) => {
  *  the same page method as the first press so the two are indistinguishable to
  *  the app — a bespoke second path here would prove something the reviewer never
  *  does. */
-When('I choose the same two sets to compare', async ({ console: consolePage }) => {
+When('I choose the same two sets to compare', async ({ console: consolePage, page }) => {
+  await refuseJobStarts(page);
   await consolePage.chooseCompare(COMPARE_A, COMPARE_B);
 });
 

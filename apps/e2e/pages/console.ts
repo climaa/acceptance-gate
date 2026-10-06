@@ -32,6 +32,7 @@ export class ConsolePage {
   readonly viewReportLink: Locator;
   readonly liveLog: Locator;
   readonly historyRows: Locator;
+  readonly historyHeading: Locator;
   readonly reportRows: Locator;
   readonly refusalAlert: Locator;
   readonly dialogRefusal: Locator;
@@ -59,6 +60,9 @@ export class ConsolePage {
     // so it carries a testid instead.
     this.liveLog = page.getByTestId('log-tail');
     this.historyRows = page.getByRole('table', { name: 'History' }).getByRole('row');
+    // The panel's own h2, not the table: an empty history draws no table, and the
+    // heading is what the console scrolls to.
+    this.historyHeading = page.getByRole('heading', { level: 2, name: /^history/ });
     this.reportRows = page.getByRole('table', { name: 'Reports' }).getByRole('row');
     // Scoped to `main`, because Next's app router keeps a permanent
     // `<div role="alert" id="__next-route-announcer__">` outside the page's own

@@ -1,11 +1,19 @@
 'use client';
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { type Dispatch, type ReactNode, useReducer, useState } from 'react';
+import {
+  type Dispatch,
+  type ReactNode,
+  useEffect,
+  useReducer,
+  useRef,
+  useState,
+} from 'react';
 import { Button, IconButton, Spinner, Stack } from '@gate/ui';
 import { type Mode, ModeTabs, PANEL_ID, isMode, tabId } from '@/components/ModeTabs';
 import { useDismissedJob } from '@/hooks/useDismissedJob';
 import { useJsonOnMount } from '@/hooks/useJsonOnMount';
+import { REDUCED_MOTION, useMediaQuery } from '@/hooks/useMediaQuery';
 import { useMutation } from '@/hooks/useMutation';
 import { Note } from './Note';
 import { HOST } from '@gate/visual-diff/policy';
@@ -22,15 +30,18 @@ import { HOST } from '@gate/visual-diff/policy';
  * the button it sits above is disabled, so the reviewer starts Docker instead of a
  * job.
  */
+import { HISTORY_ANCHOR } from '@/lib/anchors';
 import { fetchWithin } from '@/lib/network';
 import { DOCKER_DOWN, JOB_RUNNING, NOT_LOCAL } from '@/lib/refusal-copy';
 import {
   LabelResponseSchema,
   type RunnerEnv,
   RunnerEnvSchema,
+  StartJobResponseSchema,
   StoriesResponseSchema,
   type StoryTier,
 } from '@/lib/api-contract';
+import { useHandleCompareStart } from './CompareStart';
 import { CURRENT_JOB_ANCHOR, useCurrentJob, usePollNow } from './CurrentJob';
 import { FilterPicker } from './FilterPicker';
 
@@ -448,14 +459,17 @@ function jobRequest(form: JobForm): Record<string, unknown> {
 
 /** Starting a job, and whatever the server refused it with. The lifecycle is
  *  `useMutation`'s; this names the endpoint and keeps the panel's vocabulary —
- *  one refusal rather than a list, and `starting` rather than `busy`. */
+ *  one refusal rather than a list, and `starting` rather than `busy`.
+ *
+ *  `start` resolves to the started job's id, or null when nothing started — the
+ *  compare press needs it to know which finish to bring History into view for. */
 function useStartJob() {
   const { run, refusals, busy, clear } = useMutation();
   const pollNow = usePollNow();
   const { job } = useCurrentJob();
   const { dismiss } = useDismissedJob();
 
-  const start = async (request: Record<string, unknown>) => {
+  const start = async (request: Record<string, unknown>): Promise<string | null> => {
     /* The card is cleared on the CLICK rather than on the answer, which is the
        same thing its own × does. `POST /api/jobs` runs a synchronous `docker
        info` before it answers a capture or an accept — up to three seconds
@@ -479,7 +493,7 @@ function useStartJob() {
       // above the button — the run the reviewer was reading is not the price of
       // being told no.
       undoDismissal?.();
-      return;
+      return null;
     }
 
     // The panel below polls, and backs off while the console is idle — which is
@@ -487,6 +501,12 @@ function useStartJob() {
     // would not appear until that backed-off timer came round, and the reviewer
     // would be watching a region that says nothing is running.
     pollNow();
+
+    // A 202 whose body is not the job is a handler that has drifted; the job is
+    // still running, so nothing is refused — there is just no id to wait for.
+    const started = StartJobResponseSchema.safeParse(result.body);
+
+    return started.success ? started.data.job.id : null;
   };
 
   // `clear` is handed back for the same reason both `ConfirmDialogs` call sites
@@ -495,6 +515,36 @@ function useStartJob() {
   // one left beside a fresh alert is the two-alert failure below by a second
   // route.
   return { start, refusal: refusals[0] ?? null, starting: busy, clear };
+}
+
+/**
+ * Bring History into view when a given job finishes — the end of Board F2, for
+ * the comparison a `compare A ⇄ B` press started. Its new row is where the
+ * verdict and the report's `view` link land.
+ *
+ * Keyed on the id `POST /api/jobs` answered with, never on "the job finished":
+ * the poll reports the LAST run while nothing is running, so the previous job's
+ * finished record is on screen until the new one replaces it. A ref, not state —
+ * a job being watched renders nothing, and the poll's own updates are what
+ * re-run the check. Instant under `prefers-reduced-motion`.
+ */
+function useHistoryWhenFinished(): (jobId: string) => void {
+  const { job, running } = useCurrentJob();
+  const still = useMediaQuery(REDUCED_MOTION, false);
+  const watched = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (watched.current === null || running || job?.id !== watched.current) return;
+
+    watched.current = null;
+    document
+      .getElementById(HISTORY_ANCHOR)
+      ?.scrollIntoView({ block: 'start', behavior: still ? 'auto' : 'smooth' });
+  }, [job, running, still]);
+
+  return (jobId) => {
+    watched.current = jobId;
+  };
 }
 
 /** Whether the form names a job the runner could take. */
@@ -719,6 +769,17 @@ export function RunPanel({ isSample, isLocal }: RunPanelProps) {
   // Read here as well as in `StartAction`, because the two alerts this panel
   // can draw are decided in two different places and only one of them knew.
   const { running } = useCurrentJob();
+  const historyWhenFinished = useHistoryWhenFinished();
+
+  // A `compare A ⇄ B` press, started here so its refusal, the disabled button and
+  // D1's running alert are this panel's as for any other start. The pair comes
+  // with the press rather than from the form: the URL pre-fill is still in flight.
+  useHandleCompareStart((pair) => {
+    clear();
+    void start({ mode: 'compare', ...pair }).then((id) => {
+      if (id !== null) historyWhenFinished(id);
+    });
+  });
 
   // One word for the two reasons a composer is inert. They are different
   // refusals — one is answered above the button, the other instead of it — but a
