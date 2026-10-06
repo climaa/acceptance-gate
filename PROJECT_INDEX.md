@@ -131,6 +131,26 @@ scripts/               complexity-gate.mjs (the health gate) · index-integrity.
 - `playwright` 1.62.1 (exact) — acceptance suite and pixel capture
 - `turbo` ^2.11.2 — task graph + remote cache (team-ID-scoped)
 
+## 🧒 Child projects
+
+Private repositories seeded from this one. Each carries its own copy of the
+shared tooling under its own package scope — the visual-diff console
+(`apps/visual-diff-ui`), the differ (`packages/visual-diff`), the orchestrator
+(`.sandcastle/`) and the `packages/ui` scaffolding — next to an `apps/web` of its
+own. Their gate is a Husky `pre-push` hook, not Actions.
+
+| Repository               | Scope           |
+| ------------------------ | --------------- |
+| `climaa/mape-tournament` | `@mape/*`       |
+| `climaa/portafolio`      | `@portafolio/*` |
+| `climaa/trucutru`        | `@trucutru/*`   |
+| `climaa/jardinero-gerad` | `@grm/*`        |
+
+A change to that shared tooling here is ported to every child, one PR each, in
+the same pass — the copies drift otherwise, and a fix that reaches one console
+of five is a fix nobody can count on. A new child is added to this table when it
+is seeded, so the next port reaches it.
+
 ## 📝 Quick Start
 
 1. `pnpm install`
