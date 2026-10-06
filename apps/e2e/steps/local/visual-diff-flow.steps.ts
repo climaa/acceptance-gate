@@ -403,45 +403,44 @@ Then(
  * capture, and the captures follow it newest first — so index 0 is the corpus
  * and index 1 is what this scenario just wrote.
  */
-When('I compare that capture against the corpus', async ({ console: vd, localState }) => {
-  await expect(
-    vd.setRows,
-    'this console lists no captures to compare against the corpus',
-  ).not.toHaveCount(0);
+When(
+  'I compare that capture against the corpus from the pickers',
+  async ({ console: vd, localState }) => {
+    await expect(
+      vd.setRows,
+      'this console lists no captures to compare against the corpus',
+    ).not.toHaveCount(0);
 
-  await vd.pickerA.selectOption({ index: 0 });
-  await vd.pickerB.selectOption({ index: 1 });
+    await vd.pickerA.selectOption({ index: 0 });
+    await vd.pickerB.selectOption({ index: 1 });
 
-  const corpus = (await vd.selectedOption(vd.pickerA).innerText()).trim();
-  const captured = (await vd.selectedOption(vd.pickerB).innerText()).trim();
-  expect(
-    corpus,
-    'both pickers opened on the same set, so this compare says nothing',
-  ).not.toBe(captured);
-  expect(captured, 'the second picker is not the set this run captured').toBe(
-    localState.capturedLabel,
-  );
+    const corpus = (await vd.selectedOption(vd.pickerA).innerText()).trim();
+    const captured = (await vd.selectedOption(vd.pickerB).innerText()).trim();
+    expect(
+      corpus,
+      'both pickers opened on the same set, so this compare says nothing',
+    ).not.toBe(captured);
+    expect(captured, 'the second picker is not the set this run captured').toBe(
+      localState.capturedLabel,
+    );
 
-  localState.reportId = `${corpus}__${captured}`;
+    localState.reportId = `${corpus}__${captured}`;
 
-  await vd.compareButton.click();
+    // The press is the start (Board F2): it pre-fills the form AND starts the
+    // comparison, so there is no `start compare` to press after it — pressing one
+    // would be a second start, refused by the lock this scenario has already
+    // proved. The panel is still asserted to have reached the compare tab: that is
+    // the pre-fill half, and the log the next step reads belongs to this pair only
+    // if the start went out with it.
+    await vd.compareButton.click();
 
-  // Wait for the panel to actually BE on the compare tab before pressing start.
-  //
-  // `compare A ⇄ B` writes `?a=&b=&mode=compare` and the run panel reads it back
-  // — asynchronously. Press too early and `startButton` is still the capture
-  // tab's, still holding the label the wand filled in, and the click starts a
-  // SECOND capture instead of the comparison. Not theoretical: it is what this
-  // step did on its first real run, and the only trace was a capture set with a
-  // `-2` suffix nobody asked for.
-  await expect(vd.startButton).toHaveText('start compare');
-
-  await vd.startButton.click();
-  await expect(
-    vd.refusalAlert,
-    'the console refused this compare — its own reason is in the run panel',
-  ).toHaveCount(0);
-});
+    await expect(vd.jobTab('compare')).toHaveAttribute('aria-selected', 'true');
+    await expect(
+      vd.refusalAlert,
+      'the console refused this compare — its own reason is in the run panel',
+    ).toHaveCount(0);
+  },
+);
 
 Then('the comparison writes a report', async ({ console: vd, localState }) => {
   await expect(vd.liveLog).toBeVisible();
@@ -459,6 +458,13 @@ Then('the comparison writes a report', async ({ console: vd, localState }) => {
 
   // Owed from here, so the hook can take it back even if nothing below runs.
   madeReportId = written;
+});
+
+/** Where the press lands once its job is over: History, whose new row carries the
+ *  verdict and the report's `view` link. The scroll is the console's — nothing in
+ *  this scenario moves the page between the press and here. */
+Then('the console brings the history into view', async ({ console: vd }) => {
+  await expect(vd.historyHeading).toBeInViewport();
 });
 
 When('I read the whole report through', async ({ console: vd, report, localState }) => {

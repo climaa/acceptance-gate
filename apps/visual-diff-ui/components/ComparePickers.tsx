@@ -3,6 +3,7 @@
 import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Button, Stack } from '@gate/ui';
+import { useCompareStart } from './CompareStart';
 import { Note } from './Note';
 
 /**
@@ -19,6 +20,11 @@ import { Note } from './Note';
  *
  * `router.replace`, not `push`: choosing a different pair is a correction to
  * where the reviewer already is, not a step back through.
+ *
+ * **The start is not in the URL.** On a console that can start jobs the press
+ * also starts the comparison (Board F2), and that half travels through
+ * CompareStart.tsx instead: a reload or a shared link replays the query string,
+ * and must only ever pre-fill.
  */
 
 const COMPARE_MODE = 'compare';
@@ -27,6 +33,11 @@ export interface ComparePickersProps {
   /** Set labels, newest first. Also the option text — the acceptance scenario
    *  chooses a set by the label it reads, so nothing else may be shown here. */
   labels: readonly string[];
+  /** Whether the press also starts the comparison. False on a sample or a
+   *  deployed console, where `POST /api/jobs` refuses every start: there the
+   *  press pre-fills and nothing else, because comparing is reading and the
+   *  pickers stay for it. */
+  canStart: boolean;
 }
 
 interface PickerProps {
@@ -64,8 +75,9 @@ function Picker({ name, value, labels, onChange }: PickerProps) {
   );
 }
 
-export function ComparePickers({ labels }: ComparePickersProps) {
+export function ComparePickers({ labels, canStart }: ComparePickersProps) {
   const router = useRouter();
+  const startCompare = useCompareStart();
   const pathname = usePathname();
   // Newest against the one before it: the comparison a reviewer opening this
   // console almost always wants. Both fall back to the only set there is.
@@ -122,6 +134,8 @@ export function ComparePickers({ labels }: ComparePickersProps) {
     // `scroll: false` — the pickers sit below the table the reviewer just chose
     // from, and jumping to the top would move it out from under them.
     router.replace(`${pathname}?${query}`, { scroll: false });
+
+    if (canStart) startCompare({ baseline, candidate });
   };
 
   return (

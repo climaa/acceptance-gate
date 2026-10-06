@@ -31,8 +31,9 @@ Feature: The whole loop, against my own console
     And I start a capture under that name
     Then a second job is refused while that one runs
     And the capture finishes and the set is listed
-    When I compare that capture against the corpus
+    When I compare that capture against the corpus from the pickers
     Then the comparison writes a report
+    And the console brings the history into view
     When I read the whole report through
     Then every variant of it is marked reviewed
     Given my newest run is holding the job lock

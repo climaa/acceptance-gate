@@ -1,9 +1,17 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react';
 // Imported explicitly rather than relying on `globals: true` — tsconfig's
 // `**/*.tsx` include means tsc typechecks this file.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DashboardTemplate } from '../components/DashboardTemplate';
+import { HISTORY_ANCHOR } from '../lib/anchors';
 import type { HistoryRecord } from '../lib/job-contract';
 import type { CaptureSet } from '../lib/summary';
 import type { ReportListEntry } from '../lib/data';
@@ -498,6 +506,149 @@ describe('the compare pickers', () => {
     fireEvent.click(screen.getByRole('button', { name: 'compare A ⇄ B' }));
 
     expect(replaceCalls[0]?.options).toEqual({ scroll: false });
+  });
+});
+
+/**
+ * The press's second half (Board F2): where a job can start, `compare A ⇄ B`
+ * starts the comparison as well as pre-filling the form, and History comes into
+ * view when that job finishes.
+ *
+ * Driven through the template because the press is in one column and the panel
+ * that starts it is in the other — the context between them is the thing under
+ * test. The start never rides the URL, so none of this can be seen in
+ * `replaceCalls`: it is the POST or nothing.
+ */
+describe('the compare press', () => {
+  const STARTED: HistoryRecord = {
+    id: '2026-10-06T14-29-24Z-compare',
+    mode: 'compare',
+    label: `${CLEAN.label}__${DIRTY.label}`,
+    startedAt: '2026-10-06T14:29:24Z',
+    endedAt: null,
+    exitCode: null,
+    reportId: null,
+  };
+  const FINISHED: HistoryRecord = {
+    ...STARTED,
+    endedAt: '2026-10-06T14:29:25Z',
+    exitCode: 0,
+    reportId: STARTED.label,
+  };
+
+  /** The poll answers whatever `current` holds when it asks; the start answers
+   *  202 with {@link STARTED}. Everything else the right column asks on mount is
+   *  answered empty, so the only request a case can see is the one it causes. */
+  function stubRunner(initial: { running: boolean; job: HistoryRecord | null }) {
+    const state = { current: initial };
+    // `init` is declared so the calls are typed with it: the POST's body is the
+    // whole of what the start cases assert.
+    const fetchMock = vi.fn((url: string, _init?: { body?: string }) => {
+      const json = (body: unknown, status = 200) =>
+        Promise.resolve({
+          ok: status < 300,
+          status,
+          json: () => Promise.resolve(body),
+        });
+
+      if (url === '/api/jobs') return json({ job: STARTED }, 202);
+      if (url === '/api/jobs/current') {
+        return json({ isSample: false, reportExists: false, log: [], ...state.current });
+      }
+      if (url === '/api/env')
+        return json({ platform: 'linux', arch: 'x64', image: null });
+      if (url === '/api/stories') return json({ tiers: [] });
+
+      throw new Error(`unstubbed request to ${url}`);
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const posts = () =>
+      fetchMock.mock.calls
+        .filter(([url]) => url === '/api/jobs')
+        .map(([, init]) => JSON.parse(init?.body ?? 'null'));
+
+    return { state, posts };
+  }
+
+  const scrollIntoView = vi.fn();
+
+  beforeEach(() => {
+    Element.prototype.scrollIntoView = scrollIntoView;
+  });
+
+  afterEach(() => {
+    scrollIntoView.mockClear();
+    vi.unstubAllGlobals();
+  });
+
+  it('starts the comparison of the chosen pair', async () => {
+    const { posts } = stubRunner({ running: false, job: null });
+    render(consoleWith());
+
+    fireEvent.click(screen.getByRole('button', { name: 'compare A ⇄ B' }));
+
+    await waitFor(() =>
+      expect(posts()).toEqual([
+        { mode: 'compare', baseline: CLEAN.label, candidate: DIRTY.label },
+      ]),
+    );
+  });
+
+  // The same `frozen` the prune reads: both consoles refuse every start, so the
+  // press does what it always did there and nothing more.
+  it.each([
+    ['a sample console', { isSample: true }],
+    ['a deployed console', { isLocal: false }],
+  ])('only pre-fills on %s', async (_, frozen) => {
+    const { posts } = stubRunner({ running: false, job: null });
+    render(consoleWith(frozen));
+
+    fireEvent.click(screen.getByRole('button', { name: 'compare A ⇄ B' }));
+
+    expect(replaceCalls).toHaveLength(1);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(posts()).toEqual([]);
+  });
+
+  // The lock would refuse a second start anyway; the press does not ask, because
+  // its refusal would flash beside D1's alert for a pre-fill that already landed.
+  it('only pre-fills while a job is running', async () => {
+    const { posts } = stubRunner({ running: true, job: STARTED });
+    render(consoleWith());
+    await screen.findByText(/follow the running job below/);
+
+    fireEvent.click(screen.getByRole('button', { name: 'compare A ⇄ B' }));
+
+    expect(replaceCalls).toHaveLength(1);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(posts()).toEqual([]);
+  });
+
+  it('brings History into view when the job it started finishes', async () => {
+    const { state } = stubRunner({ running: false, job: null });
+    render(consoleWith());
+
+    state.current = { running: false, job: FINISHED };
+    fireEvent.click(screen.getByRole('button', { name: 'compare A ⇄ B' }));
+
+    await waitFor(() => expect(scrollIntoView).toHaveBeenCalledTimes(1));
+    expect(scrollIntoView.mock.contexts[0]).toBe(document.getElementById(HISTORY_ANCHOR));
+  });
+
+  // The poll reports the LAST run while nothing is running, so the previous
+  // job's finished record is what it answers until the new one replaces it.
+  // Scrolling on "a job finished" would jump before this one had started.
+  it('does not bring History into view for a job it did not start', async () => {
+    const { state, posts } = stubRunner({ running: false, job: RUN });
+    render(consoleWith());
+
+    state.current = { running: true, job: STARTED };
+    fireEvent.click(screen.getByRole('button', { name: 'compare A ⇄ B' }));
+
+    await waitFor(() => expect(posts()).toHaveLength(1));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(scrollIntoView).not.toHaveBeenCalled();
   });
 });
 

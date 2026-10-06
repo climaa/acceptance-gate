@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { EmptyState, Stack } from '@gate/ui';
+import { HISTORY_ANCHOR } from '@/lib/anchors';
 import type { CanonicalSet as Corpus } from '@/lib/baselines';
 import type { ReportListEntry } from '@/lib/data';
 import type { HistoryRecord } from '@/lib/job-contract';
@@ -7,6 +8,7 @@ import { formatDay } from '@/lib/outcome';
 import type { CaptureSet } from '@/lib/summary';
 import { CanonicalSet } from './CanonicalSet';
 import { ComparePickers } from './ComparePickers';
+import { CompareStartProvider } from './CompareStart';
 import { CurrentJob, CurrentJobProvider } from './CurrentJob';
 import { HistoryTable } from './HistoryTable';
 import { Note } from './Note';
@@ -143,82 +145,91 @@ export function DashboardTemplate({
   const frozen = isSample || !isLocal;
 
   return (
-    <div className="vd-console">
-      <Stack gap={6} className="vd-console__column">
-        <Panel id="vd-sets" title="screenshot sets" count={sets.length}>
-          {corpus && <CanonicalSet corpus={corpus} />}
-
-          {sets.length === 0 ? (
-            <EmptyState message="This instance has captured nothing yet — run a capture and the set appears here." />
-          ) : (
-            <SetsTable sets={sets} sizes={sizes} frozen={frozen} />
-          )}
-
-          {/* The pickers list the corpus alongside the captured sets, which is what
-              it is there for. `RetentionControl` does not: pruning is about what
-              this instance accumulated, and the corpus is not prunable — the
-              delete route refuses it by name.
-
-              The pickers stay wherever there is something to compare — comparing
-              is reading, and that is what a deployed or sample console is for.
-              The prune does not: `POST /api/prune` refuses both, and this is the
-              only bulk destruction here, so rather than a disabled button the
-              whole control goes — a keep-latest number with no prune behind it
-              states a retention policy the console cannot carry out. */}
-          {compareLabels.length > 1 && <ComparePickers labels={compareLabels} />}
-          {!frozen && sets.length > 0 && (
-            <RetentionControl labels={sets.map((set) => set.label)} />
-          )}
-        </Panel>
-
-        <Panel id="vd-reports" title="reports" count={reports.length}>
-          {reports.length === 0 ? (
-            <EmptyState message="No reports yet — compare two capture sets and one appears here." />
-          ) : (
-            <ReportsTable
-              reports={reports}
-              dates={reportDates(history)}
-              frozen={frozen}
-            />
-          )}
-        </Panel>
-      </Stack>
-
-      {/* One poller for the column: the run panel and the current-job region ask
-          the same endpoint the same question, and two of them would be two
-          consoles disagreeing about whether anything is running. */}
-      <CurrentJobProvider>
+    // Around both columns, because the press is in this one and the panel that
+    // starts it is in the other — see CompareStart.tsx.
+    <CompareStartProvider>
+      <div className="vd-console">
         <Stack gap={6} className="vd-console__column">
-          <Panel id="vd-run" title="start a job">
-            <RunPanel isSample={isSample} isLocal={isLocal} />
+          <Panel id="vd-sets" title="screenshot sets" count={sets.length}>
+            {corpus && <CanonicalSet corpus={corpus} />}
+
+            {sets.length === 0 ? (
+              <EmptyState message="This instance has captured nothing yet — run a capture and the set appears here." />
+            ) : (
+              <SetsTable sets={sets} sizes={sizes} frozen={frozen} />
+            )}
+
+            {/* The pickers list the corpus alongside the captured sets, which is what
+                it is there for. `RetentionControl` does not: pruning is about what
+                this instance accumulated, and the corpus is not prunable — the
+                delete route refuses it by name.
+
+                The pickers stay wherever there is something to compare — comparing
+                is reading, and that is what a deployed or sample console is for.
+                The prune does not: `POST /api/prune` refuses both, and this is the
+                only bulk destruction here, so rather than a disabled button the
+                whole control goes — a keep-latest number with no prune behind it
+                states a retention policy the console cannot carry out.
+
+                Where a job can start, the press starts the comparison too, and only
+                there: `canStart` is the same `frozen` the prune reads. */}
+            {compareLabels.length > 1 && (
+              <ComparePickers labels={compareLabels} canStart={!frozen} />
+            )}
+            {!frozen && sets.length > 0 && (
+              <RetentionControl labels={sets.map((set) => set.label)} />
+            )}
           </Panel>
 
-          {/* Not wrapped in `Panel`: this region owns a live region and an
-              accessible name the acceptance scenarios pin, so it brings its own
-              section — see CurrentJob.tsx. */}
-          <CurrentJob />
-
-          <Panel id="vd-history" title="history" count={history.length}>
-            {history.length === 0 ? (
-              <EmptyState message="Nothing has run yet — this instance keeps a row per job." />
+          <Panel id="vd-reports" title="reports" count={reports.length}>
+            {reports.length === 0 ? (
+              <EmptyState message="No reports yet — compare two capture sets and one appears here." />
             ) : (
-              <>
-                <Note name="what a verdict means">
-                  status is the CLI&apos;s exit code said out loud: succeeded is clean,
-                  succeeded (diffs) is a report waiting for review, failed is the run
-                  itself breaking, interrupted is a job that never got the chance to
-                  report one
-                </Note>
-                <HistoryTable
-                  runs={history}
-                  runningId={runningId}
-                  reportIds={reportIds}
-                />
-              </>
+              <ReportsTable
+                reports={reports}
+                dates={reportDates(history)}
+                frozen={frozen}
+              />
             )}
           </Panel>
         </Stack>
-      </CurrentJobProvider>
-    </div>
+
+        {/* One poller for the column: the run panel and the current-job region ask
+            the same endpoint the same question, and two of them would be two
+            consoles disagreeing about whether anything is running. */}
+        <CurrentJobProvider>
+          <Stack gap={6} className="vd-console__column">
+            <Panel id="vd-run" title="start a job">
+              <RunPanel isSample={isSample} isLocal={isLocal} />
+            </Panel>
+
+            {/* Not wrapped in `Panel`: this region owns a live region and an
+                accessible name the acceptance scenarios pin, so it brings its own
+                section — see CurrentJob.tsx. */}
+            <CurrentJob />
+
+            <Panel id={HISTORY_ANCHOR} title="history" count={history.length}>
+              {history.length === 0 ? (
+                <EmptyState message="Nothing has run yet — this instance keeps a row per job." />
+              ) : (
+                <>
+                  <Note name="what a verdict means">
+                    status is the CLI&apos;s exit code said out loud: succeeded is clean,
+                    succeeded (diffs) is a report waiting for review, failed is the run
+                    itself breaking, interrupted is a job that never got the chance to
+                    report one
+                  </Note>
+                  <HistoryTable
+                    runs={history}
+                    runningId={runningId}
+                    reportIds={reportIds}
+                  />
+                </>
+              )}
+            </Panel>
+          </Stack>
+        </CurrentJobProvider>
+      </div>
+    </CompareStartProvider>
   );
 }

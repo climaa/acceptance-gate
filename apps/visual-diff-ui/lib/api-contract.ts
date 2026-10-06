@@ -130,6 +130,13 @@ export const CurrentJobResponseSchema = z.object({
 
 export type CurrentJobResponse = z.infer<typeof CurrentJobResponseSchema>;
 
+/** `POST /api/jobs` on a 202 — the job the runner has just taken. Read by the run
+ *  panel only for the id, so it can tell the job a compare press started from
+ *  whatever the poll reported before it. */
+export const StartJobResponseSchema = z.object({ job: HistoryRecordSchema });
+
+export type StartJobResponse = z.infer<typeof StartJobResponseSchema>;
+
 /** `POST /api/prune` — what the server actually kept, removed, and spared. The
  *  dialog reports `refused` back, which is why a prune that succeeded can still
  *  leave it open. */

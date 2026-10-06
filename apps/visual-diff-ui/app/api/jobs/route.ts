@@ -1,3 +1,4 @@
+import type { StartJobResponse } from '@/lib/api-contract';
 import { dockerAvailable } from '@/lib/docker';
 import { guardMutation } from '@/lib/guard';
 import { hostMatches } from '@/lib/host';
@@ -49,7 +50,9 @@ export async function POST(request: Request): Promise<Response> {
   const outcome = startJob(dir, job, runJob);
   if (!outcome.ok) return conflict(JOB_RUNNING, { job: outcome.running });
 
-  return Response.json({ job: outcome.started.job }, { status: 202 });
+  const body: StartJobResponse = { job: outcome.started.job };
+
+  return Response.json(body, { status: 202 });
 }
 
 const issuesOf = (error: { issues: { path: PropertyKey[]; message: string }[] }) =>
