@@ -12758,7 +12758,7 @@
                   "fill": "$ink-muted",
                   "textGrowth": "fixed-width",
                   "width": "fill_container",
-                  "content": "Pick set A + set B → job starts (one at a time, D1) → LogTail streams progress → land on the report. Status vocabulary verbatim: succeeded (diffs) · failed · interrupted.",
+                  "content": "Pick set A + set B → compare A ⇄ B fills the job form AND starts the job (one at a time, D1) — a console that cannot start jobs only fills the form → LogTail streams progress → when it finishes, History comes into view and the new row's view opens the report. A reload or a shared link only fills the form: the start is the press, never the URL. Status vocabulary verbatim: succeeded (diffs) · failed · interrupted.",
                   "lineHeight": 1.45,
                   "fontFamily": "$font-body",
                   "fontSize": 12,
