@@ -83,4 +83,54 @@ describe('SiteFooter', () => {
     expect(screen.queryAllByRole('link')).toHaveLength(0);
     screen.getByText('© 2026 Carlos Lima');
   });
+  it('ends the copyright line with the version, as plain text', () => {
+    render(
+      <SiteFooter year={2026} copyright="Carlos Lima" version="1.5.0" links={links} />,
+    );
+
+    // textContent is what a reader copying the line gets, so it is the contract.
+    expect(screen.getByRole('contentinfo').textContent).toContain(
+      '© 2026 Carlos Lima · v1.5.0',
+    );
+    expect(screen.queryByRole('link', { name: 'v1.5.0' })).toBeNull();
+  });
+
+  it('links the version where the caller says the release notes are', () => {
+    render(
+      <SiteFooter
+        year={2026}
+        copyright="Carlos Lima"
+        version="1.5.0"
+        versionHref="/changelog"
+        links={links}
+      />,
+    );
+
+    const version = screen.getByRole('link', { name: 'v1.5.0' });
+
+    expect(version.getAttribute('href')).toBe('/changelog');
+  });
+
+  // A discreet mark must not cut ahead of the footer's own links for a keyboard.
+  it('puts the version link after none of the footer links', () => {
+    render(
+      <SiteFooter
+        year={2026}
+        copyright="Carlos Lima"
+        version="1.5.0"
+        versionHref="/changelog"
+        links={links}
+      />,
+    );
+
+    const names = screen.getAllByRole('link').map((link) => link.textContent);
+
+    expect(names).toEqual(['v1.5.0', 'RSS', 'GitHub']);
+  });
+
+  it('prints no separator when there is no version', () => {
+    render(<SiteFooter year={2026} copyright="Carlos Lima" links={links} />);
+
+    expect(screen.getByRole('contentinfo').textContent).not.toContain('·');
+  });
 });
