@@ -13,6 +13,7 @@ import {
   SITE_URL,
 } from '@/lib/site';
 import { THEME_SCRIPT } from '@/lib/theme';
+import { SITE_VERSION } from '@/lib/version';
 // Imported for the URL, not the bytes: the bundler emits the same hashed asset
 // the design system's `@font-face` already points at, so the preload and the
 // stylesheet ask for one file rather than two.
@@ -103,6 +104,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           className="ds-container"
           copyright={SITE_COPYRIGHT}
           year={SITE_COPYRIGHT_YEAR}
+          version={SITE_VERSION}
+          versionHref="/changelog"
           links={FOOTER_LINKS}
         />
 

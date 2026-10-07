@@ -5,6 +5,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 import RootLayout from '../app/layout';
 import { SITE_COPYRIGHT, SITE_COPYRIGHT_YEAR, SITE_TITLE } from '../lib/site';
+import manifest from '../package.json';
 
 /**
  * The frame every route renders inside, now that `SiteHeader` and `SiteFooter`
@@ -83,6 +84,14 @@ describe('the main landmark', () => {
 });
 
 describe('the site footer', () => {
+  // Against the manifest, not a literal: a release bumps the version and this
+  // must stay true without an edit, which is the whole point of reading it.
+  it("ends the copyright line with this app's release, linked to its notes", () => {
+    const links = linksIn(shell());
+
+    expect(links).toContainEqual({ href: '/changelog', text: `v${manifest.version}` });
+  });
+
   it('prints the pinned copyright year', () => {
     const html = shell();
 

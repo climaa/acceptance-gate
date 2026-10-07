@@ -19,6 +19,7 @@ import {
   SITE_URL,
 } from '@/lib/site';
 import { THEME_SCRIPT } from '@/lib/theme';
+import { SITE_VERSION } from '@/lib/version';
 import './globals.css';
 
 /**
@@ -98,6 +99,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           className="ds-container"
           copyright={SITE_COPYRIGHT}
           year={SITE_COPYRIGHT_YEAR}
+          version={SITE_VERSION}
           links={FOOTER_LINKS}
         />
 

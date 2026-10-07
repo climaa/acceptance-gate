@@ -9,3 +9,10 @@
   font-size: var(--text-sm);
   color: var(--color-text-muted);
 }
+
+/* Mono marks it as an identifier, like a hash; one step down from the line it sits
+   on because the mono face's taller x-height reads larger at the same size. */
+.ds-site-footer__version {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+}
