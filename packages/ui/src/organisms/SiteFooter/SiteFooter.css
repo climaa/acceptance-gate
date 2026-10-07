@@ -11,10 +11,8 @@
 }
 
 /* Mono marks it as an identifier, like a hash; one step down from the line it sits
-   on because the mono face's taller x-height reads larger at the same size. Tabular
-   figures keep `v1.10.0` from jittering against `v1.9.0`. */
+   on because the mono face's taller x-height reads larger at the same size. */
 .ds-site-footer__version {
   font-family: var(--font-mono);
   font-size: var(--text-xs);
-  font-variant-numeric: tabular-nums;
 }

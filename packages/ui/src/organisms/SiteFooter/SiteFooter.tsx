@@ -31,7 +31,8 @@ export interface SiteFooterProps {
 
 /**
  * The version mark: selectable text, never an image, so a bug report can quote it.
- * Last on the line, so it never takes a tab stop ahead of the footer's own links.
+ * When it links, it is the first tab stop in the footer, ahead of the nav: it sits
+ * first on the line, and focus order follows the order a reader sees.
  */
 function FooterVersion({ version, href }: { version: string; href?: string }) {
   const label = `v${version}`;

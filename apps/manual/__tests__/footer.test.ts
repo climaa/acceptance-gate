@@ -13,15 +13,17 @@ import manifest from '../package.json';
  * Plain text here, unlike the blog's: the manual has no release notes of its own
  * for the version to lead to.
  */
-const footer = () =>
-  renderToStaticMarkup(createElement(RootLayout, null, null)).match(
-    /<footer\b[\s\S]*?<\/footer>/,
-  )?.[0] ?? '';
+const footerText = () =>
+  (
+    renderToStaticMarkup(createElement(RootLayout, null, null)).match(
+      /<footer\b[\s\S]*?<\/footer>/,
+    )?.[0] ?? ''
+  ).replace(/<[^>]*>/g, '');
 
 describe('the footer', () => {
+  // The text, not the markup: it is what a reader copying the line gets, and it
+  // survives a class rename.
   it("ends the copyright line with this app's release", () => {
-    expect(footer()).toContain(
-      `· <span class="ds-site-footer__version">v${manifest.version}</span>`,
-    );
+    expect(footerText()).toContain(`· v${manifest.version}`);
   });
 });

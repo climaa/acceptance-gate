@@ -83,6 +83,7 @@ describe('SiteFooter', () => {
     expect(screen.queryAllByRole('link')).toHaveLength(0);
     screen.getByText('© 2026 Carlos Lima');
   });
+
   it('ends the copyright line with the version, as plain text', () => {
     render(
       <SiteFooter year={2026} copyright="Carlos Lima" version="1.5.0" links={links} />,
@@ -111,8 +112,9 @@ describe('SiteFooter', () => {
     expect(version.getAttribute('href')).toBe('/changelog');
   });
 
-  // A discreet mark must not cut ahead of the footer's own links for a keyboard.
-  it('puts the version link after none of the footer links', () => {
+  // Focus order follows what a reader sees: the version is first on the line, so a
+  // keyboard reaches it before the nav, not after it.
+  it('reaches the version link before the footer links, in reading order', () => {
     render(
       <SiteFooter
         year={2026}
