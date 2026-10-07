@@ -298,14 +298,43 @@
           "alignItems": "center",
           "children": [
             {
-              "type": "text",
-              "id": "ayll2",
-              "name": "Copy",
-              "fill": "$text-muted",
-              "content": "© 2026 Carles Lima — built by its own agent pipeline",
-              "fontFamily": "$font-body",
-              "fontSize": 12,
-              "fontWeight": "normal"
+              "type": "frame",
+              "id": "UDI8j",
+              "name": "Legal",
+              "gap": 6,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "ayll2",
+                  "name": "Copy",
+                  "fill": "$text-muted",
+                  "content": "© 2026 Carles Lima — built by its own agent pipeline",
+                  "fontFamily": "$font-body",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "D2OSh",
+                  "name": "Separator",
+                  "fill": "$text-muted",
+                  "content": "·",
+                  "fontFamily": "$font-body",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "crGrU",
+                  "name": "Version",
+                  "fill": "$text-muted",
+                  "content": "v1.5.0",
+                  "fontFamily": "$font-mono",
+                  "fontSize": 11,
+                  "fontWeight": "normal"
+                }
+              ]
             },
             {
               "type": "frame",
