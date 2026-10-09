@@ -66,6 +66,9 @@ const EXPECTED_SKIPS: Readonly<Record<string, string>> = {
   // No steps renders `null` too, so the same applies. `Scenario` stays captured;
   // StepList.test.tsx holds it there.
   'molecules/StepList/StepList.stories.tsx': 'no box: renders null',
+  // One page renders `null` as well. The four drawn states stay captured;
+  // Pagination.test.tsx holds them there.
+  'molecules/Pagination/Pagination.stories.tsx': 'no box: renders null',
 };
 
 /** Every story module committed under src/, as paths relative to it. */

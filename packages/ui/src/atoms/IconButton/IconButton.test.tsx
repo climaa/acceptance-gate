@@ -122,6 +122,24 @@ describe('IconButton', () => {
     expect(onClick).not.toHaveBeenCalled();
   });
 
+  // The arrow of a Pagination is a link, not a button; `as` is how it gets there
+  // without this package knowing the app's router. No `type` on a link: that
+  // attribute means something else on an anchor.
+  it('renders as the element it is handed, keeping its name and hiding its glyph', () => {
+    render(
+      <IconButton as="a" href="/blog/page/2" label="Next page">
+        <Wand />
+      </IconButton>,
+    );
+
+    const link = screen.getByRole('link', { name: 'Next page' });
+
+    expect(link.getAttribute('href')).toBe('/blog/page/2');
+    expect(link.getAttribute('type')).toBeNull();
+    expect(screen.getByTestId('glyph').closest('[aria-hidden="true"]')).not.toBeNull();
+    expect(screen.queryByRole('button')).toBeNull();
+  });
+
   it('forwards the button attributes it does not own', () => {
     const onClick = vi.fn();
     render(

@@ -49,3 +49,4 @@
 @import './atoms/SegmentedControl/SegmentedControl.css';
 @import './atoms/IconButton/IconButton.css';
 @import './atoms/Spinner/Spinner.css';
+@import './molecules/Pagination/Pagination.css';

@@ -1,12 +1,18 @@
-import type { ButtonHTMLAttributes, ReactNode } from 'react';
+import type { ComponentPropsWithoutRef, ElementType, ReactNode } from 'react';
 
 export type IconButtonVariant = 'secondary' | 'ghost';
 export type IconButtonSize = 'sm' | 'md';
 
-export interface IconButtonProps extends Omit<
-  ButtonHTMLAttributes<HTMLButtonElement>,
-  'aria-label' | 'children'
-> {
+interface IconButtonOwnProps<E extends ElementType> {
+  /**
+   * The element or component to render. Defaults to `'button'`.
+   *
+   * An arrow that navigates is a link, not a button, and this package must not
+   * depend on `next` — so a caller passes its router link the way it does to
+   * `Link` and `Tag`: `<IconButton as={NextLink} href="/blog/page/2" label="Next page">`.
+   * `label` and the `aria-hidden` glyph wrapper hold whatever the element is.
+   */
+  as?: E;
   /**
    * The accessible name, and the whole of it.
    *
@@ -19,10 +25,14 @@ export interface IconButtonProps extends Omit<
   label: string;
   variant?: IconButtonVariant;
   size?: IconButtonSize;
+  className?: string;
   /** The glyph. Wrapped in an `aria-hidden` span below, so it cannot leak into
    *  the name whatever the caller passes. */
   children: ReactNode;
 }
+
+export type IconButtonProps<E extends ElementType = 'button'> = IconButtonOwnProps<E> &
+  Omit<ComponentPropsWithoutRef<E>, keyof IconButtonOwnProps<E> | 'aria-label'>;
 
 /**
  * A button whose whole content is one glyph.
@@ -45,18 +55,26 @@ export interface IconButtonProps extends Omit<
  * one is built to stand among fields, and a submit inside a form is the wrong
  * default for a control that fills one in.
  */
-export function IconButton({
+export function IconButton<E extends ElementType = 'button'>({
+  as,
   label,
   variant = 'secondary',
   size = 'md',
   className,
-  type = 'button',
   children,
   ...rest
-}: IconButtonProps) {
+}: IconButtonProps<E>) {
+  // Widened rather than defaulted in the destructuring (`as: Tag = 'button'`):
+  // `Tag` would then be typed `E`, which `'button'` is not assignable to, and
+  // JSX cannot check a spread against a still-generic element type.
+  const Tag: ElementType = as ?? 'button';
+  // Only a real <button> has a `type`, and only there does the default below
+  // apply; `rest` follows it, so a caller who means submit still says so.
+  const typeDefault = Tag === 'button' ? { type: 'button' } : undefined;
+
   return (
-    <button
-      type={type}
+    <Tag
+      {...typeDefault}
       className={[
         'ds-icon-btn',
         `ds-icon-btn--${variant}`,
@@ -74,6 +92,6 @@ export function IconButton({
       <span className="ds-icon-btn__glyph" aria-hidden="true">
         {children}
       </span>
-    </button>
+    </Tag>
   );
 }
