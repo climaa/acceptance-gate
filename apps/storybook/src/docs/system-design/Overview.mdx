@@ -35,10 +35,11 @@ that no other Docs page does:
 
 **Status, checked against the filesystem, not assumed from the board**: the board's "Named
 candidates" row still lists five components as open — `Tag`, `PostMeta`, `Pagination`,
-`SkipLink`, `EmptyState`. Four of those five exist as real components today
-(`packages/ui/src/{atoms,molecules}/`); only `Pagination` remains unbuilt. The board _has_
-been re-exported since (2026-08-17, for the addition below) — but that row wasn't redrawn,
-so this page is still where the gap gets corrected until it is.
+`SkipLink`, `EmptyState`. All five exist as real components today
+(`packages/ui/src/{atoms,molecules}/`); `Pagination`, the last of them, landed on
+2026-10-09 (#486) with its four states drawn on the tile first. The board _has_ been
+re-exported since — but that row still reads as open, so this page is where the gap gets
+corrected until the row is folded into its tiers.
 
 That 2026-08-17 revision added a second inventory to this board: the **Visual-diff console**
 tier section — the NET-NEW components `apps/visual-diff-ui` needs, each tile carrying its

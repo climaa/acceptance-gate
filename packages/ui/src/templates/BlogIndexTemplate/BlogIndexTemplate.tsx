@@ -29,6 +29,13 @@ export interface BlogIndexTemplateProps {
    * empty.
    */
   emptyAction?: ReactNode;
+  /**
+   * The page control under the list — a `Pagination`, on the pages that have
+   * one. A slot rather than page numbers: the template knows nothing about how
+   * many posts there are or where the other pages live, and a tag page has no
+   * pages at all. Rendered only under a list, never under the empty state.
+   */
+  pagination?: ReactNode;
   className?: string;
 }
 
@@ -49,6 +56,7 @@ export function BlogIndexTemplate({
   posts,
   empty,
   emptyAction,
+  pagination,
   className,
 }: BlogIndexTemplateProps) {
   return (
@@ -67,6 +75,10 @@ export function BlogIndexTemplate({
       ) : (
         <EmptyState message={empty ?? DEFAULT_EMPTY_MESSAGE} action={emptyAction} />
       )}
+
+      {/* Placed as a child, not wrapped: a `Pagination` with one page renders
+          null, and a wrapper around null would still take the Stack's gap. */}
+      {posts.length > 0 && pagination}
     </Stack>
   );
 }

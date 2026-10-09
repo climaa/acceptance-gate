@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
+import { Pagination } from '../../molecules/Pagination/Pagination';
 import { BlogIndexTemplate } from './BlogIndexTemplate';
 
 const meta = {
@@ -57,5 +58,15 @@ export const WithIntro: Story = {
     title: 'Posts tagged agents',
     intro: 'Every post here touches the pipeline that captures this baseline.',
     posts: POSTS.slice(0, 2),
+  },
+};
+
+/** Page 2 of 3 — what `/blog/page/2` draws: the position in the intro, the control under the list. */
+export const Paged: Story = {
+  args: {
+    title: 'Blog',
+    intro: 'Page 2 of 3',
+    posts: POSTS,
+    pagination: <Pagination page={2} pageCount={3} />,
   },
 };

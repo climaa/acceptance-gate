@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
+import { laterPages } from '@/lib/paging';
 import { getAllPosts, getAllTags, tagSlug } from '@/lib/posts';
 
 /**
@@ -36,12 +37,17 @@ import { getAllPosts, getAllTags, tagSlug } from '@/lib/posts';
 interface KnownAddresses {
   posts: ReadonlySet<string>;
   tags: ReadonlySet<string>;
+  /** The later pages of the index, as the `[n]` they are addressed by. */
+  pages: ReadonlySet<string>;
 }
 
 function readContent(): KnownAddresses {
+  const posts = getAllPosts();
+
   return {
-    posts: new Set(getAllPosts().map((post) => post.slug)),
+    posts: new Set(posts.map((post) => post.slug)),
     tags: new Set(getAllTags().map((tag) => tag.slug)),
+    pages: new Set(laterPages(posts.length).map(String)),
   };
 }
 
@@ -70,15 +76,26 @@ function decodeParam(param: string): string | null {
   }
 }
 
-// Both are `string | undefined` because a split says so, never because the
+// All three are `string | undefined` because a split says so, never because the
 // matcher would let a one-segment path through.
-function isKnown(segment: string | undefined, param: string | undefined): boolean {
+function isKnown(
+  segment: string | undefined,
+  param: string | undefined,
+  rest: string | undefined,
+): boolean {
   if (!segment || !param) return false;
+
+  const known = CACHED ?? readContent();
+
+  // `/blog/page/N` is the index's own later page, not a post called "page". The
+  // set holds the canonical spellings only, so `02` and a page past the last are
+  // misses here exactly as they are in the route; `/blog/page/1` never arrives,
+  // next.config redirects it to `/blog` first.
+  if (segment === 'blog' && param === 'page')
+    return rest !== undefined && known.pages.has(rest);
 
   const decoded = decodeParam(param);
   if (decoded === null) return false;
-
-  const known = CACHED ?? readContent();
 
   // Tags go through `tagSlug` on both sides, exactly as the page does, so
   // `/tags/CI` and `/tags/visual%20regression` stay the pages they already were.
@@ -92,7 +109,7 @@ function isKnown(segment: string | undefined, param: string | undefined): boolea
 }
 
 export function proxy(request: NextRequest) {
-  const [, segment, param] = request.nextUrl.pathname.split('/');
+  const [, segment, param, rest] = request.nextUrl.pathname.split('/');
 
   // A read that throws is a post with broken frontmatter, which `next build` and
   // __tests__/content.test.ts both refuse — so this is a development-only state,
@@ -101,7 +118,7 @@ export function proxy(request: NextRequest) {
   // route speak.
   let known: boolean;
   try {
-    known = isKnown(segment, param);
+    known = isKnown(segment, param, rest);
   } catch {
     return NextResponse.next();
   }
@@ -117,6 +134,8 @@ export function proxy(request: NextRequest) {
 // Exactly one segment deep on each: `/blog` and `/tags` are their own static
 // pages, and `/blog/<slug>/opengraph-image` is meant to stay reachable even for
 // a slug this file refuses — see `outputFileTracingIncludes` in next.config.mjs.
+// The index's later pages are the one two-segment shape, and named as such
+// rather than widened to `/blog/:slug*`, which would pull the OG image back in.
 export const config = {
-  matcher: ['/blog/:slug', '/tags/:tag'],
+  matcher: ['/blog/:slug', '/blog/page/:n', '/tags/:tag'],
 };

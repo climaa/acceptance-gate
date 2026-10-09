@@ -8,6 +8,10 @@ import { describe, expect, it, vi } from 'vitest';
 import { proxy } from '../proxy';
 import { tagSlug } from '../lib/posts';
 
+// Duplicated from lib/paging.ts on purpose: an expectation that imports the
+// value under test cannot catch that value being wrong.
+const POSTS_PER_PAGE = 4;
+
 /** Flipped by the one case that needs `getAllPosts()` to throw. */
 const content = vi.hoisted(() => ({ broken: false }));
 
@@ -156,6 +160,44 @@ describe('proxy', () => {
     } finally {
       content.broken = false;
     }
+  });
+
+  describe('the later pages of the index', () => {
+    const lastPage = Math.ceil(published.length / POSTS_PER_PAGE);
+
+    // The cases below need a second page to exist; with four or fewer published
+    // posts they would pass having tried nothing.
+    it('finds more than one page of published posts', () => {
+      expect(lastPage).toBeGreaterThan(1);
+    });
+
+    it('lets every later page through', () => {
+      const pages = Array.from({ length: lastPage - 1 }, (_, index) => index + 2);
+
+      const refused = pages.filter((page) => statusOf(`/blog/page/${page}`) !== null);
+
+      expect(refused).toEqual([]);
+    });
+
+    it('refuses the page past the last', () => {
+      expect(statusOf(`/blog/page/${lastPage + 1}`)).toBe(404);
+    });
+
+    // One page, one address: the sitemap writes `2`, so `02` is a miss here as
+    // it is in the route, and page 1 is `/blog` — next.config redirects
+    // `/blog/page/1` there before this file ever sees it, so the refusal below
+    // is what a request would meet only with that redirect gone.
+    it('refuses a spelling the sitemap never writes', () => {
+      for (const n of ['0', '1', '02', 'two']) {
+        expect(statusOf(`/blog/page/${n}`)).toBe(404);
+      }
+    });
+
+    // The two-segment shape must not have widened the one-segment one: a post
+    // whose slug happened to be "page" would be a post, and there is none.
+    it('still refuses /blog/page as a post address', () => {
+      expect(statusOf('/blog/page')).toBe(404);
+    });
   });
 
   // Reached only if someone widens the matcher, which is exactly when a silent
