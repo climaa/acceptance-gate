@@ -16,6 +16,8 @@ import { ReportPage } from '../../pages/report';
  *  value: playwright-bdd steps take fixtures, not each other's results. */
 export interface ScenarioState {
   articleTitle?: string;
+  /** The titles listed on page 1 of the index, read before the step that leaves it. */
+  firstPageTitles?: string[];
   /** How many variants were marked reviewed before the step that marks one. */
   reviewedBefore?: number;
   /** Which report an accept scenario is about, when it is not the one the

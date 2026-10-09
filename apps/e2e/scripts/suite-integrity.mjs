@@ -108,12 +108,19 @@ const LANES = ['acceptance', 'local'];
  * blocking check, and a link is not verified by asserting that it is spelled
  * the way it was spelled.
  *
+ * It was 53 until `/blog` was paged four articles at a time, with page 2 and
+ * up at `/blog/page/N`. Two of the three scenarios added with it are the kind
+ * a unit test can meet and are still here because they are the requirement in
+ * the product's own words; the third is a status line — a page past the last
+ * must answer 404 end to end, which under cacheComponents only proxy.ts can
+ * make true and only HTTP can read back.
+ *
  * Exact equality, not a floor: a floor decays, and after ten more scenarios a
  * floor of 47 would permit deleting ten of them. Raising this alongside a new
  * scenario is a two-line diff; LOWERING it is a product decision and belongs in
  * its own hand-authored PR with the reason written down.
  */
-const EXPECTED_SCENARIOS = 53;
+const EXPECTED_SCENARIOS = 56;
 
 /** The two project selectors. Carrying both excludes a scenario from both. */
 const PROJECT_TAGS = ['@desktop', '@mobile'];
