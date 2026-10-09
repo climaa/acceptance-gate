@@ -31,6 +31,15 @@ const DRAFT_SLUGS = fs
 // value under test cannot catch that value being wrong.
 const STATIC_ROUTES = ['/', '/blog', '/changelog', '/about'];
 
+// Duplicated from lib/paging.ts for the same reason. Page 1 is `/blog`, already
+// among the static routes, so the sitemap owes one entry per page after it.
+const POSTS_PER_PAGE = 4;
+const laterPagesOf = (count: number) =>
+  Array.from(
+    { length: Math.max(1, Math.ceil(count / POSTS_PER_PAGE)) - 1 },
+    (_, i) => i + 2,
+  );
+
 // Duplicated from app/rss.xml/route.ts for the reason above: importing the
 // escaper under test would make every expectation below agree with it by
 // construction, including when it is wrong. A title carrying an apostrophe
@@ -184,10 +193,18 @@ describe('app/sitemap', () => {
     const entries = await renderSitemap();
 
     const urls = entries.map((entry) => entry.url);
-    expect(urls).toHaveLength(posts.length + tags.length + STATIC_ROUTES.length);
+    const laterPages = laterPagesOf(posts.length);
+    expect(urls).toHaveLength(
+      posts.length + tags.length + STATIC_ROUTES.length + laterPages.length,
+    );
     STATIC_ROUTES.forEach((pathname) => {
       expect(urls).toContain(new URL(pathname, SITE_URL).toString());
     });
+    laterPages.forEach((page) => {
+      expect(urls).toContain(new URL(`/blog/page/${page}`, SITE_URL).toString());
+    });
+    // Page 1 is /blog, never a second address of its own.
+    expect(urls).not.toContain(new URL('/blog/page/1', SITE_URL).toString());
     posts.forEach((post) => {
       expect(urls).toContain(postUrl(post.slug));
     });

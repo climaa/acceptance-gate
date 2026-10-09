@@ -48,7 +48,13 @@ const nextConfig = {
   // /sobre-mi was a published, nav-linked URL before the route segment was
   // translated. Renaming the directory alone would start 404ing it.
   async redirects() {
-    return [{ source: '/sobre-mi', destination: '/about', permanent: true }];
+    return [
+      { source: '/sobre-mi', destination: '/about', permanent: true },
+      // Page 1 of the index is /blog. One page, one address: the control never
+      // links here, and a reader who edits the number down lands on the index
+      // rather than on a second copy of it.
+      { source: '/blog/page/1', destination: '/blog', permanent: true },
+    ];
   },
 };
 

@@ -135,6 +135,38 @@ describe('BlogIndexTemplate', () => {
     expect(list).toBeNull();
   });
 
+  it('renders the pagination slot under the list', () => {
+    const { container } = render(
+      <BlogIndexTemplate
+        title="Blog"
+        posts={posts}
+        pagination={<nav aria-label="Pagination">pages</nav>}
+      />,
+    );
+
+    const nav = screen.getByRole('navigation', { name: 'Pagination' });
+    const list = container.querySelector('.ds-blog-index__list');
+
+    // After the cards, not among them: the control closes the page.
+    expect(list).not.toBeNull();
+    const position = list ? list.compareDocumentPosition(nav) : 0;
+    expect(position & Node.DOCUMENT_POSITION_FOLLOWING).not.toBe(0);
+  });
+
+  // There is no second page of nothing, and the empty state is the last thing on
+  // an empty index. A slot passed anyway must not draw under it.
+  it('renders no pagination under the empty state', () => {
+    render(
+      <BlogIndexTemplate
+        title="Blog"
+        posts={[]}
+        pagination={<nav aria-label="Pagination">pages</nav>}
+      />,
+    );
+
+    expect(screen.queryByRole('navigation', { name: 'Pagination' })).toBeNull();
+  });
+
   it('carries only the Stack and block classes when no className is supplied', () => {
     const { container } = render(<BlogIndexTemplate title="Blog" posts={posts} />);
 

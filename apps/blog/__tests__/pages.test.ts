@@ -22,7 +22,7 @@ import { getAllPosts, tagPath } from '../lib/posts';
 
 const PUBLISHED = getAllPosts();
 
-/** The slice the home page lists — it shows the newest four, `/blog` shows all. */
+/** The slice the home page lists — the newest four, which is also page 1 of `/blog`. */
 const ON_HOME = PUBLISHED.slice(0, 4);
 
 /**
@@ -121,18 +121,21 @@ describe('the home page', () => {
 });
 
 describe('the blog index', () => {
-  it('lists every published post, newest first', () => {
+  // Page 1 of the index, not the whole index: the rest is behind the control
+  // under the list, which blog-paging.test.tsx reads page by page.
+  it('lists the first page of posts, newest first, with the control under them', () => {
     const props = blogIndex();
 
     expect(props.posts.map((post) => post.href)).toEqual(
-      PUBLISHED.map((post) => `/blog/${post.slug}`),
+      ON_HOME.map((post) => `/blog/${post.slug}`),
     );
+    expect(props.pagination).toBeTruthy();
   });
 
   it('renders the page title as the only h1, with each card an h2 below it', () => {
     const html = renderPage(BlogIndexPage);
 
-    expect(headingLevels(html)).toEqual([1, ...PUBLISHED.map(() => 2)]);
+    expect(headingLevels(html)).toEqual([1, ...ON_HOME.map(() => 2)]);
   });
 
   it('names the app’s router link once per card', () => {
@@ -144,8 +147,11 @@ describe('the blog index', () => {
   it('points every tag chip at the prerendered tag route', () => {
     const html = renderPage(BlogIndexPage);
 
-    expect(hrefsIn(html)).toContain(tagPath(MULTI_WORD_TAG));
-    expect(hrefsIn(html)).not.toContain(`/tags/${encodeURIComponent(MULTI_WORD_TAG)}`);
+    // The same specimen as the home page: page 1 is the newest four.
+    expect(hrefsIn(html)).toContain(tagPath(MULTI_WORD_TAG_ON_HOME));
+    expect(hrefsIn(html)).not.toContain(
+      `/tags/${encodeURIComponent(MULTI_WORD_TAG_ON_HOME)}`,
+    );
   });
 
   it('nests no anchor inside another', () => {

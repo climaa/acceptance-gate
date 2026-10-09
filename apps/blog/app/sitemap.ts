@@ -1,4 +1,5 @@
 import type { MetadataRoute } from 'next';
+import { blogPagePath, laterPages } from '@/lib/paging';
 import { getAllPosts, getAllTags, tagPath } from '@/lib/posts';
 import { absoluteUrl } from '@/lib/site';
 
@@ -9,9 +10,17 @@ export default function sitemap(): MetadataRoute.Sitemap {
     url: absoluteUrl(pathname),
   }));
 
-  const postEntries = getAllPosts().map((post) => ({
+  const posts = getAllPosts();
+
+  const postEntries = posts.map((post) => ({
     url: absoluteUrl(`/blog/${post.slug}`),
     lastModified: post.date,
+  }));
+
+  // Pages 2 and up only: page 1 is `/blog`, already in STATIC_ROUTES, and
+  // `/blog/page/1` redirects there rather than being a page of its own.
+  const pageEntries = laterPages(posts.length).map((page) => ({
+    url: absoluteUrl(blogPagePath(page)),
   }));
 
   // Slugs, not display text: they are the URLs `/tags/[tag]` prerenders, and the
@@ -20,5 +29,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
     url: absoluteUrl(tagPath(tag.slug)),
   }));
 
-  return [...staticEntries, ...postEntries, ...tagEntries];
+  return [...staticEntries, ...postEntries, ...pageEntries, ...tagEntries];
 }
