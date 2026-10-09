@@ -60,7 +60,7 @@ packages/
                        (16 atoms · 6 molecules · 4 organisms · 2 templates); every
                        one storied but Stack, the layout primitive with nothing
                        of its own to capture
-  visual-diff/         the self-built visual-regression CLI + 160 committed baselines
+  visual-diff/         the self-built visual-regression CLI + 172 committed baselines
   tsconfig/            shared TS configs
 designs/               acceptance-gate.pen (Pencil source) + exports/*.png
 scripts/               complexity-gate.mjs (the health gate) · index-integrity.mjs
@@ -120,7 +120,7 @@ scripts/               complexity-gate.mjs (the health gate) · index-integrity.
 - Orchestrator hermetic suite: 39 files / 656 tests (prompt contracts, merge flow, override grammar, worktree safety, provenance guard)
 - Workspace suites, all in the `test` gate job: `packages/ui` 35 files / 512 tests (70% coverage floor), `apps/blog` 26 / 514 (511 passed, 3 skipped — one per draft post), `packages/visual-diff` 10 / 327, `apps/storybook` 6 / 186, `apps/visual-diff-ui` 56 / 938 (floors 93/87/92/94), `packages/logger` 2 / 20, `apps/manual` 7 / 92, `packages/links` 1 / 10
 - `apps/e2e`: 53 acceptance scenarios across smoke, blog, the changelog's release conversations, /about, axe a11y, the visual-diff console, sample mode, the report and its accessibility treatment — in `gate.needs`, blocking. `EXPECTED_SCENARIOS` in `apps/e2e/scripts/suite-integrity.mjs` is the count that must agree. A second lane, `features/local/`, is two scenarios that write to your own tree and clean up after themselves — one captures, compares, reviews and accepts against your `.visual-diff`, the other proves the dev server reflects `apps/blog/content/posts` as it is, which no built app can claim (`EXPECTED_LOCAL_SCENARIOS`). It refuses to run under `CI` and gates nothing
-- `packages/visual-diff`: 160 committed baselines; the capture/compare job runs on every PR but is deliberately never in `gate.needs` (see `packages/visual-diff/README.md#ci-status`)
+- `packages/visual-diff`: 172 committed baselines; the capture/compare job runs on every PR but is deliberately never in `gate.needs` (see `packages/visual-diff/README.md#ci-status`)
 
 ## 🔗 Key Dependencies
 
