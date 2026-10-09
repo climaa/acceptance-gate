@@ -1,0 +1,60 @@
+/* The list reuses .ds-stack for the row; this block only strips the <ul>'s
+   marker and indent, the same reset TagList carries. */
+.ds-pagination__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* A page number is a 2rem square with IconButton's radius — the `ds-icon-btn--sm`
+   geometry the two arrows beside it already have, so the whole row lines up on
+   both edges. Stated on the class rather than inherited from `.ds-link`, because
+   `as` can render the number on any element. */
+.ds-pagination__page {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  min-height: 2rem;
+  padding: 0 var(--space-1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-normal);
+  font-variant-numeric: tabular-nums;
+  text-decoration: none;
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
+}
+
+/* The hover IconButton has, so a number and an arrow answer the pointer alike.
+   `.ds-link` puts an underline back on hover; a boxed number keeps it off. */
+.ds-pagination__page:hover,
+.ds-pagination__page:focus-visible {
+  background: var(--color-bg-subtle);
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+/* The current page is not a link, so it has no hover; accent on inverted text
+   is the only filled control in the row, which is what makes it findable. */
+.ds-pagination__page--current {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+  color: var(--color-text-inverted);
+  font-weight: var(--weight-bold);
+}
+
+/* The ellipsis takes a page's slot so the row does not jump when the window
+   slides, and is muted because it is not a destination. */
+.ds-pagination__gap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  min-height: 2rem;
+  color: var(--color-text-muted);
+}
