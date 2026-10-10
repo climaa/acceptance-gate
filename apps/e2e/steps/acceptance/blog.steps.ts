@@ -80,6 +80,62 @@ Then("the article title is the page's main heading", async ({ post, scenarioStat
   await expect(post.mainHeading).toHaveText(articleTitle);
 });
 
+// The number the product rules on (lib/paging.ts). Named here because the
+// scenario says "four", and the suite must fail the day the page size moves.
+const POSTS_PER_PAGE = 4;
+
+Given('more than four published articles exist', async ({ blogIndex }) => {
+  await blogIndex.open();
+  // The control renders only when there is a second page, so its presence is
+  // the fact this step asserts — without reading a post count the suite must
+  // not know.
+  await expect(blogIndex.pagination).toBeVisible();
+});
+
+When('I open the next page', async ({ blogIndex, scenarioState }) => {
+  scenarioState.firstPageTitles = await blogIndex.articleTitles.allInnerTexts();
+  await blogIndex.openNextPage();
+});
+
+When(
+  'I request a blog page number past the last page',
+  async ({ blogIndex, scenarioState }) => {
+    await blogIndex.open();
+    const last = await blogIndex.lastPageNumber();
+    scenarioState.response = await blogIndex.requestPage(last + 1);
+  },
+);
+
+Then('I see four articles', async ({ blogIndex }) => {
+  await expect(blogIndex.articleTitles).toHaveCount(POSTS_PER_PAGE);
+});
+
+Then('I see a pagination landmark', async ({ blogIndex }) => {
+  await expect(blogIndex.pagination).toBeVisible();
+});
+
+Then(
+  'I see the articles that follow the first four',
+  async ({ blogIndex, scenarioState }) => {
+    const { firstPageTitles } = scenarioState;
+    // No fallback: with nothing recorded there is no page 1 to compare against.
+    if (firstPageTitles === undefined) {
+      throw new Error(
+        'No first-page titles recorded — "I open the next page" must run first.',
+      );
+    }
+
+    await expect(blogIndex.articleTitles.first()).toBeVisible();
+    const titles = await blogIndex.articleTitles.allInnerTexts();
+    expect(titles.length).toBeGreaterThan(0);
+    expect(titles.filter((title) => firstPageTitles.includes(title))).toEqual([]);
+  },
+);
+
+Then('the current page is marked as current', async ({ blogIndex }) => {
+  await expect(blogIndex.currentPage).toHaveText('2');
+});
+
 Then('no listed article is marked as a draft', async ({ blogIndex }) => {
   await expect(blogIndex.articlesTitled(DRAFT_FIXTURE_TITLE)).toHaveCount(0);
 });

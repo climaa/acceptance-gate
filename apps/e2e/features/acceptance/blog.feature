@@ -28,3 +28,20 @@ Feature: Blog publication
   Scenario: A draft is unreachable at its own address
     When I request the draft fixture's address
     Then the response status is 404
+
+  Scenario: The index is paged four articles at a time
+    Given more than four published articles exist
+    When I visit the blog index
+    Then I see four articles
+    And I see a pagination landmark
+
+  Scenario: The second page continues the list
+    Given more than four published articles exist
+    When I visit the blog index
+    And I open the next page
+    Then I see the articles that follow the first four
+    And the current page is marked as current
+
+  Scenario: A page past the last one is a real 404
+    When I request a blog page number past the last page
+    Then the response status is 404

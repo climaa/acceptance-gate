@@ -1,4 +1,4 @@
-import type { Locator, Page } from '@playwright/test';
+import type { Locator, Page, Response } from '@playwright/test';
 
 /** The only layer that may know about markup. Locators are role-based: a heading
  *  is a heading to a screen reader and to this file alike, and a class rename does
@@ -14,12 +14,20 @@ export class BlogIndexPage {
   /** `PostMeta`'s reading-time text ("4 min") as a pattern, never an exact
    *  string — the post catalogue changes, the shape of the text does not. */
   readonly articleReadingTimes: Locator;
+  /** The `<nav aria-label="Pagination">` under the list. Rendered only when there
+   *  is more than one page, so its presence is itself the claim "there is more". */
+  readonly pagination: Locator;
+  /** The one page number that is text rather than a link — `aria-current="page"`
+   *  is what names it, to a screen reader and to this file alike. */
+  readonly currentPage: Locator;
 
   constructor(private readonly page: Page) {
     this.mainHeading = page.getByRole('heading', { level: 1 });
     this.articleTitles = page.getByRole('heading', { level: 2 });
     this.articleDates = page.locator('time');
     this.articleReadingTimes = page.getByText(/^\d+ min$/);
+    this.pagination = page.getByRole('navigation', { name: 'Pagination' });
+    this.currentPage = this.pagination.locator('[aria-current="page"]');
   }
 
   async open() {
@@ -50,5 +58,27 @@ export class BlogIndexPage {
 
   articlesTitled(title: string): Locator {
     return this.articleTitles.filter({ hasText: title });
+  }
+
+  /** The control's own way to the next page — never a hand-built address. */
+  async openNextPage() {
+    await this.pagination.getByRole('link', { name: 'Next page' }).click();
+  }
+
+  /** The highest page the control names, read off the control rather than
+   *  computed from a post count the suite must not know. */
+  async lastPageNumber(): Promise<number> {
+    const labels = await this.pagination
+      .getByRole('link', { name: /^Page \d+$/ })
+      .allInnerTexts();
+    const current = await this.currentPage.allInnerTexts();
+    const numbers = [...labels, ...current].map(Number).filter(Number.isFinite);
+    if (numbers.length === 0) throw new Error('The pagination names no page numbers.');
+    return Math.max(...numbers);
+  }
+
+  /** The response itself, for the scenario whose claim is the status line. */
+  async requestPage(page: number): Promise<Response | null> {
+    return this.page.goto(`/blog/page/${page}`);
   }
 }
