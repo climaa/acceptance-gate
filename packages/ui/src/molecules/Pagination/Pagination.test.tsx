@@ -150,6 +150,24 @@ describe('Pagination', () => {
 
     expect(screen.getByRole('navigation').className).toBe('ds-pagination u-mt-2');
   });
+
+  it('says the words a caller hands it, for an app that does not speak English', () => {
+    render(
+      <Pagination
+        page={2}
+        pageCount={3}
+        label="Páginas de sesiones"
+        previousLabel="Página anterior"
+        nextLabel="Página siguiente"
+        pageLabel={(page) => `Página ${page}`}
+      />,
+    );
+
+    expect(screen.getByRole('navigation', { name: 'Páginas de sesiones' })).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Página anterior' })).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Página siguiente' })).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Página 3' })).toBeTruthy();
+  });
 });
 
 /**

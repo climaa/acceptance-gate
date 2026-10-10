@@ -22,11 +22,22 @@ export interface PaginationProps {
   as?: ElementType;
   /** The landmark's name. One per page, so the default rarely needs changing. */
   label?: string;
+  /**
+   * The words the control says, for an app that does not speak English. Each
+   * defaults to the English this molecule was drawn with, so a caller that
+   * passes none renders what it always has.
+   */
+  previousLabel?: string;
+  nextLabel?: string;
+  /** The accessible name of one page's link. */
+  pageLabel?: (page: number) => string;
   className?: string;
 }
 
 /** One entry of the number row: a page, or the ellipsis standing for a run of them. */
 export type PaginationItem = number | 'gap';
+
+const defaultPageLabel = (page: number): string => `Page ${page}`;
 
 const defaultHrefFor = (page: number): string =>
   page === 1 ? '/blog' : `/blog/page/${page}`;
@@ -109,6 +120,9 @@ export function Pagination({
   hrefFor = defaultHrefFor,
   as,
   label = 'Pagination',
+  previousLabel = 'Previous page',
+  nextLabel = 'Next page',
+  pageLabel = defaultPageLabel,
   className,
 }: PaginationProps) {
   if (pageCount <= 1) {
@@ -130,7 +144,7 @@ export function Pagination({
         <li>
           <Arrow
             target={page > 1 ? page - 1 : undefined}
-            label="Previous page"
+            label={previousLabel}
             direction="left"
             hrefFor={hrefFor}
             as={as}
@@ -158,7 +172,7 @@ export function Pagination({
                   href={hrefFor(item)}
                   tone="muted"
                   className="ds-pagination__page"
-                  aria-label={`Page ${item}`}
+                  aria-label={pageLabel(item)}
                 >
                   {item}
                 </Link>
@@ -170,7 +184,7 @@ export function Pagination({
         <li>
           <Arrow
             target={page < pageCount ? page + 1 : undefined}
-            label="Next page"
+            label={nextLabel}
             direction="right"
             hrefFor={hrefFor}
             as={as}
