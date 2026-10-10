@@ -62,7 +62,12 @@ export class BlogIndexPage {
 
   /** The control's own way to the next page — never a hand-built address. */
   async openNextPage() {
+    const before = this.page.url();
     await this.pagination.getByRole('link', { name: 'Next page' }).click();
+    // The link routes on the client, so the click returns while page 1 is still
+    // on screen; a title read now is page 1's. The address changing is the
+    // navigation having happened.
+    await this.page.waitForURL((url) => url.href !== before);
   }
 
   /** The highest page the control names, read off the control rather than
