@@ -209,6 +209,20 @@
   display: contents;
 }
 
+/* Packed to the foot of the shared row: when the board's row wraps, its zoom
+   controls drop to a second line, and the after row's controls sit on that same
+   line rather than floating in the middle — one box, read the same on both
+   sides. */
+.vd-compare__panzoom .ds-panzoom__bar {
+  align-content: flex-end;
+}
+
+/* The controls sit on the row's foot on both sides, wrapped or not, so the two
+   zoom readouts always share one line. */
+.vd-compare__panzoom .ds-panzoom__controls {
+  align-self: flex-end;
+}
+
 .vd-compare__panzoom .ds-panzoom__pane {
   block-size: auto;
   min-block-size: var(--space-16);
@@ -229,6 +243,7 @@
 }
 
 .vd-compare__caption {
+  margin: 0;
   font-size: var(--text-xs);
   color: var(--color-text-muted);
 }
