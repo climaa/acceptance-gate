@@ -45,6 +45,7 @@
 @import './atoms/BucketChip/BucketChip.css';
 @import './atoms/Thumbnail/Thumbnail.css';
 @import './organisms/Dialog/Dialog.css';
+@import './organisms/PanZoom/PanZoom.css';
 @import './atoms/TriStateCheckbox/TriStateCheckbox.css';
 @import './atoms/SegmentedControl/SegmentedControl.css';
 @import './atoms/IconButton/IconButton.css';
