@@ -113,11 +113,19 @@ export function comparisonHref(
   reportId: string,
   key: string,
   mode: ComparisonMode | null = null,
+  view: ComparisonView = {},
 ): string {
-  const at = comparisonPath(reportId, key);
-  if (mode === null || mode === DEFAULT_MODE) return at;
+  const params = new URLSearchParams();
+  if (mode !== null && mode !== DEFAULT_MODE) params.set('mode', mode);
+  if (view.against === 'design') {
+    params.set('against', 'design');
+    if (view.board) params.set('board', view.board);
+  }
 
-  return `${at}?${new URLSearchParams({ mode }).toString()}`;
+  const query = params.toString();
+  const at = comparisonPath(reportId, key);
+
+  return query === '' ? at : `${at}?${query}`;
 }
 
 /** The report a comparison belongs to — where closing one lands. */
@@ -160,6 +168,16 @@ export const isComparisonPath = (pathname: string) =>
  */
 export const comparisonTitle = (variant: Pick<Variant, 'id' | 'viewport' | 'theme'>) =>
   `${storyTitle(variant.id)} · ${variant.viewport}/${variant.theme}`;
+
+/**
+ * What a comparison is read against, beside its mode. `board` is the one the
+ * reviewer picked, and null for "whichever this variant opens on" — so a link
+ * carries a board only when someone chose one.
+ */
+export interface ComparisonView {
+  against?: Against;
+  board?: DesignBoard | null;
+}
 
 /**
  * What the comparison is read against: its own _before_, or a design board.

@@ -160,3 +160,29 @@ describe('isAgainst and isDesignBoard', () => {
     expect(refused).toBe(false);
   });
 });
+
+describe('comparisonHref with a design view', () => {
+  it('carries against=design', () => {
+    const href = comparisonHref(REPORT, KEY, null, { against: 'design' });
+
+    expect(href).toBe(`${comparisonPath(REPORT, KEY)}?against=design`);
+  });
+
+  it('carries a picked board alongside it, after the mode', () => {
+    const href = comparisonHref(REPORT, KEY, 'slider', {
+      against: 'design',
+      board: 'pages',
+    });
+
+    expect(href).toBe(
+      `${comparisonPath(REPORT, KEY)}?mode=slider&against=design&board=pages`,
+    );
+  });
+
+  // `before` is the default, and a board means nothing while reading against it.
+  it('leaves both out when the comparison is read against before', () => {
+    const href = comparisonHref(REPORT, KEY, null, { against: 'before', board: 'pages' });
+
+    expect(href).toBe(comparisonPath(REPORT, KEY));
+  });
+});

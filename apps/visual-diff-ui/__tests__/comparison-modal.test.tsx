@@ -6,10 +6,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ComparisonModal } from '../components/ComparisonModal';
 import { ReportTemplate } from '../components/ReportTemplate';
 import {
+  type Against,
   COMPARISON_MODES,
   type ComparisonMode,
   comparisonHref,
   comparisonPath,
+  type DesignBoard,
+  designBoardUrl,
 } from '../lib/comparison';
 import type { CaptureSet, Summary, Variant } from '../lib/summary';
 import { storyTitle } from '../lib/title';
@@ -73,9 +76,16 @@ function setViewport(wide: boolean): void {
   })) as unknown as typeof window.matchMedia;
 }
 
-function renderModal(mode: ComparisonMode = 'diff', subject: Variant = PROSE) {
+function renderModal(
+  mode: ComparisonMode = 'diff',
+  subject: Variant = PROSE,
+  against: Against = 'before',
+  board: DesignBoard = 'component-library',
+) {
   const handlers = {
     onMode: vi.fn<(mode: ComparisonMode) => void>(),
+    onAgainst: vi.fn<(against: Against) => void>(),
+    onBoard: vi.fn<(board: DesignBoard) => void>(),
     onClose: vi.fn<() => void>(),
     onVariant: vi.fn<(variant: Variant) => void>(),
   };
@@ -87,6 +97,8 @@ function renderModal(mode: ComparisonMode = 'diff', subject: Variant = PROSE) {
       variants={[PROSE, PROSE_DARK]}
       sides={SIDES}
       mode={mode}
+      against={against}
+      board={board}
       {...handlers}
     />,
   );
@@ -346,21 +358,23 @@ describe('below the mobile breakpoint', () => {
   });
 });
 
-/**
- * The report's half of the seam: which variant the modal is on, and in which
- * mode, is in the URL — so a reviewer can send a colleague the exact thing they
- * are looking at. What has been reviewed stays in `localStorage`, where it
- * belongs to one person; the URL carries position and nothing else.
- */
 describe('the copy-link status', () => {
-  const modalOn = (subject: Variant, mode: ComparisonMode) => (
+  const modalOn = (
+    subject: Variant,
+    mode: ComparisonMode,
+    against: Against = 'before',
+  ) => (
     <ComparisonModal
       reportId={REPORT}
       variant={subject}
       variants={[PROSE, PROSE_DARK]}
       sides={SIDES}
       mode={mode}
+      against={against}
+      board="component-library"
       onMode={() => {}}
+      onAgainst={() => {}}
+      onBoard={() => {}}
       onClose={() => {}}
       onVariant={() => {}}
     />
@@ -408,12 +422,118 @@ describe('the copy-link status', () => {
     expect(document.activeElement).toBe(button);
   });
 
+  it('clears once the comparison is read against a design board instead', async () => {
+    const { rerender } = await copied(PROSE, 'diff');
+
+    rerender(modalOn(PROSE, 'diff', 'design'));
+
+    expect(status()).toBe('');
+  });
+
   it('stays while the link it is about is still the one on screen', async () => {
     const { rerender } = await copied(PROSE, 'diff');
 
     rerender(modalOn(PROSE, 'diff'));
 
     expect(status()).toBe('link copied');
+  });
+});
+
+/**
+ * The report's half of the seam: which variant the modal is on, and in which
+ * mode, is in the URL — so a reviewer can send a colleague the exact thing they
+ * are looking at. What has been reviewed stays in `localStorage`, where it
+ * belongs to one person; the URL carries position and nothing else.
+ */
+describe('the design view', () => {
+  const REMOVED = variant({
+    key: 'atoms__desktop__light__atoms-gone--default',
+    id: 'atoms-gone--default',
+    bucket: 'removed',
+  });
+
+  const against = () => within(modal()).getByRole('group', { name: 'compare to' });
+  const pressedIn = (group: HTMLElement) =>
+    within(group)
+      .getAllByRole('button')
+      .filter((button) => button.getAttribute('aria-pressed') === 'true')
+      .map((button) => button.textContent);
+
+  it('offers before and design, with before pressed by default', () => {
+    renderModal();
+
+    expect(pressedIn(against())).toEqual(['before']);
+  });
+
+  it('asks for the design view when design is pressed', () => {
+    const handlers = renderModal();
+
+    fireEvent.click(within(against()).getByRole('button', { name: 'design' }));
+
+    expect(handlers.onAgainst).toHaveBeenCalledWith('design');
+  });
+
+  // Every mode compares after with before; none can be run against a board.
+  it('unmounts the six modes, the metric and the scrubber', () => {
+    renderModal('slider', PROSE, 'design');
+
+    expect(within(modal()).queryByRole('toolbar')).toBeNull();
+    expect(within(modal()).queryByRole('slider')).toBeNull();
+    expect(within(modal()).queryByText(/px differ/)).toBeNull();
+  });
+
+  it('says the board is reference, never a verdict', () => {
+    renderModal('diff', PROSE, 'design');
+
+    expect(within(modal()).getByText(/never a verdict/)).toBeTruthy();
+  });
+
+  it('shows the picked board in a pane the reader can move around in', () => {
+    renderModal('diff', PROSE, 'design', 'visual-diff-pages');
+
+    const board = within(modal()).getByRole('img', { name: 'the console design board' });
+
+    expect(board.getAttribute('src')).toBe(designBoardUrl('visual-diff-pages'));
+    expect(within(modal()).getByRole('group', { name: 'design board' })).toBeTruthy();
+  });
+
+  it('presses the board on show, among all four', () => {
+    renderModal('diff', PROSE, 'design', 'pages');
+
+    const picker = within(modal()).getByRole('group', { name: 'board' });
+
+    expect(within(picker).getAllByRole('button')).toHaveLength(4);
+    expect(pressedIn(picker)).toEqual(['pages']);
+  });
+
+  it('asks for another board when one is picked', () => {
+    const handlers = renderModal('diff', PROSE, 'design');
+
+    const picker = within(modal()).getByRole('group', { name: 'board' });
+    fireEvent.click(within(picker).getByRole('button', { name: 'flows' }));
+
+    expect(handlers.onBoard).toHaveBeenCalledWith('flows-decisions');
+  });
+
+  it('puts the after screenshot beside the board', () => {
+    renderModal('diff', PROSE, 'design');
+
+    expect(within(modal()).getByRole('img', { name: 'candidate' })).toBeTruthy();
+    expect(within(modal()).getByText(`after · ${SIDES.b}`)).toBeTruthy();
+  });
+
+  // The after side is the modes' own Shot, so its absence reads the same here.
+  it('says a removed variant has no after side, rather than framing nothing', () => {
+    renderModal('diff', REMOVED, 'design');
+
+    expect(within(modal()).queryByRole('img', { name: 'candidate' })).toBeNull();
+    expect(within(modal()).getByText('not on this side')).toBeTruthy();
+  });
+
+  it('names the design view keys in the hint line', () => {
+    renderModal('diff', PROSE, 'design');
+
+    expect(within(modal()).getByText(/drag the board/)).toBeTruthy();
   });
 });
 

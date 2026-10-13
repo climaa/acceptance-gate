@@ -167,3 +167,33 @@
   background: var(--color-accent);
   transform: translate(-50%, -50%);
 }
+
+/* The design view: the board and the after screenshot side by side above the
+   breakpoint, stacked below it with the board on top — the order Board 04
+   draws on the sheet. `min-width: 0` lets each column shrink below its
+   image's intrinsic width instead of pushing the other off the stage. */
+.vd-compare__design {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
+}
+
+@media (min-width: 768px) {
+  .vd-compare__design {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+
+.vd-compare__board,
+.vd-compare__after {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+  margin: 0;
+}
+
+.vd-compare__caption {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}

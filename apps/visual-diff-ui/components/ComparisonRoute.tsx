@@ -6,8 +6,14 @@ import {
   type ComparisonMode,
   comparisonHref,
   DEFAULT_MODE,
+  type ComparisonView,
   comparisonTitle,
+  DEFAULT_AGAINST,
+  defaultBoard,
+  type DesignBoard,
+  isAgainst,
   isComparisonMode,
+  isDesignBoard,
   parseComparisonPath,
   reportPath,
 } from '@/lib/comparison';
@@ -62,9 +68,16 @@ export function ComparisonRoute({
 }: ComparisonRouteProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const asked = useSearchParams().get('mode');
+  const params = useSearchParams();
+  const asked = params.get('mode');
+  const askedAgainst = params.get('against');
+  const askedBoard = params.get('board');
 
   const mode: ComparisonMode = isComparisonMode(asked) ? asked : DEFAULT_MODE;
+  const view: ComparisonView = {
+    against: isAgainst(askedAgainst) ? askedAgainst : DEFAULT_AGAINST,
+    board: isDesignBoard(askedBoard) ? askedBoard : null,
+  };
 
   // Off a comparison's address — closing, mid-transition — there is no modal.
   const key = parseComparisonPath(pathname)?.key ?? null;
@@ -90,8 +103,20 @@ export function ComparisonRoute({
 
   if (key === null || !variant) return null;
 
-  const write = (nextKey: string, nextMode: ComparisonMode) =>
-    window.history.replaceState(null, '', comparisonHref(reportId, nextKey, nextMode));
+  const write = (nextKey: string, nextMode: ComparisonMode, nextView = view) =>
+    window.history.replaceState(
+      null,
+      '',
+      comparisonHref(reportId, nextKey, nextMode, nextView),
+    );
+  // A board equal to the one this variant opens on is not a choice worth
+  // recording: the link stays bare, and walks on to a variant of another tier
+  // open that tier's board.
+  const pickBoard = (next: DesignBoard) =>
+    write(key, mode, {
+      ...view,
+      board: next === defaultBoard(variant.tier) ? null : next,
+    });
 
   const close = () => {
     if (entry === 'report') return router.back();
@@ -105,7 +130,11 @@ export function ComparisonRoute({
       variants={variants}
       sides={sides}
       mode={mode}
+      against={view.against ?? DEFAULT_AGAINST}
+      board={view.board ?? defaultBoard(variant.tier)}
       onMode={(next) => write(key, next)}
+      onAgainst={(next) => write(key, mode, { ...view, against: next })}
+      onBoard={pickBoard}
       onVariant={(next) => write(next.key, mode)}
       onClose={close}
     />

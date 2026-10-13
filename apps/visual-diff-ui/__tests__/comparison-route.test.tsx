@@ -200,6 +200,82 @@ describe('the address following the modal', () => {
   });
 });
 
+describe('reading against a design board', () => {
+  const modalGroup = (name: string) => within(modal()).getByRole('group', { name });
+
+  it('opens the design view an address asks for, on the variant default board', () => {
+    renderRoute('direct', 'against=design');
+
+    const pressed = within(modalGroup('board'))
+      .getAllByRole('button')
+      .filter((button) => button.getAttribute('aria-pressed') === 'true')
+      .map((button) => button.textContent);
+
+    expect(pressed).toEqual(['components']);
+  });
+
+  it('opens the board an address names', () => {
+    renderRoute('direct', 'against=design&board=visual-diff-pages');
+
+    expect(
+      within(modal()).getByRole('img', { name: 'the console design board' }),
+    ).toBeTruthy();
+  });
+
+  it('ignores a board that is not one of the exports', () => {
+    renderRoute('direct', 'against=design&board=../secrets');
+
+    expect(
+      within(modal()).getByRole('img', { name: 'the components design board' }),
+    ).toBeTruthy();
+  });
+
+  it('writes against=design when the toggle switches, keeping the mode', () => {
+    renderRoute('report', 'mode=slider');
+
+    fireEvent.click(
+      within(modalGroup('compare to')).getByRole('button', { name: 'design' }),
+    );
+
+    expect(lastWritten()).toBe(
+      comparisonHref(REPORT, LIGHT.key, 'slider', { against: 'design' }),
+    );
+  });
+
+  it('writes a picked board into the address', () => {
+    renderRoute('report', 'against=design');
+
+    fireEvent.click(within(modalGroup('board')).getByRole('button', { name: 'pages' }));
+
+    expect(lastWritten()).toBe(
+      comparisonHref(REPORT, LIGHT.key, null, { against: 'design', board: 'pages' }),
+    );
+  });
+
+  // Picking the board the variant opens on anyway is not a choice to record.
+  it('drops the board from the address when the default one is picked again', () => {
+    renderRoute('report', 'against=design&board=pages');
+
+    fireEvent.click(
+      within(modalGroup('board')).getByRole('button', { name: 'components' }),
+    );
+
+    expect(lastWritten()).toBe(
+      comparisonHref(REPORT, LIGHT.key, null, { against: 'design' }),
+    );
+  });
+
+  it('keeps the design view when the arrows walk to another variant', () => {
+    renderRoute('report', 'against=design&board=pages');
+
+    fireEvent.keyDown(document, { key: 'ArrowRight' });
+
+    expect(lastWritten()).toBe(
+      comparisonHref(REPORT, DARK.key, null, { against: 'design', board: 'pages' }),
+    );
+  });
+});
+
 describe('closing', () => {
   it('goes back to the report it was opened from', () => {
     renderRoute('report');

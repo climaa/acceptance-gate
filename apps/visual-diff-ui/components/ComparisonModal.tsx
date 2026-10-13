@@ -6,14 +6,21 @@
    cannot show a re-encoded copy of the evidence. */
 
 import { useEffect, useRef, useState } from 'react';
-import { Dialog, SegmentedControl, Stack } from '@gate/ui';
+import { Dialog, PanZoom, SegmentedControl, Stack } from '@gate/ui';
 import { REDUCED_MOTION, useMediaQuery, WIDE_VIEWPORT } from '@/hooks/useMediaQuery';
 import {
+  AGAINST,
+  type Against,
   clampPosition,
   comparisonTitle,
   type ComparisonMode,
   DEFAULT_MODE,
+  DESIGN_BOARDS,
+  type DesignBoard,
+  designBoardUrl,
+  isAgainst,
   isComparisonMode,
+  isDesignBoard,
   MIDPOINT,
   modesFor,
   SCRUB_STEP,
@@ -63,6 +70,27 @@ const TOOLBAR_LABEL = 'comparison modes';
 const BLINK_MS = 400;
 
 const DESKTOP_HINT = 'esc close · ← → previous/next variant · drag the divider';
+const DESIGN_HINT =
+  'esc close · ← → previous/next variant · drag the board · + − zoom · 0 reset';
+
+/** The toggle's accessible name, pinned like the toolbar's. */
+const AGAINST_LABEL = 'compare to';
+
+/** How a reader names each board in the picker — what Board 01, 03, 04 and
+ *  Flows & Decisions are for, in one word each. */
+const BOARD_LABELS: Readonly<Record<DesignBoard, string>> = {
+  'component-library': 'components',
+  pages: 'pages',
+  'visual-diff-pages': 'console',
+  'flows-decisions': 'flows',
+};
+
+/** What the design view says about itself where the before/after metric was. */
+const DESIGN_NOTE =
+  'design board — reference beside the after screenshot, never a verdict';
+
+const BOARD_UNAVAILABLE =
+  'this board could not be loaded — it is in designs/exports/ in the checkout';
 const SHEET_HINT = 'swipe down to close · pinch to zoom';
 
 /** The side a variant has, for the modes that want the candidate: a `removed`
@@ -307,6 +335,54 @@ function Stage({ mode, split, shots, variant, position, onPosition }: StageProps
   );
 }
 
+interface DesignStageProps {
+  board: DesignBoard;
+  onBoard: (board: DesignBoard) => void;
+  shots: ShotSources;
+  variant: Variant;
+  after: string;
+}
+
+/**
+ * A design board beside the after screenshot — reference, never a side.
+ *
+ * The board is a `PanZoom`, keyed by board so a new pick opens at 100% rather
+ * than at the last board's zoom. The after side is the same `Shot` the modes
+ * draw, so a removed variant says "not on this side" here exactly as it does
+ * there. Nothing is compared: the reviewer pans to the tile and judges by eye.
+ */
+function DesignStage({ board, onBoard, shots, variant, after }: DesignStageProps) {
+  return (
+    <div className="vd-compare__design">
+      <div className="vd-compare__board">
+        <SegmentedControl
+          label="board"
+          options={DESIGN_BOARDS.map((name) => ({
+            value: name,
+            label: BOARD_LABELS[name],
+          }))}
+          value={board}
+          onChange={(picked) => {
+            if (isDesignBoard(picked)) onBoard(picked);
+          }}
+        />
+        <PanZoom
+          key={board}
+          src={designBoardUrl(board)}
+          alt={`the ${BOARD_LABELS[board]} design board`}
+          label="design board"
+          fallback={BOARD_UNAVAILABLE}
+        />
+      </div>
+
+      <figure className="vd-compare__after">
+        <figcaption className="vd-compare__caption vd-mono">after · {after}</figcaption>
+        <Shot kind="candidate" shots={shots} variant={variant} />
+      </figure>
+    </div>
+  );
+}
+
 export interface ComparisonModalProps {
   reportId: string;
   /** The variant on screen. Rendering this component at all is what "open"
@@ -317,10 +393,23 @@ export interface ComparisonModalProps {
   variants: readonly Variant[];
   sides: ReportSides;
   mode: ComparisonMode;
+  /** What the after screenshot is read against: its before, or a design board. */
+  against: Against;
+  /** The board the design view shows. Read only while `against` is design. */
+  board: DesignBoard;
   onMode: (mode: ComparisonMode) => void;
+  onAgainst: (against: Against) => void;
+  onBoard: (board: DesignBoard) => void;
   onVariant: (variant: Variant) => void;
   onClose: () => void;
 }
+
+/** The keys line under the stage: the design view's own, then each form factor's. */
+const hintFor = (design: boolean, wide: boolean) => {
+  if (design) return DESIGN_HINT;
+
+  return wide ? DESKTOP_HINT : SHEET_HINT;
+};
 
 export function ComparisonModal({
   reportId,
@@ -328,7 +417,11 @@ export function ComparisonModal({
   variants,
   sides,
   mode,
+  against,
+  board,
   onMode,
+  onAgainst,
+  onBoard,
   onVariant,
   onClose,
 }: ComparisonModalProps) {
@@ -347,7 +440,8 @@ export function ComparisonModal({
   // slider needs it to have a second layer to reveal, and the metric below needs
   // it to have a shared area to have measured.
   const pair = compared(variant.bucket);
-  const split = active === 'slider' && pair;
+  const design = against === 'design';
+  const split = !design && active === 'slider' && pair;
 
   const title = comparisonTitle(variant);
 
@@ -360,17 +454,32 @@ export function ComparisonModal({
           </h2>
 
           <SegmentedControl
-            role="toolbar"
-            label={TOOLBAR_LABEL}
-            className="vd-compare__modes"
-            options={modes.map((name) => ({ value: name, label: name }))}
-            value={active}
-            // The control's API is a plain string — the guard is what narrows
-            // it back to a mode, rather than a cast that would assume it.
+            label={AGAINST_LABEL}
+            className="vd-compare__against"
+            options={AGAINST.map((name) => ({ value: name, label: name }))}
+            value={against}
             onChange={(picked) => {
-              if (isComparisonMode(picked)) onMode(picked);
+              if (isAgainst(picked)) onAgainst(picked);
             }}
           />
+
+          {/* Unmounted, not disabled, in the design view: every mode answers
+              how after moved from before, and none of them can be run against
+              a board that shares no pixel grid with a screenshot. */}
+          {!design && (
+            <SegmentedControl
+              role="toolbar"
+              label={TOOLBAR_LABEL}
+              className="vd-compare__modes"
+              options={modes.map((name) => ({ value: name, label: name }))}
+              value={active}
+              // The control's API is a plain string — the guard is what narrows
+              // it back to a mode, rather than a cast that would assume it.
+              onChange={(picked) => {
+                if (isComparisonMode(picked)) onMode(picked);
+              }}
+            />
+          )}
         </Stack>
 
         {/* Same rule as the row this modal was opened from: a pixel count only
@@ -379,7 +488,8 @@ export function ComparisonModal({
             differ in the shared area` over a story with no baseline reports a
             clean shared area that never existed. The stage below already says
             which side is missing. */}
-        {pair && (
+        {design && <p className="vd-compare__metric">{DESIGN_NOTE}</p>}
+        {!design && pair && (
           <p className="vd-compare__metric">
             <span className="vd-mono">{formatPixels(variant.overlapDiffPixels)} px</span>{' '}
             differ in the shared area
@@ -397,14 +507,24 @@ export function ComparisonModal({
           affordances on the image, not tab stops that would carry the scroll.
         */}
         <div className="vd-compare__stage" tabIndex={0}>
-          <Stage
-            mode={active}
-            split={split}
-            shots={shots}
-            variant={variant}
-            position={position}
-            onPosition={setPosition}
-          />
+          {design ? (
+            <DesignStage
+              board={board}
+              onBoard={onBoard}
+              shots={shots}
+              variant={variant}
+              after={sides.b}
+            />
+          ) : (
+            <Stage
+              mode={active}
+              split={split}
+              shots={shots}
+              variant={variant}
+              position={position}
+              onPosition={setPosition}
+            />
+          )}
         </div>
 
         {split && <Scrubber position={position} onPosition={setPosition} />}
@@ -413,9 +533,9 @@ export function ComparisonModal({
           <p className="vd-compare__sides vd-mono">
             A {sides.a} · B {sides.b}
           </p>
-          <CopyLink about={`${variant.key}|${active}`} />
+          <CopyLink about={`${variant.key}|${active}|${against}|${board}`} />
         </Stack>
-        <p className="vd-compare__hint vd-mono">{wide ? DESKTOP_HINT : SHEET_HINT}</p>
+        <p className="vd-compare__hint vd-mono">{hintFor(design, wide)}</p>
       </Stack>
     </Dialog>
   );
