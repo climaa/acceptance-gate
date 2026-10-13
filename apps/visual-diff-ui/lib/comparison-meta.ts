@@ -1,10 +1,9 @@
 import type { Metadata } from 'next';
-import { comparableVariants, comparisonPath } from './comparison';
+import { comparableVariants, comparisonPath, comparisonTitle } from './comparison';
 import { readReport, resolveDataDir } from './data';
 import { formatPixels } from './report-view';
 import { compared } from './shots';
 import type { Variant } from './summary';
-import { storyTitle } from './title';
 import { NOT_FOUND_TITLE } from './site';
 
 /**
@@ -20,7 +19,7 @@ export function comparisonCopy(
   reportId: string,
   variant: Variant,
 ): { title: string; description: string } {
-  const title = `${storyTitle(variant.id)} · ${variant.viewport}/${variant.theme}`;
+  const title = comparisonTitle(variant);
   const verdict = compared(variant.bucket)
     ? `${formatPixels(variant.overlapDiffPixels)} px differ in the shared area`
     : `${variant.bucket} — one side has no shot to compare`;

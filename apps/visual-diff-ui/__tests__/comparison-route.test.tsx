@@ -135,6 +135,25 @@ describe('opening a comparison by its address', () => {
     expect(within(modal()).getByRole('heading').textContent).toContain('dark');
   });
 
+  // A walk writes the address natively, which never re-runs `generateMetadata`.
+  it('retitles the tab with the variant the address names now', () => {
+    const { rerender } = renderRoute('report');
+
+    setPathname(comparisonPath(REPORT, DARK.key));
+    rerender(routeElement('report'));
+
+    expect(document.title).toBe('Prose — Default · desktop/dark · visual-diff console');
+  });
+
+  it("puts the report's title back on the way out", () => {
+    const { rerender } = renderRoute('report');
+
+    setPathname(reportPath(REPORT));
+    rerender(routeElement('report'));
+
+    expect(document.title).toBe(`${REPORT} · visual-diff console`);
+  });
+
   it('draws nothing once the address is the report again', () => {
     const { rerender } = renderRoute('report');
 

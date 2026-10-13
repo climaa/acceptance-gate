@@ -1,15 +1,18 @@
 'use client';
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useEffect } from 'react';
 import {
   type ComparisonMode,
   comparisonHref,
   DEFAULT_MODE,
+  comparisonTitle,
   isComparisonMode,
   parseComparisonPath,
   reportPath,
 } from '@/lib/comparison';
 import type { ReportSides } from '@/lib/report-view';
+import { APP_NAME } from '@/lib/site';
 import type { Variant } from '@/lib/summary';
 import { ComparisonModal } from './ComparisonModal';
 
@@ -66,6 +69,25 @@ export function ComparisonRoute({
   // Off a comparison's address — closing, mid-transition — there is no modal.
   const key = parseComparisonPath(pathname)?.key ?? null;
   const variant = variants.find((candidate) => candidate.key === key);
+
+  // `generateMetadata` runs on a router navigation, and a walk is not one: left
+  // alone, the tab would go on naming the variant the modal opened on. Spelled
+  // the way the root layout's template spells every other title.
+  //
+  // And the report's title is put back on the way out. Closing is a navigation
+  // to a route Next still holds, so it does not re-apply that route's
+  // metadata — measured: without this, the tab named the last variant walked
+  // to, over the report. The report's title is its id (app/report/[id]).
+  const title = variant ? `${comparisonTitle(variant)} · ${APP_NAME}` : null;
+  useEffect(() => {
+    if (title === null) return;
+
+    document.title = title;
+    return () => {
+      document.title = `${reportId} · ${APP_NAME}`;
+    };
+  }, [title, reportId]);
+
   if (key === null || !variant) return null;
 
   const write = (nextKey: string, nextMode: ComparisonMode) =>

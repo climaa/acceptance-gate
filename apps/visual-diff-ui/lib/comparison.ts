@@ -1,4 +1,5 @@
 import type { Variant } from './summary';
+import { storyTitle } from './title';
 
 /**
  * The comparison surface's vocabulary: how a reviewer can look at one pair of
@@ -151,3 +152,11 @@ export function parseComparisonPath(
  *  this to know a modal is over it, which is what stands its keys down. */
 export const isComparisonPath = (pathname: string) =>
   parseComparisonPath(pathname) !== null;
+
+/**
+ * The sentence a comparison is known by: the modal's heading, its `<title>` and
+ * its card's headline. One function, so a walk that retitles the tab and a link
+ * preview that names it can never disagree with the dialog on screen.
+ */
+export const comparisonTitle = (variant: Pick<Variant, 'id' | 'viewport' | 'theme'>) =>
+  `${storyTitle(variant.id)} · ${variant.viewport}/${variant.theme}`;

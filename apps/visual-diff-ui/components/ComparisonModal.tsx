@@ -10,6 +10,7 @@ import { Dialog, SegmentedControl, Stack } from '@gate/ui';
 import { REDUCED_MOTION, useMediaQuery, WIDE_VIEWPORT } from '@/hooks/useMediaQuery';
 import {
   clampPosition,
+  comparisonTitle,
   type ComparisonMode,
   DEFAULT_MODE,
   isComparisonMode,
@@ -26,7 +27,6 @@ import {
   shotSources,
 } from '@/lib/shots';
 import type { Variant } from '@/lib/summary';
-import { storyTitle } from '@/lib/title';
 import { CopyLink } from './CopyLink';
 
 /**
@@ -349,7 +349,7 @@ export function ComparisonModal({
   const pair = compared(variant.bucket);
   const split = active === 'slider' && pair;
 
-  const title = `${storyTitle(variant.id)} · ${variant.viewport}/${variant.theme}`;
+  const title = comparisonTitle(variant);
 
   return (
     <Dialog open onClose={onClose} label={DIALOG_LABEL} className="vd-compare">
