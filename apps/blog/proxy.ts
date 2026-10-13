@@ -132,10 +132,10 @@ export function proxy(request: NextRequest) {
 }
 
 // Exactly one segment deep on each: `/blog` and `/tags` are their own static
-// pages, and `/blog/<slug>/opengraph-image` is meant to stay reachable even for
-// a slug this file refuses — see `outputFileTracingIncludes` in next.config.mjs.
-// The index's later pages are the one two-segment shape, and named as such
-// rather than widened to `/blog/:slug*`, which would pull the OG image back in.
+// pages. The index's later pages are the one two-segment shape, and named as
+// such rather than widened to `/blog/:slug*`. The social cards live under `/og/`,
+// outside every pattern here, because a card is meant to answer even for a slug
+// this file refuses — see `app/og/blog/[card]/route.tsx`.
 export const config = {
   matcher: ['/blog/:slug', '/blog/page/:n', '/tags/:tag'],
 };

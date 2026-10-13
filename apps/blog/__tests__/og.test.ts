@@ -4,7 +4,16 @@ import { pathToFileURL } from 'node:url';
 // Imported explicitly rather than relying on `globals: true` — same reason as
 // content.test.ts: tsconfig's `**/*.ts` include means tsc typechecks this file.
 import { describe, expect, it } from 'vitest';
-import { loadDisplayFont, OG_FONT_PATH, postCardCopy, SITE_CARD_COPY } from '../lib/og';
+import {
+  cardVersion,
+  loadDisplayFont,
+  OG_FONT_PATH,
+  postCardCopy,
+  postCardParam,
+  postCardPath,
+  SITE_CARD_COPY,
+  slugOfCardParam,
+} from '../lib/og';
 import { formatDate, getAllPosts } from '../lib/posts';
 import { SITE_DESCRIPTION, SITE_TAGLINE } from '../lib/site';
 
@@ -35,45 +44,49 @@ function magicOf(bytes: Buffer): number[] {
   return [...bytes.subarray(0, 4)];
 }
 
-const loadSiteCard = () => import('../app/opengraph-image');
-const loadPostCard = () => import('../app/blog/[slug]/opengraph-image');
-
-const ROUTES = [
-  ['app/opengraph-image', loadSiteCard],
-  ['app/blog/[slug]/opengraph-image', loadPostCard],
-] as const;
+// The canvas size and the MIME type, as a crawler reads them: off the PNG's
+// own IHDR chunk and the response header, not off a constant the route exports.
+function pngSize(bytes: Buffer) {
+  return { width: bytes.readUInt32BE(16), height: bytes.readUInt32BE(20) };
+}
 
 async function bytesOf(response: Response): Promise<Buffer> {
   return Buffer.from(await response.arrayBuffer());
 }
 
-async function renderSiteCard(): Promise<Buffer> {
-  const { default: Image } = await loadSiteCard();
-  return bytesOf(await Image());
+async function siteCardResponse(): Promise<Response> {
+  const { GET } = await import('../app/og/site.png/route');
+  return GET();
 }
 
-async function renderPostCard(slug: string): Promise<Buffer> {
-  const { default: Image } = await loadPostCard();
-  return bytesOf(await Image({ params: Promise.resolve({ slug }) }));
+async function postCardResponse(card: string): Promise<Response> {
+  const { GET } = await import('../app/og/blog/[card]/route');
+  return GET(new Request(`https://example.test/og/blog/${card}`), {
+    params: Promise.resolve({ card }),
+  });
 }
 
-describe.each(ROUTES)('%s', (_name, load) => {
-  it('declares the 1200x630 canvas crawlers crop against', async () => {
-    const route = await load();
+const [PUBLISHED] = getAllPosts();
 
-    expect(route.size).toEqual(OG_CANVAS);
+function publishedPost() {
+  if (!PUBLISHED) throw new Error('content/posts publishes no post to build a card from');
+  return PUBLISHED;
+}
+
+describe.each([
+  ['the site card', siteCardResponse],
+  ['a post card', () => postCardResponse(postCardParam(publishedPost().slug))],
+])('%s', (_name, respond) => {
+  it('is the 1200x630 canvas crawlers crop against', async () => {
+    const response = await respond();
+
+    expect(pngSize(await bytesOf(response))).toEqual(OG_CANVAS);
   });
 
-  it('declares the PNG satori emits', async () => {
-    const route = await load();
+  it('is served as the PNG satori emits', async () => {
+    const response = await respond();
 
-    expect(route.contentType).toBe(OG_MIME);
-  });
-
-  it('carries alt text, since the card is an image of words', async () => {
-    const route = await load();
-
-    expect(route.alt.length).toBeGreaterThan(0);
+    expect(response.headers.get('content-type')).toBe(OG_MIME);
   });
 });
 
@@ -117,15 +130,14 @@ describe('the OG display face', () => {
     expect(second).toBe(first);
   });
 
-  // A prerendered card carries its own bytes, but /blog/<unknown>/opengraph-image
+  // A prerendered card carries its own bytes, but /og/blog/<unknown>.png
   // renders on demand and reads the TTF then — off a path no bundler can trace.
   it('travels with the function that reads it at request time', async () => {
     const configPath = path.resolve(__dirname, '..', 'next.config.mjs');
 
     const { default: config } = await import(pathToFileURL(configPath).href);
 
-    const included: string[] =
-      config.outputFileTracingIncludes['/blog/[slug]/opengraph-image'];
+    const included: string[] = config.outputFileTracingIncludes['/og/blog/[card]'];
 
     expect(included.map((file) => path.resolve(file))).toContain(OG_FONT_PATH);
   });
@@ -139,17 +151,79 @@ describe('the OG display face', () => {
  */
 describe('the rendered card', () => {
   it('is PNG bytes for the site card', async () => {
-    const png = await renderSiteCard();
+    const png = await bytesOf(await siteCardResponse());
 
     expect(magicOf(png)).toEqual(PNG_MAGIC);
   });
 
-  // The fallback path end to end: /blog/<unknown>/opengraph-image is reachable,
-  // and a throw there is a failed build, not a missing image.
-  it('is PNG bytes for a slug with no published post', async () => {
-    const png = await renderPostCard('no-such-post');
+  it('draws a post differently from the site card', async () => {
+    const site = await bytesOf(await siteCardResponse());
 
-    expect(magicOf(png)).toEqual(PNG_MAGIC);
+    const post = await bytesOf(
+      await postCardResponse(postCardParam(publishedPost().slug)),
+    );
+
+    expect(post.equals(site)).toBe(false);
+  });
+
+  // A link shared before a post was renamed or unpublished still points here,
+  // and a preview holding it should show an image rather than an error.
+  it('is the site card for a slug with no published post', async () => {
+    const site = await bytesOf(await siteCardResponse());
+
+    const fallback = await bytesOf(await postCardResponse(postCardParam('no-such-post')));
+
+    expect(fallback.equals(site)).toBe(true);
+  });
+
+  it('is the site card for an address that names no card', async () => {
+    const site = await bytesOf(await siteCardResponse());
+
+    const fallback = await bytesOf(await postCardResponse(publishedPost().slug));
+
+    expect(fallback.equals(site)).toBe(true);
+  });
+});
+
+describe('the post card route', () => {
+  it('prerenders a card for every published post', async () => {
+    const { generateStaticParams } = await import('../app/og/blog/[card]/route');
+
+    const params = generateStaticParams();
+
+    expect(params).toEqual(getAllPosts().map((post) => ({ card: `${post.slug}.png` })));
+  });
+});
+
+describe('the card address', () => {
+  it('names a post by its slug, as a .png', () => {
+    expect(postCardPath('a-post')).toBe('/og/blog/a-post.png');
+  });
+
+  it('reads the slug back out of its own segment', () => {
+    expect(slugOfCardParam(postCardParam('a-post'))).toBe('a-post');
+  });
+
+  it('reads no slug out of a segment that is not a card', () => {
+    expect(slugOfCardParam('a-post')).toBeNull();
+  });
+});
+
+describe('cardVersion', () => {
+  it('is the same for the same copy, so an unchanged card keeps its address', () => {
+    const copy = postCardCopy(publishedPost());
+
+    expect(cardVersion({ ...copy })).toBe(cardVersion(copy));
+  });
+
+  // Previews cache by URL: a retitled post under an unchanged address would keep
+  // its old card wherever the link was already shared.
+  it('moves when the words on the card move', () => {
+    const copy = postCardCopy(publishedPost());
+
+    const retitled = cardVersion({ ...copy, title: `${copy.title}!` });
+
+    expect(retitled).not.toBe(cardVersion(copy));
   });
 });
 
@@ -162,6 +236,7 @@ describe('postCardCopy', () => {
 
     expect(copy.title).toBe(post.title);
     expect(copy.meta).toBe(formatDate(post.date));
+    expect(copy.tags).toEqual(post.tags);
   });
 
   // /blog/<anything> is reachable without a matching post — a stale inbound

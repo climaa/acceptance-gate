@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { cacheLife } from 'next/cache';
 import * as path from 'node:path';
@@ -6,7 +7,7 @@ import { formatDate, type Post } from './posts';
 import { SITE_DESCRIPTION, SITE_TAGLINE, SITE_TITLE, SITE_URL } from './site';
 
 /**
- * The shared half of the two `opengraph-image` routes: the frame, the face and
+ * The shared half of the two card routes under `app/og/`: the frame, the face and
  * the copy rules. Deliberately its own markup rather than `packages/ui`
  * components — satori supports a small CSS subset, the design system targets
  * real browsers, and the two would drift apart the first time either moved.
@@ -59,9 +60,9 @@ let displayFont: Promise<Buffer> | undefined;
  *
  * `'use cache'` is what makes the route prerender at all. This read is the
  * card's only data access, and under Cache Components an uncached access is
- * what drops `opengraph-image` to on-demand rendering — the cards stop
+ * what drops a card route to on-demand rendering — the cards stop
  * shipping with the deployment and are built on the first crawler request
- * instead, which is exactly what the comment in `[slug]/opengraph-image.tsx`
+ * instead, which is exactly what the comment in `app/og/blog/[card]/route.tsx`
  * says must not happen.
  *
  * `'max'`: the file is a build artifact, pinned by `outputFileTracingIncludes`
@@ -95,6 +96,8 @@ export interface OgCardCopy {
   title: string;
   /** The muted line under it: a publication date, or the site description. */
   meta: string;
+  /** A post's tags, as its frontmatter spells them. The site card has none. */
+  tags?: readonly string[];
 }
 
 export const SITE_CARD_COPY: OgCardCopy = {
@@ -107,13 +110,67 @@ export const SITE_CARD_COPY: OgCardCopy = {
  * A slug with no published post still has to produce an image — the route is
  * reachable from a stale inbound link, and a throw here fails the build.
  */
-export function postCardCopy(post: Pick<Post, 'title' | 'date'> | null): OgCardCopy {
+export function postCardCopy(
+  post: Pick<Post, 'title' | 'date' | 'tags'> | null,
+): OgCardCopy {
   if (!post) return SITE_CARD_COPY;
 
-  return { title: post.title, meta: formatDate(post.date) };
+  return { title: post.title, meta: formatDate(post.date), tags: post.tags };
 }
 
-function OgCard({ title, meta }: OgCardCopy) {
+/** Where the site card is served. Every page without a card of its own shares it. */
+export const SITE_CARD_PATH = '/og/site.png';
+
+const CARD_EXTENSION = '.png';
+
+/** The `[card]` segment a post's card is served under. */
+export function postCardParam(slug: string): string {
+  return `${slug}${CARD_EXTENSION}`;
+}
+
+/** The slug a `[card]` segment names, or null when it names none. */
+export function slugOfCardParam(param: string): string | null {
+  return param.endsWith(CARD_EXTENSION) ? param.slice(0, -CARD_EXTENSION.length) : null;
+}
+
+export function postCardPath(slug: string): string {
+  return `/og/blog/${postCardParam(slug)}`;
+}
+
+/**
+ * A short digest of what the card draws, for the `?v=` on its address.
+ *
+ * Link previews cache an image by its URL, for days. A card whose words change
+ * under an unchanged URL keeps showing the old words wherever the link was
+ * already shared; a URL that moves with the copy is fetched afresh.
+ */
+export function cardVersion(copy: OgCardCopy): string {
+  return createHash('sha256').update(JSON.stringify(copy)).digest('hex').slice(0, 12);
+}
+
+function OgTags({ tags }: { tags: readonly string[] }) {
+  return (
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginTop: 24 }}>
+      {tags.map((tag) => (
+        <div
+          key={tag}
+          style={{
+            display: 'flex',
+            padding: '4px 18px',
+            borderRadius: 9999,
+            border: `2px solid ${CARD.border}`,
+            fontSize: 22,
+            color: CARD.muted,
+          }}
+        >
+          {tag}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function OgCard({ title, meta, tags }: OgCardCopy) {
   return (
     <div
       style={{
@@ -147,6 +204,7 @@ function OgCard({ title, meta }: OgCardCopy) {
         <div style={{ display: 'flex', marginTop: 28, fontSize: 28, color: CARD.muted }}>
           {meta}
         </div>
+        {tags && tags.length > 0 ? <OgTags tags={tags} /> : null}
       </div>
 
       <div
@@ -166,7 +224,7 @@ function OgCard({ title, meta }: OgCardCopy) {
   );
 }
 
-/** Both routes' renderer: one frame, two sets of copy. */
+/** Both card routes' renderer: one frame, two sets of copy. */
 export async function ogImageResponse(copy: OgCardCopy): Promise<ImageResponse> {
   return new ImageResponse(<OgCard {...copy} />, {
     ...OG_SIZE,
