@@ -10,11 +10,14 @@
  * both seams.
  *
  * `usePathname()` answers `/`, the route the console is served at, so the
- * asserted URL is the one a reviewer would actually be sent to.
+ * asserted URL is the one a reviewer would actually be sent to — unless a test
+ * moves it, which the report does to say a comparison is open over it.
  *
- * Nothing else is stubbed: `redirect` and friends have behaviour worth deciding
- * about rather than faking, and an `undefined` import fails loudly the moment
- * something reaches for one.
+ * `notFound()` is stubbed too, because its whole behaviour is one fact a server
+ * component's test asserts: it throws, and nothing after it renders. Nothing
+ * else is: `redirect` and the rest have behaviour worth deciding about rather
+ * than faking, and an `undefined` import fails loudly the moment something
+ * reaches for one.
  */
 
 export interface NavigationOptions {
@@ -32,6 +35,9 @@ export const replaceCalls: RouterCall[] = [];
 /** Every `router.push` this render performed, in call order. Clear it between tests. */
 export const pushCalls: string[] = [];
 
+/** Every `router.back()`. Clear it between tests. */
+export const backCalls: 'back'[] = [];
+
 /** Every `router.refresh()` — one entry per call, since a refresh carries no
  *  arguments and it is how many times the console re-read the server that a
  *  test has anything to say about. Clear it between tests. */
@@ -45,14 +51,24 @@ export function useRouter() {
     push(url: string): void {
       pushCalls.push(url);
     },
+    back(): void {
+      backCalls.push('back');
+    },
     refresh(): void {
       refreshCalls.push('refresh');
     },
   };
 }
 
+let pathname = '/';
+
+/** The route this render is served at. Reset it to `/` after a test that moves it. */
+export function setPathname(next: string): void {
+  pathname = next;
+}
+
 export function usePathname(): string {
-  return '/';
+  return pathname;
 }
 
 let params = new URLSearchParams();
@@ -66,4 +82,12 @@ export function setSearchParams(query: string): void {
 
 export function useSearchParams(): URLSearchParams {
   return params;
+}
+
+/** What `notFound()` throws here, so a test can tell it from any other throw. */
+export const NOT_FOUND = 'NEXT_NOT_FOUND';
+
+/** Throws {@link NOT_FOUND} — see the header for why this one is stubbed. */
+export function notFound(): never {
+  throw new Error(NOT_FOUND);
 }

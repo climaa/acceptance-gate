@@ -10,6 +10,7 @@ import { Dialog, SegmentedControl, Stack } from '@gate/ui';
 import { REDUCED_MOTION, useMediaQuery, WIDE_VIEWPORT } from '@/hooks/useMediaQuery';
 import {
   clampPosition,
+  comparisonTitle,
   type ComparisonMode,
   DEFAULT_MODE,
   isComparisonMode,
@@ -26,7 +27,7 @@ import {
   shotSources,
 } from '@/lib/shots';
 import type { Variant } from '@/lib/summary';
-import { storyTitle } from '@/lib/title';
+import { CopyLink } from './CopyLink';
 
 /**
  * Where a reviewer looks at the pixels: one variant, full-bleed, in whichever
@@ -348,7 +349,7 @@ export function ComparisonModal({
   const pair = compared(variant.bucket);
   const split = active === 'slider' && pair;
 
-  const title = `${storyTitle(variant.id)} · ${variant.viewport}/${variant.theme}`;
+  const title = comparisonTitle(variant);
 
   return (
     <Dialog open onClose={onClose} label={DIALOG_LABEL} className="vd-compare">
@@ -408,9 +409,12 @@ export function ComparisonModal({
 
         {split && <Scrubber position={position} onPosition={setPosition} />}
 
-        <p className="vd-compare__sides vd-mono">
-          A {sides.a} · B {sides.b}
-        </p>
+        <Stack direction="row" gap={3} align="center" wrap className="vd-compare__foot">
+          <p className="vd-compare__sides vd-mono">
+            A {sides.a} · B {sides.b}
+          </p>
+          <CopyLink about={`${variant.key}|${active}`} />
+        </Stack>
         <p className="vd-compare__hint vd-mono">{wide ? DESKTOP_HINT : SHEET_HINT}</p>
       </Stack>
     </Dialog>

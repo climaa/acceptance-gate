@@ -11,6 +11,7 @@ import {
   APP_TAGLINE,
   SAMPLE_LABEL,
   SAMPLE_NOTE,
+  SITE_URL,
 } from '@/lib/site';
 import { THEME_SCRIPT } from '@/lib/theme';
 import './globals.css';
@@ -21,6 +22,7 @@ export const metadata: Metadata = {
     template: `%s · ${APP_NAME}`,
   },
   description: APP_DESCRIPTION,
+  metadataBase: SITE_URL,
 };
 
 /**

@@ -46,6 +46,14 @@ const nextConfig = {
   outputFileTracingIncludes: {
     '/': ['./fixtures/**'],
     '/report/[id]': ['./fixtures/**'],
+    '/report/[id]/compare/[key]': ['./fixtures/**'],
+    '/report/[id]/@modal/(.)compare/[key]': ['./fixtures/**'],
+    // The card reads the shots like the page does, and the display face off a
+    // path no bundler can follow statically — see lib/og.tsx.
+    '/report/[id]/compare/[key]/opengraph-image': [
+      './fixtures/**',
+      '../../packages/ui/src/fonts/og/Fraunces9pt-SemiBold.ttf',
+    ],
     '/api/sets': ['./fixtures/**'],
     '/api/reports': ['./fixtures/**'],
     '/api/reports/[id]': ['./fixtures/**'],
