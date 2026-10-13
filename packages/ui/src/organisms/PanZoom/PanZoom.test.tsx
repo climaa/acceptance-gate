@@ -5,6 +5,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import {
   clampOffset,
   drawnSize,
+  fitWidth,
   PanZoom,
   type PanZoomProps,
   stepZoom,
@@ -99,7 +100,34 @@ describe('zoomAbout', () => {
   });
 });
 
+describe('fitWidth', () => {
+  it('is the pane width for an image wider than the pane', () => {
+    const width = fitWidth(1600, 400);
+
+    expect(width).toBe(400);
+  });
+
+  // A screenshot drawn wider than it was captured is a blurred claim about it.
+  it('is the image own width for an image narrower than the pane', () => {
+    const width = fitWidth(300, 400);
+
+    expect(width).toBe(300);
+  });
+
+  it('is the pane width before the image has reported a size', () => {
+    const width = fitWidth(0, 400);
+
+    expect(width).toBe(400);
+  });
+});
+
 describe('drawnSize', () => {
+  it('never stretches a narrow image at 100%', () => {
+    const size = drawnSize({ width: 400, height: 300 }, { width: 200, height: 100 }, 1);
+
+    expect(size).toEqual({ width: 200, height: 100 });
+  });
+
   it('is the pane width times the zoom, in the image proportions', () => {
     const size = drawnSize({ width: 400, height: 300 }, { width: 1600, height: 2400 }, 2);
 
@@ -172,7 +200,7 @@ describe('PanZoom', () => {
   it('draws the image as wide as the pane at 100%', () => {
     const { image } = renderLoaded();
 
-    expect(image.style.width).toBe('100%');
+    expect(image.style.width).toBe(`${PANE.width}px`);
   });
 
   it('zooms in a step, and the floor controls come alive', () => {

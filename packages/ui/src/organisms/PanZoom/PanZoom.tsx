@@ -21,6 +21,10 @@ import { Button } from '../../atoms/Button/Button';
  * {@link ZOOM_STEP} up to the image's natural pixels — past that, a zoom would
  * be inventing pixels — and `reset` returns to 100% at the top-left.
  *
+ * Fitted, never stretched: an image narrower than the pane sits at its own
+ * pixels at 100%, because 100% already shows it whole, and a screenshot drawn
+ * wider than it was captured is a blurred claim about the capture.
+ *
  * Panning is clamped so the image never leaves the pane showing nothing: a pan
  * stops where an edge of the image meets an edge of the pane. An image taller
  * than the pane (every design board, at 100%) pans vertically from the start.
@@ -69,10 +73,15 @@ export function stepZoom(zoom: number, direction: 1 | -1, cap: number): number {
   return next < 1.01 ? 1 : clamp(next, 1, cap);
 }
 
-/** The image's drawn size at a zoom: as wide as the pane times the zoom, and
- *  as tall as its own proportions make that. */
+/** The image's width at 100%: the pane's, or its own when it is narrower —
+ *  fitted, never stretched. The pane's until the image has reported a size. */
+export const fitWidth = (naturalWidth: number, paneWidth: number) =>
+  naturalWidth > 0 ? Math.min(naturalWidth, paneWidth) : paneWidth;
+
+/** The image's drawn size at a zoom: its 100% width times the zoom, and as tall
+ *  as its own proportions make that. */
 export const drawnSize = (pane: Size, natural: Size, zoom: number): Size => {
-  const width = pane.width * zoom;
+  const width = fitWidth(natural.width, pane.width) * zoom;
   const ratio = natural.width > 0 ? natural.height / natural.width : 0;
 
   return { width, height: width * ratio };
@@ -281,7 +290,9 @@ export function PanZoom({
             onLoad={onLoad}
             onError={() => setFailedSrc(src)}
             style={{
-              width: `${zoom * 100}%`,
+              // Pixels once both sizes are known, so a narrow image is never
+              // stretched; the pane's width until then.
+              width: natural.width > 0 && pane.width > 0 ? `${image.width}px` : '100%',
               transform: `translate(${offset.x}px, ${offset.y}px)`,
             }}
           />
