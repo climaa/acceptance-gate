@@ -5,6 +5,7 @@ import {
   comparisonHref,
   comparisonPath,
   isComparisonPath,
+  parseComparisonPath,
   reportPath,
 } from '../lib/comparison';
 
@@ -86,5 +87,39 @@ describe('isComparisonPath', () => {
     const answer = isComparisonPath(`${comparisonPath(REPORT, KEY)}/opengraph-image`);
 
     expect(answer).toBe(false);
+  });
+});
+
+describe('parseComparisonPath', () => {
+  it('reads back exactly what comparisonPath wrote', () => {
+    const parsed = parseComparisonPath(comparisonPath(REPORT, KEY));
+
+    expect(parsed).toEqual({ reportId: REPORT, key: KEY });
+  });
+
+  // The proxy, the modal and the report must agree on this round trip for
+  // any input, including the characters the URL grammar reserves.
+  it('round-trips segments carrying reserved characters', () => {
+    const parsed = parseComparisonPath(comparisonPath('a/b', 'c?d'));
+
+    expect(parsed).toEqual({ reportId: 'a/b', key: 'c?d' });
+  });
+
+  it('is null for a segment that will not decode, rather than throwing', () => {
+    const parsed = parseComparisonPath(`/report/${REPORT}/compare/%`);
+
+    expect(parsed).toBeNull();
+  });
+
+  it('is null for the report itself', () => {
+    const parsed = parseComparisonPath(reportPath(REPORT));
+
+    expect(parsed).toBeNull();
+  });
+
+  it('is null for an empty key', () => {
+    const parsed = parseComparisonPath(`/report/${REPORT}/compare/`);
+
+    expect(parsed).toBeNull();
   });
 });

@@ -122,8 +122,32 @@ export function comparisonHref(
 /** The report a comparison belongs to — where closing one lands. */
 export const reportPath = (reportId: string) => `/report/${encodeURIComponent(reportId)}`;
 
-const COMPARISON_PATH = /^\/report\/[^/]+\/compare\/[^/]+$/;
+const COMPARISON_PATH = /^\/report\/([^/]+)\/compare\/([^/]+)$/;
+
+/**
+ * A comparison's pathname, split back into its report and its key — the one
+ * reading of `comparisonPath`'s output. The proxy, the modal and the report all
+ * ask this, so none of them can come to disagree about what a comparison is.
+ *
+ * Null for a pathname that is not one, and for one whose segments will not
+ * decode: `decodeURIComponent('%')` throws, and every caller would rather say
+ * "not a comparison" than fail. Each segment is decoded on its own, after the
+ * split, so an encoded slash inside either cannot move it.
+ */
+export function parseComparisonPath(
+  pathname: string,
+): { reportId: string; key: string } | null {
+  const match = COMPARISON_PATH.exec(pathname);
+  if (!match?.[1] || !match[2]) return null;
+
+  try {
+    return { reportId: decodeURIComponent(match[1]), key: decodeURIComponent(match[2]) };
+  } catch {
+    return null;
+  }
+}
 
 /** Whether a pathname is a comparison's. The report reads its own URL with
  *  this to know a modal is over it, which is what stands its keys down. */
-export const isComparisonPath = (pathname: string) => COMPARISON_PATH.test(pathname);
+export const isComparisonPath = (pathname: string) =>
+  parseComparisonPath(pathname) !== null;

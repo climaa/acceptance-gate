@@ -2,7 +2,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { NextResponse, type NextRequest } from 'next/server';
 import { dataDirFrom } from '@/lib/data-dir';
-import { comparisonHref, isComparisonMode } from '@/lib/comparison';
+import { comparisonHref, isComparisonMode, parseComparisonPath } from '@/lib/comparison';
 import { comparisonKeyIn, hasReport, hasSet } from '@/lib/jobs';
 import { ReportIdSchema, SetLabelSchema } from '@/lib/job-contract';
 import { CANONICAL_LABEL } from '@/lib/baselines';
@@ -50,7 +50,6 @@ export const config = {
 
 const REPORT_PREFIX = '/report/';
 const SET_PREFIX = '/set/';
-const COMPARE_INFIX = '/compare/';
 
 /**
  * The segment after `prefix`, decoded, or null for one that will not decode.
@@ -127,26 +126,6 @@ const PASS: ProxyAnswer = { kind: 'pass' };
 const MISSING: ProxyAnswer = { kind: 'missing' };
 
 /**
- * A comparison's path, split into its report and its compare segment, or null
- * for a path that is not one. Each half decoded on its own, so an encoded slash
- * inside either cannot move the split.
- */
-function comparisonSegments(pathname: string): { id: string; param: string } | null {
-  const rest = pathname.slice(REPORT_PREFIX.length);
-  const at = rest.indexOf(COMPARE_INFIX);
-  if (at === -1) return null;
-
-  try {
-    return {
-      id: decodeURIComponent(rest.slice(0, at)),
-      param: decodeURIComponent(rest.slice(at + COMPARE_INFIX.length)),
-    };
-  } catch {
-    return null;
-  }
-}
-
-/**
  * The answer for `/report/<id>/compare/<param>`.
  *
  * A miss is a 404 for the same reason a report's is, and it is never a blank
@@ -156,13 +135,13 @@ function comparisonSegments(pathname: string): { id: string; param: string } | n
  * counted, cached and previewed under one address.
  */
 export function comparisonAnswer(pathname: string, search = ''): ProxyAnswer {
-  const segments = comparisonSegments(pathname);
+  const segments = parseComparisonPath(pathname);
   if (segments === null) return MISSING;
 
   const { dir } = dataDirFrom();
   if (!canSeeReports(dir)) return PASS;
 
-  const { id, param } = segments;
+  const { reportId: id, key: param } = segments;
   if (!ReportIdSchema.safeParse(id).success || !hasReport(dir, id)) return MISSING;
 
   const key = comparisonKeyIn(dir, id, param);
@@ -199,7 +178,15 @@ export function reportAnswer(pathname: string, search = ''): ProxyAnswer {
 
 function answerFor(pathname: string, search: string): ProxyAnswer {
   if (pathname.startsWith(SET_PREFIX)) return isMissingSet(pathname) ? MISSING : PASS;
-  if (pathname.includes(COMPARE_INFIX)) return comparisonAnswer(pathname, search);
+  // The matcher sends nothing else under a report's path, so a request that is
+  // not the report itself is a comparison — or a malformed one, which the
+  // parser turns into a miss.
+  if (
+    pathname.startsWith(REPORT_PREFIX) &&
+    pathname.slice(REPORT_PREFIX.length).includes('/')
+  ) {
+    return comparisonAnswer(pathname, search);
+  }
 
   return reportAnswer(pathname, search);
 }

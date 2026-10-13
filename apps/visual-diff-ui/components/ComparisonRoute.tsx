@@ -6,7 +6,7 @@ import {
   comparisonHref,
   DEFAULT_MODE,
   isComparisonMode,
-  isComparisonPath,
+  parseComparisonPath,
   reportPath,
 } from '@/lib/comparison';
 import type { ReportSides } from '@/lib/report-view';
@@ -25,10 +25,6 @@ import { ComparisonModal } from './ComparisonModal';
  *    may be nothing behind it, or another site, so closing replaces the entry
  *    with the report rather than walking out of the console.
  */
-/** The compare segment of a comparison's pathname, decoded. */
-const keyOf = (pathname: string) =>
-  decodeURIComponent(pathname.slice(pathname.lastIndexOf('/') + 1));
-
 export type ComparisonEntry = 'report' | 'direct';
 
 export interface ComparisonRouteProps {
@@ -68,7 +64,7 @@ export function ComparisonRoute({
   const mode: ComparisonMode = isComparisonMode(asked) ? asked : DEFAULT_MODE;
 
   // Off a comparison's address — closing, mid-transition — there is no modal.
-  const key = isComparisonPath(pathname) ? keyOf(pathname) : null;
+  const key = parseComparisonPath(pathname)?.key ?? null;
   const variant = variants.find((candidate) => candidate.key === key);
   if (key === null || !variant) return null;
 
