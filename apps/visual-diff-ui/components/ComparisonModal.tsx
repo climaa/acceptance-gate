@@ -413,7 +413,7 @@ export function ComparisonModal({
           <p className="vd-compare__sides vd-mono">
             A {sides.a} · B {sides.b}
           </p>
-          <CopyLink />
+          <CopyLink about={`${variant.key}|${active}`} />
         </Stack>
         <p className="vd-compare__hint vd-mono">{wide ? DESKTOP_HINT : SHEET_HINT}</p>
       </Stack>

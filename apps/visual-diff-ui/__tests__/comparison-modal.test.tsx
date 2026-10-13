@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 // Imported explicitly rather than relying on `globals: true` — tsconfig's
 // `**/*.tsx` include means tsc typechecks this file.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -352,6 +352,71 @@ describe('below the mobile breakpoint', () => {
  * are looking at. What has been reviewed stays in `localStorage`, where it
  * belongs to one person; the URL carries position and nothing else.
  */
+describe('the copy-link status', () => {
+  const modalOn = (subject: Variant, mode: ComparisonMode) => (
+    <ComparisonModal
+      reportId={REPORT}
+      variant={subject}
+      variants={[PROSE, PROSE_DARK]}
+      sides={SIDES}
+      mode={mode}
+      onMode={() => {}}
+      onClose={() => {}}
+      onVariant={() => {}}
+    />
+  );
+
+  async function copied(subject: Variant, mode: ComparisonMode) {
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText: async () => {} },
+      configurable: true,
+    });
+    const view = render(modalOn(subject, mode));
+    await act(async () => {
+      fireEvent.click(within(modal()).getByRole('button', { name: 'copy link' }));
+    });
+
+    return view;
+  }
+
+  const status = () => within(modal()).getByRole('status').textContent;
+
+  it('clears once the arrows walk to another variant', async () => {
+    const { rerender } = await copied(PROSE, 'diff');
+
+    rerender(modalOn(PROSE_DARK, 'diff'));
+
+    expect(status()).toBe('');
+  });
+
+  it('clears once the mode changes', async () => {
+    const { rerender } = await copied(PROSE, 'diff');
+
+    rerender(modalOn(PROSE, 'blink'));
+
+    expect(status()).toBe('');
+  });
+
+  // A remount would put focus on the body, outside the dialog's trap.
+  it('keeps the focus of a reviewer who copied, then walked', async () => {
+    const { rerender } = await copied(PROSE, 'diff');
+    const button = within(modal()).getByRole('button', { name: 'copy link' });
+    button.focus();
+
+    rerender(modalOn(PROSE_DARK, 'diff'));
+
+    expect(document.activeElement).toBe(button);
+  });
+
+  it('stays while the link it is about is still the one on screen', async () => {
+    const { rerender } = await copied(PROSE, 'diff');
+
+    rerender(modalOn(PROSE, 'diff'));
+
+    expect(status()).toBe('link copied');
+  });
+});
+
 describe('the report opening the modal', () => {
   const CARD_VARIANT = variant({
     key: 'templates__desktop__light__templates-posttemplate--long-prose',

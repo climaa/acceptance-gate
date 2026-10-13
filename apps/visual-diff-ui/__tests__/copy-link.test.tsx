@@ -29,7 +29,7 @@ afterEach(cleanup);
 
 describe('CopyLink', () => {
   it('says nothing until it is pressed', () => {
-    render(<CopyLink />);
+    render(<CopyLink about="k|diff" />);
 
     expect(screen.getByRole('status').textContent).toBe('');
   });
@@ -39,7 +39,7 @@ describe('CopyLink', () => {
   it('copies the address as it is when pressed', async () => {
     const writeText = vi.fn(async () => {});
     withClipboard(writeText);
-    render(<CopyLink />);
+    render(<CopyLink about="k|diff" />);
     window.history.replaceState(null, '', '/report/a__b/compare/k?mode=slider');
 
     await press();
@@ -51,7 +51,7 @@ describe('CopyLink', () => {
 
   it('says the link was copied', async () => {
     withClipboard(async () => {});
-    render(<CopyLink />);
+    render(<CopyLink about="k|diff" />);
 
     await press();
 
@@ -62,7 +62,7 @@ describe('CopyLink', () => {
     withClipboard(async () => {
       throw new DOMException('denied', 'NotAllowedError');
     });
-    render(<CopyLink />);
+    render(<CopyLink about="k|diff" />);
 
     await press();
 
@@ -75,7 +75,7 @@ describe('CopyLink', () => {
       value: undefined,
       configurable: true,
     });
-    render(<CopyLink />);
+    render(<CopyLink about="k|diff" />);
 
     await press();
 
