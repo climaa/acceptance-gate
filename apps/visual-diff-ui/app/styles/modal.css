@@ -231,7 +231,7 @@
     max-inline-size: 95vw;
   }
 
-  .vd-compare__design {
+  .vd-compare__design[data-split='columns'] {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     grid-template-rows: minmax(0, 1fr);
   }

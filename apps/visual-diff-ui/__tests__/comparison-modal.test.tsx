@@ -534,6 +534,54 @@ describe('the design view', () => {
     ).toBeTruthy();
   });
 
+  describe('the split toggle', () => {
+    const design = () => modal().querySelector('.vd-compare__design');
+    const stack = () =>
+      within(modal()).getByRole('button', {
+        name: 'stack the board over the screenshot',
+      });
+
+    it('opens side by side, offering to stack the panes', () => {
+      renderModal('diff', PROSE, 'design');
+
+      expect(design()?.getAttribute('data-split')).toBe('columns');
+      expect(stack()).toBeTruthy();
+    });
+
+    it('stacks the board over the screenshot when pressed, and offers the way back', () => {
+      renderModal('diff', PROSE, 'design');
+
+      fireEvent.click(stack());
+
+      expect(design()?.getAttribute('data-split')).toBe('rows');
+      expect(
+        within(modal()).getByRole('button', {
+          name: 'put the board beside the screenshot',
+        }),
+      ).toBeTruthy();
+    });
+
+    // Below the breakpoint the sheet stacks the panes anyway: a toggle there
+    // would be a control that changes nothing.
+    it('is not offered on a narrow screen, where the panes are always stacked', () => {
+      setViewport(false);
+      renderModal('diff', PROSE, 'design');
+
+      expect(
+        within(modal()).queryByRole('button', { name: /stack the board/ }),
+      ).toBeNull();
+      expect(design()?.getAttribute('data-split')).toBe('rows');
+    });
+
+    it('is not offered when reading against before', () => {
+      renderModal('diff', PROSE, 'before');
+
+      expect(
+        within(modal()).queryByRole('button', { name: /stack the board/ }),
+      ).toBeNull();
+    });
+  });
+
   // The after side's absence reads the same here as in the modes.
   it('says a removed variant has no after side, rather than framing nothing', () => {
     renderModal('diff', REMOVED, 'design');

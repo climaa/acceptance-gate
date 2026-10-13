@@ -6,7 +6,7 @@
    cannot show a re-encoded copy of the evidence. */
 
 import { useEffect, useRef, useState } from 'react';
-import { Dialog, PanZoom, SegmentedControl, Stack } from '@gate/ui';
+import { Dialog, IconButton, PanZoom, SegmentedControl, Stack } from '@gate/ui';
 import { REDUCED_MOTION, useMediaQuery, WIDE_VIEWPORT } from '@/hooks/useMediaQuery';
 import {
   AGAINST,
@@ -335,7 +335,36 @@ function Stage({ mode, split, shots, variant, position, onPosition }: StageProps
   );
 }
 
+/** How the design view lays its two panes out: side by side, or the board
+ *  stacked over the screenshot. */
+type Split = 'columns' | 'rows';
+
+const SPLIT_LABELS: Readonly<Record<Split, string>> = {
+  columns: 'stack the board over the screenshot',
+  rows: 'put the board beside the screenshot',
+};
+
+/** lucide's `rows-2` and `columns-2`: each button draws the layout it switches
+ *  TO, which is what its name says too. Stroked, sized by
+ *  `.ds-icon-btn__glyph`, tinted by `currentColor`. */
+function SplitGlyph({ to }: { to: Split }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect width="18" height="18" x="3" y="3" rx="2" />
+      <path d={to === 'rows' ? 'M3 12h18' : 'M12 3v18'} />
+    </svg>
+  );
+}
+
 interface DesignStageProps {
+  split: Split;
   board: DesignBoard;
   onBoard: (board: DesignBoard) => void;
   shots: ShotSources;
@@ -351,56 +380,221 @@ interface DesignStageProps {
  * draw, so a removed variant says "not on this side" here exactly as it does
  * there. Nothing is compared: the reviewer pans to the tile and judges by eye.
  */
-function DesignStage({ board, onBoard, shots, variant, after }: DesignStageProps) {
+function DesignStage({ split, board, onBoard, shots, variant, after }: DesignStageProps) {
   const afterSrc = shots.candidate;
 
   return (
-    <div className="vd-compare__design">
-      <div className="vd-compare__column">
-        <div className="vd-compare__column-head">
-          <SegmentedControl
-            label="board"
-            options={DESIGN_BOARDS.map((name) => ({
-              value: name,
-              label: BOARD_LABELS[name],
-            }))}
-            value={board}
-            onChange={(picked) => {
-              if (isDesignBoard(picked)) onBoard(picked);
-            }}
-          />
-        </div>
-        <PanZoom
-          key={board}
-          src={designBoardUrl(board)}
-          alt={`the ${BOARD_LABELS[board]} design board`}
-          label="design board"
-          fallback={BOARD_UNAVAILABLE}
-          className="vd-compare__panzoom"
-        />
-      </div>
-
-      <div className="vd-compare__column">
-        <p className="vd-compare__column-head vd-compare__caption vd-mono">
-          after · {after}
-        </p>
-        {/* The same pane as the board's, so the two are read the same way —
-            both fitted at 100%, both dragged and zoomed. A screenshot narrower
-            than the pane sits at its own pixels: the pane never stretches it. */}
-        {afterSrc === undefined ? (
-          <p className="vd-compare__absent">{absentShotCopy(variant, 'candidate')}</p>
-        ) : (
+    <div className="vd-compare__stage vd-compare__stage--design">
+      <div className="vd-compare__design" data-split={split}>
+        <div className="vd-compare__column">
+          <div className="vd-compare__column-head">
+            <SegmentedControl
+              label="board"
+              options={DESIGN_BOARDS.map((name) => ({
+                value: name,
+                label: BOARD_LABELS[name],
+              }))}
+              value={board}
+              onChange={(picked) => {
+                if (isDesignBoard(picked)) onBoard(picked);
+              }}
+            />
+          </div>
           <PanZoom
-            key={variant.key}
-            src={afterSrc}
-            alt="candidate"
-            label="after screenshot"
+            key={board}
+            src={designBoardUrl(board)}
+            alt={`the ${BOARD_LABELS[board]} design board`}
+            label="design board"
+            fallback={BOARD_UNAVAILABLE}
             className="vd-compare__panzoom"
           />
-        )}
+        </div>
+
+        <div className="vd-compare__column">
+          <p className="vd-compare__column-head vd-compare__caption vd-mono">
+            after · {after}
+          </p>
+          {/* The same pane as the board's, so the two are read the same way —
+            both fitted at 100%, both dragged and zoomed. A screenshot narrower
+            than the pane sits at its own pixels: the pane never stretches it. */}
+          {afterSrc === undefined ? (
+            <p className="vd-compare__absent">{absentShotCopy(variant, 'candidate')}</p>
+          ) : (
+            <PanZoom
+              key={variant.key}
+              src={afterSrc}
+              alt="candidate"
+              label="after screenshot"
+              className="vd-compare__panzoom"
+            />
+          )}
+        </div>
       </div>
     </div>
   );
+}
+
+/**
+ * The stage for the six modes.
+ *
+ * `tabIndex={0}` for the same reason LogTail carries one: the stage scrolls by
+ * construction (`max-height: 60vh` with `overflow: auto`, so any shot taller
+ * than the viewport pans inside it), and a region that scrolls but cannot be
+ * focused is unreachable from the keyboard — WCAG 2.1.1, and axe's
+ * `scrollable-region-focusable`. Unconditional, because whether a given
+ * screenshot overflows is a runtime measurement this component cannot make. The
+ * `Stage`'s own controls are pointer affordances on the image, not tab stops
+ * that would carry the scroll. The design view's stage needs none: each of its
+ * panes is focusable and moves its own image.
+ */
+function ModesStage(props: StageProps) {
+  return (
+    <div className="vd-compare__stage" tabIndex={0}>
+      <Stage {...props} />
+    </div>
+  );
+}
+
+interface ComparisonHeadProps {
+  title: string;
+  against: Against;
+  onAgainst: (against: Against) => void;
+  /** The design view's layout, or null where the split toggle is not offered:
+   *  reading against before, or below the breakpoint. */
+  layout: Split | null;
+  onLayout: (layout: Split) => void;
+  /** The modes the toolbar offers, or null in the design view. */
+  modes: readonly ComparisonMode[] | null;
+  mode: ComparisonMode;
+  onMode: (mode: ComparisonMode) => void;
+}
+
+/** The modal's head: what is on screen, what it is read against, and how. */
+function ComparisonHead({
+  title,
+  against,
+  onAgainst,
+  layout,
+  onLayout,
+  modes,
+  mode,
+  onMode,
+}: ComparisonHeadProps) {
+  return (
+    <Stack direction="row" gap={3} align="baseline" wrap className="vd-compare__head">
+      <h2 className="vd-compare__title vd-mono" title={title}>
+        {title}
+      </h2>
+
+      {/* The toggle and the split button travel together: both say how the
+          after screenshot is being read, and the split only exists once the
+          toggle says design. */}
+      <Stack direction="row" gap={2} align="center">
+        <SegmentedControl
+          label={AGAINST_LABEL}
+          className="vd-compare__against"
+          options={AGAINST.map((name) => ({ value: name, label: name }))}
+          value={against}
+          onChange={(picked) => {
+            if (isAgainst(picked)) onAgainst(picked);
+          }}
+        />
+
+        {layout && (
+          <IconButton
+            variant="ghost"
+            label={SPLIT_LABELS[layout]}
+            onClick={() => onLayout(layout === 'columns' ? 'rows' : 'columns')}
+          >
+            <SplitGlyph to={layout === 'columns' ? 'rows' : 'columns'} />
+          </IconButton>
+        )}
+      </Stack>
+
+      {/* Unmounted, not disabled, in the design view: every mode answers
+          how after moved from before, and none of them can be run against
+          a board that shares no pixel grid with a screenshot. */}
+      {modes && (
+        <SegmentedControl
+          role="toolbar"
+          label={TOOLBAR_LABEL}
+          className="vd-compare__modes"
+          options={modes.map((name) => ({ value: name, label: name }))}
+          value={mode}
+          // The control's API is a plain string — the guard is what narrows
+          // it back to a mode, rather than a cast that would assume it.
+          onChange={(picked) => {
+            if (isComparisonMode(picked)) onMode(picked);
+          }}
+        />
+      )}
+    </Stack>
+  );
+}
+
+/**
+ * The line under the head. Same rule as the row this modal was opened from: a
+ * pixel count only means something where two shots were put against each
+ * other. A variant with one side carries `compare.mjs`'s zeros, and `0 px
+ * differ in the shared area` over a story with no baseline reports a clean
+ * shared area that never existed. The stage below already says which side is
+ * missing. The design view says what a board is instead.
+ */
+function Metric({
+  design,
+  pair,
+  variant,
+}: {
+  design: boolean;
+  pair: boolean;
+  variant: Variant;
+}) {
+  if (design) return <p className="vd-compare__metric">{DESIGN_NOTE}</p>;
+  if (!pair) return null;
+
+  return (
+    <p className="vd-compare__metric">
+      <span className="vd-mono">{formatPixels(variant.overlapDiffPixels)} px</span> differ
+      in the shared area
+    </p>
+  );
+}
+
+interface ViewInput {
+  mode: ComparisonMode;
+  against: Against;
+  wide: boolean;
+  layout: Split;
+  bucket: Variant['bucket'];
+}
+
+/**
+ * What the modal shows, from what was asked and where it is shown — every
+ * either-or the render would otherwise make inline.
+ */
+function viewFor({ mode, against, wide, layout, bucket }: ViewInput) {
+  const design = against === 'design';
+  const offered = modesFor(wide);
+  // A link written on a desktop opens on a phone, where `actual size` has no
+  // control: the stage and the toolbar have to be showing the same mode.
+  const active = offered.includes(mode) ? mode : DEFAULT_MODE;
+  // One question, asked once: did the differ have two shots to work with. The
+  // slider needs it to have a second layer to reveal, and the metric needs it
+  // to have a shared area to have measured.
+  const pair = compared(bucket);
+
+  return {
+    design,
+    active,
+    pair,
+    // No modes in the design view: none of them can be run against a board.
+    modes: design ? null : offered,
+    split: !design && active === 'slider' && pair,
+    // The split toggle is offered only where it changes something.
+    headLayout: design && wide ? layout : null,
+    // Below the breakpoint the sheet stacks the panes whatever was picked.
+    stageLayout: wide ? layout : ('rows' as Split),
+  };
 }
 
 export interface ComparisonModalProps {
@@ -447,21 +641,21 @@ export function ComparisonModal({
 }: ComparisonModalProps) {
   const wide = useMediaQuery(WIDE_VIEWPORT, true);
   const [position, setPosition] = useState(MIDPOINT);
+  // How the reader likes to look, not what they are looking at — so not in the
+  // URL, like the zoom. Only offered above the breakpoint: below it the sheet
+  // stacks the panes whatever this says.
+  const [layout, setLayout] = useState<Split>('columns');
 
   useVariantKeys({ variants, current: variant, onVariant });
 
-  const modes = modesFor(wide);
-  // A link written on a desktop opens on a phone, where `actual size` has no
-  // control: the stage and the toolbar have to be showing the same mode.
-  const active = modes.includes(mode) ? mode : DEFAULT_MODE;
-
   const shots = shotSources(reportId, variant);
-  // One question, asked once: did the differ have two shots to work with. The
-  // slider needs it to have a second layer to reveal, and the metric below needs
-  // it to have a shared area to have measured.
-  const pair = compared(variant.bucket);
-  const design = against === 'design';
-  const split = !design && active === 'slider' && pair;
+  const { modes, active, pair, design, split, headLayout, stageLayout } = viewFor({
+    mode,
+    against,
+    wide,
+    layout,
+    bucket: variant.bucket,
+  });
 
   const title = comparisonTitle(variant);
 
@@ -470,92 +664,41 @@ export function ComparisonModal({
       open
       onClose={onClose}
       label={DIALOG_LABEL}
-      className={design ? 'vd-compare vd-compare--design' : 'vd-compare'}
+      className={`vd-compare${design ? ' vd-compare--design' : ''}`}
     >
       <Stack gap={3}>
-        <Stack direction="row" gap={3} align="baseline" wrap className="vd-compare__head">
-          <h2 className="vd-compare__title vd-mono" title={title}>
-            {title}
-          </h2>
+        <ComparisonHead
+          title={title}
+          against={against}
+          onAgainst={onAgainst}
+          layout={headLayout}
+          onLayout={setLayout}
+          modes={modes}
+          mode={active}
+          onMode={onMode}
+        />
 
-          <SegmentedControl
-            label={AGAINST_LABEL}
-            className="vd-compare__against"
-            options={AGAINST.map((name) => ({ value: name, label: name }))}
-            value={against}
-            onChange={(picked) => {
-              if (isAgainst(picked)) onAgainst(picked);
-            }}
+        <Metric design={design} pair={pair} variant={variant} />
+
+        {design ? (
+          <DesignStage
+            split={stageLayout}
+            board={board}
+            onBoard={onBoard}
+            shots={shots}
+            variant={variant}
+            after={sides.b}
           />
-
-          {/* Unmounted, not disabled, in the design view: every mode answers
-              how after moved from before, and none of them can be run against
-              a board that shares no pixel grid with a screenshot. */}
-          {!design && (
-            <SegmentedControl
-              role="toolbar"
-              label={TOOLBAR_LABEL}
-              className="vd-compare__modes"
-              options={modes.map((name) => ({ value: name, label: name }))}
-              value={active}
-              // The control's API is a plain string — the guard is what narrows
-              // it back to a mode, rather than a cast that would assume it.
-              onChange={(picked) => {
-                if (isComparisonMode(picked)) onMode(picked);
-              }}
-            />
-          )}
-        </Stack>
-
-        {/* Same rule as the row this modal was opened from: a pixel count only
-            means something where two shots were put against each other. A
-            variant with one side carries `compare.mjs`'s zeros, and `0 px
-            differ in the shared area` over a story with no baseline reports a
-            clean shared area that never existed. The stage below already says
-            which side is missing. */}
-        {design && <p className="vd-compare__metric">{DESIGN_NOTE}</p>}
-        {!design && pair && (
-          <p className="vd-compare__metric">
-            <span className="vd-mono">{formatPixels(variant.overlapDiffPixels)} px</span>{' '}
-            differ in the shared area
-          </p>
+        ) : (
+          <ModesStage
+            mode={active}
+            split={split}
+            shots={shots}
+            variant={variant}
+            position={position}
+            onPosition={setPosition}
+          />
         )}
-
-        {/*
-          `tabIndex={0}` for the same reason LogTail carries one: the stage
-          scrolls by construction (`max-height: 60vh` with `overflow: auto`, so
-          any shot taller than the viewport pans inside it), and a region that
-          scrolls but cannot be focused is unreachable from the keyboard —
-          WCAG 2.1.1, and axe's `scrollable-region-focusable`. Unconditional,
-          because whether a given screenshot overflows is a runtime measurement
-          this component cannot make. The `Stage`'s own controls are pointer
-          affordances on the image, not tab stops that would carry the scroll.
-        */}
-        <div
-          className={
-            design ? 'vd-compare__stage vd-compare__stage--design' : 'vd-compare__stage'
-          }
-          tabIndex={design ? undefined : 0}
-        >
-          {design ? (
-            <DesignStage
-              board={board}
-              onBoard={onBoard}
-              shots={shots}
-              variant={variant}
-              after={sides.b}
-            />
-          ) : (
-            <Stage
-              mode={active}
-              split={split}
-              shots={shots}
-              variant={variant}
-              position={position}
-              onPosition={setPosition}
-            />
-          )}
-        </div>
 
         {split && <Scrubber position={position} onPosition={setPosition} />}
 
