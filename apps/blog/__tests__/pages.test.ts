@@ -7,8 +7,9 @@ import { describe, expect, it } from 'vitest';
 import type { BlogIndexTemplateProps, PostTemplateProps } from '@gate/ui';
 import BlogIndexPage from '../app/blog/page';
 import PostPage from '../app/blog/[slug]/page';
-import HomePage from '../app/page';
+import HomePage, { metadata as homeMetadata } from '../app/page';
 import { getAllPosts, tagPath } from '../lib/posts';
+import { SITE_ALTERNATES, SITE_OPEN_GRAPH } from '../lib/site';
 
 /**
  * What the three post-bearing routes render now that the design system draws
@@ -117,6 +118,25 @@ describe('the home page', () => {
     expect(hrefsIn(html)).not.toContain(
       `/tags/${encodeURIComponent(MULTI_WORD_TAG_ON_HOME)}`,
     );
+  });
+
+  // Without its own metadata the home page inherited the layout's, which names
+  // no page: it shipped with neither an og:url nor a canonical.
+  it('names / as both its canonical and its og:url', () => {
+    const { alternates, openGraph } = homeMetadata;
+
+    expect(alternates?.canonical).toBe('/');
+    expect(openGraph?.url).toBe('/');
+  });
+
+  // Next merges metadata shallowly: setting `openGraph` or `alternates` here
+  // replaces the layout's objects whole, so the shared fields must be carried
+  // over or og:site_name, og:locale and the RSS <link> vanish from `/`.
+  it('keeps the site-wide Open Graph fields and the RSS alternate', () => {
+    const { alternates, openGraph } = homeMetadata;
+
+    expect(openGraph).toMatchObject(SITE_OPEN_GRAPH);
+    expect(alternates).toMatchObject(SITE_ALTERNATES);
   });
 });
 

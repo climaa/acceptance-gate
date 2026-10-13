@@ -5,9 +5,11 @@ import { SiteFooter, SiteHeader } from '@gate/ui';
 import { Analytics } from '@vercel/analytics/next';
 import {
   FOOTER_LINKS,
+  SITE_ALTERNATES,
   SITE_COPYRIGHT,
   SITE_COPYRIGHT_YEAR,
   SITE_DESCRIPTION,
+  SITE_OPEN_GRAPH,
   SITE_TAGLINE,
   SITE_TITLE,
   SITE_URL,
@@ -56,16 +58,8 @@ export const metadata: Metadata = {
     template: `%s · ${SITE_TITLE}`,
   },
   description: SITE_DESCRIPTION,
-  openGraph: {
-    type: 'website',
-    locale: 'en_US',
-    siteName: SITE_TITLE,
-  },
-  alternates: {
-    types: {
-      'application/rss+xml': '/rss.xml',
-    },
-  },
+  openGraph: SITE_OPEN_GRAPH,
+  alternates: SITE_ALTERNATES,
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
