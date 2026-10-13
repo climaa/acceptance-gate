@@ -160,3 +160,50 @@ export const isComparisonPath = (pathname: string) =>
  */
 export const comparisonTitle = (variant: Pick<Variant, 'id' | 'viewport' | 'theme'>) =>
   `${storyTitle(variant.id)} · ${variant.viewport}/${variant.theme}`;
+
+/**
+ * What the comparison is read against: its own _before_, or a design board.
+ *
+ * Kept apart from {@link COMPARISON_MODES} on purpose. Every mode answers "how
+ * does after differ from before"; a design board answers a different question
+ * — "is this what was drawn" — and has no shared pixel grid with a screenshot,
+ * so no mode could be run against it honestly.
+ */
+export const AGAINST = ['before', 'design'] as const;
+
+export type Against = (typeof AGAINST)[number];
+
+export const DEFAULT_AGAINST: Against = 'before';
+
+export const isAgainst = (value: string | null): value is Against =>
+  AGAINST.some((against) => against === value);
+
+/**
+ * The design boards a comparison can be read against: the PNGs exported from
+ * `designs/acceptance-gate.pen` into `designs/exports/`, by file stem. The
+ * allowlist IS the route's confinement — a name not here is never turned into
+ * a path.
+ */
+export const DESIGN_BOARDS = [
+  'component-library',
+  'pages',
+  'visual-diff-pages',
+  'flows-decisions',
+] as const;
+
+export type DesignBoard = (typeof DESIGN_BOARDS)[number];
+
+export const isDesignBoard = (value: string | null): value is DesignBoard =>
+  DESIGN_BOARDS.some((board) => board === value);
+
+/**
+ * The board a variant most likely lives on. Templates are drawn as pages on
+ * Board 03; every other tier is a tile in Board 01's component library. A
+ * guess, and stated as one — the reviewer can always pick another board.
+ */
+export const defaultBoard = (tier: Variant['tier']): DesignBoard =>
+  tier === 'templates' ? 'pages' : 'component-library';
+
+/** Where a board's bytes are served. */
+export const designBoardUrl = (board: DesignBoard) =>
+  `/api/designs?${new URLSearchParams({ board }).toString()}`;

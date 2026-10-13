@@ -4,7 +4,10 @@ import { describe, expect, it } from 'vitest';
 import {
   comparisonHref,
   comparisonPath,
+  defaultBoard,
+  isAgainst,
   isComparisonPath,
+  isDesignBoard,
   parseComparisonPath,
   reportPath,
 } from '../lib/comparison';
@@ -121,5 +124,39 @@ describe('parseComparisonPath', () => {
     const parsed = parseComparisonPath(`/report/${REPORT}/compare/`);
 
     expect(parsed).toBeNull();
+  });
+});
+
+describe('defaultBoard', () => {
+  // Templates are drawn as pages; everything else is a component-library tile.
+  it.each([
+    ['templates', 'pages'],
+    ['organisms', 'component-library'],
+    ['molecules', 'component-library'],
+    ['atoms', 'component-library'],
+  ] as const)('opens a %s variant on the %s board', (tier, board) => {
+    const chosen = defaultBoard(tier);
+
+    expect(chosen).toBe(board);
+  });
+});
+
+describe('isAgainst and isDesignBoard', () => {
+  it('accepts the two things a comparison can be read against', () => {
+    const accepted = ['before', 'design'].every(isAgainst);
+
+    expect(accepted).toBe(true);
+  });
+
+  it('refuses anything else, including no value at all', () => {
+    const refused = ['after', '', null].some(isAgainst);
+
+    expect(refused).toBe(false);
+  });
+
+  it('refuses a board that is not one of the exports', () => {
+    const refused = isDesignBoard('../pages');
+
+    expect(refused).toBe(false);
   });
 });
