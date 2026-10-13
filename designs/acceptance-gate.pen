@@ -10499,7 +10499,7 @@
                               "fill": "$ink-muted",
                               "textGrowth": "fixed-width",
                               "width": "fill_container",
-                              "content": "One image in a pane that clips it. 100% is the image fitted to the pane's width, and it is the floor: − is disabled there, + steps ×1.5 up to the image's natural pixels, reset returns to 100%. Drag pans with mouse, pen or touch and never pulls the image off the pane. Focused, the arrows pan and are consumed — so a dialog's ← → walk stands down — while + − zoom and 0 resets. Nothing animates. It knows nothing about boards: it is handed a src, an alt and a label.",
+                              "content": "One image in a pane that clips it. 100% is the image fitted to the pane's width, and it is the floor: − is disabled there, + steps ×1.5 up to the image's natural pixels, reset returns to 100%. Drag pans with mouse, pen or touch and never pulls the image off the pane. Focused, the arrows pan and are consumed — so a dialog's ← → walk stands down — while + − zoom and 0 resets. Nothing animates. It knows nothing about boards: it is handed a src, an alt and a label. An image that will not load is a sentence in the same pane — the caller's — with every control disabled.",
                               "lineHeight": 1.4,
                               "fontFamily": "$font-body",
                               "fontSize": 11,
@@ -15413,6 +15413,309 @@
                   "textGrowth": "fixed-width",
                   "width": "fill_container",
                   "content": "The board draws three row grammars: report rows are links, history rows carry a view button, set rows are plain text with delete only. The set viewer collapses one of those, so it takes the reports-table grammar — a history row's view points at a resource other than the row's subject and needs a verb, while a set label's destination IS the set, so the identity is the link. The label links only where this instance holds the screenshots, which is the same signal that already draws an em dash in the size column: a dead link beside a live one is worse than no link. D2 is untouched — a read-only route adds no mutation and no refusal.",
+                  "lineHeight": 1.45,
+                  "fontFamily": "$font-body",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "JvPAA",
+          "name": "VD Decisions 3",
+          "width": "fill_container",
+          "gap": 12,
+          "children": [
+            {
+              "type": "frame",
+              "id": "hCJsC",
+              "name": "VD D6",
+              "width": 958,
+              "fill": "#ffffff",
+              "cornerRadius": 12,
+              "stroke": "$note-border",
+              "strokeWidth": 1,
+              "layout": "vertical",
+              "gap": 12,
+              "padding": 20,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "YGcse",
+                  "name": "cap",
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "sdLXG",
+                      "name": "chip",
+                      "width": 22,
+                      "height": 22,
+                      "fill": "$ink",
+                      "cornerRadius": 9999,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "GMtkx",
+                          "name": "n",
+                          "fill": "#ffffff",
+                          "content": "D6",
+                          "fontFamily": "$font-mono",
+                          "fontSize": 12,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "abD6X",
+                      "name": "t",
+                      "fill": "$ink",
+                      "content": "A design board is reference, not a side",
+                      "fontFamily": "$font-body",
+                      "fontSize": 14,
+                      "fontWeight": "700"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "BAyi9",
+                  "name": "options",
+                  "width": "fill_container",
+                  "gap": 12,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "TX6NL",
+                      "name": "chosen",
+                      "theme": {
+                        "mode": "light"
+                      },
+                      "width": "fill_container",
+                      "fill": "$bg",
+                      "cornerRadius": 8,
+                      "stroke": "$border-strong",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "gap": 8,
+                      "padding": 12,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "ntqH5",
+                          "name": "hd",
+                          "gap": 6,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "b1lFUk",
+                              "name": "dot",
+                              "width": 8,
+                              "height": 8,
+                              "fill": "$success-fg",
+                              "cornerRadius": 9999
+                            },
+                            {
+                              "type": "text",
+                              "id": "oiCR8",
+                              "name": "t",
+                              "fill": "$text",
+                              "content": "beside after · chosen",
+                              "fontFamily": "$font-mono",
+                              "fontSize": 10,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "NGoLE",
+                          "name": "step 1.",
+                          "width": "fill_container",
+                          "gap": 6,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "sUzBt",
+                              "name": "n",
+                              "fill": "$text-muted",
+                              "content": "1.",
+                              "fontFamily": "$font-body",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "qmj1F",
+                              "name": "kw",
+                              "fill": "$text-muted",
+                              "content": "left",
+                              "fontFamily": "$font-body",
+                              "fontSize": 11,
+                              "fontWeight": "700"
+                            },
+                            {
+                              "type": "text",
+                              "id": "a6WxzD",
+                              "name": "body",
+                              "fill": "$text",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "a whole board in a PanZoom, fitted at 100%",
+                              "lineHeight": 1.4,
+                              "fontFamily": "$font-body",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "LxsvL",
+                          "name": "step 2.",
+                          "width": "fill_container",
+                          "gap": 6,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "XLenA",
+                              "name": "n",
+                              "fill": "$text-muted",
+                              "content": "2.",
+                              "fontFamily": "$font-body",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "iX12u",
+                              "name": "kw",
+                              "fill": "$text-muted",
+                              "content": "right",
+                              "fontFamily": "$font-body",
+                              "fontSize": 11,
+                              "fontWeight": "700"
+                            },
+                            {
+                              "type": "text",
+                              "id": "qZeMF",
+                              "name": "body",
+                              "fill": "$text",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "the after screenshot, never compared to it",
+                              "lineHeight": 1.4,
+                              "fontFamily": "$font-body",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "K9Mgg",
+                      "name": "rejected",
+                      "theme": {
+                        "mode": "light"
+                      },
+                      "width": "fill_container",
+                      "fill": "$bg-subtle",
+                      "cornerRadius": 8,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "gap": 8,
+                      "padding": 12,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "UgwlL",
+                          "name": "hd",
+                          "gap": 6,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "IYoKY",
+                              "name": "dot",
+                              "width": 8,
+                              "height": 8,
+                              "fill": "$danger-fg",
+                              "cornerRadius": 9999
+                            },
+                            {
+                              "type": "text",
+                              "id": "M6kcri",
+                              "name": "t",
+                              "fill": "$text",
+                              "content": "a seventh mode · rejected",
+                              "fontFamily": "$font-mono",
+                              "fontSize": 10,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "PqWAM",
+                          "name": "line",
+                          "fill": "$text-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "baseline candidate diff … [design]",
+                          "lineHeight": 1.4,
+                          "fontFamily": "$font-mono",
+                          "fontSize": 10,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "aSIs1",
+                          "name": "line",
+                          "fill": "$text-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "  a mode answers 'how did it move';",
+                          "lineHeight": 1.4,
+                          "fontFamily": "$font-mono",
+                          "fontSize": 10,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "TOil3",
+                          "name": "line",
+                          "fill": "$text-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "  a board shares no pixel grid with it",
+                          "lineHeight": 1.4,
+                          "fontFamily": "$font-mono",
+                          "fontSize": 10,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "b1Kfkw",
+                  "name": "why",
+                  "fill": "$ink-muted",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "A board is drawn at its own scale, in light, with padding no capture has, and every re-export drifts 0.4–2% of its pixels — blinking or diffing it against a screenshot would report differences that are not there. So it is never a side and never carries a bucket: compare to swaps the six modes out for the board beside the after screenshot, and the reviewer pans to the tile and judges by eye, the way Chromatic shows a design next to a story.",
                   "lineHeight": 1.45,
                   "fontFamily": "$font-body",
                   "fontSize": 12,
@@ -34012,7 +34315,14 @@
                                   "x": 0,
                                   "y": 0,
                                   "name": "board-bar",
+                                  "width": 620,
+                                  "height": 32,
+                                  "fill": "$bg-subtle",
                                   "gap": 6,
+                                  "padding": [
+                                    0,
+                                    4
+                                  ],
                                   "alignItems": "center",
                                   "children": [
                                     {
@@ -34146,7 +34456,7 @@
                                   "type": "frame",
                                   "id": "L2OtD",
                                   "x": 448,
-                                  "y": 0,
+                                  "y": 4,
                                   "name": "zoom-bar",
                                   "gap": 6,
                                   "alignItems": "center",
@@ -35189,7 +35499,14 @@
                                   "x": 0,
                                   "y": 0,
                                   "name": "board-bar",
+                                  "width": 366,
+                                  "height": 30,
+                                  "fill": "$bg-subtle",
                                   "gap": 4,
+                                  "padding": [
+                                    0,
+                                    4
+                                  ],
                                   "alignItems": "center",
                                   "children": [
                                     {
