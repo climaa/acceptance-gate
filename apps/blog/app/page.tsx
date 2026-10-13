@@ -2,7 +2,8 @@ import type { Metadata } from 'next';
 import NextLink from 'next/link';
 import { EmptyState, PostCard, Stack } from '@gate/ui';
 import { getAllPosts, tagPath } from '@/lib/posts';
-import { SITE_ALTERNATES, SITE_OPEN_GRAPH } from '@/lib/site';
+import { pageMetadata } from '@/lib/share';
+import { SITE_DEFAULT_TITLE, SITE_DESCRIPTION } from '@/lib/site';
 
 /**
  * The home page says where it lives. Without these it inherited the layout's
@@ -11,10 +12,11 @@ import { SITE_ALTERNATES, SITE_OPEN_GRAPH } from '@/lib/site';
  * a `?utm_source=…` link had no address to fold it back onto.
  * The title and description stay the layout's: they already describe this page.
  */
-export const metadata: Metadata = {
-  openGraph: { ...SITE_OPEN_GRAPH, url: '/' },
-  alternates: { ...SITE_ALTERNATES, canonical: '/' },
-};
+export const metadata: Metadata = pageMetadata({
+  path: '/',
+  title: { absolute: SITE_DEFAULT_TITLE },
+  description: SITE_DESCRIPTION,
+});
 
 export default function HomePage() {
   const posts = getAllPosts().slice(0, 4);

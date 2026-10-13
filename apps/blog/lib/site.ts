@@ -66,8 +66,18 @@ export const FOOTER_LINKS = [
 
 export const SITE_TITLE = 'Carlos Lima';
 
+/**
+ * How a page's `<title>` reads. The layout hands it to Next, and `lib/share.ts`
+ * applies it by hand for the preview headline — one spelling, so a page's tab
+ * and its link preview cannot drift apart.
+ */
+export const TITLE_TEMPLATE = `%s · ${SITE_TITLE}`;
+
 /** The half of the home page's `<title>` that is not the name, reused by the site OG card. */
 export const SITE_TAGLINE = 'Frontend engineering and quality';
+
+/** The home page's `<title>`, and the title of every page that names none. */
+export const SITE_DEFAULT_TITLE = `${SITE_TITLE} — ${SITE_TAGLINE}`;
 
 /** The rights holder the footer prints after the year. */
 export const SITE_COPYRIGHT = 'Carlos Lima · Barcelona';

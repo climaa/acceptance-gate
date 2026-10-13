@@ -3,6 +3,7 @@ import NextLink from 'next/link';
 import { notFound } from 'next/navigation';
 import { BlogIndexTemplate } from '@gate/ui';
 import { getAllTags, getPostsByTag, getTagLabel, tagPath } from '@/lib/posts';
+import { pageMetadata, tagDescription } from '@/lib/share';
 
 // The page's heading and its `<title>` are the same sentence, and a crawler that
 // reads one against the other should not find two.
@@ -21,13 +22,13 @@ export async function generateMetadata({
   const label = getTagLabel(tag);
   if (!label) return {};
 
-  return {
+  // `/tags/CI` and `/tags/visual%20regression` reach this page too, since the
+  // match is on the slug. One page, so one URL for a crawler to index.
+  return pageMetadata({
+    path: tagPath(label),
     title: tagTitle(label),
-    description: `Every post tagged ${label}.`,
-    // `/tags/CI` and `/tags/visual%20regression` reach this page too, since the
-    // match is on the slug. One page, so one URL for a crawler to index.
-    alternates: { canonical: tagPath(label) },
-  };
+    description: tagDescription(label, getPostsByTag(label)),
+  });
 }
 
 export default async function TagPage({ params }: PageProps<'/tags/[tag]'>) {
