@@ -8,6 +8,7 @@ import { Chrome } from '../../pages/chrome';
 import { ComparisonModal } from '../../pages/comparison-modal';
 import { ConsolePage } from '../../pages/console';
 import { Giscus } from '../../pages/giscus';
+import { LinkPreviews, type Preview } from '../../pages/link-preview';
 import { PostPage } from '../../pages/post';
 import { ReportPage } from '../../pages/report';
 
@@ -30,6 +31,8 @@ export interface ScenarioState {
    *  that selects it, never written into one, so the scenarios survive the next
    *  release. */
   releaseTag?: string;
+  /** The pages a link-preview scenario read, as a crawler got them. */
+  previews?: Preview[];
 }
 
 /** Page objects reach the steps as fixtures, never as `new` inside a step: two steps
@@ -46,6 +49,7 @@ export const test = base.extend<{
   blogIndex: BlogIndexPage;
   changelog: ChangelogPage;
   giscus: Giscus;
+  linkPreviews: LinkPreviews;
   post: PostPage;
   chrome: Chrome;
   console: ConsolePage;
@@ -64,6 +68,9 @@ export const test = base.extend<{
   },
   giscus: async ({ page }, use) => {
     await use(new Giscus(page));
+  },
+  linkPreviews: async ({ page }, use) => {
+    await use(new LinkPreviews(page));
   },
   post: async ({ page }, use) => {
     await use(new PostPage(page));
