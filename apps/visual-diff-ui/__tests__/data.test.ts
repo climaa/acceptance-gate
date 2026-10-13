@@ -24,6 +24,10 @@ const FIXTURE_REPORT = 'main-2026-08-17__main-2026-08-13';
 /** The second sample: the IconButton stories entering the corpus, so the demo
  *  shows an `added` verdict and not only a `changed` one. */
 const ADDED_REPORT = 'baselines__main-2026-08-24';
+/** The latest corpus comparison, and the same pair read backwards — the one
+ *  fixture that shows `removed`. See fixtures/README.md. */
+const LATEST_REPORT = 'main-2026-09-17__main-2026-10-13';
+const REMOVED_REPORT = 'main-2026-10-13__main-2026-09-17';
 const FIXTURE_SHOT = 'atoms__desktop__light__atoms-prose--default.diff.png';
 
 const temporaryDirs: string[] = [];
@@ -115,6 +119,8 @@ describe('readSets', () => {
     const { sets } = await readSets(FIXTURES_DIR);
 
     expect(sets.map((set) => set.label)).toEqual([
+      'main-2026-10-13',
+      'main-2026-09-17',
       'main-2026-08-30',
       'main-2026-08-24',
       'main-2026-08-17',
@@ -163,9 +169,33 @@ describe('readReports', () => {
   it('lists the committed fixture report with its counts', async () => {
     const reports = await readReports(FIXTURES_DIR);
 
-    // Newest-first is a descending sort on the id, so `main-…` leads and the
-    // `baselines__…` report follows — not capture order.
+    // Newest-first is a descending sort on the id, so the `main-…` reports lead
+    // and the `baselines__…` report follows — not capture order.
     expect(reports).toEqual([
+      {
+        id: REMOVED_REPORT,
+        exitCode: 1,
+        counts: {
+          unchanged: 154,
+          changed: 6,
+          added: 0,
+          removed: 12,
+          errored: 0,
+          a11y: 0,
+        },
+      },
+      {
+        id: LATEST_REPORT,
+        exitCode: 1,
+        counts: {
+          unchanged: 154,
+          changed: 6,
+          added: 12,
+          removed: 0,
+          errored: 0,
+          a11y: 0,
+        },
+      },
       {
         id: FIXTURE_REPORT,
         exitCode: 1,
