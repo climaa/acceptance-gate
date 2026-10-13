@@ -31,6 +31,10 @@ const REPORT = 'main-2026-08-17__main-2026-08-13';
 /** The second sample report: the IconButton stories entering the corpus, so the
  *  demo carries an `added` verdict as well as a `changed` one. */
 const ADDED_REPORT = 'baselines__main-2026-08-24';
+/** The latest corpus comparison, and the same pair read backwards — the one
+ *  fixture that shows `removed`. See fixtures/README.md. */
+const LATEST_REPORT = 'main-2026-09-17__main-2026-10-13';
+const REMOVED_REPORT = 'main-2026-10-13__main-2026-09-17';
 const SHOT = 'atoms__desktop__light__atoms-prose--default.diff.png';
 
 const request = new Request('http://localhost:3300/');
@@ -52,7 +56,7 @@ describe('GET /api/sets', () => {
 
     const body = (await response.json()) as { isSample: boolean; sets: unknown[] };
     expect(body.isSample).toBe(true);
-    expect(body.sets).toHaveLength(4);
+    expect(body.sets).toHaveLength(6);
   });
 
   // The reader behind it is cached with `cacheLife('seconds')` and a tag a
@@ -74,8 +78,13 @@ describe('GET /api/reports', () => {
       reports: { id: string }[];
     };
     expect(body.isSample).toBe(true);
-    // Newest-first is a descending sort on the id, so `main-…` leads.
-    expect(body.reports.map((report) => report.id)).toEqual([REPORT, ADDED_REPORT]);
+    // Newest-first is a descending sort on the id, so the `main-…` reports lead.
+    expect(body.reports.map((report) => report.id)).toEqual([
+      REMOVED_REPORT,
+      LATEST_REPORT,
+      REPORT,
+      ADDED_REPORT,
+    ]);
   });
 
   // Same reason as /api/sets: a cached list survives the tag a delete purges.

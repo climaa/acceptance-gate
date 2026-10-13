@@ -7,10 +7,12 @@ console.
 
 ## What the reports are
 
-Two, and both are real runs. The first is the regression the fixture was built
+Four, and all are real runs. The first is the regression the fixture was built
 around; the second exists because one report could only ever show one verdict,
 and a console that demos `changed` and nothing else never shows a reviewer what
-the other buckets look like.
+the other buckets look like. The third is the corpus's latest movement, which is
+where the Pagination stories are; the fourth is that same pair read backwards,
+because it is the only honest way this corpus has to show `removed`.
 
 ## 1. `main-2026-08-17__main-2026-08-13` — a real regression
 
@@ -65,12 +67,48 @@ committed corpus is not a capture set. The console says so in the report header
 — "no capture set recorded under this label" — which is itself a state worth
 demoing.
 
-**Still not demoed: `removed`, `errored`, `a11y`.** No corpus event has produced
-them, and, as above, none is fabricated to fill the gap.
+## 3. `main-2026-09-17__main-2026-10-13` — the corpus's latest movement
+
+The committed `__baselines__` corpus at two commits, compared by the console's
+own `compareSets` — the code path a compare job runs. No capture was taken:
+both sides are corpus bytes already captured in the pinned container, and
+comparing two PNGs moves no pixels. That is why `env` reads `darwin`, the host
+that did the arithmetic, and why it does not weaken the verdict the way a
+host-rendered side would. Both corpora's own `BASELINE_ENV.json` name the
+pinned image.
+
+- **A** — `a78c467` (2026-09-17), the last commit before the corpus moved again.
+  Its corpus is byte-for-byte the one at `d9d8e96`.
+- **B** — `c013d86` (2026-10-13), today's corpus.
+
+Three things landed in between, and the differ's verdict on each is the point:
+
+| change                                                                  | variants | verdict                                                                                                                  |
+| ----------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------ |
+| [#460](https://github.com/climaa/acceptance-gate/pull/460) dialog story | 4        | `changed` — 9,305–14,136 px                                                                                              |
+| [#483](https://github.com/climaa/acceptance-gate/pull/483) footer mark  | 4        | `changed` on mobile (53 and 52 px against an allowance of 40); `unchanged` on desktop, which the ratio threshold absorbs |
+| [#491](https://github.com/climaa/acceptance-gate/pull/491) Pagination   | 12       | `added`                                                                                                                  |
+
+So eight baselines moved and six are `changed`. The two that are not are kept
+that way: a report that rounded them up would be demoing a differ with no
+threshold, and the footer's version mark is exactly the kind of change the
+threshold exists to let through.
+
+## 4. `main-2026-10-13__main-2026-09-17` — the same pair, backwards
+
+Side A and side B swapped, the way report 1 reads #242 backwards. The six
+`changed` variants stay `changed`, and the twelve Pagination stories become
+`removed`: present in the baselines, absent from the candidate. The corpus has
+never deleted a story, so this is the only real run that can show what a
+removed variant looks like — and it is the differ's own answer, not a row
+written by hand.
+
+**Still not demoed: `errored`, `a11y`.** No corpus event has produced them, and,
+as above, none is fabricated to fill the gap.
 
 ## What the sets are
 
-Three of the four are registry rows and nothing else: `sets.json` names them so the
+Five of the six are registry rows and nothing else: `sets.json` names them so the
 console has something to list and the compare pickers have something to offer, and
 none of them ships the shots it claims. That is not an omission — it is the state
 a real instance is in when it holds the record of a capture taken somewhere else,
@@ -105,7 +143,7 @@ committed PNGs to demonstrate scrolling.
 
 ```bash
 fixtures/
-├── sets.json                     # the four capture sets the console lists
+├── sets.json                     # the six capture sets the console lists
 ├── sets/
 │   └── main-2026-08-30/          # the one set that ships its shots
 │       └── <variantKey>.png      # real corpus bytes, --filter'd to 14
@@ -114,10 +152,12 @@ fixtures/
     │   ├── summary.json          # schema of packages/visual-diff, plus isSample: true
     │   └── shots/
     │       └── <variantKey>.{baseline,candidate,diff}.png
-    └── baselines__main-2026-08-24/
-        ├── summary.json
-        └── shots/
-            └── <variantKey>.candidate.png   # added: no baseline, so no diff
+    ├── baselines__main-2026-08-24/
+    │   ├── summary.json
+    │   └── shots/
+    │       └── <variantKey>.candidate.png   # added: no baseline, so no diff
+    ├── main-2026-09-17__main-2026-10-13/    # changed + added
+    └── main-2026-10-13__main-2026-09-17/    # changed + removed
 ```
 
 `summary.json` follows `packages/visual-diff`'s schema (`schemaVersion` 1); `isSample:
@@ -144,3 +184,16 @@ docker run --rm --ipc=host -v "$(pwd)":/repo -w /repo \
 The capture must run in the pinned container — a bare-metal capture renders with the
 host's font stack and would visibly disagree with the committed baselines, which is the
 exact failure mode this tool exists to catch.
+
+## Regenerating reports 3 and 4
+
+No container is needed: both sides are committed corpus bytes.
+
+```bash
+D=$(mktemp -d); mkdir -p $D/sets/main-2026-09-17 $D/sets/main-2026-10-13 $D/reports
+git archive a78c467 packages/visual-diff/__baselines__ | tar -x -C $D/sets/main-2026-09-17 --strip-components=3
+git archive c013d86 packages/visual-diff/__baselines__ | tar -x -C $D/sets/main-2026-10-13 --strip-components=3
+echo '{"sets":[]}' > $D/sets.json
+# then call lib/runner.ts's compareSets(D, { mode: 'compare', baseline, candidate })
+# once per direction, and add `"isSample": true` to each summary.json.
+```

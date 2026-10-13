@@ -2,12 +2,28 @@
   "isSample": true,
   "sets": [
     {
+      "label": "main-2026-10-13",
+      "sha": "c013d86",
+      "branch": "main",
+      "capturedAt": "2026-10-13",
+      "stories": 172,
+      "note": "the committed __baselines__ corpus at this sha \u2014 the dialog fix, the footer's version mark and the twelve Pagination stories have all landed"
+    },
+    {
+      "label": "main-2026-09-17",
+      "sha": "a78c467",
+      "branch": "main",
+      "capturedAt": "2026-09-17",
+      "stories": 160,
+      "note": "the committed __baselines__ corpus at this sha, the last before the dialog fix \u2014 byte-for-byte the corpus at d9d8e96"
+    },
+    {
       "label": "main-2026-08-30",
       "sha": "d9d8e96",
       "branch": "main",
       "capturedAt": "2026-08-30",
       "stories": 14,
-      "note": "a --filter slice of the committed __baselines__ corpus at this sha — the one set here that ships its shots, so a deployed console can open a set rather than only list one"
+      "note": "a --filter slice of the committed __baselines__ corpus at this sha \u2014 the one set here that ships its shots, so a deployed console can open a set rather than only list one"
     },
     {
       "label": "main-2026-08-24",
@@ -15,7 +31,7 @@
       "branch": "feat/local-accept-loop",
       "capturedAt": "2026-08-24",
       "stories": 154,
-      "note": "the corpus after the IconButton stories landed — side B of the added report"
+      "note": "the corpus after the IconButton stories landed \u2014 side B of the added report"
     },
     {
       "label": "main-2026-08-17",
