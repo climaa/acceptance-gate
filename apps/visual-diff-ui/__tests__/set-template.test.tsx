@@ -1,12 +1,13 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 // Imported explicitly rather than relying on `globals: true` — tsconfig's
 // `**/*.ts` include means tsc typechecks this file.
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { SetTemplate } from '../components/SetTemplate';
 import type { CanonicalSet as Corpus } from '../lib/baselines';
 import type { SetShot, SetShots } from '../lib/set-shots';
-import { groupShots, parseShotName } from '../lib/set-shots';
+import { groupShots, parseShotName, setFilterFrom } from '../lib/set-shots';
+import { setFilterQuery } from '../lib/set-filter';
 
 /**
  * The set viewer, rendered from literal rows.
@@ -313,5 +314,102 @@ describe('SetFilterBar', () => {
 
     const nav = screen.getByRole('navigation', { name: 'tiers' });
     expect(nav.querySelectorAll('a')).toHaveLength(2);
+  });
+});
+
+describe('a filtered set as a link', () => {
+  const checkedIds = () =>
+    screen
+      .getAllByRole('radio', { checked: true })
+      .map((node) => node.getAttribute('id'));
+
+  it('opens with the radios the link names checked', () => {
+    render(
+      <SetTemplate
+        corpus={corpus}
+        set={null}
+        shots={shots([BADGE, ...HEADER])}
+        filter={{ theme: 'dark', viewport: 'mobile' }}
+      />,
+    );
+
+    expect(checkedIds()).toEqual(['vd-theme-dark', 'vd-viewport-mobile']);
+  });
+
+  // The filtering is still radios and CSS; this only writes the pick back.
+  it('writes a picked filter into the URL, keeping the tier fragment', () => {
+    const replaceState = vi.spyOn(window.history, 'replaceState');
+    window.location.hash = '#vd-tier-atoms';
+    render(<SetTemplate corpus={corpus} set={null} shots={shots([BADGE, ...HEADER])} />);
+
+    fireEvent.click(screen.getByRole('radio', { name: 'dark' }));
+
+    expect(replaceState.mock.calls.at(-1)?.[2]).toBe(
+      `${window.location.pathname}?theme=dark#vd-tier-atoms`,
+    );
+    replaceState.mockRestore();
+    window.location.hash = '';
+  });
+
+  it('drops the query entirely once both axes are back on both', () => {
+    const replaceState = vi.spyOn(window.history, 'replaceState');
+    render(
+      <SetTemplate
+        corpus={corpus}
+        set={null}
+        shots={shots([BADGE, ...HEADER])}
+        filter={{ theme: 'dark', viewport: 'both' }}
+      />,
+    );
+
+    fireEvent.click(
+      within(screen.getByRole('group', { name: 'theme' })).getByRole('radio', {
+        name: 'both',
+      }),
+    );
+
+    expect(replaceState.mock.calls.at(-1)?.[2]).toBe(window.location.pathname);
+    replaceState.mockRestore();
+  });
+});
+
+describe('setFilterFrom', () => {
+  it('reads both axes from the query', () => {
+    const filter = setFilterFrom({ theme: 'light', viewport: 'desktop' });
+
+    expect(filter).toEqual({ theme: 'light', viewport: 'desktop' });
+  });
+
+  it('reads auto, which the strips draw too', () => {
+    const filter = setFilterFrom({ theme: 'auto', viewport: 'auto' });
+
+    expect(filter).toEqual({ theme: 'auto', viewport: 'auto' });
+  });
+
+  // A stale or hand-edited link degrades to everything, never to nothing checked.
+  it('falls back to both for a value no strip draws', () => {
+    const filter = setFilterFrom({ theme: 'sepia', viewport: 'watch' });
+
+    expect(filter).toEqual({ theme: 'both', viewport: 'both' });
+  });
+
+  it('falls back to both for a repeated key', () => {
+    const filter = setFilterFrom({ theme: ['dark', 'light'] });
+
+    expect(filter).toEqual({ theme: 'both', viewport: 'both' });
+  });
+});
+
+describe('setFilterQuery', () => {
+  it('leaves the default out, so an unfiltered set keeps its bare link', () => {
+    const query = setFilterQuery({ theme: 'both', viewport: 'both' });
+
+    expect(query).toBe('');
+  });
+
+  it('writes each axis that is narrowed', () => {
+    const query = setFilterQuery({ theme: 'dark', viewport: 'mobile' });
+
+    expect(query).toBe('theme=dark&viewport=mobile');
   });
 });

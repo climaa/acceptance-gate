@@ -9,6 +9,8 @@ import {
   VIEWPORT_CHOICES,
   VIEWPORT_SEGMENTS,
 } from '@/lib/set-shots';
+import type { SetFilter } from '@/lib/set-filter';
+import { SetFilterUrl } from './SetFilterUrl';
 
 /** Every cell of the filter matrix, in a stable order. */
 export const FILTER_KEYS: readonly FilterKey[] = THEME_CHOICES.flatMap((theme) =>
@@ -46,10 +48,10 @@ export function Filtered({
  *
  * A SERVER component with no state, and that is the whole design. The inputs
  * below are real radios, and `set.css` reads `:checked` through `:has()` to hide
- * what a filter excludes — so a page carrying 160 images stays exactly as free of
- * client JavaScript as it was before it could be filtered. The cost is stated
- * rather than hidden: the choice lives in the DOM, not the URL, so a filtered
- * view is not a shareable one.
+ * what a filter excludes — so the filtering itself needs no client JavaScript at
+ * all. A filtered view is still a link: the page checks the radios `?theme=` and
+ * `?viewport=` name, and `SetFilterUrl` — a listener that renders nothing —
+ * writes a reader's pick back into the URL.
  *
  * It is a SIBLING of the page header, never inside it. `position: sticky` is
  * clipped by its own parent's box, so a bar nested in a header that scrolls away
@@ -69,6 +71,8 @@ const ID = (axis: string, value: string) => `vd-${axis}-${value}`;
 interface StripProps {
   axis: 'theme' | 'viewport';
   choices: readonly string[];
+  /** The segment checked on first paint — the one the link names. */
+  checked: string;
 }
 
 /**
@@ -80,7 +84,7 @@ interface StripProps {
  * the argument `TriStateCheckbox.css` already makes: what the control looks like
  * and what it IS cannot drift apart if only one of them exists.
  */
-function Strip({ axis, choices }: StripProps) {
+function Strip({ axis, choices, checked }: StripProps) {
   return (
     <fieldset className="vd-strip">
       <legend className="vd-strip__legend">{axis}</legend>
@@ -88,10 +92,11 @@ function Strip({ axis, choices }: StripProps) {
         <span className="vd-strip__segment" key={choice}>
           <input
             className="vd-strip__input"
-            defaultChecked={choice === 'both'}
+            defaultChecked={choice === checked}
             id={ID(axis, choice)}
             name={`vd-${axis}`}
             type="radio"
+            value={choice}
           />
           <label className="vd-strip__label" htmlFor={ID(axis, choice)}>
             {choice}
@@ -117,9 +122,11 @@ export interface SetFilterBarProps {
   counts: Record<FilterKey, FilterCount>;
   /** Per tier, so a jump link says how much of ITS tier survives the filter. */
   perTier: TierCounts;
+  /** What the link asked to see. */
+  filter: SetFilter;
 }
 
-export function SetFilterBar({ sections, counts, perTier }: SetFilterBarProps) {
+export function SetFilterBar({ sections, counts, perTier, filter }: SetFilterBarProps) {
   return (
     <div className="vd-set__bar">
       <nav aria-label="tiers" className="vd-set__nav">
@@ -145,8 +152,9 @@ export function SetFilterBar({ sections, counts, perTier }: SetFilterBarProps) {
         ))}
       </nav>
 
-      <Strip axis="theme" choices={THEME_SEGMENTS} />
-      <Strip axis="viewport" choices={VIEWPORT_SEGMENTS} />
+      <Strip axis="theme" choices={THEME_SEGMENTS} checked={filter.theme} />
+      <Strip axis="viewport" choices={VIEWPORT_SEGMENTS} checked={filter.viewport} />
+      <SetFilterUrl />
 
       {/* All nine answers, one revealed. CSS can hide a screenshot but it cannot
           count what is left, so the alternative to rendering these was a client

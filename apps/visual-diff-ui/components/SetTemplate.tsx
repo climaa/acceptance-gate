@@ -5,7 +5,10 @@ import { UNKNOWN, formatBytes, shortSha } from '@/lib/outcome';
 import { filterCounts, type SetShots, tierFilterCounts } from '@/lib/set-shots';
 import type { CaptureSet } from '@/lib/summary';
 import { Field } from './Field';
+import { DEFAULT_SEGMENT, type SetFilter } from '@/lib/set-filter';
 import { Filtered, SetFilterBar } from './SetFilterBar';
+
+const UNFILTERED: SetFilter = { theme: DEFAULT_SEGMENT, viewport: DEFAULT_SEGMENT };
 import { Note } from './Note';
 import { StoryScreenshots } from './StoryScreenshots';
 
@@ -85,9 +88,16 @@ export interface SetTemplateProps {
   corpus: CanonicalSet | null;
   /** The registry row, when the set is one this instance captured. */
   set: CaptureSet | null;
+  /** What the link asked to see. Everything, when it asked for nothing. */
+  filter?: SetFilter;
 }
 
-export function SetTemplate({ shots, corpus, set }: SetTemplateProps) {
+export function SetTemplate({
+  shots,
+  corpus,
+  set,
+  filter = UNFILTERED,
+}: SetTemplateProps) {
   // Once, not per tier: the same nine numbers feed the bar's jump links and every
   // tier heading below.
   const perTier = tierFilterCounts(shots.sections);
@@ -125,6 +135,7 @@ export function SetTemplate({ shots, corpus, set }: SetTemplateProps) {
         counts={filterCounts(shots.sections)}
         perTier={perTier}
         sections={shots.sections}
+        filter={filter}
       />
 
       {shots.sections.map((section) => (
