@@ -42,6 +42,27 @@ import { Button } from '../../atoms/Button/Button';
 /** How far one `+` or `−` moves the zoom. */
 export const ZOOM_STEP = 1.5;
 
+/** The grid's possible steps, in the image's own pixels: the 4-pixel unit the
+ *  system spaces by, doubled up to a size a board's tiles are laid out on. */
+export const GRID_STEPS = [4, 8, 16, 32, 64, 128, 256, 512, 1024] as const;
+
+/** The closest two grid lines may sit on screen before they stop being a grid
+ *  and start being a texture. */
+export const MIN_GRID_GAP = 12;
+
+const COARSEST_GRID = 1024;
+
+/**
+ * The grid's step at a scale (drawn pixels per image pixel): the finest step
+ * whose lines land at least {@link MIN_GRID_GAP} screen pixels apart. So the
+ * grid follows the zoom — coarse over a whole board at 100%, finer as `+` gets
+ * closer — while always counting the image's pixels, never the screen's, which
+ * is what lets a design and a screenshot be measured against each other.
+ */
+export function gridStep(scale: number): number {
+  return GRID_STEPS.find((step) => step * scale >= MIN_GRID_GAP) ?? COARSEST_GRID;
+}
+
 /** How far one arrow key pans, as a share of the pane. */
 export const PAN_STEP = 0.1;
 
@@ -142,7 +163,37 @@ export interface PanZoomProps {
    *  broken image. Every zoom control disables with it: there is nothing to
    *  move. Tracked per `src`, so pointing the pane at another image recovers. */
   fallback?: ReactNode;
+  /** Lay a grid over the image, counted in the image's own pixels — see
+   *  {@link gridStep}. Off unless asked for. */
+  grid?: boolean;
   className?: string;
+}
+
+interface GridOverlayProps {
+  image: Size;
+  offset: Offset;
+  /** The grid's step, in drawn pixels. */
+  gap: number;
+}
+
+/** The grid, sized and moved exactly as the image is, so its lines stay on the
+ *  image's pixels while it pans and zooms. Decoration only: the step it draws is
+ *  said in words beside the zoom readout. */
+function GridOverlay({ image, offset, gap }: GridOverlayProps) {
+  return (
+    <div
+      aria-hidden="true"
+      className="ds-panzoom__grid"
+      style={
+        {
+          width: `${image.width}px`,
+          height: `${image.height}px`,
+          transform: `translate(${offset.x}px, ${offset.y}px)`,
+          '--ds-panzoom-grid-gap': `${gap}px`,
+        } as React.CSSProperties
+      }
+    />
+  );
 }
 
 /** The pane's measured size, kept current as the pane resizes. */
@@ -166,12 +217,93 @@ function usePaneSize(): [React.RefObject<HTMLDivElement | null>, Size] {
   return [ref, size];
 }
 
+interface ZoomControlsProps {
+  label: string;
+  zoom: number;
+  canZoomOut: boolean;
+  canZoomIn: boolean;
+  canReset: boolean;
+  /** The grid's step in image pixels, or null when no grid is drawn. */
+  gridEvery: number | null;
+  onStep: (direction: 1 | -1) => void;
+  onReset: () => void;
+}
+
+/** − the readout + and reset, and the grid's step in words when there is one. */
+function ZoomControls({
+  label,
+  zoom,
+  canZoomOut,
+  canZoomIn,
+  canReset,
+  gridEvery,
+  onStep,
+  onReset,
+}: ZoomControlsProps) {
+  return (
+    <div className="ds-panzoom__controls" role="group" aria-label={`${label} zoom`}>
+      <Button
+        variant="ghost"
+        size="sm"
+        aria-label="zoom out"
+        disabled={!canZoomOut}
+        onClick={() => onStep(-1)}
+      >
+        −
+      </Button>
+      <span className="ds-panzoom__readout">{Math.round(zoom * 100)}%</span>
+      <Button
+        variant="ghost"
+        size="sm"
+        aria-label="zoom in"
+        disabled={!canZoomIn}
+        onClick={() => onStep(1)}
+      >
+        +
+      </Button>
+      <Button variant="ghost" size="sm" disabled={!canReset} onClick={onReset}>
+        reset
+      </Button>
+      {gridEvery !== null && (
+        <span className="ds-panzoom__grid-step">grid {gridEvery} px</span>
+      )}
+    </div>
+  );
+}
+
+interface ControlsInput {
+  failed: boolean;
+  zoom: number;
+  cap: number;
+  offset: Offset;
+  grid: boolean;
+  natural: Size;
+  image: Size;
+}
+
+/** Which controls are live, and the grid's step when one is drawn — every
+ *  either-or the render would otherwise make inline. */
+function controlsFor({ failed, zoom, cap, offset, grid, natural, image }: ControlsInput) {
+  const atRest = zoom === 1 && offset.x === 0 && offset.y === 0;
+  // Drawn pixels per image pixel, once the image has said how big it is.
+  const scale = natural.width > 0 ? image.width / natural.width : 0;
+
+  return {
+    canZoomOut: !failed && zoom > 1,
+    canZoomIn: !failed && zoom < cap,
+    canReset: !failed && !atRest,
+    scale,
+    gridEvery: grid && !failed && scale > 0 ? gridStep(scale) : null,
+  };
+}
+
 export function PanZoom({
   src,
   alt,
   label,
   defaultZoom = 1,
   fallback,
+  grid = false,
   className,
 }: PanZoomProps) {
   const [paneRef, pane] = usePaneSize();
@@ -235,34 +367,20 @@ export function PanZoom({
       height: event.currentTarget.naturalHeight,
     });
 
-  const atRest = failed || (zoom === 1 && offset.x === 0 && offset.y === 0);
+  const controls = controlsFor({ failed, zoom, cap, offset, grid, natural, image });
 
   return (
     <div className={['ds-panzoom', className].filter(Boolean).join(' ')}>
-      <div className="ds-panzoom__controls" role="group" aria-label={`${label} zoom`}>
-        <Button
-          variant="ghost"
-          size="sm"
-          aria-label="zoom out"
-          disabled={failed || zoom <= 1}
-          onClick={() => step(-1)}
-        >
-          −
-        </Button>
-        <span className="ds-panzoom__readout">{Math.round(zoom * 100)}%</span>
-        <Button
-          variant="ghost"
-          size="sm"
-          aria-label="zoom in"
-          disabled={failed || zoom >= cap}
-          onClick={() => step(1)}
-        >
-          +
-        </Button>
-        <Button variant="ghost" size="sm" disabled={atRest} onClick={reset}>
-          reset
-        </Button>
-      </div>
+      <ZoomControls
+        label={label}
+        zoom={zoom}
+        canZoomOut={controls.canZoomOut}
+        canZoomIn={controls.canZoomIn}
+        canReset={controls.canReset}
+        gridEvery={controls.gridEvery}
+        onStep={step}
+        onReset={reset}
+      />
 
       {/* A focusable group rather than an interactive role: the pane is moved
           around in, with keys it documents above, and the buttons are the
@@ -295,6 +413,13 @@ export function PanZoom({
               width: natural.width > 0 && pane.width > 0 ? `${image.width}px` : '100%',
               transform: `translate(${offset.x}px, ${offset.y}px)`,
             }}
+          />
+        )}
+        {controls.gridEvery !== null && (
+          <GridOverlay
+            image={image}
+            offset={offset}
+            gap={controls.gridEvery * controls.scale}
           />
         )}
       </div>

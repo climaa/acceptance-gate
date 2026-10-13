@@ -71,3 +71,27 @@
   font-size: var(--text-sm);
   text-align: center;
 }
+
+/* The grid, over the image and moved with it. Two hairline gradients rather
+   than a pattern image, so the step is one custom property the component
+   writes: `--ds-panzoom-grid-gap`, the step in drawn pixels. The accent at a
+   third strength reads on a light board and a dark screenshot alike. */
+.ds-panzoom__grid {
+  --ds-panzoom-grid-line: color-mix(in srgb, var(--color-accent) 35%, transparent);
+
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(to right, var(--ds-panzoom-grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--ds-panzoom-grid-line) 1px, transparent 1px);
+  background-size: var(--ds-panzoom-grid-gap) var(--ds-panzoom-grid-gap);
+}
+
+.ds-panzoom__grid-step {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-muted);
+}

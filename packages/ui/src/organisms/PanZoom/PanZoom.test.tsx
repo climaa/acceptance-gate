@@ -6,6 +6,7 @@ import {
   clampOffset,
   drawnSize,
   fitWidth,
+  gridStep,
   PanZoom,
   type PanZoomProps,
   stepZoom,
@@ -97,6 +98,33 @@ describe('zoomAbout', () => {
     // The image point under the anchor was (200,150); at 2× it is (400,300),
     // and an offset of (−200,−150) puts it back under the anchor.
     expect(offset).toEqual({ x: -200, y: -150 });
+  });
+});
+
+describe('gridStep', () => {
+  // A 2,642-pixel board fitted to a 681-pixel pane: about 0.26 drawn per pixel.
+  it('is coarse over a whole board at 100%', () => {
+    const step = gridStep(681 / 2642);
+
+    expect(step).toBe(64);
+  });
+
+  it('gets finer as the zoom gets closer', () => {
+    const step = gridStep(2);
+
+    expect(step).toBe(8);
+  });
+
+  it('never goes finer than 4 image pixels, however close the zoom', () => {
+    const step = gridStep(50);
+
+    expect(step).toBe(4);
+  });
+
+  it('stops at its coarsest step for an image shrunk past any useful grid', () => {
+    const step = gridStep(0.001);
+
+    expect(step).toBe(1024);
   });
 });
 
@@ -354,5 +382,46 @@ describe('PanZoom when the image will not load', () => {
     );
 
     expect(screen.getByRole('img', { name: 'a design board' })).toBeTruthy();
+  });
+});
+
+describe('PanZoom with a grid', () => {
+  const grid = (container: HTMLElement) =>
+    container.querySelector<HTMLElement>('.ds-panzoom__grid');
+
+  it('draws no grid unless asked for', () => {
+    const { container } = renderLoaded();
+
+    expect(grid(container)).toBeNull();
+    expect(screen.queryByText(/^grid /)).toBeNull();
+  });
+
+  // 1600 natural pixels in a 400-pixel pane: 0.25 drawn per pixel, so the
+  // finest step 12 screen pixels apart is 64 image pixels, drawn 16 apart.
+  it('lays the grid over the image, in the image pixels, and says its step', () => {
+    const { container } = renderLoaded({ grid: true });
+
+    expect(screen.getByText('grid 64 px')).toBeTruthy();
+    expect(grid(container)?.style.getPropertyValue('--ds-panzoom-grid-gap')).toBe('16px');
+  });
+
+  it('follows the zoom: a step in halves the grid it draws', () => {
+    renderLoaded({ grid: true, defaultZoom: 2 });
+
+    expect(screen.getByText('grid 32 px')).toBeTruthy();
+  });
+
+  it('moves with the image when it pans', () => {
+    const { container } = renderLoaded({ grid: true });
+
+    fireEvent.keyDown(pane(), { key: 'ArrowDown' });
+
+    expect(grid(container)?.style.transform).toBe('translate(0px, -30px)');
+  });
+
+  it('is decoration only — hidden from the accessibility tree', () => {
+    const { container } = renderLoaded({ grid: true });
+
+    expect(grid(container)?.getAttribute('aria-hidden')).toBe('true');
   });
 });
