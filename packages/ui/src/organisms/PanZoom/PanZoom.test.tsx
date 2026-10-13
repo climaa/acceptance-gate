@@ -425,3 +425,13 @@ describe('PanZoom with a grid', () => {
     expect(grid(container)?.getAttribute('aria-hidden')).toBe('true');
   });
 });
+
+describe('PanZoom with a lead', () => {
+  it('draws the lead on the control row, before the zoom controls', () => {
+    const { container } = renderLoaded({ lead: <span>after · main</span> });
+
+    const bar = container.querySelector('.ds-panzoom__bar');
+    expect(bar?.firstElementChild?.textContent).toBe('after · main');
+    expect(bar?.lastElementChild?.getAttribute('aria-label')).toBe('design board zoom');
+  });
+});

@@ -412,24 +412,14 @@ function DesignStage({
   after,
 }: DesignStageProps) {
   const afterSrc = shots.candidate;
+  const caption = <p className="vd-compare__caption vd-mono">after · {after}</p>;
 
   return (
     <div className="vd-compare__stage vd-compare__stage--design">
       <div className="vd-compare__design" data-split={split}>
         <div className="vd-compare__column">
-          <div className="vd-compare__column-head">
-            <SegmentedControl
-              label="board"
-              options={DESIGN_BOARDS.map((name) => ({
-                value: name,
-                label: BOARD_LABELS[name],
-              }))}
-              value={board}
-              onChange={(picked) => {
-                if (isDesignBoard(picked)) onBoard(picked);
-              }}
-            />
-          </div>
+          {/* What each pane holds and how it moves share one row, as Board 04
+              draws them: the picker leads the board's own zoom row. */}
           <PanZoom
             key={board}
             src={designBoardUrl(board)}
@@ -438,18 +428,19 @@ function DesignStage({
             fallback={BOARD_UNAVAILABLE}
             grid={grid}
             className="vd-compare__panzoom"
+            lead={<BoardPicker board={board} onBoard={onBoard} />}
           />
         </div>
 
         <div className="vd-compare__column">
-          <p className="vd-compare__column-head vd-compare__caption vd-mono">
-            after · {after}
-          </p>
           {/* The same pane as the board's, so the two are read the same way —
-            both fitted at 100%, both dragged and zoomed. A screenshot narrower
-            than the pane sits at its own pixels: the pane never stretches it. */}
+              both fitted at 100%, both dragged and zoomed. A screenshot narrower
+              than the pane sits at its own pixels: the pane never stretches it. */}
           {afterSrc === undefined ? (
-            <p className="vd-compare__absent">{absentShotCopy(variant, 'candidate')}</p>
+            <>
+              {caption}
+              <p className="vd-compare__absent">{absentShotCopy(variant, 'candidate')}</p>
+            </>
           ) : (
             <PanZoom
               key={variant.key}
@@ -458,11 +449,41 @@ function DesignStage({
               label="after screenshot"
               grid={grid}
               className="vd-compare__panzoom"
+              lead={caption}
             />
           )}
         </div>
       </div>
     </div>
+  );
+}
+
+/** The four boards, named the way Board 04 names them — with the word the
+ *  group is called by shown before it, not only announced. */
+function BoardPicker({
+  board,
+  onBoard,
+}: {
+  board: DesignBoard;
+  onBoard: (board: DesignBoard) => void;
+}) {
+  return (
+    <Stack direction="row" gap={2} align="center">
+      <span className="vd-compare__label vd-mono" aria-hidden="true">
+        board
+      </span>
+      <SegmentedControl
+        label="board"
+        options={DESIGN_BOARDS.map((name) => ({
+          value: name,
+          label: BOARD_LABELS[name],
+        }))}
+        value={board}
+        onChange={(picked) => {
+          if (isDesignBoard(picked)) onBoard(picked);
+        }}
+      />
+    </Stack>
   );
 }
 
@@ -527,6 +548,11 @@ function ComparisonHead({
           after screenshot is being read, and the split only exists once the
           toggle says design. */}
       <Stack direction="row" gap={2} align="center">
+        {/* The group's name, shown as well as announced — Board 04 draws it.
+            Hidden from the tree: the control already carries it as its name. */}
+        <span className="vd-compare__label vd-mono" aria-hidden="true">
+          {AGAINST_LABEL}
+        </span>
         <SegmentedControl
           label={AGAINST_LABEL}
           className="vd-compare__against"

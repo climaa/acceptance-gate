@@ -166,6 +166,10 @@ export interface PanZoomProps {
   /** Lay a grid over the image, counted in the image's own pixels — see
    *  {@link gridStep}. Off unless asked for. */
   grid?: boolean;
+  /** Drawn at the start of the control row, with the zoom controls pushed to
+   *  its end — a caller's picker or caption, so the row above the pane says
+   *  what is in it and how to move it on one line. */
+  lead?: ReactNode;
   className?: string;
 }
 
@@ -304,6 +308,7 @@ export function PanZoom({
   defaultZoom = 1,
   fallback,
   grid = false,
+  lead,
   className,
 }: PanZoomProps) {
   const [paneRef, pane] = usePaneSize();
@@ -371,16 +376,19 @@ export function PanZoom({
 
   return (
     <div className={['ds-panzoom', className].filter(Boolean).join(' ')}>
-      <ZoomControls
-        label={label}
-        zoom={zoom}
-        canZoomOut={controls.canZoomOut}
-        canZoomIn={controls.canZoomIn}
-        canReset={controls.canReset}
-        gridEvery={controls.gridEvery}
-        onStep={step}
-        onReset={reset}
-      />
+      <div className="ds-panzoom__bar">
+        {lead}
+        <ZoomControls
+          label={label}
+          zoom={zoom}
+          canZoomOut={controls.canZoomOut}
+          canZoomIn={controls.canZoomIn}
+          canReset={controls.canReset}
+          gridEvery={controls.gridEvery}
+          onStep={step}
+          onReset={reset}
+        />
+      </div>
 
       {/* A focusable group rather than an interactive role: the pane is moved
           around in, with keys it documents above, and the buttons are the

@@ -7,11 +7,21 @@
   min-height: 0;
 }
 
+/* The row above the pane: the caller's `lead` at its start, the zoom controls
+   at its end, wrapping onto two lines only when the pane is too narrow for one. */
+.ds-panzoom__bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
 .ds-panzoom__controls {
   display: flex;
   align-items: center;
-  align-self: flex-end;
   gap: var(--space-1);
+  margin-inline-start: auto;
 }
 
 /* Tabular digits so the row does not shift by a pixel as 100% becomes 225%. */
