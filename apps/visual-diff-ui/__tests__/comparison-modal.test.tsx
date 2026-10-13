@@ -582,6 +582,77 @@ describe('the design view', () => {
     });
   });
 
+  describe('the grid toggle', () => {
+    const gridButton = () => within(modal()).getByRole('button', { name: 'grid' });
+    const grids = () => modal().querySelectorAll('.ds-panzoom__grid');
+
+    it('is offered in the design view, off to begin with', () => {
+      renderModal('diff', PROSE, 'design');
+
+      expect(gridButton().getAttribute('aria-pressed')).toBe('false');
+    });
+
+    /** jsdom lays nothing out and loads no image. Every pane measures 400×300
+     *  from the prototype — it measures itself once, on mount — and each image
+     *  reports a natural size, so each PanZoom has a scale to draw a grid at. */
+    const sizes = ['clientWidth', 'clientHeight'] as const;
+    const saved = sizes.map((key) =>
+      Object.getOwnPropertyDescriptor(HTMLElement.prototype, key),
+    );
+    beforeEach(() => {
+      sizes.forEach((key, index) =>
+        Object.defineProperty(HTMLElement.prototype, key, {
+          configurable: true,
+          get(this: HTMLElement) {
+            return this.classList.contains('ds-panzoom__pane') ? [400, 300][index] : 0;
+          },
+        }),
+      );
+    });
+    afterEach(() => {
+      sizes.forEach((key, index) => {
+        const descriptor = saved[index];
+        if (descriptor) Object.defineProperty(HTMLElement.prototype, key, descriptor);
+      });
+    });
+
+    function loadBothPanes() {
+      for (const img of modal().querySelectorAll<HTMLImageElement>(
+        '.ds-panzoom__image',
+      )) {
+        Object.defineProperty(img, 'naturalWidth', { value: 1600 });
+        Object.defineProperty(img, 'naturalHeight', { value: 2400 });
+        fireEvent.load(img);
+      }
+    }
+
+    it('draws a grid over both panes when pressed, and none on a second press', () => {
+      renderModal('diff', PROSE, 'design');
+      loadBothPanes();
+
+      fireEvent.click(gridButton());
+      const drawn = grids().length;
+      fireEvent.click(gridButton());
+
+      expect(drawn).toBe(2);
+      expect(gridButton().getAttribute('aria-pressed')).toBe('false');
+      expect(grids()).toHaveLength(0);
+    });
+
+    it('is offered on a narrow screen too, where a grid is still a ruler', () => {
+      setViewport(false);
+      renderModal('diff', PROSE, 'design');
+
+      expect(gridButton()).toBeTruthy();
+    });
+
+    it('is not offered when reading against before', () => {
+      renderModal('diff', PROSE, 'before');
+
+      expect(within(modal()).queryByRole('button', { name: 'grid' })).toBeNull();
+    });
+  });
+
   // The after side's absence reads the same here as in the modes.
   it('says a removed variant has no after side, rather than framing nothing', () => {
     renderModal('diff', REMOVED, 'design');

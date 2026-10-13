@@ -363,8 +363,30 @@ function SplitGlyph({ to }: { to: Split }) {
   );
 }
 
+/** lucide's `grid-3x3`, for the toggle that lays a grid over both panes. */
+function GridGlyph() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect width="18" height="18" x="3" y="3" rx="2" />
+      <path d="M3 9h18" />
+      <path d="M3 15h18" />
+      <path d="M9 3v18" />
+      <path d="M15 3v18" />
+    </svg>
+  );
+}
+
 interface DesignStageProps {
   split: Split;
+  /** Lay each pane's own grid over it — counted in that image's pixels. */
+  grid: boolean;
   board: DesignBoard;
   onBoard: (board: DesignBoard) => void;
   shots: ShotSources;
@@ -380,7 +402,15 @@ interface DesignStageProps {
  * draw, so a removed variant says "not on this side" here exactly as it does
  * there. Nothing is compared: the reviewer pans to the tile and judges by eye.
  */
-function DesignStage({ split, board, onBoard, shots, variant, after }: DesignStageProps) {
+function DesignStage({
+  split,
+  grid,
+  board,
+  onBoard,
+  shots,
+  variant,
+  after,
+}: DesignStageProps) {
   const afterSrc = shots.candidate;
 
   return (
@@ -406,6 +436,7 @@ function DesignStage({ split, board, onBoard, shots, variant, after }: DesignSta
             alt={`the ${BOARD_LABELS[board]} design board`}
             label="design board"
             fallback={BOARD_UNAVAILABLE}
+            grid={grid}
             className="vd-compare__panzoom"
           />
         </div>
@@ -425,6 +456,7 @@ function DesignStage({ split, board, onBoard, shots, variant, after }: DesignSta
               src={afterSrc}
               alt="candidate"
               label="after screenshot"
+              grid={grid}
               className="vd-compare__panzoom"
             />
           )}
@@ -463,6 +495,9 @@ interface ComparisonHeadProps {
    *  reading against before, or below the breakpoint. */
   layout: Split | null;
   onLayout: (layout: Split) => void;
+  /** Whether the grid is on, or null where it is not offered: before. */
+  grid: boolean | null;
+  onGrid: (grid: boolean) => void;
   /** The modes the toolbar offers, or null in the design view. */
   modes: readonly ComparisonMode[] | null;
   mode: ComparisonMode;
@@ -476,6 +511,8 @@ function ComparisonHead({
   onAgainst,
   layout,
   onLayout,
+  grid,
+  onGrid,
   modes,
   mode,
   onMode,
@@ -507,6 +544,19 @@ function ComparisonHead({
             onClick={() => onLayout(layout === 'columns' ? 'rows' : 'columns')}
           >
             <SplitGlyph to={layout === 'columns' ? 'rows' : 'columns'} />
+          </IconButton>
+        )}
+
+        {/* A toggle, so pressed rather than renamed: the grid is on or off,
+            where the split button names the layout it is about to make. */}
+        {grid !== null && (
+          <IconButton
+            variant="ghost"
+            label="grid"
+            aria-pressed={grid}
+            onClick={() => onGrid(!grid)}
+          >
+            <GridGlyph />
           </IconButton>
         )}
       </Stack>
@@ -645,6 +695,9 @@ export function ComparisonModal({
   // URL, like the zoom. Only offered above the breakpoint: below it the sheet
   // stacks the panes whatever this says.
   const [layout, setLayout] = useState<Split>('columns');
+  // Off unless asked for, and not in the URL either: like the zoom it lays,
+  // it is a way of looking, not a thing to point someone at.
+  const [gridOn, setGridOn] = useState(false);
 
   useVariantKeys({ variants, current: variant, onVariant });
 
@@ -673,6 +726,8 @@ export function ComparisonModal({
           onAgainst={onAgainst}
           layout={headLayout}
           onLayout={setLayout}
+          grid={design ? gridOn : null}
+          onGrid={setGridOn}
           modes={modes}
           mode={active}
           onMode={onMode}
@@ -683,6 +738,7 @@ export function ComparisonModal({
         {design ? (
           <DesignStage
             split={stageLayout}
+            grid={gridOn}
             board={board}
             onBoard={onBoard}
             shots={shots}
