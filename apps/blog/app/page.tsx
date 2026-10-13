@@ -1,6 +1,20 @@
+import type { Metadata } from 'next';
 import NextLink from 'next/link';
 import { EmptyState, PostCard, Stack } from '@gate/ui';
 import { getAllPosts, tagPath } from '@/lib/posts';
+import { SITE_ALTERNATES, SITE_OPEN_GRAPH } from '@/lib/site';
+
+/**
+ * The home page says where it lives. Without these it inherited the layout's
+ * metadata, which names no page, so `/` went out with no `og:url` and no
+ * canonical — and a link-preview fetcher or a search engine reaching it through
+ * a `?utm_source=…` link had no address to fold it back onto.
+ * The title and description stay the layout's: they already describe this page.
+ */
+export const metadata: Metadata = {
+  openGraph: { ...SITE_OPEN_GRAPH, url: '/' },
+  alternates: { ...SITE_ALTERNATES, canonical: '/' },
+};
 
 export default function HomePage() {
   const posts = getAllPosts().slice(0, 4);

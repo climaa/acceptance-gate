@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { tagOutbound } from '@gate/links';
 
 /**
@@ -120,6 +121,27 @@ export const ERROR_ACTION = 'Try again';
 
 export const SITE_DESCRIPTION =
   'Notes on Next.js, testing with Cypress and Gherkin, visual regression and coding agents.';
+
+/**
+ * The `openGraph` and `alternates` every page starts from, shared rather than
+ * written once in the layout.
+ *
+ * NEXT MERGES METADATA SHALLOWLY. A page that sets `openGraph` replaces the
+ * layout's whole object, so a page adding only `url` would silently lose
+ * `og:site_name`, `og:locale` and `og:type`; `alternates` works the same way
+ * and would drop the RSS `<link>`. A page that adds a field spreads these first.
+ */
+export const SITE_OPEN_GRAPH = {
+  type: 'website',
+  locale: 'en_US',
+  siteName: SITE_TITLE,
+} satisfies Metadata['openGraph'];
+
+export const SITE_ALTERNATES = {
+  types: {
+    'application/rss+xml': '/rss.xml',
+  },
+} satisfies Metadata['alternates'];
 
 /**
  * The changelog's own heading, `<title>` and description.
