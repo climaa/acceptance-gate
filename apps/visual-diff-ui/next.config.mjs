@@ -46,6 +46,8 @@ const nextConfig = {
   outputFileTracingIncludes: {
     '/': ['./fixtures/**'],
     '/report/[id]': ['./fixtures/**'],
+    '/report/[id]/compare/[key]': ['./fixtures/**'],
+    '/report/[id]/@modal/(.)compare/[key]': ['./fixtures/**'],
     '/api/sets': ['./fixtures/**'],
     '/api/reports': ['./fixtures/**'],
     '/api/reports/[id]': ['./fixtures/**'],

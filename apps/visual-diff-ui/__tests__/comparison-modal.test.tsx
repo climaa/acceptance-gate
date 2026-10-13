@@ -5,10 +5,15 @@ import { cleanup, fireEvent, render, screen, within } from '@testing-library/rea
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ComparisonModal } from '../components/ComparisonModal';
 import { ReportTemplate } from '../components/ReportTemplate';
-import { COMPARISON_MODES, type ComparisonMode } from '../lib/comparison';
+import {
+  COMPARISON_MODES,
+  type ComparisonMode,
+  comparisonHref,
+  comparisonPath,
+} from '../lib/comparison';
 import type { CaptureSet, Summary, Variant } from '../lib/summary';
 import { storyTitle } from '../lib/title';
-import { replaceCalls, setSearchParams } from './stubs/next-navigation';
+import { pushCalls, setPathname, setSearchParams } from './stubs/next-navigation';
 
 /**
  * The surface a reviewer actually decides on: one variant, six ways of looking
@@ -392,7 +397,7 @@ describe('the report opening the modal', () => {
 
   function renderReport(query = ''): void {
     setSearchParams(query);
-    replaceCalls.length = 0;
+    pushCalls.length = 0;
 
     render(
       <main>
@@ -401,61 +406,39 @@ describe('the report opening the modal', () => {
     );
   }
 
-  const lastUrl = () => replaceCalls.at(-1)?.url ?? '';
   const cardOf = (subject: Variant) =>
     screen.getByRole('article', { name: storyTitle(subject.id) });
 
-  afterEach(() => localStorage.clear());
-
-  it('opens on the variant and mode a shared link names', () => {
-    renderReport(`story=${PROSE.key}&mode=slider`);
-
-    expect(modal()).toBeTruthy();
-    expect(pressedNames()).toEqual(['slider']);
+  afterEach(() => {
+    localStorage.clear();
+    setPathname('/');
   });
 
-  it('stays shut for a link naming a variant this report does not hold', () => {
-    renderReport('story=atoms__desktop__light__atoms-gone--default&mode=slider');
+  // The report draws no dialog of its own any more: a comparison is a route,
+  // and its modal is the layout's slot — see comparison-route.test.tsx.
+  it('draws no dialog, whatever the query string says', () => {
+    renderReport(`story=${PROSE.key}&mode=slider`);
 
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 
-  it('writes the variant and the mode a compare tool opened', () => {
+  it('pushes the comparison a compare tool opened, with its mode', () => {
     renderReport();
 
     fireEvent.click(
       within(cardOf(PROSE)).getByRole('button', { name: 'slider overlay' }),
     );
 
-    expect(lastUrl()).toContain(`story=${encodeURIComponent(PROSE.key)}`);
-    expect(lastUrl()).toContain('mode=slider');
+    expect(pushCalls).toEqual([comparisonHref(REPORT, PROSE.key, 'slider')]);
   });
 
-  it('rewrites the mode when the toolbar switches', () => {
-    renderReport(`story=${PROSE.key}&mode=slider`);
-
-    fireEvent.click(within(toolbar()).getByRole('button', { name: 'blink' }));
-
-    expect(lastUrl()).toContain('mode=blink');
-  });
-
-  it('clears both params when the modal closes', () => {
-    renderReport(`story=${PROSE.key}&mode=slider`);
-
-    fireEvent.click(within(modal()).getByRole('button', { name: 'close' }));
-
-    expect(screen.queryByRole('dialog')).toBeNull();
-    expect(lastUrl()).not.toContain('story=');
-    expect(lastUrl()).not.toContain('mode=');
-  });
-
-  it('opens blink on the focused card with b', () => {
+  it('pushes blink for the focused card on b', () => {
     renderReport();
     cardOf(PROSE).focus();
 
     fireEvent.keyDown(document, { key: 'b' });
 
-    expect(pressedNames()).toEqual(['blink']);
+    expect(pushCalls).toEqual([comparisonHref(REPORT, PROSE.key, 'blink')]);
   });
 
   // An accessibility failure is not in the pixels. A modal framing two
@@ -466,22 +449,18 @@ describe('the report opening the modal', () => {
 
     fireEvent.keyDown(document, { key: 'b' });
 
-    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(pushCalls).toEqual([]);
   });
 
-  it('refuses a link naming an accessibility variant', () => {
-    renderReport(`story=${A11Y_VARIANT.key}&mode=diff`);
+  // The walk keys belong to the report behind the modal. Left bound, `b` would
+  // push a second comparison over the one the reviewer is reading.
+  it('leaves the report keys alone while a comparison is open over it', () => {
+    setPathname(comparisonPath(REPORT, PROSE.key));
+    renderReport();
+    cardOf(PROSE).focus();
 
-    expect(screen.queryByRole('dialog')).toBeNull();
-  });
+    fireEvent.keyDown(document, { key: 'b' });
 
-  // The walk keys belong to the report behind the modal. Left bound, `j` would
-  // move focus out of a trap the reviewer never left.
-  it('leaves the report walk alone while the modal is open', () => {
-    renderReport(`story=${PROSE.key}&mode=diff`);
-
-    fireEvent.keyDown(document, { key: 'j' });
-
-    expect(modal().contains(document.activeElement)).toBe(true);
+    expect(pushCalls).toEqual([]);
   });
 });

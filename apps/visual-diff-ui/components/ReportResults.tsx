@@ -5,13 +5,7 @@ import { useMemo, useState } from 'react';
 import { EmptyState, Stack } from '@gate/ui';
 import { useReportKeys } from '@/hooks/useReportKeys';
 import { useReviewMarks } from '@/hooks/useReviewMarks';
-import {
-  comparableVariants,
-  type ComparisonMode,
-  DEFAULT_MODE,
-  isComparisonMode,
-  variantByParam,
-} from '@/lib/comparison';
+import { type ComparisonMode, comparisonHref, isComparisonPath } from '@/lib/comparison';
 import {
   A11Y_SECTION,
   buildSections,
@@ -33,7 +27,6 @@ import {
   type Variant,
 } from '@/lib/summary';
 import { BucketChipRow } from './BucketChipRow';
-import { ComparisonModal } from './ComparisonModal';
 import { ReviewBar } from './ReviewBar';
 import { TierSection } from './TierSection';
 
@@ -53,9 +46,10 @@ import { TierSection } from './TierSection';
  *    person keeping their place, never a fact about the run, so it is never
  *    written to the URL, to a cookie, or to the server.
  *
- * Which variant the comparison modal is on, and in which mode, is the first
- * kind: `story` and `mode` ride the same query string, so the exact pixels a
- * reviewer is looking at are a link they can send.
+ * The comparison modal is neither: it is a route of its own,
+ * `/report/<id>/compare/<key>`, which the report's layout slots in over this.
+ * A compare tool pushes that address; what the modal does once open is
+ * components/ComparisonRoute.tsx's business.
  *
  * The filters unmount cards rather than hiding them. A card that is display:none
  * is still a card a reviewer can be told they have seen.
@@ -76,10 +70,6 @@ interface ReportView {
   filter: string;
   bucket: Bucket | null;
   hideReviewed: boolean;
-  /** The variant the comparison modal is open on — its key, which is also the
-   *  stem of the shot filenames. Null closes it. */
-  story: string | null;
-  mode: ComparisonMode | null;
 }
 
 const isBucket = (value: string | null): value is Bucket =>
@@ -88,26 +78,21 @@ const isBucket = (value: string | null): value is Bucket =>
 /** The review position this render was served with. */
 function readView(params: URLSearchParams): ReportView {
   const bucket = params.get('bucket');
-  const mode = params.get('mode');
 
   return {
     filter: params.get('filter') ?? '',
     bucket: isBucket(bucket) ? bucket : null,
     hideReviewed: params.get('hideReviewed') === '1',
-    story: params.get('story'),
-    mode: isComparisonMode(mode) ? mode : null,
   };
 }
 
 /** …and the same position, back as a query string. Defaults are left out, so a
  *  reviewer who has moved nothing shares the bare report URL. */
-function toQuery({ filter, bucket, hideReviewed, story, mode }: ReportView): string {
+function toQuery({ filter, bucket, hideReviewed }: ReportView): string {
   const params = new URLSearchParams();
   if (filter !== '') params.set('filter', filter);
   if (bucket) params.set('bucket', bucket);
   if (hideReviewed) params.set('hideReviewed', '1');
-  if (story) params.set('story', story);
-  if (story && mode) params.set('mode', mode);
 
   return params.toString();
 }
@@ -201,18 +186,16 @@ export function ReportResults({ reportId, report, sides }: ReportResultsProps) {
     collapsed[entry.section.key] ? [] : entry.cards,
   );
 
-  // Every variant the modal can show, and the order ← → walks them in. Read
-  // off the whole report rather than off `visible`: a shared link has to open
-  // on the variant it names whatever bucket the recipient is filtered to, and
-  // whatever their own browser has already marked reviewed.
-  const comparable = useMemo(
-    () => comparableVariants(report.variants),
-    [report.variants],
-  );
-  const open = view.story === null ? null : variantByParam(comparable, view.story);
-
+  // Pushed, not replaced: the report is the history entry the comparison
+  // closes back to, and the browser's back button has to agree with the
+  // modal's close button about that.
+  const router = useRouter();
   const compare = (variant: Variant, mode: ComparisonMode) =>
-    update({ story: variant.key, mode });
+    router.push(comparisonHref(reportId, variant.key, mode), { scroll: false });
+
+  // A comparison's address means its modal is over this report — the slot's
+  // or, loaded cold, the page's own — and the report's keys stand down under it.
+  const comparing = isComparisonPath(usePathname());
 
   const toggleCard = (card: ReportCard, reviewed: boolean) =>
     mark(
@@ -235,7 +218,7 @@ export function ReportResults({ reportId, report, sides }: ReportResultsProps) {
       const [first] = card.variants;
       if (card.bucket !== 'a11y' && first) compare(first, 'blink');
     },
-    enabled: open === null,
+    enabled: !comparing,
   });
 
   const allCollapsed =
@@ -288,19 +271,6 @@ export function ReportResults({ reportId, report, sides }: ReportResultsProps) {
 
         {visible.length === 0 && <EmptyState message={emptyMessage(view, report)} />}
       </Stack>
-
-      {open && (
-        <ComparisonModal
-          reportId={reportId}
-          variant={open}
-          variants={comparable}
-          sides={sides}
-          mode={view.mode ?? DEFAULT_MODE}
-          onMode={(mode) => update({ mode })}
-          onVariant={(next) => update({ story: next.key })}
-          onClose={() => update({ story: null, mode: null })}
-        />
-      )}
     </Stack>
   );
 }

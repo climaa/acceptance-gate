@@ -1,9 +1,7 @@
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 import { Skeleton, Stack } from '@gate/ui';
-import { ReportTemplate } from '@/components/ReportTemplate';
-import { readReport, readSets, resolveDataDir } from '@/lib/data';
+import { ReportContents } from '@/components/ReportContents';
 import { ReportIdSchema } from '@/lib/job-contract';
 import { NOT_FOUND_TITLE } from '@/lib/site';
 
@@ -60,17 +58,4 @@ export default function ReportPage({ params }: PageProps<'/report/[id]'>) {
       </Suspense>
     </Stack>
   );
-}
-
-async function ReportContents({ params }: Pick<PageProps<'/report/[id]'>, 'params'>) {
-  const { id } = await params;
-  const { dir } = await resolveDataDir();
-  const [report, registry] = await Promise.all([readReport(dir, id), readSets(dir)]);
-
-  // A report id that never existed, and one that climbed out of the data
-  // directory, land here the same way: nothing to show, nothing to say about
-  // why. lib/data.ts refuses the second before any file is opened.
-  if (!report) notFound();
-
-  return <ReportTemplate id={id} report={report} sets={registry.sets} />;
 }

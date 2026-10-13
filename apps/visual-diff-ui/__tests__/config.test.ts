@@ -315,6 +315,11 @@ describe('fixture tracing', () => {
     'resolveShotPath',
     'resolveSetShotPath',
     'freeLabel',
+    // Not readers themselves, but the server components every report and
+    // comparison route reads through — a route that renders one reads what it
+    // reads, and naming the wrapper is what keeps that from hiding the route.
+    'ReportContents',
+    'ComparisonContents',
   ];
 
   /** `app/report/[id]/page.tsx` is the route `/report/[id]`, and `app/page.tsx`
