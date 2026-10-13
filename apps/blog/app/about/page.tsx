@@ -1,12 +1,14 @@
 import type { Metadata } from 'next';
 import { Prose, Stack } from '@gate/ui';
 
+import { pageMetadata } from '@/lib/share';
 import { PORTFOLIO_LINK } from '@/lib/site';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
+  path: '/about',
   title: 'About',
   description: 'Carlos Lima — senior frontend engineer in Barcelona.',
-};
+});
 
 export default function AboutPage() {
   return (

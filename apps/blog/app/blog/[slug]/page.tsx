@@ -6,6 +6,7 @@ import { MDXRemote } from 'next-mdx-remote/rsc';
 import { PostTemplate } from '@gate/ui';
 import { mdxComponents, mdxRemoteOptions } from '@/lib/mdx';
 import { getAllPosts, getPostBySlug, tagPath } from '@/lib/posts';
+import { pageMetadata, postShareImage } from '@/lib/share';
 
 export function generateStaticParams() {
   return getAllPosts().map((post) => ({ slug: post.slug }));
@@ -18,21 +19,14 @@ export async function generateMetadata({
   const post = getPostBySlug(slug);
   if (!post) return {};
 
-  return {
+  return pageMetadata({
+    path: `/blog/${post.slug}`,
     title: post.title,
+    shareTitle: post.title,
     description: post.description,
-    openGraph: {
-      type: 'article',
-      title: post.title,
-      description: post.description,
-      publishedTime: post.date,
-      // Omitted rather than mirrored from `date` when the post has never been
-      // revised: an `article:modified_time` equal to the publish time tells a
-      // reader nothing and is indistinguishable from a stale one.
-      ...(post.updated ? { modifiedTime: post.updated } : {}),
-      tags: post.tags,
-    },
-  };
+    image: postShareImage(post),
+    article: post,
+  });
 }
 
 /**

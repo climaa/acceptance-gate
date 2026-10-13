@@ -8,12 +8,14 @@ import {
   SITE_ALTERNATES,
   SITE_COPYRIGHT,
   SITE_COPYRIGHT_YEAR,
+  SITE_DEFAULT_TITLE,
   SITE_DESCRIPTION,
   SITE_OPEN_GRAPH,
-  SITE_TAGLINE,
   SITE_TITLE,
   SITE_URL,
+  TITLE_TEMPLATE,
 } from '@/lib/site';
+import { SITE_SHARE_IMAGE, shareImages } from '@/lib/share';
 import { THEME_SCRIPT } from '@/lib/theme';
 import { SITE_VERSION } from '@/lib/version';
 // Imported for the URL, not the bytes: the bundler emits the same hashed asset
@@ -54,11 +56,13 @@ const NAV = [
 export const metadata: Metadata = {
   metadataBase: SITE_URL,
   title: {
-    default: `${SITE_TITLE} — ${SITE_TAGLINE}`,
-    template: `%s · ${SITE_TITLE}`,
+    default: SITE_DEFAULT_TITLE,
+    template: TITLE_TEMPLATE,
   },
   description: SITE_DESCRIPTION,
-  openGraph: SITE_OPEN_GRAPH,
+  // What a page that names no preview of its own — the 404 — still carries.
+  openGraph: { ...SITE_OPEN_GRAPH, images: shareImages(SITE_SHARE_IMAGE) },
+  twitter: { card: 'summary_large_image', images: shareImages(SITE_SHARE_IMAGE) },
   alternates: SITE_ALTERNATES,
 };
 

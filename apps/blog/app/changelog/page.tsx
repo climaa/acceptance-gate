@@ -7,6 +7,7 @@ import { GISCUS_CONFIGURED } from '@/lib/giscus';
 import { RELEASES_PAGE_URL } from '@/lib/github';
 import { changelogMdxOptions, mdxComponents } from '@/lib/mdx';
 import { getReleases, releaseDate, type Release } from '@/lib/releases';
+import { pageMetadata } from '@/lib/share';
 import {
   CHANGELOG_DESCRIPTION,
   CHANGELOG_INTRO_HOW,
@@ -17,10 +18,11 @@ import {
   CHANGELOG_UNAVAILABLE_NOTE,
 } from '@/lib/site';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
+  path: '/changelog',
   title: CHANGELOG_TITLE,
   description: CHANGELOG_DESCRIPTION,
-};
+});
 
 /**
  * One release body, compiled at build time.

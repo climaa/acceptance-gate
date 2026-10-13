@@ -11,6 +11,7 @@ import {
   parseLaterPage,
 } from '@/lib/paging';
 import { getAllPosts } from '@/lib/posts';
+import { indexDescription, pageMetadata } from '@/lib/share';
 
 // The page's `<title>` names the page it is, so two tabs of the index read apart.
 const pageTitle = (page: number) => `Blog, page ${page}`;
@@ -26,14 +27,15 @@ export async function generateMetadata({
   params,
 }: PageProps<'/blog/page/[n]'>): Promise<Metadata> {
   const { n } = await params;
-  const page = parseLaterPage(n, getAllPosts().length);
+  const total = getAllPosts().length;
+  const page = parseLaterPage(n, total);
   if (!page) return {};
 
-  return {
+  return pageMetadata({
+    path: blogPagePath(page),
     title: pageTitle(page),
-    description: 'Posts on frontend, automated testing and coding agents.',
-    alternates: { canonical: blogPagePath(page) },
-  };
+    description: indexDescription(page, total),
+  });
 }
 
 export default async function BlogPagePage({ params }: PageProps<'/blog/page/[n]'>) {
