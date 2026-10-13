@@ -1,4 +1,4 @@
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import axe from 'axe-core';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
@@ -433,5 +433,18 @@ describe('PanZoom with a lead', () => {
     const bar = container.querySelector('.ds-panzoom__bar');
     expect(bar?.firstElementChild?.textContent).toBe('after · main');
     expect(bar?.lastElementChild?.getAttribute('aria-label')).toBe('design board zoom');
+  });
+});
+
+describe('PanZoom with actions', () => {
+  it('draws a caller control among the zoom controls, after reset', () => {
+    renderLoaded({ actions: <button type="button">upload</button> });
+
+    const group = screen.getByRole('group', { name: 'design board zoom' });
+    const names = within(group)
+      .getAllByRole('button')
+      .map((button) => button.getAttribute('aria-label') ?? button.textContent);
+
+    expect(names).toEqual(['zoom out', 'zoom in', 'reset', 'upload']);
   });
 });

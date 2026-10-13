@@ -653,6 +653,98 @@ describe('the design view', () => {
     });
   });
 
+  describe('an image from your own computer', () => {
+    const created: string[] = [];
+    const revoked: string[] = [];
+
+    beforeEach(() => {
+      created.length = 0;
+      revoked.length = 0;
+      URL.createObjectURL = vi.fn(() => {
+        const url = `blob:local/${created.length + 1}`;
+        created.push(url);
+        return url;
+      });
+      URL.revokeObjectURL = vi.fn((url: string) => {
+        revoked.push(url);
+      });
+    });
+
+    const fileInput = () =>
+      modal().querySelector<HTMLInputElement>('input[type="file"]') as HTMLInputElement;
+    const pick = (file: File) =>
+      fireEvent.change(fileInput(), { target: { files: [file] } });
+    const png = (name = 'my-design.png') => new File(['x'], name, { type: 'image/png' });
+
+    it('offers a button for it on the board pane, named for what it does', () => {
+      renderModal('diff', PROSE, 'design');
+
+      const button = within(
+        within(modal()).getByRole('group', { name: 'design board zoom' }),
+      ).getByRole('button', { name: 'compare against an image from your computer' });
+
+      expect(button).toBeTruthy();
+    });
+
+    it('accepts images only', () => {
+      renderModal('diff', PROSE, 'design');
+
+      expect(fileInput().getAttribute('accept')).toBe('image/*');
+    });
+
+    // Never uploaded, never in the link: shown from an object URL in place.
+    it('shows the picked image in place of the board, by its name', () => {
+      renderModal('diff', PROSE, 'design');
+
+      pick(png());
+
+      const image = within(modal()).getByRole('img', {
+        name: 'your design, my-design.png',
+      });
+      expect(image.getAttribute('src')).toBe('blob:local/1');
+      expect(within(modal()).getByText('yours').getAttribute('title')).toBe(
+        'my-design.png',
+      );
+    });
+
+    it('presses no board while your image is the one on show', () => {
+      renderModal('diff', PROSE, 'design');
+
+      pick(png());
+
+      const picker = within(modal()).getByRole('group', { name: 'board' });
+      expect(
+        within(picker)
+          .getAllByRole('button')
+          .filter((button) => button.getAttribute('aria-pressed') === 'true'),
+      ).toHaveLength(0);
+    });
+
+    it('goes back to the boards when one is picked, and lets the file go', () => {
+      renderModal('diff', PROSE, 'design');
+      pick(png());
+
+      const picker = within(modal()).getByRole('group', { name: 'board' });
+      fireEvent.click(within(picker).getByRole('button', { name: 'components' }));
+
+      expect(
+        within(modal()).getByRole('img', { name: 'the components design board' }),
+      ).toBeTruthy();
+      expect(revoked).toEqual(['blob:local/1']);
+    });
+
+    it('ignores a file that is not an image, rather than showing a broken one', () => {
+      renderModal('diff', PROSE, 'design');
+
+      pick(new File(['x'], 'notes.txt', { type: 'text/plain' }));
+
+      expect(created).toEqual([]);
+      expect(
+        within(modal()).getByRole('img', { name: 'the components design board' }),
+      ).toBeTruthy();
+    });
+  });
+
   // The after side's absence reads the same here as in the modes.
   it('says a removed variant has no after side, rather than framing nothing', () => {
     renderModal('diff', REMOVED, 'design');

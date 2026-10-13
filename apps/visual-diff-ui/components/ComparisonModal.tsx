@@ -5,7 +5,7 @@
    already `immutable`. A viewer whose whole purpose is one-pixel differences
    cannot show a re-encoded copy of the evidence. */
 
-import { useEffect, useRef, useState } from 'react';
+import { type ChangeEvent, useEffect, useRef, useState } from 'react';
 import { Dialog, IconButton, PanZoom, SegmentedControl, Stack } from '@gate/ui';
 import { REDUCED_MOTION, useMediaQuery, WIDE_VIEWPORT } from '@/hooks/useMediaQuery';
 import {
@@ -88,6 +88,11 @@ const BOARD_LABELS: Readonly<Record<DesignBoard, string>> = {
 /** What the design view says about itself where the before/after metric was. */
 const DESIGN_NOTE =
   'design board — reference beside the after screenshot, never a verdict';
+
+/** The upload button's name, pinned: it is how a scenario presses it. */
+const UPLOAD_LABEL = 'compare against an image from your computer';
+
+const LOCAL_UNREADABLE = 'this image could not be read — pick another, or a board';
 
 const BOARD_UNAVAILABLE =
   'this board could not be loaded — it is in designs/exports/ in the checkout';
@@ -413,6 +418,14 @@ function DesignStage({
 }: DesignStageProps) {
   const afterSrc = shots.candidate;
   const caption = <p className="vd-compare__caption vd-mono">after · {after}</p>;
+  // An image from the reader's own machine, read in place of a board. Held
+  // here — not in the URL, which could never carry a file on someone's disk —
+  // so it stays while the arrows walk variants, to be read against each.
+  const [local, setLocal] = useLocalImage();
+  const pickBoard = (picked: DesignBoard) => {
+    setLocal(null);
+    if (picked !== board) onBoard(picked);
+  };
 
   return (
     <div className="vd-compare__stage vd-compare__stage--design">
@@ -421,14 +434,25 @@ function DesignStage({
           {/* What each pane holds and how it moves share one row, as Board 04
               draws them: the picker leads the board's own zoom row. */}
           <PanZoom
-            key={board}
-            src={designBoardUrl(board)}
-            alt={`the ${BOARD_LABELS[board]} design board`}
+            key={local?.url ?? board}
+            src={local?.url ?? designBoardUrl(board)}
+            alt={
+              local
+                ? `your design, ${local.name}`
+                : `the ${BOARD_LABELS[board]} design board`
+            }
             label="design board"
-            fallback={BOARD_UNAVAILABLE}
+            fallback={local ? LOCAL_UNREADABLE : BOARD_UNAVAILABLE}
             grid={grid}
             className="vd-compare__panzoom"
-            lead={<BoardPicker board={board} onBoard={onBoard} />}
+            lead={
+              <BoardPicker
+                board={local ? null : board}
+                onBoard={pickBoard}
+                local={local?.name}
+              />
+            }
+            actions={<UploadDesign onPick={setLocal} />}
           />
         </div>
 
@@ -463,12 +487,16 @@ function DesignStage({
 function BoardPicker({
   board,
   onBoard,
+  local,
 }: {
-  board: DesignBoard;
+  /** The board on show, or null while the reader's own image is. */
+  board: DesignBoard | null;
   onBoard: (board: DesignBoard) => void;
+  /** The name of the reader's own image, while it is the one on show. */
+  local?: string;
 }) {
   return (
-    <Stack direction="row" gap={2} align="center">
+    <Stack direction="row" gap={2} align="center" wrap>
       <span className="vd-compare__label vd-mono" aria-hidden="true">
         board
       </span>
@@ -478,12 +506,103 @@ function BoardPicker({
           value: name,
           label: BOARD_LABELS[name],
         }))}
-        value={board}
+        value={board ?? ''}
         onChange={(picked) => {
           if (isDesignBoard(picked)) onBoard(picked);
         }}
       />
+      {local && (
+        // Just the word, with the name on hover: a file name long enough to
+        // matter would push the zoom controls onto a second row and drop
+        // this pane below the screenshot beside it. The image's alt carries
+        // the name for a screen reader.
+        <span className="vd-compare__label vd-mono" title={local}>
+          yours
+        </span>
+      )}
     </Stack>
+  );
+}
+
+interface LocalImage {
+  url: string;
+  name: string;
+}
+
+/**
+ * The reader's own image, as an object URL, revoked when it is replaced or the
+ * view closes — a file read from disk holds its bytes until it is let go.
+ */
+function useLocalImage(): [LocalImage | null, (next: LocalImage | null) => void] {
+  const [local, setLocal] = useState<LocalImage | null>(null);
+
+  useEffect(() => {
+    if (!local) return;
+    return () => URL.revokeObjectURL(local.url);
+  }, [local]);
+
+  return [local, setLocal];
+}
+
+/** lucide's `image-up`, the glyph Board 04 draws on the board's zoom row. */
+function ImageUpGlyph() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M10.3 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10l-3.1-3.1a2 2 0 0 0-2.814.014L6 21" />
+      <path d="m14 19.5 3-3 3 3" />
+      <path d="M17 22v-5.5" />
+      <circle cx="9" cy="9" r="2" />
+    </svg>
+  );
+}
+
+/**
+ * Read an image from the reader's own computer in place of a board — a design
+ * export from any tool, for a story no board draws.
+ *
+ * The file never leaves the browser: it is shown from an object URL, never
+ * uploaded, and never written into the link. A file that is not an image is
+ * ignored rather than shown as a broken one.
+ */
+function UploadDesign({ onPick }: { onPick: (image: LocalImage) => void }) {
+  const input = useRef<HTMLInputElement>(null);
+
+  const onChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    // Cleared so picking the same file again still fires a change.
+    event.target.value = '';
+    if (!file || !file.type.startsWith('image/')) return;
+
+    onPick({ url: URL.createObjectURL(file), name: file.name });
+  };
+
+  return (
+    <>
+      <IconButton
+        variant="ghost"
+        size="sm"
+        label={UPLOAD_LABEL}
+        onClick={() => input.current?.click()}
+      >
+        <ImageUpGlyph />
+      </IconButton>
+      <input
+        ref={input}
+        type="file"
+        accept="image/*"
+        className="ds-visually-hidden"
+        tabIndex={-1}
+        aria-hidden="true"
+        onChange={onChange}
+      />
+    </>
   );
 }
 

@@ -170,6 +170,9 @@ export interface PanZoomProps {
    *  its end — a caller's picker or caption, so the row above the pane says
    *  what is in it and how to move it on one line. */
   lead?: ReactNode;
+  /** Drawn among the zoom controls, after `reset` — a caller's own control
+   *  that acts on what the pane shows. */
+  actions?: ReactNode;
   className?: string;
 }
 
@@ -229,6 +232,7 @@ interface ZoomControlsProps {
   canReset: boolean;
   /** The grid's step in image pixels, or null when no grid is drawn. */
   gridEvery: number | null;
+  actions?: ReactNode;
   onStep: (direction: 1 | -1) => void;
   onReset: () => void;
 }
@@ -241,6 +245,7 @@ function ZoomControls({
   canZoomIn,
   canReset,
   gridEvery,
+  actions,
   onStep,
   onReset,
 }: ZoomControlsProps) {
@@ -268,6 +273,7 @@ function ZoomControls({
       <Button variant="ghost" size="sm" disabled={!canReset} onClick={onReset}>
         reset
       </Button>
+      {actions}
       {gridEvery !== null && (
         <span className="ds-panzoom__grid-step">grid {gridEvery} px</span>
       )}
@@ -309,6 +315,7 @@ export function PanZoom({
   fallback,
   grid = false,
   lead,
+  actions,
   className,
 }: PanZoomProps) {
   const [paneRef, pane] = usePaneSize();
@@ -385,6 +392,7 @@ export function PanZoom({
           canZoomIn={controls.canZoomIn}
           canReset={controls.canReset}
           gridEvery={controls.gridEvery}
+          actions={actions}
           onStep={step}
           onReset={reset}
         />
