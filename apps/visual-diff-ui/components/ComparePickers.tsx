@@ -1,6 +1,6 @@
 'use client';
 
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { Button, Stack } from '@gate/ui';
 import { useCompareStart } from './CompareStart';
@@ -16,7 +16,11 @@ import { Note } from './Note';
  * `useSearchParams()`, selects its compare tab and fills its two fields. That
  * choice buys three things a shared store would not — the request is shareable,
  * the server never sees it, and the prerendered shell stays cacheable because
- * this island is the only thing on the page that reads the query string.
+ * only client islands read the query string.
+ *
+ * The pickers read `?a` and `?b` too, once, to start where a shared link
+ * points. Without it a link to a pair showed that pair in the run panel and
+ * the console's own default pair here, one screen naming two comparisons.
  *
  * `router.replace`, not `push`: choosing a different pair is a correction to
  * where the reviewer already is, not a step back through.
@@ -79,10 +83,19 @@ export function ComparePickers({ labels, canStart }: ComparePickersProps) {
   const router = useRouter();
   const startCompare = useCompareStart();
   const pathname = usePathname();
+  const params = useSearchParams();
+  // A label the link names, when this instance holds it. Anything else — no
+  // param, a set deleted since the link was written — is the default below.
+  const linked = (key: 'a' | 'b', fallback: string) => {
+    const label = params.get(key);
+    return label !== null && labels.includes(label) ? label : fallback;
+  };
   // Newest against the one before it: the comparison a reviewer opening this
   // console almost always wants. Both fall back to the only set there is.
-  const [baseline, setBaseline] = useState(labels[0] ?? '');
-  const [candidate, setCandidate] = useState(labels[1] ?? labels[0] ?? '');
+  const [baseline, setBaseline] = useState(() => linked('a', labels[0] ?? ''));
+  const [candidate, setCandidate] = useState(() =>
+    linked('b', labels[1] ?? labels[0] ?? ''),
+  );
 
   /* Both pickers follow the list they are handed, the way the run panel's report
      picker does (RunPanel.tsx). `router.refresh()` re-renders this component
