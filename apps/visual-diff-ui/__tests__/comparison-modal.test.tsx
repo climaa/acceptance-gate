@@ -702,9 +702,9 @@ describe('the design view', () => {
         name: 'your design, my-design.png',
       });
       expect(image.getAttribute('src')).toBe('blob:local/1');
-      expect(within(modal()).getByText('yours').getAttribute('title')).toBe(
-        'my-design.png',
-      );
+      // Shown, not only hovered: a keyboard or touch reader sees which file it is.
+      const named = within(modal()).getByText('my-design.png');
+      expect(named.closest('[title]')?.getAttribute('title')).toBe('my-design.png');
     });
 
     it('presses no board while your image is the one on show', () => {

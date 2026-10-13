@@ -163,12 +163,12 @@ function BoardPicker({
         }}
       />
       {local && (
-        // Just the word, with the name on hover: a file name long enough to
-        // matter would push the zoom controls onto a second row and drop
-        // this pane below the screenshot beside it. The image's alt carries
-        // the name for a screen reader.
+        // Named, but held to a few characters: a name long enough to matter
+        // would push the zoom controls onto a second row and drop this pane
+        // below the screenshot beside it. The whole name is on hover and in
+        // the image's alt.
         <span className="vd-compare__label vd-mono" title={local}>
-          yours
+          yours · <span className="vd-compare__local-name">{local}</span>
         </span>
       )}
     </Stack>
