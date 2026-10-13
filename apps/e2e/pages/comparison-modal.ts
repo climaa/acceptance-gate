@@ -14,6 +14,8 @@ export class ComparisonModal {
   readonly shot: Locator;
   readonly divider: Locator;
   readonly scrubber: Locator;
+  readonly copyLink: Locator;
+  readonly copyStatus: Locator;
 
   constructor(page: Page) {
     this.root = page.getByRole('dialog', { name: 'Comparison' });
@@ -23,6 +25,13 @@ export class ComparisonModal {
     // the scrubber below is the accessible control that mirrors it.
     this.divider = this.root.getByTestId('slider-divider');
     this.scrubber = this.root.getByRole('slider', { name: 'slider position' });
+    this.copyLink = this.root.getByRole('button', { name: 'copy link', exact: true });
+    this.copyStatus = this.root.getByRole('status');
+  }
+
+  /** One of the three shots by its own name — `alt` is the shot's kind. */
+  shotNamed(kind: 'baseline' | 'candidate' | 'diff'): Locator {
+    return this.root.getByRole('img', { name: kind, exact: true });
   }
 
   mode(
