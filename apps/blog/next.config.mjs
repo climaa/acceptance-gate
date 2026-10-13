@@ -42,7 +42,7 @@ const nextConfig = {
   // deployed function ships the bytes instead of 500ing on the first such request.
   outputFileTracingIncludes: {
     '/blog/[slug]/opengraph-image': [
-      './node_modules/@gate/ui/src/fonts/og/Fraunces9pt-SemiBold.ttf',
+      '../../packages/ui/src/fonts/og/Fraunces9pt-SemiBold.ttf',
     ],
   },
   // /sobre-mi was a published, nav-linked URL before the route segment was
