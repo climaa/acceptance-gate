@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
-import { comparableVariants } from '@/lib/comparison';
-import { readReport, resolveDataDir } from '@/lib/data';
+import { readComparison } from '@/lib/comparison-meta';
+import { resolveDataDir } from '@/lib/data';
 import { reportSides } from '@/lib/report-view';
 import { type ComparisonEntry, ComparisonRoute } from './ComparisonRoute';
 
@@ -22,15 +22,13 @@ export async function ComparisonContents({
 }) {
   const { id, key } = await params;
   const { dir } = await resolveDataDir();
-  const report = await readReport(dir, id);
-  const variants = report ? comparableVariants(report.variants) : [];
-
-  if (!variants.some((variant) => variant.key === key)) notFound();
+  const comparison = await readComparison(dir, id, key);
+  if (!comparison) notFound();
 
   return (
     <ComparisonRoute
       reportId={id}
-      variants={variants}
+      variants={comparison.variants}
       sides={reportSides(id)}
       entry={entry}
     />

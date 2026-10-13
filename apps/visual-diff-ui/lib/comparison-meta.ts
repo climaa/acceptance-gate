@@ -27,16 +27,25 @@ export function comparisonCopy(
   return { title, description: `${verdict}. Report ${reportId}.` };
 }
 
-/** The comparable variant a key names in a report, or null for none. */
-export async function findComparison(
+/**
+ * One comparison read off the data directory: the variant a key names, and the
+ * comparable variants it walks among — or null when the report holds no such
+ * comparison. The modal, the metadata and the card all read through this, so
+ * none of them can open, title or draw a variant the others would refuse.
+ *
+ * The proxy cannot share it: it answers before any request work starts, so it
+ * asks the synchronous `comparisonKeyIn` in lib/jobs.ts, beside `hasReport`.
+ */
+export async function readComparison(
+  dataDir: string,
   reportId: string,
   key: string,
-): Promise<Variant | null> {
-  const { dir } = await resolveDataDir();
-  const report = await readReport(dir, reportId);
-  if (!report) return null;
+): Promise<{ variant: Variant; variants: Variant[] } | null> {
+  const report = await readReport(dataDir, reportId);
+  const variants = report ? comparableVariants(report.variants) : [];
+  const variant = variants.find((entry) => entry.key === key);
 
-  return comparableVariants(report.variants).find((entry) => entry.key === key) ?? null;
+  return variant ? { variant, variants } : null;
 }
 
 /**
@@ -50,10 +59,11 @@ export async function comparisonMetadata(
   params: Promise<{ id: string; key: string }>,
 ): Promise<Metadata> {
   const { id, key } = await params;
-  const variant = await findComparison(id, key);
-  if (!variant) return { title: NOT_FOUND_TITLE };
+  const { dir } = await resolveDataDir();
+  const comparison = await readComparison(dir, id, key);
+  if (!comparison) return { title: NOT_FOUND_TITLE };
 
-  const { title, description } = comparisonCopy(id, variant);
+  const { title, description } = comparisonCopy(id, comparison.variant);
   const url = comparisonPath(id, key);
 
   return {

@@ -6,7 +6,7 @@ import { comparisonPath } from '../lib/comparison';
 import {
   comparisonCopy,
   comparisonMetadata,
-  findComparison,
+  readComparison,
 } from '../lib/comparison-meta';
 import { FIXTURES_DIR } from '../lib/data';
 import { CARD_CACHE_CONTROL, comparisonCardBytes, readPanels } from '../lib/og';
@@ -28,9 +28,9 @@ const metadataFor = (id: string, key: string) =>
   comparisonMetadata(Promise.resolve({ id, key }));
 
 async function found(id: string, key: string) {
-  const variant = await findComparison(id, key);
-  if (!variant) throw new Error(`fixture ${id}/${key} is gone`);
-  return variant;
+  const comparison = await readComparison(FIXTURES_DIR, id, key);
+  if (!comparison) throw new Error(`fixture ${id}/${key} is gone`);
+  return comparison.variant;
 }
 
 describe('comparisonCopy', () => {

@@ -5,9 +5,8 @@ import { readFile } from 'node:fs/promises';
 import * as path from 'node:path';
 import { cacheLife, cacheTag } from 'next/cache';
 import { ImageResponse } from 'next/og';
-import { comparableVariants } from './comparison';
-import { comparisonCopy } from './comparison-meta';
-import { readReport, resolveShotPath } from './data';
+import { comparisonCopy, readComparison } from './comparison-meta';
+import { resolveShotPath } from './data';
 import { absentShotCopy, type ShotKind, shotSources } from './shots';
 import type { Variant } from './summary';
 import { SITE_URL } from './site';
@@ -240,11 +239,10 @@ export async function comparisonCardBytes(
   cacheLife('max');
   cacheTag(reportTag(reportId));
 
-  const report = await readReport(dataDir, reportId);
-  const variant = report
-    ? comparableVariants(report.variants).find((entry) => entry.key === key)
-    : undefined;
-  if (!variant) return null;
+  const comparison = await readComparison(dataDir, reportId, key);
+  if (!comparison) return null;
+
+  const { variant } = comparison;
 
   const response = await comparisonCardResponse({
     title: comparisonCopy(reportId, variant).title,

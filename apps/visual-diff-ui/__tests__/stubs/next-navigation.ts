@@ -13,9 +13,11 @@
  * asserted URL is the one a reviewer would actually be sent to — unless a test
  * moves it, which the report does to say a comparison is open over it.
  *
- * Nothing else is stubbed: `redirect` and friends have behaviour worth deciding
- * about rather than faking, and an `undefined` import fails loudly the moment
- * something reaches for one.
+ * `notFound()` is stubbed too, because its whole behaviour is one fact a server
+ * component's test asserts: it throws, and nothing after it renders. Nothing
+ * else is: `redirect` and the rest have behaviour worth deciding about rather
+ * than faking, and an `undefined` import fails loudly the moment something
+ * reaches for one.
  */
 
 export interface NavigationOptions {
@@ -85,8 +87,7 @@ export function useSearchParams(): URLSearchParams {
 /** What `notFound()` throws here, so a test can tell it from any other throw. */
 export const NOT_FOUND = 'NEXT_NOT_FOUND';
 
-/** Stubbed after all, because its whole behaviour is one fact a server
- *  component's test asserts: it throws, and nothing after it renders. */
+/** Throws {@link NOT_FOUND} — see the header for why this one is stubbed. */
 export function notFound(): never {
   throw new Error(NOT_FOUND);
 }
