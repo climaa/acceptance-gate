@@ -320,7 +320,7 @@ describe('fixture tracing', () => {
     // reads, and naming the wrapper is what keeps that from hiding the route.
     'ReportContents',
     'ComparisonContents',
-    'readPanels',
+    'comparisonCardBytes',
   ];
 
   /** `app/report/[id]/page.tsx` is the route `/report/[id]`, `app/page.tsx` is

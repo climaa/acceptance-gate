@@ -3,10 +3,15 @@
 
 import { readFile } from 'node:fs/promises';
 import * as path from 'node:path';
+import { cacheLife, cacheTag } from 'next/cache';
 import { ImageResponse } from 'next/og';
-import { resolveShotPath } from './data';
+import { comparableVariants } from './comparison';
+import { comparisonCopy } from './comparison-meta';
+import { readReport, resolveShotPath } from './data';
 import { absentShotCopy, type ShotKind, shotSources } from './shots';
 import type { Variant } from './summary';
+import { SITE_URL } from './site';
+import { reportTag } from './tags';
 
 /**
  * A comparison's link-preview card: before, diff and after side by side, under
@@ -23,6 +28,14 @@ export const OG_SIZE = { width: 1200, height: 630 };
 export const OG_CONTENT_TYPE = 'image/png';
 
 export const OG_ALT = 'Before, diff and after of one visual comparison';
+
+/**
+ * How long a card may be reused outside this server: an hour in a browser, a
+ * year on the CDN. The CDN's copy is per deployment, so it cannot outlive the
+ * data it was drawn from; a browser's could, on a console whose report was
+ * re-run under the same id, which is why its hour is short.
+ */
+export const CARD_CACHE_CONTROL = 'public, max-age=3600, s-maxage=31536000';
 
 /**
  * The committed display face — `next/og` reads neither page CSS nor woff2, and
@@ -203,4 +216,42 @@ export async function comparisonCardResponse(
       },
     ],
   });
+}
+
+/**
+ * One comparison's card as PNG bytes, or null when the report holds no such
+ * comparison.
+ *
+ * Cached for as long as the report is: a card reads three screenshots, encodes
+ * them and rasterises the lot, and a route that redid that per request is a
+ * cheap way for anyone to spend this deployment's compute. A report is written
+ * once, and the job that writes one revalidates its tag — so `'max'` under that
+ * tag is never served for a report that has since changed.
+ *
+ * The data directory is an argument rather than read here: resolving it calls
+ * `connection()`, which a cached scope refuses.
+ */
+export async function comparisonCardBytes(
+  dataDir: string,
+  reportId: string,
+  key: string,
+): Promise<Uint8Array<ArrayBuffer> | null> {
+  'use cache';
+  cacheLife('max');
+  cacheTag(reportTag(reportId));
+
+  const report = await readReport(dataDir, reportId);
+  const variant = report
+    ? comparableVariants(report.variants).find((entry) => entry.key === key)
+    : undefined;
+  if (!variant) return null;
+
+  const response = await comparisonCardResponse({
+    title: comparisonCopy(reportId, variant).title,
+    reportId,
+    host: SITE_URL.host,
+    panels: await readPanels(dataDir, reportId, variant),
+  });
+
+  return new Uint8Array(await response.arrayBuffer());
 }

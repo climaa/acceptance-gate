@@ -1,23 +1,20 @@
 import { notFound } from 'next/navigation';
-import { comparisonCopy, findComparison } from '@/lib/comparison-meta';
 import { resolveDataDir } from '@/lib/data';
 import {
-  comparisonCardResponse,
+  CARD_CACHE_CONTROL,
+  comparisonCardBytes,
   OG_ALT,
   OG_CONTENT_TYPE,
   OG_SIZE,
-  readPanels,
 } from '@/lib/og';
-import { SITE_URL } from '@/lib/site';
 
 export const alt = OG_ALT;
 export const size = OG_SIZE;
 export const contentType = OG_CONTENT_TYPE;
 
 /**
- * The card a shared comparison unfurls with. Rendered per request, from the
- * same data directory the page reads — a report is only ever written once, so
- * a card cached by an unfurler cannot go stale under its URL.
+ * The card a shared comparison unfurls with. Drawn once per report and served
+ * from cache after that — see `comparisonCardBytes`.
  */
 export default async function Image({
   params,
@@ -25,15 +22,11 @@ export default async function Image({
   params: Promise<{ id: string; key: string }>;
 }) {
   const { id, key } = await params;
-  const variant = await findComparison(id, key);
-  if (!variant) notFound();
-
   const { dir } = await resolveDataDir();
+  const bytes = await comparisonCardBytes(dir, id, key);
+  if (!bytes) notFound();
 
-  return comparisonCardResponse({
-    title: comparisonCopy(id, variant).title,
-    reportId: id,
-    host: SITE_URL.host,
-    panels: await readPanels(dir, id, variant),
+  return new Response(bytes, {
+    headers: { 'Content-Type': OG_CONTENT_TYPE, 'Cache-Control': CARD_CACHE_CONTROL },
   });
 }

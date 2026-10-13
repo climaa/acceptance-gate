@@ -9,7 +9,7 @@ import {
   findComparison,
 } from '../lib/comparison-meta';
 import { FIXTURES_DIR } from '../lib/data';
-import { readPanels } from '../lib/og';
+import { CARD_CACHE_CONTROL, comparisonCardBytes, readPanels } from '../lib/og';
 import { NOT_FOUND_TITLE } from '../lib/site';
 import { NOT_FOUND } from './stubs/next-navigation';
 
@@ -127,9 +127,31 @@ describe('the comparison card route', () => {
     expect([view.getUint32(16), view.getUint32(20)]).toEqual([1200, 630]);
   });
 
+  // Drawing a card is the expensive request on this route; the CDN serving the
+  // second one is what keeps it from being a free way to spend compute.
+  it('lets the CDN keep the card', async () => {
+    const response = await Image({ params: Promise.resolve({ id: REPORT, key: KEY }) });
+
+    expect(response.headers.get('cache-control')).toBe(CARD_CACHE_CONTROL);
+  });
+
   it('is a not-found for a comparison the report does not hold', async () => {
     const draw = Image({ params: Promise.resolve({ id: REPORT, key: 'nope' }) });
 
     await expect(draw).rejects.toThrow(NOT_FOUND);
+  });
+});
+
+describe('comparisonCardBytes', () => {
+  it('answers null, not an empty card, for a key the report lacks', async () => {
+    const bytes = await comparisonCardBytes(FIXTURES_DIR, REPORT, 'nope');
+
+    expect(bytes).toBeNull();
+  });
+
+  it('answers null for a report this instance does not have', async () => {
+    const bytes = await comparisonCardBytes(FIXTURES_DIR, 'nothing__here', KEY);
+
+    expect(bytes).toBeNull();
   });
 });
