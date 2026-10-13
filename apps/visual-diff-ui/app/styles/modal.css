@@ -167,3 +167,83 @@
   background: var(--color-accent);
   transform: translate(-50%, -50%);
 }
+
+/* The design view: the board and the after screenshot side by side above the
+   breakpoint, stacked below it with the board on top. Both are PanZooms that
+   fill the stage — the stage stops scrolling here, because each pane clips and
+   moves its own image, and a scrolling stage around two panning panes would be
+   two ways of moving one thing. */
+.vd-compare__stage--design {
+  overflow: hidden;
+  border: 0;
+  background-color: transparent;
+}
+
+.vd-compare__design {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  /* Stacked: each pane's control row, then the pane. */
+  grid-template-rows: auto minmax(0, 1fr) auto minmax(0, 1fr);
+  row-gap: var(--space-2);
+  column-gap: var(--space-4);
+  block-size: 100%;
+}
+
+/* A column is a pane that takes the whole of it. Each pane's own control row
+   carries what it holds — the board picker, or the after caption — so both
+   panes start on the same line and a board can be read against the shot. */
+/* Each column takes two of the design grid's rows — its control row and its
+   pane — through `subgrid`, and the PanZoom between them steps aside with
+   `display: contents`. So the two columns share one control-row height: when
+   one row wraps — a narrow window, a file name — both panes still start on
+   the same line, which is the whole point of putting them side by side. */
+.vd-compare__column {
+  display: grid;
+  grid-row: span 2;
+  grid-template-rows: subgrid;
+  min-width: 0;
+  min-height: 0;
+}
+
+.vd-compare__column > .ds-panzoom {
+  display: contents;
+}
+
+.vd-compare__panzoom .ds-panzoom__pane {
+  block-size: auto;
+  min-block-size: var(--space-16);
+}
+
+.vd-compare__label {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.vd-compare__local-name {
+  display: inline-block;
+  max-inline-size: 16ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: bottom;
+}
+
+.vd-compare__caption {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+/* Above the breakpoint the design view takes nearly the whole window: two
+   panes side by side need the width a single shot never did. Scoped to the
+   design view — the six modes keep the dialog's own width. */
+@media (min-width: 768px) {
+  .vd-compare--design .ds-dialog__surface {
+    inline-size: 95vw;
+    max-inline-size: 95vw;
+  }
+
+  .vd-compare__design[data-split='columns'] {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+}

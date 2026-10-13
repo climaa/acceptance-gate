@@ -6,10 +6,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ComparisonModal } from '../components/ComparisonModal';
 import { ReportTemplate } from '../components/ReportTemplate';
 import {
+  type Against,
   COMPARISON_MODES,
   type ComparisonMode,
   comparisonHref,
   comparisonPath,
+  type DesignBoard,
+  designBoardUrl,
 } from '../lib/comparison';
 import type { CaptureSet, Summary, Variant } from '../lib/summary';
 import { storyTitle } from '../lib/title';
@@ -73,9 +76,16 @@ function setViewport(wide: boolean): void {
   })) as unknown as typeof window.matchMedia;
 }
 
-function renderModal(mode: ComparisonMode = 'diff', subject: Variant = PROSE) {
+function renderModal(
+  mode: ComparisonMode = 'diff',
+  subject: Variant = PROSE,
+  against: Against = 'before',
+  board: DesignBoard = 'component-library',
+) {
   const handlers = {
     onMode: vi.fn<(mode: ComparisonMode) => void>(),
+    onAgainst: vi.fn<(against: Against) => void>(),
+    onBoard: vi.fn<(board: DesignBoard) => void>(),
     onClose: vi.fn<() => void>(),
     onVariant: vi.fn<(variant: Variant) => void>(),
   };
@@ -87,6 +97,8 @@ function renderModal(mode: ComparisonMode = 'diff', subject: Variant = PROSE) {
       variants={[PROSE, PROSE_DARK]}
       sides={SIDES}
       mode={mode}
+      against={against}
+      board={board}
       {...handlers}
     />,
   );
@@ -346,21 +358,23 @@ describe('below the mobile breakpoint', () => {
   });
 });
 
-/**
- * The report's half of the seam: which variant the modal is on, and in which
- * mode, is in the URL — so a reviewer can send a colleague the exact thing they
- * are looking at. What has been reviewed stays in `localStorage`, where it
- * belongs to one person; the URL carries position and nothing else.
- */
 describe('the copy-link status', () => {
-  const modalOn = (subject: Variant, mode: ComparisonMode) => (
+  const modalOn = (
+    subject: Variant,
+    mode: ComparisonMode,
+    against: Against = 'before',
+  ) => (
     <ComparisonModal
       reportId={REPORT}
       variant={subject}
       variants={[PROSE, PROSE_DARK]}
       sides={SIDES}
       mode={mode}
+      against={against}
+      board="component-library"
       onMode={() => {}}
+      onAgainst={() => {}}
+      onBoard={() => {}}
       onClose={() => {}}
       onVariant={() => {}}
     />
@@ -408,12 +422,341 @@ describe('the copy-link status', () => {
     expect(document.activeElement).toBe(button);
   });
 
+  it('clears once the comparison is read against a design board instead', async () => {
+    const { rerender } = await copied(PROSE, 'diff');
+
+    rerender(modalOn(PROSE, 'diff', 'design'));
+
+    expect(status()).toBe('');
+  });
+
   it('stays while the link it is about is still the one on screen', async () => {
     const { rerender } = await copied(PROSE, 'diff');
 
     rerender(modalOn(PROSE, 'diff'));
 
     expect(status()).toBe('link copied');
+  });
+});
+
+/**
+ * The report's half of the seam: which variant the modal is on, and in which
+ * mode, is in the URL — so a reviewer can send a colleague the exact thing they
+ * are looking at. What has been reviewed stays in `localStorage`, where it
+ * belongs to one person; the URL carries position and nothing else.
+ */
+describe('the design view', () => {
+  const REMOVED = variant({
+    key: 'atoms__desktop__light__atoms-gone--default',
+    id: 'atoms-gone--default',
+    bucket: 'removed',
+  });
+
+  const against = () => within(modal()).getByRole('group', { name: 'compare to' });
+  const pressedIn = (group: HTMLElement) =>
+    within(group)
+      .getAllByRole('button')
+      .filter((button) => button.getAttribute('aria-pressed') === 'true')
+      .map((button) => button.textContent);
+
+  it('offers before and design, with before pressed by default', () => {
+    renderModal();
+
+    expect(pressedIn(against())).toEqual(['before']);
+  });
+
+  it('asks for the design view when design is pressed', () => {
+    const handlers = renderModal();
+
+    fireEvent.click(within(against()).getByRole('button', { name: 'design' }));
+
+    expect(handlers.onAgainst).toHaveBeenCalledWith('design');
+  });
+
+  // Every mode compares after with before; none can be run against a board.
+  it('unmounts the six modes, the metric and the scrubber', () => {
+    renderModal('slider', PROSE, 'design');
+
+    expect(within(modal()).queryByRole('toolbar')).toBeNull();
+    expect(within(modal()).queryByRole('slider')).toBeNull();
+    expect(within(modal()).queryByText(/px differ/)).toBeNull();
+  });
+
+  it('says the board is reference, never a verdict', () => {
+    renderModal('diff', PROSE, 'design');
+
+    expect(within(modal()).getByText(/never a verdict/)).toBeTruthy();
+  });
+
+  it('shows the picked board in a pane the reader can move around in', () => {
+    renderModal('diff', PROSE, 'design', 'visual-diff-pages');
+
+    const board = within(modal()).getByRole('img', { name: 'the console design board' });
+
+    expect(board.getAttribute('src')).toBe(designBoardUrl('visual-diff-pages'));
+    expect(within(modal()).getByRole('group', { name: 'design board' })).toBeTruthy();
+  });
+
+  it('presses the board on show, among all four', () => {
+    renderModal('diff', PROSE, 'design', 'pages');
+
+    const picker = within(modal()).getByRole('group', { name: 'board' });
+
+    expect(within(picker).getAllByRole('button')).toHaveLength(4);
+    expect(pressedIn(picker)).toEqual(['pages']);
+  });
+
+  it('asks for another board when one is picked', () => {
+    const handlers = renderModal('diff', PROSE, 'design');
+
+    const picker = within(modal()).getByRole('group', { name: 'board' });
+    fireEvent.click(within(picker).getByRole('button', { name: 'flows' }));
+
+    expect(handlers.onBoard).toHaveBeenCalledWith('flows-decisions');
+  });
+
+  it('puts the after screenshot beside the board', () => {
+    renderModal('diff', PROSE, 'design');
+
+    expect(within(modal()).getByRole('img', { name: 'candidate' })).toBeTruthy();
+    expect(within(modal()).getByText(`after · ${SIDES.b}`)).toBeTruthy();
+  });
+
+  // Read the same way as the board: fitted at 100%, dragged and zoomed.
+  it('gives the after screenshot a pane of its own, with its own zoom', () => {
+    renderModal('diff', PROSE, 'design');
+
+    const pane = within(modal()).getByRole('group', { name: 'after screenshot' });
+
+    expect(within(pane).getByRole('img', { name: 'candidate' })).toBeTruthy();
+    expect(
+      within(modal()).getByRole('group', { name: 'after screenshot zoom' }),
+    ).toBeTruthy();
+  });
+
+  describe('the split toggle', () => {
+    const design = () => modal().querySelector('.vd-compare__design');
+    const stack = () =>
+      within(modal()).getByRole('button', {
+        name: 'stack the board over the screenshot',
+      });
+
+    it('opens side by side, offering to stack the panes', () => {
+      renderModal('diff', PROSE, 'design');
+
+      expect(design()?.getAttribute('data-split')).toBe('columns');
+      expect(stack()).toBeTruthy();
+    });
+
+    it('stacks the board over the screenshot when pressed, and offers the way back', () => {
+      renderModal('diff', PROSE, 'design');
+
+      fireEvent.click(stack());
+
+      expect(design()?.getAttribute('data-split')).toBe('rows');
+      expect(
+        within(modal()).getByRole('button', {
+          name: 'put the board beside the screenshot',
+        }),
+      ).toBeTruthy();
+    });
+
+    // Below the breakpoint the sheet stacks the panes anyway: a toggle there
+    // would be a control that changes nothing.
+    it('is not offered on a narrow screen, where the panes are always stacked', () => {
+      setViewport(false);
+      renderModal('diff', PROSE, 'design');
+
+      expect(
+        within(modal()).queryByRole('button', { name: /stack the board/ }),
+      ).toBeNull();
+      expect(design()?.getAttribute('data-split')).toBe('rows');
+    });
+
+    it('is not offered when reading against before', () => {
+      renderModal('diff', PROSE, 'before');
+
+      expect(
+        within(modal()).queryByRole('button', { name: /stack the board/ }),
+      ).toBeNull();
+    });
+  });
+
+  describe('the grid toggle', () => {
+    const gridButton = () => within(modal()).getByRole('button', { name: 'grid' });
+    const grids = () => modal().querySelectorAll('.ds-panzoom__grid');
+
+    it('is offered in the design view, off to begin with', () => {
+      renderModal('diff', PROSE, 'design');
+
+      expect(gridButton().getAttribute('aria-pressed')).toBe('false');
+    });
+
+    /** jsdom lays nothing out and loads no image. Every pane measures 400×300
+     *  from the prototype — it measures itself once, on mount — and each image
+     *  reports a natural size, so each PanZoom has a scale to draw a grid at. */
+    const sizes = ['clientWidth', 'clientHeight'] as const;
+    const saved = sizes.map((key) =>
+      Object.getOwnPropertyDescriptor(HTMLElement.prototype, key),
+    );
+    beforeEach(() => {
+      sizes.forEach((key, index) =>
+        Object.defineProperty(HTMLElement.prototype, key, {
+          configurable: true,
+          get(this: HTMLElement) {
+            return this.classList.contains('ds-panzoom__pane') ? [400, 300][index] : 0;
+          },
+        }),
+      );
+    });
+    afterEach(() => {
+      sizes.forEach((key, index) => {
+        const descriptor = saved[index];
+        if (descriptor) Object.defineProperty(HTMLElement.prototype, key, descriptor);
+      });
+    });
+
+    function loadBothPanes() {
+      for (const img of modal().querySelectorAll<HTMLImageElement>(
+        '.ds-panzoom__image',
+      )) {
+        Object.defineProperty(img, 'naturalWidth', { value: 1600 });
+        Object.defineProperty(img, 'naturalHeight', { value: 2400 });
+        fireEvent.load(img);
+      }
+    }
+
+    it('draws a grid over both panes when pressed, and none on a second press', () => {
+      renderModal('diff', PROSE, 'design');
+      loadBothPanes();
+
+      fireEvent.click(gridButton());
+      const drawn = grids().length;
+      fireEvent.click(gridButton());
+
+      expect(drawn).toBe(2);
+      expect(gridButton().getAttribute('aria-pressed')).toBe('false');
+      expect(grids()).toHaveLength(0);
+    });
+
+    it('is offered on a narrow screen too, where a grid is still a ruler', () => {
+      setViewport(false);
+      renderModal('diff', PROSE, 'design');
+
+      expect(gridButton()).toBeTruthy();
+    });
+
+    it('is not offered when reading against before', () => {
+      renderModal('diff', PROSE, 'before');
+
+      expect(within(modal()).queryByRole('button', { name: 'grid' })).toBeNull();
+    });
+  });
+
+  describe('an image from your own computer', () => {
+    const created: string[] = [];
+    const revoked: string[] = [];
+
+    beforeEach(() => {
+      created.length = 0;
+      revoked.length = 0;
+      URL.createObjectURL = vi.fn(() => {
+        const url = `blob:local/${created.length + 1}`;
+        created.push(url);
+        return url;
+      });
+      URL.revokeObjectURL = vi.fn((url: string) => {
+        revoked.push(url);
+      });
+    });
+
+    const fileInput = () =>
+      modal().querySelector<HTMLInputElement>('input[type="file"]') as HTMLInputElement;
+    const pick = (file: File) =>
+      fireEvent.change(fileInput(), { target: { files: [file] } });
+    const png = (name = 'my-design.png') => new File(['x'], name, { type: 'image/png' });
+
+    it('offers a button for it on the board pane, named for what it does', () => {
+      renderModal('diff', PROSE, 'design');
+
+      const button = within(
+        within(modal()).getByRole('group', { name: 'design board zoom' }),
+      ).getByRole('button', { name: 'compare against an image from your computer' });
+
+      expect(button).toBeTruthy();
+    });
+
+    it('accepts images only', () => {
+      renderModal('diff', PROSE, 'design');
+
+      expect(fileInput().getAttribute('accept')).toBe('image/*');
+    });
+
+    // Never uploaded, never in the link: shown from an object URL in place.
+    it('shows the picked image in place of the board, by its name', () => {
+      renderModal('diff', PROSE, 'design');
+
+      pick(png());
+
+      const image = within(modal()).getByRole('img', {
+        name: 'your design, my-design.png',
+      });
+      expect(image.getAttribute('src')).toBe('blob:local/1');
+      // Shown, not only hovered: a keyboard or touch reader sees which file it is.
+      const named = within(modal()).getByText('my-design.png');
+      expect(named.closest('[title]')?.getAttribute('title')).toBe('my-design.png');
+    });
+
+    it('presses no board while your image is the one on show', () => {
+      renderModal('diff', PROSE, 'design');
+
+      pick(png());
+
+      const picker = within(modal()).getByRole('group', { name: 'board' });
+      expect(
+        within(picker)
+          .getAllByRole('button')
+          .filter((button) => button.getAttribute('aria-pressed') === 'true'),
+      ).toHaveLength(0);
+    });
+
+    it('goes back to the boards when one is picked, and lets the file go', () => {
+      renderModal('diff', PROSE, 'design');
+      pick(png());
+
+      const picker = within(modal()).getByRole('group', { name: 'board' });
+      fireEvent.click(within(picker).getByRole('button', { name: 'components' }));
+
+      expect(
+        within(modal()).getByRole('img', { name: 'the components design board' }),
+      ).toBeTruthy();
+      expect(revoked).toEqual(['blob:local/1']);
+    });
+
+    it('ignores a file that is not an image, rather than showing a broken one', () => {
+      renderModal('diff', PROSE, 'design');
+
+      pick(new File(['x'], 'notes.txt', { type: 'text/plain' }));
+
+      expect(created).toEqual([]);
+      expect(
+        within(modal()).getByRole('img', { name: 'the components design board' }),
+      ).toBeTruthy();
+    });
+  });
+
+  // The after side's absence reads the same here as in the modes.
+  it('says a removed variant has no after side, rather than framing nothing', () => {
+    renderModal('diff', REMOVED, 'design');
+
+    expect(within(modal()).queryByRole('img', { name: 'candidate' })).toBeNull();
+    expect(within(modal()).getByText('not on this side')).toBeTruthy();
+  });
+
+  it('names the design view keys in the hint line', () => {
+    renderModal('diff', PROSE, 'design');
+
+    expect(within(modal()).getByText(/drag the board/)).toBeTruthy();
   });
 });
 

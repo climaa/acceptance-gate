@@ -15,6 +15,10 @@ export class ComparisonModal {
   readonly divider: Locator;
   readonly scrubber: Locator;
   readonly copyLink: Locator;
+  readonly against: Locator;
+  readonly boardPicker: Locator;
+  readonly boardPane: Locator;
+  readonly zoomReadout: Locator;
   readonly copyStatus: Locator;
 
   constructor(page: Page) {
@@ -26,12 +30,31 @@ export class ComparisonModal {
     this.divider = this.root.getByTestId('slider-divider');
     this.scrubber = this.root.getByRole('slider', { name: 'slider position' });
     this.copyLink = this.root.getByRole('button', { name: 'copy link', exact: true });
+    this.against = this.root.getByRole('group', { name: 'compare to' });
+    this.boardPicker = this.root.getByRole('group', { name: 'board', exact: true });
+    this.boardPane = this.root.getByRole('group', { name: 'design board', exact: true });
+    this.zoomReadout = this.root
+      .getByRole('group', { name: 'design board zoom', exact: true })
+      .getByText(/^\d+%$/);
     this.copyStatus = this.root.getByRole('status');
   }
 
   /** One of the three shots by its own name — `alt` is the shot's kind. */
   shotNamed(kind: 'baseline' | 'candidate' | 'diff'): Locator {
     return this.root.getByRole('img', { name: kind, exact: true });
+  }
+
+  /** A design board by its picker name, as the pane's image names it. */
+  board(name: 'components' | 'pages' | 'console' | 'flows'): Locator {
+    return this.root.getByRole('img', { name: `the ${name} design board` });
+  }
+
+  /** The board's zoom controls — scoped, because the after screenshot has a
+   *  pane of its own with the same three buttons. */
+  zoom(name: 'zoom in' | 'zoom out' | 'reset'): Locator {
+    return this.root
+      .getByRole('group', { name: 'design board zoom', exact: true })
+      .getByRole('button', { name, exact: true });
   }
 
   mode(

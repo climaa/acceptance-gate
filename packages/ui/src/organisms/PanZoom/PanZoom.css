@@ -1,0 +1,107 @@
+/* The controls sit above the pane, at its end: the board draws them as one row
+   of −, the readout and +, then reset, aligned to the pane's right edge. */
+.ds-panzoom {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-height: 0;
+}
+
+/* The row above the pane: the caller's `lead` at its start, the zoom controls
+   at its end, wrapping onto two lines only when the pane is too narrow for one. */
+.ds-panzoom__bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.ds-panzoom__controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-inline-start: auto;
+}
+
+/* Tabular digits so the row does not shift by a pixel as 100% becomes 225%. */
+.ds-panzoom__readout {
+  min-width: 5ch;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  color: var(--color-text);
+}
+
+/* A fixed height the consumer can override: the pane clips, so it has to be
+   given a size rather than take one from an image many times taller than any
+   screen. No `flex: 1` — in a column with no height of its own, a zero
+   flex-basis wins over this height and the pane collapses to its border.
+   `touch-action: none` makes a finger drag pan the image instead of
+   scrolling the page under it. */
+.ds-panzoom__pane {
+  position: relative;
+  height: calc(var(--space-16) * 6);
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-subtle);
+  touch-action: none;
+  cursor: grab;
+}
+
+.ds-panzoom__pane:active {
+  cursor: grabbing;
+}
+
+/* Positioned by the transform the component writes; `max-width: none` because
+   past 100% the image is meant to be wider than the pane. Pointer events stay
+   on the pane, so a drag never starts the browser's own image drag. */
+.ds-panzoom__image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  max-width: none;
+  height: auto;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* The unavailable state the board draws: the sentence, centred in the same
+   pane, so the layout around it does not move when an image fails. */
+.ds-panzoom__fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  margin: 0;
+  padding: var(--space-4);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  text-align: center;
+}
+
+/* The grid, over the image and moved with it. Two hairline gradients rather
+   than a pattern image, so the step is one custom property the component
+   writes: `--ds-panzoom-grid-gap`, the step in drawn pixels. The accent at a
+   third strength reads on a light board and a dark screenshot alike. */
+.ds-panzoom__grid {
+  --ds-panzoom-grid-line: color-mix(in srgb, var(--color-accent) 35%, transparent);
+
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(to right, var(--ds-panzoom-grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--ds-panzoom-grid-line) 1px, transparent 1px);
+  background-size: var(--ds-panzoom-grid-gap) var(--ds-panzoom-grid-gap);
+}
+
+.ds-panzoom__grid-step {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-muted);
+}

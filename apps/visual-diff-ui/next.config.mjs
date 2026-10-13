@@ -61,6 +61,10 @@ const nextConfig = {
     '/api/shots/[report]/[file]': ['./fixtures/**'],
     '/set/[label]': ['./fixtures/**'],
     '/api/sets/[label]/shots/[file]': ['./fixtures/**'],
+    // No brackets in the key, on purpose: these keys are globs, and a bracketed
+    // one was measured to match no route at all. The boards are read off their
+    // real path by the route — see app/api/designs/route.ts.
+    '/api/designs': ['../../designs/exports/*.png'],
   },
 };
 
