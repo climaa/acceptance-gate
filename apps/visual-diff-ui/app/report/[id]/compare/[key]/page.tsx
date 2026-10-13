@@ -1,7 +1,15 @@
+import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { Skeleton, Stack } from '@gate/ui';
 import { ComparisonContents } from '@/components/ComparisonContents';
+import { comparisonMetadata } from '@/lib/comparison-meta';
 import { ReportContents } from '@/components/ReportContents';
+
+export async function generateMetadata({
+  params,
+}: PageProps<'/report/[id]/compare/[key]'>): Promise<Metadata> {
+  return comparisonMetadata(params);
+}
 
 /**
  * A comparison loaded cold — a shared link, a refresh: its report, with the

@@ -8,6 +8,18 @@ import { tagOutbound } from '@gate/links';
 
 export const APP_NAME = 'visual-diff console';
 
+/**
+ * The deployed origin — `metadataBase`, so a comparison's `og:url` and card are
+ * absolute. A link preview fetches both from wherever the link was pasted, so a
+ * relative card is a card no unfurler can load.
+ *
+ * Production, even on a local console: only the deployment is reachable from
+ * outside, and its committed sample reports are the only ones a shared link can
+ * name. A local report's card would point at a host that does not hold it —
+ * which is the truth about sharing a local report.
+ */
+export const SITE_URL = new URL('https://visual-diff-ui.carloslima.dev');
+
 /** The board's brand line — what this app is, and what it deliberately is not. */
 export const APP_TAGLINE = 'the CLI is the engine — this page just drives it';
 

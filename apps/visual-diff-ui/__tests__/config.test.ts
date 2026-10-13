@@ -320,26 +320,28 @@ describe('fixture tracing', () => {
     // reads, and naming the wrapper is what keeps that from hiding the route.
     'ReportContents',
     'ComparisonContents',
+    'readPanels',
   ];
 
-  /** `app/report/[id]/page.tsx` is the route `/report/[id]`, and `app/page.tsx`
-   *  is `/` — the shape `outputFileTracingIncludes` is keyed by. */
+  /** `app/report/[id]/page.tsx` is the route `/report/[id]`, `app/page.tsx` is
+   *  `/`, and a metadata image keeps its own name as its last segment — the
+   *  shape `outputFileTracingIncludes` is keyed by. */
   const routeOf = (file: string) =>
-    `/${file.replace(/^app\//, '').replace(/\/?(page|route)\.tsx?$/, '')}`.replace(
-      /\/$/,
-      '',
-    ) || '/';
+    `/${file
+      .replace(/^app\//, '')
+      .replace(/\/?(page|route)\.tsx?$/, '')
+      .replace(/\.tsx?$/, '')}`.replace(/\/$/, '') || '/';
 
   it('names every route that reads the fixtures', () => {
     const routes = sourceFiles()
-      .filter((file) => /(?:page|route)\.tsx?$/.test(file))
+      .filter((file) => /(?:page|route|opengraph-image)\.tsx?$/.test(file))
       .filter((file) => READERS.some((reader) => read(file).includes(reader)))
       .map(routeOf)
       .sort();
 
     const config = fs.readFileSync(path.join(APP_ROOT, 'next.config.mjs'), 'utf8');
     const block = config.slice(config.indexOf('outputFileTracingIncludes'));
-    const traced = [...block.matchAll(/'(\/[^']*)':\s*\['\.\/fixtures/g)]
+    const traced = [...block.matchAll(/'(\/[^']*)':\s*\[\s*'\.\/fixtures/g)]
       .map((match) => match[1])
       .sort();
 
