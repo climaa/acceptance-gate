@@ -2,7 +2,8 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { NextResponse, type NextRequest } from 'next/server';
 import { dataDirFrom } from '@/lib/data-dir';
-import { hasReport, hasSet } from '@/lib/jobs';
+import { comparisonHref, isComparisonMode } from '@/lib/comparison';
+import { comparisonKeyIn, hasReport, hasSet } from '@/lib/jobs';
 import { ReportIdSchema, SetLabelSchema } from '@/lib/job-contract';
 import { CANONICAL_LABEL } from '@/lib/baselines';
 
@@ -40,12 +41,16 @@ import { CANONICAL_LABEL } from '@/lib/baselines';
  * existed. Wrong-but-harmless beats confidently wrong.
  */
 
-/** Only the two routes that can miss. Every other path — the console, the API,
- *  the assets — reaches the router without this file running at all. */
-export const config = { matcher: ['/report/:id', '/set/:label'] };
+/** Only the three routes that can miss. Every other path — the console, the API,
+ *  the assets, a comparison's card — reaches the router without this file
+ *  running at all. */
+export const config = {
+  matcher: ['/report/:id', '/report/:id/compare/:key', '/set/:label'],
+};
 
 const REPORT_PREFIX = '/report/';
 const SET_PREFIX = '/set/';
+const COMPARE_INFIX = '/compare/';
 
 /**
  * The segment after `prefix`, decoded, or null for one that will not decode.
@@ -113,13 +118,100 @@ export function isMissingSet(pathname: string): boolean {
   return canSeeSets(dir) && !hasSet(dir, label);
 }
 
-export function proxy(request: NextRequest): NextResponse | undefined {
-  const { pathname } = request.nextUrl;
-  const missing = pathname.startsWith(SET_PREFIX)
-    ? isMissingSet(pathname)
-    : isMissingReport(pathname);
+/** What the proxy does with a request: let it through, answer it with the
+ *  404 page, or send it to the one address it names. */
+export type ProxyAnswer =
+  { kind: 'pass' } | { kind: 'missing' } | { kind: 'redirect'; to: string };
 
-  if (!missing) return undefined;
+const PASS: ProxyAnswer = { kind: 'pass' };
+const MISSING: ProxyAnswer = { kind: 'missing' };
+
+/**
+ * A comparison's path, split into its report and its compare segment, or null
+ * for a path that is not one. Each half decoded on its own, so an encoded slash
+ * inside either cannot move the split.
+ */
+function comparisonSegments(pathname: string): { id: string; param: string } | null {
+  const rest = pathname.slice(REPORT_PREFIX.length);
+  const at = rest.indexOf(COMPARE_INFIX);
+  if (at === -1) return null;
+
+  try {
+    return {
+      id: decodeURIComponent(rest.slice(0, at)),
+      param: decodeURIComponent(rest.slice(at + COMPARE_INFIX.length)),
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * The answer for `/report/<id>/compare/<param>`.
+ *
+ * A miss is a 404 for the same reason a report's is, and it is never a blank
+ * modal: the dialog only renders over a variant the page found. A segment that
+ * names a comparison by anything but its key — a bare story id, which the old
+ * `?story=` links carried — is redirected onto the key, so one comparison is
+ * counted, cached and previewed under one address.
+ */
+export function comparisonAnswer(pathname: string, search = ''): ProxyAnswer {
+  const segments = comparisonSegments(pathname);
+  if (segments === null) return MISSING;
+
+  const { dir } = dataDirFrom();
+  if (!canSeeReports(dir)) return PASS;
+
+  const { id, param } = segments;
+  if (!ReportIdSchema.safeParse(id).success || !hasReport(dir, id)) return MISSING;
+
+  const key = comparisonKeyIn(dir, id, param);
+  if (key === null) return MISSING;
+  if (key === param) return PASS;
+
+  return { kind: 'redirect', to: `${comparisonHref(id, key)}${search}` };
+}
+
+/**
+ * The answer for `/report/<id>`: a 404 for a report this instance lacks, and a
+ * redirect for a link written before comparisons had paths of their own.
+ *
+ * Those carried the open modal as `?story=<key or story id>&mode=<mode>`, and
+ * they are already out in the world. The redirect does not look the story up —
+ * the comparison's own answer above does that on arrival, so there is one
+ * place that decides what a story parameter names.
+ */
+export function reportAnswer(pathname: string, search = ''): ProxyAnswer {
+  if (isMissingReport(pathname)) return MISSING;
+
+  const params = new URLSearchParams(search);
+  const story = params.get('story');
+  const id = segmentAfter(pathname, REPORT_PREFIX);
+  if (!story || id === null) return PASS;
+
+  const mode = params.get('mode');
+
+  return {
+    kind: 'redirect',
+    to: comparisonHref(id, story, isComparisonMode(mode) ? mode : null),
+  };
+}
+
+function answerFor(pathname: string, search: string): ProxyAnswer {
+  if (pathname.startsWith(SET_PREFIX)) return isMissingSet(pathname) ? MISSING : PASS;
+  if (pathname.includes(COMPARE_INFIX)) return comparisonAnswer(pathname, search);
+
+  return reportAnswer(pathname, search);
+}
+
+export function proxy(request: NextRequest): NextResponse | undefined {
+  const { pathname, search } = request.nextUrl;
+  const answer = answerFor(pathname, search);
+
+  if (answer.kind === 'pass') return undefined;
+  if (answer.kind === 'redirect') {
+    return NextResponse.redirect(new URL(answer.to, request.url), 307);
+  }
 
   // Rewritten rather than redirected: the address a reviewer followed is the
   // address they should still be looking at when they read what is wrong with

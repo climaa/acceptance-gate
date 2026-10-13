@@ -19,7 +19,8 @@ import {
   WorktreesFileSchema,
   type Worktree,
 } from './job-contract';
-import { type CaptureSet, SetsFileSchema } from './summary';
+import { comparableVariants, variantByParam } from './comparison';
+import { type CaptureSet, SetsFileSchema, SummarySchema } from './summary';
 
 /**
  * The job system: the data-directory layout every write in this app goes
@@ -165,6 +166,35 @@ export function removeReport(dataDir: string, id: string): void {
  *  directory under `reports/` a report rather than something a human copied in. */
 export function hasReport(dataDir: string, id: string): boolean {
   return fs.existsSync(path.join(reportDir(dataDir, id), 'summary.json'));
+}
+
+/**
+ * The key of the comparison a `compare/<param>` segment names in that report, or
+ * null when it names none — including when the report has no readable summary.
+ *
+ * Synchronous for the same reason `hasReport` is: the proxy asks it before a
+ * byte goes out. The lookup is the modal's own (`variantByParam` over
+ * `comparableVariants`), so the proxy can never accept an address the page then
+ * cannot open, nor refuse one it could.
+ */
+export function comparisonKeyIn(
+  dataDir: string,
+  id: string,
+  param: string,
+): string | null {
+  let raw: unknown;
+  try {
+    raw = JSON.parse(
+      fs.readFileSync(path.join(reportDir(dataDir, id), 'summary.json'), 'utf8'),
+    );
+  } catch {
+    return null;
+  }
+
+  const summary = SummarySchema.safeParse(raw);
+  if (!summary.success) return null;
+
+  return variantByParam(comparableVariants(summary.data.variants), param)?.key ?? null;
 }
 
 /** Whether this instance has that set at all — either as a shot tree or as a

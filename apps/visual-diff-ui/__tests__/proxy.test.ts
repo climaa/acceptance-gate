@@ -4,7 +4,7 @@ import * as path from 'node:path';
 // Imported explicitly rather than relying on `globals: true` — tsconfig's
 // `**/*.ts` include means tsc typechecks this file.
 import { afterEach, describe, expect, it } from 'vitest';
-import { isMissingReport, isMissingSet } from '../proxy';
+import { comparisonAnswer, isMissingReport, isMissingSet, reportAnswer } from '../proxy';
 import { within } from '../lib/paths';
 
 /**
@@ -217,5 +217,167 @@ describe('a segment that is not even a string', () => {
     const answer = isMissingReport('/report/%');
 
     expect(answer).toBe(true);
+  });
+});
+
+/** A variant row with only the fields the lookup reads set to anything telling. */
+const variant = (key: string, bucket: string) => {
+  const [tier, viewport, theme, id] = key.split('__');
+
+  return {
+    key,
+    id,
+    tier,
+    viewport,
+    theme,
+    bucket,
+    overlapDiffPixels: 0,
+    marginPixels: 0,
+    diffPixels: 0,
+    allowedDiffPixels: 0,
+    width: null,
+    height: null,
+    sizeDelta: null,
+    violations: [],
+    error: null,
+  };
+};
+
+const CHANGED = 'atoms__desktop__light__atoms-prose--default';
+const A11Y = 'atoms__desktop__dark__atoms-badge--default';
+
+/** A configured data directory holding one report with a real summary. */
+function reportWithVariants(): void {
+  const dir = dataDirWith();
+  const file = within(dir, 'reports', REPORT, 'summary.json');
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(
+    file,
+    JSON.stringify({
+      schemaVersion: 1,
+      exitCode: 1,
+      thresholds: { maxDiffPixels: 0, maxDiffRatio: 0 },
+      env: {},
+      // Every bucket, because the schema's record is keyed by the whole enum.
+      counts: { unchanged: 0, changed: 1, added: 0, removed: 0, errored: 0, a11y: 1 },
+      warnings: [],
+      variants: [variant(CHANGED, 'changed'), variant(A11Y, 'a11y')],
+    }),
+  );
+}
+
+const compareAt = (id: string, param: string) =>
+  `/report/${encodeURIComponent(id)}/compare/${encodeURIComponent(param)}`;
+
+describe('the comparison proxy', () => {
+  it('lets a comparison the report holds through untouched', () => {
+    reportWithVariants();
+
+    const answer = comparisonAnswer(compareAt(REPORT, CHANGED));
+
+    expect(answer).toEqual({ kind: 'pass' });
+  });
+
+  it('answers a key the report does not hold with a 404', () => {
+    reportWithVariants();
+
+    const answer = comparisonAnswer(compareAt(REPORT, 'atoms__desktop__light__nope'));
+
+    expect(answer).toEqual({ kind: 'missing' });
+  });
+
+  it('answers a comparison in a report that does not exist with a 404', () => {
+    reportWithVariants();
+
+    const answer = comparisonAnswer(compareAt('nothing__here', CHANGED));
+
+    expect(answer).toEqual({ kind: 'missing' });
+  });
+
+  // The modal never frames an a11y variant, so its address cannot open one —
+  // and a 404 is what keeps that from being a blank dialog instead.
+  it('answers an accessibility variant with a 404', () => {
+    reportWithVariants();
+
+    const answer = comparisonAnswer(compareAt(REPORT, A11Y));
+
+    expect(answer).toEqual({ kind: 'missing' });
+  });
+
+  it('redirects a bare story id onto its key, keeping the query', () => {
+    reportWithVariants();
+
+    const answer = comparisonAnswer(
+      compareAt(REPORT, 'atoms-prose--default'),
+      '?mode=slider',
+    );
+
+    expect(answer).toEqual({
+      kind: 'redirect',
+      to: `${compareAt(REPORT, CHANGED)}?mode=slider`,
+    });
+  });
+
+  it('answers a malformed escape as a miss rather than throwing', () => {
+    reportWithVariants();
+
+    const answer = comparisonAnswer(`/report/${REPORT}/compare/%`);
+
+    expect(answer).toEqual({ kind: 'missing' });
+  });
+
+  it('answers a report whose summary will not parse with a 404', () => {
+    dataDirWith(REPORT);
+
+    const answer = comparisonAnswer(compareAt(REPORT, CHANGED));
+
+    expect(answer).toEqual({ kind: 'missing' });
+  });
+
+  it('stays out of the way when there is no reports tree to read', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'vd-proxy-'));
+    temporaryDirs.push(dir);
+    process.env.VISUAL_DIFF_DATA_DIR = dir;
+
+    const answer = comparisonAnswer(compareAt(REPORT, CHANGED));
+
+    expect(answer).toEqual({ kind: 'pass' });
+  });
+});
+
+describe('a link written before comparisons had paths', () => {
+  it('redirects ?story and ?mode onto the comparison path', () => {
+    reportWithVariants();
+
+    const answer = reportAnswer(`/report/${REPORT}`, `?story=${CHANGED}&mode=slider`);
+
+    expect(answer).toEqual({
+      kind: 'redirect',
+      to: `${compareAt(REPORT, CHANGED)}?mode=slider`,
+    });
+  });
+
+  it('drops a mode that is not one', () => {
+    reportWithVariants();
+
+    const answer = reportAnswer(`/report/${REPORT}`, `?story=${CHANGED}&mode=sideways`);
+
+    expect(answer).toEqual({ kind: 'redirect', to: compareAt(REPORT, CHANGED) });
+  });
+
+  it('leaves a report link with no story alone', () => {
+    reportWithVariants();
+
+    const answer = reportAnswer(`/report/${REPORT}`, '?bucket=changed');
+
+    expect(answer).toEqual({ kind: 'pass' });
+  });
+
+  it('still answers a missing report with a 404 before reading the query', () => {
+    reportWithVariants();
+
+    const answer = reportAnswer('/report/nothing__here', `?story=${CHANGED}`);
+
+    expect(answer).toEqual({ kind: 'missing' });
   });
 });

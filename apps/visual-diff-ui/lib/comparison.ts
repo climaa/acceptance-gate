@@ -82,3 +82,48 @@ export const variantByParam = (variants: readonly Variant[], story: string) =>
   variants.find((variant) => variant.key === story) ??
   variants.find((variant) => variant.id === story) ??
   null;
+
+/**
+ * Where one comparison lives: `/report/<id>/compare/<variantKey>`.
+ *
+ * A path rather than the `?story=` it replaced, for two readers the query string
+ * could not serve. The analytics beacon counts a pageview when the pathname
+ * moves and never when only the query does, so a comparison that was a query
+ * parameter was invisible to it. And a link preview is a page's own `<head>`:
+ * a comparison with an address of its own can carry a title and a card of its
+ * own, which a report URL with a parameter on it cannot.
+ *
+ * The key, never the story id. The key is the only value that names one
+ * viewport/theme pair, so it is the one address a comparison has — the proxy
+ * redirects every other spelling onto it.
+ */
+export const comparisonPath = (reportId: string, key: string) =>
+  `/report/${encodeURIComponent(reportId)}/compare/${encodeURIComponent(key)}`;
+
+/**
+ * …with the mode, when it is not the one the modal opens on anyway.
+ *
+ * The mode rides the query string because it is how a comparison is being
+ * looked at, not which comparison it is: switching it is not a new page, so it
+ * must not be a new pageview either. The default is left out so that one
+ * comparison has one bare link.
+ */
+export function comparisonHref(
+  reportId: string,
+  key: string,
+  mode: ComparisonMode | null = null,
+): string {
+  const at = comparisonPath(reportId, key);
+  if (mode === null || mode === DEFAULT_MODE) return at;
+
+  return `${at}?${new URLSearchParams({ mode }).toString()}`;
+}
+
+/** The report a comparison belongs to — where closing one lands. */
+export const reportPath = (reportId: string) => `/report/${encodeURIComponent(reportId)}`;
+
+const COMPARISON_PATH = /^\/report\/[^/]+\/compare\/[^/]+$/;
+
+/** Whether a pathname is a comparison's. The report reads its own URL with
+ *  this to know a modal is over it, which is what stands its keys down. */
+export const isComparisonPath = (pathname: string) => COMPARISON_PATH.test(pathname);
