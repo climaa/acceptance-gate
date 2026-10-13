@@ -352,33 +352,53 @@ interface DesignStageProps {
  * there. Nothing is compared: the reviewer pans to the tile and judges by eye.
  */
 function DesignStage({ board, onBoard, shots, variant, after }: DesignStageProps) {
+  const afterSrc = shots.candidate;
+
   return (
     <div className="vd-compare__design">
-      <div className="vd-compare__board">
-        <SegmentedControl
-          label="board"
-          options={DESIGN_BOARDS.map((name) => ({
-            value: name,
-            label: BOARD_LABELS[name],
-          }))}
-          value={board}
-          onChange={(picked) => {
-            if (isDesignBoard(picked)) onBoard(picked);
-          }}
-        />
+      <div className="vd-compare__column">
+        <div className="vd-compare__column-head">
+          <SegmentedControl
+            label="board"
+            options={DESIGN_BOARDS.map((name) => ({
+              value: name,
+              label: BOARD_LABELS[name],
+            }))}
+            value={board}
+            onChange={(picked) => {
+              if (isDesignBoard(picked)) onBoard(picked);
+            }}
+          />
+        </div>
         <PanZoom
           key={board}
           src={designBoardUrl(board)}
           alt={`the ${BOARD_LABELS[board]} design board`}
           label="design board"
           fallback={BOARD_UNAVAILABLE}
+          className="vd-compare__panzoom"
         />
       </div>
 
-      <figure className="vd-compare__after">
-        <figcaption className="vd-compare__caption vd-mono">after · {after}</figcaption>
-        <Shot kind="candidate" shots={shots} variant={variant} />
-      </figure>
+      <div className="vd-compare__column">
+        <p className="vd-compare__column-head vd-compare__caption vd-mono">
+          after · {after}
+        </p>
+        {/* The same pane as the board's, so the two are read the same way —
+            both fitted at 100%, both dragged and zoomed. A screenshot narrower
+            than the pane sits at its own pixels: the pane never stretches it. */}
+        {afterSrc === undefined ? (
+          <p className="vd-compare__absent">{absentShotCopy(variant, 'candidate')}</p>
+        ) : (
+          <PanZoom
+            key={variant.key}
+            src={afterSrc}
+            alt="candidate"
+            label="after screenshot"
+            className="vd-compare__panzoom"
+          />
+        )}
+      </div>
     </div>
   );
 }
@@ -446,7 +466,12 @@ export function ComparisonModal({
   const title = comparisonTitle(variant);
 
   return (
-    <Dialog open onClose={onClose} label={DIALOG_LABEL} className="vd-compare">
+    <Dialog
+      open
+      onClose={onClose}
+      label={DIALOG_LABEL}
+      className={design ? 'vd-compare vd-compare--design' : 'vd-compare'}
+    >
       <Stack gap={3}>
         <Stack direction="row" gap={3} align="baseline" wrap className="vd-compare__head">
           <h2 className="vd-compare__title vd-mono" title={title}>
@@ -506,7 +531,12 @@ export function ComparisonModal({
           this component cannot make. The `Stage`'s own controls are pointer
           affordances on the image, not tab stops that would carry the scroll.
         */}
-        <div className="vd-compare__stage" tabIndex={0}>
+        <div
+          className={
+            design ? 'vd-compare__stage vd-compare__stage--design' : 'vd-compare__stage'
+          }
+          tabIndex={design ? undefined : 0}
+        >
           {design ? (
             <DesignStage
               board={board}

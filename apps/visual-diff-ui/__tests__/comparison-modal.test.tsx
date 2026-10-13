@@ -522,7 +522,19 @@ describe('the design view', () => {
     expect(within(modal()).getByText(`after · ${SIDES.b}`)).toBeTruthy();
   });
 
-  // The after side is the modes' own Shot, so its absence reads the same here.
+  // Read the same way as the board: fitted at 100%, dragged and zoomed.
+  it('gives the after screenshot a pane of its own, with its own zoom', () => {
+    renderModal('diff', PROSE, 'design');
+
+    const pane = within(modal()).getByRole('group', { name: 'after screenshot' });
+
+    expect(within(pane).getByRole('img', { name: 'candidate' })).toBeTruthy();
+    expect(
+      within(modal()).getByRole('group', { name: 'after screenshot zoom' }),
+    ).toBeTruthy();
+  });
+
+  // The after side's absence reads the same here as in the modes.
   it('says a removed variant has no after side, rather than framing nothing', () => {
     renderModal('diff', REMOVED, 'design');
 

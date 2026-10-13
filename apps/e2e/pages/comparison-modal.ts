@@ -33,7 +33,9 @@ export class ComparisonModal {
     this.against = this.root.getByRole('group', { name: 'compare to' });
     this.boardPicker = this.root.getByRole('group', { name: 'board', exact: true });
     this.boardPane = this.root.getByRole('group', { name: 'design board', exact: true });
-    this.zoomReadout = this.root.getByText(/^\d+%$/);
+    this.zoomReadout = this.root
+      .getByRole('group', { name: 'design board zoom', exact: true })
+      .getByText(/^\d+%$/);
     this.copyStatus = this.root.getByRole('status');
   }
 
@@ -47,8 +49,12 @@ export class ComparisonModal {
     return this.root.getByRole('img', { name: `the ${name} design board` });
   }
 
+  /** The board's zoom controls — scoped, because the after screenshot has a
+   *  pane of its own with the same three buttons. */
   zoom(name: 'zoom in' | 'zoom out' | 'reset'): Locator {
-    return this.root.getByRole('button', { name, exact: true });
+    return this.root
+      .getByRole('group', { name: 'design board zoom', exact: true })
+      .getByRole('button', { name, exact: true });
   }
 
   mode(
