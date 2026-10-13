@@ -21,16 +21,22 @@ export const OG_CONTENT_TYPE = 'image/png';
 /**
  * `next/og` reads neither page CSS nor woff2, so the card is handed font bytes
  * directly — `packages/ui/src/fonts/og/` exists for exactly this and documents
- * itself in its own PROVENANCE.md. Resolved through the workspace link, so the
- * path follows the `@gate/ui` dependency edge package.json already declares
- * rather than counting `../` hops out of apps/blog. Off `process.cwd()` because
- * that is the resolution Next's own metadata-route docs use, and both the build
- * worker and vitest run with apps/blog as the working directory.
+ * itself in its own PROVENANCE.md. Off `process.cwd()` because that is the
+ * resolution Next's own metadata-route docs use, and the build worker, vitest
+ * and the deployed function all run with apps/blog as the working directory.
+ *
+ * The real path, never the `node_modules/@gate/ui` workspace link. The file
+ * tracer records a symlinked file under its target, so the deployed function
+ * carries `packages/ui/src/fonts/og/…` and has no `node_modules/@gate/ui` at
+ * all. A read through the link works on every machine with a pnpm install and
+ * is ENOENT on Vercel — every card rendered at request time answered 500.
  */
 export const OG_FONT_PATH = path.join(
   process.cwd(),
-  'node_modules',
-  '@gate/ui',
+  '..',
+  '..',
+  'packages',
+  'ui',
   'src',
   'fonts',
   'og',

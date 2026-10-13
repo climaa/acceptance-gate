@@ -80,7 +80,7 @@ describe.each(ROUTES)('%s', (_name, load) => {
 describe('the OG display face', () => {
   it('is the TTF @gate/ui documents as the one woff2 exemption', () => {
     const exemption = path.join(
-      '@gate',
+      'packages',
       'ui',
       'src',
       'fonts',
@@ -93,6 +93,14 @@ describe('the OG display face', () => {
 
   it('exists on disk at the path the routes read', () => {
     expect(fs.existsSync(OG_FONT_PATH)).toBe(true);
+  });
+
+  // The file tracer ships a symlinked file under its target only, so a read
+  // through the workspace link finds nothing in the deployed function.
+  it('is read at its real path, through no symlink the deployment lacks', () => {
+    const real = fs.realpathSync(OG_FONT_PATH);
+
+    expect(OG_FONT_PATH).toBe(real);
   });
 
   it('is TrueType, the one outline format satori parses', async () => {
@@ -116,9 +124,10 @@ describe('the OG display face', () => {
 
     const { default: config } = await import(pathToFileURL(configPath).href);
 
-    expect(config.outputFileTracingIncludes['/blog/[slug]/opengraph-image']).toContain(
-      `./${path.relative(process.cwd(), OG_FONT_PATH)}`,
-    );
+    const included: string[] =
+      config.outputFileTracingIncludes['/blog/[slug]/opengraph-image'];
+
+    expect(included.map((file) => path.resolve(file))).toContain(OG_FONT_PATH);
   });
 });
 
