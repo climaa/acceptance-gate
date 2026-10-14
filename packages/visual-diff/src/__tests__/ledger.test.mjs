@@ -162,6 +162,14 @@ describe('classify', () => {
     expect(reading).toEqual({ verdict: 'none', token: null });
   });
 
+  it('reads a gap that computes to `normal` as no spacing, not as a value off the scale', () => {
+    // Chromium computes `row-gap`/`column-gap` as `normal` on every element that sets
+    // no gap, so the collector's number for most elements is `parseFloat('normal')`.
+    const reading = classify(measured({ px: Number.NaN, authored: null }), SCALE);
+
+    expect(reading).toEqual({ verdict: 'none', token: null });
+  });
+
   it.each([['0.35em'], ['2%'], ['1ch'], ['1vw'], ['calc(100% - 1rem)']])(
     'exempts a value written in a relative unit (%s)',
     (authored) => {
