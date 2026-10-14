@@ -106,6 +106,28 @@ One of the board images exported from `designs/acceptance-gate.pen` into
 never a side of a comparison and never carries a bucket. Short form: _board_.
 _Avoid_: design for the screenshot, mock or baseline for the board.
 
+**token ledger**:
+The spacing one capture measured on one variant, each value named by the design
+token it matches or the one it is nearest to. Recorded per variant, beside its
+screenshot. Like a design board, it is reference beside a comparison: never a
+side, never a bucket, never an exit code. Short form: _ledger_.
+_Avoid_: audit, lint, check — each already names something here.
+
+**reading**:
+One measured property of one element in a token ledger, with its verdict: a
+design token, a raw value on the scale, off-scale, or exempt.
+_Avoid_: finding, which belongs to axe.
+
+**off-scale**:
+A spacing value that is not a step of the spacing scale. A description of the
+value, not a verdict on the interface: the differ still detects change, not
+correctness.
+_Avoid_: wrong, invalid, violation.
+
+**design token**:
+A named value in `packages/ui/src/tokens.css`. Always qualified: the bare word
+_token_ also names OAuth, GitHub and Turbo credentials in this repository.
+
 **summary row**, **report card**:
 Stages downstream of a comparison, not synonyms for one. A _summary row_ is a
 comparison as recorded; a _report card_ groups one story's variants for reading.

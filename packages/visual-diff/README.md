@@ -18,6 +18,9 @@ runs an axe scan (`wcag2a`/`wcag2aa`/`wcag21a`/`wcag21aa`) and an accessibility 
 outranks the pixel verdict: a story with an a11y hit is bucketed `a11y`, never quietly
 folded into `changed` or `unchanged` where accepting it would make the violation permanent.
 
+The token ledger is informational in the same way a design board is: it names
+spacing in design-token terms beside a comparison and never changes its bucket.
+
 ## How it works
 
 ### The capture matrix
