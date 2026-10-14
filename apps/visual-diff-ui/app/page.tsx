@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { headers } from 'next/headers';
 import { Suspense } from 'react';
 import { Skeleton, Stack } from '@gate/ui';
@@ -7,6 +8,8 @@ import { readReports, readSetSizes, readSets, resolveDataDir } from '@/lib/data'
 import { repoRoot } from '@/lib/git';
 import { currentJob, readHistory } from '@/lib/jobs';
 import { isLocalHost } from '@/lib/local';
+import { pageMetadata } from '@/lib/share';
+import { APP_DESCRIPTION, APP_NAME } from '@/lib/site';
 
 /**
  * The console: what this instance has captured, compared and run.
@@ -17,6 +20,15 @@ import { isLocalHost } from '@/lib/local';
  * confirmations — is client-side inside that hole and polls its own endpoints;
  * nothing on this page is cached beyond the readers below.
  */
+
+/** The console's own name and sentence — the words its header and the layout
+ *  already say — under its own address, so a shared link to it previews as the
+ *  console rather than as the bare host. */
+export const metadata: Metadata = pageMetadata({
+  path: '/',
+  title: { absolute: APP_NAME },
+  description: APP_DESCRIPTION,
+});
 
 export default function ConsolePage() {
   return (

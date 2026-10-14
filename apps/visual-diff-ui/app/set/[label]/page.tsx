@@ -8,6 +8,8 @@ import { readSets, resolveDataDir } from '@/lib/data';
 import { repoRoot } from '@/lib/git';
 import { SetLabelSchema } from '@/lib/job-contract';
 import { readSetShots } from '@/lib/set-shots';
+import { pageMetadata } from '@/lib/share';
+import { setHref } from '@/lib/shots';
 import { NOT_FOUND_TITLE } from '@/lib/site';
 
 /**
@@ -22,13 +24,19 @@ import { NOT_FOUND_TITLE } from '@/lib/site';
 /** The label is the page's `<h1>`, so it is the `<title>` too, and the root
  *  layout's `%s · visual-diff console` template wraps it. Validated for the same
  *  reason the report route validates its id: a title is the part of a miss a
- *  reader keeps, in a tab strip and in their history. */
+ *  reader keeps, in a tab strip and in their history. A label that passes
+ *  previews under it too, at the set's own address. */
 export async function generateMetadata({
   params,
 }: PageProps<'/set/[label]'>): Promise<Metadata> {
   const { label } = await params;
+  if (!SetLabelSchema.safeParse(label).success) return { title: NOT_FOUND_TITLE };
 
-  return { title: SetLabelSchema.safeParse(label).success ? label : NOT_FOUND_TITLE };
+  return pageMetadata({
+    path: setHref(label),
+    title: label,
+    description: `Screenshot set ${label}: every screenshot it holds, by tier, viewport and theme.`,
+  });
 }
 
 export default function SetPage({ params }: PageProps<'/set/[label]'>) {
