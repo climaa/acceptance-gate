@@ -51,7 +51,6 @@ function documentTitle(title: PageShare['title']): string {
 
 export function pageMetadata({ path, title, description }: PageShare): Metadata {
   const shareTitle = documentTitle(title);
-  const images = SITE_SHARE_IMAGES;
 
   return {
     title,
@@ -61,9 +60,14 @@ export function pageMetadata({ path, title, description }: PageShare): Metadata 
       title: shareTitle,
       description,
       url: path,
-      images,
+      images: SITE_SHARE_IMAGES,
     },
-    twitter: { card: 'summary_large_image', title: shareTitle, description, images },
+    twitter: {
+      card: 'summary_large_image',
+      title: shareTitle,
+      description,
+      images: SITE_SHARE_IMAGES,
+    },
     alternates: { canonical: path },
   };
 }
