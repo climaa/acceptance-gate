@@ -3,6 +3,7 @@ import * as path from 'node:path';
 import { cacheLife, cacheTag } from 'next/cache';
 import { pngSize } from '@gate/visual-diff/capture';
 import {
+  LEDGER,
   THEMES,
   TIERS,
   type Theme,
@@ -104,10 +105,20 @@ export interface SetShots {
   /** Files in the directory that name no cell of the matrix. Named rather than
    *  dropped, the way `readSet` logs them: a file whose name is not a variant key
    *  must not read as a story that went missing. `BASELINE_ENV.json` is not one
-   *  of them — it is skipped by name, before anything asks. */
+   *  of them — it is skipped by name, before anything asks — and neither is a
+   *  shot's token ledger, which belongs beside it. */
   ignored: readonly string[];
   /** The corpus's host stamp. Null for a capture set, which records none. */
   env: Readonly<Record<string, string>> | null;
+}
+
+/** Whether a filename is the token ledger a capture wrote beside one of its shots.
+ *  A ledger is no cell of the grid, and no stray file either. */
+function isLedgerFile(name: string): boolean {
+  return (
+    name.endsWith(LEDGER.fileSuffix) &&
+    parseVariantKey(name.slice(0, -LEDGER.fileSuffix.length)) !== null
+  );
 }
 
 /** A filename read back as the cell it names, or null for anything that is not
@@ -285,7 +296,7 @@ export async function readSetShots(
   const ignored: string[] = [];
   const parsed: ShotCell[] = [];
   for (const name of names) {
-    if (name === BASELINE_ENV) continue;
+    if (name === BASELINE_ENV || isLedgerFile(name)) continue;
 
     const cell = parseShotName(name);
     if (cell) parsed.push(cell);

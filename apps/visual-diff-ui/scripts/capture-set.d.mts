@@ -47,3 +47,18 @@ export function buildSet(
   args: Record<string, Arg>,
   meta: { label: string; stories: number; capturedAt: string },
 ): unknown;
+
+/** The token ledgers a capture writes beside its shots, as file names and text,
+ *  and the warnings to log about them. The ledger itself is typed `unknown` here
+ *  for the reason `buildSet`'s row is: the differ owns its shape. */
+export function ledgerOutputs(
+  captures: readonly {
+    key: string;
+    tier: string;
+    viewport: string;
+    theme: string;
+    id: string;
+    ledger?: unknown;
+    ledgerWarning?: string | null;
+  }[],
+): { files: { name: string; text: string }[]; warnings: string[] };

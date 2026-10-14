@@ -13,7 +13,7 @@ import { BASELINE_ENV, CANONICAL_LABEL } from '../lib/baselines';
 import { describeCheckout } from '../lib/git';
 import { NO_CHECKOUT, STORYBOOK_FAILED } from '../lib/refusals';
 import { SummarySchema } from '../lib/summary';
-import { compareSets, runJob } from '../lib/runner';
+import { compareSets, readSet, runJob } from '../lib/runner';
 
 /**
  * The runner: comparing two shot trees, and promoting a report's candidates
@@ -318,6 +318,51 @@ describe('compareSets against the committed corpus', () => {
     },
     PIXEL_WORK_MS,
   );
+
+  // A console capture writes a token ledger beside every shot. Pairing them is a later
+  // step's; reading a set must already know them for what they are.
+  it(
+    'reads the token ledgers beside a set’s shots without calling them ignored',
+    async () => {
+      const dir = makeDataDir();
+      const lines: string[] = [];
+      const shots = fixtureShots('candidate');
+      seedSet(dir, 'set-a', shots);
+      seedSet(dir, 'set-b', shots);
+      const [key] = [...shots.keys()];
+      fs.writeFileSync(
+        path.join(dir, 'sets', 'set-b', `${key}.ledger.json`),
+        '{"schema":1}\n',
+      );
+
+      await compareSets(
+        dir,
+        { mode: 'compare', baseline: 'set-a', candidate: 'set-b' },
+        (line) => lines.push(line),
+      );
+
+      expect(lines.join('\n')).not.toContain('ignored');
+    },
+    PIXEL_WORK_MS,
+  );
+
+  it('collects a set’s ledgers by variant key, beside its shots', () => {
+    const dir = makeDataDir();
+    const shots = fixtureShots('candidate');
+    seedSet(dir, 'set-b', shots);
+    const [key] = [...shots.keys()];
+    fs.writeFileSync(
+      path.join(dir, 'sets', 'set-b', `${key}.ledger.json`),
+      '{"schema":1}\n',
+    );
+
+    const set = readSet(dir, 'set-b', silent);
+
+    expect({ shots: set.shots.size, ledgers: [...set.ledgers.keys()] }).toEqual({
+      shots: shots.size,
+      ledgers: [key],
+    });
+  });
 
   // `BASELINE_ENV.json` sits beside the shots. Reporting it as an ignored file
   // every time the corpus is compared would name a file that belongs there.

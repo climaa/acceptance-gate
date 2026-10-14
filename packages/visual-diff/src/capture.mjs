@@ -26,10 +26,12 @@ import {
   isRenderedPhase,
   shotsEqual,
 } from './determinism.mjs';
+import { axOf, buildLedger, ledgerExpression } from './ledger.mjs';
 import {
   CAPTURE_TARGET,
   COLOR_SCHEME_GLOBAL,
   DETERMINISM,
+  LEDGER,
   VIEWPORTS,
 } from './policy.mjs';
 
@@ -409,7 +411,9 @@ const AXE_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'];
 /** @typedef {import('playwright').Page} Page */
 
 /** One captured cell of the matrix. `captured` is the neutral bucket: whether it is
- *  unchanged, changed or new is the comparer's verdict, not this module's.
+ *  unchanged, changed or new is the comparer's verdict, not this module's. `ledger` and
+ *  `ledgerWarning` are there only when a ledger was asked for, and neither ever moves
+ *  the bucket.
  *  @typedef {PlannedVariant & {
  *    bucket: 'captured' | 'errored' | 'a11y',
  *    bytes: Uint8Array | null,
@@ -417,6 +421,8 @@ const AXE_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'];
  *    height: number | null,
  *    violations: { id: string, nodes: number }[],
  *    error: string | null,
+ *    ledger?: import('./ledger.mjs').Ledger | null,
+ *    ledgerWarning?: string | null,
  *  }} CaptureResult */
 
 /** @param {unknown} cause */
@@ -553,6 +559,113 @@ async function runAxe(page) {
   }));
 }
 
+/** Every node the walk stamped, traced through CDP: the cascade that set its spacing
+ *  and its accessible name. Stops once `budgetMs` is spent — a capture that has gone
+ *  wrong must not stall the run — and the nodes past that point are left to the page's
+ *  own reading. DOM is enabled first: CSS refuses to start without it.
+ *  @param {Pick<import('playwright').CDPSession, 'send'>} cdp
+ *  @param {number} budgetMs @param {() => number} [now]
+ *  @returns {Promise<import('./ledger.mjs').TracedNode[]>} */
+export async function traceNodes(cdp, budgetMs, now = () => performance.now()) {
+  await cdp.send('DOM.enable');
+  await cdp.send('CSS.enable');
+  await cdp.send('Accessibility.enable');
+
+  const { root } = await cdp.send('DOM.getDocument', { depth: 0 });
+  const { nodeIds } = await cdp.send('DOM.querySelectorAll', {
+    nodeId: root.nodeId,
+    selector: '[data-vd-ledger]',
+  });
+
+  const deadline = now() + budgetMs;
+  const traced = [];
+  for (const nodeId of nodeIds) {
+    if (now() > deadline) break;
+
+    const matched = await cdp.send('CSS.getMatchedStylesForNode', { nodeId });
+    const tree = await cdp.send('Accessibility.getPartialAXTree', {
+      nodeId,
+      fetchRelatives: false,
+    });
+    traced.push({ matched, ax: axOf(tree) });
+  }
+
+  return traced;
+}
+
+/** The variant's token ledger: the walk in the page, then the trace through CDP, then
+ *  the pure core names every value. Throws when the walk found nothing — a story with
+ *  visible content always has something to measure, so an empty walk is a walk that
+ *  looked in the wrong place, and a ledger that silently says "no spacing" would pass.
+ *  @param {Page} page @param {PlannedVariant} variant
+ *  @returns {Promise<import('./ledger.mjs').Ledger>} */
+async function collectLedger(page, variant) {
+  const fullPage = Boolean(variant.fullPage);
+  const collected = await page.evaluate(
+    ledgerExpression({
+      target: CAPTURE_TARGET,
+      fullPage,
+      properties: [...LEDGER.properties],
+      scalePrefix: LEDGER.scalePrefix,
+    }),
+  );
+  if (collected.elements.length === 0) {
+    throw new Error('the walk found no element to measure');
+  }
+
+  const cdp = await page.context().newCDPSession(page);
+  try {
+    const traced = await traceNodes(cdp, LEDGER.cdpBudgetMs);
+    return buildLedger({ key: variant.key, fullPage, collected, traced });
+  } finally {
+    await cdp.detach().catch(() => undefined);
+  }
+}
+
+/** The two steps after the shot. A seam for the bulkhead's test, never for a caller. */
+const AFTER_SHOT_STEPS = Object.freeze({ runAxe, collectLedger });
+
+/** What happens to a variant after its shot: axe, then — only when asked — the ledger.
+ *
+ *  The order is fixed. The ledger stamps attributes on the page, so neither the shot
+ *  nor axe may come after it. And the ledger is a bulkhead: whatever it throws becomes
+ *  a warning beside a null ledger, never the variant's error. An axe failure still
+ *  propagates, exactly as it did before there was a ledger.
+ *  @param {Page} page @param {PlannedVariant} variant @param {{ ledger?: boolean }} [options]
+ *  @param {typeof AFTER_SHOT_STEPS} [steps]
+ *  @returns {Promise<Pick<CaptureResult, 'violations' | 'ledger' | 'ledgerWarning'>>} */
+export async function afterShot(page, variant, options = {}, steps = AFTER_SHOT_STEPS) {
+  const violations = await steps.runAxe(page);
+  if (!options.ledger) return { violations };
+
+  try {
+    return {
+      violations,
+      ledger: await steps.collectLedger(page, variant),
+      ledgerWarning: null,
+    };
+  } catch (cause) {
+    return {
+      violations,
+      ledger: null,
+      ledgerWarning: `token ledger not recorded: ${messageOf(cause)}`,
+    };
+  }
+}
+
+/** A shot and what came after it, as the variant's result. The bucket is axe's alone.
+ *  @param {PlannedVariant} variant @param {Uint8Array | null} bytes
+ *  @param {Pick<CaptureResult, 'violations' | 'ledger' | 'ledgerWarning'>} after
+ *  @returns {CaptureResult} */
+export function shotResult(variant, bytes, after) {
+  return captureResult(
+    variant,
+    after.violations.length > 0 ? 'a11y' : 'captured',
+    bytes,
+    after,
+  );
+}
+
 /** One variant, start to finish. Never throws: a story that fails takes its own row in
  *  the report and the pool moves on, because one broken story must not cost the run its
  *  other hundred-odd shots.
@@ -561,16 +674,14 @@ async function runAxe(page) {
  *  capture target and the half-rendered story are all things a human needs to *see* to
  *  diagnose.
  *  @param {Page} page @param {PlannedVariant} variant @param {string} baseUrl
+ *  @param {{ ledger?: boolean }} options
  *  @returns {Promise<CaptureResult>} */
-async function captureVariant(page, variant, baseUrl) {
+async function captureVariant(page, variant, baseUrl, options) {
   try {
     await openStory(page, variant, baseUrl);
     const bytes = await stableShot(page, variant);
-    const violations = await runAxe(page);
 
-    return captureResult(variant, violations.length > 0 ? 'a11y' : 'captured', bytes, {
-      violations,
-    });
+    return shotResult(variant, bytes, await afterShot(page, variant, options));
   } catch (cause) {
     const bytes = await page.screenshot({ animations: 'disabled' }).catch(() => null);
     return captureResult(variant, 'errored', bytes, { error: messageOf(cause) });
@@ -595,9 +706,13 @@ export async function launchBrowser() {
  *
  *  The sanity gates are exported, not called here: the command layer runs them between
  *  capture and compare so a tripped gate is reported as its own verdict.
- *  @param {{ variants: readonly PlannedVariant[], baseUrl: string, browser: Browser }} run
+ *
+ *  `ledger` is off unless asked for: the console's captures ask, and `check` never
+ *  does, so the CI run is the run it was before ledgers existed.
+ *  @param {{ variants: readonly PlannedVariant[], baseUrl: string, browser: Browser,
+ *    ledger?: boolean }} run
  *  @returns {Promise<CaptureResult[]>} */
-export async function captureAll({ variants, baseUrl, browser }) {
+export async function captureAll({ variants, baseUrl, browser, ledger = false }) {
   const context = await browser.newContext({
     reducedMotion: 'reduce',
     deviceScaleFactor: DETERMINISM.deviceScaleFactor,
@@ -618,7 +733,7 @@ export async function captureAll({ variants, baseUrl, browser }) {
     );
 
     return await drainQueue(variants, pages, (page, variant) =>
-      captureVariant(page, variant, baseUrl),
+      captureVariant(page, variant, baseUrl, { ledger }),
     );
   } finally {
     await context.close();

@@ -6,7 +6,7 @@ import type { Readable } from 'node:stream';
 import { buildSummary } from '@gate/visual-diff/artifacts';
 import { pngSize } from '@gate/visual-diff/capture';
 import { type CaptureShot, type Comparison, compareAll } from '@gate/visual-diff/compare';
-import { EXIT, HOST, parseVariantKey } from '@gate/visual-diff/policy';
+import { EXIT, HOST, LEDGER, parseVariantKey } from '@gate/visual-diff/policy';
 import { BASELINE_ENV, CANONICAL_LABEL, baselinesPath } from './baselines';
 import { DATA_MOUNT, REPO_MOUNT, containerArgv } from './docker';
 import { type Checkout, describeCheckout, repoRoot } from './git';
@@ -65,11 +65,32 @@ function shotsDir(dataDir: string, label: string): string {
   return baselinesPath(root);
 }
 
-function readSet(
+/** A set as a compare reads it: the shots, and the token ledgers a console capture
+ *  wrote beside them — kept as the text on disk, keyed like the shots. Pairing them
+ *  across two sets is the report writer's job; here they are only read, so a sidecar
+ *  is never reported as an ignored file. */
+export interface ReadSet {
+  shots: Map<string, Uint8Array>;
+  ledgers: Map<string, string>;
+}
+
+/** The variant key a file name carries, and which kind of file it is — or null for
+ *  a name that is neither a shot nor a ledger of a cell in the matrix. */
+function keyOf(name: string): { key: string; kind: 'shot' | 'ledger' } | null {
+  const [kind, suffix] = name.endsWith(LEDGER.fileSuffix)
+    ? (['ledger', LEDGER.fileSuffix] as const)
+    : (['shot', PNG] as const);
+  if (!name.endsWith(suffix)) return null;
+
+  const key = name.slice(0, -suffix.length);
+  return parseVariantKey(key) ? { key, kind } : null;
+}
+
+export function readSet(
   dataDir: string,
   label: string,
   log: (message: string) => void,
-): Map<string, Uint8Array> {
+): ReadSet {
   const dir = shotsDir(dataDir, label);
 
   let names: string[];
@@ -80,6 +101,7 @@ function readSet(
   }
 
   const shots = new Map<string, Uint8Array>();
+  const ledgers = new Map<string, string>();
   const ignored: string[] = [];
 
   for (const name of names) {
@@ -88,13 +110,15 @@ function readSet(
     // supposed to be there.
     if (name === BASELINE_ENV) continue;
 
-    const key = name.endsWith(PNG) ? name.slice(0, -PNG.length) : null;
-    if (!key || !parseVariantKey(key)) {
+    const file = keyOf(name);
+    if (!file) {
       ignored.push(name);
       continue;
     }
 
-    shots.set(key, fs.readFileSync(path.join(dir, name)));
+    const at = path.join(dir, name);
+    if (file.kind === 'ledger') ledgers.set(file.key, fs.readFileSync(at, 'utf8'));
+    else shots.set(file.key, fs.readFileSync(at));
   }
 
   if (ignored.length > 0) {
@@ -102,7 +126,7 @@ function readSet(
   }
   if (shots.size === 0) throw new Error(`the capture set sets/${label} holds no shots`);
 
-  return shots;
+  return { shots, ledgers };
 }
 
 /** A set's shots as capture results. Dimensions are read out of the PNG header
@@ -188,8 +212,8 @@ export async function compareSets(
   const { baseline, candidate } = request;
   const reportId = `${baseline}__${candidate}`;
 
-  const baselines = readSet(dataDir, baseline, log);
-  const candidates = readSet(dataDir, candidate, log);
+  const baselines = readSet(dataDir, baseline, log).shots;
+  const candidates = readSet(dataDir, candidate, log).shots;
   log(`comparing ${candidates.size} shot(s) against ${baselines.size} baseline(s)`);
 
   const rows = compareAll({ captures: asCaptures(candidates), baselines, env: {} });

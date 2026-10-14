@@ -8,7 +8,8 @@
     "./artifacts": "./src/artifacts.mjs",
     "./capture": "./src/capture.mjs",
     "./commands": "./src/commands.mjs",
-    "./compare": "./src/compare.mjs"
+    "./compare": "./src/compare.mjs",
+    "./ledger": "./src/ledger.mjs"
   },
   "bin": {
     "visual-diff": "./src/cli.mjs"
