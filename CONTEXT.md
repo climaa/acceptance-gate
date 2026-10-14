@@ -114,9 +114,9 @@ side, never a bucket, never an exit code. Short form: _ledger_.
 _Avoid_: audit, lint, check — each already names something here.
 
 **reading**:
-One measured property of one element in a token ledger, with its verdict: a
-design token, a raw value on the scale, off-scale, or exempt.
-_Avoid_: finding, which belongs to axe.
+One measured property of one element in a token ledger, with its classification:
+a design token, a raw value on the scale, off-scale, or exempt.
+_Avoid_: finding, which belongs to axe; verdict, which belongs to a comparison.
 
 **off-scale**:
 A spacing value that is not a step of the spacing scale. A description of the
