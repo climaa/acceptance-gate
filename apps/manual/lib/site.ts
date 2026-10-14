@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { tagOutbound } from '@gate/links';
 
 /**
@@ -28,6 +29,28 @@ export const SITE_TAGLINE = 'What the console does, taken from what it must do';
 
 export const SITE_DESCRIPTION =
   'The end-user manual for the visual-diff console, with every page built from the acceptance scenarios that block the merge.';
+
+/**
+ * How a page's `<title>` reads. The layout hands it to Next, and `lib/share.ts`
+ * applies it by hand for the preview headline — one spelling, so a page's tab
+ * and its link preview cannot drift apart.
+ */
+export const TITLE_TEMPLATE = `%s · ${SITE_TITLE}`;
+
+/** The index's `<title>`, and the title of every page that names none. */
+export const SITE_DEFAULT_TITLE = `${SITE_TITLE} — ${SITE_TAGLINE}`;
+
+/**
+ * The Open Graph fields every page shares. Next merges metadata shallowly: a
+ * page that sets `openGraph` replaces the layout's whole object, and would drop
+ * `og:site_name`, `og:locale` and `og:type` with it. So the layout and
+ * `lib/share.ts` spread this one object, and nothing spells the fields twice.
+ */
+export const SITE_OPEN_GRAPH = {
+  type: 'website',
+  locale: 'en_US',
+  siteName: SITE_TITLE,
+} satisfies Metadata['openGraph'];
 
 /** The rights holder the footer prints after the year. */
 export const SITE_COPYRIGHT = 'Carlos Lima · Barcelona';

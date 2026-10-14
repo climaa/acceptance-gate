@@ -29,7 +29,13 @@ export default defineConfig({
   resolve: {
     // Mirrors tsconfig's "@/*": ["./*"] — the tests import lib/** through the
     // same alias the app does, and vitest doesn't read tsconfig paths on its own.
-    alias: { '@': path.resolve(import.meta.dirname) },
+    alias: {
+      '@': path.resolve(import.meta.dirname),
+      // `cacheLife()` throws without the compiled `cacheComponents` config, so
+      // lib/og.tsx would fail at import. See the stub for why only that one
+      // export is provided.
+      'next/cache': path.resolve(import.meta.dirname, '__tests__/stubs/next-cache.ts'),
+    },
   },
   test: {
     include: ['__tests__/**/*.test.ts'],

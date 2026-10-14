@@ -25,6 +25,12 @@ const nextConfig = {
   experimental: {
     optimizePackageImports: ['@gate/ui'],
   },
+  // The site card reads the display face with `readFile` off a path no bundler
+  // can follow statically. Name the file so the function ships the bytes if the
+  // card ever renders on demand, instead of 500ing — apps/blog learnt it (#495).
+  outputFileTracingIncludes: {
+    '/og/site.png': ['../../packages/ui/src/fonts/og/Fraunces9pt-SemiBold.ttf'],
+  },
 };
 
 export default nextConfig;
