@@ -273,3 +273,76 @@ export function assertWithinBudget(shots, retainedBytes) {
     );
   }
 }
+
+/** @typedef {{ anchor: string, properties: readonly string[], px: number, reason: string }} LedgerExemption */
+
+/** What a token ledger measures and how it names what it measured — the one home for
+ *  the numbers `ledger.mjs` classifies with, so a reading can be argued about in one
+ *  place.
+ *
+ *  The scale itself is NOT here. A capture reads it off the live root — every custom
+ *  property that starts with {@link LEDGER.scalePrefix} — so tokens.css stays its only
+ *  source and nothing here can drift from it.
+ *
+ *  - `properties`: longhands only. A shorthand is read through them, and `gap` is the
+ *    row/column pair. Margin is deliberately out: `auto`, negative values, collapse and
+ *    the browser's own 1em/40px margins would be most of what it reported.
+ *  - `tolerancePx` 0: a pixel differ does not round a pixel away, so 16.5 is off the
+ *    scale, not `--space-4`.
+ *  - `nearestTie` `lower`: 18 sits between 16 and 20 and is named against 16.
+ *  - `relativeUnits`: a value written in one of these is a function of its context,
+ *    not a choice from the scale, and is exempt rather than off it. `rem` is not among
+ *    them — it is the unit the scale is written in.
+ *  - `exempt`: the only paddings in packages/ui that sit off the scale on purpose,
+ *    each with the reason a reader is shown. A match needs the anchor, the property
+ *    and the px; anything else off the scale is still reported.
+ *  - `cdpBudgetMs`: per variant. Measured at 37–64 ms for 8–12 elements, so this
+ *    only ever stops a capture that has gone wrong.
+ *  @type {Readonly<{ scalePrefix: string, properties: readonly string[],
+ *    tolerancePx: number, decimals: number, nearestTie: 'lower' | 'upper',
+ *    relativeUnits: readonly string[], exempt: readonly LedgerExemption[],
+ *    cdpBudgetMs: number, fileSuffix: string, reportDir: string }>} */
+export const LEDGER = Object.freeze({
+  scalePrefix: '--space-',
+  properties: Object.freeze([
+    'padding-top',
+    'padding-right',
+    'padding-bottom',
+    'padding-left',
+    'row-gap',
+    'column-gap',
+  ]),
+  tolerancePx: 0,
+  decimals: 2,
+  nearestTie: 'lower',
+  relativeUnits: Object.freeze(['%', 'em', 'ch', 'vw', 'vh']),
+  exempt: Object.freeze([
+    {
+      anchor: 'ds-badge',
+      properties: ['padding-top', 'padding-bottom'],
+      px: 2,
+      reason: 'pill half-step',
+    },
+    {
+      anchor: 'ds-tag',
+      properties: ['padding-top', 'padding-bottom'],
+      px: 2,
+      reason: 'pill half-step',
+    },
+    {
+      anchor: 'ds-bucket-chip',
+      properties: ['padding-top', 'padding-bottom'],
+      px: 2,
+      reason: 'pill half-step',
+    },
+    {
+      anchor: 'ds-theme-toggle',
+      properties: ['padding-top', 'padding-right', 'padding-bottom', 'padding-left'],
+      px: 3,
+      reason: 'track inset',
+    },
+  ]),
+  cdpBudgetMs: 1000,
+  fileSuffix: '.ledger.json',
+  reportDir: 'ledger',
+});
