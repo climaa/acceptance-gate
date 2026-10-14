@@ -1,9 +1,22 @@
+import type { Metadata } from 'next';
 import NextLink from 'next/link';
 import { Badge, Card, CardTitle, Link, Prose, Stack } from '@gate/ui';
 import { ABOUT_MANUAL, INDEX_LEAD, INTROS, START_HERE } from '@/content/intros';
 import { MANUAL_PAGES, TOUR_SLUG } from '@/lib/allowlist';
 import { parseManualPage } from '@/lib/features';
-import { CONSOLE_LINK, SITE_TITLE } from '@/lib/site';
+import { pageMetadata } from '@/lib/share';
+import {
+  CONSOLE_LINK,
+  SITE_DEFAULT_TITLE,
+  SITE_DESCRIPTION,
+  SITE_TITLE,
+} from '@/lib/site';
+
+export const metadata: Metadata = pageMetadata({
+  path: '/',
+  title: { absolute: SITE_DEFAULT_TITLE },
+  description: SITE_DESCRIPTION,
+});
 
 export default function IndexPage() {
   // The count comes from the source, not from `expectedScenarios`. The pin is a

@@ -5,6 +5,7 @@ import { INTROS } from '@/content/intros';
 import { SCREENSHOTS } from '@/content/screenshots';
 import { findManualPage, MANUAL_PAGES } from '@/lib/allowlist';
 import { parseManualPage } from '@/lib/features';
+import { pageMetadata } from '@/lib/share';
 
 // Three known slugs, by hand. This is the whole of what a docs framework's
 // loader would buy at this size, which is why there is no docs framework here
@@ -48,7 +49,15 @@ export async function generateMetadata({
   const { slug } = await params;
   const page = findManualPage(slug);
 
-  return page ? { title: page.title } : {};
+  // The intro's first paragraph is the page's lede, and the one the index's card
+  // for it already prints.
+  return page
+    ? pageMetadata({
+        path: `/${page.slug}`,
+        title: page.title,
+        description: INTROS[page.slug][0],
+      })
+    : {};
 }
 
 export default async function ManualPage({

@@ -13,11 +13,14 @@ import {
   FOOTER_LINKS,
   SITE_COPYRIGHT,
   SITE_COPYRIGHT_YEAR,
+  SITE_DEFAULT_TITLE,
   SITE_DESCRIPTION,
-  SITE_TAGLINE,
+  SITE_OPEN_GRAPH,
   SITE_TITLE,
   SITE_URL,
+  TITLE_TEMPLATE,
 } from '@/lib/site';
+import { SITE_SHARE_IMAGES } from '@/lib/share';
 import { THEME_SCRIPT } from '@/lib/theme';
 import { SITE_VERSION } from '@/lib/version';
 import './globals.css';
@@ -50,15 +53,14 @@ export const metadata: Metadata = {
   // name a host that answers — see `lib/site.ts`.
   metadataBase: SITE_URL,
   title: {
-    default: `${SITE_TITLE} — ${SITE_TAGLINE}`,
-    template: `%s · ${SITE_TITLE}`,
+    default: SITE_DEFAULT_TITLE,
+    template: TITLE_TEMPLATE,
   },
   description: SITE_DESCRIPTION,
-  openGraph: {
-    type: 'website',
-    locale: 'en_US',
-    siteName: SITE_TITLE,
-  },
+  // What a page that names no preview of its own still gets, the 404 among
+  // them. Every published page names one through `lib/share.ts`.
+  openGraph: { ...SITE_OPEN_GRAPH, images: SITE_SHARE_IMAGES },
+  twitter: { card: 'summary_large_image', images: SITE_SHARE_IMAGES },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

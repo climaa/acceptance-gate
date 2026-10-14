@@ -2,9 +2,15 @@ import type { Metadata } from 'next';
 import NextLink from 'next/link';
 import { Card, CardTitle, Link, Prose, Stack, StepList } from '@gate/ui';
 import { TOUR_LEAD, TOUR_TITLE, TOUR_TRAILER } from '@/content/tour';
+import { TOUR_SLUG } from '@/lib/allowlist';
+import { pageMetadata } from '@/lib/share';
 import { resolveTour } from '@/lib/tour';
 
-export const metadata: Metadata = { title: TOUR_TITLE };
+export const metadata: Metadata = pageMetadata({
+  path: `/${TOUR_SLUG}`,
+  title: TOUR_TITLE,
+  description: TOUR_LEAD,
+});
 
 /**
  * The on-boarding tour: the one page here that tells a newcomer what to do
