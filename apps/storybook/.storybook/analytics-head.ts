@@ -106,7 +106,7 @@ export function rewriteAnalyticsUrl<E extends { url: string }>(event: E): E {
  * the output of the other three. `'` is not escaped because this always emits
  * double quotes, and it always emits them because it owns them.
  */
-const attributeValue = (value: string): string => {
+export const attributeValue = (value: string): string => {
   const escaped = value
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
