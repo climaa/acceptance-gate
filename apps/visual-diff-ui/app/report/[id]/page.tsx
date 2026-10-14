@@ -2,7 +2,10 @@ import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { Skeleton, Stack } from '@gate/ui';
 import { ReportContents } from '@/components/ReportContents';
+import { reportPath } from '@/lib/comparison';
 import { ReportIdSchema } from '@/lib/job-contract';
+import { reportSides } from '@/lib/report-view';
+import { pageMetadata } from '@/lib/share';
 import { NOT_FOUND_TITLE } from '@/lib/site';
 
 /**
@@ -16,7 +19,9 @@ import { NOT_FOUND_TITLE } from '@/lib/site';
 /**
  * The report id is the page's `<h1>` (components/ReportTemplate.tsx), so it is
  * the `<title>` too — the heading and the tab say the same sentence, and the
- * root layout's `%s · visual-diff console` template wraps it. Without this every
+ * root layout's `%s · visual-diff console` template wraps it. The preview says
+ * it as well, at the report's own address, and its description names the two
+ * sets the header draws beside the id. Without this every
  * report tab read `visual-diff console` and a reviewer comparing two of them
  * side by side had no way to tell which was which.
  *
@@ -40,8 +45,15 @@ export async function generateMetadata({
   params,
 }: PageProps<'/report/[id]'>): Promise<Metadata> {
   const { id } = await params;
+  if (!ReportIdSchema.safeParse(id).success) return { title: NOT_FOUND_TITLE };
 
-  return { title: ReportIdSchema.safeParse(id).success ? id : NOT_FOUND_TITLE };
+  const { a, b } = reportSides(id);
+
+  return pageMetadata({
+    path: reportPath(id),
+    title: id,
+    description: `Report ${id}: screenshot set ${b} (after) judged against ${a} (before).`,
+  });
 }
 
 export default function ReportPage({ params }: PageProps<'/report/[id]'>) {

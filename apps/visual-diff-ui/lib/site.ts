@@ -26,6 +26,25 @@ export const APP_TAGLINE = 'the CLI is the engine — this page just drives it';
 export const APP_DESCRIPTION =
   'Review visual-diff comparisons: capture sets, reports, and the shots behind every verdict.';
 
+/**
+ * How a page's `<title>` reads. The layout hands it to Next, and `lib/share.ts`
+ * applies it by hand for the preview headline — one spelling, so a page's tab
+ * and its link preview cannot drift apart.
+ */
+export const TITLE_TEMPLATE = `%s · ${APP_NAME}`;
+
+/**
+ * The Open Graph fields every page shares. Spread first by the layout and by
+ * `lib/share.ts`, because Next merges metadata shallowly: a page that sets
+ * `openGraph` replaces the layout's object whole, and would otherwise go out
+ * without `og:site_name` or `og:locale`.
+ */
+export const SITE_OPEN_GRAPH = {
+  siteName: APP_NAME,
+  locale: 'en_US',
+  type: 'website',
+} as const;
+
 /** The sample notice's accessible name and its visible text — one string, so the
  *  two can never drift apart. */
 /**

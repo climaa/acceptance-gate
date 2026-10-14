@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-img-element -- satori draws `<img>` and nothing
    else; `next/image` has no meaning inside an `ImageResponse`. */
 
+import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import * as path from 'node:path';
 import { cacheLife, cacheTag } from 'next/cache';
@@ -9,12 +10,13 @@ import { comparisonCopy, readComparison } from './comparison-meta';
 import { resolveShotPath } from './data';
 import { absentShotCopy, type ShotKind, shotSources } from './shots';
 import type { Variant } from './summary';
-import { SITE_URL } from './site';
+import { APP_DESCRIPTION, APP_NAME, APP_TAGLINE, SITE_URL } from './site';
 import { reportTag } from './tags';
 
 /**
- * A comparison's link-preview card: before, diff and after side by side, under
- * the sentence the modal's heading says.
+ * The console's two link-preview cards. A comparison's: before, diff and after
+ * side by side, under the sentence the modal's heading says. And the site card,
+ * which every other page shares: the console's name and what it is for.
  *
  * Its own markup rather than the modal's components, for the reason the blog's
  * card gives: satori supports a small CSS subset, the design system targets real
@@ -57,6 +59,24 @@ export const OG_FONT_PATH = path.join(
 
 const OG_FONT_FAMILY = 'Fraunces';
 
+let displayFont: Promise<Buffer> | undefined;
+
+/**
+ * The face's bytes, read once per process and inside a cache scope.
+ *
+ * `'use cache'` because under `cacheComponents` an uncached read during a
+ * request is what a route answers 500 for on a deployment; `'max'` because the
+ * file is pinned by `outputFileTracingIncludes` and cannot change without a new
+ * one.
+ */
+async function loadDisplayFont(): Promise<Buffer> {
+  'use cache';
+  cacheLife('max');
+
+  displayFont ??= readFile(OG_FONT_PATH);
+  return displayFont;
+}
+
 /**
  * satori resolves no custom properties, so tokens.css cannot reach this file —
  * the one sanctioned place a literal colour stands in for a token. Each is a
@@ -71,6 +91,18 @@ const CARD = {
   border: '#d8cfbc', // --color-border      -> --c-cream-400
   surface: '#f5efe0', // a panel well       -> --c-cream-50
 };
+
+/** Both cards' one face, as `ImageResponse` takes it. */
+async function cardFonts() {
+  return [
+    {
+      name: OG_FONT_FAMILY,
+      data: await loadDisplayFont(),
+      weight: 600 as const,
+      style: 'normal' as const,
+    },
+  ];
+}
 
 /** The three panels, in the order the comparison reads: A, what moved, B. */
 const PANELS: readonly { kind: ShotKind; label: string }[] = [
@@ -206,14 +238,7 @@ export async function comparisonCardResponse(
 ): Promise<ImageResponse> {
   return new ImageResponse(<Card {...card} />, {
     ...OG_SIZE,
-    fonts: [
-      {
-        name: OG_FONT_FAMILY,
-        data: await readFile(OG_FONT_PATH),
-        weight: 600,
-        style: 'normal',
-      },
-    ],
+    fonts: await cardFonts(),
   });
 }
 
@@ -252,4 +277,92 @@ export async function comparisonCardBytes(
   });
 
   return new Uint8Array(await response.arrayBuffer());
+}
+
+/** What the site card draws: the words the console's own head says. */
+export interface SiteCardCopy {
+  title: string;
+  meta: string;
+  /** The foot line. In the copy, not the frame, so `cardVersion` moves with it. */
+  tagline: string;
+}
+
+export const SITE_CARD_COPY: SiteCardCopy = {
+  title: APP_NAME,
+  meta: APP_DESCRIPTION,
+  tagline: APP_TAGLINE,
+};
+
+/** Where the site card is served. Every page without a card of its own shares it. */
+export const SITE_CARD_PATH = '/og/site.png';
+
+/**
+ * A short digest of what a card draws, for the `?v=` on its address.
+ *
+ * Link previews cache an image by its URL, for days. A card whose words change
+ * under an unchanged URL keeps showing the old words wherever the link was
+ * already shared; a URL that moves with the copy is fetched afresh.
+ */
+export function cardVersion(copy: SiteCardCopy): string {
+  return createHash('sha256').update(JSON.stringify(copy)).digest('hex').slice(0, 12);
+}
+
+function SiteCard({ title, meta, tagline }: SiteCardCopy) {
+  return (
+    <div
+      style={{
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        padding: '72px 80px',
+        backgroundColor: CARD.bg,
+        color: CARD.text,
+        fontFamily: OG_FONT_FAMILY,
+      }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          width: 96,
+          height: 10,
+          borderRadius: 9999,
+          backgroundColor: CARD.accent,
+        }}
+      />
+
+      <div style={{ display: 'flex', flexDirection: 'column' }}>
+        <div
+          style={{ display: 'flex', fontSize: 72, lineHeight: 1.15, letterSpacing: -1.5 }}
+        >
+          {title}
+        </div>
+        <div style={{ display: 'flex', marginTop: 28, fontSize: 30, color: CARD.muted }}>
+          {meta}
+        </div>
+      </div>
+
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          paddingTop: 28,
+          borderTop: `2px solid ${CARD.border}`,
+          fontSize: 26,
+          color: CARD.accent,
+        }}
+      >
+        <span>{tagline}</span>
+        <span style={{ color: CARD.muted }}>{SITE_URL.host}</span>
+      </div>
+    </div>
+  );
+}
+
+export async function siteCardResponse(): Promise<ImageResponse> {
+  return new ImageResponse(<SiteCard {...SITE_CARD_COPY} />, {
+    ...OG_SIZE,
+    fonts: await cardFonts(),
+  });
 }
