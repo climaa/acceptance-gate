@@ -270,18 +270,32 @@ describe('the report header', () => {
     expect(header.textContent).toContain('e0427b4');
   });
 
-  // The provenance folds so a reviewer can have the screenful back for image
-  // comparisons — but it folds inside the landmark, so what the report says it
-  // compared is the same either way.
-  it('folds its provenance behind one disclosure, open by default', () => {
+  // The run's parameters are read once per report, while the comparisons under them
+  // are the work, so they start folded and the first screenful goes to the results.
+  // The fold sits inside the landmark, so what the report says it ran with is the
+  // same either way.
+  it('folds the run parameters behind one disclosure, closed by default', () => {
     renderReport();
 
     const header = screen.getByRole('region', { name: 'report' });
     const details = within(header).getByText('report details').closest('details');
 
-    expect(details?.hasAttribute('open')).toBe(true);
-    expect(details?.textContent).toContain('main-2026-08-17');
+    expect(details?.hasAttribute('open')).toBe(false);
     expect(details?.textContent).toContain('thresholds');
+  });
+
+  // Which two sets were compared is what a reader arriving at a shared link needs
+  // first, so the sides stay outside the fold and are never hidden by it.
+  it('names both capture sets outside the folded disclosure', () => {
+    renderReport();
+
+    const header = screen.getByRole('region', { name: 'report' });
+    const details = within(header).getByText('report details').closest('details');
+
+    expect(details?.textContent).not.toContain('main-2026-08-17');
+    expect(details?.textContent).not.toContain('main-2026-08-13');
+    expect(header.textContent).toContain('main-2026-08-17');
+    expect(header.textContent).toContain('main-2026-08-13');
   });
 
   it('carries the report id as the page heading', () => {
