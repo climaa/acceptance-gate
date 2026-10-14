@@ -101,12 +101,13 @@ const escapeRegExp = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 /** Whether authored text is written in a unit that depends on its context. A unit
  *  only counts straight after a number, so `rem` — the scale's own unit — never reads
- *  as `em`.
+ *  as `em`; and custom property names are dropped first, so a `--space-2em` is a
+ *  name rather than two ems.
  *  @param {string} text @param {readonly string[]} units @returns {boolean} */
 function isRelative(text, units) {
   const pattern = new RegExp(`\\d(?:${units.map(escapeRegExp).join('|')})(?![a-z])`, 'i');
 
-  return pattern.test(text);
+  return pattern.test(text.replace(/--[\w-]+/g, ''));
 }
 
 /** Whether authored text reads its value through `step`'s custom property.
@@ -116,8 +117,9 @@ function namesStep(text, step) {
 }
 
 /** The allowlist entry that covers a value, if one does.
- *  @param {Measured} measured @param {LedgerPolicy} policy */
-function exemptionFor({ anchor, property, px }, policy) {
+ *  @param {Measured} measured @param {number} px The value as the ledger writes it.
+ *  @param {LedgerPolicy} policy */
+function exemptionFor({ anchor, property }, px, policy) {
   return policy.exempt.find(
     (entry) =>
       entry.anchor === anchor && entry.px === px && entry.properties.includes(property),
@@ -134,14 +136,17 @@ function exemptionFor({ anchor, property, px }, policy) {
  *  @param {LedgerPolicy} [policy]
  *  @returns {Classification} */
 export function classify(measured, scale, policy = LEDGER) {
-  const { px, authored } = measured;
+  // Named at the precision the file is written at: a value judged unrounded could be
+  // called off-scale and then written as exactly the step it missed.
+  const px = rounded(measured.px, policy.decimals);
+  const { authored } = measured;
   if (px === 0) return { verdict: 'none', token: null };
 
   if (authored !== null && isRelative(authored, policy.relativeUnits)) {
     return { verdict: 'exempt', token: null, reason: 'relative unit' };
   }
 
-  const exemption = exemptionFor(measured, policy);
+  const exemption = exemptionFor(measured, px, policy);
   if (exemption) return { verdict: 'exempt', token: null, reason: exemption.reason };
 
   const step = stepAt(px, scale, policy.tolerancePx);
@@ -240,7 +245,9 @@ function slotOf(value, slot, arity) {
  *  @param {CdpStyle | undefined} style @param {string} origin @param {number} order
  *  @param {string} property @returns {Candidate[]} */
 function candidatesIn(style, origin, order, property) {
-  const sources = SOURCES[property] ?? [];
+  // Own keys only: `toString` is not a property this ledger measures, whatever every
+  // object inherits under that name.
+  const sources = (Object.hasOwn(SOURCES, property) && SOURCES[property]) || [];
 
   return (style?.cssProperties ?? []).flatMap((declaration, index) => {
     const source = sources.find(([name]) => name === declaration.name);

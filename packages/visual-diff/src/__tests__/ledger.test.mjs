@@ -81,6 +81,12 @@ describe('nearestStep', () => {
     expect(step).toBe('--space-16');
   });
 
+  it('breaks a tie towards the upper step when the policy asks for that', () => {
+    const step = nearestStep(18, SCALE, 'upper');
+
+    expect(step).toBe('--space-5');
+  });
+
   it('has nothing to name against an empty scale', () => {
     const step = nearestStep(16, {});
 
@@ -119,6 +125,27 @@ describe('classify', () => {
     expect(reading).toEqual({ verdict: 'off-scale', token: '--space-4' });
   });
 
+  it('names a value at the precision the ledger writes it, so 15.9999999 is 16', () => {
+    const reading = classify(
+      measured({ px: 15.9999999, authored: 'var(--space-4)' }),
+      SCALE,
+    );
+
+    expect(reading).toEqual({ verdict: 'token', token: '--space-4' });
+  });
+
+  it('never calls off-scale a value the ledger will write as on it', () => {
+    const reading = classify(measured({ px: 16.004, authored: 'var(--space-4)' }), SCALE);
+
+    expect(reading.verdict).toBe('token');
+  });
+
+  it('still holds off the scale a value that rounds to a different number', () => {
+    const reading = classify(measured({ px: 16.006, authored: '16.006px' }), SCALE);
+
+    expect(reading).toEqual({ verdict: 'off-scale', token: '--space-4' });
+  });
+
   it('reads zero as no spacing, not as a value off the scale', () => {
     const reading = classify(measured({ px: 0, authored: '0' }), SCALE);
 
@@ -137,6 +164,12 @@ describe('classify', () => {
       });
     },
   );
+
+  it('does not read a unit inside a custom property’s name as a relative value', () => {
+    const reading = classify(measured({ px: 16, authored: 'var(--space-2em)' }), SCALE);
+
+    expect(reading.verdict).not.toBe('exempt');
+  });
 
   it('does not read rem as a relative unit: it is the scale’s own unit', () => {
     const reading = classify(measured({ px: 16, authored: '1rem' }), SCALE);
@@ -352,6 +385,14 @@ describe('winningDeclaration', () => {
     const result = winningDeclaration(matched, 'padding-top');
 
     expect(result.text).toBe('calc(1px + 2px)');
+  });
+
+  it('knows no source for a name it does not measure, even one every object inherits', () => {
+    const matched = payload({ rules: [ruleWith([{ name: 'padding', value: '1px' }])] });
+
+    const result = winningDeclaration(matched, 'toString');
+
+    expect(result).toEqual({ text: null, origin: 'unknown' });
   });
 
   it('reports no source, never a guess, when nothing set the property', () => {
