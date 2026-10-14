@@ -78,9 +78,9 @@ function SetLine({
   );
 }
 
-/** The run's own parameters. Inside the disclosure below rather than behind one
- *  of its own: nested folds are two clicks to reach one fact, and a reviewer who
- *  has opened the details wants everything about the run at once. */
+/** The run's own parameters, all inside the one disclosure below: nested folds
+ *  are two clicks to reach one fact, and a reviewer who has opened the details
+ *  wants everything about the run at once. */
 function RunInfo({ report }: { report: Summary }) {
   return (
     <div className="vd-report__run-info">
@@ -135,21 +135,21 @@ export function ReportTemplate({ id, report, sets }: ReportTemplateProps) {
             )}
           </Stack>
 
-          {/* Open, and foldable: the identity row above says which report this
-              is, and everything under it is provenance a reviewer reads once.
-              The rows stay inside this landmark either way — a fold changes
-              what is on screen, never what the report says it compared. */}
-          <details className="vd-report__more" open>
+          {/* The two sides stay in view: which sets were compared is what a
+              reader arriving at a shared link needs first. */}
+          <dl className="vd-report__sets">
+            <SetLine side="A" label={sides.a} set={byLabel.get(sides.a)} />
+            <SetLine side="B" label={sides.b} set={byLabel.get(sides.b)} />
+          </dl>
+
+          {/* Folded by default: the run's parameters are read once per report,
+              so the first screenful goes to the comparisons instead. The rows
+              stay inside this landmark either way — a fold changes what is on
+              screen, never what the report says it ran with. */}
+          <details className="vd-report__more">
             <summary>{DETAILS_LABEL}</summary>
 
-            <Stack gap={3}>
-              <dl className="vd-report__sets">
-                <SetLine side="A" label={sides.a} set={byLabel.get(sides.a)} />
-                <SetLine side="B" label={sides.b} set={byLabel.get(sides.b)} />
-              </dl>
-
-              <RunInfo report={report} />
-            </Stack>
+            <RunInfo report={report} />
           </details>
         </Stack>
       </header>

@@ -25,11 +25,11 @@
   overflow-wrap: anywhere;
 }
 
-/* Everything about the run that is not its identity, behind one disclosure: the
-   report's first screenful is otherwise five lines of provenance above the work,
-   and a reviewer scrolling image comparisons wants that height back. Open by
-   default — folding it is a deliberate click, and the two capture sets are what
-   a reader arriving at a shared link needs first. */
+/* The run's parameters, behind one disclosure: the report's first screenful is
+   otherwise several lines of provenance above the work, and a reviewer scrolling
+   image comparisons wants that height back. Closed by default — opening it is a
+   deliberate click. The two capture sets stay outside it, because they are what a
+   reader arriving at a shared link needs first. */
 .vd-report__more {
   font-size: var(--text-sm);
 }
