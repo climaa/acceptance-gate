@@ -303,7 +303,8 @@ export function winningDeclaration(matched, property) {
 /** @param {number} value @param {number} decimals @returns {number} */
 function rounded(value, decimals) {
   const factor = 10 ** decimals;
-  // `|| 0` folds -0 into 0: the two print differently and mean the same thing.
+  // `|| 0` folds -0 into 0: the two print differently and mean the same thing. It
+  // also folds NaN, which is what an unset gap measures as (`normal`): no spacing.
   return Math.round(value * factor) / factor || 0;
 }
 
