@@ -11,18 +11,26 @@ import {
   APP_TAGLINE,
   SAMPLE_LABEL,
   SAMPLE_NOTE,
+  SITE_OPEN_GRAPH,
   SITE_URL,
+  TITLE_TEMPLATE,
 } from '@/lib/site';
+import { SITE_SHARE_IMAGES } from '@/lib/share';
 import { THEME_SCRIPT } from '@/lib/theme';
 import './globals.css';
 
+/** What a page that names no preview of its own — the 404 — still shares: the
+ *  site fields and the site card. Every page with an address names its own
+ *  through `lib/share.ts`, which spreads the same `SITE_OPEN_GRAPH`. */
 export const metadata: Metadata = {
   title: {
     default: APP_NAME,
-    template: `%s · ${APP_NAME}`,
+    template: TITLE_TEMPLATE,
   },
   description: APP_DESCRIPTION,
   metadataBase: SITE_URL,
+  openGraph: { ...SITE_OPEN_GRAPH, images: SITE_SHARE_IMAGES },
+  twitter: { card: 'summary_large_image', images: SITE_SHARE_IMAGES },
 };
 
 /**

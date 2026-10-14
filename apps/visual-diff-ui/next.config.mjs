@@ -54,6 +54,8 @@ const nextConfig = {
       './fixtures/**',
       '../../packages/ui/src/fonts/og/Fraunces9pt-SemiBold.ttf',
     ],
+    // The site card reads only the display face, off its real path — lib/og.tsx.
+    '/og/site.png': ['../../packages/ui/src/fonts/og/Fraunces9pt-SemiBold.ttf'],
     '/api/sets': ['./fixtures/**'],
     '/api/reports': ['./fixtures/**'],
     '/api/reports/[id]': ['./fixtures/**'],
