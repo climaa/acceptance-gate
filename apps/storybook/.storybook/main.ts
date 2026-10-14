@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import type { StorybookConfig } from '@storybook/nextjs-vite';
 import remarkGfm from 'remark-gfm';
 
@@ -5,6 +8,16 @@ import remarkGfm from 'remark-gfm';
 // loader, which warns on an extensionless relative import (storybook.js.org
 // FAQ, "extensionless imports in storybook/main.ts"); tsconfig.json allows it.
 import { analyticsHead } from './analytics-head.ts';
+import { linkPreviewHead } from './link-preview-head.ts';
+
+/** The page the root redirect lands on, whose words a shared link previews with. */
+const WELCOME_MDX = join(
+  dirname(fileURLToPath(import.meta.url)),
+  '..',
+  'src',
+  'docs',
+  'Welcome.mdx',
+);
 
 const config: StorybookConfig = {
   // Resolved against this directory, not the workspace root: three levels up is
@@ -57,7 +70,13 @@ const config: StorybookConfig = {
   // so far, but the preset signature permits its absence. A bare template
   // literal type-checks against that and then writes the seven characters
   // "undefined" into the manager's <head>, where they render as page text.
-  managerHead: (head) => `${head ?? ''}${analyticsHead(process.env)}`,
+  //
+  // The link-preview tags ride the same head, on every build rather than only
+  // production: they load nothing, and a preview build that shares them names
+  // the published address, which is where the link should fold back to.
+  // link-preview-head.ts says where the words come from.
+  managerHead: (head) =>
+    `${head ?? ''}${linkPreviewHead(readFileSync(WELCOME_MDX, 'utf8'))}${analyticsHead(process.env)}`,
   // GFM (tables, strikethrough, task lists) is not CommonMark — without this,
   // a pipe table in a docs page silently renders as one run-on paragraph of
   // literal pipe characters instead of a <table>, same failure mode the blog's
