@@ -146,6 +146,16 @@ describe('classify', () => {
     expect(reading).toEqual({ verdict: 'off-scale', token: '--space-4' });
   });
 
+  it.each([
+    [18, '--space-4'],
+    [80, '--space-16'],
+    [28, '--space-6'],
+  ])('names %spx off the scale against %s', (px, nearest) => {
+    const reading = classify(measured({ px, authored: `${px}px` }), SCALE);
+
+    expect(reading).toEqual({ verdict: 'off-scale', token: nearest });
+  });
+
   it('reads zero as no spacing, not as a value off the scale', () => {
     const reading = classify(measured({ px: 0, authored: '0' }), SCALE);
 
@@ -278,6 +288,18 @@ describe('winningDeclaration', () => {
     const right = winningDeclaration(matched, 'padding-right');
 
     expect(top).toEqual({ text: '1px', origin: 'user-agent' });
+    expect(left).toEqual({ text: '6px', origin: 'user-agent' });
+    expect(right).toEqual({ text: '6px', origin: 'user-agent' });
+  });
+
+  it('reads a one-value padding-inline for both inline sides', () => {
+    const matched = payload({
+      rules: [ruleWith([{ name: 'padding-inline', value: '6px' }], 'user-agent')],
+    });
+
+    const left = winningDeclaration(matched, 'padding-left');
+    const right = winningDeclaration(matched, 'padding-right');
+
     expect(left).toEqual({ text: '6px', origin: 'user-agent' });
     expect(right).toEqual({ text: '6px', origin: 'user-agent' });
   });
