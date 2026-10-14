@@ -68,6 +68,10 @@ declare module '@gate/visual-diff/policy' {
   /** Applied to a story that cannot be captured deterministically. */
   export const SKIP_TAG: string;
 
+  /** The token ledger's policy, narrowed to the names a set reader needs: the
+   *  sidecar suffix a capture writes beside each shot. */
+  export const LEDGER: Readonly<{ fileSuffix: string; reportDir: string }>;
+
   /** `${tier}__${viewport}__${theme}__${storyId}` parsed back, or `null` for a
    *  key naming a cell outside the matrix. */
   export function parseVariantKey(key: string): Variant | null;

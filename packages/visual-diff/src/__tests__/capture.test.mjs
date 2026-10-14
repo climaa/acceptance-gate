@@ -8,6 +8,7 @@ import {
   ERROR_OVERLAY_EXPRESSION,
   STORY_PHASES_EXPRESSION,
   SanityError,
+  afterShot,
   buildStoryUrl,
   captureAll,
   drainQueue,
@@ -19,8 +20,10 @@ import {
   filterNeedles,
   matchesFilter,
   pngSize,
+  shotResult,
   stableWaitMs,
   themeSanity,
+  traceNodes,
   viewportSanity,
 } from '../capture.mjs';
 
@@ -739,5 +742,165 @@ describe('captureAll', () => {
     await captureAll({ variants: [], baseUrl: BASE_URL, browser });
 
     expect(browser.contexts[0]?.initScripts[0]).toContain(PINNED_NOW_ISO);
+  });
+});
+
+describe('afterShot', () => {
+  const VARIANT = Object.freeze({
+    key: 'organisms__desktop__dark__organisms-dialog--open',
+    tier: 'organisms',
+    viewport: 'desktop',
+    theme: 'dark',
+    id: STORY_ID,
+  });
+  const VIOLATIONS = Object.freeze([{ id: 'color-contrast', nodes: 2 }]);
+  const SHOT = new Uint8Array([1, 2, 3]);
+  const LEDGER_OUT = Object.freeze({ schema: 1, key: VARIANT.key, elements: [] });
+
+  /** The two steps after a shot, as stand-ins: axe answers, the ledger as asked. */
+  const steps = (collectLedger = async () => LEDGER_OUT) => ({
+    runAxe: async () => [...VIOLATIONS],
+    collectLedger,
+  });
+
+  it('runs no ledger unless one is asked for, and adds no field for it', async () => {
+    const after = await afterShot({}, VARIANT, {}, steps());
+
+    expect(after).toEqual({ violations: VIOLATIONS });
+  });
+
+  it('records the ledger beside the violations when one is asked for', async () => {
+    const after = await afterShot({}, VARIANT, { ledger: true }, steps());
+
+    expect(after).toEqual({
+      violations: VIOLATIONS,
+      ledger: LEDGER_OUT,
+      ledgerWarning: null,
+    });
+  });
+
+  it('keeps a failing ledger out of the bucket, the bytes and the violations', async () => {
+    const failing = steps(async () => {
+      throw new Error('CDP went away');
+    });
+
+    const without = shotResult(VARIANT, SHOT, await afterShot({}, VARIANT, {}, steps()));
+    const broken = shotResult(
+      VARIANT,
+      SHOT,
+      await afterShot({}, VARIANT, { ledger: true }, failing),
+    );
+
+    expect({
+      same: [broken.bucket, broken.bytes, broken.violations],
+      ledger: broken.ledger,
+      warning: broken.ledgerWarning,
+    }).toEqual({
+      same: [without.bucket, without.bytes, without.violations],
+      ledger: null,
+      warning: 'token ledger not recorded: CDP went away',
+    });
+  });
+
+  it('lets an axe failure stay the variant’s own error, as it was before any ledger', async () => {
+    const axeThrows = {
+      runAxe: async () => Promise.reject(new Error('axe died')),
+      collectLedger: async () => LEDGER_OUT,
+    };
+
+    const after = afterShot({}, VARIANT, { ledger: true }, axeThrows);
+
+    await expect(after).rejects.toThrow('axe died');
+  });
+});
+
+describe('shotResult', () => {
+  const VARIANT = Object.freeze({
+    key: 'k',
+    tier: 'atoms',
+    viewport: 'desktop',
+    theme: 'light',
+    id: STORY_ID,
+  });
+
+  it('buckets a shot with violations as a11y', () => {
+    const result = shotResult(VARIANT, null, { violations: [{ id: 'x', nodes: 1 }] });
+
+    expect(result.bucket).toBe('a11y');
+  });
+
+  it('buckets a clean shot as captured', () => {
+    const result = shotResult(VARIANT, null, { violations: [] });
+
+    expect(result.bucket).toBe('captured');
+  });
+});
+
+describe('traceNodes', () => {
+  /** A CDP session that answers every node, recording what it was asked. */
+  const fakeCdp = (nodeIds) => {
+    const sent = [];
+    return {
+      sent,
+      send: async (method, params) => {
+        sent.push(method);
+        if (method === 'DOM.getDocument') return { root: { nodeId: 1 } };
+        if (method === 'DOM.querySelectorAll') return { nodeIds };
+        if (method === 'CSS.getMatchedStylesForNode')
+          return { matchedCSSRules: [], at: params.nodeId };
+        if (method === 'Accessibility.getPartialAXTree') {
+          return {
+            nodes: [{ role: { value: 'button' }, name: { value: `n${params.nodeId}` } }],
+          };
+        }
+        return {};
+      },
+    };
+  };
+
+  it('traces every stamped node, in the order the page stamped them', async () => {
+    const cdp = fakeCdp([11, 12]);
+
+    const traced = await traceNodes(cdp, 1000);
+
+    expect(traced.map((node) => node.ax.name)).toEqual(['n11', 'n12']);
+  });
+
+  it('enables the DOM before CSS, which refuses to start without it', async () => {
+    const cdp = fakeCdp([]);
+
+    await traceNodes(cdp, 1000);
+
+    expect(cdp.sent.indexOf('DOM.enable')).toBeLessThan(cdp.sent.indexOf('CSS.enable'));
+  });
+
+  it('stops at the budget and leaves the rest untraced', async () => {
+    const cdp = fakeCdp([11, 12, 13]);
+    let clock = 0;
+    const now = () => {
+      clock += 600;
+      return clock;
+    };
+
+    const traced = await traceNodes(cdp, 1000, now);
+
+    expect(traced).toHaveLength(1);
+  });
+});
+
+describe('captureAll and the ledger', () => {
+  it('opens the same context whether or not a ledger is asked for', async () => {
+    const plain = fakeBrowser();
+    const withLedger = fakeBrowser();
+
+    await captureAll({ variants: [], baseUrl: BASE_URL, browser: plain });
+    await captureAll({
+      variants: [],
+      baseUrl: BASE_URL,
+      browser: withLedger,
+      ledger: true,
+    });
+
+    expect(withLedger.contexts[0]?.options).toEqual(plain.contexts[0]?.options);
   });
 });

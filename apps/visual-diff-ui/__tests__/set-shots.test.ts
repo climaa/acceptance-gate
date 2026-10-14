@@ -195,6 +195,31 @@ describe('readSetShots', () => {
     expect(shots?.ignored).toEqual(['notes.txt']);
   });
 
+  it('treats a token ledger beside its shot as a ledger, not as an ignored file', async () => {
+    const dir = setDirWith({
+      'atoms__desktop__light__atoms-badge--accent.png': pngBytes(1248, 25),
+      'atoms__desktop__light__atoms-badge--accent.ledger.json': '{"schema":1}',
+    });
+
+    const shots = await readSetShots(dir, null, 'main-2026-08-17');
+
+    expect({ count: shots?.shots, ignored: shots?.ignored }).toEqual({
+      count: 1,
+      ignored: [],
+    });
+  });
+
+  it('still names a ledger-looking file whose key is no variant', async () => {
+    const dir = setDirWith({
+      'atoms__desktop__light__atoms-badge--accent.png': pngBytes(1248, 25),
+      'not-a-key.ledger.json': '{}',
+    });
+
+    const shots = await readSetShots(dir, null, 'main-2026-08-17');
+
+    expect(shots?.ignored).toEqual(['not-a-key.ledger.json']);
+  });
+
   it('treats BASELINE_ENV.json as the stamp it is, not as an unreadable file', async () => {
     const dir = setDirWith({
       'atoms__desktop__light__atoms-badge--accent.png': pngBytes(1248, 25),

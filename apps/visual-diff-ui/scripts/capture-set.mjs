@@ -13,11 +13,12 @@
 // Plain `.mjs` for the same reason: the container runs `node` against the
 // host's mounted `node_modules`, with no TypeScript toolchain and no Next.
 //
-// It writes two things, and both are shapes apps/visual-diff-ui reads back
-// through zod:
+// It writes three things. The first two are shapes apps/visual-diff-ui reads
+// back through zod; the third is read as text and paired by a later step:
 //
-//   <dataDir>/sets/<label>/<variantKey>.png   the shots
-//   <dataDir>/sets.json                       the row that makes them a set
+//   <dataDir>/sets/<label>/<variantKey>.png           the shots
+//   <dataDir>/sets.json                               the row that makes them a set
+//   <dataDir>/sets/<label>/<variantKey>.ledger.json   each shot's token ledger
 //
 // THE ARGV SEAM, AND HOW IT IS HELD. `check` runs against real `defaultDeps()`
 // — a Storybook build, a browser, the pinned image — so a module that ran it on
@@ -56,6 +57,7 @@ import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { check, defaultDeps } from '@gate/visual-diff/commands';
+import { ledgerFile, themeDrift } from '@gate/visual-diff/ledger';
 
 /** Every line this prints is a line the run panel shows: the job log is stdout,
  *  and lib/runner.ts forwards it verbatim. */
@@ -137,6 +139,30 @@ export function buildSet(args, { label, stories, capturedAt }) {
 export const filtersOf = (args) => (args.filter ? [args.filter].flat() : undefined);
 
 /**
+ * The token ledgers a capture leaves beside its shots, and what to say about them.
+ *
+ * One sidecar per shot that carries a ledger. A ledger that could not be recorded
+ * left a warning instead, and a story whose light and dark ledgers read different
+ * spacing earns one too — a theme changes colour, never spacing. Each warning is a
+ * log line and nothing more: neither moves an exit code nor stops a write.
+ *
+ * @param {readonly { key: string, tier: string, viewport: string, theme: string,
+ *   id: string, ledger?: import('@gate/visual-diff/ledger').Ledger | null,
+ *   ledgerWarning?: string | null }[]} captures
+ * @returns {{ files: { name: string, text: string }[], warnings: string[] }}
+ */
+export function ledgerOutputs(captures) {
+  const files = captures.flatMap((shot) =>
+    shot.ledger ? [ledgerFile(shot.ledger)] : [],
+  );
+  const failed = captures.flatMap((shot) =>
+    shot.ledgerWarning ? [`${shot.key}: ${shot.ledgerWarning}`] : [],
+  );
+
+  return { files, warnings: [...failed, ...themeDrift(captures)] };
+}
+
+/**
  * Everything this script does when node is pointed at it, and nothing it does
  * when it is imported.
  *
@@ -185,6 +211,10 @@ async function main(argv) {
       written += 1;
     }
 
+    const ledgers = ledgerOutputs(captures);
+    for (const file of ledgers.files) writeFileSync(join(setDir, file.name), file.text);
+    for (const warning of ledgers.warnings) say(`warning: ${warning}`);
+
     const registry = readRegistry();
     const set = buildSet(args, {
       label,
@@ -218,9 +248,10 @@ async function main(argv) {
       // can have. Written here, before `check`'s sanity gates: the shots were
       // taken, and whether the run passes is the exit code's verdict rather than a
       // reason to throw the pixels away.
+      // The console's captures, and only these, record a token ledger per shot.
       capture: async (run) => {
         say(`capturing ${run.variants.length} variant(s)`);
-        const captured = await deps.capture(run);
+        const captured = await deps.capture({ ...run, ledger: true });
         const written = writeSet(captured.captures);
         const errored = captured.captures.filter(
           (shot) => shot.bucket === 'errored',

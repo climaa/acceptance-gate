@@ -69,8 +69,8 @@ const under = (rootDir) => (relative) => path.join(rootDir, relative);
  *              planCaptures: typeof planCaptures,
  *              serve: (rootDir: string) => Promise<{ baseUrl: string,
  *                                                    close: () => Promise<void> }>,
- *              capture: (run: { variants: PlannedVariant[], baseUrl: string })
- *                => Promise<CaptureRun>,
+ *              capture: (run: { variants: PlannedVariant[], baseUrl: string,
+ *                               ledger?: boolean }) => Promise<CaptureRun>,
  *              compare: typeof compareAll,
  *              writeArtifacts: typeof writeArtifacts,
  *              host: () => Promise<Record<string, string>>,
@@ -91,15 +91,24 @@ async function serve(rootDir) {
   return { baseUrl: `http://${LOOPBACK_HOST}:${port}`, close };
 }
 
+/** The browser a capture drives. A seam for the ledger flag's test, never for a caller. */
+const DRIVER = Object.freeze({ launch: launchBrowser, shoot: captureAll });
+
 /** One browser for the whole run, closed however the run ends.
- *  @param {{ variants: PlannedVariant[], baseUrl: string }} run
+ *
+ *  `ledger` is forwarded, and off unless a caller asks: the console's capture script
+ *  asks, `check` never does.
+ *  @param {{ variants: PlannedVariant[], baseUrl: string, ledger?: boolean }} run
+ *  @param {{ launch: () => Promise<Pick<import('playwright').Browser, 'version' | 'close'>>,
+ *            shoot: (run: { variants: PlannedVariant[], baseUrl: string,
+ *                           browser: any, ledger: boolean }) => Promise<CaptureResult[]> }} [driver]
  *  @returns {Promise<CaptureRun>} */
-async function capture({ variants, baseUrl }) {
-  const browser = await launchBrowser();
+export async function capture({ variants, baseUrl, ledger = false }, driver = DRIVER) {
+  const browser = await driver.launch();
 
   try {
     return {
-      captures: await captureAll({ variants, baseUrl, browser }),
+      captures: await driver.shoot({ variants, baseUrl, browser, ledger }),
       chromium: browser.version(),
     };
   } finally {

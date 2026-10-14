@@ -2,7 +2,7 @@ import path from 'node:path';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { accept, check, defaultDeps, mismatchedHostKeys } from '../commands.mjs';
+import { accept, capture, check, defaultDeps, mismatchedHostKeys } from '../commands.mjs';
 import { BASELINE_PNG_BUDGET_BYTES, EXIT, HOST, PATHS } from '../policy.mjs';
 
 const ROOT = '/repo';
@@ -644,5 +644,47 @@ describe('the timing a run records', () => {
     const { summary } = await check(deps(), { rootDir: ROOT });
 
     expect(summary.schemaVersion).toBe(1);
+  });
+});
+
+describe('the ledger flag', () => {
+  /** A browser that records how it was driven, and nothing else. */
+  const fakeDriver = () => {
+    const shot = [];
+    return {
+      shot,
+      launch: async () => ({ version: () => '149.0.0.0', close: async () => {} }),
+      shoot: async (run) => {
+        shot.push(run);
+        return [];
+      },
+    };
+  };
+
+  it('is forwarded by the capture step to the browser run when a caller asks for it', async () => {
+    const driver = fakeDriver();
+
+    await capture(
+      { variants: [], baseUrl: 'http://127.0.0.1:4242', ledger: true },
+      driver,
+    );
+
+    expect(driver.shot[0]?.ledger).toBe(true);
+  });
+
+  it('stays off in the capture step unless asked for', async () => {
+    const driver = fakeDriver();
+
+    await capture({ variants: [], baseUrl: 'http://127.0.0.1:4242' }, driver);
+
+    expect(driver.shot[0]?.ledger).toBe(false);
+  });
+
+  it('is never asked for by check, so the CI run is the run it always was', async () => {
+    const gate = deps();
+
+    await check(gate, { rootDir: ROOT });
+
+    expect(gate.captured[0]).not.toHaveProperty('ledger');
   });
 });

@@ -7,7 +7,13 @@ import { Readable } from 'node:stream';
 // Imported explicitly rather than relying on `globals: true` — tsconfig's
 // `**/*.ts` include means tsc typechecks this file.
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { buildSet, filtersOf, isDirty, parseArgs } from '../scripts/capture-set.mjs';
+import {
+  buildSet,
+  filtersOf,
+  isDirty,
+  ledgerOutputs,
+  parseArgs,
+} from '../scripts/capture-set.mjs';
 import { SetsFileSchema } from '../lib/summary';
 
 /**
@@ -294,6 +300,7 @@ describe('importing the script', () => {
       'buildSet',
       'filtersOf',
       'isDirty',
+      'ledgerOutputs',
       'parseArgs',
     ]);
   });
@@ -302,5 +309,89 @@ describe('importing the script', () => {
     // The capture writes into `<dataDir>/sets/`; importing it must not have
     // created one anywhere near this repo.
     expect(fs.existsSync(path.join(REPO_ROOT, 'sets'))).toBe(false);
+  });
+});
+
+describe('the ledgers a capture writes beside its shots', () => {
+  /** A ledger as the differ builds one, narrowed to what the sidecar and the drift
+   *  check read. */
+  const ledger = (key: string, px = 16) => ({
+    schema: 1 as const,
+    key,
+    origin: 'document' as const,
+    scale: { '--space-4': 16 },
+    elements: [
+      {
+        path: 'ds-btn',
+        label: 'button "Keep it open"',
+        rect: [0, 0, 100, 40],
+        readings: [
+          {
+            property: 'padding-right',
+            px,
+            authored: 'var(--space-4)',
+            origin: 'regular',
+            token: '--space-4',
+            verdict: 'token' as const,
+          },
+        ],
+      },
+    ],
+  });
+  const shot = (theme: 'light' | 'dark', extra: Record<string, unknown> = {}) => ({
+    key: `organisms__desktop__${theme}__organisms-dialog--open`,
+    tier: 'organisms',
+    viewport: 'desktop',
+    theme,
+    id: 'organisms-dialog--open',
+    bytes: new Uint8Array([1]),
+    ...extra,
+  });
+
+  it('writes one sidecar per shot that carries a ledger, named after its key', () => {
+    const captures = [
+      shot('light', {
+        ledger: ledger('organisms__desktop__light__organisms-dialog--open'),
+      }),
+      shot('dark'),
+    ];
+
+    const { files } = ledgerOutputs(captures);
+
+    expect(files.map((file) => file.name)).toEqual([
+      'organisms__desktop__light__organisms-dialog--open.ledger.json',
+    ]);
+  });
+
+  it('passes on the warning a ledger that could not be recorded left behind', () => {
+    const captures = [
+      shot('light', { ledger: null, ledgerWarning: 'token ledger not recorded: x' }),
+    ];
+
+    const { warnings } = ledgerOutputs(captures);
+
+    expect(warnings).toEqual([
+      'organisms__desktop__light__organisms-dialog--open: token ledger not recorded: x',
+    ]);
+  });
+
+  it('warns when light and dark read different spacing, and decides nothing else', () => {
+    const captures = [
+      shot('light', {
+        ledger: ledger('organisms__desktop__light__organisms-dialog--open'),
+      }),
+      shot('dark', {
+        ledger: ledger('organisms__desktop__dark__organisms-dialog--open', 17),
+      }),
+    ];
+
+    const { files, warnings } = ledgerOutputs(captures);
+
+    expect({ files: files.length, warnings }).toEqual({
+      files: 2,
+      warnings: [
+        'organisms-dialog--open desktop: light and dark spacing differ at button "Keep it open" padding-right (16px light, 17px dark)',
+      ],
+    });
   });
 });
