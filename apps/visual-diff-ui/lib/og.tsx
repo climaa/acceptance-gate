@@ -69,7 +69,7 @@ let displayFont: Promise<Buffer> | undefined;
  * file is pinned by `outputFileTracingIncludes` and cannot change without a new
  * one.
  */
-export async function loadDisplayFont(): Promise<Buffer> {
+async function loadDisplayFont(): Promise<Buffer> {
   'use cache';
   cacheLife('max');
 
