@@ -342,23 +342,27 @@ describe('the wiring in main.ts', () => {
     expect(parseHead(head).querySelectorAll('script')).toHaveLength(2);
   });
 
-  it('leaves the head untouched on a preview deployment', () => {
+  // Not untouched: the link-preview tags ride every build (see
+  // link-preview-head.test.ts). What a preview deployment must never get is a
+  // script.
+  it('adds no beacon on a preview deployment', () => {
     vi.stubEnv('VERCEL_ENV', 'preview');
 
     const head = callManagerHead('<meta name="sentinel" />');
 
-    expect(head).toBe('<meta name="sentinel" />');
+    expect(parseHead(head).querySelector('meta[name="sentinel"]')).not.toBeNull();
+    expect(parseHead(head).querySelectorAll('script')).toHaveLength(0);
   });
 
   // The preset signature types the accumulated head as optional, so a bare
   // template literal would type-check and then write the word "undefined" into
   // the manager's <head> — visible on the page, and only there.
-  it('writes nothing at all when Storybook passes no accumulated head', () => {
+  it('writes no "undefined" when Storybook passes no accumulated head', () => {
     vi.stubEnv('VERCEL_ENV', 'preview');
 
     const head = callManagerHead(undefined);
 
-    expect(head).toBe('');
+    expect(head.startsWith('<meta property="og:title"')).toBe(true);
   });
 
   /**
