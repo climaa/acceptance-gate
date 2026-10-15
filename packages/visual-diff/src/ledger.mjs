@@ -13,7 +13,7 @@
 
 import { LEDGER } from './policy.mjs';
 
-/** @typedef {'token' | 'raw-on-scale' | 'off-scale' | 'exempt' | 'none'} Verdict */
+/** @typedef {'token' | 'raw-on-scale' | 'off-scale' | 'exempt' | 'none'} Classification */
 /** @typedef {Readonly<Record<string, number>>} Scale */
 /** @typedef {typeof LEDGER} LedgerPolicy */
 
@@ -26,7 +26,7 @@ import { LEDGER } from './policy.mjs';
  *  @property {string | null} anchor The element's `ds-*` class, when it has one.
  *  @property {string} property One of {@link LEDGER}'s properties. */
 
-/** @typedef {{ verdict: Verdict, token: string | null, reason?: string }} Classification */
+/** @typedef {{ classification: Classification, token: string | null, reason?: string }} Classified */
 
 /** @typedef {object} Reading
  *  @property {string} property
@@ -34,7 +34,7 @@ import { LEDGER } from './policy.mjs';
  *  @property {string | null} authored
  *  @property {string} origin
  *  @property {string | null} token
- *  @property {Verdict} verdict
+ *  @property {Classification} classification
  *  @property {string} [reason] */
 
 /** @typedef {object} LedgerElement
@@ -134,28 +134,32 @@ function exemptionFor({ anchor, property }, px, policy) {
  *  case where "should be `--space-N`" is honest.
  *  @param {Measured} measured @param {Scale} scale
  *  @param {LedgerPolicy} [policy]
- *  @returns {Classification} */
+ *  @returns {Classified} */
 export function classify(measured, scale, policy = LEDGER) {
   // Named at the precision the file is written at: a value judged unrounded could be
   // called off-scale and then written as exactly the step it missed.
   const px = rounded(measured.px, policy.decimals);
   const { authored } = measured;
-  if (px === 0) return { verdict: 'none', token: null };
+  if (px === 0) return { classification: 'none', token: null };
 
   if (authored !== null && isRelative(authored, policy.relativeUnits)) {
-    return { verdict: 'exempt', token: null, reason: 'relative unit' };
+    return { classification: 'exempt', token: null, reason: 'relative unit' };
   }
 
   const exemption = exemptionFor(measured, px, policy);
-  if (exemption) return { verdict: 'exempt', token: null, reason: exemption.reason };
+  if (exemption)
+    return { classification: 'exempt', token: null, reason: exemption.reason };
 
   const step = stepAt(px, scale, policy.tolerancePx);
   if (step !== null) {
     const named = authored !== null && namesStep(authored, step);
-    return { verdict: named ? 'token' : 'raw-on-scale', token: step };
+    return { classification: named ? 'token' : 'raw-on-scale', token: step };
   }
 
-  return { verdict: 'off-scale', token: nearestStep(px, scale, policy.nearestTie) };
+  return {
+    classification: 'off-scale',
+    token: nearestStep(px, scale, policy.nearestTie),
+  };
 }
 
 /** Where a measured longhand's value can have been written, as `[declaration, slot,
@@ -316,7 +320,7 @@ function readingOut(reading, decimals) {
     authored: reading.authored,
     origin: reading.origin,
     token: reading.token,
-    verdict: reading.verdict,
+    classification: reading.classification,
   };
 
   return reading.reason === undefined ? out : { ...out, reason: reading.reason };
@@ -592,7 +596,7 @@ function firstDifference(light, dark) {
       return (
         twin?.px !== reading.px ||
         twin.token !== reading.token ||
-        twin.verdict !== reading.verdict
+        twin.classification !== reading.classification
       );
     });
     if (differs) {
