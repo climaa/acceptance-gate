@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 
 import { describe, expect, it } from 'vitest';
 import {
@@ -10,6 +10,7 @@ import {
   EXIT,
   FULLPAGE_TAG,
   HOST,
+  LEDGER,
   MODES,
   PATHS,
   SKIP_TAG,
@@ -241,4 +242,42 @@ describe('baseline budgets', () => {
   it('caps one PNG well below the budget for the whole committed set', () => {
     expect(BASELINE_PNG_BUDGET_BYTES).toBeLessThan(BASELINE_BUDGET_BYTES);
   });
+});
+
+describe('LEDGER.exempt', () => {
+  /** Every stylesheet packages/ui ships, as text. Read rather than resolved through a
+   *  dependency because this package has none on @gate/ui; the `@gate/visual-diff#test`
+   *  override in turbo.json names these files so a warm cache cannot hide a rename. */
+  const UI_SRC = new URL('../../../ui/src/', import.meta.url);
+  const UI_CSS = readdirSync(UI_SRC, { recursive: true })
+    .filter((file) => String(file).endsWith('.css'))
+    .map((file) => readFileSync(new URL(String(file), UI_SRC), 'utf8'))
+    .join('\n');
+
+  /** The declarations of the rule an anchor's class opens with, or null if no
+   *  stylesheet starts a rule with it. */
+  const ruleOf = (anchor) =>
+    UI_CSS.match(new RegExp(`(?:^|\\n)\\.${anchor}\\s*\\{([^}]*)\\}`))?.[1] ?? null;
+
+  it.each(LEDGER.exempt.map((entry) => [entry.anchor, entry]))(
+    'names a class packages/ui still styles (%s): a renamed one would turn its readings off-scale',
+    (anchor) => {
+      const rule = ruleOf(anchor);
+
+      expect(rule).not.toBeNull();
+    },
+  );
+
+  it.each(LEDGER.exempt.map((entry) => [entry.anchor, entry]))(
+    'exempts a padding the class still authors off the scale (%s): a fixed one leaves a dead entry',
+    (anchor, entry) => {
+      const paddings = [
+        ...(ruleOf(anchor) ?? '').matchAll(/padding[\w-]*\s*:\s*([^;]+)/g),
+      ];
+
+      expect(paddings.map((match) => match[1])).toContainEqual(
+        expect.stringContaining(`${entry.px / 16}rem`),
+      );
+    },
+  );
 });
