@@ -41,3 +41,15 @@ export const Zoomed: Story = { args: { defaultZoom: 2.25 } };
 
 /** At the image's natural pixels, the cap: `+` is disabled. */
 export const AtCap: Story = { args: { defaultZoom: 100 } };
+
+/** Two boxes outlined on the board, in its own pixels: the first tile, and the
+ *  second, emphasized — the one a reader is pointing at. They pan and zoom with
+ *  the board, as the grid does. */
+export const WithMarks: Story = {
+  args: {
+    marks: [
+      { x: 40, y: 120, width: 350, height: 330 },
+      { x: 430, y: 120, width: 350, height: 330, emphasis: true },
+    ],
+  },
+};

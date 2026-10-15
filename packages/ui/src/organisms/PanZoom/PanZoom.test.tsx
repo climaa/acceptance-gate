@@ -448,3 +448,76 @@ describe('PanZoom with actions', () => {
     expect(names).toEqual(['zoom out', 'zoom in', 'reset', 'upload']);
   });
 });
+
+describe('PanZoom with marks', () => {
+  const layer = (container: HTMLElement) =>
+    container.querySelector<HTMLElement>('.ds-panzoom__marks');
+  const marksIn = (container: HTMLElement) => [
+    ...container.querySelectorAll<HTMLElement>('.ds-panzoom__mark'),
+  ];
+  const MARKS = [
+    { x: 400, y: 200, width: 80, height: 40 },
+    { x: 800, y: 1200, width: 120, height: 60, emphasis: true },
+  ];
+
+  it('draws no layer when handed no marks', () => {
+    const { container } = renderLoaded();
+
+    expect(layer(container)).toBeNull();
+  });
+
+  it('draws no layer for an empty list of marks', () => {
+    const { container } = renderLoaded({ marks: [] });
+
+    expect(layer(container)).toBeNull();
+  });
+
+  it('draws one box per mark', () => {
+    const { container } = renderLoaded({ marks: MARKS });
+
+    expect(marksIn(container)).toHaveLength(2);
+  });
+
+  // 1600 natural pixels in a 400-pixel pane: 0.25 drawn per image pixel.
+  it('places a box from the image pixels to the drawn ones', () => {
+    const { container } = renderLoaded({ marks: MARKS });
+
+    const { left, top, width, height } = marksIn(container)[0]?.style ?? {};
+    expect({ left, top, width, height }).toEqual({
+      left: '100px',
+      top: '50px',
+      width: '20px',
+      height: '10px',
+    });
+  });
+
+  it('follows the zoom: at 200% a box is drawn twice as far and as large', () => {
+    const { container } = renderLoaded({ marks: MARKS, defaultZoom: 2 });
+
+    const { left, width } = marksIn(container)[0]?.style ?? {};
+    expect({ left, width }).toEqual({ left: '200px', width: '40px' });
+  });
+
+  it('moves with the image when it pans', () => {
+    const { container } = renderLoaded({ marks: MARKS });
+
+    fireEvent.keyDown(pane(), { key: 'ArrowDown' });
+
+    expect(layer(container)?.style.transform).toBe('translate(0px, -30px)');
+  });
+
+  it('sets the emphasized mark apart, and only that one', () => {
+    const { container } = renderLoaded({ marks: MARKS });
+
+    const emphasized = marksIn(container).map((mark) =>
+      mark.classList.contains('ds-panzoom__mark--emphasis'),
+    );
+    expect(emphasized).toEqual([false, true]);
+  });
+
+  it('is decoration only — hidden from the accessibility tree', () => {
+    const { container } = renderLoaded({ marks: MARKS });
+
+    expect(layer(container)?.getAttribute('aria-hidden')).toBe('true');
+  });
+});
