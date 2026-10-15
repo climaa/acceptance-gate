@@ -10508,6 +10508,284 @@
                           ]
                         }
                       ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "ZzEJA",
+                      "name": "Tile PanZoom · with marks",
+                      "width": 255,
+                      "fill": "#ffffff",
+                      "cornerRadius": 12,
+                      "stroke": "$note-border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "gap": 12,
+                      "padding": 18,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "N34oFX",
+                          "name": "Cap",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 6,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "B1O2EJ",
+                              "name": "Name",
+                              "fill": "$ink",
+                              "content": "PanZoom · with marks",
+                              "fontFamily": "$font-mono",
+                              "fontSize": 13,
+                              "fontWeight": "700"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "L6CavX",
+                              "name": "home",
+                              "fill": "#713520",
+                              "cornerRadius": 9999,
+                              "padding": [
+                                2,
+                                8
+                              ],
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "lUkjs",
+                                  "name": "h",
+                                  "fill": "#ffffff",
+                                  "content": "packages/ui",
+                                  "fontFamily": "$font-mono",
+                                  "fontSize": 10,
+                                  "fontWeight": "700"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "xm7Yr",
+                          "name": "Stage",
+                          "clip": true,
+                          "width": "fill_container",
+                          "fill": "#fafaf8",
+                          "cornerRadius": 8,
+                          "layout": "vertical",
+                          "gap": 8,
+                          "padding": 14,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "f1Zmm",
+                              "name": "controls",
+                              "gap": 6,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "UqIAT",
+                                  "name": "m diff",
+                                  "fill": "#00000000",
+                                  "cornerRadius": 6,
+                                  "stroke": "#00000000",
+                                  "strokeWidth": 1,
+                                  "padding": [
+                                    4,
+                                    10
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "VQEQu",
+                                      "name": "t",
+                                      "fill": "$border-strong",
+                                      "content": "−",
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "P5WTE",
+                                  "name": "m baseline",
+                                  "fill": "#00000000",
+                                  "cornerRadius": 6,
+                                  "stroke": "#00000000",
+                                  "strokeWidth": 1,
+                                  "padding": [
+                                    4,
+                                    10
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "SRKXZ",
+                                      "name": "t",
+                                      "fill": "$text",
+                                      "content": "100%",
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "L9xmk",
+                                  "name": "m candidate",
+                                  "fill": "$bg",
+                                  "cornerRadius": 6,
+                                  "stroke": "$border-strong",
+                                  "strokeWidth": 1,
+                                  "padding": [
+                                    4,
+                                    10
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "UGM8p",
+                                      "name": "t",
+                                      "fill": "$text",
+                                      "content": "+",
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "l4iBS",
+                                  "name": "m blink",
+                                  "fill": "$bg",
+                                  "cornerRadius": 6,
+                                  "stroke": "$border-strong",
+                                  "strokeWidth": 1,
+                                  "padding": [
+                                    4,
+                                    10
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "fQsJk",
+                                      "name": "t",
+                                      "fill": "$text",
+                                      "content": "reset",
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "S2ztE",
+                              "name": "pane",
+                              "theme": {
+                                "mode": "light"
+                              },
+                              "width": "fill_container",
+                              "height": 120,
+                              "fill": {
+                                "type": "image",
+                                "enabled": true,
+                                "url": "exports/component-library.png",
+                                "mode": "cover",
+                                "transform": [
+                                  2.25,
+                                  0,
+                                  0,
+                                  10,
+                                  -0.62,
+                                  -6.95
+                                ]
+                              },
+                              "cornerRadius": 4,
+                              "stroke": "$border-strong",
+                              "strokeWidth": 1,
+                              "layout": "none",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "Buru6",
+                                  "x": 24,
+                                  "y": 20,
+                                  "name": "mark",
+                                  "width": 64,
+                                  "height": 30,
+                                  "fill": "#00000000",
+                                  "stroke": "$accent",
+                                  "strokeWidth": 1,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "T5aV9Z",
+                                      "x": 10,
+                                      "y": 4,
+                                      "name": "t",
+                                      "enabled": false,
+                                      "fill": "$border-strong",
+                                      "content": "−",
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "VU7MX",
+                                  "x": 104,
+                                  "y": 58,
+                                  "name": "mark emphasis",
+                                  "width": 66,
+                                  "height": 36,
+                                  "fill": "$accent-subtle",
+                                  "stroke": "$accent",
+                                  "strokeWidth": 2,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "vKW1j",
+                                      "x": 10,
+                                      "y": 4,
+                                      "name": "t",
+                                      "enabled": false,
+                                      "fill": "$border-strong",
+                                      "content": "−",
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "l4zIp",
+                              "name": "note",
+                              "fill": "$ink-muted",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Marks are boxes in the image's own pixels, drawn in a layer that pans and zooms with it exactly as the grid does: aria-hidden, never in the way of a drag, never animated. A plain mark is a 1px accent outline; an emphasized one is 2px over a subtle accent fill. Handed no marks, there is no layer. The design view uses them to outline the boxes whose spacing it reports.",
+                              "lineHeight": 1.4,
+                              "fontFamily": "$font-body",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
                     }
                   ]
                 }
