@@ -105,31 +105,31 @@ describe('classify', () => {
   it('reads a value authored through a scale step as that design token', () => {
     const reading = classify(measured({ px: 16, authored: 'var(--space-4)' }), SCALE);
 
-    expect(reading).toEqual({ verdict: 'token', token: '--space-4' });
+    expect(reading).toEqual({ classification: 'token', token: '--space-4' });
   });
 
   it('reads a literal that equals a step as raw-on-scale', () => {
     const reading = classify(measured({ px: 16, authored: '16px' }), SCALE);
 
-    expect(reading).toEqual({ verdict: 'raw-on-scale', token: '--space-4' });
+    expect(reading).toEqual({ classification: 'raw-on-scale', token: '--space-4' });
   });
 
   it('does not credit a var() of a different step', () => {
     const reading = classify(measured({ px: 16, authored: 'var(--space-3)' }), SCALE);
 
-    expect(reading.verdict).toBe('raw-on-scale');
+    expect(reading.classification).toBe('raw-on-scale');
   });
 
   it('reads a value between steps as off-scale, naming the nearest', () => {
     const reading = classify(measured({ px: 17, authored: '17px' }), SCALE);
 
-    expect(reading).toEqual({ verdict: 'off-scale', token: '--space-4' });
+    expect(reading).toEqual({ classification: 'off-scale', token: '--space-4' });
   });
 
   it('holds a sub-pixel value off the scale: a pixel differ does not round one away', () => {
     const reading = classify(measured({ px: 16.5, authored: '16.5px' }), SCALE);
 
-    expect(reading).toEqual({ verdict: 'off-scale', token: '--space-4' });
+    expect(reading).toEqual({ classification: 'off-scale', token: '--space-4' });
   });
 
   it('names a value at the precision the ledger writes it, so 15.9999999 is 16', () => {
@@ -138,19 +138,19 @@ describe('classify', () => {
       SCALE,
     );
 
-    expect(reading).toEqual({ verdict: 'token', token: '--space-4' });
+    expect(reading).toEqual({ classification: 'token', token: '--space-4' });
   });
 
   it('never calls off-scale a value the ledger will write as on it', () => {
     const reading = classify(measured({ px: 16.004, authored: 'var(--space-4)' }), SCALE);
 
-    expect(reading.verdict).toBe('token');
+    expect(reading.classification).toBe('token');
   });
 
   it('still holds off the scale a value that rounds to a different number', () => {
     const reading = classify(measured({ px: 16.006, authored: '16.006px' }), SCALE);
 
-    expect(reading).toEqual({ verdict: 'off-scale', token: '--space-4' });
+    expect(reading).toEqual({ classification: 'off-scale', token: '--space-4' });
   });
 
   it.each([
@@ -160,13 +160,13 @@ describe('classify', () => {
   ])('names %spx off the scale against %s', (px, nearest) => {
     const reading = classify(measured({ px, authored: `${px}px` }), SCALE);
 
-    expect(reading).toEqual({ verdict: 'off-scale', token: nearest });
+    expect(reading).toEqual({ classification: 'off-scale', token: nearest });
   });
 
   it('reads zero as no spacing, not as a value off the scale', () => {
     const reading = classify(measured({ px: 0, authored: '0' }), SCALE);
 
-    expect(reading).toEqual({ verdict: 'none', token: null });
+    expect(reading).toEqual({ classification: 'none', token: null });
   });
 
   it('reads a gap that computes to `normal` as no spacing, not as a value off the scale', () => {
@@ -174,7 +174,7 @@ describe('classify', () => {
     // no gap, so the collector's number for most elements is `parseFloat('normal')`.
     const reading = classify(measured({ px: Number.NaN, authored: null }), SCALE);
 
-    expect(reading).toEqual({ verdict: 'none', token: null });
+    expect(reading).toEqual({ classification: 'none', token: null });
   });
 
   it.each([['0.35em'], ['2%'], ['1ch'], ['1vw'], ['1vh'], ['calc(100% - 1rem)']])(
@@ -183,7 +183,7 @@ describe('classify', () => {
       const reading = classify(measured({ px: 4.9, authored }), SCALE);
 
       expect(reading).toEqual({
-        verdict: 'exempt',
+        classification: 'exempt',
         token: null,
         reason: 'relative unit',
       });
@@ -193,13 +193,13 @@ describe('classify', () => {
   it('does not read a unit inside a custom property’s name as a relative value', () => {
     const reading = classify(measured({ px: 16, authored: 'var(--space-2em)' }), SCALE);
 
-    expect(reading.verdict).not.toBe('exempt');
+    expect(reading.classification).not.toBe('exempt');
   });
 
   it('does not read rem as a relative unit: it is the scale’s own unit', () => {
     const reading = classify(measured({ px: 16, authored: '1rem' }), SCALE);
 
-    expect(reading.verdict).toBe('raw-on-scale');
+    expect(reading.classification).toBe('raw-on-scale');
   });
 
   it('exempts an allowlisted half-step with the reason the policy gives', () => {
@@ -208,7 +208,11 @@ describe('classify', () => {
       SCALE,
     );
 
-    expect(reading).toEqual({ verdict: 'exempt', token: null, reason: 'pill half-step' });
+    expect(reading).toEqual({
+      classification: 'exempt',
+      token: null,
+      reason: 'pill half-step',
+    });
   });
 
   it('holds the same half-step off the scale on an element the allowlist does not name', () => {
@@ -217,7 +221,7 @@ describe('classify', () => {
       SCALE,
     );
 
-    expect(reading).toEqual({ verdict: 'off-scale', token: '--space-1' });
+    expect(reading).toEqual({ classification: 'off-scale', token: '--space-1' });
   });
 
   it('holds an allowlisted anchor to the properties its entry names', () => {
@@ -231,7 +235,7 @@ describe('classify', () => {
       SCALE,
     );
 
-    expect(reading.verdict).toBe('off-scale');
+    expect(reading.classification).toBe('off-scale');
   });
 
   it('classifies a browser default by its value: 6px is off the scale', () => {
@@ -240,7 +244,7 @@ describe('classify', () => {
       SCALE,
     );
 
-    expect(reading).toEqual({ verdict: 'off-scale', token: '--space-1' });
+    expect(reading).toEqual({ classification: 'off-scale', token: '--space-1' });
   });
 
   it('classifies a browser default by its value: 8px is on it, though no token set it', () => {
@@ -249,7 +253,7 @@ describe('classify', () => {
       SCALE,
     );
 
-    expect(reading).toEqual({ verdict: 'raw-on-scale', token: '--space-2' });
+    expect(reading).toEqual({ classification: 'raw-on-scale', token: '--space-2' });
   });
 
   it('never credits a token when the authored text is unknown', () => {
@@ -258,7 +262,7 @@ describe('classify', () => {
       SCALE,
     );
 
-    expect(reading).toEqual({ verdict: 'raw-on-scale', token: '--space-4' });
+    expect(reading).toEqual({ classification: 'raw-on-scale', token: '--space-4' });
   });
 
   it('reads the exemptions from the policy it is handed, not a copy of its own', () => {
@@ -270,7 +274,7 @@ describe('classify', () => {
       policy,
     );
 
-    expect(reading.verdict).toBe('off-scale');
+    expect(reading.classification).toBe('off-scale');
   });
 });
 
@@ -460,7 +464,7 @@ describe('serializeLedger', () => {
             authored: '6px',
             origin: 'user-agent',
             token: '--space-1',
-            verdict: 'off-scale',
+            classification: 'off-scale',
           },
           {
             property: 'padding-top',
@@ -468,7 +472,7 @@ describe('serializeLedger', () => {
             authored: '1px',
             origin: 'user-agent',
             token: '--space-1',
-            verdict: 'off-scale',
+            classification: 'off-scale',
           },
         ],
       },
@@ -538,7 +542,7 @@ describe('serializeLedger', () => {
     expect(text).not.toMatch(/nodeId|styleSheetId|http|\d{4}-\d{2}-\d{2}T/);
   });
 
-  it('keeps an exemption’s reason beside its verdict', () => {
+  it('keeps an exemption’s reason beside its classification', () => {
     const exempt = ledger();
     exempt.elements[0].readings[0] = {
       property: 'padding-right',
@@ -546,14 +550,14 @@ describe('serializeLedger', () => {
       authored: '0.125rem',
       origin: 'regular',
       token: null,
-      verdict: 'exempt',
+      classification: 'exempt',
       reason: 'pill half-step',
     };
 
     const parsed = JSON.parse(serializeLedger(exempt));
 
     expect(parsed.elements[0].readings[1]).toMatchObject({
-      verdict: 'exempt',
+      classification: 'exempt',
       reason: 'pill half-step',
     });
   });
@@ -928,7 +932,7 @@ describe('buildLedger', () => {
       label: button?.label,
       padding: button?.readings
         .slice(0, 4)
-        .map((reading) => [reading.px, reading.verdict]),
+        .map((reading) => [reading.px, reading.classification]),
       authored: button?.readings.slice(0, 2).map((reading) => reading.authored),
     }).toEqual({
       label: 'button "Keep it open"',
@@ -970,7 +974,7 @@ describe('buildLedger', () => {
     expect(ledger.elements[0]?.readings[4]).toMatchObject({
       authored: 'var(--space-2)',
       origin: 'inline',
-      verdict: 'token',
+      classification: 'token',
     });
   });
 
@@ -981,7 +985,7 @@ describe('buildLedger', () => {
       authored: null,
       origin: 'unknown',
       token: '--space-4',
-      verdict: 'raw-on-scale',
+      classification: 'raw-on-scale',
     });
   });
 
