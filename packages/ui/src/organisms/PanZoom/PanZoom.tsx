@@ -36,7 +36,7 @@ import { Button } from '../../atoms/Button/Button';
  * image rather than the page. Nothing animates.
  *
  * It knows nothing about what it shows: the caller hands it a `src`, an `alt`
- * and a `label`.
+ * and a `label` — and, when it has boxes to point at, their {@link Mark}s.
  */
 
 /** How far one `+` or `−` moves the zoom. */
@@ -74,6 +74,17 @@ export interface Size {
 export interface Offset {
   x: number;
   y: number;
+}
+
+/** A box to outline on the image, in the image's own pixels — the same space a
+ *  screenshot's element rects are measured in, so a caller hands them over as
+ *  measured. An emphasized mark is the one the reader is pointing at. */
+export interface Mark {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  emphasis?: boolean;
 }
 
 const ORIGIN: Offset = { x: 0, y: 0 };
@@ -166,6 +177,9 @@ export interface PanZoomProps {
   /** Lay a grid over the image, counted in the image's own pixels — see
    *  {@link gridStep}. Off unless asked for. */
   grid?: boolean;
+  /** Boxes to outline on the image, moved and scaled with it — see {@link Mark}.
+   *  No marks, no layer. */
+  marks?: readonly Mark[];
   /** Drawn at the start of the control row, with the zoom controls pushed to
    *  its end — a caller's picker or caption, so the row above the pane says
    *  what is in it and how to move it on one line. */
@@ -200,6 +214,47 @@ function GridOverlay({ image, offset, gap }: GridOverlayProps) {
         } as React.CSSProperties
       }
     />
+  );
+}
+
+interface MarksOverlayProps {
+  marks: readonly Mark[];
+  image: Size;
+  offset: Offset;
+  /** Drawn pixels per image pixel. */
+  scale: number;
+}
+
+/** The marks, in a layer sized and moved exactly as the image is — the grid's
+ *  arrangement — with each box scaled from the image's pixels to drawn ones.
+ *  Decoration only: whoever hands the marks over says in words what they are. */
+function MarksOverlay({ marks, image, offset, scale }: MarksOverlayProps) {
+  return (
+    <div
+      aria-hidden="true"
+      className="ds-panzoom__marks"
+      style={{
+        width: `${image.width}px`,
+        height: `${image.height}px`,
+        transform: `translate(${offset.x}px, ${offset.y}px)`,
+      }}
+    >
+      {marks.map((mark, index) => (
+        <div
+          // Marks carry no identity of their own, and the list is redrawn whole.
+          key={index}
+          className={['ds-panzoom__mark', mark.emphasis && 'ds-panzoom__mark--emphasis']
+            .filter(Boolean)
+            .join(' ')}
+          style={{
+            left: `${mark.x * scale}px`,
+            top: `${mark.y * scale}px`,
+            width: `${mark.width * scale}px`,
+            height: `${mark.height * scale}px`,
+          }}
+        />
+      ))}
+    </div>
   );
 }
 
@@ -314,6 +369,7 @@ export function PanZoom({
   defaultZoom = 1,
   fallback,
   grid = false,
+  marks,
   lead,
   actions,
   className,
@@ -436,6 +492,14 @@ export function PanZoom({
             image={image}
             offset={offset}
             gap={controls.gridEvery * controls.scale}
+          />
+        )}
+        {!failed && controls.scale > 0 && marks && marks.length > 0 && (
+          <MarksOverlay
+            marks={marks}
+            image={image}
+            offset={offset}
+            scale={controls.scale}
           />
         )}
       </div>

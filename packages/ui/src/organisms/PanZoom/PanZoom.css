@@ -105,3 +105,25 @@
   font-variant-numeric: tabular-nums;
   color: var(--color-text-muted);
 }
+
+/* The marks, over the image and moved with it, as the grid is. Each box is
+   placed in drawn pixels by the component; a plain one is a hairline, an
+   emphasized one a heavier line over a wash of the same accent, so the box a
+   reader is pointing at stands out among the rest. Nothing animates. */
+.ds-panzoom__marks {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+}
+
+.ds-panzoom__mark {
+  position: absolute;
+  box-sizing: border-box;
+  border: 1px solid var(--color-accent);
+}
+
+.ds-panzoom__mark--emphasis {
+  border-width: 2px;
+  background: var(--color-accent-subtle);
+}
