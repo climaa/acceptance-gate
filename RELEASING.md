@@ -97,7 +97,18 @@ that rendered as an unbroken wall of text.
 
    The message is that one line. No body.
 
-7. Publish, with the four-part body in a file:
+7. Ship. Fast-forward the `production` branch to the tag:
+
+   ```bash
+   gh api -X PATCH repos/climaa/acceptance-gate/git/refs/heads/production \
+     -f sha="$(git rev-parse 'vX.Y.Z^{commit}')" -F force=false
+   ```
+
+   This is the step that changes the live sites — see
+   [Production is a branch](#production-is-a-branch). Wait for the production deployments
+   it starts to finish before step 8.
+
+8. Publish, with the four-part body in a file:
 
    ```bash
    gh release create vX.Y.Z --title "vX.Y.Z — <headline>" --notes-file <path> --verify-tag
@@ -107,16 +118,8 @@ that rendered as an unbroken wall of text.
    `apps/blog/lib/releases.ts` splits on it to render the tag and the story separately, and
    a title shaped any other way is printed whole.
 
-8. Ship. Fast-forward the `production` branch to the tag:
-
-   ```bash
-   gh api -X PATCH repos/climaa/acceptance-gate/git/refs/heads/production \
-     -f sha="$(git rev-parse 'vX.Y.Z^{commit}')" -F force=false
-   ```
-
-   This is the only step that changes the live sites — see
-   [Production is a branch](#production-is-a-branch). It comes after step 7 so the blog
-   build that it triggers already finds the new GitHub Release for `/changelog`.
+   Publishing comes last on purpose: it is what puts the release on `/changelog` — see
+   [Publishing is what updates /changelog](#publishing-is-what-updates-changelog).
 
 Get the headline signed off **before** step 6. It becomes the tag message, the GitHub
 Release title and the permanent `/changelog` entry.
@@ -137,18 +140,24 @@ took the Hobby plan's deployment storage to 75% in a fortnight — one per relea
   `main`'s sha instead of a tag. The `ignoreCommand` in each `vercel.json` still skips the
   projects the range did not affect.
 
-## Publishing alone does not update the site
+## Publishing is what updates /changelog
 
-A published release changes nothing in git, so nothing that watches git rebuilds the blog
-— step 8 is what does, because it moves `production`.
-`.github/workflows/changelog-deploy.yml` is the only edge that does: it fires on
-`release: published`, POSTs the Vercel deploy hook with `?buildCache=false`, and then polls
-the deployed page for the tag rather than trusting that a deployment happened.
+Step 7's blog build does **not** put the new release on `/changelog`. The releases fetch
+sits behind `'use cache'` with a `max` profile and Vercel restores `.next/cache` between
+builds, so an ordinary build replays the list it fetched last time.
 
-It needs the `BLOG_DEPLOY_HOOK_URL` secret. Set that **interactively** —
-`gh secret set BLOG_DEPLOY_HOOK_URL` reading from a terminal — because run from a
-non-interactive tool call it stores an empty value that still reads as set, which is
-exactly how v1.4.0 was published to a changelog nothing could rebuild.
+`.github/workflows/changelog-deploy.yml` is the edge that does it: it fires on
+`release: published`, POSTs the blog's Vercel deploy hook with `?buildCache=false`, and
+then polls the deployed page for the tag rather than trusting that a deployment happened.
+The hook (`changelog-deploy`) builds the `production` branch, which is why step 7 comes
+first — published before the ship, the hook would rebuild the previous release's code, and
+step 7's cached build would then serve it with whatever list its cache held.
+
+It needs the `BLOG_DEPLOY_HOOK_URL` secret, holding that hook's URL (Vercel → the blog
+project → Settings → Git → Deploy Hooks). Set it in the GitHub web UI or from a real
+terminal — `gh secret set BLOG_DEPLOY_HOOK_URL` run from a non-interactive tool call stores
+an empty value that still reads as set, which is exactly how v1.4.0 was published to a
+changelog nothing could rebuild.
 
 `changelog-check.yml` reads the deployed page back once a day and fails if it is showing
 its unavailable note, or no releases at all.
