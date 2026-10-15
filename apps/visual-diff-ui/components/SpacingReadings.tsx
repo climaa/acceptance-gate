@@ -84,9 +84,9 @@ const DECIMALS = 2;
 /** The step a token name is worth, or null for a name that is not a step of the
  *  spacing scale. */
 function stepPx(token: string): number | null {
-  const step = /^--space-(\d+(?:\.\d+)?)$/.exec(token);
+  const digits = /^--space-(\d+(?:\.\d+)?)$/.exec(token)?.[1];
 
-  return step?.[1] === undefined ? null : Number(step[1]) * STEP_PX;
+  return digits === undefined ? null : Number(digits) * STEP_PX;
 }
 
 /** A value's distance from its nearest step, signed. The minus is U+2212, the
@@ -100,12 +100,16 @@ function signed(distance: number): string {
 
 const pixels = (px: number) => `${px}px`;
 
+/** A value named through the design token that set it — the one term the before
+ *  column and the token column both write. */
+const tokenTerm = (token: string, px: number) => `${token} (${pixels(px)})`;
+
 /** One side's value as the panel writes it: in token terms where a token set
  *  it, and in pixels otherwise. */
 function sideTerm(side: ChangeSide | null): string {
   if (side === null) return NOTHING;
   if (side.classification === 'token' && side.token !== null) {
-    return `${side.token} (${pixels(side.px)})`;
+    return tokenTerm(side.token, side.px);
   }
 
   return pixels(side.px);
@@ -132,7 +136,7 @@ function classificationTerm(side: ChangeSide): string | null {
   const { classification, token, px } = side;
   if (token === null) return null;
 
-  if (classification === 'token') return `${token} (${pixels(px)})`;
+  if (classification === 'token') return tokenTerm(token, px);
   // The one place "should be" is honest: the value IS the step, written as a
   // literal rather than read through the step's own custom property.
   if (classification === 'raw-on-scale') return `should be ${token}`;
@@ -180,18 +184,12 @@ function TokenCell({ change }: { change: LedgerChange }) {
 /** Sized to what they hold, in the proportions Board 04 draws: the element
  *  column carries a control, and `table-layout: fixed` will not grow a cell for
  *  its contents. The token column takes whatever is left. */
-const ELEMENT_COLUMN: TableColumn = { header: 'element', width: '18rem' };
-const PROPERTY_COLUMN: TableColumn = { header: 'property', width: '9rem' };
-const BEFORE_COLUMN: TableColumn = { header: 'before', width: '11rem' };
-const AFTER_COLUMN: TableColumn = { header: 'after', width: '13rem' };
-const TOKEN_COLUMN: TableColumn = { header: 'token' };
-
 const columnsFor = (mode: Mode): readonly TableColumn[] => [
-  ELEMENT_COLUMN,
-  PROPERTY_COLUMN,
-  ...(mode === 'changed' ? [BEFORE_COLUMN] : []),
-  AFTER_COLUMN,
-  TOKEN_COLUMN,
+  { header: 'element', width: '18rem' },
+  { header: 'property', width: '9rem' },
+  ...(mode === 'changed' ? [{ header: 'before', width: '11rem' }] : []),
+  { header: 'after', width: '13rem' },
+  { header: 'token' },
 ];
 
 interface RowInput {

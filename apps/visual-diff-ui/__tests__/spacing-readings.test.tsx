@@ -145,6 +145,25 @@ describe('the spacing readings panel', () => {
     expect(within(table()).getByText('should be --space-4')).toBeTruthy();
   });
 
+  // A value that moved from one step to another is still on the scale, so the
+  // token column names the step it landed on — there is no distance to price.
+  it('names an after side that is still a design token as that step', () => {
+    renderPanel(
+      report({
+        changes: [
+          change({
+            after: side({ px: 24, token: '--space-6', classification: 'token' }),
+          }),
+        ],
+      }),
+    );
+
+    const token = within(bodyRows()[0] as HTMLElement)
+      .getAllByRole('cell')
+      .at(-1);
+    expect(token?.textContent).toBe('token--space-6 (24px)');
+  });
+
   it('names an element that arrived or left rather than a token it has none of', () => {
     renderPanel(
       report({

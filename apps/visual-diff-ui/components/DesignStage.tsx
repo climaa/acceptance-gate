@@ -97,17 +97,19 @@ const readingsFor = (ledger: LedgerReport | null, variant: Variant) =>
  * `PanZoom` draws marks in, so they are handed over as measured.
  */
 function marksFor(changes: readonly LedgerChange[], shown: number | null): Mark[] {
-  const rectKey = (rect: readonly number[] | null) =>
-    rect === null ? null : rect.join();
-  const emphasis = shown === null ? null : rectKey(changes[shown]?.rect ?? null);
+  // The rect itself is what tells two readings they are on one element, so its
+  // four numbers are the key the boxes are collected under.
+  const emphasis = shown === null ? null : (changes[shown]?.rect?.join() ?? null);
   const outlined = new Map<string, Mark>();
 
-  for (const change of changes) {
-    const [x, y, width, height] = change.rect ?? [];
-    const key = rectKey(change.rect);
-    if (key === null || x === undefined || y === undefined) continue;
+  for (const { rect } of changes) {
+    if (rect === null) continue;
+
+    const [x, y, width, height] = rect;
+    if (x === undefined || y === undefined) continue;
     if (width === undefined || height === undefined) continue;
 
+    const key = rect.join();
     if (!outlined.has(key)) {
       outlined.set(key, { x, y, width, height, emphasis: key === emphasis });
     }
