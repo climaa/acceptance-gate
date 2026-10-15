@@ -648,9 +648,11 @@ function sideOf(reading, decimals) {
  *  `exempt` and `none` are nothing to show. */
 const AFTER_ONLY = new Set(['off-scale', 'raw-on-scale']);
 
-/** Every property one paired element disagrees on. Reported when the value or the
- *  token moved; a reading the other side classified `none` is a value falling to
- *  zero, which is that property changing rather than the element going away.
+/** Every property one paired element disagrees on. Reported when the value, the
+ *  token or the classification moved — the last alone catches a design token swapped
+ *  for the literal it equals, which moves no pixel and names the same nearest step.
+ *  A reading the other side classified `none` is a value falling to zero, which is
+ *  that property changing rather than the element going away.
  *  @param {LedgerElement} before @param {LedgerElement} after @param {LedgerPolicy} policy
  *  @returns {LedgerChange[]} */
 function changesBetween(before, after, policy) {
@@ -662,7 +664,9 @@ function changesBetween(before, after, policy) {
     if (!sides.before && !sides.after) return [];
 
     const same =
-      sides.before?.px === sides.after?.px && sides.before?.token === sides.after?.token;
+      sides.before?.px === sides.after?.px &&
+      sides.before?.token === sides.after?.token &&
+      sides.before?.classification === sides.after?.classification;
     if (same) return [];
 
     return [
