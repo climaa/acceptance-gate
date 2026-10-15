@@ -1,7 +1,14 @@
 'use client';
 
 import { type ChangeEvent, useEffect, useRef, useState } from 'react';
-import { IconButton, PanZoom, SegmentedControl, Stack } from '@gate/ui';
+import {
+  IconButton,
+  PanZoom,
+  type PanZoomProps,
+  SegmentedControl,
+  Stack,
+} from '@gate/ui';
+import type { LedgerChange, LedgerReport } from '@gate/visual-diff/ledger';
 import {
   DESIGN_BOARDS,
   type DesignBoard,
@@ -10,6 +17,7 @@ import {
 } from '@/lib/comparison';
 import { absentShotCopy, type ShotSources } from '@/lib/shots';
 import type { Variant } from '@/lib/summary';
+import { SpacingReadings } from './SpacingReadings';
 
 /**
  * The comparison modal's design view: a design board — or an image from the
@@ -39,6 +47,14 @@ const LOCAL_UNREADABLE = 'this image could not be read — pick another, or a bo
 
 const BOARD_UNAVAILABLE =
   'this board could not be loaded — it is in designs/exports/ in the checkout';
+
+/** The box toggle's name, pinned the way the upload button's is. */
+const BOXES_LABEL = 'show spacing boxes';
+
+/** One box to outline, as `PanZoom` takes it — the type it already owns,
+ *  reached through its props rather than re-declared here. */
+type Mark = NonNullable<PanZoomProps['marks']>[number];
+
 interface DesignStageProps {
   split: Split;
   /** Lay each pane's own grid over it — counted in that image's pixels. */
@@ -48,6 +64,56 @@ interface DesignStageProps {
   shots: ShotSources;
   variant: Variant;
   after: string;
+  /** What the spacing did on the variant the address was loaded with, read on
+   *  the server and handed down — or null for a comparison with no ledger
+   *  report behind it. */
+  ledger: LedgerReport | null;
+}
+
+/**
+ * The readings for the variant on screen, and nothing for any other.
+ *
+ * Walking the report with ← → writes the address with `history.replaceState`
+ * and asks the server for nothing (ComparisonRoute explains why), so the report
+ * this component holds goes on being the one the address was LOADED with. Its
+ * own `key` is what makes that visible: readings from another variant would be
+ * a panel describing one screenshot beside another, with its boxes drawn on the
+ * wrong image. The panel says it has no ledger instead, which is the truth about
+ * what it was handed.
+ */
+const readingsFor = (ledger: LedgerReport | null, variant: Variant) =>
+  ledger?.key === variant.key ? ledger : null;
+
+/**
+ * The boxes the readings point at, one per distinct rect.
+ *
+ * Four paddings on one element are four rows and ONE outline: `MarksOverlay`
+ * draws them in order, so four identical boxes would bury the emphasized one
+ * under three plain hairlines. A box is emphasized when the row a reader is
+ * pointing at is one of its own — which is how a press on any of that element's
+ * rows lights up the same box.
+ *
+ * Rects arrive in the after screenshot's own pixels, which is the space
+ * `PanZoom` draws marks in, so they are handed over as measured.
+ */
+function marksFor(changes: readonly LedgerChange[], shown: number | null): Mark[] {
+  const rectKey = (rect: readonly number[] | null) =>
+    rect === null ? null : rect.join();
+  const emphasis = shown === null ? null : rectKey(changes[shown]?.rect ?? null);
+  const outlined = new Map<string, Mark>();
+
+  for (const change of changes) {
+    const [x, y, width, height] = change.rect ?? [];
+    const key = rectKey(change.rect);
+    if (key === null || x === undefined || y === undefined) continue;
+    if (width === undefined || height === undefined) continue;
+
+    if (!outlined.has(key)) {
+      outlined.set(key, { x, y, width, height, emphasis: key === emphasis });
+    }
+  }
+
+  return [...outlined.values()];
 }
 
 /**
@@ -57,6 +123,14 @@ interface DesignStageProps {
  * than at the last board's zoom. The after side is the same `Shot` the modes
  * draw, so a removed variant says "not on this side" here exactly as it does
  * there. Nothing is compared: the reviewer pans to the tile and judges by eye.
+ *
+ * Under both panes, one more thing that is reference beside a comparison: the
+ * spacing readings, and the boxes on the after screenshot they point at. The
+ * two halves are HERE together because the panel's pressed row and the pane's
+ * emphasized mark are one state in two places — a row is pointed at, and the
+ * box it measures lights up. The panel is a full-width row of its own and never
+ * part of the modal's head, which is what keeps the design view free of the
+ * `role="toolbar"` an acceptance scenario asserts is absent.
  */
 export function DesignStage({
   split,
@@ -66,6 +140,7 @@ export function DesignStage({
   shots,
   variant,
   after,
+  ledger,
 }: DesignStageProps) {
   const afterSrc = shots.candidate;
   const caption = <p className="vd-compare__caption vd-mono">after · {after}</p>;
@@ -78,58 +153,100 @@ export function DesignStage({
     if (picked !== board) onBoard(picked);
   };
 
-  return (
-    <div className="vd-compare__stage vd-compare__stage--design">
-      <div className="vd-compare__design" data-split={split}>
-        <div className="vd-compare__column">
-          {/* What each pane holds and how it moves share one row, as Board 04
-              draws them: the picker leads the board's own zoom row. */}
-          <PanZoom
-            key={local?.url ?? board}
-            src={local?.url ?? designBoardUrl(board)}
-            alt={
-              local
-                ? `your design, ${local.name}`
-                : `the ${BOARD_LABELS[board]} design board`
-            }
-            label="design board"
-            fallback={local ? LOCAL_UNREADABLE : BOARD_UNAVAILABLE}
-            grid={grid}
-            className="vd-compare__panzoom"
-            lead={
-              <BoardPicker
-                board={local ? null : board}
-                onBoard={pickBoard}
-                local={local?.name}
-              />
-            }
-            actions={<UploadDesign onPick={setLocal} />}
-          />
-        </div>
+  // Which reading the boxes answer to: the row a pointer is over while it is
+  // there, and the pressed row otherwise. A preview outranks a press, so
+  // reading down the panel points at each box in turn without losing the one
+  // that was pressed.
+  const [pressed, setPressed] = useState<number | null>(null);
+  const [hovered, setHovered] = useState<number | null>(null);
+  const [boxes, setBoxes] = useState(true);
 
-        <div className="vd-compare__column">
-          {/* The same pane as the board's, so the two are read the same way —
-              both fitted at 100%, both dragged and zoomed. A screenshot narrower
-              than the pane sits at its own pixels: the pane never stretches it. */}
-          {afterSrc === undefined ? (
-            <>
-              {caption}
-              <p className="vd-compare__absent">{absentShotCopy(variant, 'candidate')}</p>
-            </>
-          ) : (
+  const readings = readingsFor(ledger, variant);
+  const marks = marksFor(readings?.changes ?? [], hovered ?? pressed);
+
+  return (
+    <>
+      <div className="vd-compare__stage vd-compare__stage--design">
+        <div className="vd-compare__design" data-split={split}>
+          <div className="vd-compare__column">
+            {/* What each pane holds and how it moves share one row, as Board
+                04 draws them: the picker leads the board's own zoom row. */}
             <PanZoom
-              key={variant.key}
-              src={afterSrc}
-              alt="candidate"
-              label="after screenshot"
+              key={local?.url ?? board}
+              src={local?.url ?? designBoardUrl(board)}
+              alt={
+                local
+                  ? `your design, ${local.name}`
+                  : `the ${BOARD_LABELS[board]} design board`
+              }
+              label="design board"
+              fallback={local ? LOCAL_UNREADABLE : BOARD_UNAVAILABLE}
               grid={grid}
               className="vd-compare__panzoom"
-              lead={caption}
+              lead={
+                <BoardPicker
+                  board={local ? null : board}
+                  onBoard={pickBoard}
+                  local={local?.name}
+                />
+              }
+              actions={<UploadDesign onPick={setLocal} />}
             />
-          )}
+          </div>
+
+          <div className="vd-compare__column">
+            {/* The same pane as the board's, so the two are read the same way
+                — both fitted at 100%, both dragged and zoomed. A screenshot
+                narrower than the pane sits at its own pixels: the pane never
+                stretches it. */}
+            {afterSrc === undefined ? (
+              <>
+                {caption}
+                <p className="vd-compare__absent">
+                  {absentShotCopy(variant, 'candidate')}
+                </p>
+              </>
+            ) : (
+              <PanZoom
+                key={variant.key}
+                src={afterSrc}
+                alt="candidate"
+                label="after screenshot"
+                grid={grid}
+                marks={boxes ? marks : undefined}
+                className="vd-compare__panzoom"
+                lead={caption}
+                // On the after pane's own zoom bar, the way the upload button
+                // sits on the board's: it acts on what that pane shows. Offered
+                // only where it has a box to show or hide.
+                actions={
+                  marks.length > 0 ? (
+                    <IconButton
+                      variant="ghost"
+                      size="sm"
+                      label={BOXES_LABEL}
+                      aria-pressed={boxes}
+                      onClick={() => setBoxes(!boxes)}
+                    >
+                      <SquareDashedGlyph />
+                    </IconButton>
+                  ) : undefined
+                }
+              />
+            )}
+          </div>
         </div>
       </div>
-    </div>
+
+      {/* A full-width row below both panes, as Board 04 draws it — never in the
+          modal's head, which is what keeps the design view free of a toolbar. */}
+      <SpacingReadings
+        ledger={readings}
+        pressed={pressed}
+        onPress={setPressed}
+        onHover={setHovered}
+      />
+    </>
   );
 }
 
@@ -193,6 +310,34 @@ function useLocalImage(): [LocalImage | null, (next: LocalImage | null) => void]
   }, [local]);
 
   return [local, setLocal];
+}
+
+/** lucide's `square-dashed`, the glyph Board 04 draws on the box toggle — an
+ *  outline of the thing the toggle outlines. */
+function SquareDashedGlyph() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M5 3a2 2 0 0 0-2 2" />
+      <path d="M19 3a2 2 0 0 1 2 2" />
+      <path d="M21 19a2 2 0 0 1-2 2" />
+      <path d="M5 21a2 2 0 0 1-2-2" />
+      <path d="M9 3h1" />
+      <path d="M9 21h1" />
+      <path d="M14 3h1" />
+      <path d="M14 21h1" />
+      <path d="M3 9v1" />
+      <path d="M21 9v1" />
+      <path d="M3 14v1" />
+      <path d="M21 14v1" />
+    </svg>
+  );
 }
 
 /** lucide's `image-up`, the glyph Board 04 draws on the board's zoom row. */

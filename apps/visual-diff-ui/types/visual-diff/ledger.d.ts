@@ -3,14 +3,22 @@
  * source — see ./compare.d.ts for why every module beside it does the same, and
  * for the bargain that strikes.
  *
- * Narrowed to what the report writer calls: a ledger as it reads one off a capture
- * set, the pairing of two of them, and the bytes a report is written as. The walk,
- * the cascade and the classifier are the package's own business, exercised by its
- * own suite; nothing here reaches a page or a stylesheet.
+ * Narrowed to what the report writer calls and what the design view's readings
+ * panel renders: a ledger as it reads one off a capture set, the pairing of two of
+ * them, the bytes a report is written as, and the shapes that report holds. The
+ * walk, the cascade and the classifier are the package's own business, exercised
+ * by its own suite.
+ *
+ * The SHAPES being declared here is what lets a client component name them. This
+ * file has no runtime at all, so `LedgerReport` in a `'use client'` module can
+ * never become a value import that drags `node:fs` into a browser bundle — which
+ * is the trap `__tests__/config.test.ts` describes, and the reason lib/ledger.ts
+ * exports a reader and a schema but no shape of its own.
  *
  * What holds the transcription honest is `__tests__/runner.test.ts`, which pairs
- * two real sidecars and reads the report back — a changed signature fails that
- * suite rather than passing quietly.
+ * two real sidecars and reads the report back, and `__tests__/ledger.test.ts`,
+ * which parses one with the app's own schema — a changed signature or a changed
+ * field fails one of those rather than passing quietly.
  */
 
 declare module '@gate/visual-diff/ledger' {

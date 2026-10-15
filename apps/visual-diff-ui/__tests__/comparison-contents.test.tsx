@@ -35,6 +35,17 @@ describe('ComparisonContents', () => {
     expect(variants.some((variant) => variant.bucket === 'a11y')).toBe(false);
   });
 
+  // The committed fixtures are a real run's artifacts from before the console
+  // measured any spacing, so they carry no ledger directory — which is also
+  // every report in a tree the differ wrote before this feature existed. The
+  // panel says so; the read does not throw and the modal still opens.
+  it('hands the modal no readings for a comparison with no ledger report', async () => {
+    const element = await contentsFor(REPORT, KEY);
+
+    const { ledger } = element.props as ComparisonRouteProps;
+    expect(ledger).toBeNull();
+  });
+
   it('is a not-found, never a blank modal, for a key the report lacks', async () => {
     const read = contentsFor(REPORT, 'atoms__desktop__light__atoms-gone--default');
 
