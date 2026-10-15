@@ -1,4 +1,8 @@
 import * as path from 'node:path';
+// The directory a report's ledger reports sit in, named where every other ledger
+// literal is. Zero-import and side-effect free, like `./job-contract` below, so
+// reading it from here keeps this module the leaf its header claims.
+import { LEDGER } from '@gate/visual-diff/policy';
 // What may name a directory is a fact about the data before it is one about the
 // filesystem, so the pattern lives with the shapes. Checked here before
 // `entryUnder` rather than instead of it: confinement catches the climb, and this
@@ -27,8 +31,9 @@ import { REPORT_ID, SET_LABEL } from './job-contract';
  * the host check.
  *
  * A LEAF. No `next/*`, no `node:fs`, no `node:child_process` — nothing but
- * `node:path` and the names below. That is what lets both sides import it: the
- * read path is cached and request-scoped, the write path runs from a detached job,
+ * `node:path`, two zero-import data modules, and the names below. That is what
+ * lets both sides import it: the read path is cached and request-scoped, the
+ * write path runs from a detached job,
  * and a module either of them can reach has to be reachable from neither's runtime
  * in particular.
  *
@@ -48,6 +53,7 @@ import { REPORT_ID, SET_LABEL } from './job-contract';
  *     <dir>/sets/<label>/<variantKey>.png                one set's shots
  *     <dir>/reports/<id>/summary.json                    one comparison's record
  *     <dir>/reports/<id>/shots/<variantKey>.<kind>.png   what it compared
+ *     <dir>/reports/<id>/ledger/<variantKey>.json        what its spacing did
  *     <dir>/history.json  worktrees.json  refresh.json   the console's own state
  *     <dir>/job.lock  jobs/<jobId>.log                   the run in flight
  *
@@ -169,6 +175,14 @@ export function reportDirOf(dataDir: string, id: string): string | null {
 
 /** The `summary.json` inside a report directory the caller already holds. */
 export const summaryFile = (dir: string) => path.join(dir, SUMMARY_FILE);
+
+/** One variant's ledger report inside a report directory the caller already holds.
+ *
+ *  Through `within()` rather than a join, unlike `summaryFile`: `key` is a name the
+ *  runner read off a capture set's `readdir`, so it is data rather than a constant.
+ *  Throws on a climb, because the caller is a writer with nowhere to put a null. */
+export const ledgerReportPath = (dir: string, key: string) =>
+  within(dir, LEDGER.reportDir, `${key}.json`);
 
 /** One shot inside a report directory the caller already holds. `file` arrives
  *  from a URL, so it goes through `entryUnder` rather than a join. */

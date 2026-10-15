@@ -12,7 +12,10 @@ import {
   ledgerExpression,
   ledgerFile,
   nearestStep,
+  pairKey,
+  pairLedgers,
   serializeLedger,
+  serializeLedgerReport,
   themeDrift,
   winningDeclaration,
 } from '../ledger.mjs';
@@ -445,6 +448,18 @@ describe('winningDeclaration', () => {
   });
 });
 
+/** Every object in `value`, rebuilt with its keys in reverse insertion order. A
+ *  serializer that read its input's key order would answer differently for this. */
+const reversedKeys = (value) => {
+  if (Array.isArray(value)) return value.map(reversedKeys);
+  if (value === null || typeof value !== 'object') return value;
+  return Object.fromEntries(
+    Object.entries(value)
+      .reverse()
+      .map(([key, inner]) => [key, reversedKeys(inner)]),
+  );
+};
+
 describe('serializeLedger', () => {
   /** @returns {import('../ledger.mjs').Ledger} */
   const ledger = () => ({
@@ -478,17 +493,6 @@ describe('serializeLedger', () => {
       },
     ],
   });
-
-  /** Every object in `value`, rebuilt with its keys in reverse insertion order. */
-  const reversedKeys = (value) => {
-    if (Array.isArray(value)) return value.map(reversedKeys);
-    if (value === null || typeof value !== 'object') return value;
-    return Object.fromEntries(
-      Object.entries(value)
-        .reverse()
-        .map(([key, inner]) => [key, reversedKeys(inner)]),
-    );
-  };
 
   it('writes the same bytes for the same ledger', () => {
     const first = serializeLedger(ledger());
@@ -1068,5 +1072,396 @@ describe('themeDrift', () => {
     const drift = themeDrift([shot('light', ledgerOf()), shot('dark', null)]);
 
     expect(drift).toEqual([]);
+  });
+});
+
+/* ---- Before against after --------------------------------------------------- */
+
+/** One reading, named as the design token it equals when the scale has one — which
+ *  is what `classify` answers for a value written through that token's own custom
+ *  property, and the shape every case below starts from. */
+const reads = (property, px, overrides = {}) => {
+  const step = Object.entries(SCALE).find(([, value]) => value === px);
+
+  return {
+    property,
+    px,
+    authored: step ? `var(${step[0]})` : `${px}px`,
+    origin: 'regular',
+    token: step?.[0] ?? null,
+    classification: step ? 'token' : px === 0 ? 'none' : 'off-scale',
+    ...overrides,
+  };
+};
+
+/** One element of a ledger, carrying only the readings a case is about. */
+const element = ({
+  path = 'ds-dialog/ds-btn:2',
+  label = 'button "Keep it open"',
+  rect = [912.5, 455, 131.27, 40],
+  readings = [],
+}) => ({ path, label, rect, readings });
+
+/** A ledger over the given elements. */
+const ledgerAround = (elements, origin = 'document') => ({
+  schema: 1,
+  key: 'organisms__desktop__dark__organisms-dialog--open',
+  origin,
+  scale: SCALE,
+  elements,
+});
+
+/** The dialog's button as the design system styles it, and as the browser does
+ *  when the class is gone: the real regression Board 04 draws. */
+const STYLED = element({
+  readings: [
+    reads('padding-top', 8),
+    reads('padding-right', 16),
+    reads('padding-bottom', 8),
+    reads('padding-left', 16),
+  ],
+});
+const BARE = element({
+  path: 'ds-dialog/button:2',
+  readings: [
+    reads('padding-top', 1, { origin: 'user-agent', token: '--space-1' }),
+    reads('padding-right', 6, { origin: 'user-agent', token: '--space-1' }),
+    reads('padding-bottom', 1, { origin: 'user-agent', token: '--space-1' }),
+    reads('padding-left', 6, { origin: 'user-agent', token: '--space-1' }),
+  ],
+});
+
+describe('pairKey', () => {
+  it('keys an element by the name the accessibility tree gave it', () => {
+    const key = pairKey(STYLED, [STYLED]);
+
+    expect(key).toBe('button "Keep it open"');
+  });
+
+  // `labelOf` falls back to the last path segment for an element with no name, so a
+  // label that IS that segment is no name at all — and a path pairs it as well as
+  // anything can.
+  it('falls back to the path for an element the tree never named', () => {
+    const stack = element({ path: 'ds-dialog/ds-stack:1', label: 'ds-stack:1' });
+
+    const key = pairKey(stack, [stack]);
+
+    expect(key).toBe('ds-dialog/ds-stack:1');
+  });
+
+  // Two elements that answer to one name cannot tell each other apart, so the name
+  // is worse than the path: it would pair the first with the second.
+  it('falls back to the path for a name two elements share', () => {
+    const twin = element({ path: 'ds-dialog/ds-btn:3' });
+    const siblings = [STYLED, twin];
+
+    const key = pairKey(twin, siblings);
+
+    expect(key).toBe('ds-dialog/ds-btn:3');
+  });
+});
+
+describe('pairLedgers', () => {
+  it('says nothing about a variant neither set measured', () => {
+    const paired = pairLedgers(null, null);
+
+    expect(paired).toEqual({ mode: null, changes: [] });
+  });
+
+  // A before side alone is a variant the after capture no longer has. There is
+  // nothing to show beside an after screenshot that does not exist.
+  it('says nothing when only the before side measured a ledger', () => {
+    const paired = pairLedgers(ledgerAround([STYLED]), null);
+
+    expect(paired).toEqual({ mode: null, changes: [] });
+  });
+
+  it('reports nothing for a property whose value and token both stayed', () => {
+    const paired = pairLedgers(ledgerAround([STYLED]), ledgerAround([STYLED]));
+
+    expect(paired).toEqual({ mode: 'changed', changes: [] });
+  });
+
+  it('reports the dialog’s button falling off the scale, property by property', () => {
+    const paired = pairLedgers(ledgerAround([STYLED]), ledgerAround([BARE]));
+
+    expect(paired.changes).toEqual([
+      {
+        label: 'button "Keep it open"',
+        property: 'padding-top',
+        change: 'changed',
+        before: { px: 8, token: '--space-2', origin: 'regular', classification: 'token' },
+        after: {
+          px: 1,
+          token: '--space-1',
+          origin: 'user-agent',
+          classification: 'off-scale',
+        },
+        rect: [912.5, 455, 131.27, 40],
+      },
+      {
+        label: 'button "Keep it open"',
+        property: 'padding-right',
+        change: 'changed',
+        before: {
+          px: 16,
+          token: '--space-4',
+          origin: 'regular',
+          classification: 'token',
+        },
+        after: {
+          px: 6,
+          token: '--space-1',
+          origin: 'user-agent',
+          classification: 'off-scale',
+        },
+        rect: [912.5, 455, 131.27, 40],
+      },
+      {
+        label: 'button "Keep it open"',
+        property: 'padding-bottom',
+        change: 'changed',
+        before: { px: 8, token: '--space-2', origin: 'regular', classification: 'token' },
+        after: {
+          px: 1,
+          token: '--space-1',
+          origin: 'user-agent',
+          classification: 'off-scale',
+        },
+        rect: [912.5, 455, 131.27, 40],
+      },
+      {
+        label: 'button "Keep it open"',
+        property: 'padding-left',
+        change: 'changed',
+        before: {
+          px: 16,
+          token: '--space-4',
+          origin: 'regular',
+          classification: 'token',
+        },
+        after: {
+          px: 6,
+          token: '--space-1',
+          origin: 'user-agent',
+          classification: 'off-scale',
+        },
+        rect: [912.5, 455, 131.27, 40],
+      },
+    ]);
+  });
+
+  // The label pairs them, so the path moving from `ds-btn:2` to `button:2` — which
+  // is what losing the class does to the walk — is not a disappearance.
+  it('pairs an element whose path moved but whose name did not', () => {
+    const paired = pairLedgers(ledgerAround([STYLED]), ledgerAround([BARE]));
+
+    expect(paired.changes.map((change) => change.change)).toEqual([
+      'changed',
+      'changed',
+      'changed',
+      'changed',
+    ]);
+  });
+
+  // A padding that went away is still that element's spacing having changed. Read
+  // as `gone`, it would report the whole element as having disappeared.
+  it('reports a padding that fell to zero as changed, never as gone', () => {
+    const flattened = element({
+      readings: [reads('padding-right', 0)],
+    });
+
+    const paired = pairLedgers(
+      ledgerAround([element({ readings: [reads('padding-right', 16)] })]),
+      ledgerAround([flattened]),
+    );
+
+    expect(paired.changes).toEqual([
+      {
+        label: 'button "Keep it open"',
+        property: 'padding-right',
+        change: 'changed',
+        before: {
+          px: 16,
+          token: '--space-4',
+          origin: 'regular',
+          classification: 'token',
+        },
+        after: { px: 0, token: null, origin: 'regular', classification: 'none' },
+        rect: [912.5, 455, 131.27, 40],
+      },
+    ]);
+  });
+
+  it('reports an element only the after side has as appeared, with its own rect', () => {
+    const paired = pairLedgers(ledgerAround([]), ledgerAround([STYLED]));
+
+    expect(paired.changes).toMatchObject([
+      { property: 'padding-top', change: 'appeared', before: null, rect: STYLED.rect },
+      { property: 'padding-right', change: 'appeared', before: null },
+      { property: 'padding-bottom', change: 'appeared', before: null },
+      { property: 'padding-left', change: 'appeared', before: null },
+    ]);
+  });
+
+  it('reports an element only the before side has as gone, with no rect', () => {
+    const paired = pairLedgers(ledgerAround([STYLED]), ledgerAround([]));
+
+    expect(paired.changes).toMatchObject([
+      { property: 'padding-top', change: 'gone', after: null, rect: null },
+      { property: 'padding-right', change: 'gone', after: null, rect: null },
+      { property: 'padding-bottom', change: 'gone', after: null, rect: null },
+      { property: 'padding-left', change: 'gone', after: null, rect: null },
+    ]);
+  });
+
+  // An element that came or went lists the spacing it has, and a property it never
+  // set is not spacing it has.
+  it('lists no `none` reading for an element that came or went', () => {
+    const empty = element({ readings: [reads('row-gap', 0), reads('padding-top', 8)] });
+
+    const paired = pairLedgers(ledgerAround([]), ledgerAround([empty]));
+
+    expect(paired.changes.map((change) => change.property)).toEqual(['padding-top']);
+  });
+
+  // The after side is what a reader is looking at, so it leads; a before-only
+  // element has nowhere else to go than after everything that is still there.
+  it('reads after-side document order first, then what the before side lost', () => {
+    const kept = element({ path: 'ds-card', label: 'ds-card' });
+    const lost = element({
+      path: 'ds-dialog/ds-stack:1',
+      label: 'ds-stack:1',
+      readings: [reads('row-gap', 8)],
+    });
+    const added = element({
+      path: 'ds-tag',
+      label: 'ds-tag',
+      readings: [reads('row-gap', 4)],
+    });
+
+    const paired = pairLedgers(ledgerAround([kept, lost]), ledgerAround([kept, added]));
+
+    expect(paired.changes.map((change) => [change.label, change.change])).toEqual([
+      ['ds-tag', 'appeared'],
+      ['ds-stack:1', 'gone'],
+    ]);
+  });
+
+  it('orders one element’s properties as the policy does', () => {
+    const shuffled = element({
+      readings: [reads('row-gap', 8), reads('padding-left', 6), reads('padding-top', 6)],
+    });
+
+    const paired = pairLedgers(ledgerAround([]), ledgerAround([shuffled]));
+
+    expect(paired.changes.map((change) => change.property)).toEqual([
+      'padding-top',
+      'padding-left',
+      'row-gap',
+    ]);
+  });
+
+  // `baselines` carries no ledgers by construction, so a compare against the corpus
+  // has only one side to read. What it can still say is which spacing is not a
+  // design token — and nothing at all about what moved.
+  it('keeps only the off-scale and raw-on-scale readings of an after-only capture', () => {
+    const mixed = element({
+      readings: [
+        reads('padding-top', 8),
+        reads('padding-right', 6),
+        reads('padding-bottom', 16, { authored: '16px', classification: 'raw-on-scale' }),
+        reads('padding-left', 0),
+        reads('row-gap', 2, { classification: 'exempt', token: null }),
+      ],
+    });
+
+    const paired = pairLedgers(null, ledgerAround([mixed]));
+
+    expect({
+      mode: paired.mode,
+      changes: paired.changes.map((change) => [change.property, change.change]),
+    }).toEqual({
+      mode: 'after-only',
+      changes: [
+        ['padding-right', 'present'],
+        ['padding-bottom', 'present'],
+      ],
+    });
+  });
+
+  it('names the after side of a present reading and leaves the before side empty', () => {
+    const paired = pairLedgers(null, ledgerAround([BARE]));
+
+    expect(paired.changes[0]).toEqual({
+      label: 'button "Keep it open"',
+      property: 'padding-top',
+      change: 'present',
+      before: null,
+      after: {
+        px: 1,
+        token: '--space-1',
+        origin: 'user-agent',
+        classification: 'off-scale',
+      },
+      rect: [912.5, 455, 131.27, 40],
+    });
+  });
+});
+
+describe('serializeLedgerReport', () => {
+  const report = () => ({
+    key: 'organisms__desktop__dark__organisms-dialog--open',
+    mode: 'changed',
+    origin: 'document',
+    changes: pairLedgers(ledgerAround([STYLED]), ledgerAround([BARE])).changes,
+  });
+
+  it('writes the same bytes for the same report', () => {
+    const first = serializeLedgerReport(report());
+
+    const second = serializeLedgerReport(report());
+
+    expect(second).toBe(first);
+  });
+
+  it('writes the same bytes whatever order the keys arrived in', () => {
+    const ordered = serializeLedgerReport(report());
+
+    const shuffled = serializeLedgerReport(reversedKeys(report()));
+
+    expect(shuffled).toBe(ordered);
+  });
+
+  it('stamps the schema, the key, the mode and where a rect is measured from', () => {
+    const parsed = JSON.parse(serializeLedgerReport(report()));
+
+    expect(parsed).toMatchObject({
+      schema: 1,
+      key: 'organisms__desktop__dark__organisms-dialog--open',
+      mode: 'changed',
+      origin: 'document',
+    });
+  });
+
+  it('rounds every number to the policy’s decimals', () => {
+    const one = element({
+      rect: [280.27419, 462.906, 106.1904, 30],
+      readings: [reads('padding-top', 6.004)],
+    });
+
+    const parsed = JSON.parse(
+      serializeLedgerReport({
+        key: 'k',
+        mode: 'after-only',
+        origin: 'target',
+        changes: pairLedgers(null, ledgerAround([one])).changes,
+      }),
+    );
+
+    expect(parsed.changes[0]).toMatchObject({
+      after: { px: 6 },
+      rect: [280.27, 462.91, 106.19, 30],
+    });
   });
 });
