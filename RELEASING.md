@@ -107,12 +107,40 @@ that rendered as an unbroken wall of text.
    `apps/blog/lib/releases.ts` splits on it to render the tag and the story separately, and
    a title shaped any other way is printed whole.
 
+8. Ship. Fast-forward the `production` branch to the tag:
+
+   ```bash
+   gh api -X PATCH repos/climaa/acceptance-gate/git/refs/heads/production \
+     -f sha="$(git rev-parse 'vX.Y.Z^{commit}')" -F force=false
+   ```
+
+   This is the only step that changes the live sites — see
+   [Production is a branch](#production-is-a-branch). It comes after step 7 so the blog
+   build that it triggers already finds the new GitHub Release for `/changelog`.
+
 Get the headline signed off **before** step 6. It becomes the tag message, the GitHub
 Release title and the permanent `/changelog` entry.
 
-## Publishing does not update the site
+## Production is a branch
 
-A published release changes nothing in git, so nothing that watches git rebuilds the blog.
+Each of the four Vercel projects deploys production from the `production` branch, not from
+`main`. A merge to `main` builds previews only; nothing reaches `*.carloslima.dev` until
+`production` moves. Every production build is kept for a week, so building one per merge
+took the Hobby plan's deployment storage to 75% in a fortnight — one per release does not.
+
+- **Why not `release`:** step 1 creates `release/X.Y.Z` branches, and git cannot hold a
+  `release` branch beside them.
+- **Why `gh api` and not `git push`:** it moves the ref on GitHub without a local checkout,
+  and `force=false` refuses anything but a fast-forward, so production can never be rolled
+  back to an older commit by accident.
+- **Shipping without a release** — a blog post, an urgent fix — is the same command with
+  `main`'s sha instead of a tag. The `ignoreCommand` in each `vercel.json` still skips the
+  projects the range did not affect.
+
+## Publishing alone does not update the site
+
+A published release changes nothing in git, so nothing that watches git rebuilds the blog
+— step 8 is what does, because it moves `production`.
 `.github/workflows/changelog-deploy.yml` is the only edge that does: it fires on
 `release: published`, POSTs the Vercel deploy hook with `?buildCache=false`, and then polls
 the deployed page for the tag rather than trusting that a deployment happened.
