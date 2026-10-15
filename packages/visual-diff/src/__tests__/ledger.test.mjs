@@ -1182,6 +1182,54 @@ describe('pairLedgers', () => {
     expect(paired).toEqual({ mode: 'changed', changes: [] });
   });
 
+  // The same 16px and the same nearest step on both sides: only the authoring moved,
+  // from the design token to a literal that happens to equal it. That is the
+  // "should be --space-4" the readings exist to name, invisible to px and token alone.
+  it('reports a token swapped for the literal it equals, though no pixel moved', () => {
+    const literal = element({
+      readings: [
+        reads('padding-right', 16, { authored: '16px', classification: 'raw-on-scale' }),
+      ],
+    });
+    const tokened = element({ readings: [reads('padding-right', 16)] });
+
+    const paired = pairLedgers(ledgerAround([tokened]), ledgerAround([literal]));
+
+    expect(paired.changes).toEqual([
+      {
+        label: 'button "Keep it open"',
+        property: 'padding-right',
+        change: 'changed',
+        before: {
+          px: 16,
+          token: '--space-4',
+          origin: 'regular',
+          classification: 'token',
+        },
+        after: {
+          px: 16,
+          token: '--space-4',
+          origin: 'regular',
+          classification: 'raw-on-scale',
+        },
+        rect: [912.5, 455, 131.27, 40],
+      },
+    ]);
+  });
+
+  it('reports an off-scale value whose nearest step moved, though its pixels did not', () => {
+    const before = element({
+      readings: [reads('padding-right', 18, { token: '--space-4' })],
+    });
+    const after = element({
+      readings: [reads('padding-right', 18, { token: '--space-5' })],
+    });
+
+    const paired = pairLedgers(ledgerAround([before]), ledgerAround([after]));
+
+    expect(paired.changes.map((change) => change.after?.token)).toEqual(['--space-5']);
+  });
+
   it('reports the dialog’s button falling off the scale, property by property', () => {
     const paired = pairLedgers(ledgerAround([STYLED]), ledgerAround([BARE]));
 
