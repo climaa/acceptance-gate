@@ -29,9 +29,9 @@
   "devDependencies": {
     "@ai-hero/sandcastle": "0.12.0",
     "@types/node": "^22.20.5",
-    "dotenv": "^18.0.5",
-    "fallow": "3.31.0",
-    "prettier": "^3.9.9",
+    "dotenv": "^18.0.7",
+    "fallow": "3.33.1",
+    "prettier": "^3.9.10",
     "tsx": "^4.23.15",
     "turbo": "^2.11.7",
     "typescript": "^5.9.3",
