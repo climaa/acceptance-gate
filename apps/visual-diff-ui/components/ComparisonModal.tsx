@@ -7,6 +7,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Dialog, IconButton, SegmentedControl, Stack } from '@gate/ui';
+import type { LedgerReport } from '@gate/visual-diff/ledger';
 import { REDUCED_MOTION, useMediaQuery, WIDE_VIEWPORT } from '@/hooks/useMediaQuery';
 import {
   AGAINST,
@@ -566,6 +567,9 @@ export interface ComparisonModalProps {
   against: Against;
   /** The board the design view shows. Read only while `against` is design. */
   board: DesignBoard;
+  /** What the spacing did on this variant, for the design view's readings
+   *  panel. Read on the server (lib/ledger.ts), never fetched from here. */
+  ledger: LedgerReport | null;
   onMode: (mode: ComparisonMode) => void;
   onAgainst: (against: Against) => void;
   onBoard: (board: DesignBoard) => void;
@@ -588,6 +592,7 @@ export function ComparisonModal({
   mode,
   against,
   board,
+  ledger,
   onMode,
   onAgainst,
   onBoard,
@@ -649,6 +654,7 @@ export function ComparisonModal({
             shots={shots}
             variant={variant}
             after={sides.b}
+            ledger={ledger}
           />
         ) : (
           <ModesStage

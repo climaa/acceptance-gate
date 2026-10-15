@@ -3,6 +3,7 @@ import { act, cleanup, fireEvent, render, screen, within } from '@testing-librar
 // Imported explicitly rather than relying on `globals: true` — tsconfig's
 // `**/*.tsx` include means tsc typechecks this file.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { LedgerChange, LedgerReport } from '@gate/visual-diff/ledger';
 import { ComparisonModal } from '../components/ComparisonModal';
 import { ReportTemplate } from '../components/ReportTemplate';
 import {
@@ -81,6 +82,10 @@ function renderModal(
   subject: Variant = PROSE,
   against: Against = 'before',
   board: DesignBoard = 'component-library',
+  /** What the spacing did on this variant. Null is the common case and the
+   *  default: a report written before the console measured anything, and every
+   *  comparison in the committed fixtures. */
+  ledger: LedgerReport | null = null,
 ) {
   const handlers = {
     onMode: vi.fn<(mode: ComparisonMode) => void>(),
@@ -99,6 +104,7 @@ function renderModal(
       mode={mode}
       against={against}
       board={board}
+      ledger={ledger}
       {...handlers}
     />,
   );
@@ -372,6 +378,7 @@ describe('the copy-link status', () => {
       mode={mode}
       against={against}
       board="component-library"
+      ledger={null}
       onMode={() => {}}
       onAgainst={() => {}}
       onBoard={() => {}}
@@ -458,6 +465,45 @@ describe('the design view', () => {
       .getAllByRole('button')
       .filter((button) => button.getAttribute('aria-pressed') === 'true')
       .map((button) => button.textContent);
+
+  /**
+   * jsdom lays nothing out and loads no image, so a pane has no size and an
+   * image no natural size — and a `PanZoom` with no scale draws neither a grid
+   * nor a mark. Registered by the two blocks that need one: every pane measures
+   * 400×300 from the prototype (it measures itself once, on mount), and
+   * `loadBothPanes` is what gives each image its own pixels.
+   */
+  function measuredPanes() {
+    const sizes = ['clientWidth', 'clientHeight'] as const;
+    const saved = sizes.map((key) =>
+      Object.getOwnPropertyDescriptor(HTMLElement.prototype, key),
+    );
+
+    beforeEach(() => {
+      sizes.forEach((key, index) =>
+        Object.defineProperty(HTMLElement.prototype, key, {
+          configurable: true,
+          get(this: HTMLElement) {
+            return this.classList.contains('ds-panzoom__pane') ? [400, 300][index] : 0;
+          },
+        }),
+      );
+    });
+    afterEach(() => {
+      sizes.forEach((key, index) => {
+        const descriptor = saved[index];
+        if (descriptor) Object.defineProperty(HTMLElement.prototype, key, descriptor);
+      });
+    });
+  }
+
+  function loadBothPanes() {
+    for (const img of modal().querySelectorAll<HTMLImageElement>('.ds-panzoom__image')) {
+      Object.defineProperty(img, 'naturalWidth', { value: 1600 });
+      Object.defineProperty(img, 'naturalHeight', { value: 2400 });
+      fireEvent.load(img);
+    }
+  }
 
   it('offers before and design, with before pressed by default', () => {
     renderModal();
@@ -592,39 +638,7 @@ describe('the design view', () => {
       expect(gridButton().getAttribute('aria-pressed')).toBe('false');
     });
 
-    /** jsdom lays nothing out and loads no image. Every pane measures 400×300
-     *  from the prototype — it measures itself once, on mount — and each image
-     *  reports a natural size, so each PanZoom has a scale to draw a grid at. */
-    const sizes = ['clientWidth', 'clientHeight'] as const;
-    const saved = sizes.map((key) =>
-      Object.getOwnPropertyDescriptor(HTMLElement.prototype, key),
-    );
-    beforeEach(() => {
-      sizes.forEach((key, index) =>
-        Object.defineProperty(HTMLElement.prototype, key, {
-          configurable: true,
-          get(this: HTMLElement) {
-            return this.classList.contains('ds-panzoom__pane') ? [400, 300][index] : 0;
-          },
-        }),
-      );
-    });
-    afterEach(() => {
-      sizes.forEach((key, index) => {
-        const descriptor = saved[index];
-        if (descriptor) Object.defineProperty(HTMLElement.prototype, key, descriptor);
-      });
-    });
-
-    function loadBothPanes() {
-      for (const img of modal().querySelectorAll<HTMLImageElement>(
-        '.ds-panzoom__image',
-      )) {
-        Object.defineProperty(img, 'naturalWidth', { value: 1600 });
-        Object.defineProperty(img, 'naturalHeight', { value: 2400 });
-        fireEvent.load(img);
-      }
-    }
+    measuredPanes();
 
     it('draws a grid over both panes when pressed, and none on a second press', () => {
       renderModal('diff', PROSE, 'design');
@@ -650,6 +664,193 @@ describe('the design view', () => {
       renderModal('diff', PROSE, 'before');
 
       expect(within(modal()).queryByRole('button', { name: 'grid' })).toBeNull();
+    });
+  });
+
+  /**
+   * The readings panel and the boxes it points at, as one surface: the table is
+   * SpacingReadings' own suite, and what is asserted here is the wiring between
+   * a row and the after screenshot — which is why the panel lives beside both
+   * panes rather than inside either.
+   */
+  describe('the spacing readings', () => {
+    /** The dialog's real regression, as Board 04 draws it: the button's padding
+     *  falling off the scale to the browser's own 6px. */
+    const reading = (
+      property: string,
+      rect: readonly number[] | null,
+      label = 'button "Keep it open"',
+    ): LedgerChange => ({
+      label,
+      property,
+      change: 'changed',
+      before: {
+        px: 16,
+        token: '--space-4',
+        origin: 'regular',
+        classification: 'token',
+      },
+      after: {
+        px: 6,
+        token: '--space-1',
+        origin: 'user-agent',
+        classification: 'off-scale',
+      },
+      rect,
+    });
+
+    /** Two paddings on one element and one gap on another: three rows, two
+     *  boxes. */
+    const LEDGER: LedgerReport = {
+      key: PROSE.key,
+      mode: 'changed',
+      origin: 'target',
+      changes: [
+        reading('padding-right', [1042, 380, 84, 30]),
+        reading('padding-left', [1042, 380, 84, 30]),
+        reading('row-gap', [40, 120, 300, 24], 'dialog "Unsaved changes"'),
+      ],
+    };
+
+    const panel = () => modal().querySelector('.vd-readings') as HTMLElement;
+    const readings = () =>
+      within(modal()).getByRole('table', { name: 'Spacing readings' });
+    const marks = () => modal().querySelectorAll('.ds-panzoom__mark');
+    const emphasized = () => modal().querySelectorAll('.ds-panzoom__mark--emphasis');
+    const boxToggle = () =>
+      within(modal()).getByRole('button', { name: 'show spacing boxes' });
+    const rowFor = (property: string) =>
+      within(readings()).getByText(property).closest('tr') as HTMLElement;
+    const elementIn = (property: string) => within(rowFor(property)).getByRole('button');
+
+    it('lists what moved, in a row of its own below both panes', () => {
+      renderModal('diff', PROSE, 'design', 'component-library', LEDGER);
+
+      expect(within(readings()).getAllByRole('row')).toHaveLength(4);
+      // Below the panes, never inside one: the design view exposes no toolbar,
+      // and a panel in the stage would be a third thing competing for its height.
+      expect(modal().querySelector('.vd-compare__stage--design')?.contains(panel())).toBe(
+        false,
+      );
+    });
+
+    it('says so when the comparison has no ledger behind it', () => {
+      renderModal('diff', PROSE, 'design');
+
+      expect(
+        within(modal()).getByText('No token ledger for this comparison.'),
+      ).toBeTruthy();
+    });
+
+    it('is not offered when reading against before', () => {
+      renderModal('diff', PROSE, 'before', 'component-library', LEDGER);
+
+      expect(
+        within(modal()).queryByRole('table', { name: 'Spacing readings' }),
+      ).toBeNull();
+    });
+
+    // A walk writes the address and asks the server for nothing, so the report
+    // on hand stays the one the address was loaded with. Readings from another
+    // variant would be a panel describing one screenshot beside another — and
+    // boxes drawn on the wrong image.
+    it('says nothing about a variant its readings were not read for', () => {
+      renderModal('diff', PROSE_DARK, 'design', 'component-library', LEDGER);
+
+      expect(
+        within(modal()).queryByRole('table', { name: 'Spacing readings' }),
+      ).toBeNull();
+      expect(
+        within(modal()).getByText('No token ledger for this comparison.'),
+      ).toBeTruthy();
+    });
+
+    // The one role the design view must never expose: an acceptance scenario
+    // asserts the modes toolbar is absent here, and a panel of controls is
+    // exactly the kind of thing that would bring one back.
+    it('exposes no toolbar, readings and all', () => {
+      renderModal('diff', PROSE, 'design', 'component-library', LEDGER);
+
+      expect(within(modal()).queryByRole('toolbar')).toBeNull();
+    });
+
+    describe('the boxes on the after screenshot', () => {
+      measuredPanes();
+
+      it('outlines one box per element the readings name', () => {
+        renderModal('diff', PROSE, 'design', 'component-library', LEDGER);
+
+        loadBothPanes();
+
+        // Three rows, two elements: four paddings on one box are four readings
+        // and one outline.
+        expect(marks()).toHaveLength(2);
+        expect(emphasized()).toHaveLength(0);
+      });
+
+      it('emphasizes the box of the row a reader presses', () => {
+        renderModal('diff', PROSE, 'design', 'component-library', LEDGER);
+        loadBothPanes();
+
+        fireEvent.click(elementIn('padding-right'));
+
+        expect(elementIn('padding-right').getAttribute('aria-pressed')).toBe('true');
+        expect(emphasized()).toHaveLength(1);
+      });
+
+      it('previews a box while the pointer is over its row, and lets it go', () => {
+        renderModal('diff', PROSE, 'design', 'component-library', LEDGER);
+        loadBothPanes();
+
+        fireEvent.mouseEnter(elementIn('row-gap'));
+        const previewed = emphasized().length;
+        fireEvent.mouseLeave(elementIn('row-gap'));
+
+        expect(previewed).toBe(1);
+        expect(emphasized()).toHaveLength(0);
+      });
+
+      it('draws the boxes from the start, and puts its toggle on the after pane', () => {
+        renderModal('diff', PROSE, 'design', 'component-library', LEDGER);
+        loadBothPanes();
+
+        const bar = within(modal()).getByRole('group', {
+          name: 'after screenshot zoom',
+        });
+        expect(within(bar).getByRole('button', { name: 'show spacing boxes' })).toBe(
+          boxToggle(),
+        );
+        expect(boxToggle().getAttribute('aria-pressed')).toBe('true');
+      });
+
+      it('takes the boxes off the screenshot when the toggle is released', () => {
+        renderModal('diff', PROSE, 'design', 'component-library', LEDGER);
+        loadBothPanes();
+
+        fireEvent.click(boxToggle());
+        const hidden = marks().length;
+        fireEvent.click(boxToggle());
+
+        expect(hidden).toBe(0);
+        expect(marks()).toHaveLength(2);
+      });
+
+      // A reading on an element that is gone has no after rect to point at, so
+      // there is nothing for a toggle to show or hide.
+      it('offers no toggle where no reading has a box', () => {
+        const gone: LedgerReport = {
+          ...LEDGER,
+          changes: [{ ...reading('padding-right', null), change: 'gone', after: null }],
+        };
+        renderModal('diff', PROSE, 'design', 'component-library', gone);
+
+        loadBothPanes();
+
+        expect(
+          within(modal()).queryByRole('button', { name: 'show spacing boxes' }),
+        ).toBeNull();
+        expect(marks()).toHaveLength(0);
+      });
     });
   });
 

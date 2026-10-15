@@ -301,10 +301,10 @@ describe('the dev server address', () => {
  * readers are the functions that open those files.
  */
 describe('fixture tracing', () => {
-  /** Everything in lib/data.ts and lib/set-shots.ts that opens a file under the
-   *  data directory. A route mentioning one of these reads fixtures in sample
-   *  mode, and a deployed function without them answers from a tree that is not
-   *  there. */
+  /** Everything in lib/data.ts, lib/set-shots.ts and lib/ledger.ts that opens a
+   *  file under the data directory. A route mentioning one of these reads
+   *  fixtures in sample mode, and a deployed function without them answers from
+   *  a tree that is not there. */
   const READERS = [
     'readSets',
     'readSetSizes',
@@ -315,6 +315,7 @@ describe('fixture tracing', () => {
     'resolveShotPath',
     'resolveSetShotPath',
     'freeLabel',
+    'readLedgerReport',
     // Not readers themselves, but the server components every report and
     // comparison route reads through — a route that renders one reads what it
     // reads, and naming the wrapper is what keeps that from hiding the route.

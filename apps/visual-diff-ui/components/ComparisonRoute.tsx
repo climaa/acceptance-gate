@@ -17,6 +17,7 @@ import {
   parseComparisonPath,
   reportPath,
 } from '@/lib/comparison';
+import type { LedgerReport } from '@gate/visual-diff/ledger';
 import type { ReportSides } from '@/lib/report-view';
 import { APP_NAME } from '@/lib/site';
 import type { Variant } from '@/lib/summary';
@@ -41,6 +42,9 @@ export interface ComparisonRouteProps {
   /** Every variant the modal can show — the report's comparable ones. */
   variants: readonly Variant[];
   sides: ReportSides;
+  /** What the spacing did on the variant the address names, read beside the
+   *  comparison itself. Null for every comparison with no ledger report. */
+  ledger: LedgerReport | null;
   entry: ComparisonEntry;
 }
 
@@ -64,6 +68,7 @@ export function ComparisonRoute({
   reportId,
   variants,
   sides,
+  ledger,
   entry,
 }: ComparisonRouteProps) {
   const router = useRouter();
@@ -130,6 +135,7 @@ export function ComparisonRoute({
       variants={variants}
       sides={sides}
       mode={mode}
+      ledger={ledger}
       against={view.against ?? DEFAULT_AGAINST}
       board={view.board ?? defaultBoard(variant.tier)}
       onMode={(next) => write(key, next)}

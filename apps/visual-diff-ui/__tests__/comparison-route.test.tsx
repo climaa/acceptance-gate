@@ -62,6 +62,7 @@ const routeElement = (entry: ComparisonEntry) => (
     reportId={REPORT}
     variants={[LIGHT, DARK]}
     sides={SIDES}
+    ledger={null}
     entry={entry}
   />
 );

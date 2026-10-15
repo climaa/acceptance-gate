@@ -262,3 +262,73 @@
     grid-template-rows: auto minmax(0, 1fr);
   }
 }
+
+/* ---- The design view's spacing readings ---------------------------------- */
+
+/* A full-width row below both panes, as Board 04 draws it: a panel in the same
+   ink as the console's, holding a heading, the mode it is reading in, and the
+   table. Never in the modal's head — the design view exposes no toolbar. */
+.vd-readings {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background-color: var(--color-bg-subtle);
+}
+
+.vd-readings__heading {
+  margin: 0;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+}
+
+/* The mode, and what wrote a browser-default value: the two asides in the panel,
+   both quieter than the values they qualify. */
+.vd-readings__caption,
+.vd-readings__note {
+  margin: 0;
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+/* Read down as values rather than across as prose, so every body cell takes the
+   mono face — the generic table gives it to numeric columns only, and a token
+   name is not a number. The heading row keeps the sans face: it is bold, and
+   JetBrains Mono is committed at 400 alone (see Table.css). */
+.vd-readings__table td.ds-table__cell {
+  padding: var(--space-2) var(--space-3);
+  font-family: var(--font-mono);
+}
+
+.vd-readings__table .ds-table__cell--header {
+  padding: var(--space-1) var(--space-3);
+}
+
+/* The pressed row carries the accent its box carries on the screenshot, so the
+   row and the outline a reader is pointing at read as one thing in two places. */
+.vd-readings__table .ds-table__row:has([aria-pressed='true']) {
+  background-color: var(--color-accent-subtle);
+}
+
+/* The element's own name, as the accessibility tree gave it — a value to press,
+   not a call to action, so it is set in the face of the row it names and packed
+   to the start of its cell. The weight is not a preference: `.ds-btn` is bold,
+   JetBrains Mono is committed at 400 alone, and the two together would be a
+   weight the engine synthesizes. */
+.vd-readings__element {
+  max-inline-size: 100%;
+  justify-content: flex-start;
+  font-family: var(--font-mono);
+  font-weight: var(--weight-normal);
+}
+
+/* A name can be a sentence. One line of it here, with the whole of it on the
+   control's title; `min-inline-size: 0` is what lets a flex item shrink below
+   its content, which is the very thing being clipped. */
+.vd-readings__label {
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
