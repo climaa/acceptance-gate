@@ -102,7 +102,7 @@ describe('nearestStep', () => {
 });
 
 describe('classify', () => {
-  it('reads a value authored through a scale step as that token', () => {
+  it('reads a value authored through a scale step as that design token', () => {
     const reading = classify(measured({ px: 16, authored: 'var(--space-4)' }), SCALE);
 
     expect(reading).toEqual({ verdict: 'token', token: '--space-4' });
@@ -177,7 +177,7 @@ describe('classify', () => {
     expect(reading).toEqual({ verdict: 'none', token: null });
   });
 
-  it.each([['0.35em'], ['2%'], ['1ch'], ['1vw'], ['calc(100% - 1rem)']])(
+  it.each([['0.35em'], ['2%'], ['1ch'], ['1vw'], ['1vh'], ['calc(100% - 1rem)']])(
     'exempts a value written in a relative unit (%s)',
     (authored) => {
       const reading = classify(measured({ px: 4.9, authored }), SCALE);
