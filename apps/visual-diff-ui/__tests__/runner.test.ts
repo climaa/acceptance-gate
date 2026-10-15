@@ -104,6 +104,48 @@ function seedSet(dataDir: string, label: string, shots: ReadonlyMap<string, Buff
   for (const [key, bytes] of shots) fs.writeFileSync(path.join(dir, `${key}.png`), bytes);
 }
 
+/**
+ * A token ledger beside one of a set's shots, as a console capture writes it.
+ *
+ * One element with one padding, which is all a pairing needs to have something to
+ * say. The scale is written out rather than read from `tokens.css`: what a ledger
+ * holds is what a capture measured, and these cases are about pairing two of them.
+ */
+function seedLedger(dataDir: string, label: string, key: string, px: number) {
+  const ledger = {
+    schema: 1,
+    key,
+    origin: 'document',
+    scale: { '--space-1': 4, '--space-2': 8, '--space-4': 16 },
+    elements: [
+      {
+        path: 'ds-dialog/ds-btn:2',
+        label: 'button "Keep it open"',
+        rect: [280.27, 462.91, 106.19, 30],
+        readings: [
+          {
+            property: 'padding-right',
+            px,
+            authored: `${px}px`,
+            origin: px === 16 ? 'regular' : 'user-agent',
+            token: px === 16 ? '--space-4' : '--space-1',
+            classification: px === 16 ? 'raw-on-scale' : 'off-scale',
+          },
+        ],
+      },
+    ],
+  };
+
+  fs.writeFileSync(
+    path.join(dataDir, 'sets', label, `${key}.ledger.json`),
+    `${JSON.stringify(ledger, null, 2)}\n`,
+  );
+}
+
+/** One report's `summary.json`, as the bytes on disk. */
+const summaryBytes = (dataDir: string, reportId: string) =>
+  fs.readFileSync(path.join(dataDir, 'reports', reportId, 'summary.json'), 'utf8');
+
 /** The two committed trees this app must never write into, as one digest. */
 const committedTrees = () => `${digest(REAL_BASELINES)}:${digest(COMMITTED_FIXTURES)}`;
 
@@ -380,6 +422,150 @@ describe('compareSets against the committed corpus', () => {
       );
 
       expect(lines.join('\n')).not.toContain(BASELINE_ENV);
+    },
+    PIXEL_WORK_MS,
+  );
+});
+
+/**
+ * What the spacing did, beside what the pixels did.
+ *
+ * A report records this and the comparison records the bucket, and the two never
+ * meet: `compare.mjs` is not reached from here, and a ledger that moved changes no
+ * exit code. The byte-identical case below is what holds that apart — a reading is
+ * reference beside a comparison, the way a design board is.
+ */
+describe('the ledger reports beside a compare', () => {
+  const compare = (dir: string) =>
+    compareSets(dir, { mode: 'compare', baseline: 'set-a', candidate: 'set-b' }, silent);
+
+  /** Two sets of the same shots, with whichever ledgers a case asks for. */
+  function seedPair(ledgers: { before?: number; after?: number }): {
+    dir: string;
+    key: string;
+  } {
+    const dir = makeDataDir();
+    const shots = fixtureShots('candidate');
+    const key = [...shots.keys()][0]!;
+    seedSet(dir, 'set-a', shots);
+    seedSet(dir, 'set-b', shots);
+    if (ledgers.before !== undefined) seedLedger(dir, 'set-a', key, ledgers.before);
+    if (ledgers.after !== undefined) seedLedger(dir, 'set-b', key, ledgers.after);
+
+    return { dir, key };
+  }
+
+  const ledgerReport = (dir: string, key: string) =>
+    JSON.parse(
+      fs.readFileSync(
+        path.join(dir, 'reports', 'set-a__set-b', 'ledger', `${key}.json`),
+        'utf8',
+      ),
+    ) as Record<string, unknown>;
+
+  it(
+    'pairs the two sides and writes what moved, under the report’s own ledger/',
+    async () => {
+      const { dir, key } = seedPair({ before: 16, after: 6 });
+
+      await compare(dir);
+
+      expect(ledgerReport(dir, key)).toMatchObject({
+        schema: 1,
+        key,
+        mode: 'changed',
+        changes: [
+          {
+            label: 'button "Keep it open"',
+            property: 'padding-right',
+            change: 'changed',
+            before: { px: 16, token: '--space-4' },
+            after: { px: 6, token: '--space-1' },
+            rect: [280.27, 462.91, 106.19, 30],
+          },
+        ],
+      });
+    },
+    PIXEL_WORK_MS,
+  );
+
+  // The corpus is committed rather than captured, so it carries no ledgers at all —
+  // which is the compare a reviewer runs most often. One side is still worth
+  // reading: it says which values are not design tokens.
+  it(
+    'reads a set whose other side measured nothing as after-only',
+    async () => {
+      const { dir, key } = seedPair({ after: 6 });
+
+      await compare(dir);
+
+      expect(ledgerReport(dir, key)).toMatchObject({
+        mode: 'after-only',
+        changes: [{ property: 'padding-right', change: 'present', before: null }],
+      });
+    },
+    PIXEL_WORK_MS,
+  );
+
+  it(
+    'writes no ledger directory at all when neither set measured one',
+    async () => {
+      const { dir } = seedPair({});
+
+      await compare(dir);
+
+      expect(fs.existsSync(path.join(dir, 'reports', 'set-a__set-b', 'ledger'))).toBe(
+        false,
+      );
+    },
+    PIXEL_WORK_MS,
+  );
+
+  /**
+   * The whole point of pairing in the report writer rather than in `compare.mjs`.
+   *
+   * A reading is reference beside a comparison: it carries no bucket and moves no
+   * exit code. Asserted on the BYTES rather than on the parsed counts, because
+   * `summary.json` is what the console reads back and what a reviewer diffs — a
+   * field order that moved is a change to it too.
+   */
+  it(
+    'leaves summary.json byte-identical to the same compare without ledgers',
+    async () => {
+      const withLedgers = seedPair({ before: 16, after: 6 });
+      const without = seedPair({});
+
+      await compare(withLedgers.dir);
+      await compare(without.dir);
+
+      expect(summaryBytes(withLedgers.dir, 'set-a__set-b')).toBe(
+        summaryBytes(without.dir, 'set-a__set-b'),
+      );
+    },
+    PIXEL_WORK_MS,
+  );
+
+  // The same bulkhead the capture puts around the ledger: a sidecar that will not
+  // parse costs its own panel and nothing else. The report and the exit code are
+  // the shots' and axe's alone, and they are already written by the time this runs.
+  it(
+    'names a ledger it could not read and keeps the report it already wrote',
+    async () => {
+      const lines: string[] = [];
+      const { dir, key } = seedPair({ after: 6 });
+      fs.writeFileSync(path.join(dir, 'sets', 'set-b', `${key}.ledger.json`), 'not json');
+
+      const outcome = await compareSets(
+        dir,
+        { mode: 'compare', baseline: 'set-a', candidate: 'set-b' },
+        (line) => lines.push(line),
+      );
+
+      expect(outcome.reportId).toBe('set-a__set-b');
+      expect(lines.join('\n')).toContain(key);
+      expect(
+        fs.existsSync(path.join(dir, 'reports', 'set-a__set-b', 'summary.json')),
+      ).toBe(true);
     },
     PIXEL_WORK_MS,
   );

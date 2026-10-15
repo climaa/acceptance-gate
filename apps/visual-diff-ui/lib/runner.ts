@@ -6,6 +6,11 @@ import type { Readable } from 'node:stream';
 import { buildSummary } from '@gate/visual-diff/artifacts';
 import { pngSize } from '@gate/visual-diff/capture';
 import { type CaptureShot, type Comparison, compareAll } from '@gate/visual-diff/compare';
+import {
+  type Ledger,
+  pairLedgers,
+  serializeLedgerReport,
+} from '@gate/visual-diff/ledger';
 import { EXIT, HOST, LEDGER, parseVariantKey } from '@gate/visual-diff/policy';
 import { BASELINE_ENV, CANONICAL_LABEL, baselinesPath } from './baselines';
 import { DATA_MOUNT, REPO_MOUNT, containerArgv } from './docker';
@@ -13,7 +18,7 @@ import { type Checkout, describeCheckout, repoRoot } from './git';
 import { type HostEnv, hostFingerprint, hostMatches } from './host';
 import { type JobOutcome, freeLabel } from './jobs';
 import type { JobRequest } from './job-contract';
-import { reportDir, setDir } from './paths';
+import { ledgerReportPath, reportDir, setDir } from './paths';
 import { NO_CHECKOUT, STORYBOOK_FAILED } from './refusals';
 import { type Summary, SummarySchema } from './summary';
 
@@ -195,6 +200,70 @@ function writeReport(
   );
 }
 
+/** One variant's report, from the two sidecars as they sit on disk. `origin` is the
+ *  after side's when there is one: it says what a change's rect is measured from, and
+ *  that rect is the after screenshot's.
+ *  @throws on a sidecar that will not parse — the caller is the bulkhead. */
+function ledgerReport(
+  key: string,
+  before: ReadonlyMap<string, string>,
+  after: ReadonlyMap<string, string>,
+): string {
+  const read = (text: string | undefined) =>
+    text === undefined ? null : (JSON.parse(text) as Ledger);
+  const sides = { before: read(before.get(key)), after: read(after.get(key)) };
+  const { mode, changes } = pairLedgers(sides.before, sides.after);
+
+  return serializeLedgerReport({
+    key,
+    mode,
+    origin: sides.after?.origin ?? sides.before?.origin ?? 'document',
+    changes,
+  });
+}
+
+/**
+ * What the spacing did, beside what the pixels did.
+ *
+ * Pairing happens HERE rather than in `compare.mjs`, and that is the whole shape of
+ * it: a reading is reference beside a comparison, the way a design board is. It
+ * carries no bucket, moves no exit code, and `summary.json` is byte-identical to the
+ * same compare run over two sets that measured nothing — `__tests__/runner.test.ts`
+ * holds that.
+ *
+ * One file per variant either set measured, which is why a `baselines` before side
+ * gives after-only reports on its own: the corpus is committed rather than captured,
+ * so it carries no sidecars by construction. Nothing is written at all — not even the
+ * directory — when neither set has any.
+ *
+ * A BULKHEAD, the same one the capture puts around the ledger: a sidecar that will
+ * not parse costs its own panel and nothing else. The report and the exit code are
+ * already on disk by the time this runs.
+ */
+function writeLedgerReports(
+  dir: string,
+  before: ReadonlyMap<string, string>,
+  after: ReadonlyMap<string, string>,
+  log: (message: string) => void,
+): void {
+  const keys = [...new Set([...before.keys(), ...after.keys()])].sort();
+  if (keys.length === 0) return;
+
+  fs.mkdirSync(path.join(dir, LEDGER.reportDir), { recursive: true });
+
+  let written = 0;
+  for (const key of keys) {
+    try {
+      fs.writeFileSync(ledgerReportPath(dir, key), ledgerReport(key, before, after));
+      written += 1;
+    } catch (cause) {
+      log(`could not pair the token ledgers for ${key}: ${String(cause)}`);
+    }
+  }
+
+  log(`paired ${written} token ledger(s)`);
+}
+
 /**
  * Compare two capture sets, A as baselines and B as candidates.
  *
@@ -212,8 +281,10 @@ export async function compareSets(
   const { baseline, candidate } = request;
   const reportId = `${baseline}__${candidate}`;
 
-  const baselines = readSet(dataDir, baseline, log).shots;
-  const candidates = readSet(dataDir, candidate, log).shots;
+  const before = readSet(dataDir, baseline, log);
+  const after = readSet(dataDir, candidate, log);
+  const { shots: baselines } = before;
+  const { shots: candidates } = after;
   log(`comparing ${candidates.size} shot(s) against ${baselines.size} baseline(s)`);
 
   const rows = compareAll({ captures: asCaptures(candidates), baselines, env: {} });
@@ -227,6 +298,9 @@ export async function compareSets(
   writeReport(dir, summary, rows, { baselines, candidates });
 
   log(`wrote reports/${reportId}/summary.json — ${summary.variants.length} to review`);
+  // After the report, never before it: the summary is the comparison's answer, and a
+  // ledger that would not pair must not be why it is missing.
+  writeLedgerReports(dir, before.ledgers, after.ledgers, log);
 
   return { exitCode: summary.exitCode, reportId };
 }

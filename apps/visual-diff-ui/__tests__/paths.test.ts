@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 import {
   ConfinementError,
   entryUnder,
+  ledgerReportPath,
   reportDir,
   reportDirOf,
   reportsRoot,
@@ -134,6 +135,18 @@ describe('the layout', () => {
     expect(summaryFile(reportDir(BASE, 'a__b'))).toBe(
       path.join(BASE, 'reports', 'a__b', 'summary.json'),
     );
+    expect(ledgerReportPath(reportDir(BASE, 'a__b'), 'atoms__desktop__light__a--b')).toBe(
+      path.join(BASE, 'reports', 'a__b', 'ledger', 'atoms__desktop__light__a--b.json'),
+    );
+  });
+
+  // A variant key reaches this one off a `readdir` rather than out of a URL, so it
+  // throws like the other builders: there is nowhere to put a null, and a write
+  // that quietly did nothing would be worse than one that stopped.
+  it('refuses a ledger report key that climbs out of the report', () => {
+    const dir = reportDir(BASE, 'a__b');
+
+    expect(() => ledgerReportPath(dir, '../../../etc/passwd')).toThrow(ConfinementError);
   });
 
   it('resolves a report a reader asked for by id', () => {

@@ -502,13 +502,17 @@ export function axOf(tree) {
 /** Roles that name nothing a reader could find on the screen. */
 const UNNAMED_ROLES = new Set(['', 'none', 'generic', 'presentation']);
 
+/** The last segment of a walked path — the element's own, without its anchors.
+ *  @param {string} path @returns {string} */
+const segmentOf = (path) => path.split('/').at(-1) ?? path;
+
 /** How a reader finds an element: `role "name"`, as the accessibility tree has it.
  *  An element with no name is labelled by its last path segment, and a role that
  *  says nothing is replaced by that segment — never a bare `none` or `generic`.
  *  @param {{ role: string, name: string } | null} ax @param {string} path
  *  @returns {string} */
 export function labelOf(ax, path) {
-  const segment = path.split('/').at(-1) ?? path;
+  const segment = segmentOf(path);
   if (!ax?.name) return segment;
 
   const role = UNNAMED_ROLES.has(ax.role) ? segment : ax.role;
@@ -573,6 +577,210 @@ export function ledgerFile(ledger, policy = LEDGER) {
     name: `${ledger.key}${policy.fileSuffix}`,
     text: serializeLedger(ledger, policy),
   };
+}
+
+/* ---- Before against after -------------------------------------------------- */
+
+/** What one element's spacing did between two captures: it moved, or the element
+ *  itself arrived or left, or — with only one side to read — this is simply what it
+ *  measures.
+ *  @typedef {'changed' | 'appeared' | 'gone' | 'present'} ChangeKind */
+
+/** One side of a change: a reading trimmed to the value, what names it and where it
+ *  was written. The authored text is left behind — the panel shows a token, and the
+ *  CSS that set it is the sidecar's business.
+ *  @typedef {{ px: number, token: string | null, origin: string,
+ *    classification: Classification }} ChangeSide */
+
+/** @typedef {object} LedgerChange
+ *  @property {string} label
+ *  @property {string} property
+ *  @property {ChangeKind} change
+ *  @property {ChangeSide | null} before
+ *  @property {ChangeSide | null} after
+ *  @property {readonly number[] | null} rect The after rect, or null when gone. */
+
+/** @typedef {object} LedgerReport
+ *  @property {string} key
+ *  @property {'changed' | 'after-only' | null} mode
+ *  @property {'target' | 'document'} origin
+ *  @property {readonly LedgerChange[]} changes */
+
+/** How an element is paired across two captures: by the name the accessibility tree
+ *  gave it, when it has one and no sibling answers to it too; by its path otherwise.
+ *
+ *  A name survives what a path does not — losing a `ds-*` class moves `ds-btn:2` to
+ *  `button:2` while the button is still the one reading "Keep it open" — so the name
+ *  leads. `labelOf` falls back to the last path segment for an element with no name,
+ *  which is why a label that IS that segment counts as no name at all; and a name two
+ *  elements share pairs neither, since nothing would say which is which.
+ *  @param {LedgerElement} element @param {readonly LedgerElement[]} siblings
+ *  @returns {string} */
+export function pairKey(element, siblings) {
+  if (element.label === segmentOf(element.path)) return element.path;
+
+  const twins = siblings.filter((other) => other.label === element.label);
+  return twins.length <= 1 ? element.label : element.path;
+}
+
+/** @param {LedgerElement} element @param {string} property
+ *  @returns {Reading | undefined} */
+const readingAt = (element, property) =>
+  element.readings.find((reading) => reading.property === property);
+
+/** @param {Reading | undefined} reading @param {number} decimals
+ *  @returns {ChangeSide | null} */
+function sideOf(reading, decimals) {
+  if (reading === undefined) return null;
+
+  return {
+    // Compared at the precision the file is written at, for the reason `classify`
+    // rounds first: 15.999 against 16 is not a change a reader could ever see.
+    px: rounded(reading.px, decimals),
+    token: reading.token,
+    origin: reading.origin,
+    classification: reading.classification,
+  };
+}
+
+/** The classifications an after-only report keeps: the two that say a value is not
+ *  the design token it could be. A `token` reading is the system working, and
+ *  `exempt` and `none` are nothing to show. */
+const AFTER_ONLY = new Set(['off-scale', 'raw-on-scale']);
+
+/** Every property one paired element disagrees on. Reported when the value or the
+ *  token moved; a reading the other side classified `none` is a value falling to
+ *  zero, which is that property changing rather than the element going away.
+ *  @param {LedgerElement} before @param {LedgerElement} after @param {LedgerPolicy} policy
+ *  @returns {LedgerChange[]} */
+function changesBetween(before, after, policy) {
+  return policy.properties.flatMap((property) => {
+    const sides = {
+      before: sideOf(readingAt(before, property), policy.decimals),
+      after: sideOf(readingAt(after, property), policy.decimals),
+    };
+    if (!sides.before && !sides.after) return [];
+
+    const same =
+      sides.before?.px === sides.after?.px && sides.before?.token === sides.after?.token;
+    if (same) return [];
+
+    return [
+      { label: after.label, property, change: 'changed', ...sides, rect: after.rect },
+    ];
+  });
+}
+
+/** One side's element as changes: everything it measures for an element that arrived
+ *  or left, and only what is not a design token when there is no other side to
+ *  compare against.
+ *  @param {LedgerElement} element @param {'appeared' | 'gone' | 'present'} change
+ *  @param {LedgerPolicy} policy @returns {LedgerChange[]} */
+function changesOf(element, change, policy) {
+  const gone = change === 'gone';
+  const keep = (/** @type {Reading} */ reading) =>
+    change === 'present'
+      ? AFTER_ONLY.has(reading.classification)
+      : reading.classification !== 'none';
+
+  return policy.properties.flatMap((property) => {
+    const reading = readingAt(element, property);
+    if (reading === undefined || !keep(reading)) return [];
+
+    const side = sideOf(reading, policy.decimals);
+    return [
+      {
+        label: element.label,
+        property,
+        change,
+        before: gone ? side : null,
+        after: gone ? null : side,
+        rect: gone ? null : element.rect,
+      },
+    ];
+  });
+}
+
+/** What the spacing did between two captures of one variant.
+ *
+ *  `baselines` carries no ledgers by construction, so a compare against the corpus
+ *  has one side to read and answers `after-only`: which values are not design tokens,
+ *  and nothing about what moved. A before side alone is a variant the after capture no
+ *  longer has, and there is no after screenshot to show a panel beside.
+ *
+ *  Order is the reader's: after-side document order, then whatever the before side
+ *  lost, then each element's properties as the policy lists them.
+ *  @param {Ledger | null | undefined} before @param {Ledger | null | undefined} after
+ *  @param {LedgerPolicy} [policy] @returns {{ mode: 'changed' | 'after-only' | null,
+ *    changes: LedgerChange[] }} */
+export function pairLedgers(before, after, policy = LEDGER) {
+  if (!after) return { mode: null, changes: [] };
+  if (!before) {
+    return {
+      mode: 'after-only',
+      changes: after.elements.flatMap((element) => changesOf(element, 'present', policy)),
+    };
+  }
+
+  const keyed = new Map(
+    before.elements.map((element) => [pairKey(element, before.elements), element]),
+  );
+  const paired = new Set();
+
+  const moved = after.elements.flatMap((element) => {
+    const key = pairKey(element, after.elements);
+    const twin = keyed.get(key);
+    if (twin === undefined) return changesOf(element, 'appeared', policy);
+
+    paired.add(key);
+    return changesBetween(twin, element, policy);
+  });
+
+  const lost = before.elements.flatMap((element) =>
+    paired.has(pairKey(element, before.elements))
+      ? []
+      : changesOf(element, 'gone', policy),
+  );
+
+  return { mode: 'changed', changes: [...moved, ...lost] };
+}
+
+/** @param {ChangeSide | null} side @param {number} decimals */
+const sideOut = (side, decimals) =>
+  side === null
+    ? null
+    : {
+        px: rounded(side.px, decimals),
+        token: side.token,
+        origin: side.origin,
+        classification: side.classification,
+      };
+
+/** @param {LedgerChange} change @param {number} decimals */
+const changeOut = (change, decimals) => ({
+  label: change.label,
+  property: change.property,
+  change: change.change,
+  before: sideOut(change.before, decimals),
+  after: sideOut(change.after, decimals),
+  rect:
+    change.rect === null ? null : change.rect.map((value) => rounded(value, decimals)),
+});
+
+/** A report as the bytes a file holds, on `serializeLedger`'s terms: every object
+ *  rebuilt field by field in a fixed order, so the same report is always the same
+ *  bytes whatever a caller attached or whichever order it built its keys in.
+ *  @param {LedgerReport} report @param {LedgerPolicy} [policy] @returns {string} */
+export function serializeLedgerReport(report, policy = LEDGER) {
+  const out = {
+    schema: 1,
+    key: report.key,
+    mode: report.mode,
+    origin: report.origin,
+    changes: report.changes.map((change) => changeOut(change, policy.decimals)),
+  };
+
+  return `${JSON.stringify(out, null, 2)}\n`;
 }
 
 /* ---- Light against dark ---------------------------------------------------- */
