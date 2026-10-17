@@ -154,10 +154,14 @@ fixtures/
     │       └── <variantKey>.{baseline,candidate,diff}.png
     ├── baselines__main-2026-08-24/
     │   ├── summary.json
-    │   └── shots/
-    │       └── <variantKey>.candidate.png   # added: no baseline, so no diff
+    │   ├── shots/
+    │   │   └── <variantKey>.candidate.png   # added: no baseline, so no diff
+    │   └── ledger/
+    │       └── <variantKey>.json            # after-only token ledger reports, IconButton x10
     ├── main-2026-09-17__main-2026-10-13/    # changed + added
     └── main-2026-10-13__main-2026-09-17/    # changed + removed
+        └── ledger/
+            └── <variantKey>.json            # paired token ledger reports, Dialog x4
 ```
 
 `summary.json` follows `packages/visual-diff`'s schema (`schemaVersion` 1); `isSample:
@@ -196,4 +200,52 @@ git archive c013d86 packages/visual-diff/__baselines__ | tar -x -C $D/sets/main-
 echo '{"sets":[]}' > $D/sets.json
 # then call lib/runner.ts's compareSets(D, { mode: 'compare', baseline, candidate })
 # once per direction, and add `"isSample": true` to each summary.json.
+```
+
+## Token ledgers
+
+Two reports carry token ledger reports under `ledger/`, so the design view has spacing
+readings to show. Every other variant, and every other report, has none and shows the
+"no token ledger" state, which is the backward-compatible case.
+
+- **`main-2026-10-13__main-2026-09-17`, the four `organisms-dialog--open` variants.**
+  The report reads #460 backwards: its after side is the Dialog story before #460 put
+  design-system `Button`s where a bare `<button>` stood. So the readings show the real
+  regression: `button "Keep it open"` · `padding-right` from `--space-4` (16px) to 6px,
+  a browser default.
+- **`baselines__main-2026-08-24`, the ten added `atoms-iconbutton--*` variants.** The
+  before side is the committed corpus, which carries no ledgers by construction, so
+  these are after-only reports. They have no off-scale reading, so the panel shows its
+  after-only empty state.
+
+**Provenance.** Both sides were captured on 2026-10-17 in the pinned container, by the
+console's own capture path (`scripts/capture-set.mjs`), from `main` @ `da96298`:
+
+- **before:** `main` as it was;
+- **after (Dialog):** the same checkout with only #460's hunk to
+  `packages/ui/src/organisms/Dialog/Dialog.stories.tsx` reverted. An old checkout
+  could not be used, because it predates the collector.
+
+Every captured PNG is byte-identical to the committed shot it describes: the four Dialog
+shots against this report's `baseline` and `candidate` PNGs, and the ten IconButton shots
+against this report's `candidate` PNGs. So each ledger measured exactly the render the
+report shows. The IconButton sources did change after 2026-08-24, but only in story
+comments and in a link variant those stories do not use.
+
+**Regenerating.**
+
+```bash
+D=$(mktemp -d)
+pnpm --filter @gate/storybook build
+docker run --rm --ipc=host -v "$(pwd)":/repo -v $D/before:/data -w /repo \
+  -e PLAYWRIGHT_BROWSERS_PATH=/ms-playwright mcr.microsoft.com/playwright:v1.62.1-noble \
+  node /repo/apps/visual-diff-ui/scripts/capture-set.mjs --root /repo --data-dir /data \
+  --label before --filter organisms-dialog--open --filter atoms-iconbutton
+git show c690138 -- packages/ui/src/organisms/Dialog/Dialog.stories.tsx | git apply -R
+pnpm --filter @gate/storybook build
+# the same docker run into $D/after, --label after, --filter organisms-dialog--open
+git checkout -- packages/ui/src/organisms/Dialog/Dialog.stories.tsx
+# then pair each key as lib/runner.ts's ledgerReport does (ledger.mjs's pairLedgers,
+# then serializeLedgerReport) into <report>/ledger/<key>.json. For the IconButton keys,
+# use no before side.
 ```

@@ -1,0 +1,250 @@
+{
+  "schema": 1,
+  "key": "organisms__desktop__dark__organisms-dialog--open",
+  "mode": "changed",
+  "origin": "document",
+  "changes": [
+    {
+      "label": "button \"Keep it open\"",
+      "property": "padding-top",
+      "change": "changed",
+      "before": {
+        "px": 8,
+        "token": "--space-2",
+        "origin": "regular",
+        "classification": "token"
+      },
+      "after": {
+        "px": 1,
+        "token": "--space-1",
+        "origin": "user-agent",
+        "classification": "off-scale"
+      },
+      "rect": [
+        280.27,
+        462.91,
+        106.19,
+        30
+      ]
+    },
+    {
+      "label": "button \"Keep it open\"",
+      "property": "padding-right",
+      "change": "changed",
+      "before": {
+        "px": 16,
+        "token": "--space-4",
+        "origin": "regular",
+        "classification": "token"
+      },
+      "after": {
+        "px": 6,
+        "token": "--space-1",
+        "origin": "user-agent",
+        "classification": "off-scale"
+      },
+      "rect": [
+        280.27,
+        462.91,
+        106.19,
+        30
+      ]
+    },
+    {
+      "label": "button \"Keep it open\"",
+      "property": "padding-bottom",
+      "change": "changed",
+      "before": {
+        "px": 8,
+        "token": "--space-2",
+        "origin": "regular",
+        "classification": "token"
+      },
+      "after": {
+        "px": 1,
+        "token": "--space-1",
+        "origin": "user-agent",
+        "classification": "off-scale"
+      },
+      "rect": [
+        280.27,
+        462.91,
+        106.19,
+        30
+      ]
+    },
+    {
+      "label": "button \"Keep it open\"",
+      "property": "padding-left",
+      "change": "changed",
+      "before": {
+        "px": 16,
+        "token": "--space-4",
+        "origin": "regular",
+        "classification": "token"
+      },
+      "after": {
+        "px": 6,
+        "token": "--space-1",
+        "origin": "user-agent",
+        "classification": "off-scale"
+      },
+      "rect": [
+        280.27,
+        462.91,
+        106.19,
+        30
+      ]
+    },
+    {
+      "label": "button \"Keep it open\"",
+      "property": "row-gap",
+      "change": "changed",
+      "before": {
+        "px": 8,
+        "token": "--space-2",
+        "origin": "regular",
+        "classification": "token"
+      },
+      "after": {
+        "px": 0,
+        "token": null,
+        "origin": "unknown",
+        "classification": "none"
+      },
+      "rect": [
+        280.27,
+        462.91,
+        106.19,
+        30
+      ]
+    },
+    {
+      "label": "button \"Keep it open\"",
+      "property": "column-gap",
+      "change": "changed",
+      "before": {
+        "px": 8,
+        "token": "--space-2",
+        "origin": "regular",
+        "classification": "token"
+      },
+      "after": {
+        "px": 0,
+        "token": null,
+        "origin": "unknown",
+        "classification": "none"
+      },
+      "rect": [
+        280.27,
+        462.91,
+        106.19,
+        30
+      ]
+    },
+    {
+      "label": "ds-stack",
+      "property": "row-gap",
+      "change": "gone",
+      "before": {
+        "px": 12,
+        "token": "--space-3",
+        "origin": "inline",
+        "classification": "token"
+      },
+      "after": null,
+      "rect": null
+    },
+    {
+      "label": "ds-stack",
+      "property": "column-gap",
+      "change": "gone",
+      "before": {
+        "px": 12,
+        "token": "--space-3",
+        "origin": "inline",
+        "classification": "token"
+      },
+      "after": null,
+      "rect": null
+    },
+    {
+      "label": "button \"Discard\"",
+      "property": "padding-top",
+      "change": "gone",
+      "before": {
+        "px": 8,
+        "token": "--space-2",
+        "origin": "regular",
+        "classification": "token"
+      },
+      "after": null,
+      "rect": null
+    },
+    {
+      "label": "button \"Discard\"",
+      "property": "padding-right",
+      "change": "gone",
+      "before": {
+        "px": 16,
+        "token": "--space-4",
+        "origin": "regular",
+        "classification": "token"
+      },
+      "after": null,
+      "rect": null
+    },
+    {
+      "label": "button \"Discard\"",
+      "property": "padding-bottom",
+      "change": "gone",
+      "before": {
+        "px": 8,
+        "token": "--space-2",
+        "origin": "regular",
+        "classification": "token"
+      },
+      "after": null,
+      "rect": null
+    },
+    {
+      "label": "button \"Discard\"",
+      "property": "padding-left",
+      "change": "gone",
+      "before": {
+        "px": 16,
+        "token": "--space-4",
+        "origin": "regular",
+        "classification": "token"
+      },
+      "after": null,
+      "rect": null
+    },
+    {
+      "label": "button \"Discard\"",
+      "property": "row-gap",
+      "change": "gone",
+      "before": {
+        "px": 8,
+        "token": "--space-2",
+        "origin": "regular",
+        "classification": "token"
+      },
+      "after": null,
+      "rect": null
+    },
+    {
+      "label": "button \"Discard\"",
+      "property": "column-gap",
+      "change": "gone",
+      "before": {
+        "px": 8,
+        "token": "--space-2",
+        "origin": "regular",
+        "classification": "token"
+      },
+      "after": null,
+      "rect": null
+    }
+  ]
+}
