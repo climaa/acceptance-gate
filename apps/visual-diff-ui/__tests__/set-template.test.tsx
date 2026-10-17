@@ -153,6 +153,18 @@ describe('SetTemplate', () => {
     expect(link.getAttribute('href')).toContain('colorScheme:light');
   });
 
+  // A screenshot opens its shot view, over the set — named by what it shows,
+  // because its key is a filename nobody reads.
+  it('links each screenshot to its shot view, named by story, viewport and theme', () => {
+    render(<SetTemplate corpus={corpus} set={null} shots={shots([BADGE])} />);
+
+    const link = screen.getByRole('link', { name: 'Badge — Accent · desktop/light' });
+    expect({
+      href: link.getAttribute('href'),
+      target: link.getAttribute('target'),
+    }).toEqual({ href: `/set/baselines/shot/${BADGE}`, target: null });
+  });
+
   it('names files that are in the directory but are not screenshots', () => {
     const set = shots([BADGE], { ignored: ['notes.txt'] });
 

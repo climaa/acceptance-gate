@@ -1,3 +1,4 @@
+import NextLink from 'next/link';
 import {
   DEV_STORYBOOK,
   PUBLISHED_STORYBOOK,
@@ -5,7 +6,7 @@ import {
   storybookLink,
 } from '@/lib/report-view';
 import type { SetShot, ShotGroup } from '@/lib/set-shots';
-import { setShotUrl } from '@/lib/shots';
+import { setShotUrl, shotViewHref } from '@/lib/shots';
 
 /**
  * One story's screenshots in one set.
@@ -32,7 +33,15 @@ const cellId = (key: string) => `vd-story-${key.replace(/[^A-Za-z0-9_-]/g, '-')}
  * a reviewer moving between the two surfaces finds the same pair in the same
  * place, opening the same way.
  */
-function VariantCell({ label, shot }: { label: string; shot: SetShot }) {
+function VariantCell({
+  label,
+  title,
+  shot,
+}: {
+  label: string;
+  title: string;
+  shot: SetShot;
+}) {
   const src = setShotUrl(label, shot.file);
   const dimensions = shot.width !== null && shot.height !== null;
 
@@ -49,16 +58,15 @@ function VariantCell({ label, shot }: { label: string; shot: SetShot }) {
       // captured. Derived from the file, not a chosen visual value.
       style={dimensions ? { maxWidth: `${shot.width}px` } : undefined}
     >
-      {/* The raw PNG, at 1:1, in the browser's own viewer. The report reads
-          pixels in its comparison modal; a set has one shot per cell and nothing
-          to compare it against, so there is no modal to open — and a new tab
-          costs the reader nothing they were looking at. */}
-      <a
+      {/* The shot view: this screenshot beside a design board, opened over
+          the set — intercepted into the layout's modal slot, so the set stays
+          where the reader left it. Named by what it shows rather than by its
+          key, which is a filename. */}
+      <NextLink
         className="vd-cell__open"
-        href={src}
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label={`open ${shot.key} at full size`}
+        href={shotViewHref(label, shot.key)}
+        scroll={false}
+        aria-label={`${title} · ${shot.viewport}/${shot.theme}`}
       >
         {/* eslint-disable-next-line @next/next/no-img-element -- `next/image`
             resamples and re-encodes, and this page exists to show the committed
@@ -73,7 +81,7 @@ function VariantCell({ label, shot }: { label: string; shot: SetShot }) {
           loading="lazy"
           decoding="async"
         />
-      </a>
+      </NextLink>
 
       <figcaption className="vd-cell__caption vd-mono">
         {shot.viewport}/{shot.theme}
@@ -137,7 +145,12 @@ export function StoryScreenshots({ label, group }: StoryScreenshotsProps) {
             {group.shots
               .filter((shot) => shot.viewport === viewport)
               .map((shot) => (
-                <VariantCell key={shot.key} label={label} shot={shot} />
+                <VariantCell
+                  key={shot.key}
+                  label={label}
+                  title={group.title}
+                  shot={shot}
+                />
               ))}
           </div>
         </div>

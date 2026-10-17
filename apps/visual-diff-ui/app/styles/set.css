@@ -177,6 +177,14 @@
   outline-offset: 2px;
 }
 
+/* A shot opens its shot view: the ring Board 04 draws on hover says so before
+   the press does. */
+@media (hover: hover) {
+  .vd-cell__open:hover {
+    border-color: var(--color-accent);
+  }
+}
+
 /* Never upscaled — the figure's own `max-width` is the capture's width, so this
    fills the column only down to it — and never cropped, because `height: auto`
    keeps the ratio the `width`/`height` attributes already reserved. */

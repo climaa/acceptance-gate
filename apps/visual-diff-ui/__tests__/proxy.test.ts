@@ -4,7 +4,13 @@ import * as path from 'node:path';
 // Imported explicitly rather than relying on `globals: true` — tsconfig's
 // `**/*.ts` include means tsc typechecks this file.
 import { afterEach, describe, expect, it } from 'vitest';
-import { comparisonAnswer, isMissingReport, isMissingSet, reportAnswer } from '../proxy';
+import {
+  comparisonAnswer,
+  isMissingReport,
+  isMissingSet,
+  isMissingShot,
+  reportAnswer,
+} from '../proxy';
 import { within } from '../lib/paths';
 
 /**
@@ -188,6 +194,66 @@ describe('the set proxy', () => {
     const answer = isMissingSet('/set/never-captured');
 
     expect(answer).toBe(false);
+  });
+});
+
+const SHOT = 'atoms__desktop__light__atoms-badge--accent';
+
+/** A data directory holding one set with one screenshot in it. */
+function shotDirWith(label: string, key: string): void {
+  const dir = setsDirWith(label);
+  fs.writeFileSync(path.join(dir, 'sets', label, `${key}.png`), '');
+}
+
+describe('the shot proxy', () => {
+  it('lets a screenshot the set holds through untouched', () => {
+    shotDirWith('main-2026-10-16', SHOT);
+
+    const answer = isMissingShot(`/set/main-2026-10-16/shot/${SHOT}`);
+
+    expect(answer).toBe(false);
+  });
+
+  it('answers a screenshot the set does not hold with a 404', () => {
+    shotDirWith('main-2026-10-16', SHOT);
+
+    const answer = isMissingShot(
+      '/set/main-2026-10-16/shot/atoms__desktop__dark__atoms-badge--accent',
+    );
+
+    expect(answer).toBe(true);
+  });
+
+  it('answers a set this instance never captured with a 404', () => {
+    shotDirWith('main-2026-10-16', SHOT);
+
+    const answer = isMissingShot(`/set/never-captured/shot/${SHOT}`);
+
+    expect(answer).toBe(true);
+  });
+
+  it('refuses a key that names no variant, with no tree read', () => {
+    shotDirWith('main-2026-10-16', SHOT);
+
+    const answer = isMissingShot('/set/main-2026-10-16/shot/..%2Fsets.json');
+
+    expect(answer).toBe(true);
+  });
+
+  it('never calls a corpus screenshot a miss', () => {
+    setsDirWith();
+
+    const answer = isMissingShot(`/set/baselines/shot/${SHOT}`);
+
+    expect(answer).toBe(false);
+  });
+
+  it('refuses a segment that will not decode', () => {
+    setsDirWith();
+
+    const answer = isMissingShot(`/set/%/shot/${SHOT}`);
+
+    expect(answer).toBe(true);
   });
 });
 

@@ -113,6 +113,19 @@ export function absentShotCopy(variant: Variant, kind: ShotKind): string {
 export const setHref = (label: string) => `/set/${encodeURIComponent(label)}`;
 
 /**
+ * The sentence a set's screenshot is known by: the shot view's heading, its
+ * `<title>` and its link preview, so the three never disagree — the rule
+ * `comparisonTitle` keeps for a comparison. The set is part of it because the
+ * same story at the same cell is a different screenshot in another set.
+ */
+export const shotTitle = (
+  story: string,
+  viewport: string,
+  theme: string,
+  label: string,
+) => `${story} · ${viewport}/${theme} · ${label}`;
+
+/**
  * One screenshot of a capture set, on the route that serves a set's own tree.
  *
  * Here rather than in lib/set-shots.ts for a boundary reason: that module reads
@@ -123,3 +136,35 @@ export const setHref = (label: string) => `/set/${encodeURIComponent(label)}`;
  */
 export const setShotUrl = (label: string, file: string) =>
   `/api/sets/${encodeURIComponent(label)}/shots/${encodeURIComponent(file)}`;
+
+/**
+ * One screenshot of a set, opened beside a design board: the shot view.
+ *
+ * A board is carried only when someone picked one, the rule `comparisonHref`
+ * keeps — so a link stays bare and opens on the board the tier lives on.
+ */
+export function shotViewHref(label: string, key: string, board?: string | null): string {
+  const at = `${setHref(label)}/shot/${encodeURIComponent(key)}`;
+
+  return board ? `${at}?${new URLSearchParams({ board }).toString()}` : at;
+}
+
+const SHOT_VIEW_PATH = /^\/set\/([^/]+)\/shot\/([^/]+)$/;
+
+/**
+ * A shot view's pathname, split back into its set and its key — the one reading
+ * of `shotViewHref`'s output, the way `parseComparisonPath` reads a comparison's.
+ * Null for a pathname that is not one, and for a segment that will not decode.
+ */
+export function parseShotViewPath(
+  pathname: string,
+): { label: string; key: string } | null {
+  const match = SHOT_VIEW_PATH.exec(pathname);
+  if (!match?.[1] || !match[2]) return null;
+
+  try {
+    return { label: decodeURIComponent(match[1]), key: decodeURIComponent(match[2]) };
+  } catch {
+    return null;
+  }
+}
