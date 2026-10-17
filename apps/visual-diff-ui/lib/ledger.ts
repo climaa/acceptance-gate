@@ -1,9 +1,8 @@
-import * as fs from 'node:fs';
-import { logger } from '@gate/logger';
 import type { LedgerReport } from '@gate/visual-diff/ledger';
 import { z } from 'zod';
 import { resolveDataDir } from './data';
 import { ledgerReportPath, reportDirOf } from './paths';
+import { readSidecar } from './sidecar';
 
 /**
  * What the spacing did on one variant, read back for the design view's panel.
@@ -95,22 +94,5 @@ export async function readLedgerReport(
   const file = await ledgerFileFor(reportId, key);
   if (file === null) return null;
 
-  let raw: string;
-  try {
-    raw = await fs.promises.readFile(file, 'utf8');
-  } catch (cause) {
-    if ((cause as NodeJS.ErrnoException).code !== 'ENOENT') {
-      logger.warn(`could not read the ledger report ${file}`, cause);
-    }
-
-    return null;
-  }
-
-  try {
-    return LedgerReportSchema.parse(JSON.parse(raw));
-  } catch (cause) {
-    logger.warn(`${file} does not match the ledger-report schema`, cause);
-
-    return null;
-  }
+  return readSidecar(file, LedgerReportSchema, 'ledger report');
 }

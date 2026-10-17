@@ -33,6 +33,7 @@ import {
 } from '@/lib/shots';
 import type { Variant } from '@/lib/summary';
 import { CopyLink } from './CopyLink';
+import { pairedReadings } from '@/lib/readings';
 import { DesignStage, type Split } from './DesignStage';
 
 /**
@@ -323,7 +324,7 @@ function Stage({ mode, split, shots, variant, position, onPosition }: StageProps
   );
 }
 
-const SPLIT_LABELS: Readonly<Record<Split, string>> = {
+export const SPLIT_LABELS: Readonly<Record<Split, string>> = {
   columns: 'stack the board over the screenshot',
   rows: 'put the board beside the screenshot',
 };
@@ -331,7 +332,7 @@ const SPLIT_LABELS: Readonly<Record<Split, string>> = {
 /** lucide's `rows-2` and `columns-2`: each button draws the layout it switches
  *  TO, which is what its name says too. Stroked, sized by
  *  `.ds-icon-btn__glyph`, tinted by `currentColor`. */
-function SplitGlyph({ to }: { to: Split }) {
+export function SplitGlyph({ to }: { to: Split }) {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -348,7 +349,7 @@ function SplitGlyph({ to }: { to: Split }) {
 }
 
 /** lucide's `grid-3x3`, for the toggle that lays a grid over both panes. */
-function GridGlyph() {
+export function GridGlyph() {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -651,10 +652,16 @@ export function ComparisonModal({
             grid={gridOn}
             board={board}
             onBoard={onBoard}
-            shots={shots}
-            variant={variant}
-            after={sides.b}
-            ledger={ledger}
+            shot={{
+              key: variant.key,
+              src: shots.candidate,
+              absent: absentShotCopy(variant, 'candidate'),
+              caption: `after · ${sides.b}`,
+              // Pinned: the acceptance suite finds the after pane by these.
+              alt: 'candidate',
+              label: 'after screenshot',
+            }}
+            ledger={ledger && pairedReadings(ledger)}
           />
         ) : (
           <ModesStage

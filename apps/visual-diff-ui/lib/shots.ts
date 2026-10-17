@@ -123,3 +123,15 @@ export const setHref = (label: string) => `/set/${encodeURIComponent(label)}`;
  */
 export const setShotUrl = (label: string, file: string) =>
   `/api/sets/${encodeURIComponent(label)}/shots/${encodeURIComponent(file)}`;
+
+/**
+ * One screenshot of a set, opened beside a design board: the shot view.
+ *
+ * A board is carried only when someone picked one, the rule `comparisonHref`
+ * keeps — so a link stays bare and opens on the board the tier lives on.
+ */
+export function shotViewHref(label: string, key: string, board?: string | null): string {
+  const at = `${setHref(label)}/shot/${encodeURIComponent(key)}`;
+
+  return board ? `${at}?${new URLSearchParams({ board }).toString()}` : at;
+}

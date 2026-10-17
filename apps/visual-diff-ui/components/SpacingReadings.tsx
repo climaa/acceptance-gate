@@ -1,3 +1,4 @@
+import { useId, useState } from 'react';
 import {
   Badge,
   type BadgeTone,
@@ -8,12 +9,8 @@ import {
   type TableColumn,
   type TableRow,
 } from '@gate/ui';
-import type {
-  ChangeSide,
-  Classification,
-  LedgerChange,
-  LedgerReport,
-} from '@gate/visual-diff/ledger';
+import type { Classification } from '@gate/visual-diff/ledger';
+import type { ReadingRow, ReadingSide, Readings, ReadingsMode } from '@/lib/readings';
 
 /**
  * What the spacing did, in design-token terms — the part of the design view a
@@ -38,23 +35,36 @@ import type {
 const HEADING = 'Spacing readings';
 
 /** What the panel is able to say, which is decided by how many sides the
- *  pairing had. `after-only` is every compare against `baselines` — the corpus
- *  is committed rather than captured, so it carries no ledgers at all. */
-type Mode = NonNullable<LedgerReport['mode']>;
+ *  readings had. `after-only` is every compare against `baselines` — the corpus
+ *  is committed rather than captured, so it carries no ledgers at all — and
+ *  `every` is one screenshot opened from a set, read as it stands. */
+type Mode = ReadingsMode;
 
 const CAPTIONS: Readonly<Record<Mode, string>> = {
   changed: 'changed between before and after',
   'after-only': 'after side · off-scale only',
+  every: 'every reading in this screenshot',
 };
 
 const NOTHING_FOUND: Readonly<Record<Mode, string>> = {
   changed: 'No spacing changed between before and after.',
   'after-only': 'No off-scale spacing in the after screenshot.',
+  every: 'No spacing measured in this screenshot.',
 };
 
+/** What the panel is beside, which is the one word its missing-ledger sentence
+ *  changes on. */
+export type ReadingsSubject = 'comparison' | 'screenshot';
+
 /** A comparison with no sidecar to read, and one whose after capture measured
- *  nothing, say the same thing: there is no ledger behind this panel. */
-const NO_LEDGER = 'No token ledger for this comparison.';
+ *  nothing, say the same thing: there is no ledger behind this panel. A set's
+ *  screenshot says where one would come from, because a reader holding a
+ *  baselines shot has no other way to learn that the console can make one. */
+const NO_LEDGER: Readonly<Record<ReadingsSubject, string>> = {
+  comparison: 'No token ledger for this comparison.',
+  screenshot:
+    'No token ledger for this screenshot. Capture a set from the console to read its spacing.',
+};
 
 /** A side that is not there: an element that arrived has no before, one that
  *  left has no after. The same em dash the history table uses for a number a
@@ -106,7 +116,7 @@ const tokenTerm = (token: string, px: number) => `${token} (${pixels(px)})`;
 
 /** One side's value as the panel writes it: in token terms where a token set
  *  it, and in pixels otherwise. */
-function sideTerm(side: ChangeSide | null): string {
+function sideTerm(side: ReadingSide | null): string {
   if (side === null) return NOTHING;
   if (side.classification === 'token' && side.token !== null) {
     return tokenTerm(side.token, side.px);
@@ -129,11 +139,12 @@ const TONES: Readonly<Record<Classification, BadgeTone>> = {
 /** What a classification says about the value beside it, or null where the
  *  badge has already said all there is.
  *
- *  `exempt` is one of those, and not by choice: the allowlist entry's reason is
- *  measured per reading and the report's `ChangeSide` does not carry it, so the
+ *  `exempt` quotes its reason where the reading carries one — a screenshot's
+ *  own sidecar does. A paired report's `ChangeSide` does not, so there the
  *  panel names the exemption without quoting it. */
-function classificationTerm(side: ChangeSide): string | null {
+function classificationTerm(side: ReadingSide): string | null {
   const { classification, token, px } = side;
+  if (classification === 'exempt') return side.reason ?? null;
   if (token === null) return null;
 
   if (classification === 'token') return tokenTerm(token, px);
@@ -148,7 +159,7 @@ function classificationTerm(side: ChangeSide): string | null {
 }
 
 /** The after value, with what wrote it when that is worth saying. */
-function AfterCell({ side }: { side: ChangeSide | null }) {
+function AfterCell({ side }: { side: ReadingSide | null }) {
   if (side === null) return NOTHING;
 
   return (
@@ -163,7 +174,7 @@ function AfterCell({ side }: { side: ChangeSide | null }) {
 
 /** How the after value is named against the scale. An element that arrived or
  *  left is named as that instead: there is no pair of values to classify. */
-function TokenCell({ change }: { change: LedgerChange }) {
+function TokenCell({ change }: { change: ReadingRow }) {
   if (change.change === 'appeared' || change.change === 'gone') {
     return <Badge tone="accent">{change.change}</Badge>;
   }
@@ -183,17 +194,18 @@ function TokenCell({ change }: { change: LedgerChange }) {
 
 /** Sized to what they hold, in the proportions Board 04 draws: the element
  *  column carries a control, and `table-layout: fixed` will not grow a cell for
- *  its contents. The design-token column takes whatever is left. */
+ *  its contents. The design-token column takes whatever is left. One screenshot
+ *  has no after to set against a before, so its value is just the value. */
 const columnsFor = (mode: Mode): readonly TableColumn[] => [
   { header: 'element', width: '18rem' },
   { header: 'property', width: '9rem' },
   ...(mode === 'changed' ? [{ header: 'before', width: '11rem' }] : []),
-  { header: 'after', width: '13rem' },
+  { header: mode === 'every' ? 'value' : 'after', width: '13rem' },
   { header: 'design token' },
 ];
 
 interface RowInput {
-  change: LedgerChange;
+  change: ReadingRow;
   /** The change's position in the report, which is the row's whole identity:
    *  a label is not one — two elements can answer to the same name — and the
    *  list is never re-sorted. */
@@ -245,15 +257,40 @@ function readingRow({
   };
 }
 
+/** The one line a folded panel reads: how many readings there are, and whether
+ *  any of them is worth unfolding for. Counted, never judged — "off-scale" and
+ *  "raw on the scale" are what the badges say, in the badges' own words. */
+function foldSummary(rows: readonly ReadingRow[]): string {
+  const count = (classification: Classification) =>
+    rows.filter((row) => row.after?.classification === classification).length;
+  const notable = [
+    [count('off-scale'), 'off-scale'],
+    [count('raw-on-scale'), 'raw on the scale'],
+  ]
+    .filter(([n]) => Number(n) > 0)
+    .map(([n, what]) => `${n} ${what}`);
+  const noun = rows.length === 1 ? 'reading' : 'readings';
+
+  return [
+    `${rows.length} ${noun}`,
+    notable.length === 0 ? 'all on the scale or exempt' : notable.join(' · '),
+  ].join(' · ');
+}
+
 export interface SpacingReadingsProps {
-  /** What the spacing did on this variant, or null for a comparison with no
-   *  ledger report behind it. */
-  ledger: LedgerReport | null;
-  /** Which row is pressed, as its index in the report's changes. */
+  /** What the spacing did, or measured, on this variant — or null where there
+   *  is no ledger behind the panel. */
+  ledger: Readings | null;
+  /** Which row is pressed, as its index in the readings. */
   pressed: number | null;
   onPress: (index: number | null) => void;
-  /** The same emphasis, for as long as a pointer is over a row. */
+  /** The same emphasis, for as long as a pointer or focus is on a row. */
   onHover: (index: number | null) => void;
+  /** Whether the panel opens folded to one line, or null for a panel that does
+   *  not fold. A set's screenshot folds, because there the weight is the
+   *  pixels; a comparison's readings are what its design view is FOR. */
+  folded?: boolean | null;
+  subject?: ReadingsSubject;
 }
 
 export function SpacingReadings({
@@ -261,30 +298,54 @@ export function SpacingReadings({
   pressed,
   onPress,
   onHover,
+  folded = null,
+  subject = 'comparison',
 }: SpacingReadingsProps) {
   const mode = ledger?.mode ?? null;
-  const changes = ledger?.changes ?? [];
+  const rows = ledger?.rows ?? [];
+  const tableId = useId();
+  const [closed, setClosed] = useState(folded === true);
+  // Only something to unfold: a missing ledger is one sentence, and an empty
+  // one is another, so neither is ever hidden behind a press.
+  const foldable = folded !== null && mode !== null && rows.length > 0;
+  const shut = foldable && closed;
 
   return (
     <div className="vd-readings">
       <Stack direction="row" gap={3} align="baseline" wrap>
         <h3 className="vd-readings__heading">{HEADING}</h3>
         {mode !== null && (
-          <p className="vd-readings__caption vd-mono">{CAPTIONS[mode]}</p>
+          <p className="vd-readings__caption vd-mono">
+            {shut ? foldSummary(rows) : CAPTIONS[mode]}
+          </p>
+        )}
+        {foldable && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="vd-readings__fold"
+            aria-expanded={!shut}
+            aria-controls={tableId}
+            onClick={() => setClosed(!shut)}
+          >
+            {shut ? 'show' : 'hide'}
+          </Button>
         )}
       </Stack>
 
-      {mode === null || changes.length === 0 ? (
-        <EmptyState message={mode === null ? NO_LEDGER : NOTHING_FOUND[mode]} />
+      {mode === null || rows.length === 0 ? (
+        <EmptyState message={mode === null ? NO_LEDGER[subject] : NOTHING_FOUND[mode]} />
       ) : (
-        <Table
-          label={HEADING}
-          className="vd-readings__table"
-          columns={columnsFor(mode)}
-          rows={changes.map((change, index) =>
-            readingRow({ change, index, mode, pressed, onPress, onHover }),
-          )}
-        />
+        <div id={tableId} hidden={shut}>
+          <Table
+            label={HEADING}
+            className="vd-readings__table"
+            columns={columnsFor(mode)}
+            rows={rows.map((change, index) =>
+              readingRow({ change, index, mode, pressed, onPress, onHover }),
+            )}
+          />
+        </div>
       )}
     </div>
   );

@@ -332,3 +332,21 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* ---- The shot view -------------------------------------------------------- */
+
+/* The expanded presentation: the shot view as the page's own content, with no
+   dialog surface around it. */
+.vd-shot {
+  display: block;
+}
+
+.vd-shot__back {
+  font-size: var(--text-xs);
+  color: var(--color-accent);
+}
+
+/* The fold sits at the end of the readings' head line, after the caption. */
+.vd-readings__fold {
+  margin-inline-start: auto;
+}

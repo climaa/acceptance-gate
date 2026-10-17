@@ -8,23 +8,24 @@ import {
   SegmentedControl,
   Stack,
 } from '@gate/ui';
-import type { LedgerChange, LedgerReport } from '@gate/visual-diff/ledger';
 import {
   DESIGN_BOARDS,
   type DesignBoard,
   designBoardUrl,
   isDesignBoard,
 } from '@/lib/comparison';
-import { absentShotCopy, type ShotSources } from '@/lib/shots';
-import type { Variant } from '@/lib/summary';
-import { SpacingReadings } from './SpacingReadings';
+import type { ReadingRow, Readings } from '@/lib/readings';
+import { type ReadingsSubject, SpacingReadings } from './SpacingReadings';
 
 /**
- * The comparison modal's design view: a design board — or an image from the
- * reader's own computer — in one pane, the after screenshot in the other.
+ * A design board — or an image from the reader's own computer — in one pane, a
+ * screenshot in the other: the comparison modal's design view, and the whole of
+ * a set's shot view.
  *
- * Its own module because it is its own view. The modal decides whether it is
- * on show and how it is split; everything inside the two panes is here.
+ * Its own module because it is its own view. Whoever hosts it decides whether it
+ * is on show and how it is split; everything inside the two panes is here. The
+ * screenshot arrives already described ({@link DesignShot}), so the stage never
+ * has to know whether it is the after side of a comparison or one shot of a set.
  */
 
 /** How the design view lays its two panes out: side by side, or the board
@@ -55,19 +56,35 @@ const BOXES_LABEL = 'show spacing boxes';
  *  reached through its props rather than re-declared here. */
 type Mark = NonNullable<PanZoomProps['marks']>[number];
 
+/** The screenshot pane's subject, as its host names it. */
+export interface DesignShot {
+  /** The variant key: what the readings must match, and what keys the pane so
+   *  a new shot opens fitted rather than at the last one's zoom. */
+  key: string;
+  /** Where the shot is served, or undefined where there is none to show. */
+  src: string | undefined;
+  /** The sentence shown in place of a shot that does not exist. */
+  absent: string;
+  /** The pane's lead: which side or which set this is. */
+  caption: string;
+  /** The image's alt and the pane's accessible name. */
+  alt: string;
+  label: string;
+}
+
 interface DesignStageProps {
   split: Split;
   /** Lay each pane's own grid over it — counted in that image's pixels. */
   grid: boolean;
   board: DesignBoard;
   onBoard: (board: DesignBoard) => void;
-  shots: ShotSources;
-  variant: Variant;
-  after: string;
-  /** What the spacing did on the variant the address was loaded with, read on
-   *  the server and handed down — or null for a comparison with no ledger
-   *  report behind it. */
-  ledger: LedgerReport | null;
+  shot: DesignShot;
+  /** The spacing readings for the shot the address was loaded with, read on
+   *  the server and handed down — or null where there is no ledger behind it. */
+  ledger: Readings | null;
+  /** Passed through to the panel: whether it folds, and what it is beside. */
+  readingsFolded?: boolean | null;
+  subject?: ReadingsSubject;
 }
 
 /**
@@ -81,8 +98,8 @@ interface DesignStageProps {
  * wrong image. The panel says it has no ledger instead, which is the truth about
  * what it was handed.
  */
-const readingsFor = (ledger: LedgerReport | null, variant: Variant) =>
-  ledger?.key === variant.key ? ledger : null;
+const readingsFor = (ledger: Readings | null, key: string) =>
+  ledger?.key === key ? ledger : null;
 
 /**
  * The boxes the readings point at, one per distinct rect.
@@ -96,7 +113,7 @@ const readingsFor = (ledger: LedgerReport | null, variant: Variant) =>
  * Rects arrive in the after screenshot's own pixels, which is the space
  * `PanZoom` draws marks in, so they are handed over as measured.
  */
-function marksFor(changes: readonly LedgerChange[], shown: number | null): Mark[] {
+function marksFor(changes: readonly ReadingRow[], shown: number | null): Mark[] {
   // The rect itself is what tells two readings they are on one element, so its
   // four numbers are the key the boxes are collected under.
   const emphasis = shown === null ? null : (changes[shown]?.rect?.join() ?? null);
@@ -139,13 +156,12 @@ export function DesignStage({
   grid,
   board,
   onBoard,
-  shots,
-  variant,
-  after,
+  shot,
   ledger,
+  readingsFolded = null,
+  subject = 'comparison',
 }: DesignStageProps) {
-  const afterSrc = shots.candidate;
-  const caption = <p className="vd-compare__caption vd-mono">after · {after}</p>;
+  const caption = <p className="vd-compare__caption vd-mono">{shot.caption}</p>;
   // An image from the reader's own machine, read in place of a board. Held
   // here — not in the URL, which could never carry a file on someone's disk —
   // so it stays while the arrows walk variants, to be read against each.
@@ -163,8 +179,8 @@ export function DesignStage({
   const [hovered, setHovered] = useState<number | null>(null);
   const [boxes, setBoxes] = useState(true);
 
-  const readings = readingsFor(ledger, variant);
-  const marks = marksFor(readings?.changes ?? [], hovered ?? pressed);
+  const readings = readingsFor(ledger, shot.key);
+  const marks = marksFor(readings?.rows ?? [], hovered ?? pressed);
 
   return (
     <>
@@ -201,19 +217,17 @@ export function DesignStage({
                 — both fitted at 100%, both dragged and zoomed. A screenshot
                 narrower than the pane sits at its own pixels: the pane never
                 stretches it. */}
-            {afterSrc === undefined ? (
+            {shot.src === undefined ? (
               <>
                 {caption}
-                <p className="vd-compare__absent">
-                  {absentShotCopy(variant, 'candidate')}
-                </p>
+                <p className="vd-compare__absent">{shot.absent}</p>
               </>
             ) : (
               <PanZoom
-                key={variant.key}
-                src={afterSrc}
-                alt="candidate"
-                label="after screenshot"
+                key={shot.key}
+                src={shot.src}
+                alt={shot.alt}
+                label={shot.label}
                 grid={grid}
                 marks={boxes ? marks : undefined}
                 className="vd-compare__panzoom"
@@ -247,6 +261,8 @@ export function DesignStage({
         pressed={pressed}
         onPress={setPressed}
         onHover={setHovered}
+        folded={readingsFolded}
+        subject={subject}
       />
     </>
   );

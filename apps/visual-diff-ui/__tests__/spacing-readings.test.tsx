@@ -5,6 +5,7 @@ import { cleanup, fireEvent, render, screen, within } from '@testing-library/rea
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ChangeSide, LedgerChange, LedgerReport } from '@gate/visual-diff/ledger';
 import { SpacingReadings } from '../components/SpacingReadings';
+import { pairedReadings, type Readings } from '../lib/readings';
 
 /**
  * The list a designer reads beside the board: what the spacing did, in
@@ -61,7 +62,13 @@ function renderPanel(ledger: LedgerReport | null, pressed: number | null = null)
     onHover: vi.fn<(index: number | null) => void>(),
   };
 
-  render(<SpacingReadings ledger={ledger} pressed={pressed} {...handlers} />);
+  render(
+    <SpacingReadings
+      ledger={ledger && pairedReadings(ledger)}
+      pressed={pressed}
+      {...handlers}
+    />,
+  );
 
   return handlers;
 }
@@ -334,5 +341,140 @@ describe('the spacing readings panel', () => {
       expect(screen.getByText('No token ledger for this comparison.')).toBeTruthy();
       expect(screen.queryByText(/between before and after/)).toBeNull();
     });
+  });
+});
+
+/* ---- One screenshot from a set ---------------------------------------- */
+
+/** A badge's own ledger, read as every reading it holds. */
+const badge: Readings = {
+  key: KEY,
+  mode: 'every',
+  rows: [
+    {
+      ...change({
+        label: 'ds-badge',
+        property: 'padding-top',
+        change: 'present',
+        before: null,
+      }),
+      after: {
+        px: 2,
+        token: null,
+        origin: 'regular',
+        classification: 'exempt',
+        reason: 'pill half-step',
+      },
+    },
+    change({
+      label: 'ds-badge',
+      property: 'padding-right',
+      change: 'present',
+      before: null,
+      after: side({
+        px: 8,
+        token: '--space-2',
+        origin: 'regular',
+        classification: 'token',
+      }),
+    }),
+  ],
+};
+
+function renderShot(ledger: Readings | null, folded: boolean | null = null) {
+  render(
+    <SpacingReadings
+      ledger={ledger}
+      pressed={null}
+      onPress={vi.fn()}
+      onHover={vi.fn()}
+      folded={folded}
+      subject="screenshot"
+    />,
+  );
+}
+
+describe('the spacing readings of one screenshot', () => {
+  it('lists every reading under a value column, with no before', () => {
+    renderShot(badge);
+
+    expect(headers()).toEqual(['element', 'property', 'value', 'design token']);
+  });
+
+  it('says what it is reading', () => {
+    renderShot(badge);
+
+    expect(screen.getByText('every reading in this screenshot')).toBeTruthy();
+  });
+
+  it('quotes an exemption’s reason beside its badge', () => {
+    renderShot(badge);
+
+    expect(bodyRows()[0]?.textContent).toContain('exemptpill half-step');
+  });
+
+  it('names a design token by its step and value', () => {
+    renderShot(badge);
+
+    expect(bodyRows()[1]?.textContent).toContain('--space-2 (8px)');
+  });
+
+  it('opens folded to one line that counts what it holds', () => {
+    renderShot(badge, true);
+
+    expect({
+      line: screen.getByText('2 readings · all on the scale or exempt') !== null,
+      table: screen.queryByRole('table'),
+      expanded: screen
+        .getByRole('button', { name: 'show' })
+        .getAttribute('aria-expanded'),
+    }).toEqual({ line: true, table: null, expanded: 'false' });
+  });
+
+  it('counts what a folded line is worth unfolding for', () => {
+    renderShot(
+      { ...badge, rows: [...badge.rows, change({ change: 'present', before: null })] },
+      true,
+    );
+
+    expect(screen.getByText('3 readings · 1 off-scale')).toBeTruthy();
+  });
+
+  it('unfolds to the table when asked', () => {
+    renderShot(badge, true);
+
+    fireEvent.click(screen.getByRole('button', { name: 'show' }));
+
+    expect({
+      rows: bodyRows().length,
+      expanded: screen
+        .getByRole('button', { name: 'hide' })
+        .getAttribute('aria-expanded'),
+    }).toEqual({ rows: 2, expanded: 'true' });
+  });
+
+  it('says where a ledger would come from, and offers nothing to unfold', () => {
+    renderShot(null, true);
+
+    expect({
+      message:
+        screen.getByText(
+          'No token ledger for this screenshot. Capture a set from the console to read its spacing.',
+        ) !== null,
+      fold: screen.queryByRole('button', { name: 'show' }),
+    }).toEqual({ message: true, fold: null });
+  });
+
+  it('says a screenshot that measured nothing measured nothing', () => {
+    renderShot({ ...badge, rows: [] });
+
+    expect(screen.getByText('No spacing measured in this screenshot.')).toBeTruthy();
+  });
+
+  // A comparison's readings are what its design view is for: never folded away.
+  it('offers no fold on a comparison', () => {
+    renderPanel(report());
+
+    expect(screen.queryByRole('button', { name: /^(show|hide)$/ })).toBeNull();
   });
 });
