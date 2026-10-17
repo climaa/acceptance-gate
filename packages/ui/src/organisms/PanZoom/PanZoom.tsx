@@ -475,6 +475,8 @@ interface PaneLayersProps {
   marks: readonly Mark[] | undefined;
   crop: Rect | null;
   onLoad: (event: SyntheticEvent<HTMLImageElement>) => void;
+  /** Handed the image element, to read a size `onLoad` arrived too early for. */
+  imageRef: (image: HTMLImageElement | null) => void;
   onError: () => void;
 }
 
@@ -493,6 +495,7 @@ function PaneLayers(props: PaneLayersProps) {
           src={props.src}
           alt={props.alt}
           draggable={false}
+          ref={props.imageRef}
           onLoad={props.onLoad}
           onError={props.onError}
           style={{
@@ -624,6 +627,15 @@ export function PanZoom({
       width: event.currentTarget.naturalWidth,
       height: event.currentTarget.naturalHeight,
     });
+  // A server-rendered image can finish loading before React is listening, and
+  // then `onLoad` never fires: the pane would never learn the image's size, and
+  // with it the cap, the grid and every crop. So an image already complete when
+  // it mounts is read here instead — once, while the size is still unknown.
+  const imageRef = (image: HTMLImageElement | null) => {
+    if (!image?.complete || image.naturalWidth === 0 || natural.width > 0) return;
+
+    setNatural({ width: image.naturalWidth, height: image.naturalHeight });
+  };
 
   const shown = shownCrop(cropDraft.draft, crop, offset, controls.scale);
 
@@ -676,6 +688,7 @@ export function PanZoom({
           marks={marks}
           crop={shown}
           onLoad={onLoad}
+          imageRef={imageRef}
           onError={() => setFailedSrc(src)}
         />
       </div>

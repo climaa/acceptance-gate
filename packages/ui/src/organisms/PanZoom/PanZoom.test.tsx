@@ -584,3 +584,40 @@ describe('PanZoom cropping, as a host steers it', () => {
     expect(results.violations).toEqual([]);
   });
 });
+
+describe('PanZoom with an image that loaded before it was listening', () => {
+  // Server-rendered markup can finish loading its image before hydration, and
+  // React then never sees the load event. The pane must still learn the size.
+  it('reads the size off an image already complete when it mounts', () => {
+    const proto = HTMLImageElement.prototype;
+    const saved = {
+      complete: Object.getOwnPropertyDescriptor(proto, 'complete'),
+      naturalWidth: Object.getOwnPropertyDescriptor(proto, 'naturalWidth'),
+      naturalHeight: Object.getOwnPropertyDescriptor(proto, 'naturalHeight'),
+    };
+    Object.defineProperty(proto, 'complete', { configurable: true, get: () => true });
+    Object.defineProperty(proto, 'naturalWidth', {
+      configurable: true,
+      get: () => NATURAL.width,
+    });
+    Object.defineProperty(proto, 'naturalHeight', {
+      configurable: true,
+      get: () => NATURAL.height,
+    });
+
+    try {
+      render(<PanZoom src="board.png" alt="a design board" label="design board" />);
+
+      expect(button('zoom in').disabled).toBe(false);
+      expect(
+        (screen.getByRole('img', { name: 'a design board' }) as HTMLImageElement).style
+          .width,
+      ).toBe(`${PANE.width}px`);
+    } finally {
+      for (const [key, descriptor] of Object.entries(saved)) {
+        if (descriptor) Object.defineProperty(proto, key, descriptor);
+        else delete (proto as unknown as Record<string, unknown>)[key];
+      }
+    }
+  });
+});
