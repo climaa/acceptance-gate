@@ -60,3 +60,9 @@ apps/e2e/.features-gen-local/
 # bytes, so regenerating them by fixtures/README.md reproduces the committed files
 # exactly. Reformatted, every regeneration would be a diff.
 apps/visual-diff-ui/fixtures/reports/*/ledger/
+
+# The e2e worlds: a copy of those fixtures, plus the overlay, that each run seeds
+# before its servers boot. Gitignored via apps/e2e/.gitignore, but Prettier does
+# not read .gitignore, so a local e2e run left the copied ledgers above for this
+# glob to flag.
+apps/e2e/.worlds/
