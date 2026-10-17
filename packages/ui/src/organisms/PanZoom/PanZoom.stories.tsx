@@ -53,3 +53,21 @@ export const WithMarks: Story = {
     ],
   },
 };
+
+/** One view, handed to two panes: both at 225%, both a fifth of the way in and a
+ *  tenth of the way down, so the same part of each shows. Board 01's "following
+ *  a view" tile. */
+export const FollowingAView: Story = {
+  render: (args) => (
+    <div style={{ display: 'grid', gap: '0.5rem' }}>
+      <PanZoom {...args} view={{ zoom: 2.25, x: 0.2, y: 0.1 }} />
+      <PanZoom {...args} label="the same view" view={{ zoom: 2.25, x: 0.2, y: 0.1 }} />
+    </div>
+  ),
+};
+
+/** A kept crop, handed back by the host: the second tile, outlined in the accent
+ *  over a light wash. Board 01's "cropping" tile. */
+export const WithCrop: Story = {
+  args: { crop: { x: 430, y: 120, width: 350, height: 330 } },
+};

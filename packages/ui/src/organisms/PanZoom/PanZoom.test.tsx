@@ -1,167 +1,12 @@
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import axe from 'axe-core';
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
-import {
-  clampOffset,
-  drawnSize,
-  fitWidth,
-  gridStep,
-  PanZoom,
-  type PanZoomProps,
-  stepZoom,
-  zoomAbout,
-  zoomCap,
-} from './PanZoom';
+import { PanZoom, type PanZoomProps, type View } from './PanZoom';
 
 // `globals` is off in vitest.config.ts, so Testing Library's automatic cleanup
 // has no global `afterEach` to hook onto.
 afterEach(cleanup);
-
-describe('zoomCap', () => {
-  it('is the image at its natural pixels', () => {
-    const cap = zoomCap(1600, 400);
-
-    expect(cap).toBe(4);
-  });
-
-  it('is 100% for an image no wider than the pane — it is already whole', () => {
-    const cap = zoomCap(300, 400);
-
-    expect(cap).toBe(1);
-  });
-
-  it('is 100% before the pane has been measured', () => {
-    const cap = zoomCap(1600, 0);
-
-    expect(cap).toBe(1);
-  });
-});
-
-describe('stepZoom', () => {
-  it('steps in by 1.5', () => {
-    const next = stepZoom(1, 1, 4);
-
-    expect(next).toBe(1.5);
-  });
-
-  it('stops at the cap', () => {
-    const next = stepZoom(3, 1, 4);
-
-    expect(next).toBe(4);
-  });
-
-  it('never steps out below 100%', () => {
-    const next = stepZoom(1.2, -1, 4);
-
-    expect(next).toBe(1);
-  });
-
-  // 1.5 × 1.5 / 1.5 / 1.5 is 1 only up to floating point: the floor has to be
-  // reachable by stepping, or `−` never disables.
-  it('lands exactly on the floor after stepping in and back out', () => {
-    const next = stepZoom(stepZoom(stepZoom(stepZoom(1, 1, 4), 1, 4), -1, 4), -1, 4);
-
-    expect(next).toBe(1);
-  });
-});
-
-describe('clampOffset', () => {
-  const pane = { width: 400, height: 300 };
-  const image = { width: 800, height: 1200 };
-
-  it('never lets the image move right of or below the pane origin', () => {
-    const offset = clampOffset({ x: 50, y: 20 }, pane, image);
-
-    expect(offset).toEqual({ x: 0, y: 0 });
-  });
-
-  it('stops where the image far edge meets the pane far edge', () => {
-    const offset = clampOffset({ x: -5000, y: -5000 }, pane, image);
-
-    expect(offset).toEqual({ x: -400, y: -900 });
-  });
-
-  it('pins an image shorter than the pane to its top', () => {
-    const offset = clampOffset({ x: 0, y: -40 }, pane, { width: 400, height: 100 });
-
-    expect(offset).toEqual({ x: 0, y: 0 });
-  });
-});
-
-describe('zoomAbout', () => {
-  it('keeps the point under the anchor where it was', () => {
-    const anchor = { x: 200, y: 150 };
-
-    const offset = zoomAbout({ x: 0, y: 0 }, 1, 2, anchor);
-
-    // The image point under the anchor was (200,150); at 2× it is (400,300),
-    // and an offset of (−200,−150) puts it back under the anchor.
-    expect(offset).toEqual({ x: -200, y: -150 });
-  });
-});
-
-describe('gridStep', () => {
-  // A 2,642-pixel board fitted to a 681-pixel pane: about 0.26 drawn per pixel.
-  it('is coarse over a whole board at 100%', () => {
-    const step = gridStep(681 / 2642);
-
-    expect(step).toBe(64);
-  });
-
-  it('gets finer as the zoom gets closer', () => {
-    const step = gridStep(2);
-
-    expect(step).toBe(8);
-  });
-
-  it('never goes finer than 4 image pixels, however close the zoom', () => {
-    const step = gridStep(50);
-
-    expect(step).toBe(4);
-  });
-
-  it('stops at its coarsest step for an image shrunk past any useful grid', () => {
-    const step = gridStep(0.001);
-
-    expect(step).toBe(1024);
-  });
-});
-
-describe('fitWidth', () => {
-  it('is the pane width for an image wider than the pane', () => {
-    const width = fitWidth(1600, 400);
-
-    expect(width).toBe(400);
-  });
-
-  // A screenshot drawn wider than it was captured is a blurred claim about it.
-  it('is the image own width for an image narrower than the pane', () => {
-    const width = fitWidth(300, 400);
-
-    expect(width).toBe(300);
-  });
-
-  it('is the pane width before the image has reported a size', () => {
-    const width = fitWidth(0, 400);
-
-    expect(width).toBe(400);
-  });
-});
-
-describe('drawnSize', () => {
-  it('never stretches a narrow image at 100%', () => {
-    const size = drawnSize({ width: 400, height: 300 }, { width: 200, height: 100 }, 1);
-
-    expect(size).toEqual({ width: 200, height: 100 });
-  });
-
-  it('is the pane width times the zoom, in the image proportions', () => {
-    const size = drawnSize({ width: 400, height: 300 }, { width: 1600, height: 2400 }, 2);
-
-    expect(size).toEqual({ width: 800, height: 1200 });
-  });
-});
 
 /**
  * jsdom does no layout: every element measures 0. The pane is given the size a
@@ -519,5 +364,223 @@ describe('PanZoom with marks', () => {
     const { container } = renderLoaded({ marks: MARKS });
 
     expect(layer(container)?.getAttribute('aria-hidden')).toBe('true');
+  });
+});
+
+describe('PanZoom following a view', () => {
+  const VIEW: View = { zoom: 2, x: 0, y: 0.25 };
+
+  // 800 × 1200 drawn at 200%: a quarter of the way down is 300 px.
+  it('shows the view it is handed', () => {
+    const { image } = renderLoaded({ view: VIEW });
+
+    expect({ readout: readout(), transform: image.style.transform }).toEqual({
+      readout: '200%',
+      transform: 'translate(0px, -300px)',
+    });
+  });
+
+  it('reports a step rather than taking it', () => {
+    const onViewChange = vi.fn<(view: View) => void>();
+    renderLoaded({ view: { zoom: 1, x: 0, y: 0 }, onViewChange });
+
+    fireEvent.click(button('zoom in'));
+
+    expect({
+      readout: readout(),
+      reported: onViewChange.mock.calls[0]?.[0].zoom,
+    }).toEqual({
+      readout: '100%',
+      reported: 1.5,
+    });
+  });
+
+  it('reports a drag as a share of the image, clamped as the pane would show it', () => {
+    const onViewChange = vi.fn<(view: View) => void>();
+    renderLoaded({ view: VIEW, onViewChange });
+
+    fireEvent.pointerDown(pane(), { pointerId: 1, clientX: 100, clientY: 200 });
+    fireEvent.pointerMove(pane(), { pointerId: 1, clientX: 100, clientY: 80 });
+
+    expect(onViewChange.mock.calls.at(-1)?.[0]).toEqual({ zoom: 2, x: 0, y: 0.35 });
+  });
+
+  it('reports a reset as the top-left at 100%', () => {
+    const onViewChange = vi.fn<(view: View) => void>();
+    renderLoaded({ view: VIEW, onViewChange });
+
+    fireEvent.click(button('reset'));
+
+    expect(onViewChange).toHaveBeenCalledWith({ zoom: 1, x: 0, y: 0 });
+  });
+
+  // A host that only listens: the pane keeps its own view and says what it is.
+  it('reports its own view when it keeps one', () => {
+    const onViewChange = vi.fn<(view: View) => void>();
+    renderLoaded({ onViewChange });
+
+    fireEvent.keyDown(pane(), { key: '+' });
+
+    expect({
+      readout: readout(),
+      reported: onViewChange.mock.calls[0]?.[0].zoom,
+    }).toEqual({
+      readout: '150%',
+      reported: 1.5,
+    });
+  });
+});
+
+describe('PanZoom cropping', () => {
+  const box = (container: HTMLElement) =>
+    container.querySelector<HTMLElement>('.ds-panzoom__crop');
+
+  it('draws a box while a drag is in progress, and moves nothing', () => {
+    const { image, container } = renderLoaded({ cropping: true });
+
+    fireEvent.pointerDown(pane(), { pointerId: 1, clientX: 100, clientY: 50 });
+    fireEvent.pointerMove(pane(), { pointerId: 1, clientX: 200, clientY: 100 });
+
+    const { left, top, width, height } = box(container)?.style ?? {};
+    expect({ left, top, width, height, transform: image.style.transform }).toEqual({
+      left: '100px',
+      top: '50px',
+      width: '100px',
+      height: '50px',
+      transform: 'translate(0px, 0px)',
+    });
+  });
+
+  // 0.25 drawn pixels per image pixel at 100%.
+  it('reports the box in the image own pixels on release, and keeps nothing', () => {
+    const onCrop = vi.fn();
+    const { container } = renderLoaded({ cropping: true, onCrop });
+
+    fireEvent.pointerDown(pane(), { pointerId: 1, clientX: 100, clientY: 50 });
+    fireEvent.pointerMove(pane(), { pointerId: 1, clientX: 200, clientY: 100 });
+    fireEvent.pointerUp(pane(), { pointerId: 1 });
+
+    expect({ reported: onCrop.mock.calls[0]?.[0], box: box(container) }).toEqual({
+      reported: { x: 400, y: 200, width: 400, height: 200 },
+      box: null,
+    });
+  });
+
+  it('reports nothing for a click', () => {
+    const onCrop = vi.fn();
+    renderLoaded({ cropping: true, onCrop });
+
+    fireEvent.pointerDown(pane(), { pointerId: 1, clientX: 100, clientY: 50 });
+    fireEvent.pointerUp(pane(), { pointerId: 1 });
+
+    expect(onCrop).not.toHaveBeenCalled();
+  });
+
+  it('drops a crop on Escape, and keeps the key from whoever listens above', () => {
+    const onCrop = vi.fn();
+    const above = vi.fn();
+    const { container } = renderLoaded({ cropping: true, onCrop });
+    document.addEventListener('keydown', above);
+
+    fireEvent.pointerDown(pane(), { pointerId: 1, clientX: 100, clientY: 50 });
+    fireEvent.pointerMove(pane(), { pointerId: 1, clientX: 200, clientY: 100 });
+    fireEvent.keyDown(pane(), { key: 'Escape' });
+    document.removeEventListener('keydown', above);
+
+    expect({ box: box(container), above: above.mock.calls.length }).toEqual({
+      box: null,
+      above: 0,
+    });
+  });
+
+  // From the keyboard: Enter starts the middle half of the pane, an arrow moves
+  // its far corner by a tenth of the pane, and Enter again reports it.
+  it('crops from the keyboard', () => {
+    const onCrop = vi.fn();
+    renderLoaded({ cropping: true, onCrop });
+
+    fireEvent.keyDown(pane(), { key: 'Enter' });
+    fireEvent.keyDown(pane(), { key: 'ArrowRight' });
+    fireEvent.keyDown(pane(), { key: 'Enter' });
+
+    expect(onCrop).toHaveBeenCalledWith({ x: 400, y: 300, width: 960, height: 600 });
+  });
+
+  it('leaves Escape alone when no crop is being drawn', () => {
+    renderLoaded({ cropping: true });
+
+    const handled = !fireEvent.keyDown(pane(), { key: 'Escape' });
+
+    expect(handled).toBe(false);
+  });
+
+  it('pans with a drag when it is not cropping, even with a crop to show', () => {
+    const { image } = renderLoaded({ crop: { x: 0, y: 0, width: 400, height: 400 } });
+
+    fireEvent.pointerDown(pane(), { pointerId: 1, clientX: 100, clientY: 200 });
+    fireEvent.pointerMove(pane(), { pointerId: 1, clientX: 100, clientY: 120 });
+
+    expect(image.style.transform).toBe('translate(0px, -80px)');
+  });
+
+  it('shows a kept crop where the image now is', () => {
+    const { container } = renderLoaded({
+      crop: { x: 400, y: 200, width: 400, height: 200 },
+      defaultZoom: 2,
+    });
+
+    const { left, top, width, height } = box(container)?.style ?? {};
+    expect({ left, top, width, height }).toEqual({
+      left: '200px',
+      top: '100px',
+      width: '200px',
+      height: '100px',
+    });
+  });
+
+  it('is decoration only — hidden from the accessibility tree', () => {
+    const { container } = renderLoaded({ crop: { x: 0, y: 0, width: 400, height: 400 } });
+
+    expect(box(container)?.getAttribute('aria-hidden')).toBe('true');
+  });
+});
+
+describe('PanZoom cropping, as a host steers it', () => {
+  it('drops a crop being drawn when cropping is turned off, and pans again', () => {
+    const { image, container, rerender } = renderLoaded({ cropping: true });
+    fireEvent.pointerDown(pane(), { pointerId: 1, clientX: 100, clientY: 50 });
+    fireEvent.pointerMove(pane(), { pointerId: 1, clientX: 200, clientY: 100 });
+
+    rerender(<PanZoom src="board.png" alt="a design board" label="design board" />);
+    fireEvent.pointerDown(pane(), { pointerId: 2, clientX: 100, clientY: 200 });
+    fireEvent.pointerMove(pane(), { pointerId: 2, clientX: 100, clientY: 120 });
+
+    expect({
+      box: container.querySelector('.ds-panzoom__crop'),
+      transform: image.style.transform,
+    }).toEqual({ box: null, transform: 'translate(0px, -80px)' });
+  });
+
+  it('tells assistive technology how to crop while cropping is on', () => {
+    renderLoaded({ cropping: true });
+
+    expect(pane().getAttribute('aria-describedby')).not.toBeNull();
+    expect(
+      document.getElementById(pane().getAttribute('aria-describedby') ?? '')?.textContent,
+    ).toContain('press Enter to start one');
+  });
+
+  it('says nothing about cropping when it is off', () => {
+    renderLoaded();
+
+    expect(pane().getAttribute('aria-describedby')).toBeNull();
+  });
+
+  it('has no axe violations while cropping', async () => {
+    const { container } = renderLoaded({ cropping: true });
+
+    const results = await axe.run(container);
+
+    expect(results.violations).toEqual([]);
   });
 });
