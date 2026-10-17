@@ -1,5 +1,10 @@
 export { Dialog, type DialogProps } from './Dialog/Dialog';
-export { PanZoom, type PanZoomProps } from './PanZoom/PanZoom';
+export {
+  PanZoom,
+  type PanZoomProps,
+  type Rect as PanZoomRect,
+  type View as PanZoomView,
+} from './PanZoom/PanZoom';
 export {
   SiteFooter,
   type SiteFooterLink,
