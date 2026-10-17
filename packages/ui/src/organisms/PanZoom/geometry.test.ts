@@ -14,6 +14,14 @@ import {
 } from './geometry';
 
 describe('zoomCap', () => {
+  it('rises past the natural pixels by the factor a host asks to magnify', () => {
+    expect(zoomCap(1600, 400, 2)).toBe(8);
+  });
+
+  it('lets an image narrower than the pane be magnified too', () => {
+    expect(zoomCap(300, 400, 8)).toBe(8);
+  });
+
   it('is the image at its natural pixels', () => {
     const cap = zoomCap(1600, 400);
 

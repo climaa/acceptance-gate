@@ -101,6 +101,9 @@ export function OverlayStage({ shot, crop, onAskCrop }: OverlayStageProps) {
       >
         <div
           className="vd-overlay__layers"
+          // Past the shot's own pixels, each pixel draws as a square, as a
+          // magnified PanZoom does (#547).
+          data-magnified={zoom > 1 ? '' : undefined}
           style={
             size
               ? { width: `${size.width * zoom}px`, height: `${size.height * zoom}px` }

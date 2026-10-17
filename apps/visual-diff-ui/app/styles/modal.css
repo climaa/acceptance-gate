@@ -421,3 +421,7 @@
 .vd-overlay__label input {
   accent-color: var(--color-accent);
 }
+
+.vd-overlay__layers[data-magnified] img {
+  image-rendering: pixelated;
+}

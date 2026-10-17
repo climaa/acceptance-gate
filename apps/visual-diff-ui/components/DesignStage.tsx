@@ -29,6 +29,24 @@ import { type ReadingsSubject, SpacingReadings } from './SpacingReadings';
  *  stacked over the screenshot. */
 export type Split = 'columns' | 'rows';
 
+/** How far past a screenshot's own pixels the shot view's panes may zoom. */
+const SHOT_MAGNIFY = 8;
+
+/**
+ * What both panes are handed so they move alike. The shot view reads pixels by
+ * eye, so its panes magnify past a shot's own size (#547) — both by the same
+ * factor, so a synced view stays pixel for pixel — and, synced, they hold one
+ * view. The comparison modal passes no tools and keeps the natural cap.
+ */
+function followOf(
+  tools: ShotTools | undefined,
+): Pick<PanZoomProps, 'view' | 'onViewChange' | 'magnify'> {
+  if (!tools) return {};
+  if (!tools.sync) return { magnify: SHOT_MAGNIFY };
+
+  return { magnify: SHOT_MAGNIFY, view: tools.view, onViewChange: tools.onViewChange };
+}
+
 /** The box toggle's name, pinned the way the upload button's is. */
 const BOXES_LABEL = 'show spacing boxes';
 
@@ -188,9 +206,7 @@ export function DesignStage({
 
   const readings = readingsFor(ledger, shot.key);
   const marks = marksFor(readings?.rows ?? [], hovered ?? pressed);
-  const follow = tools?.sync
-    ? { view: tools.view, onViewChange: tools.onViewChange }
-    : {};
+  const follow = followOf(tools);
 
   return (
     <>
