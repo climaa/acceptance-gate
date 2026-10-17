@@ -244,7 +244,13 @@ describe('the spacing readings panel', () => {
       renderPanel(report());
 
       expect(screen.getByText('changed between before and after')).toBeTruthy();
-      expect(headers()).toEqual(['element', 'property', 'before', 'after', 'token']);
+      expect(headers()).toEqual([
+        'element',
+        'property',
+        'before',
+        'after',
+        'design token',
+      ]);
     });
 
     // Every compare against `baselines`: the corpus is committed rather than
@@ -258,7 +264,7 @@ describe('the spacing readings panel', () => {
       );
 
       expect(screen.getByText('after side · off-scale only')).toBeTruthy();
-      expect(headers()).toEqual(['element', 'property', 'after', 'token']);
+      expect(headers()).toEqual(['element', 'property', 'after', 'design token']);
     });
   });
 
