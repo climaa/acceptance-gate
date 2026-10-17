@@ -131,6 +131,12 @@ Each of the four Vercel projects deploys production from the `production` branch
 `production` moves. Every production build is kept for a week, so building one per merge
 took the Hobby plan's deployment storage to 75% in a fortnight — one per release does not.
 
+Nothing else deploys. Each `vercel.json` sets `git.deploymentEnabled` to
+`{ "**": false, "production": true }`, so a pull request, a merge to `main` or a Sandcastle
+branch builds nothing on Vercel. Previews were login-protected and read by nothing — not the
+`gate`, not the e2e suite — and every one spent the Hobby plan's daily deployment cap that a
+release needs.
+
 - **Why not `release`:** step 1 creates `release/X.Y.Z` branches, and git cannot hold a
   `release` branch beside them.
 - **Why `gh api` and not `git push`:** it moves the ref on GitHub without a local checkout,
