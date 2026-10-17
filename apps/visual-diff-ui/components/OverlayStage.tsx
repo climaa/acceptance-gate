@@ -1,7 +1,7 @@
 'use client';
 
 import { type KeyboardEvent, useState } from 'react';
-import { Button, Stack } from '@gate/ui';
+import { Button, PAN_ZOOM_STEP, Stack } from '@gate/ui';
 import { type Nudge, nudged, nudgeText } from '@/lib/board-crop';
 import type { BoardCrop } from '@/hooks/useBoardCrop';
 import type { DesignShot } from './DesignStage';
@@ -18,8 +18,9 @@ import type { DesignShot } from './DesignStage';
  * The pane scrolls rather than drags — the arrow keys belong to the nudge.
  */
 
-/** Zoom steps, as PanZoom steps them: 1.5 at a time, from the shot's own size. */
-const ZOOMS = [1, 1.5, 2.25, 3.375, 5, 7.5] as const;
+/** Zoom steps, as PanZoom steps them, from the shot's own size: six steps of
+ *  PanZoom's own step, so the two views zoom alike. */
+const ZOOMS = Array.from({ length: 6 }, (_, at) => PAN_ZOOM_STEP ** at);
 
 const OPACITY_LABEL = 'board opacity';
 
@@ -90,7 +91,9 @@ export function OverlayStage({ shot, crop, onAskCrop }: OverlayStageProps) {
       </Stack>
 
       <div
-        className="vd-overlay__pane"
+        // PanZoom's pane frame, so switching to the overlay moves nothing; the
+        // overlay's own class undoes only what a dragged pane needs.
+        className="ds-panzoom__pane vd-overlay__pane"
         role="group"
         aria-label="the screenshot with the board crop over it"
         tabIndex={0}

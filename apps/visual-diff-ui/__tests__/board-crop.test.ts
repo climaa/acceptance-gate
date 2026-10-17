@@ -2,6 +2,7 @@
 // `**/*.ts` include means tsc typechecks this file.
 import { describe, expect, it } from 'vitest';
 import { cropParam, cssSize, nudged, nudgeText, parseCrop } from '../lib/board-crop';
+import { shotViewHref } from '../lib/shots';
 
 describe('parseCrop and cropParam', () => {
   it('reads a crop back from the address', () => {
@@ -52,5 +53,13 @@ describe('nudged', () => {
 describe('nudgeText', () => {
   it('signs each axis, with a real minus', () => {
     expect(nudgeText({ x: 3, y: -1 })).toBe('+3, −1');
+  });
+});
+
+describe('shotViewHref with a crop', () => {
+  it('carries the crop with its commas as they are', () => {
+    expect(shotViewHref('main-2026-10-16', 'k', 'pages', '1,2,3,4')).toBe(
+      '/set/main-2026-10-16/shot/k?board=pages&crop=1,2,3,4',
+    );
   });
 });

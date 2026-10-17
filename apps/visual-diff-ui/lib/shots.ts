@@ -153,8 +153,9 @@ export function shotViewHref(
   const at = `${setHref(label)}/shot/${encodeURIComponent(key)}`;
   const params = new URLSearchParams();
   if (board) params.set('board', board);
-  if (crop) params.set('crop', crop);
-  const query = params.toString();
+  // Written by hand: a crop is digits and commas, which a query carries as they
+  // are, and URLSearchParams would spell every comma %2C.
+  const query = [params.toString(), crop ? `crop=${crop}` : ''].filter(Boolean).join('&');
 
   return query === '' ? at : `${at}?${query}`;
 }

@@ -23,6 +23,8 @@ function imageThat(loads: boolean) {
   return class {
     onload: (() => void) | null = null;
     onerror: (() => void) | null = null;
+    naturalWidth = 2000;
+    naturalHeight = 1000;
     set src(_value: string) {
       queueMicrotask(() => (loads ? this.onload?.() : this.onerror?.()));
     }
@@ -123,5 +125,42 @@ describe('useBoardCrop', () => {
     await settle();
 
     expect(screen.getByText('no crop')).toBeTruthy();
+  });
+
+  // An address can carry any numbers: a box past the board is held to it.
+  it('holds a crop to the board it is a crop of', async () => {
+    render(<Probe rect={{ x: 1900, y: 900, width: 400, height: 400 }} />);
+    await settle();
+
+    expect(drawImage.mock.calls[0]?.slice(1)).toEqual([
+      1900, 900, 100, 100, 0, 0, 50, 50,
+    ]);
+  });
+
+  it('cuts nothing for a crop wholly off the board', async () => {
+    render(<Probe rect={{ x: 5000, y: 0, width: 10, height: 10 }} />);
+    await settle();
+
+    expect({
+      drawn: drawImage.mock.calls.length,
+      shown: screen.getByText('no crop') !== null,
+    }).toEqual({
+      drawn: 0,
+      shown: true,
+    });
+  });
+
+  it('cuts nothing larger than a region, however large the board', async () => {
+    vi.stubGlobal(
+      'Image',
+      class extends imageThat(true) {
+        naturalWidth = 100_000;
+        naturalHeight = 100_000;
+      },
+    );
+    render(<Probe rect={{ x: 0, y: 0, width: 90_000, height: 10 }} />);
+    await settle();
+
+    expect(drawImage).not.toHaveBeenCalled();
   });
 });

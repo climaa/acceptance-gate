@@ -21,7 +21,12 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const EXPORTS = resolve(dirname(fileURLToPath(import.meta.url)), '..', 'designs', 'exports');
+const EXPORTS = resolve(
+  dirname(fileURLToPath(import.meta.url)),
+  '..',
+  'designs',
+  'exports',
+);
 
 /** A PNG's width and height, off its IHDR chunk: bytes 16–23, big-endian. */
 function pngSize(file) {
@@ -57,7 +62,9 @@ for (const png of pngs) {
 if (problems.length > 0) {
   console.error('✗ design-board export scales disagree with their PNGs:');
   for (const problem of problems) console.error(`    ${problem}`);
-  console.error('  Re-export wrote a new size: update the sidecar with the board size and scale used.');
+  console.error(
+    '  Re-export wrote a new size: update the sidecar with the board size and scale used.',
+  );
   process.exit(1);
 }
 

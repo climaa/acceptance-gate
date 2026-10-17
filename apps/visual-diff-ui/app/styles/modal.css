@@ -377,11 +377,19 @@
 }
 
 .vd-overlay__pane {
-  height: calc(var(--space-16) * 6);
   overflow: auto;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-bg-subtle);
+  cursor: auto;
+  touch-action: auto;
+}
+
+.vd-overlay__pane:active {
+  cursor: auto;
+}
+
+/* The overlay is one pane and its controls, not two panes: the stage takes its
+   height rather than holding the two panes' 60dvh open around it. */
+.vd-compare__stage--overlay {
+  block-size: auto;
 }
 
 /* Both images at their CSS pixels times the zoom the component writes; the

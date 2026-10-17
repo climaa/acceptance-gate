@@ -43,12 +43,32 @@ function useBoardScale(board: DesignBoard): number | null {
 }
 
 /** The region of a loaded board, redrawn at CSS size, as a PNG blob. */
+/** The largest side a cut is drawn at, in CSS pixels: past it a crop is a
+ *  board, not a region of one, and a canvas that size is memory, not a view. */
+const MAX_CUT = 4096;
+
+/** A crop held to the board it is a crop of: an address can carry any numbers,
+ *  and a box past the board's edges is pixels that do not exist. */
+function withinBoard(rect: PanZoomRect, board: HTMLImageElement): PanZoomRect | null {
+  const x = Math.min(rect.x, board.naturalWidth);
+  const y = Math.min(rect.y, board.naturalHeight);
+  const width = Math.min(rect.width, board.naturalWidth - x);
+  const height = Math.min(rect.height, board.naturalHeight - y);
+
+  return width > 0 && height > 0 ? { x, y, width, height } : null;
+}
+
 async function cutBoard(
   board: HTMLImageElement,
-  rect: PanZoomRect,
+  asked: PanZoomRect,
   scale: number,
 ): Promise<Blob | null> {
+  const rect = withinBoard(asked, board);
+  if (!rect) return null;
+
   const size = cssSize(rect, scale);
+  if (size.width > MAX_CUT || size.height > MAX_CUT) return null;
+
   const canvas = document.createElement('canvas');
   canvas.width = Math.round(size.width);
   canvas.height = Math.round(size.height);
@@ -99,11 +119,16 @@ export function useBoardCrop(
     let url: string | null = null;
     void (async () => {
       try {
-        const blob = await cutBoard(await loadBoard(board), rect, scale);
+        const image = await loadBoard(board);
+        const blob = await cutBoard(image, rect, scale);
         if (!live || !blob) return;
 
         url = URL.createObjectURL(blob);
-        setCrop({ key: current, url, ...cssSize(rect, scale) });
+        setCrop({
+          key: current,
+          url,
+          ...cssSize(withinBoard(rect, image) ?? rect, scale),
+        });
       } catch {
         if (live) setCrop(null);
       }

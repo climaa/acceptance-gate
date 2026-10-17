@@ -170,7 +170,7 @@ export function ShotView({ label, title, tier, shot, ledger, entry }: ShotViewPr
           <LayoutControls
             layout={tools.layout}
             onLayout={tools.onLayout}
-            sync={tools.sync}
+            sync={tools.tools.sync}
             onSync={tools.onSync}
           />
           <ViewControls
@@ -195,10 +195,14 @@ export function ShotView({ label, title, tier, shot, ledger, entry }: ShotViewPr
         readingsFolded={modal}
         subject="screenshot"
         tools={{
-          ...tools,
+          ...tools.tools,
           overlay:
             tools.layout === 'overlay' ? (
-              <OverlayStage shot={shot} crop={tools.crop} onAskCrop={tools.askCrop} />
+              <OverlayStage
+                shot={shot}
+                crop={tools.tools.crop}
+                onAskCrop={tools.askCrop}
+              />
             ) : null,
         }}
       />

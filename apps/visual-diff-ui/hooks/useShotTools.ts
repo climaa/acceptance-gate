@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import type { PanZoomRect, PanZoomView } from '@gate/ui';
 import { cropParam, parseCrop } from '@/lib/board-crop';
 import type { DesignBoard } from '@/lib/comparison';
+import type { ShotTools } from '@/components/DesignStage';
 import { useBoardCrop } from './useBoardCrop';
 
 /**
@@ -45,7 +46,23 @@ function shortcut(event: KeyboardEvent): string | null {
   return event.key;
 }
 
-export function useShotTools({ board, asked, onCropParam }: ShotToolsInput) {
+/**
+ * Turning the sync back on starts a fresh shared view rather than the one it
+ * left: that view is stale by then, and both panes would jump to it.
+ */
+const resync = (on: boolean, setView: (view: PanZoomView | undefined) => void) => {
+  if (on) setView(undefined);
+};
+
+export function useShotTools({ board, asked, onCropParam }: ShotToolsInput): {
+  /** What the stage is handed, exactly — the overlay is the host's to draw. */
+  tools: Omit<ShotTools, 'overlay'>;
+  onSync: (on: boolean) => void;
+  layout: ShotLayout;
+  onLayout: (layout: ShotLayout) => void;
+  /** For the overlay's "crop the board" press: back beside, ready to drag. */
+  askCrop: () => void;
+} {
   const [sync, setSync] = useState(true);
   const [view, setView] = useState<PanZoomView | undefined>(undefined);
   const [cropping, setCropping] = useState(false);
@@ -53,14 +70,25 @@ export function useShotTools({ board, asked, onCropParam }: ShotToolsInput) {
   const rect = parseCrop(asked);
   const crop = useBoardCrop(board, rect);
 
+  const onSync = (on: boolean) => {
+    resync(on, setView);
+    setSync(on);
+  };
+
   // `s` sync, `o` overlay, `c` crop: the letters the view's hint line names.
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       const key = shortcut(event);
-      if (key === 's') setSync((on) => !on);
-      else if (key === 'o')
+      if (key === 's') {
+        setSync((on) => {
+          resync(!on, setView);
+          return !on;
+        });
+      } else if (key === 'o') {
         setLayout((at) => (at === 'overlay' ? 'side by side' : 'overlay'));
-      else if (key === 'c') setCropping((on) => !on);
+      } else if (key === 'c') {
+        setCropping((on) => !on);
+      }
     };
     document.addEventListener('keydown', onKey);
 
@@ -68,22 +96,23 @@ export function useShotTools({ board, asked, onCropParam }: ShotToolsInput) {
   }, []);
 
   return {
-    sync,
-    onSync: setSync,
+    tools: {
+      sync,
+      view,
+      onViewChange: setView,
+      cropping,
+      onCropping: setCropping,
+      // A finished crop pins and leaves crop mode: one drag, one region.
+      onCrop: (picked: PanZoomRect) => {
+        setCropping(false);
+        onCropParam(cropParam(picked));
+      },
+      crop,
+      onClearCrop: () => onCropParam(null),
+    },
+    onSync,
     layout,
     onLayout: setLayout,
-    view,
-    onViewChange: setView,
-    cropping,
-    onCropping: setCropping,
-    /** A finished crop pins and leaves crop mode: one drag, one region. */
-    onCrop: (picked: PanZoomRect) => {
-      setCropping(false);
-      onCropParam(cropParam(picked));
-    },
-    crop,
-    onClearCrop: () => onCropParam(null),
-    /** For the overlay's "crop the board" press: back beside, ready to drag. */
     askCrop: () => {
       setLayout('side by side');
       setCropping(true);

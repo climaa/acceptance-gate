@@ -94,6 +94,15 @@ describe('the shot view’s layout', () => {
     ]);
   });
 
+  it('starts the sync afresh when it is turned back on', () => {
+    renderView();
+
+    press('zoom and pan both panes together');
+    press('zoom and pan both panes together');
+
+    expect(pressed('zoom and pan both panes together')).toBe('true');
+  });
+
   it('offers a crop toggle on the board’s zoom row', () => {
     renderView();
 
