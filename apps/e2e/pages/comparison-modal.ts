@@ -20,6 +20,9 @@ export class ComparisonModal {
   readonly boardPane: Locator;
   readonly zoomReadout: Locator;
   readonly copyStatus: Locator;
+  readonly readings: Locator;
+  readonly spacingBoxes: Locator;
+  readonly emphasizedBox: Locator;
 
   constructor(page: Page) {
     this.root = page.getByRole('dialog', { name: 'Comparison' });
@@ -37,6 +40,32 @@ export class ComparisonModal {
       .getByRole('group', { name: 'design board zoom', exact: true })
       .getByText(/^\d+%$/);
     this.copyStatus = this.root.getByRole('status');
+    // The spacing readings table, by the name `Table` gives it from the panel's
+    // heading. Below 768px it reflows to cards and keeps its row and cell roles.
+    this.readings = this.root.getByRole('table', { name: 'Spacing readings' });
+    // The boxes are decoration — an `aria-hidden` layer over the after
+    // screenshot, whose meaning the readings table carries in words — so a
+    // class is the only handle they offer.
+    this.spacingBoxes = this.root.locator('.ds-panzoom__mark');
+    this.emphasizedBox = this.root.locator('.ds-panzoom__mark--emphasis');
+  }
+
+  /** Text the readings panel shows outside its table: the mode caption, or one
+   *  of its three empty states. `EmptyState` carries no role of its own. */
+  readingsText(text: string): Locator {
+    return this.root.getByText(text, { exact: true });
+  }
+
+  /** One reading: the row whose element is `label` and whose property is
+   *  `property`. Its cells run element, property, before, after, design token.
+   *  As cards, below 768px, each cell's name leads with its column header
+   *  ("property padding-right"), so the property is matched at the name's end. */
+  reading(label: string, property: string): Locator {
+    const page = this.root.page();
+    return this.readings
+      .getByRole('row')
+      .filter({ has: page.getByRole('button', { name: label, exact: true }) })
+      .filter({ has: page.getByRole('cell', { name: endsWithWord(property) }) });
   }
 
   /** One of the three shots by its own name — `alt` is the shot's kind. */
@@ -62,4 +91,9 @@ export class ComparisonModal {
   ): Locator {
     return this.toolbar.getByRole('button', { name, exact: true });
   }
+}
+
+/** `text` as the last word of a name, whatever header text precedes it. */
+export function endsWithWord(text: string): RegExp {
+  return new RegExp(`(^|\\s)${text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`);
 }
