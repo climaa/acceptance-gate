@@ -1,15 +1,19 @@
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import axe from 'axe-core';
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import {
   clampOffset,
+  cropRect,
   drawnSize,
   fitWidth,
   gridStep,
   PanZoom,
   type PanZoomProps,
+  offsetOf,
   stepZoom,
+  type View,
+  viewOf,
   zoomAbout,
   zoomCap,
 } from './PanZoom';
@@ -160,6 +164,79 @@ describe('drawnSize', () => {
     const size = drawnSize({ width: 400, height: 300 }, { width: 1600, height: 2400 }, 2);
 
     expect(size).toEqual({ width: 800, height: 1200 });
+  });
+});
+
+describe('viewOf and offsetOf', () => {
+  const IMAGE = { width: 800, height: 1200 };
+
+  it('reads an offset as the share of the image at the pane top-left', () => {
+    expect(viewOf(2, { x: -200, y: -600 }, IMAGE)).toEqual({ zoom: 2, x: 0.25, y: 0.5 });
+  });
+
+  it('puts the image back where the view says', () => {
+    expect(offsetOf({ zoom: 2, x: 0.25, y: 0.5 }, IMAGE)).toEqual({ x: -200, y: -600 });
+  });
+
+  it('reads the top-left of an image not yet measured', () => {
+    expect(viewOf(1, { x: 0, y: 0 }, { width: 0, height: 0 })).toEqual({
+      zoom: 1,
+      x: 0,
+      y: 0,
+    });
+  });
+});
+
+describe('cropRect', () => {
+  const NATURAL_SIZE = { width: 1600, height: 2400 };
+
+  // 0.25 drawn pixels per image pixel, the image 40 px up the pane.
+  it('turns two pane points into a box in the image own pixels', () => {
+    const rect = cropRect(
+      { x: 100, y: 10 },
+      { x: 200, y: 60 },
+      { x: 0, y: -40 },
+      0.25,
+      NATURAL_SIZE,
+    );
+
+    expect(rect).toEqual({ x: 400, y: 200, width: 400, height: 200 });
+  });
+
+  it('reads a box drawn up and to the left the same as one drawn down and right', () => {
+    const rect = cropRect(
+      { x: 200, y: 60 },
+      { x: 100, y: 10 },
+      { x: 0, y: 0 },
+      0.25,
+      NATURAL_SIZE,
+    );
+
+    expect(rect).toEqual({ x: 400, y: 40, width: 400, height: 200 });
+  });
+
+  it('holds a box inside the image', () => {
+    const rect = cropRect(
+      { x: -50, y: -50 },
+      { x: 40, y: 40 },
+      { x: 0, y: 0 },
+      0.25,
+      NATURAL_SIZE,
+    );
+
+    expect(rect).toEqual({ x: 0, y: 0, width: 160, height: 160 });
+  });
+
+  it('is no crop for a click, which has no area', () => {
+    expect(
+      cropRect({ x: 10, y: 10 }, { x: 10, y: 10 }, { x: 0, y: 0 }, 0.25, NATURAL_SIZE),
+    ).toBeNull();
+  });
+
+  it('is no crop before the image has a scale', () => {
+    expect(
+      cropRect({ x: 0, y: 0 }, { x: 50, y: 50 }, { x: 0, y: 0 }, 0, NATURAL_SIZE),
+    ).toBeNull();
   });
 });
 
@@ -519,5 +596,183 @@ describe('PanZoom with marks', () => {
     const { container } = renderLoaded({ marks: MARKS });
 
     expect(layer(container)?.getAttribute('aria-hidden')).toBe('true');
+  });
+});
+
+describe('PanZoom following a view', () => {
+  const VIEW: View = { zoom: 2, x: 0, y: 0.25 };
+
+  // 800 × 1200 drawn at 200%: a quarter of the way down is 300 px.
+  it('shows the view it is handed', () => {
+    const { image } = renderLoaded({ view: VIEW });
+
+    expect({ readout: readout(), transform: image.style.transform }).toEqual({
+      readout: '200%',
+      transform: 'translate(0px, -300px)',
+    });
+  });
+
+  it('reports a step rather than taking it', () => {
+    const onViewChange = vi.fn<(view: View) => void>();
+    renderLoaded({ view: { zoom: 1, x: 0, y: 0 }, onViewChange });
+
+    fireEvent.click(button('zoom in'));
+
+    expect({
+      readout: readout(),
+      reported: onViewChange.mock.calls[0]?.[0].zoom,
+    }).toEqual({
+      readout: '100%',
+      reported: 1.5,
+    });
+  });
+
+  it('reports a drag as a share of the image, clamped as the pane would show it', () => {
+    const onViewChange = vi.fn<(view: View) => void>();
+    renderLoaded({ view: VIEW, onViewChange });
+
+    fireEvent.pointerDown(pane(), { pointerId: 1, clientX: 100, clientY: 200 });
+    fireEvent.pointerMove(pane(), { pointerId: 1, clientX: 100, clientY: 80 });
+
+    expect(onViewChange.mock.calls.at(-1)?.[0]).toEqual({ zoom: 2, x: 0, y: 0.35 });
+  });
+
+  it('reports a reset as the top-left at 100%', () => {
+    const onViewChange = vi.fn<(view: View) => void>();
+    renderLoaded({ view: VIEW, onViewChange });
+
+    fireEvent.click(button('reset'));
+
+    expect(onViewChange).toHaveBeenCalledWith({ zoom: 1, x: 0, y: 0 });
+  });
+
+  // A host that only listens: the pane keeps its own view and says what it is.
+  it('reports its own view when it keeps one', () => {
+    const onViewChange = vi.fn<(view: View) => void>();
+    renderLoaded({ onViewChange });
+
+    fireEvent.keyDown(pane(), { key: '+' });
+
+    expect({
+      readout: readout(),
+      reported: onViewChange.mock.calls[0]?.[0].zoom,
+    }).toEqual({
+      readout: '150%',
+      reported: 1.5,
+    });
+  });
+});
+
+describe('PanZoom cropping', () => {
+  const box = (container: HTMLElement) =>
+    container.querySelector<HTMLElement>('.ds-panzoom__crop');
+
+  it('draws a box while a drag is in progress, and moves nothing', () => {
+    const { image, container } = renderLoaded({ cropping: true });
+
+    fireEvent.pointerDown(pane(), { pointerId: 1, clientX: 100, clientY: 50 });
+    fireEvent.pointerMove(pane(), { pointerId: 1, clientX: 200, clientY: 100 });
+
+    const { left, top, width, height } = box(container)?.style ?? {};
+    expect({ left, top, width, height, transform: image.style.transform }).toEqual({
+      left: '100px',
+      top: '50px',
+      width: '100px',
+      height: '50px',
+      transform: 'translate(0px, 0px)',
+    });
+  });
+
+  // 0.25 drawn pixels per image pixel at 100%.
+  it('reports the box in the image own pixels on release, and keeps nothing', () => {
+    const onCrop = vi.fn();
+    const { container } = renderLoaded({ cropping: true, onCrop });
+
+    fireEvent.pointerDown(pane(), { pointerId: 1, clientX: 100, clientY: 50 });
+    fireEvent.pointerMove(pane(), { pointerId: 1, clientX: 200, clientY: 100 });
+    fireEvent.pointerUp(pane(), { pointerId: 1 });
+
+    expect({ reported: onCrop.mock.calls[0]?.[0], box: box(container) }).toEqual({
+      reported: { x: 400, y: 200, width: 400, height: 200 },
+      box: null,
+    });
+  });
+
+  it('reports nothing for a click', () => {
+    const onCrop = vi.fn();
+    renderLoaded({ cropping: true, onCrop });
+
+    fireEvent.pointerDown(pane(), { pointerId: 1, clientX: 100, clientY: 50 });
+    fireEvent.pointerUp(pane(), { pointerId: 1 });
+
+    expect(onCrop).not.toHaveBeenCalled();
+  });
+
+  it('drops a crop on Escape, and keeps the key from whoever listens above', () => {
+    const onCrop = vi.fn();
+    const above = vi.fn();
+    const { container } = renderLoaded({ cropping: true, onCrop });
+    document.addEventListener('keydown', above);
+
+    fireEvent.pointerDown(pane(), { pointerId: 1, clientX: 100, clientY: 50 });
+    fireEvent.pointerMove(pane(), { pointerId: 1, clientX: 200, clientY: 100 });
+    fireEvent.keyDown(pane(), { key: 'Escape' });
+    document.removeEventListener('keydown', above);
+
+    expect({ box: box(container), above: above.mock.calls.length }).toEqual({
+      box: null,
+      above: 0,
+    });
+  });
+
+  // From the keyboard: Enter starts the middle half of the pane, an arrow moves
+  // its far corner by a tenth of the pane, and Enter again reports it.
+  it('crops from the keyboard', () => {
+    const onCrop = vi.fn();
+    renderLoaded({ cropping: true, onCrop });
+
+    fireEvent.keyDown(pane(), { key: 'Enter' });
+    fireEvent.keyDown(pane(), { key: 'ArrowRight' });
+    fireEvent.keyDown(pane(), { key: 'Enter' });
+
+    expect(onCrop).toHaveBeenCalledWith({ x: 400, y: 300, width: 960, height: 600 });
+  });
+
+  it('leaves Escape alone when no crop is being drawn', () => {
+    renderLoaded({ cropping: true });
+
+    const handled = !fireEvent.keyDown(pane(), { key: 'Escape' });
+
+    expect(handled).toBe(false);
+  });
+
+  it('pans with a drag when it is not cropping, even with a crop to show', () => {
+    const { image } = renderLoaded({ crop: { x: 0, y: 0, width: 400, height: 400 } });
+
+    fireEvent.pointerDown(pane(), { pointerId: 1, clientX: 100, clientY: 200 });
+    fireEvent.pointerMove(pane(), { pointerId: 1, clientX: 100, clientY: 120 });
+
+    expect(image.style.transform).toBe('translate(0px, -80px)');
+  });
+
+  it('shows a kept crop where the image now is', () => {
+    const { container } = renderLoaded({
+      crop: { x: 400, y: 200, width: 400, height: 200 },
+      defaultZoom: 2,
+    });
+
+    const { left, top, width, height } = box(container)?.style ?? {};
+    expect({ left, top, width, height }).toEqual({
+      left: '200px',
+      top: '100px',
+      width: '200px',
+      height: '100px',
+    });
+  });
+
+  it('is decoration only — hidden from the accessibility tree', () => {
+    const { container } = renderLoaded({ crop: { x: 0, y: 0, width: 400, height: 400 } });
+
+    expect(box(container)?.getAttribute('aria-hidden')).toBe('true');
   });
 });

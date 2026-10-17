@@ -37,6 +37,16 @@ import { Button } from '../../atoms/Button/Button';
  *
  * It knows nothing about what it shows: the caller hands it a `src`, an `alt`
  * and a `label` — and, when it has boxes to point at, their {@link Mark}s.
+ *
+ * **Handed a `view`, it follows it** rather than keeping its own: the zoom and
+ * where the image sits come from the host, and every change is reported through
+ * `onViewChange` instead of kept. Two panes handed one view move as one. Handed
+ * none, it keeps its own exactly as before — and still reports, for a host that
+ * only wants to listen.
+ *
+ * **Asked to crop**, a drag draws a rectangle instead of panning, and its box in
+ * the image's own pixels is reported through `onCrop` on release. It never keeps
+ * the crop: a host that wants it shown hands it back as `crop`.
  */
 
 /** How far one `+` or `−` moves the zoom. */
@@ -85,6 +95,23 @@ export interface Mark {
   width: number;
   height: number;
   emphasis?: boolean;
+}
+
+/** A box in the image's own pixels, with nothing to say about emphasis. */
+export type Rect = Omit<Mark, 'emphasis'>;
+
+/**
+ * Where a pane is looking: its zoom, and the point of the image at the pane's
+ * top-left as a share of the drawn image — 0 to 1 on each axis.
+ *
+ * A share rather than pixels, because pixels of one pane mean nothing in
+ * another: two panes holding images of different sizes, in panes of different
+ * widths, can hold the same view and show the same part of each.
+ */
+export interface View {
+  zoom: number;
+  x: number;
+  y: number;
 }
 
 const ORIGIN: Offset = { x: 0, y: 0 };
@@ -146,6 +173,52 @@ export function zoomAbout(
   };
 }
 
+/** A view read off a zoom and an offset, at the size the image is drawn at it. */
+export function viewOf(zoom: number, offset: Offset, image: Size): View {
+  return {
+    zoom,
+    // `0 - x` rather than `-x`: a pane at rest reports 0, never -0.
+    x: image.width > 0 ? (0 - offset.x) / image.width : 0,
+    y: image.height > 0 ? (0 - offset.y) / image.height : 0,
+  };
+}
+
+/** The offset a view puts the image at, at the size it is drawn at. */
+export const offsetOf = (view: View, image: Size): Offset => ({
+  x: -view.x * image.width,
+  y: -view.y * image.height,
+});
+
+/**
+ * The box between two points of the pane, in the image's own pixels: unshifted
+ * by the offset, unscaled by the zoom, and held inside the image. Null for a box
+ * with no area — a click is not a crop.
+ */
+export function cropRect(
+  from: Offset,
+  to: Offset,
+  offset: Offset,
+  scale: number,
+  natural: Size,
+): Rect | null {
+  if (scale <= 0) return null;
+
+  const toImage = (point: Offset) => ({
+    x: clamp((point.x - offset.x) / scale, 0, natural.width),
+    y: clamp((point.y - offset.y) / scale, 0, natural.height),
+  });
+  const a = toImage(from);
+  const b = toImage(to);
+  const rect = {
+    x: Math.round(Math.min(a.x, b.x)),
+    y: Math.round(Math.min(a.y, b.y)),
+    width: Math.round(Math.abs(b.x - a.x)),
+    height: Math.round(Math.abs(b.y - a.y)),
+  };
+
+  return rect.width < 1 || rect.height < 1 ? null : rect;
+}
+
 /** What a key does to the pane, or null for a key the pane leaves alone. */
 type KeyAction = { pan: Offset } | { zoom: 1 | -1 } | { reset: true };
 
@@ -187,6 +260,16 @@ export interface PanZoomProps {
   /** Drawn among the zoom controls, after `reset` — a caller's own control
    *  that acts on what the pane shows. */
   actions?: ReactNode;
+  /** The view to follow — see {@link View}. Absent, the pane keeps its own. */
+  view?: View;
+  /** Every change of view: a step, a pan, a drag, a reset. */
+  onViewChange?: (view: View) => void;
+  /** Whether a drag draws a crop rather than panning. */
+  cropping?: boolean;
+  /** A crop to show, in the image's own pixels — the host's to keep. */
+  crop?: Rect | null;
+  /** A finished crop, in the image's own pixels. */
+  onCrop?: (rect: Rect) => void;
   className?: string;
 }
 
@@ -257,6 +340,40 @@ function MarksOverlay({ marks, image, offset, scale }: MarksOverlayProps) {
     </div>
   );
 }
+
+/** A box on the pane, in its own coordinates — a crop being drawn, or a kept
+ *  one placed where the image now is. Decoration: the crop is reported, not
+ *  read off the screen. */
+function CropBox({ rect }: { rect: Rect }) {
+  return (
+    <div
+      aria-hidden="true"
+      className="ds-panzoom__crop"
+      style={{
+        left: `${rect.x}px`,
+        top: `${rect.y}px`,
+        width: `${rect.width}px`,
+        height: `${rect.height}px`,
+      }}
+    />
+  );
+}
+
+/** The box between two pane points, in pane coordinates. */
+const between = (from: Offset, to: Offset): Rect => ({
+  x: Math.min(from.x, to.x),
+  y: Math.min(from.y, to.y),
+  width: Math.abs(to.x - from.x),
+  height: Math.abs(to.y - from.y),
+});
+
+/** A kept crop, from the image's pixels to where it is drawn on the pane now. */
+const onPane = (rect: Rect, offset: Offset, scale: number): Rect => ({
+  x: rect.x * scale + offset.x,
+  y: rect.y * scale + offset.y,
+  width: rect.width * scale,
+  height: rect.height * scale,
+});
 
 /** The pane's measured size, kept current as the pane resizes. */
 function usePaneSize(): [React.RefObject<HTMLDivElement | null>, Size] {
@@ -362,6 +479,197 @@ function controlsFor({ failed, zoom, cap, offset, grid, natural, image }: Contro
   };
 }
 
+/** A crop being drawn: where the drag began and where it is now, on the pane. */
+interface Draft {
+  from: Offset;
+  to: Offset;
+}
+
+/** A point of the pane under the pointer, in the pane's own coordinates. */
+function panePoint(event: PointerEvent<HTMLDivElement>): Offset {
+  const box = event.currentTarget.getBoundingClientRect();
+
+  return { x: event.clientX - box.left, y: event.clientY - box.top };
+}
+
+/** The draft the keyboard starts: the middle half of the pane. */
+const centredDraft = (pane: Size): Draft => ({
+  from: { x: pane.width / 4, y: pane.height / 4 },
+  to: { x: (pane.width * 3) / 4, y: (pane.height * 3) / 4 },
+});
+
+interface CropDraftInput {
+  /** Whether a drag draws a crop at all. */
+  enabled: boolean;
+  pane: Size;
+  /** A draft let go of — whether it has an area is the caller's to judge. */
+  onFinish: (done: Draft) => void;
+}
+
+/**
+ * The crop being drawn, and the gestures that draw it: a drag, or from the
+ * keyboard Enter to start the middle half of the pane, the arrows to move its
+ * far corner, Enter to finish and Escape to drop it.
+ *
+ * Kept apart from the pane's view, which a crop never moves.
+ */
+function useCropDraft({ enabled, pane, onFinish }: CropDraftInput) {
+  const [draft, setDraft] = useState<Draft | null>(null);
+
+  const finish = (done: Draft) => {
+    setDraft(null);
+    onFinish(done);
+  };
+
+  const resize = (current: Draft, by: Offset): Draft => ({
+    from: current.from,
+    to: {
+      x: current.to.x - by.x * pane.width * PAN_STEP,
+      y: current.to.y - by.y * pane.height * PAN_STEP,
+    },
+  });
+
+  /** True when the key was the crop's to take. */
+  const onKey = (key: string, action: KeyAction | undefined): boolean => {
+    if (!enabled) return false;
+    if (key === 'Enter') {
+      if (draft) finish(draft);
+      else setDraft(centredDraft(pane));
+      return true;
+    }
+    if (!draft) return false;
+    if (key === 'Escape') {
+      setDraft(null);
+      return true;
+    }
+    if (!action || !('pan' in action)) return false;
+
+    setDraft(resize(draft, action.pan));
+    return true;
+  };
+
+  return {
+    draft,
+    start: (at: Offset) => setDraft({ from: at, to: at }),
+    /** False when no crop is being drawn, so the caller's drag carries on. */
+    move: (at: Offset) => {
+      if (draft) setDraft({ from: draft.from, to: at });
+      return draft !== null;
+    },
+    end: () => {
+      if (draft) finish(draft);
+    },
+    onKey,
+  };
+}
+
+/** The box to draw on the pane: the crop being drawn, or else a kept one placed
+ *  where the image now is, or none. */
+function shownCrop(
+  draft: Draft | null,
+  crop: Rect | null | undefined,
+  offset: Offset,
+  scale: number,
+): Rect | null {
+  if (draft) return between(draft.from, draft.to);
+
+  return crop && scale > 0 ? onPane(crop, offset, scale) : null;
+}
+
+interface PaneViewInput {
+  view: View | undefined;
+  onViewChange: ((view: View) => void) | undefined;
+  defaultZoom: number;
+  pane: Size;
+  natural: Size;
+}
+
+/**
+ * Where the image sits: the host's view when one is handed down, the pane's own
+ * otherwise — and the one way either changes, `apply`.
+ *
+ * `apply` keeps the change when the pane keeps its own view, and reports it
+ * either way, clamped, so a host following it is never handed a view the pane
+ * would not show.
+ */
+function usePaneView({ view, onViewChange, defaultZoom, pane, natural }: PaneViewInput) {
+  const [requested, setRequested] = useState(defaultZoom);
+  const [rawOffset, setOffset] = useState<Offset>(ORIGIN);
+
+  const cap = zoomCap(natural.width, pane.width);
+  const zoom = clamp(view ? view.zoom : requested, 1, cap);
+  const image = drawnSize(pane, natural, zoom);
+  const offset = clampOffset(view ? offsetOf(view, image) : rawOffset, pane, image);
+
+  const apply = (nextZoom: number, nextOffset: Offset) => {
+    const drawn = drawnSize(pane, natural, nextZoom);
+    const placed = clampOffset(nextOffset, pane, drawn);
+    if (!view) {
+      setRequested(nextZoom);
+      setOffset(placed);
+    }
+    onViewChange?.(viewOf(nextZoom, placed, drawn));
+  };
+
+  return { cap, zoom, image, offset, apply };
+}
+
+interface PaneLayersProps {
+  failed: boolean;
+  fallback: ReactNode;
+  src: string;
+  alt: string;
+  natural: Size;
+  pane: Size;
+  image: Size;
+  offset: Offset;
+  scale: number;
+  gridEvery: number | null;
+  marks: readonly Mark[] | undefined;
+  crop: Rect | null;
+  onLoad: (event: SyntheticEvent<HTMLImageElement>) => void;
+  onError: () => void;
+}
+
+/** What the pane holds, back to front: the image or the sentence in its place,
+ *  then the grid, the marks and a crop — each only when there is one. */
+function PaneLayers(props: PaneLayersProps) {
+  const { failed, image, offset, scale, gridEvery, marks, crop } = props;
+
+  return (
+    <>
+      {failed ? (
+        <p className="ds-panzoom__fallback">{props.fallback}</p>
+      ) : (
+        <img
+          className="ds-panzoom__image"
+          src={props.src}
+          alt={props.alt}
+          draggable={false}
+          onLoad={props.onLoad}
+          onError={props.onError}
+          style={{
+            // Pixels once both sizes are known, so a narrow image is never
+            // stretched; the pane's width until then.
+            width:
+              props.natural.width > 0 && props.pane.width > 0
+                ? `${image.width}px`
+                : '100%',
+            transform: `translate(${offset.x}px, ${offset.y}px)`,
+          }}
+        />
+      )}
+      {gridEvery !== null && (
+        <GridOverlay image={image} offset={offset} gap={gridEvery * scale} />
+      )}
+      {!failed && scale > 0 && marks && marks.length > 0 && (
+        <MarksOverlay marks={marks} image={image} offset={offset} scale={scale} />
+      )}
+      {!failed && crop && <CropBox rect={crop} />}
+    </>
+  );
+}
+
 export function PanZoom({
   src,
   alt,
@@ -372,61 +680,83 @@ export function PanZoom({
   marks,
   lead,
   actions,
+  view,
+  onViewChange,
+  cropping = false,
+  crop,
+  onCrop,
   className,
 }: PanZoomProps) {
   const [paneRef, pane] = usePaneSize();
   const [natural, setNatural] = useState<Size>({ width: 0, height: 0 });
-  const [requested, setRequested] = useState(defaultZoom);
-  const [rawOffset, setOffset] = useState<Offset>(ORIGIN);
   const drag = useRef<{ pointer: Offset; from: Offset } | null>(null);
   const [failedSrc, setFailedSrc] = useState<string | null>(null);
   const failed = failedSrc === src;
 
-  const cap = zoomCap(natural.width, pane.width);
-  const zoom = clamp(requested, 1, cap);
-  const image = drawnSize(pane, natural, zoom);
-  const offset = clampOffset(rawOffset, pane, image);
+  const { cap, zoom, image, offset, apply } = usePaneView({
+    view,
+    onViewChange,
+    defaultZoom,
+    pane,
+    natural,
+  });
   const center = { x: pane.width / 2, y: pane.height / 2 };
 
-  const zoomTo = (next: number) => {
-    setOffset(zoomAbout(offset, zoom, next, center));
-    setRequested(next);
-  };
+  const zoomTo = (next: number) => apply(next, zoomAbout(offset, zoom, next, center));
   const step = (direction: 1 | -1) => zoomTo(stepZoom(zoom, direction, cap));
-  const reset = () => {
-    setRequested(1);
-    setOffset(ORIGIN);
-  };
+  const reset = () => apply(1, ORIGIN);
+  const pan = (by: Offset) => apply(zoom, { x: offset.x + by.x, y: offset.y + by.y });
+
+  const controls = controlsFor({ failed, zoom, cap, offset, grid, natural, image });
+
+  const cropDraft = useCropDraft({
+    enabled: cropping,
+    pane,
+    onFinish: (done) => {
+      const rect = cropRect(done.from, done.to, offset, controls.scale, natural);
+      if (rect) onCrop?.(rect);
+    },
+  });
 
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     if (event.metaKey || event.ctrlKey || event.altKey) return;
     const action = KEY_ACTIONS[event.key];
+    if (cropDraft.onKey(event.key, action)) {
+      // Consumed all the way: an Escape that drops a crop must not also close
+      // the dialog the pane sits in.
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
     if (!action) return;
 
     event.preventDefault();
     if ('reset' in action) return reset();
     if ('zoom' in action) return step(action.zoom);
-    setOffset({
-      x: offset.x + action.pan.x * pane.width * PAN_STEP,
-      y: offset.y + action.pan.y * pane.height * PAN_STEP,
+    pan({
+      x: action.pan.x * pane.width * PAN_STEP,
+      y: action.pan.y * pane.height * PAN_STEP,
     });
   };
 
   const onPointerDown = (event: PointerEvent<HTMLDivElement>) => {
     event.currentTarget.setPointerCapture?.(event.pointerId);
+    if (cropping) return cropDraft.start(panePoint(event));
     drag.current = { pointer: { x: event.clientX, y: event.clientY }, from: offset };
   };
   const onPointerMove = (event: PointerEvent<HTMLDivElement>) => {
+    if (cropDraft.move(panePoint(event))) return;
     const start = drag.current;
     if (!start) return;
 
-    setOffset({
+    apply(zoom, {
       x: start.from.x + event.clientX - start.pointer.x,
       y: start.from.y + event.clientY - start.pointer.y,
     });
   };
   const endDrag = () => {
     drag.current = null;
+    cropDraft.end();
   };
 
   const onLoad = (event: SyntheticEvent<HTMLImageElement>) =>
@@ -435,7 +765,7 @@ export function PanZoom({
       height: event.currentTarget.naturalHeight,
     });
 
-  const controls = controlsFor({ failed, zoom, cap, offset, grid, natural, image });
+  const shown = shownCrop(cropDraft.draft, crop, offset, controls.scale);
 
   return (
     <div className={['ds-panzoom', className].filter(Boolean).join(' ')}>
@@ -459,7 +789,9 @@ export function PanZoom({
           zoom's accessible path for every reader. */}
       <div
         ref={paneRef}
-        className="ds-panzoom__pane"
+        className={['ds-panzoom__pane', cropping && 'ds-panzoom__pane--cropping']
+          .filter(Boolean)
+          .join(' ')}
         role="group"
         aria-label={label}
         tabIndex={0}
@@ -469,39 +801,22 @@ export function PanZoom({
         onPointerUp={endDrag}
         onPointerCancel={endDrag}
       >
-        {failed ? (
-          <p className="ds-panzoom__fallback">{fallback}</p>
-        ) : (
-          <img
-            className="ds-panzoom__image"
-            src={src}
-            alt={alt}
-            draggable={false}
-            onLoad={onLoad}
-            onError={() => setFailedSrc(src)}
-            style={{
-              // Pixels once both sizes are known, so a narrow image is never
-              // stretched; the pane's width until then.
-              width: natural.width > 0 && pane.width > 0 ? `${image.width}px` : '100%',
-              transform: `translate(${offset.x}px, ${offset.y}px)`,
-            }}
-          />
-        )}
-        {controls.gridEvery !== null && (
-          <GridOverlay
-            image={image}
-            offset={offset}
-            gap={controls.gridEvery * controls.scale}
-          />
-        )}
-        {!failed && controls.scale > 0 && marks && marks.length > 0 && (
-          <MarksOverlay
-            marks={marks}
-            image={image}
-            offset={offset}
-            scale={controls.scale}
-          />
-        )}
+        <PaneLayers
+          failed={failed}
+          fallback={fallback}
+          src={src}
+          alt={alt}
+          natural={natural}
+          pane={pane}
+          image={image}
+          offset={offset}
+          scale={controls.scale}
+          gridEvery={controls.gridEvery}
+          marks={marks}
+          crop={shown}
+          onLoad={onLoad}
+          onError={() => setFailedSrc(src)}
+        />
       </div>
     </div>
   );

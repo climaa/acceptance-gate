@@ -127,3 +127,19 @@
   border-width: 2px;
   background: var(--color-accent-subtle);
 }
+
+/* Cropping: a drag draws a box rather than moving the image, so the pointer
+   says so. The box is the accent, as a mark is, over a lighter wash than an
+   emphasized mark's so the image under it stays readable while it is drawn. */
+.ds-panzoom__pane--cropping,
+.ds-panzoom__pane--cropping:active {
+  cursor: crosshair;
+}
+
+.ds-panzoom__crop {
+  position: absolute;
+  box-sizing: border-box;
+  border: 1px solid var(--color-accent);
+  background: color-mix(in srgb, var(--color-accent-subtle) 50%, transparent);
+  pointer-events: none;
+}
