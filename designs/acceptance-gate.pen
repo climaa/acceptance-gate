@@ -10786,6 +10786,684 @@
                           ]
                         }
                       ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "FOlnJ",
+                      "name": "Tile PanZoom · following a view",
+                      "width": 255,
+                      "fill": "#ffffff",
+                      "cornerRadius": 12,
+                      "stroke": "$note-border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "gap": 12,
+                      "padding": 18,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "pVhGY",
+                          "name": "Cap",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 6,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "uSd14",
+                              "name": "Name",
+                              "fill": "$ink",
+                              "content": "PanZoom · following a view",
+                              "fontFamily": "$font-mono",
+                              "fontSize": 13,
+                              "fontWeight": "700"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "P6A11r",
+                              "name": "home",
+                              "fill": "#713520",
+                              "cornerRadius": 9999,
+                              "padding": [
+                                2,
+                                8
+                              ],
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "jcER5",
+                                  "name": "h",
+                                  "fill": "#ffffff",
+                                  "content": "packages/ui",
+                                  "fontFamily": "$font-mono",
+                                  "fontSize": 10,
+                                  "fontWeight": "700"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "E84gNI",
+                          "name": "Stage",
+                          "clip": true,
+                          "width": "fill_container",
+                          "fill": "#fafaf8",
+                          "cornerRadius": 8,
+                          "layout": "vertical",
+                          "gap": 8,
+                          "padding": 14,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "kNtLO",
+                              "name": "controls",
+                              "gap": 6,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "OHIz2",
+                                  "name": "m diff",
+                                  "fill": "#00000000",
+                                  "cornerRadius": 6,
+                                  "stroke": "#00000000",
+                                  "strokeWidth": 1,
+                                  "padding": [
+                                    4,
+                                    10
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "urgW8",
+                                      "name": "t",
+                                      "fill": "$border-strong",
+                                      "content": "−",
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "ctcpu",
+                                  "name": "m baseline",
+                                  "fill": "#00000000",
+                                  "cornerRadius": 6,
+                                  "stroke": "#00000000",
+                                  "strokeWidth": 1,
+                                  "padding": [
+                                    4,
+                                    10
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "I3qokG",
+                                      "name": "t",
+                                      "fill": "$text",
+                                      "content": "400%",
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "S2Fi6",
+                                  "name": "m candidate",
+                                  "fill": "$bg",
+                                  "cornerRadius": 6,
+                                  "stroke": "$border-strong",
+                                  "strokeWidth": 1,
+                                  "padding": [
+                                    4,
+                                    10
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "qYGtV",
+                                      "name": "t",
+                                      "fill": "$text",
+                                      "content": "+",
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "Q45sXb",
+                                  "name": "m blink",
+                                  "fill": "$bg",
+                                  "cornerRadius": 6,
+                                  "stroke": "$border-strong",
+                                  "strokeWidth": 1,
+                                  "padding": [
+                                    4,
+                                    10
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "lThBO",
+                                      "name": "t",
+                                      "fill": "$text",
+                                      "content": "reset",
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "cagc7",
+                              "name": "pane",
+                              "theme": {
+                                "mode": "light"
+                              },
+                              "width": "fill_container",
+                              "height": 120,
+                              "fill": {
+                                "type": "image",
+                                "enabled": true,
+                                "url": "exports/component-library.png",
+                                "mode": "cover",
+                                "transform": [
+                                  2.25,
+                                  0,
+                                  0,
+                                  10,
+                                  -0.62,
+                                  -6.95
+                                ]
+                              },
+                              "cornerRadius": 4,
+                              "stroke": "$border-strong",
+                              "strokeWidth": 1,
+                              "layout": "none",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "S6LKJ9",
+                                  "x": 24,
+                                  "y": 20,
+                                  "name": "mark",
+                                  "enabled": false,
+                                  "width": 64,
+                                  "height": 30,
+                                  "fill": "#00000000",
+                                  "stroke": "$accent",
+                                  "strokeWidth": 1,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "d12QvZ",
+                                      "x": 10,
+                                      "y": 4,
+                                      "name": "t",
+                                      "enabled": false,
+                                      "fill": "$border-strong",
+                                      "content": "−",
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "K7aAV4",
+                                  "x": 104,
+                                  "y": 58,
+                                  "name": "mark emphasis",
+                                  "enabled": false,
+                                  "width": 66,
+                                  "height": 36,
+                                  "fill": "$accent-subtle",
+                                  "stroke": "$accent",
+                                  "strokeWidth": 2,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "trQSE",
+                                      "x": 10,
+                                      "y": 4,
+                                      "name": "t",
+                                      "enabled": false,
+                                      "fill": "$border-strong",
+                                      "content": "−",
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "aG5JQ",
+                              "name": "linked",
+                              "gap": 6,
+                              "padding": [
+                                2,
+                                0
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "AwJBe",
+                                  "name": "i",
+                                  "width": 12,
+                                  "height": 12,
+                                  "icon": "link",
+                                  "library": "lucide",
+                                  "fill": "$accent"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "qxNaV",
+                                  "name": "t",
+                                  "fill": "$text-muted",
+                                  "content": "one view · 400% · same offset",
+                                  "fontFamily": "$font-mono",
+                                  "fontSize": 10,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "pow9I",
+                              "name": "pane (following)",
+                              "theme": {
+                                "mode": "light"
+                              },
+                              "width": "fill_container",
+                              "height": 120,
+                              "fill": {
+                                "type": "image",
+                                "enabled": true,
+                                "url": "exports/component-library.png",
+                                "mode": "cover",
+                                "transform": [
+                                  2.25,
+                                  0,
+                                  0,
+                                  10,
+                                  -0.62,
+                                  -6.95
+                                ]
+                              },
+                              "cornerRadius": 4,
+                              "stroke": "$border-strong",
+                              "strokeWidth": 1,
+                              "layout": "none",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "NuRws",
+                                  "x": 24,
+                                  "y": 20,
+                                  "name": "mark",
+                                  "enabled": false,
+                                  "width": 64,
+                                  "height": 30,
+                                  "fill": "#00000000",
+                                  "stroke": "$accent",
+                                  "strokeWidth": 1,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "cF0UA",
+                                      "x": 10,
+                                      "y": 4,
+                                      "name": "t",
+                                      "enabled": false,
+                                      "fill": "$border-strong",
+                                      "content": "−",
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "chE2n",
+                                  "x": 104,
+                                  "y": 58,
+                                  "name": "mark emphasis",
+                                  "enabled": false,
+                                  "width": 66,
+                                  "height": 36,
+                                  "fill": "$accent-subtle",
+                                  "stroke": "$accent",
+                                  "strokeWidth": 2,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "yezYZ",
+                                      "x": 10,
+                                      "y": 4,
+                                      "name": "t",
+                                      "enabled": false,
+                                      "fill": "$border-strong",
+                                      "content": "−",
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "czVBj",
+                              "name": "note",
+                              "fill": "$ink-muted",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Handed a view, it follows it: zoom and offset come from the host, and every change — wheel, drag, keys, the buttons — is reported back rather than kept. Two panes handed one view move as one; the shot view links its board and its screenshot this way. Handed none, it keeps its own exactly as before.",
+                              "lineHeight": 1.4,
+                              "fontFamily": "$font-body",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "KxTIT",
+                      "name": "Tile PanZoom · cropping",
+                      "width": 255,
+                      "fill": "#ffffff",
+                      "cornerRadius": 12,
+                      "stroke": "$note-border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "gap": 12,
+                      "padding": 18,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "yX0b8",
+                          "name": "Cap",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 6,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "j3YhWF",
+                              "name": "Name",
+                              "fill": "$ink",
+                              "content": "PanZoom · cropping",
+                              "fontFamily": "$font-mono",
+                              "fontSize": 13,
+                              "fontWeight": "700"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "lSVjx",
+                              "name": "home",
+                              "fill": "#713520",
+                              "cornerRadius": 9999,
+                              "padding": [
+                                2,
+                                8
+                              ],
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "Z5CroM",
+                                  "name": "h",
+                                  "fill": "#ffffff",
+                                  "content": "packages/ui",
+                                  "fontFamily": "$font-mono",
+                                  "fontSize": 10,
+                                  "fontWeight": "700"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Ki9yO",
+                          "name": "Stage",
+                          "clip": true,
+                          "width": "fill_container",
+                          "fill": "#fafaf8",
+                          "cornerRadius": 8,
+                          "layout": "vertical",
+                          "gap": 8,
+                          "padding": 14,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "g0D3Rw",
+                              "name": "controls",
+                              "gap": 6,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "KB33A",
+                                  "name": "m diff",
+                                  "fill": "#00000000",
+                                  "cornerRadius": 6,
+                                  "stroke": "#00000000",
+                                  "strokeWidth": 1,
+                                  "padding": [
+                                    4,
+                                    10
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "p8nTF",
+                                      "name": "t",
+                                      "fill": "$border-strong",
+                                      "content": "−",
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "wP77G",
+                                  "name": "m baseline",
+                                  "fill": "#00000000",
+                                  "cornerRadius": 6,
+                                  "stroke": "#00000000",
+                                  "strokeWidth": 1,
+                                  "padding": [
+                                    4,
+                                    10
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "kWzhD",
+                                      "name": "t",
+                                      "fill": "$text",
+                                      "content": "100%",
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "O53pl",
+                                  "name": "m candidate",
+                                  "fill": "$bg",
+                                  "cornerRadius": 6,
+                                  "stroke": "$border-strong",
+                                  "strokeWidth": 1,
+                                  "padding": [
+                                    4,
+                                    10
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "R8eOF3",
+                                      "name": "t",
+                                      "fill": "$text",
+                                      "content": "+",
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "NClHn",
+                                  "name": "m blink",
+                                  "fill": "$bg",
+                                  "cornerRadius": 6,
+                                  "stroke": "$border-strong",
+                                  "strokeWidth": 1,
+                                  "padding": [
+                                    4,
+                                    10
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "ETNjU",
+                                      "name": "t",
+                                      "fill": "$text",
+                                      "content": "reset",
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "tlCds",
+                              "name": "pane",
+                              "theme": {
+                                "mode": "light"
+                              },
+                              "width": "fill_container",
+                              "height": 120,
+                              "fill": {
+                                "type": "image",
+                                "enabled": true,
+                                "url": "exports/component-library.png",
+                                "mode": "cover",
+                                "transform": [
+                                  2.25,
+                                  0,
+                                  0,
+                                  10,
+                                  -0.62,
+                                  -6.95
+                                ]
+                              },
+                              "cornerRadius": 4,
+                              "stroke": "$border-strong",
+                              "strokeWidth": 1,
+                              "layout": "none",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "WPK9K",
+                                  "x": 24,
+                                  "y": 20,
+                                  "name": "mark",
+                                  "enabled": false,
+                                  "width": 64,
+                                  "height": 30,
+                                  "fill": "#00000000",
+                                  "stroke": "$accent",
+                                  "strokeWidth": 1,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "wqfhk",
+                                      "x": 10,
+                                      "y": 4,
+                                      "name": "t",
+                                      "enabled": false,
+                                      "fill": "$border-strong",
+                                      "content": "−",
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "sSuJz",
+                                  "x": 104,
+                                  "y": 58,
+                                  "name": "crop rect",
+                                  "width": 66,
+                                  "height": 36,
+                                  "fill": "#00000000",
+                                  "stroke": "$accent",
+                                  "strokeWidth": 1,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "BQEfv",
+                                      "x": 10,
+                                      "y": 4,
+                                      "name": "t",
+                                      "enabled": false,
+                                      "fill": "$border-strong",
+                                      "content": "−",
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "RA4PH",
+                              "name": "note",
+                              "fill": "$ink-muted",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Asked to crop, a drag draws a rectangle in the accent over the image and reports it on release, in the image's own pixels at any zoom; Escape cancels. From the keyboard, Enter starts a centred rectangle the arrows resize and Enter again reports it. It never keeps the crop: the host decides what it is for — the shot view pins that region of the board beside the screenshot.",
+                              "lineHeight": 1.4,
+                              "fontFamily": "$font-body",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
                     }
                   ]
                 }
