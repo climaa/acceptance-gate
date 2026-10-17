@@ -810,6 +810,32 @@ describe('the design view', () => {
         expect(emphasized()).toHaveLength(0);
       });
 
+      // The keyboard's hover: a reader tabbing down the rows sees each box light
+      // up without having to press it.
+      it('previews a box while its row has focus, and lets it go on blur', () => {
+        renderModal('diff', PROSE, 'design', 'component-library', LEDGER);
+        loadBothPanes();
+
+        fireEvent.focus(elementIn('row-gap'));
+        const previewed = emphasized().length;
+        fireEvent.blur(elementIn('row-gap'));
+
+        expect(previewed).toBe(1);
+        expect(emphasized()).toHaveLength(0);
+      });
+
+      it('keeps the pressed box once focus leaves another row', () => {
+        renderModal('diff', PROSE, 'design', 'component-library', LEDGER);
+        loadBothPanes();
+        fireEvent.click(elementIn('padding-right'));
+
+        fireEvent.focus(elementIn('row-gap'));
+        fireEvent.blur(elementIn('row-gap'));
+
+        expect(elementIn('padding-right').getAttribute('aria-pressed')).toBe('true');
+        expect(emphasized()).toHaveLength(1);
+      });
+
       it('draws the boxes from the start, and puts its toggle on the after pane', () => {
         renderModal('diff', PROSE, 'design', 'component-library', LEDGER);
         loadBothPanes();

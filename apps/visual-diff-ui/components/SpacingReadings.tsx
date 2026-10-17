@@ -228,9 +228,12 @@ function readingRow({
         title={change.label}
         onClick={() => onPress(on ? null : index)}
         // Hover previews what pressing would hold: the box lights up while the
-        // pointer is on the row, and lets go when it leaves.
+        // pointer is on the row, and lets go when it leaves. Focus does the same
+        // for a reader tabbing down the rows.
         onMouseEnter={() => onHover(index)}
         onMouseLeave={() => onHover(null)}
+        onFocus={() => onHover(index)}
+        onBlur={() => onHover(null)}
       >
         <span className="vd-readings__label">{change.label}</span>
       </Button>,
