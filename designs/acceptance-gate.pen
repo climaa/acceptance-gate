@@ -37822,7 +37822,7 @@
                                               "id": "kdoHi",
                                               "name": "t",
                                               "fill": "$text-muted",
-                                              "content": "token",
+                                              "content": "design token",
                                               "fontFamily": "$font-mono",
                                               "fontSize": 10,
                                               "fontWeight": "normal"
@@ -39527,7 +39527,7 @@
                                               "id": "zzFYE",
                                               "name": "t",
                                               "fill": "$text-muted",
-                                              "content": "token",
+                                              "content": "design token",
                                               "fontFamily": "$font-mono",
                                               "fontSize": 10,
                                               "fontWeight": "normal"

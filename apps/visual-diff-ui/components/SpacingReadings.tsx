@@ -183,13 +183,13 @@ function TokenCell({ change }: { change: LedgerChange }) {
 
 /** Sized to what they hold, in the proportions Board 04 draws: the element
  *  column carries a control, and `table-layout: fixed` will not grow a cell for
- *  its contents. The token column takes whatever is left. */
+ *  its contents. The design-token column takes whatever is left. */
 const columnsFor = (mode: Mode): readonly TableColumn[] => [
   { header: 'element', width: '18rem' },
   { header: 'property', width: '9rem' },
   ...(mode === 'changed' ? [{ header: 'before', width: '11rem' }] : []),
   { header: 'after', width: '13rem' },
-  { header: 'token' },
+  { header: 'design token' },
 ];
 
 interface RowInput {
