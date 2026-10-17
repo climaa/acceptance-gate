@@ -45,9 +45,18 @@ describe('ShotContents', () => {
     expect(shot.caption).toMatch(new RegExp(`^screenshot · ${SET} · \\d+×\\d+$`));
   });
 
-  // The fixture sets predate the console's ledgers, as most sets on a disk do.
-  it('hands the view no readings for a shot with no ledger beside it', async () => {
+  // The fixture set carries the Badge's ledgers (fixtures/README.md, "Token
+  // ledgers"), so its readings come down with the shot.
+  it('hands the view every reading of a shot with a ledger beside it', async () => {
     const element = await contentsFor(SET, KEY);
+
+    const { ledger } = element.props as ShotViewProps;
+    expect({ mode: ledger?.mode, key: ledger?.key }).toEqual({ mode: 'every', key: KEY });
+  });
+
+  // Every other shot in the set predates the console's ledgers, as most do.
+  it('hands the view no readings for a shot with no ledger beside it', async () => {
+    const element = await contentsFor(SET, 'atoms__desktop__light__atoms-skeleton--line');
 
     expect((element.props as ShotViewProps).ledger).toBeNull();
   });
