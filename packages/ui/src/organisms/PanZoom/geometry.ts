@@ -75,9 +75,10 @@ export const clamp = (value: number, min: number, max: number) =>
   Math.min(Math.max(value, min), max);
 
 /** The highest zoom there is: the image at its natural pixels. An image no
- *  wider than the pane cannot be zoomed at all — 100% already shows it whole. */
-export const zoomCap = (naturalWidth: number, paneWidth: number) =>
-  paneWidth > 0 && naturalWidth > paneWidth ? naturalWidth / paneWidth : 1;
+ *  wider than the pane cannot be zoomed at all — 100% already shows it whole —
+ *  unless a host asks to `magnify` past the natural pixels by that factor. */
+export const zoomCap = (naturalWidth: number, paneWidth: number, magnify = 1) =>
+  (paneWidth > 0 && naturalWidth > paneWidth ? naturalWidth / paneWidth : 1) * magnify;
 
 /** One step in or out, never below 100% nor above the cap. A step that lands
  *  within a hair of 100% lands on it, so the floor is reachable by stepping. */

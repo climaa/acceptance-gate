@@ -143,3 +143,10 @@
   background: color-mix(in srgb, var(--color-accent-subtle) 50%, transparent);
   pointer-events: none;
 }
+
+/* Past the image's own pixels — only where a host asked to magnify — each pixel
+   is drawn as a square: smoothing would blur the very edges a reader zoomed in
+   to see. */
+.ds-panzoom__image--magnified {
+  image-rendering: pixelated;
+}

@@ -120,6 +120,12 @@ export interface PanZoomProps {
   /** Drawn among the zoom controls, after `reset` — a caller's own control
    *  that acts on what the pane shows. */
   actions?: ReactNode;
+  /** How far past the image's own pixels the zoom may go, as a factor of them.
+   *  1, the default, is the rule this component keeps everywhere else: a
+   *  screenshot is never drawn larger than it was captured. A host that reads
+   *  pixels by eye — the set's shot view — asks for more, and past natural size
+   *  the image is drawn pixelated, so a pixel reads as a square, never a blur. */
+  magnify?: number;
   /** The view to follow — see {@link View}. Absent, the pane keeps its own. */
   view?: View;
   /** Every change of view: a step, a pan, a drag, a reset. */
@@ -427,6 +433,7 @@ interface PaneViewInput {
   view: View | undefined;
   onViewChange: ((view: View) => void) | undefined;
   defaultZoom: number;
+  magnify: number;
   pane: Size;
   natural: Size;
 }
@@ -439,11 +446,18 @@ interface PaneViewInput {
  * either way, clamped, so a host following it is never handed a view the pane
  * would not show.
  */
-function usePaneView({ view, onViewChange, defaultZoom, pane, natural }: PaneViewInput) {
+function usePaneView({
+  view,
+  onViewChange,
+  defaultZoom,
+  magnify,
+  pane,
+  natural,
+}: PaneViewInput) {
   const [requested, setRequested] = useState(defaultZoom);
   const [rawOffset, setOffset] = useState<Offset>(ORIGIN);
 
-  const cap = zoomCap(natural.width, pane.width);
+  const cap = zoomCap(natural.width, pane.width, magnify);
   const zoom = clamp(view ? view.zoom : requested, 1, cap);
   const image = drawnSize(pane, natural, zoom);
   const offset = clampOffset(view ? offsetOf(view, image) : rawOffset, pane, image);
@@ -491,7 +505,11 @@ function PaneLayers(props: PaneLayersProps) {
         <p className="ds-panzoom__fallback">{props.fallback}</p>
       ) : (
         <img
-          className="ds-panzoom__image"
+          className={
+            props.natural.width > 0 && image.width > props.natural.width
+              ? 'ds-panzoom__image ds-panzoom__image--magnified'
+              : 'ds-panzoom__image'
+          }
           src={props.src}
           alt={props.alt}
           draggable={false}
@@ -532,11 +550,16 @@ function CropHint({ id, on }: { id: string; on: boolean }) {
   );
 }
 
+/** The pane's classes: the crosshair modifier while a drag draws a crop. */
+const paneClass = (cropping: boolean) =>
+  cropping ? 'ds-panzoom__pane ds-panzoom__pane--cropping' : 'ds-panzoom__pane';
+
 export function PanZoom({
   src,
   alt,
   label,
   defaultZoom = 1,
+  magnify = 1,
   fallback,
   grid = false,
   marks,
@@ -560,6 +583,7 @@ export function PanZoom({
     view,
     onViewChange,
     defaultZoom,
+    magnify,
     pane,
     natural,
   });
@@ -661,9 +685,7 @@ export function PanZoom({
           zoom's accessible path for every reader. */}
       <div
         ref={paneRef}
-        className={['ds-panzoom__pane', cropping && 'ds-panzoom__pane--cropping']
-          .filter(Boolean)
-          .join(' ')}
+        className={paneClass(cropping)}
         role="group"
         aria-label={label}
         aria-describedby={cropping ? hintId : undefined}

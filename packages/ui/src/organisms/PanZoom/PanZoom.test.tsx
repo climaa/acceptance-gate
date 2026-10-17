@@ -621,3 +621,36 @@ describe('PanZoom with an image that loaded before it was listening', () => {
     }
   });
 });
+
+describe('PanZoom magnified', () => {
+  const image = () => screen.getByRole('img', { name: 'a design board' });
+
+  // 1600 natural pixels in a 400-pixel pane: 400% is the natural size, and a
+  // factor of 2 asks for twice that.
+  it('zooms past the natural pixels only as far as it is asked to', () => {
+    renderLoaded({ defaultZoom: 100, magnify: 2 });
+
+    expect({ readout: readout(), zoomIn: button('zoom in').disabled }).toEqual({
+      readout: '800%',
+      zoomIn: true,
+    });
+  });
+
+  it('draws the image pixelated past its natural size', () => {
+    renderLoaded({ defaultZoom: 6, magnify: 2 });
+
+    expect(image().classList.contains('ds-panzoom__image--magnified')).toBe(true);
+  });
+
+  it('draws it smooth at or under its natural size', () => {
+    renderLoaded({ defaultZoom: 4, magnify: 2 });
+
+    expect(image().classList.contains('ds-panzoom__image--magnified')).toBe(false);
+  });
+
+  it('keeps the natural cap when asked for nothing', () => {
+    renderLoaded({ defaultZoom: 100 });
+
+    expect(readout()).toBe('400%');
+  });
+});

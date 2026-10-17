@@ -49,7 +49,7 @@ interface BoardPaneProps {
   grid: boolean;
   tools: ShotTools | undefined;
   /** The shared view, when the panes are synced. */
-  follow: Pick<PanZoomProps, 'view' | 'onViewChange'>;
+  follow: Pick<PanZoomProps, 'view' | 'onViewChange' | 'magnify'>;
   onBoard: (board: DesignBoard) => void;
   onLocal: (image: LocalImage) => void;
 }
