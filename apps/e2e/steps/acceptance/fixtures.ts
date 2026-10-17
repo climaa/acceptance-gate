@@ -11,6 +11,7 @@ import { Giscus } from '../../pages/giscus';
 import { LinkPreviews, type Preview } from '../../pages/link-preview';
 import { PostPage } from '../../pages/post';
 import { ReportPage } from '../../pages/report';
+import { ShotView } from '../../pages/shot-view';
 
 /** What one scenario's steps hand each other — e.g. the title read off the index
  *  before the click that navigates away from it. A plain object, not a return
@@ -55,6 +56,7 @@ export const test = base.extend<{
   console: ConsolePage;
   report: ReportPage;
   modal: ComparisonModal;
+  shot: ShotView;
   scenarioState: ScenarioState;
 }>({
   about: async ({ page }, use) => {
@@ -86,6 +88,9 @@ export const test = base.extend<{
   },
   modal: async ({ page }, use) => {
     await use(new ComparisonModal(page));
+  },
+  shot: async ({ page }, use) => {
+    await use(new ShotView(page));
   },
   scenarioState: async ({}, use) => {
     await use({});

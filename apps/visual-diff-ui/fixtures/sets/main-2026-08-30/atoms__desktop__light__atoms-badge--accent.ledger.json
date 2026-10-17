@@ -1,0 +1,81 @@
+{
+  "schema": 1,
+  "key": "atoms__desktop__light__atoms-badge--accent",
+  "origin": "target",
+  "scale": {
+    "--space-1": 4,
+    "--space-2": 8,
+    "--space-3": 12,
+    "--space-4": 16,
+    "--space-5": 20,
+    "--space-6": 24,
+    "--space-8": 32,
+    "--space-10": 40,
+    "--space-12": 48,
+    "--space-16": 64
+  },
+  "elements": [
+    {
+      "path": "ds-badge",
+      "label": "ds-badge",
+      "rect": [
+        0,
+        4,
+        41.48,
+        20.8
+      ],
+      "readings": [
+        {
+          "property": "padding-top",
+          "px": 2,
+          "authored": ".125rem",
+          "origin": "regular",
+          "token": null,
+          "classification": "exempt",
+          "reason": "pill half-step"
+        },
+        {
+          "property": "padding-right",
+          "px": 8,
+          "authored": "var(--space-2)",
+          "origin": "regular",
+          "token": "--space-2",
+          "classification": "token"
+        },
+        {
+          "property": "padding-bottom",
+          "px": 2,
+          "authored": ".125rem",
+          "origin": "regular",
+          "token": null,
+          "classification": "exempt",
+          "reason": "pill half-step"
+        },
+        {
+          "property": "padding-left",
+          "px": 8,
+          "authored": "var(--space-2)",
+          "origin": "regular",
+          "token": "--space-2",
+          "classification": "token"
+        },
+        {
+          "property": "row-gap",
+          "px": 4,
+          "authored": "var(--space-1)",
+          "origin": "regular",
+          "token": "--space-1",
+          "classification": "token"
+        },
+        {
+          "property": "column-gap",
+          "px": 4,
+          "authored": "var(--space-1)",
+          "origin": "regular",
+          "token": "--space-1",
+          "classification": "token"
+        }
+      ]
+    }
+  ]
+}

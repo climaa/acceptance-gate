@@ -232,6 +232,14 @@ against this report's `candidate` PNGs. So each ledger measured exactly the rend
 report shows. The IconButton sources did change after 2026-08-24, but only in story
 comments and in a link variant those stories do not use.
 
+**A set's own ledgers.** `sets/main-2026-08-30` carries the two
+`atoms-badge--accent` ledgers (`<key>.ledger.json`), so the shot view has every
+reading of a simple story to show: `--space-2` either side and a 2px pill half-step.
+They come from a console capture of `main` @ `613aba4` (2026-10-16), and both PNGs
+of that capture are byte-identical to this set's, so each ledger measured exactly the
+render this set holds. Regenerate them the way the next paragraph does, with
+`--filter atoms-badge--accent`, and copy the two `.ledger.json` files beside the PNGs.
+
 **Regenerating.**
 
 ```bash
