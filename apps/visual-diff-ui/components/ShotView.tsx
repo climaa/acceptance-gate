@@ -137,6 +137,7 @@ export function ShotView({ label, title, tier, shot, ledger, entry }: ShotViewPr
   const pickBoard = (next: DesignBoard) => write(next, null);
   const tools = useShotTools({
     board,
+    frameWidth: shot.width ?? 0,
     asked: params.get('crop'),
     onCropParam: (crop) => write(board, crop),
   });

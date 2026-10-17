@@ -58,20 +58,35 @@ function withinBoard(rect: PanZoomRect, board: HTMLImageElement): PanZoomRect | 
   return width > 0 && height > 0 ? { x, y, width, height } : null;
 }
 
+/**
+ * The region of a loaded board, redrawn at CSS size at the top-left of a frame
+ * as wide as the screenshot it is read beside.
+ *
+ * The frame is what makes the two panes comparable. PanZoom fits an image to
+ * its pane and never stretches one past its own pixels, so a 72px crop beside a
+ * 1248px screenshot sat at 1:1 while the screenshot was shrunk to fit, and could
+ * not be zoomed at all — the synced panes moved at two different scales. Cut
+ * into a frame of the screenshot's width, both images are the same width, fit
+ * at the same scale, zoom to the same cap, and one view shows the same CSS
+ * pixels in each.
+ */
 async function cutBoard(
   board: HTMLImageElement,
   asked: PanZoomRect,
   scale: number,
-): Promise<Blob | null> {
+  frameWidth: number,
+): Promise<{ blob: Blob | null; width: number; height: number } | null> {
   const rect = withinBoard(asked, board);
   if (!rect) return null;
 
   const size = cssSize(rect, scale);
-  if (size.width > MAX_CUT || size.height > MAX_CUT) return null;
+  const width = Math.round(Math.max(size.width, frameWidth));
+  const height = Math.round(size.height);
+  if (width > MAX_CUT || height > MAX_CUT) return null;
 
   const canvas = document.createElement('canvas');
-  canvas.width = Math.round(size.width);
-  canvas.height = Math.round(size.height);
+  canvas.width = width;
+  canvas.height = height;
   const context = canvas.getContext('2d');
   if (!context) return null;
 
@@ -83,11 +98,14 @@ async function cutBoard(
     rect.height,
     0,
     0,
-    canvas.width,
-    canvas.height,
+    Math.round(size.width),
+    height,
+  );
+  const blob = await new Promise<Blob | null>((resolve) =>
+    canvas.toBlob(resolve, 'image/png'),
   );
 
-  return new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
+  return { blob, width, height };
 }
 
 /** A board's image, decoded. */
@@ -103,12 +121,15 @@ function loadBoard(board: DesignBoard): Promise<HTMLImageElement> {
 export function useBoardCrop(
   board: DesignBoard,
   rect: PanZoomRect | null,
+  /** The screenshot's width in CSS pixels, which the cut is framed to; 0 when
+   *  it is not known, and the cut is then only as wide as the crop. */
+  frameWidth = 0,
 ): BoardCrop | null {
   const scale = useBoardScale(board);
   const [crop, setCrop] = useState<(BoardCrop & { key: string }) | null>(null);
   const key =
     rect && scale
-      ? `${board}|${rect.x},${rect.y},${rect.width},${rect.height}|${scale}`
+      ? `${board}|${rect.x},${rect.y},${rect.width},${rect.height}|${scale}|${frameWidth}`
       : null;
 
   useEffect(() => {
@@ -120,15 +141,11 @@ export function useBoardCrop(
     void (async () => {
       try {
         const image = await loadBoard(board);
-        const blob = await cutBoard(image, rect, scale);
-        if (!live || !blob) return;
+        const cut = await cutBoard(image, rect, scale, frameWidth);
+        if (!live || !cut?.blob) return;
 
-        url = URL.createObjectURL(blob);
-        setCrop({
-          key: current,
-          url,
-          ...cssSize(withinBoard(rect, image) ?? rect, scale),
-        });
+        url = URL.createObjectURL(cut.blob);
+        setCrop({ key: current, url, width: cut.width, height: cut.height });
       } catch {
         if (live) setCrop(null);
       }

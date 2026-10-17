@@ -59,6 +59,7 @@ export async function ShotContents({
         caption: `screenshot · ${label}${size ? ` · ${shot.width}×${shot.height}` : ''}`,
         alt: `${shot.storyId}, ${shot.viewport} ${shot.theme}`,
         label: 'screenshot',
+        ...(shot.width === null ? {} : { width: shot.width }),
       }}
       ledger={await readSetLedger(label, key)}
       entry={entry}

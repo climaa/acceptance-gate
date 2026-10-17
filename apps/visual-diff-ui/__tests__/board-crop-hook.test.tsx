@@ -31,8 +31,8 @@ function imageThat(loads: boolean) {
   };
 }
 
-function Probe({ rect }: { rect: PanZoomRect | null }) {
-  const crop = useBoardCrop('component-library', rect);
+function Probe({ rect, frame }: { rect: PanZoomRect | null; frame?: number }) {
+  const crop = useBoardCrop('component-library', rect, frame);
 
   return <p>{crop ? `${crop.url} ${crop.width}×${crop.height}` : 'no crop'}</p>;
 }
@@ -162,5 +162,17 @@ describe('useBoardCrop', () => {
     await settle();
 
     expect(drawImage).not.toHaveBeenCalled();
+  });
+
+  // The frame is what lets two synced panes share a scale: the crop is drawn at
+  // its own CSS size, at the top-left of an image as wide as the screenshot.
+  it('frames the cut to the screenshot it is read beside', async () => {
+    render(<Probe rect={RECT} frame={1248} />);
+    await settle();
+
+    expect({
+      shown: screen.getByText('blob:crop 1248×50') !== null,
+      drawn: drawImage.mock.calls[0]?.slice(1),
+    }).toEqual({ shown: true, drawn: [10, 20, 200, 100, 0, 0, 100, 50] });
   });
 });

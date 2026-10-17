@@ -47,6 +47,8 @@ export interface DesignShot {
   absent: string;
   /** The pane's lead: which side or which set this is. */
   caption: string;
+  /** The shot's own width in CSS pixels, where the host knows it. */
+  width?: number;
   /** The image's alt and the pane's accessible name. */
   alt: string;
   label: string;
