@@ -4,7 +4,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { BOARD_CACHE_CONTROL, DESIGN_EXPORTS_DIR, GET } from '../app/api/designs/route';
-import { DESIGN_BOARDS, designBoardUrl } from '../lib/comparison';
+import { DESIGN_BOARDS, designBoardScaleUrl, designBoardUrl } from '../lib/comparison';
 
 /**
  * The design boards' route: the four committed exports and nothing else.
@@ -26,6 +26,21 @@ describe('GET /api/designs', () => {
     expect(bytes.byteLength).toBe(
       fs.statSync(path.join(DESIGN_EXPORTS_DIR, `${board}.png`)).size,
     );
+  });
+
+  it.each(DESIGN_BOARDS)('serves the %s board’s export scale as JSON', async (board) => {
+    const response = await ask(designBoardScaleUrl(board).slice('/api/designs'.length));
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get('content-type')).toBe('application/json');
+    const { scale } = (await response.json()) as { scale: number };
+    expect(scale).toBeGreaterThan(0);
+  });
+
+  it('answers a scale for a name off the allowlist with a 404', async () => {
+    const response = await ask('?board=nope&format=json');
+
+    expect(response.status).toBe(404);
   });
 
   it('lets the CDN keep a board, and a browser for an hour', async () => {

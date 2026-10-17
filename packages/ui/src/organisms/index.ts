@@ -5,6 +5,7 @@ export {
   type Rect as PanZoomRect,
   type View as PanZoomView,
 } from './PanZoom/PanZoom';
+export { ZOOM_STEP as PAN_ZOOM_STEP } from './PanZoom/geometry';
 export {
   SiteFooter,
   type SiteFooterLink,

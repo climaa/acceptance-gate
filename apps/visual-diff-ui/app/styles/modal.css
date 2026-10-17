@@ -354,3 +354,70 @@
 .vd-readings__fold {
   margin-inline-start: auto;
 }
+
+/* ---- The shot view's overlay (D7) ----------------------------------------- */
+
+/* One pane, the PanZoom pane's size and frame, so switching to the overlay does
+   not move the layout. It scrolls rather than drags: the arrows nudge the crop. */
+.vd-overlay {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.vd-overlay__bar {
+  justify-content: space-between;
+}
+
+.vd-overlay__readout {
+  min-width: 5ch;
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.vd-overlay__pane {
+  overflow: auto;
+  cursor: auto;
+  touch-action: auto;
+}
+
+.vd-overlay__pane:active {
+  cursor: auto;
+}
+
+/* The overlay is one pane and its controls, not two panes: the stage takes its
+   height rather than holding the two panes' 60dvh open around it. */
+.vd-compare__stage--overlay {
+  block-size: auto;
+}
+
+/* Both images at their CSS pixels times the zoom the component writes; the
+   crop sits where the nudge puts it, over the shot, never catching a pointer. */
+.vd-overlay__layers {
+  position: relative;
+}
+
+.vd-overlay__shot {
+  display: block;
+  width: 100%;
+  max-width: none;
+}
+
+.vd-overlay__crop {
+  position: absolute;
+  max-width: none;
+  pointer-events: none;
+}
+
+.vd-overlay__label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.vd-overlay__label input {
+  accent-color: var(--color-accent);
+}

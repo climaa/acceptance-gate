@@ -141,12 +141,23 @@ export const setShotUrl = (label: string, file: string) =>
  * One screenshot of a set, opened beside a design board: the shot view.
  *
  * A board is carried only when someone picked one, the rule `comparisonHref`
- * keeps — so a link stays bare and opens on the board the tier lives on.
+ * keeps — so a link stays bare and opens on the board the tier lives on. A crop
+ * of it is carried as `x,y,w,h` in the board's own pixels (lib/board-crop.ts).
  */
-export function shotViewHref(label: string, key: string, board?: string | null): string {
+export function shotViewHref(
+  label: string,
+  key: string,
+  board?: string | null,
+  crop?: string | null,
+): string {
   const at = `${setHref(label)}/shot/${encodeURIComponent(key)}`;
+  const params = new URLSearchParams();
+  if (board) params.set('board', board);
+  // Written by hand: a crop is digits and commas, which a query carries as they
+  // are, and URLSearchParams would spell every comma %2C.
+  const query = [params.toString(), crop ? `crop=${crop}` : ''].filter(Boolean).join('&');
 
-  return board ? `${at}?${new URLSearchParams({ board }).toString()}` : at;
+  return query === '' ? at : `${at}?${query}`;
 }
 
 const SHOT_VIEW_PATH = /^\/set\/([^/]+)\/shot\/([^/]+)$/;

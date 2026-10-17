@@ -225,3 +225,8 @@ export const defaultBoard = (tier: Variant['tier']): DesignBoard =>
 /** Where a board's bytes are served. */
 export const designBoardUrl = (board: DesignBoard) =>
   `/api/designs?${new URLSearchParams({ board }).toString()}`;
+
+/** Where a board's export sidecar is served: its size in design pixels and the
+ *  scale its PNG was exported at (app/api/designs/route.ts). */
+export const designBoardScaleUrl = (board: DesignBoard) =>
+  `/api/designs?${new URLSearchParams({ board, format: 'json' }).toString()}`;
