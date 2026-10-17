@@ -13,7 +13,7 @@ describe('shotMetadata', () => {
     );
 
     expect({ title: meta.title, canonical: meta.alternates?.canonical }).toEqual({
-      title: 'Badge — Accent · desktop/light',
+      title: 'Badge — Accent · desktop/light · main-2026-10-16',
       canonical: `/set/main-2026-10-16/shot/${KEY}`,
     });
   });

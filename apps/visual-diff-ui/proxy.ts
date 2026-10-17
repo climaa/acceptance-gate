@@ -6,6 +6,9 @@ import { comparisonHref, isComparisonMode, parseComparisonPath } from '@/lib/com
 import { comparisonKeyIn, hasReport, hasSet } from '@/lib/jobs';
 import { ReportIdSchema, SetLabelSchema } from '@/lib/job-contract';
 import { CANONICAL_LABEL } from '@/lib/baselines';
+import { setDirOf } from '@/lib/paths';
+import { parseShotViewPath } from '@/lib/shots';
+import { parseVariantKey } from '@gate/visual-diff/policy';
 
 /**
  * The one thing the report route cannot do for itself: answer a miss with a
@@ -41,11 +44,16 @@ import { CANONICAL_LABEL } from '@/lib/baselines';
  * existed. Wrong-but-harmless beats confidently wrong.
  */
 
-/** Only the three routes that can miss. Every other path — the console, the API,
+/** Only the four routes that can miss. Every other path — the console, the API,
  *  the assets, a comparison's card — reaches the router without this file
  *  running at all. */
 export const config = {
-  matcher: ['/report/:id', '/report/:id/compare/:key', '/set/:label'],
+  matcher: [
+    '/report/:id',
+    '/report/:id/compare/:key',
+    '/set/:label',
+    '/set/:label/shot/:key',
+  ],
 };
 
 const REPORT_PREFIX = '/report/';
@@ -117,6 +125,32 @@ export function isMissingSet(pathname: string): boolean {
   return canSeeSets(dir) && !hasSet(dir, label);
 }
 
+/**
+ * Whether that path names a screenshot this instance cannot show — the shot
+ * view's miss, answered for the reason the set's is.
+ *
+ * A key that is no variant's is a miss before any tree is read, as a label that
+ * is not one is. The corpus is never a miss from here, for `isMissingSet`'s
+ * reason. Otherwise the set must be one this instance holds and the shot a file
+ * in it: the same PNG the set viewer would have drawn a link to.
+ */
+export function isMissingShot(pathname: string): boolean {
+  const segments = parseShotViewPath(pathname);
+  if (segments === null) return true;
+
+  const { label, key } = segments;
+  if (!SetLabelSchema.safeParse(label).success || parseVariantKey(key) === null)
+    return true;
+  if (label === CANONICAL_LABEL) return false;
+
+  const { dir } = dataDirFrom();
+  if (!canSeeSets(dir)) return false;
+
+  const setDir = setDirOf(dir, label);
+
+  return setDir === null || !fs.existsSync(path.join(setDir, `${key}.png`));
+}
+
 /** What the proxy does with a request: let it through, answer it with the
  *  404 page, or send it to the one address it names. */
 export type ProxyAnswer =
@@ -177,7 +211,11 @@ export function reportAnswer(pathname: string, search = ''): ProxyAnswer {
 }
 
 function answerFor(pathname: string, search: string): ProxyAnswer {
-  if (pathname.startsWith(SET_PREFIX)) return isMissingSet(pathname) ? MISSING : PASS;
+  if (pathname.startsWith(SET_PREFIX)) {
+    const missing = pathname.includes('/shot/') ? isMissingShot : isMissingSet;
+
+    return missing(pathname) ? MISSING : PASS;
+  }
   // The matcher sends nothing else under a report's path, so a request that is
   // not the report itself is a comparison — or a malformed one, which the
   // parser turns into a miss.

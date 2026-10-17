@@ -346,6 +346,10 @@
   color: var(--color-accent);
 }
 
+.vd-readings__chevron {
+  margin-inline-end: var(--space-1);
+}
+
 /* The fold sits at the end of the readings' head line, after the caption. */
 .vd-readings__fold {
   margin-inline-start: auto;

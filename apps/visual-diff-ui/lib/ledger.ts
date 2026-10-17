@@ -30,7 +30,13 @@ import { readSidecar } from './sidecar';
  *  imported for the reason lib/summary.ts transcribes `BUCKETS`: the canonical
  *  array is `packages/visual-diff`'s own and its `exports` map does not publish
  *  it. The ambient `Classification` type is what keeps the two in step. */
-const CLASSIFICATIONS = ['token', 'raw-on-scale', 'off-scale', 'exempt', 'none'] as const;
+export const CLASSIFICATIONS = [
+  'token',
+  'raw-on-scale',
+  'off-scale',
+  'exempt',
+  'none',
+] as const;
 
 const ChangeSideSchema = z.object({
   px: z.number(),

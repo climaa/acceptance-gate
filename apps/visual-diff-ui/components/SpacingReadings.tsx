@@ -304,6 +304,10 @@ export function SpacingReadings({
   const mode = ledger?.mode ?? null;
   const rows = ledger?.rows ?? [];
   const tableId = useId();
+  // Held, not derived from the address: unfolding is a way of looking, like the
+  // modal's split and grid. Next keeps a closed modal mounted but hidden, so
+  // reopening the SAME screenshot finds it as the reader left it — and another
+  // screenshot is another route instance, which starts folded.
   const [closed, setClosed] = useState(folded === true);
   // Only something to unfold: a missing ledger is one sentence, and an empty
   // one is another, so neither is ever hidden behind a press.
@@ -313,7 +317,16 @@ export function SpacingReadings({
   return (
     <div className="vd-readings">
       <Stack direction="row" gap={3} align="baseline" wrap>
-        <h3 className="vd-readings__heading">{HEADING}</h3>
+        <h3 className="vd-readings__heading">
+          {/* Board 04's fold marker. Decoration: the button below carries the
+              state, as aria-expanded. */}
+          {foldable && (
+            <span className="vd-readings__chevron" aria-hidden="true">
+              {shut ? '▸' : '▾'}
+            </span>
+          )}
+          {HEADING}
+        </h3>
         {mode !== null && (
           <p className="vd-readings__caption vd-mono">
             {shut ? foldSummary(rows) : CAPTIONS[mode]}

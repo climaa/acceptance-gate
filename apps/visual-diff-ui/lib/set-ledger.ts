@@ -2,6 +2,7 @@ import { LEDGER, parseVariantKey } from '@gate/visual-diff/policy';
 import { z } from 'zod';
 import { CANONICAL_LABEL } from './baselines';
 import { resolveDataDir } from './data';
+import { CLASSIFICATIONS } from './ledger';
 import { entryUnder, setDirOf } from './paths';
 import { everyReading, type Readings } from './readings';
 import { readSidecar } from './sidecar';
@@ -19,9 +20,6 @@ import { readSidecar } from './sidecar';
  * a ledger — it is captured in CI, and nothing is written beside it (R-B3) — so
  * the answer is known before the disk is asked.
  */
-
-/** Transcribed for the reason lib/ledger.ts transcribes it. */
-const CLASSIFICATIONS = ['token', 'raw-on-scale', 'off-scale', 'exempt', 'none'] as const;
 
 const ReadingSchema = z.object({
   property: z.string(),

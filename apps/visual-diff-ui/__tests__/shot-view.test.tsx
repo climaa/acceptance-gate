@@ -17,7 +17,7 @@ import { backCalls, setSearchParams } from './stubs/next-navigation';
 
 const SET = 'main-2026-10-16';
 const KEY = 'atoms__desktop__light__atoms-badge--accent';
-const TITLE = 'Badge — Accent · desktop/light';
+const TITLE = `Badge — Accent · desktop/light · ${SET}`;
 
 const LEDGER: Readings = {
   key: KEY,
@@ -87,9 +87,7 @@ describe('the shot view, opened from its set', () => {
 
     const dialog = screen.getByRole('dialog', { name: 'Screenshot' });
 
-    expect(within(dialog).getByRole('heading', { level: 2 }).textContent).toBe(
-      `${TITLE} · ${SET}`,
-    );
+    expect(within(dialog).getByRole('heading', { level: 2 }).textContent).toBe(TITLE);
   });
 
   // A set screenshot is no comparison: nothing to compare it to, no mode to run.

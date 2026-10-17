@@ -3,15 +3,15 @@
 import NextLink from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { type ReactNode, useEffect, useState } from 'react';
-import { Dialog, IconButton, Stack } from '@gate/ui';
+import { Dialog, Stack } from '@gate/ui';
 import type { Tier } from '@gate/visual-diff/policy';
 import { useMediaQuery, WIDE_VIEWPORT } from '@/hooks/useMediaQuery';
 import { defaultBoard, type DesignBoard, isDesignBoard } from '@/lib/comparison';
 import type { Readings } from '@/lib/readings';
 import { setHref, shotViewHref } from '@/lib/shots';
 import { APP_NAME } from '@/lib/site';
-import { GridGlyph, SPLIT_LABELS, SplitGlyph } from './ComparisonModal';
 import { type DesignShot, DesignStage, type Split } from './DesignStage';
+import { ViewControls } from './ViewControls';
 
 /**
  * One screenshot of a set, beside a design board: the shot view.
@@ -42,7 +42,7 @@ const HINT = 'drag the board · + − zoom · 0 reset';
 
 export interface ShotViewProps {
   label: string;
-  /** The sentence the shot is known by: story, viewport and theme. */
+  /** The sentence the shot is known by (`shotTitle`). */
   title: string;
   tier: Tier;
   shot: DesignShot;
@@ -92,26 +92,15 @@ export function ShotView({ label, title, tier, shot, ledger, entry }: ShotViewPr
           </NextLink>
         )}
         <h2 className="vd-compare__title vd-mono" title={title}>
-          {title} · {label}
+          {title}
         </h2>
         <Stack direction="row" gap={2} align="center">
-          {wide && (
-            <IconButton
-              variant="ghost"
-              label={SPLIT_LABELS[layout]}
-              onClick={() => setLayout(layout === 'columns' ? 'rows' : 'columns')}
-            >
-              <SplitGlyph to={layout === 'columns' ? 'rows' : 'columns'} />
-            </IconButton>
-          )}
-          <IconButton
-            variant="ghost"
-            label="grid"
-            aria-pressed={grid}
-            onClick={() => setGrid(!grid)}
-          >
-            <GridGlyph />
-          </IconButton>
+          <ViewControls
+            layout={wide ? layout : null}
+            onLayout={setLayout}
+            grid={grid}
+            onGrid={setGrid}
+          />
         </Stack>
       </Stack>
 

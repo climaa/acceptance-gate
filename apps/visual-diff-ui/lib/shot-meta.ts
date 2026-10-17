@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { parseVariantKey } from '@gate/visual-diff/policy';
 import { SetLabelSchema } from './job-contract';
 import { pageMetadata } from './share';
-import { shotViewHref } from './shots';
+import { shotTitle, shotViewHref } from './shots';
 import { NOT_FOUND_TITLE } from './site';
 import { storyTitle } from './title';
 
@@ -25,11 +25,11 @@ export async function shotMetadata(
     return { title: NOT_FOUND_TITLE };
   }
 
-  const title = `${storyTitle(cell.id)} · ${cell.viewport}/${cell.theme}`;
+  const title = shotTitle(storyTitle(cell.id), cell.viewport, cell.theme, label);
 
   return pageMetadata({
     path: shotViewHref(label, key),
     title,
-    description: `${title}, from screenshot set ${label}, beside its design board.`,
+    description: `${title}: one screenshot, beside its design board.`,
   });
 }

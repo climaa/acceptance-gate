@@ -6,7 +6,7 @@
    cannot show a re-encoded copy of the evidence. */
 
 import { useEffect, useRef, useState } from 'react';
-import { Dialog, IconButton, SegmentedControl, Stack } from '@gate/ui';
+import { Dialog, SegmentedControl, Stack } from '@gate/ui';
 import type { LedgerReport } from '@gate/visual-diff/ledger';
 import { REDUCED_MOTION, useMediaQuery, WIDE_VIEWPORT } from '@/hooks/useMediaQuery';
 import {
@@ -35,6 +35,7 @@ import type { Variant } from '@/lib/summary';
 import { CopyLink } from './CopyLink';
 import { pairedReadings } from '@/lib/readings';
 import { DesignStage, type Split } from './DesignStage';
+import { ViewControls } from './ViewControls';
 
 /**
  * Where a reviewer looks at the pixels: one variant, full-bleed, in whichever
@@ -324,50 +325,6 @@ function Stage({ mode, split, shots, variant, position, onPosition }: StageProps
   );
 }
 
-export const SPLIT_LABELS: Readonly<Record<Split, string>> = {
-  columns: 'stack the board over the screenshot',
-  rows: 'put the board beside the screenshot',
-};
-
-/** lucide's `rows-2` and `columns-2`: each button draws the layout it switches
- *  TO, which is what its name says too. Stroked, sized by
- *  `.ds-icon-btn__glyph`, tinted by `currentColor`. */
-export function SplitGlyph({ to }: { to: Split }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <rect width="18" height="18" x="3" y="3" rx="2" />
-      <path d={to === 'rows' ? 'M3 12h18' : 'M12 3v18'} />
-    </svg>
-  );
-}
-
-/** lucide's `grid-3x3`, for the toggle that lays a grid over both panes. */
-export function GridGlyph() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <rect width="18" height="18" x="3" y="3" rx="2" />
-      <path d="M3 9h18" />
-      <path d="M3 15h18" />
-      <path d="M9 3v18" />
-      <path d="M15 3v18" />
-    </svg>
-  );
-}
-
 /**
  * The stage for the six modes.
  *
@@ -444,28 +401,7 @@ function ComparisonHead({
           }}
         />
 
-        {layout && (
-          <IconButton
-            variant="ghost"
-            label={SPLIT_LABELS[layout]}
-            onClick={() => onLayout(layout === 'columns' ? 'rows' : 'columns')}
-          >
-            <SplitGlyph to={layout === 'columns' ? 'rows' : 'columns'} />
-          </IconButton>
-        )}
-
-        {/* A toggle, so pressed rather than renamed: the grid is on or off,
-            where the split button names the layout it is about to make. */}
-        {grid !== null && (
-          <IconButton
-            variant="ghost"
-            label="grid"
-            aria-pressed={grid}
-            onClick={() => onGrid(!grid)}
-          >
-            <GridGlyph />
-          </IconButton>
-        )}
+        <ViewControls layout={layout} onLayout={onLayout} grid={grid} onGrid={onGrid} />
       </Stack>
 
       {/* Unmounted, not disabled, in the design view: every mode answers
