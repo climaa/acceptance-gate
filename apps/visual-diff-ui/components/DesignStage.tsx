@@ -1,13 +1,16 @@
 'use client';
 
-import { type ChangeEvent, useEffect, useRef, useState } from 'react';
+import { type ChangeEvent, type ReactNode, useEffect, useRef, useState } from 'react';
 import {
   IconButton,
   PanZoom,
   type PanZoomProps,
+  type PanZoomRect,
+  type PanZoomView,
   SegmentedControl,
   Stack,
 } from '@gate/ui';
+import type { BoardCrop } from '@/hooks/useBoardCrop';
 import {
   DESIGN_BOARDS,
   type DesignBoard,
@@ -49,6 +52,9 @@ const LOCAL_UNREADABLE = 'this image could not be read — pick another, or a bo
 const BOARD_UNAVAILABLE =
   'this board could not be loaded — it is in designs/exports/ in the checkout';
 
+/** The crop toggle's name, pinned like the box toggle's. */
+const CROP_LABEL = 'crop the board';
+
 /** The box toggle's name, pinned the way the upload button's is. */
 const BOXES_LABEL = 'show spacing boxes';
 
@@ -85,6 +91,30 @@ interface DesignStageProps {
   /** Passed through to the panel: whether it folds, and what it is beside. */
   readingsFolded?: boolean | null;
   subject?: ReadingsSubject;
+  /** The shot view's visual-comparison tools; the comparison modal passes none,
+   *  and its design view is exactly what it was. */
+  tools?: ShotTools;
+}
+
+/**
+ * What the shot view adds to the stage, for human visual comparison (#540):
+ * the two panes holding one view, a crop of the board pinned in the board's
+ * pane, and the overlay standing in for both panes.
+ */
+export interface ShotTools {
+  /** Whether the panes hold one view. */
+  sync: boolean;
+  view: PanZoomView | undefined;
+  onViewChange: (view: PanZoomView) => void;
+  /** Whether a drag on the board draws a crop. */
+  cropping: boolean;
+  onCropping: (on: boolean) => void;
+  onCrop: (rect: PanZoomRect) => void;
+  /** The pinned crop, cut and in CSS pixels, or null for the whole board. */
+  crop: BoardCrop | null;
+  onClearCrop: () => void;
+  /** Drawn in place of both panes: the overlay. */
+  overlay: ReactNode | null;
 }
 
 /**
@@ -160,6 +190,7 @@ export function DesignStage({
   ledger,
   readingsFolded = null,
   subject = 'comparison',
+  tools,
 }: DesignStageProps) {
   const caption = <p className="vd-compare__caption vd-mono">{shot.caption}</p>;
   // An image from the reader's own machine, read in place of a board. Held
@@ -181,77 +212,71 @@ export function DesignStage({
 
   const readings = readingsFor(ledger, shot.key);
   const marks = marksFor(readings?.rows ?? [], hovered ?? pressed);
+  const follow = tools?.sync
+    ? { view: tools.view, onViewChange: tools.onViewChange }
+    : {};
 
   return (
     <>
       <div className="vd-compare__stage vd-compare__stage--design">
-        <div className="vd-compare__design" data-split={split}>
-          <div className="vd-compare__column">
-            {/* What each pane holds and how it moves share one row, as Board
-                04 draws them: the picker leads the board's own zoom row. */}
-            <PanZoom
-              key={local?.url ?? board}
-              src={local?.url ?? designBoardUrl(board)}
-              alt={
-                local
-                  ? `your design, ${local.name}`
-                  : `the ${BOARD_LABELS[board]} design board`
-              }
-              label="design board"
-              fallback={local ? LOCAL_UNREADABLE : BOARD_UNAVAILABLE}
-              grid={grid}
-              className="vd-compare__panzoom"
-              lead={
-                <BoardPicker
-                  board={local ? null : board}
-                  onBoard={pickBoard}
-                  local={local?.name}
-                />
-              }
-              actions={<UploadDesign onPick={setLocal} />}
-            />
-          </div>
-
-          <div className="vd-compare__column">
-            {/* The same pane as the board's, so the two are read the same way
-                — both fitted at 100%, both dragged and zoomed. A screenshot
-                narrower than the pane sits at its own pixels: the pane never
-                stretches it. */}
-            {shot.src === undefined ? (
-              <>
-                {caption}
-                <p className="vd-compare__absent">{shot.absent}</p>
-              </>
-            ) : (
-              <PanZoom
-                key={shot.key}
-                src={shot.src}
-                alt={shot.alt}
-                label={shot.label}
+        {tools?.overlay ?? (
+          <div className="vd-compare__design" data-split={split}>
+            <div className="vd-compare__column">
+              {/* What each pane holds and how it moves share one row, as Board
+                  04 draws them: the picker leads the board's own zoom row. */}
+              <BoardPane
+                board={board}
+                local={local}
                 grid={grid}
-                marks={boxes ? marks : undefined}
-                className="vd-compare__panzoom"
-                lead={caption}
-                // On the after pane's own zoom bar, the way the upload button
-                // sits on the board's: it acts on what that pane shows. Offered
-                // only where it has a box to show or hide.
-                actions={
-                  marks.length > 0 ? (
-                    <IconButton
-                      variant="ghost"
-                      size="sm"
-                      label={BOXES_LABEL}
-                      aria-pressed={boxes}
-                      onClick={() => setBoxes(!boxes)}
-                    >
-                      <SquareDashedGlyph />
-                    </IconButton>
-                  ) : undefined
-                }
+                tools={tools}
+                follow={follow}
+                onBoard={pickBoard}
+                onLocal={setLocal}
               />
-            )}
+            </div>
+
+            <div className="vd-compare__column">
+              {/* The same pane as the board's, so the two are read the same way
+                  — both fitted at 100%, both dragged and zoomed. A screenshot
+                  narrower than the pane sits at its own pixels: the pane never
+                  stretches it. */}
+              {shot.src === undefined ? (
+                <>
+                  {caption}
+                  <p className="vd-compare__absent">{shot.absent}</p>
+                </>
+              ) : (
+                <PanZoom
+                  key={shot.key}
+                  src={shot.src}
+                  alt={shot.alt}
+                  label={shot.label}
+                  grid={grid}
+                  marks={boxes ? marks : undefined}
+                  className="vd-compare__panzoom"
+                  lead={caption}
+                  {...follow}
+                  // On the after pane's own zoom bar, the way the upload button
+                  // sits on the board's: it acts on what that pane shows. Offered
+                  // only where it has a box to show or hide.
+                  actions={
+                    marks.length > 0 ? (
+                      <IconButton
+                        variant="ghost"
+                        size="sm"
+                        label={BOXES_LABEL}
+                        aria-pressed={boxes}
+                        onClick={() => setBoxes(!boxes)}
+                      >
+                        <SquareDashedGlyph />
+                      </IconButton>
+                    ) : undefined
+                  }
+                />
+              )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* A full-width row below both panes, as Board 04 draws it — never in the
@@ -265,6 +290,140 @@ export function DesignStage({
         subject={subject}
       />
     </>
+  );
+}
+
+interface BoardPaneProps {
+  board: DesignBoard;
+  local: LocalImage | null;
+  grid: boolean;
+  tools: ShotTools | undefined;
+  /** The shared view, when the panes are synced. */
+  follow: Pick<PanZoomProps, 'view' | 'onViewChange'>;
+  onBoard: (board: DesignBoard) => void;
+  onLocal: (image: LocalImage) => void;
+}
+
+/**
+ * The board's pane: a board, the reader's own image, or — in the shot view — a
+ * crop of the board pinned at the screenshot's scale, with the way back to the
+ * whole board beside it. The crop toggle sits on this pane's zoom row, as the
+ * upload button does: both act on what this pane shows.
+ */
+function BoardPane({
+  board,
+  local,
+  grid,
+  tools,
+  follow,
+  onBoard,
+  onLocal,
+}: BoardPaneProps) {
+  const crop = local ? null : (tools?.crop ?? null);
+  if (crop) {
+    return (
+      <PanZoom
+        key={crop.url}
+        src={crop.url}
+        alt={`a crop of the ${BOARD_LABELS[board]} design board`}
+        label="design board"
+        grid={grid}
+        className="vd-compare__panzoom"
+        lead={<CropLabel board={board} onClear={tools?.onClearCrop} />}
+        {...follow}
+      />
+    );
+  }
+
+  return (
+    <PanZoom
+      key={local?.url ?? board}
+      src={local?.url ?? designBoardUrl(board)}
+      alt={
+        local ? `your design, ${local.name}` : `the ${BOARD_LABELS[board]} design board`
+      }
+      label="design board"
+      fallback={local ? LOCAL_UNREADABLE : BOARD_UNAVAILABLE}
+      grid={grid}
+      className="vd-compare__panzoom"
+      lead={
+        <BoardPicker board={local ? null : board} onBoard={onBoard} local={local?.name} />
+      }
+      cropping={!local && tools?.cropping}
+      onCrop={tools?.onCrop}
+      {...follow}
+      actions={
+        <>
+          {tools && !local && (
+            <CropToggle on={tools.cropping} onToggle={tools.onCropping} />
+          )}
+          <UploadDesign onPick={onLocal} />
+        </>
+      }
+    />
+  );
+}
+
+/** What a pinned crop is, and the way back to the whole board. */
+function CropLabel({ board, onClear }: { board: DesignBoard; onClear?: () => void }) {
+  return (
+    <Stack direction="row" gap={2} align="center">
+      <span className="vd-compare__label vd-mono">crop · {BOARD_LABELS[board]}</span>
+      {onClear && (
+        <IconButton variant="ghost" size="sm" label="clear the crop" onClick={onClear}>
+          <XGlyph />
+        </IconButton>
+      )}
+    </Stack>
+  );
+}
+
+/** The crop toggle: pressed while a drag on the board draws a crop. */
+function CropToggle({ on, onToggle }: { on: boolean; onToggle: (on: boolean) => void }) {
+  return (
+    <IconButton
+      variant="ghost"
+      size="sm"
+      label={CROP_LABEL}
+      aria-pressed={on}
+      onClick={() => onToggle(!on)}
+    >
+      <CropGlyph />
+    </IconButton>
+  );
+}
+
+/** lucide's `crop`, the glyph Board 04 draws on the board's zoom row. */
+function CropGlyph() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M6 2v14a2 2 0 0 0 2 2h14" />
+      <path d="M18 22V8a2 2 0 0 0-2-2H2" />
+    </svg>
+  );
+}
+
+/** lucide's `x`, for clearing a crop. */
+function XGlyph() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M18 6 6 18" />
+      <path d="m6 6 12 12" />
+    </svg>
   );
 }
 
