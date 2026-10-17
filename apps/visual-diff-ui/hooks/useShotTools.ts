@@ -24,6 +24,9 @@ export const SHOT_LAYOUTS: readonly ShotLayout[] = ['side by side', 'overlay'];
 
 interface ShotToolsInput {
   board: DesignBoard;
+  /** The screenshot's width in CSS pixels, which a crop is framed to so the two
+   *  panes share one scale (hooks/useBoardCrop.ts). */
+  frameWidth: number;
   /** The crop the address carries, as it carries it. */
   asked: string | null;
   /** Writes the address with a new crop, or none. */
@@ -54,7 +57,7 @@ const resync = (on: boolean, setView: (view: PanZoomView | undefined) => void) =
   if (on) setView(undefined);
 };
 
-export function useShotTools({ board, asked, onCropParam }: ShotToolsInput): {
+export function useShotTools({ board, frameWidth, asked, onCropParam }: ShotToolsInput): {
   /** What the stage is handed, exactly — the overlay is the host's to draw. */
   tools: Omit<ShotTools, 'overlay'>;
   onSync: (on: boolean) => void;
@@ -68,7 +71,7 @@ export function useShotTools({ board, asked, onCropParam }: ShotToolsInput): {
   const [cropping, setCropping] = useState(false);
   const [layout, setLayout] = useState<ShotLayout>('side by side');
   const rect = parseCrop(asked);
-  const crop = useBoardCrop(board, rect);
+  const crop = useBoardCrop(board, rect, frameWidth);
 
   const onSync = (on: boolean) => {
     resync(on, setView);
