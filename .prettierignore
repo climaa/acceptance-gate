@@ -55,3 +55,8 @@ apps/visual-diff-ui/next-env.d.ts
 # had last run `pnpm test:local`.
 apps/e2e/.features-gen/
 apps/e2e/.features-gen-local/
+
+# Token ledger reports in the console's sample fixtures: serializeLedgerReport's own
+# bytes, so regenerating them by fixtures/README.md reproduces the committed files
+# exactly. Reformatted, every regeneration would be a diff.
+apps/visual-diff-ui/fixtures/reports/*/ledger/
