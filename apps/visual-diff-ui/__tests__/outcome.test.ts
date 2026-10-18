@@ -81,6 +81,16 @@ describe('formatDuration', () => {
   it('keeps the minutes when the seconds land on zero', () => {
     expect(formatDuration(120_000)).toBe('2m 0s');
   });
+
+  // A compare of 200 shots finishes in well under a second; "0s" read as a run
+  // that took no time, or as a stamp nobody wrote.
+  it('says under a second rather than zero seconds', () => {
+    expect([formatDuration(0), formatDuration(420), formatDuration(999)]).toEqual([
+      '<1s',
+      '<1s',
+      '<1s',
+    ]);
+  });
 });
 
 describe('durationOf', () => {

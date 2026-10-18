@@ -905,6 +905,37 @@ describe('the reports panel', () => {
     expect(within(chips).getAllByRole('button')).toHaveLength(7);
   });
 
+  // Regression, 18 Oct 2026: reports were ordered by id alone, so a `main-…`
+  // report with no run in this history sat above every `baselines__…` one,
+  // today's included, because "m" sorts after "b".
+  it('lists dated reports newest first, and the undated ones after them', () => {
+    const dated: ReportListEntry = { ...REPORT, id: 'baselines__main-2026-10-18-3' };
+    const newer: ReportListEntry = { ...REPORT, id: 'baselines__main-2026-10-19' };
+    const runOf = (id: string, endedAt: string): HistoryRecord => ({
+      ...RUN,
+      id: `${endedAt}-compare`,
+      label: id,
+      endedAt,
+      reportId: id,
+    });
+
+    render(
+      consoleWith({
+        reports: [REPORT, dated, newer],
+        history: [
+          runOf(newer.id, '2026-10-19T09:00:00Z'),
+          runOf(dated.id, '2026-10-18T09:00:00Z'),
+        ],
+      }),
+    );
+
+    expect(
+      within(table('Reports'))
+        .getAllByRole('link')
+        .map((link) => link.textContent),
+    ).toEqual([newer.id, dated.id, REPORT.id]);
+  });
+
   it('has no date for a report no run in this history claims', () => {
     render(consoleWith({ history: [] }));
 

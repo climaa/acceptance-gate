@@ -123,6 +123,9 @@ const ISO_INSTANT = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$/;
  */
 export function formatDuration(ms: number): string {
   const seconds = Math.floor(ms / 1000);
+  // Under a second floors to 0, which reads as no time at all — a compare of
+  // 200 shots is routinely that fast.
+  if (seconds === 0) return '<1s';
   if (seconds < SECONDS_PER_MINUTE) return `${seconds}s`;
 
   return `${Math.floor(seconds / SECONDS_PER_MINUTE)}m ${seconds % SECONDS_PER_MINUTE}s`;
