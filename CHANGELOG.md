@@ -17,6 +17,7 @@ Merged to `main` since v1.6.0, not yet released:
 - fix(visual-diff-ui): the shot view's overlay sits centred in its pane, as Board 04 draws it (#558)
 - feat(visual-diff-ui): the overlay chooses which layer the nudge moves, and nudges by touch (#559)
 - fix(visual-diff-ui): the grid toggle draws a grid on the overlay too (#560)
+- feat(visual-diff-ui): a difference blend on the overlay, to see the drift by eye (#561)
 
 ## v1.6.0 — a screenshot is read against its design board, down to the design token
 
