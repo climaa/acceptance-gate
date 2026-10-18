@@ -33,6 +33,7 @@ import {
   zoomAbout,
   zoomCap,
 } from './geometry';
+import { useFitOnce } from './useFitOnce';
 
 export type { Mark, Rect, View } from './geometry';
 
@@ -127,6 +128,12 @@ export interface PanZoomProps {
    *  pixels by eye — the set's shot view — asks for more, and past natural size
    *  the image is drawn pixelated, so a pixel reads as a square, never a blur. */
   magnify?: number;
+  /** A region of the image, in its own pixels, to open on: zoomed until it
+   *  fills the pane on its tighter side, as far as {@link magnify} allows, with
+   *  the region's corner at the pane's. For a small region a reader came to
+   *  read, like the shot view's board crop. Applied once per image and reported
+   *  through `onViewChange`, so a pane following the same view opens with it. */
+  fitTo?: Rect;
   /** The view to follow — see {@link View}. Absent, the pane keeps its own. */
   view?: View;
   /** Every change of view: a step, a pan, a drag, a reset. */
@@ -437,6 +444,10 @@ interface PaneViewInput {
   magnify: number;
   pane: Size;
   natural: Size;
+  /** Where to open, once — see {@link PanZoomProps.fitTo}. */
+  fitTo: Rect | undefined;
+  /** The image did not load: there is nothing to fit. */
+  failed: boolean;
 }
 
 /**
@@ -454,6 +465,8 @@ function usePaneView({
   magnify,
   pane,
   natural,
+  fitTo,
+  failed,
 }: PaneViewInput) {
   const [requested, setRequested] = useState(defaultZoom);
   const [rawOffset, setOffset] = useState<Offset>(ORIGIN);
@@ -472,6 +485,8 @@ function usePaneView({
     }
     onViewChange?.(viewOf(nextZoom, placed, drawn));
   };
+
+  useFitOnce({ fitTo: failed ? undefined : fitTo, natural, pane, cap, apply });
 
   return { cap, zoom, image, offset, apply };
 }
@@ -552,6 +567,9 @@ function CropHint({ id, on }: { id: string; on: boolean }) {
 }
 
 /** The pane's classes: the crosshair modifier while a drag draws a crop. */
+/** The crop hint describes the pane only while a drag would draw a crop. */
+const hintWhile = (cropping: boolean, hintId: string) => (cropping ? hintId : undefined);
+
 const paneClass = (cropping: boolean) =>
   cropping ? 'ds-panzoom__pane ds-panzoom__pane--cropping' : 'ds-panzoom__pane';
 
@@ -561,6 +579,7 @@ export function PanZoom({
   label,
   defaultZoom = 1,
   magnify = 1,
+  fitTo,
   fallback,
   grid = false,
   marks,
@@ -587,6 +606,8 @@ export function PanZoom({
     magnify,
     pane,
     natural,
+    fitTo,
+    failed,
   });
   const center = { x: pane.width / 2, y: pane.height / 2 };
 
@@ -689,7 +710,7 @@ export function PanZoom({
         className={paneClass(cropping)}
         role="group"
         aria-label={label}
-        aria-describedby={cropping ? hintId : undefined}
+        aria-describedby={hintWhile(cropping, hintId)}
         tabIndex={0}
         onKeyDown={onKeyDown}
         onPointerDown={onPointerDown}

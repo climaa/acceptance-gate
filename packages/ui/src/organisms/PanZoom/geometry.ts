@@ -145,6 +145,25 @@ export function viewOf(zoom: number, offset: Offset, image: Size): View {
   };
 }
 
+/** The zoom and offset that open on `region` (in the image's own pixels):
+ *  zoomed until it fills the pane on its tighter side, held between the floor
+ *  and `cap`, with the region's corner at the pane's. */
+export function fitView(
+  region: Rect,
+  pane: Size,
+  natural: Size,
+  cap: number,
+): { zoom: number; offset: Offset } {
+  const scale = drawnSize(pane, natural, 1).width / natural.width;
+  const zoom = clamp(
+    Math.min(pane.width / (region.width * scale), pane.height / (region.height * scale)),
+    1,
+    cap,
+  );
+
+  return { zoom, offset: { x: -region.x * scale * zoom, y: -region.y * scale * zoom } };
+}
+
 /** The offset a view puts the image at, at the size it is drawn at. */
 export const offsetOf = (view: View, image: Size): Offset => ({
   x: -view.x * image.width,

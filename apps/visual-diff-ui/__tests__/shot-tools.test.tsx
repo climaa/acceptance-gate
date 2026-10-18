@@ -19,7 +19,14 @@ import { setSearchParams } from './stubs/next-navigation';
 
 vi.mock('../hooks/useBoardCrop', () => ({
   useBoardCrop: (_board: string, rect: { width: number; height: number } | null) =>
-    rect ? { url: 'blob:crop', width: rect.width / 2, height: rect.height / 2 } : null,
+    rect
+      ? {
+          url: 'blob:crop',
+          width: rect.width / 2,
+          height: rect.height / 2,
+          region: { width: rect.width / 2, height: rect.height / 2 },
+        }
+      : null,
 }));
 
 const SET = 'main-2026-10-16';

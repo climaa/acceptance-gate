@@ -28,6 +28,9 @@ export interface BoardCrop {
   /** In CSS pixels: the size it is laid over a screenshot at. */
   width: number;
   height: number;
+  /** The cropped region inside that frame, from its top-left, in CSS pixels —
+   *  the frame is as wide as the screenshot, the region usually far narrower. */
+  region: { width: number; height: number };
 }
 
 /** The board's PNG pixels per design pixel, or null until it is known. */
@@ -75,7 +78,12 @@ async function cutBoard(
   asked: PanZoomRect,
   scale: number,
   frameWidth: number,
-): Promise<{ blob: Blob | null; width: number; height: number } | null> {
+): Promise<{
+  blob: Blob | null;
+  width: number;
+  height: number;
+  region: { width: number; height: number };
+} | null> {
   const rect = withinBoard(asked, board);
   if (!rect) return null;
 
@@ -105,7 +113,7 @@ async function cutBoard(
     canvas.toBlob(resolve, 'image/png'),
   );
 
-  return { blob, width, height };
+  return { blob, width, height, region: { width: Math.round(size.width), height } };
 }
 
 /** A board's image, decoded. */
@@ -145,7 +153,13 @@ export function useBoardCrop(
         if (!live || !cut?.blob) return;
 
         url = URL.createObjectURL(cut.blob);
-        setCrop({ key: current, url, width: cut.width, height: cut.height });
+        setCrop({
+          key: current,
+          url,
+          width: cut.width,
+          height: cut.height,
+          region: cut.region,
+        });
       } catch {
         if (live) setCrop(null);
       }
@@ -163,5 +177,5 @@ export function useBoardCrop(
   // the crop changes, and showing it would be a broken image.
   if (key === null || crop?.key !== key) return null;
 
-  return { url: crop.url, width: crop.width, height: crop.height };
+  return { url: crop.url, width: crop.width, height: crop.height, region: crop.region };
 }
