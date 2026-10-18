@@ -1,6 +1,7 @@
 import NextLink from 'next/link';
 import { Fragment } from 'react';
 import { Badge, Stack } from '@gate/ui';
+import type { CanonicalSet } from '@/lib/baselines';
 import { reportSides } from '@/lib/report-view';
 import type { CaptureSet, Summary } from '@/lib/summary';
 import { ReportResults } from './ReportResults';
@@ -48,10 +49,14 @@ function SetLine({
   side,
   label,
   set,
+  corpus,
 }: {
   side: string;
   label: string;
   set?: CaptureSet;
+  /** The committed corpus, when this side names it: it is not in the capture
+   *  registry by design, so without this a `baselines` side read as missing. */
+  corpus?: CanonicalSet | null;
 }) {
   return (
     <>
@@ -67,6 +72,12 @@ function SetLine({
               {set.branch}
             </span>{' '}
             · <span className="vd-count">{set.stories}</span> stories
+          </span>
+        ) : corpus ? (
+          <span className="vd-report__meta">
+            canonical · accepted <span className="vd-mono">{corpus.sha ?? '—'}</span> ·{' '}
+            {corpus.acceptedAt ?? '—'} ·{' '}
+            <span className="vd-count">{corpus.stories}</span> stories
           </span>
         ) : (
           <span className="vd-report__meta">
@@ -105,9 +116,11 @@ export interface ReportTemplateProps {
   report: Summary;
   /** Every registered capture set — the two sides are looked up in it by label. */
   sets: readonly CaptureSet[];
+  /** The committed corpus, or null where there is none to read (a deployment). */
+  corpus?: CanonicalSet | null;
 }
 
-export function ReportTemplate({ id, report, sets }: ReportTemplateProps) {
+export function ReportTemplate({ id, report, sets, corpus = null }: ReportTemplateProps) {
   const sides = reportSides(id);
   const byLabel = new Map(sets.map((set) => [set.label, set]));
 
@@ -138,8 +151,18 @@ export function ReportTemplate({ id, report, sets }: ReportTemplateProps) {
           {/* The two sides stay in view: which sets were compared is what a
               reader arriving at a shared link needs first. */}
           <dl className="vd-report__sets">
-            <SetLine side="A" label={sides.a} set={byLabel.get(sides.a)} />
-            <SetLine side="B" label={sides.b} set={byLabel.get(sides.b)} />
+            <SetLine
+              side="A"
+              label={sides.a}
+              set={byLabel.get(sides.a)}
+              corpus={corpus?.label === sides.a ? corpus : null}
+            />
+            <SetLine
+              side="B"
+              label={sides.b}
+              set={byLabel.get(sides.b)}
+              corpus={corpus?.label === sides.b ? corpus : null}
+            />
           </dl>
 
           {/* Folded by default: the run's parameters are read once per report,

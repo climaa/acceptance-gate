@@ -234,17 +234,21 @@ export function ReportResults({ reportId, report, sides }: ReportResultsProps) {
         onSelect={(bucket) => update({ bucket })}
       />
 
-      <ReviewBar
-        filter={view.filter}
-        onFilter={(filter) => update({ filter })}
-        hideReviewed={view.hideReviewed}
-        onHideReviewed={(hideReviewed) => update({ hideReviewed })}
-        reviewed={countReviewed(reportKeys, marks)}
-        total={reviewableCount(report.counts)}
-        onNextUnreviewed={nextUnreviewed}
-        allCollapsed={allCollapsed}
-        onCollapseAll={collapseAll}
-      />
+      {/* A clean run wrote no rows: the bar's filter, progress and jumps would
+          all act on nothing, under a note saying there is nothing to review. */}
+      {report.variants.length > 0 && (
+        <ReviewBar
+          filter={view.filter}
+          onFilter={(filter) => update({ filter })}
+          hideReviewed={view.hideReviewed}
+          onHideReviewed={(hideReviewed) => update({ hideReviewed })}
+          reviewed={countReviewed(reportKeys, marks)}
+          total={reviewableCount(report.counts)}
+          onNextUnreviewed={nextUnreviewed}
+          allCollapsed={allCollapsed}
+          onCollapseAll={collapseAll}
+        />
+      )}
 
       <WarningStrip warnings={report.warnings} />
 
