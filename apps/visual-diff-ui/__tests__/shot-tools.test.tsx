@@ -14,10 +14,14 @@ import { setSearchParams } from './stubs/next-navigation';
  * The cut itself — fetching the board's export scale, drawing the region into a
  * canvas — needs a browser jsdom does not have, so the hook that makes it is
  * replaced by one that hands back a crop for any rect it is given. What is
- * asserted is the view around it.
+ * asserted is the view around it. The tile map is a stub each test sets: none
+ * by default, so the board opens whole unless a test hands it Board 01's tiles.
  */
 
+const tileMap = vi.hoisted(() => ({ tiles: null as Record<string, number[]> | null }));
+
 vi.mock('../hooks/useBoardCrop', () => ({
+  useBoardTiles: () => tileMap.tiles,
   useBoardCrop: (_board: string, rect: { width: number; height: number } | null) =>
     rect
       ? {
@@ -75,6 +79,7 @@ beforeEach(() => {
 afterEach(() => {
   cleanup();
   replaceState.mockReset();
+  tileMap.tiles = null;
 });
 
 describe('the shot view’s layout', () => {
@@ -142,7 +147,7 @@ describe('the shot view’s crop', () => {
     expect({
       cleared: replaceState.mock.calls.at(-1)?.[2],
       cropping: pressed('crop the board'),
-    }).toEqual({ cleared: AT, cropping: 'true' });
+    }).toEqual({ cleared: `${AT}?crop=`, cropping: 'true' });
   });
 
   it('clears the crop from the address, back to the whole board', () => {
@@ -150,7 +155,32 @@ describe('the shot view’s crop', () => {
 
     press('clear the crop');
 
-    expect(replaceState.mock.calls.at(-1)?.[2]).toBe(AT);
+    // Kept as an empty `crop=`: no crop at all would open on the story's tile.
+    expect(replaceState.mock.calls.at(-1)?.[2]).toBe(`${AT}?crop=`);
+  });
+
+  it('opens on the story’s tile when the address carries no crop', () => {
+    tileMap.tiles = { Badge: [476, 528, 384, 148], Button: [71, 528, 384, 331] };
+
+    renderView();
+
+    expect(screen.getByText('crop · Badge tile')).not.toBeNull();
+  });
+
+  it('opens on the whole board when the address asks for it with an empty crop', () => {
+    tileMap.tiles = { Badge: [476, 528, 384, 148] };
+
+    renderView('crop=');
+
+    expect(screen.queryByRole('button', { name: 'clear the crop' })).toBeNull();
+  });
+
+  it('opens on the whole board for a story the board draws no tile for', () => {
+    tileMap.tiles = { Button: [71, 528, 384, 331] };
+
+    renderView();
+
+    expect(screen.queryByRole('button', { name: 'clear the crop' })).toBeNull();
   });
 
   // A crop is in one board's pixels: another board has nothing at those pixels.

@@ -106,6 +106,8 @@ export interface ShotTools {
   onCrop: (rect: PanZoomRect) => void;
   /** The pinned crop, cut and in CSS pixels, or null for the whole board. */
   crop: BoardCrop | null;
+  /** The component whose tile the crop is, when the board opened on one. */
+  tile: string | null;
   onClearCrop: () => void;
   /** Drawn in place of both panes: the overlay. */
   overlay: ReactNode | null;

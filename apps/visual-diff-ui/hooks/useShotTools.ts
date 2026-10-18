@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import type { PanZoomRect, PanZoomView } from '@gate/ui';
-import { cropParam, parseCrop } from '@/lib/board-crop';
+import { cropParam, parseCrop, storyTile } from '@/lib/board-crop';
 import type { DesignBoard } from '@/lib/comparison';
 import type { ShotTools } from '@/components/DesignStage';
-import { useBoardCrop } from './useBoardCrop';
+import { useBoardCrop, useBoardTiles } from './useBoardCrop';
 
 /**
  * The shot view's visual-comparison state (#540): whether the panes hold one
@@ -14,7 +14,9 @@ import { useBoardCrop } from './useBoardCrop';
  *
  * The crop is the one part in the address — `?crop=x,y,w,h`, in the board's own
  * pixels — because it is a thing to point someone at: a link reproduces exactly
- * the region that was compared. Sync, cropping and the view are ways of looking,
+ * the region that was compared. With no crop in the address at all, the board
+ * opens on the story's own tile, as Board 04 draws it; an empty `crop=` is the
+ * reader asking for the whole board. Sync, cropping and the view are ways of looking,
  * held here, as the modal's split and grid are.
  */
 
@@ -27,6 +29,8 @@ interface ShotToolsInput {
   /** The screenshot's width in CSS pixels, which a crop is framed to so the two
    *  panes share one scale (hooks/useBoardCrop.ts). */
   frameWidth: number;
+  /** The variant on screen, whose story names the tile a board opens on. */
+  story: string;
   /** The crop the address carries, as it carries it. */
   asked: string | null;
   /** Writes the address with a new crop, or none. */
@@ -57,7 +61,13 @@ const resync = (on: boolean, setView: (view: PanZoomView | undefined) => void) =
   if (on) setView(undefined);
 };
 
-export function useShotTools({ board, frameWidth, asked, onCropParam }: ShotToolsInput): {
+export function useShotTools({
+  board,
+  frameWidth,
+  story,
+  asked,
+  onCropParam,
+}: ShotToolsInput): {
   /** What the stage is handed, exactly — the overlay is the host's to draw. */
   tools: Omit<ShotTools, 'overlay'>;
   onSync: (on: boolean) => void;
@@ -70,7 +80,9 @@ export function useShotTools({ board, frameWidth, asked, onCropParam }: ShotTool
   const [view, setView] = useState<PanZoomView | undefined>(undefined);
   const [cropping, setCropping] = useState(false);
   const [layout, setLayout] = useState<ShotLayout>('side by side');
-  const rect = parseCrop(asked);
+  const tiles = useBoardTiles(board);
+  const tile = asked === null && tiles ? storyTile(tiles, story) : null;
+  const rect = tile ? tile.rect : parseCrop(asked);
   const crop = useBoardCrop(board, rect, frameWidth);
 
   const onSync = (on: boolean) => {
@@ -111,7 +123,8 @@ export function useShotTools({ board, frameWidth, asked, onCropParam }: ShotTool
         onCropParam(cropParam(picked));
       },
       crop,
-      onClearCrop: () => onCropParam(null),
+      tile: crop && tile ? tile.name : null,
+      onClearCrop: () => onCropParam(''),
     },
     onSync,
     layout,

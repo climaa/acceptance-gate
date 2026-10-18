@@ -29,6 +29,37 @@ export function parseCrop(value: string | null): PanZoomRect | null {
   return width > 0 && height > 0 ? { x, y, width, height } : null;
 }
 
+/** A board's component tiles, in its PNG's pixels, as
+ *  designs/exports/<board>.tiles.json holds them: x, y, width, height. */
+export type BoardTiles = Readonly<
+  Record<string, readonly [number, number, number, number]>
+>;
+
+/** A name with its case and punctuation dropped: Storybook writes `BucketChip`
+ *  as `bucketchip` in an id, and the board names its tile `BucketChip`. */
+const loose = (name: string) => name.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+/**
+ * The tile a variant's story is drawn in on the board, as a crop — or null for
+ * a story the board draws no tile for, which then opens on the whole board.
+ *
+ * The component is read off the variant key's story id: `atoms-badge--accent`
+ * is the Badge, whatever the story, so every variant of it opens on one tile.
+ */
+export function storyTile(
+  tiles: BoardTiles,
+  variantKey: string,
+): { name: string; rect: PanZoomRect } | null {
+  const storyId = variantKey.split('__').at(-1) ?? '';
+  const component = loose((storyId.split('--')[0] ?? '').replace(/^[a-z]+-/, ''));
+  const hit = Object.entries(tiles).find(([name]) => loose(name) === component);
+  if (!hit) return null;
+
+  const [name, [x, y, width, height]] = hit;
+
+  return { name, rect: { x, y, width, height } };
+}
+
 /** A crop as the address carries it. */
 export const cropParam = (rect: PanZoomRect) =>
   `${rect.x},${rect.y},${rect.width},${rect.height}`;

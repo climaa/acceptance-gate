@@ -1,7 +1,14 @@
 // Imported explicitly rather than relying on `globals: true` — tsconfig's
 // `**/*.ts` include means tsc typechecks this file.
 import { describe, expect, it } from 'vitest';
-import { cropParam, cssSize, nudged, nudgeText, parseCrop } from '../lib/board-crop';
+import {
+  cropParam,
+  cssSize,
+  nudged,
+  nudgeText,
+  parseCrop,
+  storyTile,
+} from '../lib/board-crop';
 import { shotViewHref } from '../lib/shots';
 
 describe('parseCrop and cropParam', () => {
@@ -60,6 +67,41 @@ describe('shotViewHref with a crop', () => {
   it('carries the crop with its commas as they are', () => {
     expect(shotViewHref('main-2026-10-16', 'k', 'pages', '1,2,3,4')).toBe(
       '/set/main-2026-10-16/shot/k?board=pages&crop=1,2,3,4',
+    );
+  });
+});
+
+describe('storyTile', () => {
+  const tiles = {
+    Badge: [476, 528, 384, 148],
+    BucketChip: [71, 5599, 327, 251],
+    PanZoom: [420, 6958, 327, 755],
+  } as const;
+
+  it('finds the tile a story’s component is drawn in, whatever the story', () => {
+    expect(storyTile(tiles, 'atoms__desktop__light__atoms-badge--accent')).toEqual({
+      name: 'Badge',
+      rect: { x: 476, y: 528, width: 384, height: 148 },
+    });
+  });
+
+  it('matches a component whose id Storybook writes without its capitals', () => {
+    expect(storyTile(tiles, 'atoms__mobile__dark__atoms-bucketchip--changed')?.name).toBe(
+      'BucketChip',
+    );
+  });
+
+  it('is null for a story the board draws no tile for', () => {
+    expect(
+      storyTile(tiles, 'organisms__desktop__light__organisms-dialog--open'),
+    ).toBeNull();
+  });
+});
+
+describe('shotViewHref with an empty crop', () => {
+  it('keeps it, as the reader asking for the whole board', () => {
+    expect(shotViewHref('main-2026-10-16', 'k', null, '')).toBe(
+      '/set/main-2026-10-16/shot/k?crop=',
     );
   });
 });
