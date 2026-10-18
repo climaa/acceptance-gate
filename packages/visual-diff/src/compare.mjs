@@ -35,8 +35,9 @@ import { shotsEqual } from './determinism.mjs';
  *           diffColor: [number, number, number],
  *           diffColorAlt: [number, number, number] }} */
 const PIXELMATCH_OPTIONS = {
-  /** Perceptual (YIQ) distance rather than RGB equality — under it the two colours are
-   *  one colour to a reader, and a differ that disagrees with the eye is noise. */
+  /** Perceptual distance rather than RGB equality — OKLab with HyAB since pixelmatch 8,
+   *  YIQ before it. Under it the two colours are one colour to a reader, and a differ that
+   *  disagrees with the eye is noise. */
   threshold: 0.1,
 
   /** *The* setting for text-heavy shots. A laptop and the CI container hint glyph edges
