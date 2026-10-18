@@ -4,11 +4,14 @@ Nothing here publishes to npm. Every workspace is `private: true`, so the versio
 coherence marker rather than a distribution fact: the repo is the product, and it carries
 one version across all eleven manifests.
 
-There is no `CHANGELOG.md` and there are no changesets. **"Add a changelog entry" means
-"write it into the release notes at tag time."** `/changelog` on the blog fetches the
+`CHANGELOG.md` at the root is the changelog's source, since 2026-10-18. There are no
+changesets. **"Add a changelog entry" means "add it under `## Unreleased` in
+`CHANGELOG.md`."** At release time that section is written up into the four-part body
+and moved under its version, and the GitHub Release body is copied from it, never written
+separately: one text, so the two cannot drift. `/changelog` on the blog still fetches the
 GitHub Releases at build time (`apps/blog/lib/releases.ts`) and renders their bodies
-verbatim, so the release body _is_ the published changelog. If someone asks for a
-changeset here, say the mechanism does not exist rather than adding the tooling.
+verbatim, which is why the copy has to be exact. If someone asks for a changeset here,
+say the mechanism does not exist rather than adding the tooling.
 
 ## The four parts
 
@@ -114,6 +117,10 @@ that rendered as an unbroken wall of text.
    ```bash
    gh release create vX.Y.Z --title "vX.Y.Z — <headline>" --notes-file <path> --verify-tag
    ```
+
+   The file is the version's section of `CHANGELOG.md`, which the release PR moved out of
+   `## Unreleased`, with its headings shifted back up one level (`###` → `##`). Copy it;
+   do not rewrite it.
 
    The title must read `vX.Y.Z — <narrative>`, em-dash separated: `narrativeTitle()` in
    `apps/blog/lib/releases.ts` splits on it to render the tag and the story separately, and
