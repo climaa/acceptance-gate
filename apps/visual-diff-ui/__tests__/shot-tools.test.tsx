@@ -214,6 +214,42 @@ describe('the shot view’s overlay', () => {
     }).toEqual({ left: '1px', said: true });
   });
 
+  it('nudges the screenshot instead when the toggle hands it the move', () => {
+    const { container } = renderView('crop=0,0,200,100');
+    fireEvent.click(within(viewGroup()).getByRole('button', { name: 'overlay' }));
+    const moves = screen.getByRole('group', { name: 'moves' });
+
+    fireEvent.click(within(moves).getByRole('button', { name: 'screenshot' }));
+    fireEvent.keyDown(
+      screen.getByRole('group', { name: 'the screenshot with the board crop over it' }),
+      { key: 'ArrowRight' },
+    );
+
+    expect({
+      shot: container.querySelector<HTMLImageElement>('.vd-overlay__shot')?.style.left,
+      crop: container.querySelector<HTMLImageElement>('.vd-overlay__crop')?.style.left,
+      pressed: within(moves)
+        .getByRole('button', { name: 'screenshot' })
+        .getAttribute('aria-pressed'),
+    }).toEqual({ shot: '1px', crop: '0px', pressed: 'true' });
+  });
+
+  it('nudges with buttons, for a reader with no arrow keys', () => {
+    const { container } = renderView('crop=0,0,200,100');
+    fireEvent.click(within(viewGroup()).getByRole('button', { name: 'overlay' }));
+
+    fireEvent.click(screen.getByRole('button', { name: 'nudge down' }));
+    fireEvent.click(screen.getByRole('button', { name: 'nudge left' }), {
+      shiftKey: true,
+    });
+
+    expect({
+      top: container.querySelector<HTMLImageElement>('.vd-overlay__crop')?.style.top,
+      left: container.querySelector<HTMLImageElement>('.vd-overlay__crop')?.style.left,
+      said: screen.getByText(/offset −10, \+1/).getAttribute('aria-live'),
+    }).toEqual({ top: '1px', left: '-10px', said: 'polite' });
+  });
+
   it('zooms the shot and the crop together', () => {
     const { container } = renderView('crop=0,0,200,100');
     fireEvent.click(within(viewGroup()).getByRole('button', { name: 'overlay' }));

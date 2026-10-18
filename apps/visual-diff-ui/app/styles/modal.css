@@ -405,7 +405,10 @@
   margin: auto;
 }
 
+/* Relative so the screenshot can take its own nudge when the toggle hands it the
+   move; at offset 0 it sits exactly where a static image would. */
 .vd-overlay__shot {
+  position: relative;
   display: block;
   width: 100%;
   max-width: none;

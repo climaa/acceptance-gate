@@ -1,7 +1,7 @@
 'use client';
 
 import { type KeyboardEvent, useState } from 'react';
-import { Button, PAN_ZOOM_STEP, Stack } from '@gate/ui';
+import { Button, PAN_ZOOM_STEP, SegmentedControl, Stack } from '@gate/ui';
 import { type Nudge, nudged, nudgeText } from '@/lib/board-crop';
 import type { BoardCrop } from '@/hooks/useBoardCrop';
 import type { DesignShot } from './DesignStage';
@@ -23,6 +23,28 @@ import type { DesignShot } from './DesignStage';
 const ZOOMS = Array.from({ length: 6 }, (_, at) => PAN_ZOOM_STEP ** at);
 
 const OPACITY_LABEL = 'board opacity';
+
+/** Which layer the nudge moves. Board 04 draws the toggle first in the row:
+ *  choose the layer, then align it. Aligning by moving only the board was hard
+ *  when the drift was easier to read off the screenshot. */
+type Layer = 'board' | 'shot';
+
+const LAYERS = [
+  { value: 'board', label: 'board' },
+  { value: 'shot', label: 'screenshot' },
+] as const;
+
+/** The nudge as buttons, for a reader with no arrow keys — a phone, a tablet.
+ *  Each stands for the arrow key it names, so the step and shift-for-10 are
+ *  the keyboard's. */
+const NUDGE_BUTTONS = [
+  { key: 'ArrowLeft', glyph: '←', name: 'nudge left' },
+  { key: 'ArrowUp', glyph: '↑', name: 'nudge up' },
+  { key: 'ArrowRight', glyph: '→', name: 'nudge right' },
+  { key: 'ArrowDown', glyph: '↓', name: 'nudge down' },
+] as const;
+
+const ORIGIN: Nudge = { x: 0, y: 0 };
 
 const NO_CROP =
   'Crop a region of the board to lay it over the screenshot — the whole board is never laid on a single shot.';
@@ -69,18 +91,30 @@ export function OverlayStage({ shot, crop, onAskCrop }: OverlayStageProps) {
   // device pixel per CSS pixel, so its natural size IS its CSS size.
   const [size, setSize] = useState<{ width: number; height: number } | null>(null);
   const [opacity, setOpacity] = useState(50);
-  const [nudge, setNudge] = useState<Nudge>({ x: 0, y: 0 });
+  const [moving, setMoving] = useState<Layer>('board');
+  const [nudges, setNudges] = useState<Record<Layer, Nudge>>({
+    board: ORIGIN,
+    shot: ORIGIN,
+  });
+  const nudge = nudges[moving];
   const zoom = ZOOMS[zoomAt] ?? 1;
 
+  /** Moves the chosen layer as an arrow key would; false for any other key. */
+  const nudgeBy = (key: string, shift: boolean) => {
+    const next = crop && nudged(nudge, key, shift);
+    if (!next) return false;
+
+    setNudges((all) => ({ ...all, [moving]: next }));
+    return true;
+  };
+
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    const next = crop && nudged(nudge, event.key, event.shiftKey);
-    if (!next) return;
+    if (!nudgeBy(event.key, event.shiftKey)) return;
 
     // Claimed from the scroll and from any walk listening above: an arrow here
-    // moves the crop and nothing else.
+    // moves the chosen layer and nothing else.
     event.preventDefault();
     event.stopPropagation();
-    setNudge(next);
   };
 
   return (
@@ -116,6 +150,10 @@ export function OverlayStage({ shot, crop, onAskCrop }: OverlayStageProps) {
             className="vd-overlay__shot"
             src={shot.src}
             alt={shot.alt}
+            style={{
+              left: `${nudges.shot.x * zoom}px`,
+              top: `${nudges.shot.y * zoom}px`,
+            }}
             onLoad={(event) =>
               setSize({
                 width: event.currentTarget.naturalWidth,
@@ -131,8 +169,8 @@ export function OverlayStage({ shot, crop, onAskCrop }: OverlayStageProps) {
               alt=""
               aria-hidden="true"
               style={{
-                left: `${nudge.x * zoom}px`,
-                top: `${nudge.y * zoom}px`,
+                left: `${nudges.board.x * zoom}px`,
+                top: `${nudges.board.y * zoom}px`,
                 width: `${crop.width * zoom}px`,
                 opacity: opacity / 100,
               }}
@@ -149,6 +187,17 @@ export function OverlayStage({ shot, crop, onAskCrop }: OverlayStageProps) {
           wrap
           className="vd-overlay__controls"
         >
+          <Stack direction="row" gap={2} align="center">
+            <span className="vd-overlay__label vd-mono" aria-hidden="true">
+              moves
+            </span>
+            <SegmentedControl
+              label="moves"
+              options={LAYERS}
+              value={moving}
+              onChange={(value) => setMoving(value as Layer)}
+            />
+          </Stack>
           <label className="vd-overlay__label vd-mono">
             board
             <input
@@ -160,9 +209,22 @@ export function OverlayStage({ shot, crop, onAskCrop }: OverlayStageProps) {
               onChange={(event) => setOpacity(Number(event.target.value))}
             />
           </label>
-          <p className="vd-compare__caption vd-mono">
+          <p className="vd-compare__caption vd-mono" aria-live="polite">
             {opacity}% · ←↑→↓ nudge 1px · shift 10px · offset {nudgeText(nudge)}
           </p>
+          <Stack direction="row" gap={1} align="center">
+            {NUDGE_BUTTONS.map(({ key, glyph, name }) => (
+              <Button
+                key={key}
+                variant="secondary"
+                size="sm"
+                aria-label={name}
+                onClick={(event) => nudgeBy(key, event.shiftKey)}
+              >
+                {glyph}
+              </Button>
+            ))}
+          </Stack>
         </Stack>
       ) : (
         <Stack
