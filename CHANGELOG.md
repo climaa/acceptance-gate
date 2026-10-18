@@ -25,6 +25,7 @@ Merged to `main` since v1.6.0, not yet released:
 - feat(ui): PanZoom centres an image smaller than its pane (#566)
 - feat(visual-diff-ui): a pinned crop opens filling its pane, and the screenshot follows at one scale (#567)
 - feat(visual-diff-ui): the shot view opens on the story's tile of the board (#568)
+- fix(visual-diff-ui): clearing a crop opens the whole board fitted, not at the crop's zoom (#569)
 
 ## v1.6.0 — a screenshot is read against its design board, down to the design token
 
