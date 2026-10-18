@@ -97,22 +97,17 @@ that rendered as an unbroken wall of text.
 
    The message is that one line. No body.
 
-7. Ship. Fast-forward the `production` branch to the tag, then fire each project's deploy
-   hook — moving the ref alone deploys nothing:
+7. Ship. Fast-forward the `production` branch to the tag:
 
    ```bash
    gh api -X PATCH repos/climaa/acceptance-gate/git/refs/heads/production \
      -f sha="$(git rev-parse 'vX.Y.Z^{commit}')" -F force=false
-   for p in blog manual storybook visual-diff-ui; do
-     vercel api "/v9/projects/acceptance-gate-$p" | jq -r '.link.deployHooks[0].url' |
-       xargs curl -s -o /dev/null -X POST
-   done
    ```
 
    This is the step that changes the live sites — see
-   [Production is a branch](#production-is-a-branch). The loop reads the hook URLs through
-   the Vercel CLI's current team, so they are never written down. Wait for the production
-   deployments it starts to finish before step 8.
+   [Production is a branch](#production-is-a-branch). Wait for the production deployments
+   it starts to finish before step 8. Do not also fire the deploy hooks: the ref move
+   already deploys, and a hook on top builds every project a second time (v1.6.0 did).
 
 8. Publish, with the four-part body in a file:
 
@@ -139,9 +134,10 @@ took the Hobby plan's deployment storage to 75% in a fortnight — one per relea
 
 Nothing else deploys. Git deployments are turned off on all four Vercel projects (Settings →
 Git, `gitProviderOptions.createDeployments: disabled`), so a pull request, a merge to `main`
-or a Sandcastle branch creates nothing on Vercel, and production builds only when step 7's
-deploy hooks are fired. Each hook (`changelog-deploy` on the blog, `release` on the other
-three) builds the `production` branch. Previews were login-protected and read by nothing —
+or a Sandcastle branch creates nothing on Vercel. Despite the setting's name, a move of
+`production` still deploys — measured on 2026-10-18, when v1.6.0's ref move built all four
+projects before any hook was fired. The blog keeps one deploy hook, `changelog-deploy`, for
+the `/changelog` refresh below. Previews were login-protected and read by nothing —
 not the `gate`, not the e2e suite — and every one spent the Hobby plan's daily deployment cap
 that a release needs.
 
@@ -149,21 +145,20 @@ that a release needs.
   `{ "**": false, "production": true }`, and in the private children it works. Here, on a
   public repository, every push after #550 still created a deployment per project — cancelled
   by the `ignoreCommand`, but created, and creations are what the daily cap counts. The
-  project setting is the only switch that held; it is all-or-nothing, hence the hooks.
-- **Why the `ignoreCommand` builds when `VERCEL_GIT_PREVIOUS_SHA` is empty:** the one hook
-  deployment fired to test this (2026-10-18) behaved as if it had none, and falling back to `HEAD^1` compared only the last commit,
-  which would skip a project whose change sat earlier in the released range. A fired hook
-  therefore always builds; a redeploy of the same sha builds too (the blog's `/changelog`
-  refresh depends on that).
+  project setting is the switch that held.
+- **Why the `ignoreCommand` builds when `VERCEL_GIT_PREVIOUS_SHA` is empty:** a hook
+  deployment fired on 2026-10-18 behaved as if it had none, and falling back to `HEAD^1`
+  would have compared only the last commit. A fired hook therefore always builds, and a
+  redeploy of the same sha builds too — the blog's `/changelog` refresh depends on both.
 
 - **Why not `release`:** step 1 creates `release/X.Y.Z` branches, and git cannot hold a
   `release` branch beside them.
 - **Why `gh api` and not `git push`:** it moves the ref on GitHub without a local checkout,
   and `force=false` refuses anything but a fast-forward, so production can never be rolled
   back to an older commit by accident.
-- **Shipping without a release** — a blog post, an urgent fix — is the same two commands
-  with `main`'s sha instead of a tag. Fire only the hooks of the projects the range affected
-  (`pnpm turbo query affected --base=<old production sha>`); every hook fired is a build.
+- **Shipping without a release** — a blog post, an urgent fix — is the same command with
+  `main`'s sha instead of a tag. The `ignoreCommand` in each `vercel.json` still skips the
+  projects the range did not affect.
 
 ## Publishing is what updates /changelog
 
