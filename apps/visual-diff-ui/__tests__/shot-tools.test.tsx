@@ -250,6 +250,20 @@ describe('the shot view’s overlay', () => {
     }).toEqual({ top: '1px', left: '-10px', said: 'polite' });
   });
 
+  // Regression, 18 Oct 2026: the grid toggle stayed on the overlay's toolbar,
+  // pressed and did nothing — the overlay drew no grid.
+  it('lays the grid over the screenshot when the grid is on', () => {
+    const { container } = renderView('crop=0,0,200,100');
+    fireEvent.click(within(viewGroup()).getByRole('button', { name: 'overlay' }));
+
+    fireEvent.click(screen.getByRole('button', { name: 'grid' }));
+
+    expect({
+      drawn: container.querySelector('.vd-overlay .ds-panzoom__grid') !== null,
+      said: screen.queryByText('grid 16 px') !== null,
+    }).toEqual({ drawn: true, said: true });
+  });
+
   it('zooms the shot and the crop together', () => {
     const { container } = renderView('crop=0,0,200,100');
     fireEvent.click(within(viewGroup()).getByRole('button', { name: 'overlay' }));
