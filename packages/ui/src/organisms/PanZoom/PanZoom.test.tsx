@@ -654,3 +654,36 @@ describe('PanZoom magnified', () => {
     expect(readout()).toBe('400%');
   });
 });
+
+describe('PanZoom fitTo', () => {
+  // 1600×2400 natural in a 400×300 pane: 100% draws it at a quarter. A 200×100
+  // region fills the width at 800% (400 / (200 × ¼)) and its height at 1200%,
+  // so the width wins; the pane opens on the region's top-left corner.
+  it('opens zoomed so the region fills the pane, at its corner', () => {
+    const onViewChange = vi.fn();
+
+    const { image } = renderLoaded({
+      fitTo: { x: 0, y: 0, width: 200, height: 100 },
+      magnify: 4,
+      onViewChange,
+    });
+
+    expect({
+      readout: readout(),
+      zoom: onViewChange.mock.calls.at(-1)?.[0].zoom,
+      left: image.style.transform,
+    }).toEqual({ readout: '800%', zoom: 8, left: 'translate(0px, 0px)' });
+  });
+
+  it('stops at the cap rather than filling the pane', () => {
+    renderLoaded({ fitTo: { x: 0, y: 0, width: 200, height: 100 } });
+
+    expect(readout()).toBe('400%');
+  });
+
+  it('opens at 100% when no region is asked for', () => {
+    renderLoaded({ magnify: 4 });
+
+    expect(readout()).toBe('100%');
+  });
+});

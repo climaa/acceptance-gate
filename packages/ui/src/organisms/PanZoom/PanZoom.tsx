@@ -127,6 +127,12 @@ export interface PanZoomProps {
    *  pixels by eye — the set's shot view — asks for more, and past natural size
    *  the image is drawn pixelated, so a pixel reads as a square, never a blur. */
   magnify?: number;
+  /** A region of the image, in its own pixels, to open on: zoomed until it
+   *  fills the pane on its tighter side, as far as {@link magnify} allows, with
+   *  the region's corner at the pane's. For a small region a reader came to
+   *  read, like the shot view's board crop. Applied once per image and reported
+   *  through `onViewChange`, so a pane following the same view opens with it. */
+  fitTo?: Rect;
   /** The view to follow — see {@link View}. Absent, the pane keeps its own. */
   view?: View;
   /** Every change of view: a step, a pan, a drag, a reset. */
@@ -561,6 +567,7 @@ export function PanZoom({
   label,
   defaultZoom = 1,
   magnify = 1,
+  fitTo,
   fallback,
   grid = false,
   marks,
@@ -589,6 +596,23 @@ export function PanZoom({
     natural,
   });
   const center = { x: pane.width / 2, y: pane.height / 2 };
+
+  // Once the image and the pane both have a size: a fit is a starting point,
+  // not a lock, so it never re-applies over a zoom the reader chose since.
+  const fitted = useRef(false);
+  useEffect(() => {
+    const ready = natural.width > 0 && pane.width > 0 && pane.height > 0;
+    if (!fitTo || fitted.current || failed || !ready) return;
+    fitted.current = true;
+
+    const scale = drawnSize(pane, natural, 1).width / natural.width;
+    const next = clamp(
+      Math.min(pane.width / (fitTo.width * scale), pane.height / (fitTo.height * scale)),
+      1,
+      cap,
+    );
+    apply(next, { x: -fitTo.x * scale * next, y: -fitTo.y * scale * next });
+  }, [fitTo, failed, natural, pane, cap, apply]);
 
   const zoomTo = (next: number) => apply(next, zoomAbout(offset, zoom, next, center));
   const step = (direction: 1 | -1) => zoomTo(stepZoom(zoom, direction, cap));

@@ -81,6 +81,10 @@ export function BoardPane({
         className="vd-compare__panzoom"
         lead={<CropLabel board={board} onClear={tools?.onClearCrop} />}
         {...follow}
+        // A crop is a small region a reader came to read: it opens with the
+        // region filling the pane, as Board 04 draws it at 400%, and the synced
+        // screenshot pane follows the same view, so the two stay at one scale.
+        fitTo={{ x: 0, y: 0, ...crop.region }}
         // Still on the zoom row, as Board 04 draws it beside a pinned crop:
         // pressing it goes back to the whole board, ready to draw the region
         // again, so a crop can be refined rather than only cleared.
