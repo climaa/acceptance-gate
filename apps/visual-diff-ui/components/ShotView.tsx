@@ -203,6 +203,7 @@ export function ShotView({ label, title, tier, shot, ledger, entry }: ShotViewPr
                 shot={shot}
                 crop={tools.tools.crop}
                 onAskCrop={tools.askCrop}
+                grid={grid}
               />
             ) : null,
         }}

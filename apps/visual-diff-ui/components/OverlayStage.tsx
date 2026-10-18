@@ -1,7 +1,13 @@
 'use client';
 
-import { type KeyboardEvent, useState } from 'react';
-import { Button, PAN_ZOOM_STEP, SegmentedControl, Stack } from '@gate/ui';
+import { type CSSProperties, type KeyboardEvent, useState } from 'react';
+import {
+  Button,
+  PAN_ZOOM_STEP,
+  panZoomGridStep,
+  SegmentedControl,
+  Stack,
+} from '@gate/ui';
 import { type Nudge, nudged, nudgeText } from '@/lib/board-crop';
 import type { BoardCrop } from '@/hooks/useBoardCrop';
 import type { DesignShot } from './DesignStage';
@@ -54,10 +60,22 @@ export interface OverlayStageProps {
   crop: BoardCrop | null;
   /** Asks the host to go back and draw a crop. */
   onAskCrop: () => void;
+  /** Lay the screenshot's own grid over it, as the panes do. The toolbar's grid
+   *  toggle is shared with side by side, so the overlay has to honour it. */
+  grid: boolean;
 }
 
-/** The overlay's own zoom: − the readout + and reset. */
-function OverlayZoom({ at, onAt }: { at: number; onAt: (at: number) => void }) {
+/** The overlay's own zoom: − the readout +, and the grid's step in words when
+ *  there is one, as PanZoom says it. */
+function OverlayZoom({
+  at,
+  onAt,
+  gridEvery,
+}: {
+  at: number;
+  onAt: (at: number) => void;
+  gridEvery: number | null;
+}) {
   return (
     <Stack direction="row" gap={1} align="center" className="vd-overlay__zoom">
       <Button
@@ -81,11 +99,14 @@ function OverlayZoom({ at, onAt }: { at: number; onAt: (at: number) => void }) {
       >
         +
       </Button>
+      {gridEvery !== null && (
+        <span className="ds-panzoom__grid-step">grid {gridEvery} px</span>
+      )}
     </Stack>
   );
 }
 
-export function OverlayStage({ shot, crop, onAskCrop }: OverlayStageProps) {
+export function OverlayStage({ shot, crop, onAskCrop, grid }: OverlayStageProps) {
   const [zoomAt, setZoomAt] = useState(0);
   // The screenshot's own size, read off it once it loads: a capture is one
   // device pixel per CSS pixel, so its natural size IS its CSS size.
@@ -98,6 +119,8 @@ export function OverlayStage({ shot, crop, onAskCrop }: OverlayStageProps) {
   });
   const nudge = nudges[moving];
   const zoom = ZOOMS[zoomAt] ?? 1;
+  // Counted in the screenshot's own pixels, as PanZoom counts a pane's grid.
+  const gridEvery = grid ? panZoomGridStep(zoom) : null;
 
   /** Moves the chosen layer as an arrow key would; false for any other key. */
   const nudgeBy = (key: string, shift: boolean) => {
@@ -121,7 +144,7 @@ export function OverlayStage({ shot, crop, onAskCrop }: OverlayStageProps) {
     <div className="vd-overlay">
       <Stack direction="row" gap={3} align="center" className="vd-overlay__bar">
         <p className="vd-compare__caption vd-mono">{shot.caption} · board crop over it</p>
-        <OverlayZoom at={zoomAt} onAt={setZoomAt} />
+        <OverlayZoom at={zoomAt} onAt={setZoomAt} gridEvery={gridEvery} />
       </Stack>
 
       <div
@@ -161,6 +184,23 @@ export function OverlayStage({ shot, crop, onAskCrop }: OverlayStageProps) {
               })
             }
           />
+          {gridEvery !== null && (
+            // PanZoom's grid layer, on the screenshot's pixels: it follows the
+            // screenshot's own nudge, so the crop is what moves across it.
+            <div
+              aria-hidden="true"
+              className="ds-panzoom__grid"
+              style={
+                {
+                  width: size ? `${size.width * zoom}px` : '100%',
+                  height: size ? `${size.height * zoom}px` : '100%',
+                  left: `${nudges.shot.x * zoom}px`,
+                  top: `${nudges.shot.y * zoom}px`,
+                  '--ds-panzoom-grid-gap': `${gridEvery * zoom}px`,
+                } as CSSProperties
+              }
+            />
+          )}
           {crop && (
             // eslint-disable-next-line @next/next/no-img-element -- as above.
             <img
