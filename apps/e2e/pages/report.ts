@@ -160,14 +160,6 @@ export class ReportPage {
     });
   }
 
-  /** A chip's count, which `BucketChip` attaches as the description rather than
-   *  folding into the accessible name — so the name stays the bucket word and
-   *  `changed` never matches `unchanged`. The number is therefore read from the
-   *  element, not parsed out of the chip's text. */
-  bucketCount(bucket: string): Locator {
-    return this.bucketChip(bucket).locator('.ds-bucket-chip__count');
-  }
-
   /** What the report says when there is nothing under the bar. `EmptyState`
    *  carries no role of its own, so the pinned copy is the surface — which is
    *  the right one anyway: reading the wrong one of the three answers as "your
