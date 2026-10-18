@@ -18,6 +18,7 @@ Merged to `main` since v1.6.0, not yet released:
 - feat(visual-diff-ui): the overlay chooses which layer the nudge moves, and nudges by touch (#559)
 - fix(visual-diff-ui): the grid toggle draws a grid on the overlay too (#560)
 - feat(visual-diff-ui): a difference blend on the overlay, to see the drift by eye (#561)
+- fix(visual-diff-ui): reports list in run order, durations under a second say so, and the label placeholder stops looking like a date (#562)
 
 ## v1.6.0 — a screenshot is read against its design board, down to the design token
 

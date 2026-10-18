@@ -84,7 +84,7 @@ import { FilterPicker } from './FilterPicker';
 /** Placeholders end in an ellipsis so a shape can never be read as a value. Only
  *  the label is typed now — `--filter` is ticked off the corpus (FilterPicker). */
 const PLACEHOLDER = {
-  label: 'main-2026-08-17…',
+  label: 'branch-YYYY-MM-DD…',
 };
 
 /** Sample mode explains itself, and the deployed case does not appear here: an

@@ -100,8 +100,9 @@ function parseFile<T>(schema: z.ZodType<T>, value: unknown, file: string): T {
   throw new Error(`${file} does not match the visual-diff schema: ${issues}`);
 }
 
-/** Code-unit order, descending. Report ids lead with their capture-set labels,
- *  which lead with a date, so this is newest-first for every id the CLI writes. */
+/** Code-unit order, descending — a deterministic order, not a date order: an id
+ *  can lead with `baselines` as well as a dated label. The reports table puts
+ *  them in run order (ReportsTable's `byRunDate`), from the history it holds. */
 function newestFirst(left: string, right: string): number {
   if (left === right) return 0;
   return left < right ? 1 : -1;

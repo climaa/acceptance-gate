@@ -76,12 +76,32 @@ export interface ReportsTableProps {
   frozen: boolean;
 }
 
+/**
+ * Newest run first, then every report no run in this history claims. The ids
+ * alone cannot order them: `baselines__…` and `main-…` start with different
+ * letters, so code-unit order put an old `main-…` report above today's. Dates
+ * are local days (`YYYY-MM-DD`), so they compare as strings; the sort is stable,
+ * so reports of one day, and the undated ones, keep the server's id order.
+ */
+function byRunDate(dates: Readonly<Record<string, string>>) {
+  return (left: ReportListEntry, right: ReportListEntry) => {
+    const a = dates[left.id];
+    const b = dates[right.id];
+    if (a === b) return 0;
+    if (a === undefined) return 1;
+    if (b === undefined) return -1;
+    return a < b ? 1 : -1;
+  };
+}
+
 export function ReportsTable({ reports, dates, frozen }: ReportsTableProps) {
   return (
     <Table
       label={REPORTS_TABLE_LABEL}
       columns={REPORT_COLUMNS}
-      rows={reports.map((report) => reportRow(report, dates[report.id] ?? null, frozen))}
+      rows={[...reports]
+        .sort(byRunDate(dates))
+        .map((report) => reportRow(report, dates[report.id] ?? null, frozen))}
     />
   );
 }
