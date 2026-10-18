@@ -204,6 +204,7 @@ export function ShotView({ label, title, tier, shot, ledger, entry }: ShotViewPr
                 crop={tools.tools.crop}
                 onAskCrop={tools.askCrop}
                 grid={grid}
+                zoom={tools.tools.sync ? tools.tools.view?.zoom : undefined}
               />
             ) : null,
         }}

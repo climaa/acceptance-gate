@@ -28,6 +28,16 @@ import type { DesignShot } from './DesignStage';
  *  PanZoom's own step, so the two views zoom alike. */
 const ZOOMS = Array.from({ length: 6 }, (_, at) => PAN_ZOOM_STEP ** at);
 
+/** The overlay step nearest a pane's zoom, so switching from side by side keeps
+ *  the zoom the reader was at instead of dropping back to 100%. Both step by
+ *  {@link PAN_ZOOM_STEP}, so a synced pane's zoom lands on one exactly. */
+export function zoomIndexOf(zoom: number | undefined): number {
+  if (!zoom || zoom <= 1) return 0;
+  const at = Math.round(Math.log(zoom) / Math.log(PAN_ZOOM_STEP));
+
+  return Math.min(Math.max(at, 0), ZOOMS.length - 1);
+}
+
 const OPACITY_LABEL = 'board opacity';
 
 /** Which layer the nudge moves. Board 04 draws the toggle first in the row:
@@ -74,6 +84,8 @@ export interface OverlayStageProps {
   /** Lay the screenshot's own grid over it, as the panes do. The toolbar's grid
    *  toggle is shared with side by side, so the overlay has to honour it. */
   grid: boolean;
+  /** The zoom the panes were at, when they shared one, to start from. */
+  zoom?: number;
 }
 
 /** The overlay's own zoom: − the readout +, and the grid's step in words when
@@ -117,8 +129,14 @@ function OverlayZoom({
   );
 }
 
-export function OverlayStage({ shot, crop, onAskCrop, grid }: OverlayStageProps) {
-  const [zoomAt, setZoomAt] = useState(0);
+export function OverlayStage({
+  shot,
+  crop,
+  onAskCrop,
+  grid,
+  zoom: from,
+}: OverlayStageProps) {
+  const [zoomAt, setZoomAt] = useState(() => zoomIndexOf(from));
   // The screenshot's own size, read off it once it loads: a capture is one
   // device pixel per CSS pixel, so its natural size IS its CSS size.
   const [size, setSize] = useState<{ width: number; height: number } | null>(null);
