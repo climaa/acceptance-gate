@@ -169,12 +169,11 @@ a preview of the deployment there is: Vercel builds no previews at all.
 
 ## Deploy mechanics
 
-Moving the `production` branch and firing the project's deploy hook is what publishes, in a
-release session (`RELEASING.md`, "Production is a branch"). Merging to `main` publishes
-nothing.
+Moving the `production` branch is what publishes, in a release session (`RELEASING.md`,
+"Production is a branch"). Merging to `main` publishes nothing.
 
-- **Only the hook deploys.** Git deployments are off on the Vercel project, so no push — a
-  pull request, `main`, a Sandcastle branch — creates anything on Vercel.
+- **Only `production` deploys.** Git deployments are off on the Vercel project, so no other
+  push — a pull request, `main`, a Sandcastle branch — creates anything on Vercel.
 - **Unaffected ranges are skipped.** The `ignoreCommand` in `apps/visual-diff-ui/vercel.json`
   builds only when `@gate/visual-diff-ui` is affected since the last deployment — which
   includes `fixtures/`, since the fixtures live inside that package. With no previous
@@ -194,5 +193,5 @@ leave stale bytes in caches; publish it under a new report id instead.
 | Sample badge on an instance with a data directory   | `isPopulated` — the directory is missing or empty, so the resolution fell back.                |
 | A report 404s on the deployed console               | Its directory is not committed, or the id was typed by hand. The console lists what exists.    |
 | Fixture-shaped tests fail after editing sample data | Intended. They pin the tree by value; update them with the change.                             |
-| A deploy didn't happen                              | The hook was not fired, or `ignoreCommand` found `@gate/visual-diff-ui` unaffected.            |
+| A deploy didn't happen                              | `production` did not move, or `ignoreCommand` found `@gate/visual-diff-ui` unaffected.         |
 | An updated shot still shows the old image           | `immutable` caching. Publish under a new report id rather than overwriting.                    |
