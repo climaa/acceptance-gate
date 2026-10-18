@@ -54568,6 +54568,75 @@
                                   "children": [
                                     {
                                       "type": "text",
+                                      "id": "IjRCt",
+                                      "name": "moves label",
+                                      "fill": "$text-muted",
+                                      "content": "moves",
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "dH5Sg",
+                                      "name": "moves toggle",
+                                      "gap": 4,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "jOBAO",
+                                          "name": "moves board (pressed)",
+                                          "fill": "$accent-subtle",
+                                          "cornerRadius": 6,
+                                          "stroke": "$accent",
+                                          "strokeWidth": 1,
+                                          "padding": [
+                                            4,
+                                            10
+                                          ],
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "tbdgs",
+                                              "name": "t",
+                                              "fill": "$accent",
+                                              "content": "board",
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 11,
+                                              "fontWeight": "700"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "VPKG3",
+                                          "name": "moves screenshot",
+                                          "fill": "$bg",
+                                          "cornerRadius": 6,
+                                          "stroke": "$border-strong",
+                                          "strokeWidth": 1,
+                                          "padding": [
+                                            4,
+                                            10
+                                          ],
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "hhzCn",
+                                              "name": "t",
+                                              "fill": "$text",
+                                              "content": "screenshot",
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 11,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "text",
                                       "id": "I4Bt2T",
                                       "name": "t",
                                       "fill": "$text-muted",
@@ -54618,6 +54687,115 @@
                                       "fontFamily": "$font-mono",
                                       "fontSize": 11,
                                       "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "WRaFq",
+                                      "name": "nudge buttons",
+                                      "gap": 4,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "WItLF",
+                                          "name": "nudge left",
+                                          "fill": "$bg",
+                                          "cornerRadius": 6,
+                                          "stroke": "$border-strong",
+                                          "strokeWidth": 1,
+                                          "padding": [
+                                            4,
+                                            10
+                                          ],
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "k4l7OY",
+                                              "name": "t",
+                                              "fill": "$text",
+                                              "content": "←",
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 11,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "HXN1j",
+                                          "name": "nudge up",
+                                          "fill": "$bg",
+                                          "cornerRadius": 6,
+                                          "stroke": "$border-strong",
+                                          "strokeWidth": 1,
+                                          "padding": [
+                                            4,
+                                            10
+                                          ],
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "pCOm1",
+                                              "name": "t",
+                                              "fill": "$text",
+                                              "content": "↑",
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 11,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "M2Wc8",
+                                          "name": "nudge right",
+                                          "fill": "$bg",
+                                          "cornerRadius": 6,
+                                          "stroke": "$border-strong",
+                                          "strokeWidth": 1,
+                                          "padding": [
+                                            4,
+                                            10
+                                          ],
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "fLDVV",
+                                              "name": "t",
+                                              "fill": "$text",
+                                              "content": "→",
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 11,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "ZK1gc",
+                                          "name": "nudge down",
+                                          "fill": "$bg",
+                                          "cornerRadius": 6,
+                                          "stroke": "$border-strong",
+                                          "strokeWidth": 1,
+                                          "padding": [
+                                            4,
+                                            10
+                                          ],
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "UWpij",
+                                              "name": "t",
+                                              "fill": "$text",
+                                              "content": "↓",
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 11,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        }
+                                      ]
                                     }
                                   ]
                                 }
