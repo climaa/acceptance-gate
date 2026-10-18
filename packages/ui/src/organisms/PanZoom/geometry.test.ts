@@ -85,10 +85,19 @@ describe('clampOffset', () => {
     expect(offset).toEqual({ x: -400, y: -900 });
   });
 
-  it('pins an image shorter than the pane to its top', () => {
+  // Changed 18 Oct 2026: a short image was pinned to the pane's top, and a
+  // 1248×25 screenshot sat as a sliver in the corner of an empty pane. Board 04
+  // draws it in the middle; the axis it fits on has nothing to pan, so it centres.
+  it('centres an image shorter than the pane, and holds it there', () => {
     const offset = clampOffset({ x: 0, y: -40 }, pane, { width: 400, height: 100 });
 
-    expect(offset).toEqual({ x: 0, y: 0 });
+    expect(offset).toEqual({ x: 0, y: 100 });
+  });
+
+  it('centres an image narrower than the pane on that axis only', () => {
+    const offset = clampOffset({ x: 30, y: -5000 }, pane, { width: 200, height: 1200 });
+
+    expect(offset).toEqual({ x: 100, y: -900 });
   });
 });
 
