@@ -77,7 +77,7 @@ applied). A wiring bug is not a UI change, and the run says so.
 ### Comparing two shots
 
 `pixelmatch` runs on the **overlap box** only — the shared top-left region when two shots
-differ in size — using perceptual (YIQ) distance with antialiasing excluded, so a
+differ in size — using perceptual distance (OKLab with HyAB since pixelmatch 8) with antialiasing excluded, so a
 laptop's and CI's differently-hinted glyph edges don't count as a diff. Anything outside
 the overlap (one shot literally has no pixel there) is counted by arithmetic as
 **margin pixels**, not pixel-compared. The two are summed for the verdict but sorted
