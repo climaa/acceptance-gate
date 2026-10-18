@@ -125,6 +125,7 @@ export function SetFilterBar({ sections, counts, perTier }: SetFilterBarProps) {
       <nav aria-label="tiers" className="vd-set__nav">
         {sections.map((section) => (
           <a
+            key={section.tier}
             className="vd-set__jump vd-mono"
             /* What the tier HOLDS, so set.css can drop the link when a filter
                empties the section it points at. Per axis and plural, matching
@@ -132,7 +133,6 @@ export function SetFilterBar({ sections, counts, perTier }: SetFilterBarProps) {
                says what one screenshot IS. */
             {...axes(section)}
             href={`#vd-tier-${section.tier}`}
-            key={section.tier}
           >
             {section.tier}{' '}
             {/* A jump link says how much of ITS tier survives, not how much the

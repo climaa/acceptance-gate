@@ -349,3 +349,30 @@ describe('fixture tracing', () => {
     expect(traced).toEqual(routes);
   });
 });
+
+/**
+ * A JSX `key` written after a props spread. Next's compiler then takes the
+ * `createElement` path, and React reports the element as a list child with no
+ * key — on 18 Oct 2026, every `/set` page carried that warning from the filter
+ * bar's tier links. The unit suite cannot see it: Vitest compiles JSX with oxc,
+ * which keeps the key either way, so a render test passed with the bug in place.
+ *
+ * Held structurally for that reason: the rule is the order of two attributes,
+ * and the only tool that sees the consequence is the dev server's overlay.
+ */
+describe('JSX keys', () => {
+  it('writes no key after a props spread', () => {
+    const late = sourceFiles()
+      .filter((file) => file.endsWith('.tsx'))
+      .flatMap((file) =>
+        [...read(file).matchAll(/<[A-Za-z][\w.]*\s([^<>]*?)>/gs)]
+          .filter(([, attrs]) => {
+            const spread = attrs.search(/\{\.\.\./);
+            return spread >= 0 && attrs.slice(spread).search(/\bkey=/) >= 0;
+          })
+          .map(() => file),
+      );
+
+    expect(late).toEqual([]);
+  });
+});
