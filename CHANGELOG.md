@@ -14,6 +14,7 @@ Merged to `main` since v1.6.0, not yet released:
 - docs(visual-diff): pixelmatch 8 measures in OKLab with HyAB, not YIQ (#555)
 - docs: CHANGELOG.md is the changelog's source, and the release body is copied from it (#556)
 - fix(visual-diff-ui): the filter bar's tier links put their key before the spread (#557)
+- fix(visual-diff-ui): the shot view's overlay sits centred in its pane, as Board 04 draws it (#558)
 
 ## v1.6.0 — a screenshot is read against its design board, down to the design token
 
