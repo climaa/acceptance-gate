@@ -43,7 +43,8 @@ export type { Mark, Rect, View } from './geometry';
  * many times wider than the screen is read by zooming into it, never out of it:
  * there is nothing to see below "all of it, as wide as the pane". `+` steps by
  * {@link ZOOM_STEP} up to the image's natural pixels — past that, a zoom would
- * be inventing pixels — and `reset` returns to 100% at the top-left.
+ * be inventing pixels — and `reset` returns to 100% at the top-left, or centred
+ * on any axis the image is smaller than the pane.
  *
  * Fitted, never stretched: an image narrower than the pane sits at its own
  * pixels at 100%, because 100% already shows it whole, and a screenshot drawn

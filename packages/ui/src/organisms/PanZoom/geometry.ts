@@ -102,13 +102,19 @@ export const drawnSize = (pane: Size, natural: Size, zoom: number): Size => {
   return { width, height: width * ratio };
 };
 
-/** An offset the image can actually sit at: never further right or down than
- *  the pane's top-left, never so far the other way that the pane shows past the
- *  image's far edge. */
+/** One axis of {@link clampOffset}: centred where the image fits, since there is
+ *  nothing to pan along that axis; otherwise never past the pane's near edge nor
+ *  so far the other way that the pane shows past the image's far edge. */
+const clampAxis = (at: number, pane: number, image: number) =>
+  image < pane ? (pane - image) / 2 : clamp(at, pane - image, 0);
+
+/** An offset the image can actually sit at. An image smaller than the pane on an
+ *  axis sits in the middle of it — Board 04 draws a 1248×25 screenshot centred,
+ *  not as a sliver in the pane's corner. */
 export function clampOffset(offset: Offset, pane: Size, image: Size): Offset {
   return {
-    x: clamp(offset.x, Math.min(0, pane.width - image.width), 0),
-    y: clamp(offset.y, Math.min(0, pane.height - image.height), 0),
+    x: clampAxis(offset.x, pane.width, image.width),
+    y: clampAxis(offset.y, pane.height, image.height),
   };
 }
 
