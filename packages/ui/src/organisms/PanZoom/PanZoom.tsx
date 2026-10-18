@@ -33,6 +33,7 @@ import {
   zoomAbout,
   zoomCap,
 } from './geometry';
+import { useFitOnce } from './useFitOnce';
 
 export type { Mark, Rect, View } from './geometry';
 
@@ -443,6 +444,10 @@ interface PaneViewInput {
   magnify: number;
   pane: Size;
   natural: Size;
+  /** Where to open, once — see {@link PanZoomProps.fitTo}. */
+  fitTo: Rect | undefined;
+  /** The image did not load: there is nothing to fit. */
+  failed: boolean;
 }
 
 /**
@@ -460,6 +465,8 @@ function usePaneView({
   magnify,
   pane,
   natural,
+  fitTo,
+  failed,
 }: PaneViewInput) {
   const [requested, setRequested] = useState(defaultZoom);
   const [rawOffset, setOffset] = useState<Offset>(ORIGIN);
@@ -478,6 +485,8 @@ function usePaneView({
     }
     onViewChange?.(viewOf(nextZoom, placed, drawn));
   };
+
+  useFitOnce({ fitTo: failed ? undefined : fitTo, natural, pane, cap, apply });
 
   return { cap, zoom, image, offset, apply };
 }
@@ -558,6 +567,9 @@ function CropHint({ id, on }: { id: string; on: boolean }) {
 }
 
 /** The pane's classes: the crosshair modifier while a drag draws a crop. */
+/** The crop hint describes the pane only while a drag would draw a crop. */
+const hintWhile = (cropping: boolean, hintId: string) => (cropping ? hintId : undefined);
+
 const paneClass = (cropping: boolean) =>
   cropping ? 'ds-panzoom__pane ds-panzoom__pane--cropping' : 'ds-panzoom__pane';
 
@@ -594,25 +606,10 @@ export function PanZoom({
     magnify,
     pane,
     natural,
+    fitTo,
+    failed,
   });
   const center = { x: pane.width / 2, y: pane.height / 2 };
-
-  // Once the image and the pane both have a size: a fit is a starting point,
-  // not a lock, so it never re-applies over a zoom the reader chose since.
-  const fitted = useRef(false);
-  useEffect(() => {
-    const ready = natural.width > 0 && pane.width > 0 && pane.height > 0;
-    if (!fitTo || fitted.current || failed || !ready) return;
-    fitted.current = true;
-
-    const scale = drawnSize(pane, natural, 1).width / natural.width;
-    const next = clamp(
-      Math.min(pane.width / (fitTo.width * scale), pane.height / (fitTo.height * scale)),
-      1,
-      cap,
-    );
-    apply(next, { x: -fitTo.x * scale * next, y: -fitTo.y * scale * next });
-  }, [fitTo, failed, natural, pane, cap, apply]);
 
   const zoomTo = (next: number) => apply(next, zoomAbout(offset, zoom, next, center));
   const step = (direction: 1 | -1) => zoomTo(stepZoom(zoom, direction, cap));
@@ -713,7 +710,7 @@ export function PanZoom({
         className={paneClass(cropping)}
         role="group"
         aria-label={label}
-        aria-describedby={cropping ? hintId : undefined}
+        aria-describedby={hintWhile(cropping, hintId)}
         tabIndex={0}
         onKeyDown={onKeyDown}
         onPointerDown={onPointerDown}
