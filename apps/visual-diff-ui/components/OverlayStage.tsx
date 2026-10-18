@@ -40,6 +40,17 @@ const LAYERS = [
   { value: 'shot', label: 'screenshot' },
 ] as const;
 
+/** How the crop is laid on the screenshot. `difference` darkens what matches and
+ *  lights what drifts, so the eye finds the drift faster — still read by eye:
+ *  no count, no verdict, so the board stays reference beside the screenshot and
+ *  never a side of a comparison (D7, CONTEXT.md). */
+type Blend = 'normal' | 'difference';
+
+const BLENDS = [
+  { value: 'normal', label: 'normal' },
+  { value: 'difference', label: 'difference' },
+] as const;
+
 /** The nudge as buttons, for a reader with no arrow keys — a phone, a tablet.
  *  Each stands for the arrow key it names, so the step and shift-for-10 are
  *  the keyboard's. */
@@ -113,6 +124,7 @@ export function OverlayStage({ shot, crop, onAskCrop, grid }: OverlayStageProps)
   const [size, setSize] = useState<{ width: number; height: number } | null>(null);
   const [opacity, setOpacity] = useState(50);
   const [moving, setMoving] = useState<Layer>('board');
+  const [blend, setBlend] = useState<Blend>('normal');
   const [nudges, setNudges] = useState<Record<Layer, Nudge>>({
     board: ORIGIN,
     shot: ORIGIN,
@@ -208,6 +220,7 @@ export function OverlayStage({ shot, crop, onAskCrop, grid }: OverlayStageProps)
               src={crop.url}
               alt=""
               aria-hidden="true"
+              data-blend={blend}
               style={{
                 left: `${nudges.board.x * zoom}px`,
                 top: `${nudges.board.y * zoom}px`,
@@ -236,6 +249,17 @@ export function OverlayStage({ shot, crop, onAskCrop, grid }: OverlayStageProps)
               options={LAYERS}
               value={moving}
               onChange={(value) => setMoving(value as Layer)}
+            />
+          </Stack>
+          <Stack direction="row" gap={2} align="center">
+            <span className="vd-overlay__label vd-mono" aria-hidden="true">
+              blend
+            </span>
+            <SegmentedControl
+              label="blend"
+              options={BLENDS}
+              value={blend}
+              onChange={(value) => setBlend(value as Blend)}
             />
           </Stack>
           <label className="vd-overlay__label vd-mono">

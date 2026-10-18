@@ -403,6 +403,9 @@
   position: relative;
   flex: none;
   margin: auto;
+  /* The difference blend mixes the crop with the screenshot only, never with
+     the pane behind it. */
+  isolation: isolate;
 }
 
 /* Relative so the screenshot can take its own nudge when the toggle hands it the
@@ -418,6 +421,12 @@
   position: absolute;
   max-width: none;
   pointer-events: none;
+}
+
+/* A visual aid read by eye: what matches the screenshot goes dark, what drifts
+   lights up. Nothing is counted and nothing is judged (D7). */
+.vd-overlay__crop[data-blend='difference'] {
+  mix-blend-mode: difference;
 }
 
 .vd-overlay__label {

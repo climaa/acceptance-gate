@@ -54637,6 +54637,75 @@
                                     },
                                     {
                                       "type": "text",
+                                      "id": "wO9QX",
+                                      "name": "blend label",
+                                      "fill": "$text-muted",
+                                      "content": "blend",
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 11,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "uHAbl",
+                                      "name": "blend toggle",
+                                      "gap": 4,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "cO1qZ",
+                                          "name": "blend normal (pressed)",
+                                          "fill": "$accent-subtle",
+                                          "cornerRadius": 6,
+                                          "stroke": "$accent",
+                                          "strokeWidth": 1,
+                                          "padding": [
+                                            4,
+                                            10
+                                          ],
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "Yhy2z",
+                                              "name": "t",
+                                              "fill": "$accent",
+                                              "content": "normal",
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 11,
+                                              "fontWeight": "700"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "sKwBJ",
+                                          "name": "blend difference",
+                                          "fill": "$bg",
+                                          "cornerRadius": 6,
+                                          "stroke": "$border-strong",
+                                          "strokeWidth": 1,
+                                          "padding": [
+                                            4,
+                                            10
+                                          ],
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "aopHN",
+                                              "name": "t",
+                                              "fill": "$text",
+                                              "content": "difference",
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 11,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "text",
                                       "id": "I4Bt2T",
                                       "name": "t",
                                       "fill": "$text-muted",

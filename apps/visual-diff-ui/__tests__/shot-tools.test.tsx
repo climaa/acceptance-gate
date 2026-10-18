@@ -264,6 +264,24 @@ describe('the shot view’s overlay', () => {
     }).toEqual({ drawn: true, said: true });
   });
 
+  it('lays the crop normally until the difference blend is chosen', () => {
+    const { container } = renderView('crop=0,0,200,100');
+    fireEvent.click(within(viewGroup()).getByRole('button', { name: 'overlay' }));
+    const blend = screen.getByRole('group', { name: 'blend' });
+    const crop = () => container.querySelector<HTMLImageElement>('.vd-overlay__crop');
+    const before = crop()?.dataset.blend;
+
+    fireEvent.click(within(blend).getByRole('button', { name: 'difference' }));
+
+    expect({
+      before,
+      after: crop()?.dataset.blend,
+      pressed: within(blend)
+        .getByRole('button', { name: 'difference' })
+        .getAttribute('aria-pressed'),
+    }).toEqual({ before: 'normal', after: 'difference', pressed: 'true' });
+  });
+
   it('zooms the shot and the crop together', () => {
     const { container } = renderView('crop=0,0,200,100');
     fireEvent.click(within(viewGroup()).getByRole('button', { name: 'overlay' }));
