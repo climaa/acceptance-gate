@@ -377,6 +377,7 @@
 }
 
 .vd-overlay__pane {
+  display: flex;
   overflow: auto;
   cursor: auto;
   touch-action: auto;
@@ -393,9 +394,15 @@
 }
 
 /* Both images at their CSS pixels times the zoom the component writes; the
-   crop sits where the nudge puts it, over the shot, never catching a pointer. */
+   crop sits where the nudge puts it, over the shot, never catching a pointer.
+   Centred in the pane, as Board 04's overlay frame draws it. Auto margins
+   rather than `place-content: center`: a flex item's auto margin collapses to
+   zero once the layers outgrow the pane, so a zoomed shot still scrolls to its
+   top-left edge instead of overflowing where no scrollbar can reach. */
 .vd-overlay__layers {
   position: relative;
+  flex: none;
+  margin: auto;
 }
 
 .vd-overlay__shot {
