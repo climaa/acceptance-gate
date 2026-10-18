@@ -20,6 +20,9 @@ import { useBoardCrop, useBoardTiles } from './useBoardCrop';
  * held here, as the modal's split and grid are.
  */
 
+/** Both panes at rest: the whole image, fitted and centred in its pane. */
+const FITTED: PanZoomView = { zoom: 1, x: 0, y: 0 };
+
 export type ShotLayout = 'side by side' | 'overlay';
 
 export const SHOT_LAYOUTS: readonly ShotLayout[] = ['side by side', 'overlay'];
@@ -124,7 +127,14 @@ export function useShotTools({
       },
       crop,
       tile: crop && tile ? tile.name : null,
-      onClearCrop: () => onCropParam(''),
+      // The shared view was the crop's — fitted to a region a few dozen pixels
+      // wide — and would hold the whole board at that zoom. Set to the fitted
+      // view rather than dropped: a pane zoomed before the panes shared a view
+      // kept that zoom as its own, and would go back to it.
+      onClearCrop: () => {
+        if (sync) setView(FITTED);
+        onCropParam('');
+      },
     },
     onSync,
     layout,

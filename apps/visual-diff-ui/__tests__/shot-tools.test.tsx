@@ -159,6 +159,21 @@ describe('the shot view’s crop', () => {
     expect(replaceState.mock.calls.at(-1)?.[2]).toBe(`${AT}?crop=`);
   });
 
+  // Regression, 18 Oct 2026: the cleared crop's zoom — 416% on a Badge tile —
+  // stayed on the shared view, so the whole board opened magnified on a corner.
+  it('drops the crop’s zoom with it, so both panes open fitted', () => {
+    renderView('crop=325,487,130,65');
+    fireEvent.click(screen.getAllByRole('button', { name: 'zoom in' })[0]!);
+    const zoomed = screen.queryAllByText('150%').length;
+
+    press('clear the crop');
+
+    expect({ zoomed, after: screen.queryAllByText('150%').length }).toEqual({
+      zoomed: 2,
+      after: 0,
+    });
+  });
+
   it('opens on the story’s tile when the address carries no crop', () => {
     tileMap.tiles = { Badge: [476, 528, 384, 148], Button: [71, 528, 384, 331] };
 
