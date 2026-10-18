@@ -230,3 +230,8 @@ export const designBoardUrl = (board: DesignBoard) =>
  *  scale its PNG was exported at (app/api/designs/route.ts). */
 export const designBoardScaleUrl = (board: DesignBoard) =>
   `/api/designs?${new URLSearchParams({ board, format: 'json' }).toString()}`;
+
+/** Where a board's tile map is served: each component's tile, in the board's
+ *  PNG pixels. Only Board 01 has one; any other board answers 404. */
+export const designBoardTilesUrl = (board: DesignBoard) =>
+  `/api/designs?${new URLSearchParams({ board, format: 'tiles' }).toString()}`;

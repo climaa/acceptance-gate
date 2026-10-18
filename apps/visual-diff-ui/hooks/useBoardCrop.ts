@@ -3,8 +3,13 @@
 import { useEffect, useState } from 'react';
 import type { PanZoomRect } from '@gate/ui';
 import { z } from 'zod';
-import { cssSize } from '@/lib/board-crop';
-import { type DesignBoard, designBoardScaleUrl, designBoardUrl } from '@/lib/comparison';
+import { type BoardTiles, cssSize } from '@/lib/board-crop';
+import {
+  type DesignBoard,
+  designBoardScaleUrl,
+  designBoardTilesUrl,
+  designBoardUrl,
+} from '@/lib/comparison';
 import { useJsonOnMount } from './useJsonOnMount';
 
 /**
@@ -22,6 +27,13 @@ import { useJsonOnMount } from './useJsonOnMount';
  */
 
 const SidecarSchema = z.object({ scale: z.number().positive() });
+
+const TilesSchema = z.object({
+  tiles: z.record(
+    z.string(),
+    z.tuple([z.number(), z.number(), z.number().positive(), z.number().positive()]),
+  ),
+});
 
 export interface BoardCrop {
   url: string;
@@ -45,7 +57,16 @@ function useBoardScale(board: DesignBoard): number | null {
   );
 }
 
-/** The region of a loaded board, redrawn at CSS size, as a PNG blob. */
+/** The board's component tiles, or null until they are known and for good on
+ *  a board with no tile map — every board but Board 01. */
+export function useBoardTiles(board: DesignBoard): BoardTiles | null {
+  return useJsonOnMount(
+    designBoardTilesUrl(board),
+    (body) => TilesSchema.parse(body).tiles,
+    { initial: null, unreachable: null },
+  );
+}
+
 /** The largest side a cut is drawn at, in CSS pixels: past it a crop is a
  *  board, not a region of one, and a canvas that size is memory, not a view. */
 const MAX_CUT = 4096;

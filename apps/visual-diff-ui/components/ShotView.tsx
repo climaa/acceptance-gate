@@ -138,6 +138,7 @@ export function ShotView({ label, title, tier, shot, ledger, entry }: ShotViewPr
   const tools = useShotTools({
     board,
     frameWidth: shot.width ?? 0,
+    story: shot.key,
     asked: params.get('crop'),
     onCropParam: (crop) => write(board, crop),
   });

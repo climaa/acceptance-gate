@@ -35,12 +35,10 @@ export const BOARD_CACHE_CONTROL = 'public, max-age=3600, s-maxage=31536000';
  * `scripts/board-scale-integrity.mjs`. The shot view needs it to lay a crop of
  * the board over a screenshot at the screenshot's own scale.
  */
-async function sidecar(board: string): Promise<Response> {
+/** A JSON file beside a board's PNG: its export sidecar, or its tile map. */
+async function sidecar(file: string): Promise<Response> {
   try {
-    const text = await fs.promises.readFile(
-      path.join(DESIGN_EXPORTS_DIR, `${board}.json`),
-      'utf8',
-    );
+    const text = await fs.promises.readFile(path.join(DESIGN_EXPORTS_DIR, file), 'utf8');
 
     return new Response(text, {
       headers: {
@@ -68,7 +66,8 @@ export async function GET(request: Request): Promise<Response> {
   const params = new URL(request.url).searchParams;
   const board = params.get('board');
   if (!isDesignBoard(board)) return notFound();
-  if (params.get('format') === 'json') return sidecar(board);
+  if (params.get('format') === 'json') return sidecar(`${board}.json`);
+  if (params.get('format') === 'tiles') return sidecar(`${board}.tiles.json`);
 
   try {
     const bytes = await fs.promises.readFile(

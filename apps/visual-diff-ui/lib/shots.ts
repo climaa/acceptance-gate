@@ -154,8 +154,12 @@ export function shotViewHref(
   const params = new URLSearchParams();
   if (board) params.set('board', board);
   // Written by hand: a crop is digits and commas, which a query carries as they
-  // are, and URLSearchParams would spell every comma %2C.
-  const query = [params.toString(), crop ? `crop=${crop}` : ''].filter(Boolean).join('&');
+  // are, and URLSearchParams would spell every comma %2C. An empty crop is
+  // kept as `crop=`: it is the reader asking for the whole board, where no
+  // crop at all opens on the story's tile.
+  const query = [params.toString(), crop == null ? '' : `crop=${crop}`]
+    .filter(Boolean)
+    .join('&');
 
   return query === '' ? at : `${at}?${query}`;
 }

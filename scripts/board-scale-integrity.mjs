@@ -13,6 +13,13 @@
 // WHAT IT CHECKS. Every PNG has a sidecar, and the PNG's own size is the
 // sidecar's board size times its scale, to the pixel the exporter rounds to.
 //
+// THE TILES. A board may also carry `<board>.tiles.json`: each component's
+// tile, in that PNG's pixels, which the shot view opens its crop on. Read off
+// the .pen through the Pencil MCP, so nothing regenerates it on export; a
+// re-export at a new scale would leave every tile pointing at the wrong
+// region. So each tile file must state its board's scale, and every tile must
+// lie inside the PNG.
+//
 // WHY HERE AND NOT A WORKSPACE TEST, for the reason index-integrity.mjs gives:
 // designs/ belongs to no workspace, and a workspace test reading it would need
 // the directory named in that task's turbo `inputs` or the cache would answer
@@ -59,6 +66,32 @@ for (const png of pngs) {
   }
 }
 
+const tileFiles = readdirSync(EXPORTS).filter((name) => name.endsWith('.tiles.json'));
+
+for (const file of tileFiles) {
+  const stem = file.slice(0, -'.tiles.json'.length);
+  let tiles, sidecar, size;
+  try {
+    tiles = JSON.parse(readFileSync(join(EXPORTS, file), 'utf8'));
+    sidecar = JSON.parse(readFileSync(join(EXPORTS, `${stem}.json`), 'utf8'));
+    size = pngSize(join(EXPORTS, `${stem}.png`));
+  } catch {
+    problems.push(`${file} has no readable ${stem}.png and ${stem}.json beside it`);
+    continue;
+  }
+
+  if (tiles.scale !== sidecar.scale) {
+    problems.push(
+      `${file} was measured at scale ${tiles.scale}, but ${stem}.png is exported at ${sidecar.scale} — read the tiles off the .pen again`,
+    );
+  }
+  for (const [name, [x, y, width, height]] of Object.entries(tiles.tiles)) {
+    if (x < 0 || y < 0 || x + width > size.width || y + height > size.height) {
+      problems.push(`${file}: the ${name} tile lies outside ${stem}.png`);
+    }
+  }
+}
+
 if (problems.length > 0) {
   console.error('✗ design-board export scales disagree with their PNGs:');
   for (const problem of problems) console.error(`    ${problem}`);
@@ -68,4 +101,6 @@ if (problems.length > 0) {
   process.exit(1);
 }
 
-console.log(`✓ design-board export scales OK — ${pngs.length} boards.`);
+console.log(
+  `✓ design-board export scales OK — ${pngs.length} boards, ${tileFiles.length} tile maps.`,
+);

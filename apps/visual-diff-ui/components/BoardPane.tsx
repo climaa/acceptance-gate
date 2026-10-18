@@ -79,7 +79,7 @@ export function BoardPane({
         label="design board"
         grid={grid}
         className="vd-compare__panzoom"
-        lead={<CropLabel board={board} onClear={tools?.onClearCrop} />}
+        lead={<CropLabel board={board} tile={tools?.tile} onClear={tools?.onClearCrop} />}
         {...follow}
         // A crop is a small region a reader came to read: it opens with the
         // region filling the pane, as Board 04 draws it at 400%, and the synced
@@ -132,11 +132,22 @@ export function BoardPane({
   );
 }
 
-/** What a pinned crop is, and the way back to the whole board. */
-function CropLabel({ board, onClear }: { board: DesignBoard; onClear?: () => void }) {
+/** What a pinned crop is — the story's tile, as Board 04 names it, or a region
+ *  of a board — and the way back to the whole board. */
+function CropLabel({
+  board,
+  tile,
+  onClear,
+}: {
+  board: DesignBoard;
+  tile?: string | null;
+  onClear?: () => void;
+}) {
   return (
     <Stack direction="row" gap={2} align="center">
-      <span className="vd-compare__label vd-mono">crop · {BOARD_LABELS[board]}</span>
+      <span className="vd-compare__label vd-mono">
+        crop · {tile ? `${tile} tile` : BOARD_LABELS[board]}
+      </span>
       {onClear && (
         <IconButton variant="ghost" size="sm" label="clear the crop" onClick={onClear}>
           <XGlyph />
