@@ -1,11 +1,8 @@
-import * as fs from 'node:fs';
-import * as path from 'node:path';
-
 import { expect } from '@playwright/test';
 import { createBdd } from 'playwright-bdd';
 
 import { endsWithWord } from '../../pages/comparison-modal';
-import { VD_HOSTS, vdWorldDir } from '../../pages/visual-diff-hosts';
+import { VD_HOSTS } from '../../pages/visual-diff-hosts';
 import { test } from './fixtures';
 
 const { Given, When, Then } = createBdd(test);
@@ -116,18 +113,10 @@ Then('the readings say this comparison has no token ledger', async ({ modal }) =
 });
 
 Then('the dialog story is still counted as changed', async ({ report }) => {
-  // The count the served report recorded, read from the world it was served
-  // from: readings are reference, so the chip must say exactly what the
-  // compare said before any ledger existed.
-  const summary = JSON.parse(
-    fs.readFileSync(
-      path.join(vdWorldDir('seeded'), 'reports', DIALOG_REPORT, 'summary.json'),
-      'utf8',
-    ),
-  ) as { counts: { changed: number } };
-
+  // Only the bucket is asserted. The page's counts are summary.json's own
+  // (lib/data.ts), so checking one against the other could never fail; that a
+  // ledger leaves summary.json alone is runner.test.ts's to prove.
   await expect(
     report.storyCard(DIALOG_TITLE).locator('.ds-bucket-chip__label'),
   ).toHaveText('changed');
-  await expect(report.bucketCount('changed')).toHaveText(String(summary.counts.changed));
 });
