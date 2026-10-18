@@ -1,5 +1,7 @@
 import { notFound } from 'next/navigation';
+import { readCanonicalSet } from '@/lib/baselines';
 import { readReport, readSets, resolveDataDir } from '@/lib/data';
+import { repoRoot } from '@/lib/git';
 import { ReportTemplate } from './ReportTemplate';
 
 /**
@@ -14,9 +16,15 @@ import { ReportTemplate } from './ReportTemplate';
 export async function ReportContents({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const { dir } = await resolveDataDir();
-  const [report, registry] = await Promise.all([readReport(dir, id), readSets(dir)]);
+  // The corpus too: a `baselines` side is not in the capture registry, and the
+  // header names it from here instead of calling it missing.
+  const [report, registry, corpus] = await Promise.all([
+    readReport(dir, id),
+    readSets(dir),
+    readCanonicalSet(repoRoot()),
+  ]);
 
   if (!report) notFound();
 
-  return <ReportTemplate id={id} report={report} sets={registry.sets} />;
+  return <ReportTemplate id={id} report={report} sets={registry.sets} corpus={corpus} />;
 }

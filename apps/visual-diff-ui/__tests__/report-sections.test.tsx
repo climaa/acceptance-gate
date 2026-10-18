@@ -4,6 +4,7 @@ import { cleanup, fireEvent, render, screen, within } from '@testing-library/rea
 // `**/*.tsx` include means tsc typechecks this file.
 import { afterEach, describe, expect, it } from 'vitest';
 import { ReportTemplate } from '../components/ReportTemplate';
+import type { CanonicalSet } from '../lib/baselines';
 import type { CaptureSet, Summary, Variant } from '../lib/summary';
 import { setSearchParams } from './stubs/next-navigation';
 
@@ -104,12 +105,16 @@ const REPORT: Summary = {
 
 /** The template inside the landmark the app shell gives it, so the ordering
  *  assertions below are about `main`'s regions and not about the whole page. */
-function renderReport(report: Summary = REPORT, id = REPORT_ID) {
+function renderReport(
+  report: Summary = REPORT,
+  id = REPORT_ID,
+  corpus: CanonicalSet | null = null,
+) {
   setSearchParams('');
 
   return render(
     <main>
-      <ReportTemplate id={id} report={report} sets={SETS} />
+      <ReportTemplate id={id} report={report} sets={SETS} corpus={corpus} />
     </main>,
   );
 }
@@ -249,6 +254,24 @@ describe('the bucket chip row', () => {
     expect(screen.getByText(/every variant matched its baseline/)).toBeTruthy();
   });
 
+  // Regression, 18 Oct 2026: a clean run still drew "reviewed 0/0", a hide
+  // toggle, a next-unreviewed button and collapse all — controls with nothing to
+  // act on, under a note saying there is nothing to review.
+  it('draws no review controls when the run wrote no rows', () => {
+    renderReport({
+      ...REPORT,
+      exitCode: 0,
+      counts: { unchanged: 106, changed: 0, added: 0, removed: 0, errored: 0, a11y: 0 },
+      variants: [],
+    });
+
+    expect({
+      next: screen.queryByRole('button', { name: /next unreviewed/ }),
+      collapse: screen.queryByRole('button', { name: /collapse all/ }),
+      progress: screen.queryByText(/reviewed 0\/0/),
+    }).toEqual({ next: null, collapse: null, progress: null });
+  });
+
   it('says why the unchanged bucket has nothing to open', () => {
     renderReport();
 
@@ -315,6 +338,28 @@ describe('the report header', () => {
 
     expect(header.textContent).toContain('pruned-2026-08-01');
     expect(within(header).getByText(/no capture set recorded/)).toBeTruthy();
+  });
+
+  // Regression, 18 Oct 2026: a report against `baselines` said "no capture set
+  // recorded under this label" for the canonical corpus, which is not in the
+  // capture registry by design.
+  it('names the canonical corpus as such, with the commit that accepted it', () => {
+    renderReport(REPORT, 'baselines__main-2026-08-17', {
+      label: 'baselines',
+      sha: 'cb2012f',
+      acceptedAt: '2026-10-17',
+      stories: 200,
+      bytes: 2_200_000,
+    });
+
+    const header = screen.getByRole('region', { name: 'report' });
+
+    expect({
+      canonical: header.textContent?.includes('canonical'),
+      accepted: header.textContent?.includes('cb2012f'),
+      stories: header.textContent?.includes('200 stories'),
+      missing: within(header).queryByText(/no capture set recorded/),
+    }).toEqual({ canonical: true, accepted: true, stories: true, missing: null });
   });
 });
 
