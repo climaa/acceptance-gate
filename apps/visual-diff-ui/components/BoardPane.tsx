@@ -81,6 +81,20 @@ export function BoardPane({
         className="vd-compare__panzoom"
         lead={<CropLabel board={board} onClear={tools?.onClearCrop} />}
         {...follow}
+        // Still on the zoom row, as Board 04 draws it beside a pinned crop:
+        // pressing it goes back to the whole board, ready to draw the region
+        // again, so a crop can be refined rather than only cleared.
+        actions={
+          tools && (
+            <CropToggle
+              on={tools.cropping}
+              onToggle={(on) => {
+                tools.onCropping(on);
+                if (on) tools.onClearCrop();
+              }}
+            />
+          )
+        }
       />
     );
   }

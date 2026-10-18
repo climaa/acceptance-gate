@@ -3,6 +3,7 @@ import { cleanup, fireEvent, render, screen, within } from '@testing-library/rea
 // Imported explicitly rather than relying on `globals: true` — tsconfig's
 // `**/*.tsx` include means tsc typechecks this file.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { zoomIndexOf } from '../components/OverlayStage';
 import { ShotView } from '../components/ShotView';
 import { setSearchParams } from './stubs/next-navigation';
 
@@ -122,6 +123,19 @@ describe('the shot view’s crop', () => {
         screen.getByRole('img', { name: 'a crop of the components design board' }) !==
         null,
     }).toEqual({ label: true, alt: true });
+  });
+
+  // Regression, 18 Oct 2026: once a crop was pinned the crop toggle left the
+  // zoom row, so a reader could not refine the region — only clear it.
+  it('keeps the crop toggle beside a pinned crop, to draw the region again', () => {
+    renderView('crop=325,487,130,65');
+
+    press('crop the board');
+
+    expect({
+      cleared: replaceState.mock.calls.at(-1)?.[2],
+      cropping: pressed('crop the board'),
+    }).toEqual({ cleared: AT, cropping: 'true' });
   });
 
   it('clears the crop from the address, back to the whole board', () => {
@@ -335,5 +349,15 @@ describe('the shot view’s keys', () => {
     fireEvent.keyDown(document, { key: 's', metaKey: true });
 
     expect(pressed('zoom and pan both panes together')).toBe('true');
+  });
+});
+
+// Regression, 18 Oct 2026: switching side by side → overlay at 338% dropped the
+// overlay back to 100%. The overlay starts at the step nearest the panes' zoom.
+describe('the overlay’s starting zoom', () => {
+  it('starts where the synced panes were, on its own steps', () => {
+    expect([undefined, 1, 1.5, 2.25, 3.375, 3.4, 50].map(zoomIndexOf)).toEqual([
+      0, 0, 1, 2, 3, 3, 5,
+    ]);
   });
 });

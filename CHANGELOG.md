@@ -21,6 +21,7 @@ Merged to `main` since v1.6.0, not yet released:
 - fix(visual-diff-ui): reports list in run order, durations under a second say so, and the label placeholder stops looking like a date (#562)
 - fix(visual-diff-ui): a report names the canonical corpus, and a clean run draws no review controls (#563)
 - fix(visual-diff-ui): the sets table gives the label the room, so two sets of one day read apart (#564)
+- fix(visual-diff-ui): the crop toggle stays beside a pinned crop, and the overlay keeps the panes' zoom (#565)
 
 ## v1.6.0 — a screenshot is read against its design board, down to the design token
 
