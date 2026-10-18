@@ -18,13 +18,18 @@ import { DeleteSetButton } from './ConfirmDialogs';
 /** The name the acceptance scenario finds this table by. */
 const SETS_TABLE_LABEL = 'Screenshot sets';
 
+// Every column but the label holds a short, predictable value, so each says how
+// much room it takes and the label keeps the rest. Left to `table-layout: fixed`
+// all seven took an equal slice: `stories` got as much as the label, which then
+// ellipsised away the date and the `-2` that tell two sets apart, while the date
+// broke over two lines. The branch still truncates, with the whole name on hover.
 const SET_COLUMNS: readonly TableColumn[] = [
   { header: 'label', truncate: true },
-  { header: 'sha' },
-  { header: 'branch', truncate: true },
-  { header: 'date' },
-  { header: 'stories', numeric: true },
-  { header: 'size', numeric: true },
+  { header: 'sha', width: '6rem' },
+  { header: 'branch', truncate: true, width: '6rem' },
+  { header: 'date', width: '6.5rem' },
+  { header: 'stories', numeric: true, width: '4rem' },
+  { header: 'size', numeric: true, width: '6rem' },
   // The delete button's own width, not a share of the table: `table-layout: fixed`
   // allots every undeclared column an equal slice, and at this panel's width that
   // slice is narrower than the button standing in it.
