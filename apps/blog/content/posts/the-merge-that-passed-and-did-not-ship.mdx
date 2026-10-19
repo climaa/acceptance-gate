@@ -1,0 +1,159 @@
+---
+title: 'The merge that passed every check and did not ship'
+description: 'One person and a handful of agents merged eighteen pull requests across five repositories in twenty-four hours, and the last merge never reached production: Vercel refused it on a Hobby limit of 100 deployments a day. The account had created 111. Half of them never built, and I still cannot tell what the meter counted. The limit is the easy part of the story.'
+date: '2026-10-14'
+updated: '2026-10-19'
+tags: ['ci', 'vercel', 'agents', 'cost']
+draft: false
+---
+
+The last pull request I merged on Wednesday went green on every required check and then did not ship. Its four Vercel statuses all said the same thing:
+
+```text
+acceptance-gate-blog            Deployment rate limited — retry in 24 hours.
+acceptance-gate-manual          Deployment rate limited — retry in 24 hours.
+acceptance-gate-storybook       Deployment rate limited — retry in 24 hours.
+acceptance-gate-visual-diff-ui  Deployment rate limited — retry in 24 hours.
+```
+
+The code is on `main`. The sites are serving the build before it. Nothing failed, nothing is broken, and nothing will move until the limit lets go.
+
+I have been here before with a different vendor. [GitHub doesn't bill time, it bills jobs](/blog/github-doesnt-bill-time-it-bills-jobs) was about a monthly Actions quota spent in forty-eight hours. This is the same shape on a different meter. What is new is that this time I tried to do the arithmetic, and it did not come out.
+
+## Twenty-four hours, as merges
+
+Five repositories share one Vercel account: this one, which has four projects, and three of its private children, which have one or two each. A fifth child has no Vercel project at all. Every pull request below was written by an agent — either a Claude Code session I was directing, or Sandcastle, which picks issues off a queue and merges its own work. I reviewed, decided and merged. I did not write the code.
+
+All times are UTC.
+
+```text
+Tue 19:00  #503  a layout fix in the console
+Wed 09:42  a test-timeout fix in one child
+    09:42–09:50  four children merge a ported console feature, one PR each
+    14:09  #506  the token ledger's classifier
+    16:51  #507  three glossary entries
+    17:27  #511  Sandcastle: Storybook link previews
+    17:31  #512  Sandcastle: console link previews
+    17:34  #513  Sandcastle: manual link previews
+    17:50  #514  a folded disclosure on the report page
+    17:57–18:04  the same fix ported to four children, one PR each
+    18:32  #510  one test and one comment
+    18:55  #515  the token ledger's collector  ← refused
+```
+
+Eighteen merged pull requests, nine here and nine in the children. A merge is not the only thing that deploys: every push to an open pull request does too. Thirty-nine distinct commits across nineteen branches reached Vercel.
+
+## The numbers
+
+Counted from the Vercel API, for the twenty-four hours before the refusal:
+
+| | |
+| --- | --- |
+| Deployments created | **111** |
+| Hobby limit | 100 a day |
+| Built and became ready | 55 |
+| Cancelled before building | **56** |
+| Production | 42 |
+| Preview | 69 |
+
+By repository, 91 came from this one — four projects, and every commit is offered to all four — 12 from the child with two projects, and 4 each from the other two.
+
+By hour, the shape is one spike. Fifty deployments were created between 17:00 and 18:00, the hour Sandcastle merged three pull requests and I ported one fix into four repositories.
+
+## The ones that never built
+
+Fifty-six of the 111 were cancelled before they ran a single build step, and each carries the same reason:
+
+```text
+The deployment was canceled because the commit didn't affect this project.
+```
+
+That is Vercel's monorepo feature doing what it should. A commit that only touches the visual-diff console does not need the blog rebuilt, so the blog's deployment is created and immediately cancelled. No build minutes, no concurrency.
+
+Whether it costs a deployment is the question I could not answer. The docs are explicit about the older mechanism — cancelled builds from an Ignored Build Step "count towards your deployment and concurrent build limits" — and say only that the built-in skip does not take a build slot. So I tried to settle it from the numbers, and the numbers refuse to cooperate:
+
+- If every cancellation counts against a sliding twenty-four-hour window, the account could never have created 111. It did.
+- If none of them count, 55 builds are nowhere near 100, and nothing should have been refused. It was.
+- On the push just before the merge, at 18:43:19, three projects created their deployments and the fourth was refused — in the same second.
+
+There is a reading that fits all three — a fixed window that started earlier than I think, partial counting, a limit checked per request in a way that races — and I cannot tell those apart from the outside. **I do not know what the meter counted.** I know when it said no.
+
+One more thing I cannot explain. The branches Sandcastle pushes are excluded in every project's `vercel.json`:
+
+```json
+"git": { "deploymentEnabled": { "sandcastle/*": false } }
+```
+
+Twenty-four deployments were created on `sandcastle/*` branches anyway, all of them cancelled as unaffected. The opt-out exists to keep agent branches off the meter. In the list, it made no visible difference.
+
+## Deleting them does not help
+
+My first instinct, and the first thing I asked for, was to clear out the day's deployments. It had seemed to work once before.
+
+The limit is named "Deployments Created per Day". Removing a deployment does not uncreate it, and nothing in the docs suggests the count gives anything back. Whatever seemed to work last time was most likely the window moving on by itself while I was busy deleting. This time I am doing the boring thing: a redeploy is booked for the next morning, and whether it goes through will tell me more than any count I could make tonight.
+
+## Are we ready for this?
+
+I can only speak for one account, and I do not want to dress a single Wednesday up as a trend. But the question is a fair one, and the day answers part of it.
+
+**The unit was designed for people.** GitHub meters jobs. Vercel meters deployments. Both units date from when a job or a deployment was something a person caused — a push, a merge, a decision to ship. With agents, they become side effects of iteration. An agent that pushes three corrections in ten minutes creates twelve deployments here, and none of them is anybody's decision to deploy.
+
+**Money solves the capacity half.** Pro raises the same limit to 6,000 a day, fifty-four of my Wednesdays. A company paying for its platform will not hit this wall the way I did, and it would be the wrong lesson to pretend otherwise.
+
+**It does not solve the other two halves.** The first is that I could not count. With the account's own API and the vendor's own documentation open side by side, I could not say what the limit had measured. You cannot budget a meter you cannot read, and you certainly cannot hand that budget to an agent.
+
+The second is the one I would worry about at a company. Look at how the refusal arrived. Every required check passed. The pull request merged. The only evidence that production had not moved was four red statuses on checks that are *deliberately* not required — because a preview failing must never block a merge. The pipeline reported success, and production quietly stayed on the previous build.
+
+That is not a quota problem. It is a correctness problem wearing a quota's clothes. Every platform has places where it is allowed to say no, and an organisation that has put agents into its delivery will reach those places faster and more often than its monitoring was designed for. The question I would ask a team is not "can you afford the deployments?" It is: **when the platform declines to ship a merged change, who finds out, and how long does it take?**
+
+Here, the answer was me, a few minutes later, because I happened to read a check nobody required me to read.
+
+## What I have not fixed
+
+- **What counts.** I do not know whether skipped deployments count, or what the window is. The next morning's redeploy is the first real data point.
+- **The `sandcastle/*` opt-out.** Twenty-four deployments on branches configured not to deploy. That is the first thing to trace.
+- **The test that rebuilt four sites.** #510 changed one test file and one comment in a package that two of the four apps do not even depend on. Its merge built all four to production, and it was the last production deployment before the wall.
+- **The shared account.** The children spend from the same limit. A day of ports into four repositories is a day the parent may not ship.
+- **The signal.** Nothing alerts on a refused production deployment. Today it is a red check that only someone reading the right page will see.
+
+None of these are fixed, and I am not going to guess at numbers I have not measured.
+
+## How these numbers were measured
+
+The deployment list came from the Vercel REST API through the CLI, paginated over the twenty-four hours before the refusal:
+
+```bash
+vercel api "/v6/deployments?since=$SINCE&limit=100" > page1.json
+vercel api "/v6/deployments?since=$SINCE&until=$NEXT&limit=100" > page2.json
+```
+
+Every count above is a tally of those 111 records by `state`, `target`, `meta.githubRepo` and `meta.githubCommitRef`. The cancellation reason is each record's own `readyStateReason`. The refusals are the commit statuses GitHub shows on the commits, read with `gh api repos/OWNER/REPO/commits/SHA/statuses`. Refused attempts do not appear in the deployment list at all, so I cannot say how many there were — only where they landed.
+
+## The line I would tell myself on Wednesday morning
+
+Not *upgrade the plan*. The plan is the cheap half.
+
+It is this. Every platform you deploy to has a place where it is allowed to say no, and you designed your monitoring for the rate at which a human reaches those places. Hand the keyboard to an agent and you reach them several times faster, on every meter at once — and the first you hear of it may be a red check nobody was required to read.
+
+## Update, 19 October
+
+Five days on, this is what happened to the list above.
+
+**The refused merge shipped by itself.** The redeploy I had booked was never needed. At 02:25 UTC the next morning a Dependabot merge built all four projects to production, and #515 went out with it — about seven and a half hours after the refusal, on a commit that had nothing to do with it.
+
+**There were two meters, not one.** The same day, a second warning arrived: 75% of the plan's 10 GB of *deployment storage*. That is bytes of builds Vercel keeps, not deployments created — and unlike the daily count, deleting old deployments does free it. Every merge to `main` had been a production build kept for fourteen days. I deleted 265 of them and cut retention to seven days for production and one for everything else.
+
+**Production stopped following `main`.** Since 15 October every project — the four here and the children's — takes production from a branch called `production`. A merge to `main` ships nothing; production moves when I fast-forward that branch in a release session.
+
+**Then only production deploys.** On 17 October every `vercel.json` changed to `deploymentEnabled: { "**": false, "production": true }`. In the three private children that was enough. Here it was not: every push still created four deployments, each cancelled as unaffected and each, presumably, on the meter. The configuration and the project settings are the same in all four repositories; the only difference I can find is that this one is public, and I have not proved that is the cause. On 18 October I turned Git deployments off for these four projects instead, which stops every branch but `production`. A move of that branch still deploys, and v1.6.0 shipped that way the same day.
+
+So, the five items:
+
+- **What counts.** Still unknown. Nothing since has told me whether a skipped deployment is on the meter.
+- **The `sandcastle/*` opt-out.** It no longer matters, because no branch but `production` deploys. The leak itself was never explained, and the newer opt-out leaked here in the same way.
+- **The test that rebuilt four sites.** A merge to `main` now builds nothing at all, so a one-line test change cannot spend four deployments.
+- **The shared account.** Still shared. Release sessions keep the parent's spend to a few deployments a release rather than four a merge, which leaves the children room.
+- **The signal.** Still nothing. A refused deployment is still a red check that someone has to read, though it can now only happen when I am deliberately shipping.
+
+The fix that held was not a cleverer opt-out. It was deciding that deploying is something I do on purpose, at a time I choose, instead of something every merge does on its own. That is the same answer the agents needed anyway.
+
