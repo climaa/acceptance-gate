@@ -182,6 +182,13 @@
     block-size: 70dvh;
   }
 
+  /* The overlay takes its own height here too (modal.css): this file comes
+     last, so without it the panes' 70dvh held a band of empty stage open
+     under the overlay's controls. */
+  .vd-compare__stage--overlay {
+    block-size: auto;
+  }
+
   /* The themes of one viewport, side by side, which is the comparison a reviewer
      makes when checking a capture in both. `flex-start` so a 12px atom and a
      482px template in the same row align at the top rather than floating. */
