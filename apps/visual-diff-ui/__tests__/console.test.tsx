@@ -200,6 +200,20 @@ describe('the screenshot sets panel', () => {
     expect(table('Screenshot sets')).toBeDefined();
   });
 
+  // Structural, not a look: the table's least width is the fixed columns plus a
+  // floor for the label, and the panel scrolls past it. Without it a 1280px
+  // viewport left the label column 10px wide and the set link unclickable.
+  it('keeps room for the label and scrolls instead of squeezing it', () => {
+    render(consoleWith({ sets: [CLEAN] }));
+
+    const scroll = table('Screenshot sets').parentElement;
+
+    expect(scroll?.className).toBe('vd-sets-scroll');
+    expect(scroll?.style.getPropertyValue('--vd-sets-floor')).toBe(
+      'calc(6rem + 6rem + 6.5rem + 4rem + 6rem + 6rem + 10rem)',
+    );
+  });
+
   // The acceptance scenario, cell by cell: "I see each screenshot set with its
   // branch, story count and size".
   it('lists a set with its branch, story count and size', () => {
