@@ -19,6 +19,8 @@
  * bumped in the other three apps, diff those four functions against this file.
  */
 
+import { optOutBeforeSend } from '@gate/logger/analytics';
+
 /**
  * The two Vercel system variables this reads, and deliberately not
  * `NodeJS.ProcessEnv`. `process.env` is an index signature of
@@ -53,7 +55,25 @@ const QUEUE_STUB =
   'window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };';
 
 /**
- * The `beforeSend` the manager registers.
+ * The owner's opt-out (`?va-disable=1` / `?va-disable=0`), from the same
+ * function apps/blog, apps/manual and apps/visual-diff-ui hand `<Analytics />`.
+ * It is written self-contained for exactly this: inlined, it runs here in an
+ * empty scope.
+ *
+ * Bound to `window.vaOptOut` and called once straight away, against the
+ * address the manager was opened at. That first call is the point: the
+ * manager is a client-side router, and by the time the deferred loader sends
+ * the first page view, the `?va-disable` parameter may no longer be in the
+ * URL it reports. Read synchronously from the head, it still is — and the flag
+ * it stores is what every later `beforeSend` call checks.
+ */
+const OWNER_OPT_OUT = [
+  `window.vaOptOut = (${optOutBeforeSend.toString()});`,
+  'if (window.location) window.vaOptOut({ url: window.location.href });',
+].join('\n');
+
+/**
+ * The `beforeSend` the manager registers, after the owner's opt-out.
  *
  * INLINED VERBATIM into the page, via `.toString()`. Three rules follow, and
  * none is negotiable:
@@ -189,7 +209,11 @@ const snippet = (config: AnalyticsConfig) => {
   return [
     '<script>',
     QUEUE_STUB,
-    `window.va('beforeSend', (${rewriteAnalyticsUrl.toString()}));`,
+    OWNER_OPT_OUT,
+    "window.va('beforeSend', function (event) {",
+    '  var kept = window.vaOptOut(event);',
+    `  return kept && (${rewriteAnalyticsUrl.toString()})(kept);`,
+    '});',
     '</script>',
     `<script defer src=${attributeValue(src)}${endpoints}></script>`,
   ].join('\n');

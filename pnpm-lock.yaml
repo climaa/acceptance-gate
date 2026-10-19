@@ -208,6 +208,9 @@ importers:
 
   apps/storybook:
     dependencies:
+      '@gate/logger':
+        specifier: workspace:*
+        version: link:../../packages/logger
       '@gate/ui':
         specifier: workspace:*
         version: link:../../packages/ui

@@ -380,3 +380,50 @@ describe('the wiring in main.ts', () => {
     },
   );
 });
+
+/**
+ * The owner's opt-out, against the copy that ships. `?va-disable=1` once per
+ * browser stops counting the owner's own visits; the head reads it before the
+ * manager's router has a chance to rewrite the address it was opened at.
+ */
+describe('the inlined owner opt-out', () => {
+  const head = analyticsHead(production());
+
+  /** The inline script run against a window opened at `href`, with jsdom's
+   *  real `localStorage` behind it — the global the inlined function reads. */
+  const openedAt = (href: string): QueueWindow => {
+    const win: QueueWindow & { location: { href: string } } = { location: { href } };
+
+    new Function('window', inlineScriptOf(head))(win);
+
+    return win;
+  };
+
+  const beforeSendOf = (win: QueueWindow) =>
+    win.vaq?.[0]?.[1] as (event: { url: string }) => { url: string } | null;
+
+  afterEach(() => {
+    localStorage.clear();
+  });
+
+  it('drops every view once the manager is opened with ?va-disable=1', () => {
+    const win = openedAt('https://sb.example/index.html?path=/docs/a--docs&va-disable=1');
+
+    const sent = beforeSendOf(win)({
+      url: 'https://sb.example/index.html?path=/docs/b--docs',
+    });
+
+    expect(sent).toBeNull();
+  });
+
+  it('counts the view again after ?va-disable=0, still rewritten to its docs path', () => {
+    localStorage.setItem('va-disable', '1');
+    const win = openedAt('https://sb.example/index.html?path=/docs/a--docs&va-disable=0');
+
+    const sent = beforeSendOf(win)({
+      url: 'https://sb.example/index.html?path=/docs/a--docs',
+    });
+
+    expect(sent?.url).toBe('https://sb.example/docs/a--docs');
+  });
+});

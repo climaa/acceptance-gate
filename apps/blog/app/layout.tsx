@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import NextLink from 'next/link';
 import { preload } from 'react-dom';
 import { SiteFooter, SiteHeader } from '@gate/ui';
-import { Analytics } from '@vercel/analytics/next';
 import {
   FOOTER_LINKS,
   SITE_ALTERNATES,
@@ -24,6 +23,7 @@ import { SITE_VERSION } from '@/lib/version';
 import bodyFace from '@gate/ui/fonts/atkinson-hyperlegible-latin-400-normal.woff2';
 import bodyBoldFace from '@gate/ui/fonts/atkinson-hyperlegible-latin-700-normal.woff2';
 import displayFace from '@gate/ui/fonts/fraunces-latin-600-normal.woff2';
+import { SiteAnalytics } from './site-analytics';
 import './globals.css';
 
 /**
@@ -125,7 +125,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             not. Contained to that boundary — this route still prerenders
             static — but it is the reason the two builds' HTML differs by more
             than the payload line above. */}
-        {process.env.VERCEL_ENV === 'production' && <Analytics />}
+        {process.env.VERCEL_ENV === 'production' && <SiteAnalytics />}
       </body>
     </html>
   );
