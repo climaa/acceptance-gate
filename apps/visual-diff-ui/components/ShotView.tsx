@@ -9,7 +9,13 @@ import { useMediaQuery, WIDE_VIEWPORT } from '@/hooks/useMediaQuery';
 import { SHOT_LAYOUTS, type ShotLayout, useShotTools } from '@/hooks/useShotTools';
 import { defaultBoard, type DesignBoard, isDesignBoard } from '@/lib/comparison';
 import type { Readings } from '@/lib/readings';
-import { setHref, shotViewHref } from '@/lib/shots';
+import {
+  DEV_STORYBOOK,
+  PUBLISHED_STORYBOOK,
+  showsDevStorybook,
+  storybookLink,
+} from '@/lib/report-view';
+import { setHref, shotTitle, shotViewHref } from '@/lib/shots';
 import { APP_NAME } from '@/lib/site';
 import { type DesignShot, DesignStage, type Split } from './DesignStage';
 import { OverlayStage } from './OverlayStage';
@@ -62,6 +68,100 @@ function LinkGlyph() {
   );
 }
 
+/** lucide's `square-arrow-out-up-right`, the glyph Board 04 draws beside the
+ *  title for the published Storybook. */
+function OutGlyph() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M21 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h6" />
+      <path d="m21 3-9 9" />
+      <path d="M15 3h6v6" />
+    </svg>
+  );
+}
+
+/** The published Storybook's name, pinned: the glyph has no text of its own,
+ *  and it is how a scenario finds the link. */
+export const PUBLISHED_STORYBOOK_LABEL = 'open in the published Storybook';
+
+/**
+ * The title, as the way out to the story itself (Board 04).
+ *
+ * `viewport/theme · set` opens the dev Storybook, and is a link only while the
+ * console runs in development — `localhost:6006` answers nothing anywhere else,
+ * and a dead link beside a live one is worse than none, so it is plain text
+ * there. The arrow-out square opens the published Storybook, which always
+ * answers. Both land on the story in the shot's theme, as the set viewer's two
+ * links do.
+ *
+ * The dev link's name leads with its visible text, so a reader who says what
+ * they see still hits it, and says where it goes after.
+ */
+function ShotTitle({ heading }: { heading: ShotHeading }) {
+  const { story, storyId, theme } = heading;
+  const { title, place } = headingText(heading);
+
+  return (
+    <span className="vd-shot__title">
+      <h2 className="vd-compare__title vd-mono" title={title}>
+        {story} ·{' '}
+        {showsDevStorybook() ? (
+          <a
+            className="vd-shot__storybook"
+            href={storybookLink(DEV_STORYBOOK, storyId, theme)}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`${place} — dev Storybook`}
+          >
+            {place}
+          </a>
+        ) : (
+          place
+        )}
+      </h2>
+      <a
+        className="vd-shot__published"
+        href={storybookLink(PUBLISHED_STORYBOOK, storyId, theme)}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label={PUBLISHED_STORYBOOK_LABEL}
+        title={PUBLISHED_STORYBOOK_LABEL}
+      >
+        <span aria-hidden="true">
+          <OutGlyph />
+        </span>
+      </a>
+    </span>
+  );
+}
+
+/** What the shot view's title is made of, as the set names the shot. */
+interface ShotHeading {
+  label: string;
+  /** The story's own title, as its group in the set is headed. */
+  story: string;
+  /** The Storybook id both title links open. */
+  storyId: string;
+  viewport: string;
+  theme: string;
+}
+
+/** The sentence the shot is known by — the tab's title and the heading's
+ *  tooltip — and the half of it the dev Storybook link is drawn on. */
+function headingText({ label, story, viewport, theme }: ShotHeading) {
+  return {
+    title: shotTitle(story, viewport, theme, label),
+    place: `${viewport}/${theme} · ${label}`,
+  };
+}
+
 /** How the board and the screenshot are put together: side by side, or one
  *  laid on the other — and, side by side, whether the two panes move as one. */
 function LayoutControls({
@@ -103,17 +203,34 @@ function LayoutControls({
   );
 }
 
-export interface ShotViewProps {
-  label: string;
-  /** The sentence the shot is known by (`shotTitle`). */
-  title: string;
+/**
+ * The tab's title while the view is a modal over its set.
+ *
+ * Next keeps the set mounted under the modal and does not re-apply its metadata
+ * on the way back, so the set's title is put back here — the lesson
+ * ComparisonRoute measured for the report. The page presentation has its own
+ * metadata and needs none of this.
+ */
+function useModalTitle(modal: boolean, title: string, label: string) {
+  useEffect(() => {
+    if (!modal) return;
+
+    document.title = `${title} · ${APP_NAME}`;
+    return () => {
+      document.title = `${label} · ${APP_NAME}`;
+    };
+  }, [modal, title, label]);
+}
+
+export interface ShotViewProps extends ShotHeading {
   tier: Tier;
   shot: DesignShot;
   ledger: Readings | null;
   entry: ShotEntry;
 }
 
-export function ShotView({ label, title, tier, shot, ledger, entry }: ShotViewProps) {
+export function ShotView({ tier, shot, ledger, entry, ...heading }: ShotViewProps) {
+  const { label } = heading;
   const router = useRouter();
   const params = useSearchParams();
   const asked = params.get('board');
@@ -145,17 +262,7 @@ export function ShotView({ label, title, tier, shot, ledger, entry }: ShotViewPr
 
   const modal = entry === 'set';
 
-  // Next keeps the set mounted under the modal and does not re-apply its
-  // metadata on the way back, so the set's title is put back here — the lesson
-  // ComparisonRoute measured for the report.
-  useEffect(() => {
-    if (!modal) return;
-
-    document.title = `${title} · ${APP_NAME}`;
-    return () => {
-      document.title = `${label} · ${APP_NAME}`;
-    };
-  }, [modal, title, label]);
+  useModalTitle(modal, headingText(heading).title, label);
 
   const body = (
     <Stack gap={3}>
@@ -165,9 +272,7 @@ export function ShotView({ label, title, tier, shot, ledger, entry }: ShotViewPr
             ← set {label}
           </NextLink>
         )}
-        <h2 className="vd-compare__title vd-mono" title={title}>
-          {title}
-        </h2>
+        <ShotTitle heading={heading} />
         <Stack direction="row" gap={2} align="center">
           <LayoutControls
             layout={tools.layout}

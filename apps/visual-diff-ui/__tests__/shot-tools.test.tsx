@@ -45,7 +45,10 @@ function renderView(query = '') {
   return render(
     <ShotView
       label={SET}
-      title={`Badge — Accent · desktop/light · ${SET}`}
+      story="Badge — Accent"
+      storyId="atoms-badge--accent"
+      viewport="desktop"
+      theme="light"
       tier="atoms"
       shot={{
         key: KEY,

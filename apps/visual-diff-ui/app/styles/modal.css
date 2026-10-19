@@ -346,6 +346,35 @@
   color: var(--color-accent);
 }
 
+/* The title and the published Storybook beside it, as one item of the head row:
+   the heading keeps its ellipsis, and the glyph stays on its line rather than
+   wrapping away from the words it belongs to. */
+.vd-shot__title {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+/* The dev Storybook, drawn on `viewport/theme · set` — underlined, as Board 04
+   draws it, because nothing else says the words are a way out. */
+.vd-shot__storybook {
+  color: var(--color-accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.vd-shot__published {
+  display: inline-flex;
+  flex: none;
+  color: var(--color-accent);
+}
+
+.vd-shot__published svg {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
 .vd-readings__chevron {
   margin-inline-end: var(--space-1);
 }

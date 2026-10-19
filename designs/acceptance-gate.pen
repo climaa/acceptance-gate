@@ -51762,7 +51762,7 @@
               "fill": "$ink-muted",
               "textGrowth": "fixed-width",
               "width": 1000,
-              "content": "One screenshot from a set, read in depth beside a design board. Pressing a screenshot in the set viewer opens it here as a modal, with the set kept mounted beneath it so its filters and scroll survive a close; the same address loaded on its own renders expanded, as a page, with the way back to the set in place of the close button. There is no before side and no bucket: a set screenshot is not a comparison. The board pane, the zoom bars and the box toggle are the comparison modal's design view, unchanged. Below both panes, the spacing readings list every reading the capture measured — design token, raw value on the scale, off-scale, exempt — not only what changed, so the simplest story reads in full: Badge — Accent is 8px of --space-2 either side and a 2px pill half-step top and bottom. Token and exempt are the neutral tone; only raw-on-scale and off-scale take warning. A set captured without a token ledger, which today is every baselines screenshot, opens the same view and says so in two sentences: the screenshot and the board are still worth reading.",
+              "content": "One screenshot from a set, read in depth beside a design board. Pressing a screenshot in the set viewer opens it here as a modal, with the set kept mounted beneath it so its filters and scroll survive a close; the same address loaded on its own renders expanded, as a page, with the way back to the set in place of the close button. There is no before side and no bucket: a set screenshot is not a comparison. The board pane, the zoom bars and the box toggle are the comparison modal's design view, unchanged. Below both panes, the spacing readings list every reading the capture measured — design token, raw value on the scale, off-scale, exempt — not only what changed, so the simplest story reads in full: Badge — Accent is 8px of --space-2 either side and a 2px pill half-step top and bottom. Token and exempt are the neutral tone; only raw-on-scale and off-scale take warning. A set captured without a token ledger, which today is every baselines screenshot, opens the same view and says so in two sentences: the screenshot and the board are still worth reading. The title is the way out to the story itself: viewport/theme · set is underlined and opens the dev Storybook (localhost:6006), drawn as a link only while the console runs in development and as plain text otherwise; the arrow-out square opens the published Storybook in the shot's theme — acceptance-gate only, since no child publishes one.",
               "lineHeight": 1.5,
               "fontFamily": "$font-body",
               "fontSize": 13,
@@ -51830,14 +51830,61 @@
                               "alignItems": "center",
                               "children": [
                                 {
-                                  "type": "text",
-                                  "id": "ZKWCb",
-                                  "name": "ti",
-                                  "fill": "$text",
-                                  "content": "Atoms/Badge — Accent · desktop/light · main-2026-10-16",
-                                  "fontFamily": "$font-mono",
-                                  "fontSize": 12,
-                                  "fontWeight": "700"
+                                  "type": "frame",
+                                  "id": "jC9BR",
+                                  "name": "title",
+                                  "gap": 6,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "Ru8bQ",
+                                      "name": "story",
+                                      "fill": "$text",
+                                      "content": "Atoms/Badge — Accent ·",
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "700"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "V2ZRV",
+                                      "name": "dev Storybook link",
+                                      "stroke": "$accent",
+                                      "strokeWidth": {
+                                        "bottom": 1
+                                      },
+                                      "strokeAlignment": "inner",
+                                      "padding": [
+                                        0,
+                                        0,
+                                        1,
+                                        0
+                                      ],
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "Iv8O7",
+                                          "name": "t",
+                                          "fill": "$accent",
+                                          "content": "desktop/light · main-2026-10-16",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "700"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "icon",
+                                      "id": "Tq4xi",
+                                      "name": "published Storybook",
+                                      "width": 12,
+                                      "height": 12,
+                                      "icon": "square-arrow-out-up-right",
+                                      "library": "lucide",
+                                      "fill": "$accent"
+                                    }
+                                  ]
                                 },
                                 {
                                   "type": "frame",
@@ -54043,14 +54090,61 @@
                               "alignItems": "center",
                               "children": [
                                 {
-                                  "type": "text",
-                                  "id": "NTEYQ",
-                                  "name": "ti",
-                                  "fill": "$text",
-                                  "content": "Atoms/Badge — Accent · desktop/light · main-2026-10-16",
-                                  "fontFamily": "$font-mono",
-                                  "fontSize": 12,
-                                  "fontWeight": "700"
+                                  "type": "frame",
+                                  "id": "LOqiW",
+                                  "name": "title",
+                                  "gap": 6,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "Rdqze",
+                                      "name": "story",
+                                      "fill": "$text",
+                                      "content": "Atoms/Badge — Accent ·",
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "700"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "oasbf",
+                                      "name": "dev Storybook link",
+                                      "stroke": "$accent",
+                                      "strokeWidth": {
+                                        "bottom": 1
+                                      },
+                                      "strokeAlignment": "inner",
+                                      "padding": [
+                                        0,
+                                        0,
+                                        1,
+                                        0
+                                      ],
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "R6PrT",
+                                          "name": "t",
+                                          "fill": "$accent",
+                                          "content": "desktop/light · main-2026-10-16",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "700"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "icon",
+                                      "id": "x93xtf",
+                                      "name": "published Storybook",
+                                      "width": 12,
+                                      "height": 12,
+                                      "icon": "square-arrow-out-up-right",
+                                      "library": "lucide",
+                                      "fill": "$accent"
+                                    }
+                                  ]
                                 },
                                 {
                                   "type": "frame",
@@ -56612,14 +56706,61 @@
                                   "fontWeight": "normal"
                                 },
                                 {
-                                  "type": "text",
-                                  "id": "f7BacN",
-                                  "name": "ti",
-                                  "fill": "$text",
-                                  "content": "Atoms/Badge — Accent · desktop/light · main-2026-10-16",
-                                  "fontFamily": "$font-mono",
-                                  "fontSize": 12,
-                                  "fontWeight": "700"
+                                  "type": "frame",
+                                  "id": "BMu1u",
+                                  "name": "title",
+                                  "gap": 6,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "oduuE",
+                                      "name": "story",
+                                      "fill": "$text",
+                                      "content": "Atoms/Badge — Accent ·",
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "700"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "p5yAFM",
+                                      "name": "dev Storybook link",
+                                      "stroke": "$accent",
+                                      "strokeWidth": {
+                                        "bottom": 1
+                                      },
+                                      "strokeAlignment": "inner",
+                                      "padding": [
+                                        0,
+                                        0,
+                                        1,
+                                        0
+                                      ],
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "CGA7Q",
+                                          "name": "t",
+                                          "fill": "$accent",
+                                          "content": "desktop/light · main-2026-10-16",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "700"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "icon",
+                                      "id": "cXE0Z",
+                                      "name": "published Storybook",
+                                      "width": 12,
+                                      "height": 12,
+                                      "icon": "square-arrow-out-up-right",
+                                      "library": "lucide",
+                                      "fill": "$accent"
+                                    }
+                                  ]
                                 },
                                 {
                                   "type": "frame",
@@ -58825,14 +58966,61 @@
                               "alignItems": "center",
                               "children": [
                                 {
-                                  "type": "text",
-                                  "id": "iupMS",
-                                  "name": "ti",
-                                  "fill": "$text",
-                                  "content": "Atoms/Badge — Accent · desktop/light · main-2026-10-16",
-                                  "fontFamily": "$font-mono",
-                                  "fontSize": 12,
-                                  "fontWeight": "700"
+                                  "type": "frame",
+                                  "id": "d3LHgN",
+                                  "name": "title",
+                                  "gap": 6,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "r3FhO",
+                                      "name": "story",
+                                      "fill": "$text",
+                                      "content": "Atoms/Badge — Accent ·",
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "700"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "qiohk",
+                                      "name": "dev Storybook link",
+                                      "stroke": "$accent",
+                                      "strokeWidth": {
+                                        "bottom": 1
+                                      },
+                                      "strokeAlignment": "inner",
+                                      "padding": [
+                                        0,
+                                        0,
+                                        1,
+                                        0
+                                      ],
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "HuBN9",
+                                          "name": "t",
+                                          "fill": "$accent",
+                                          "content": "desktop/light · main-2026-10-16",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "700"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "icon",
+                                      "id": "q0CdK",
+                                      "name": "published Storybook",
+                                      "width": 12,
+                                      "height": 12,
+                                      "icon": "square-arrow-out-up-right",
+                                      "library": "lucide",
+                                      "fill": "$accent"
+                                    }
+                                  ]
                                 },
                                 {
                                   "type": "frame",
@@ -61283,14 +61471,61 @@
                               "alignItems": "center",
                               "children": [
                                 {
-                                  "type": "text",
-                                  "id": "NzeTj",
-                                  "name": "ti",
-                                  "fill": "$text",
-                                  "content": "Badge — Accent · desktop/light",
-                                  "fontFamily": "$font-mono",
-                                  "fontSize": 9,
-                                  "fontWeight": "700"
+                                  "type": "frame",
+                                  "id": "iyVm1",
+                                  "name": "title",
+                                  "gap": 6,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "a7g7a",
+                                      "name": "story",
+                                      "fill": "$text",
+                                      "content": "Badge — Accent ·",
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 10,
+                                      "fontWeight": "700"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "NaIT1",
+                                      "name": "dev Storybook link",
+                                      "stroke": "$accent",
+                                      "strokeWidth": {
+                                        "bottom": 1
+                                      },
+                                      "strokeAlignment": "inner",
+                                      "padding": [
+                                        0,
+                                        0,
+                                        1,
+                                        0
+                                      ],
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "BzFXC",
+                                          "name": "t",
+                                          "fill": "$accent",
+                                          "content": "desktop/light",
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 10,
+                                          "fontWeight": "700"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "icon",
+                                      "id": "snja5",
+                                      "name": "published Storybook",
+                                      "width": 10,
+                                      "height": 10,
+                                      "icon": "square-arrow-out-up-right",
+                                      "library": "lucide",
+                                      "fill": "$accent"
+                                    }
+                                  ]
                                 },
                                 {
                                   "type": "frame",
