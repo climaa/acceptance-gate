@@ -6,8 +6,10 @@ import { type ReactNode, useEffect, useState } from 'react';
 import { Dialog, IconButton, SegmentedControl, Stack } from '@gate/ui';
 import type { Tier } from '@gate/visual-diff/policy';
 import { useMediaQuery, WIDE_VIEWPORT } from '@/hooks/useMediaQuery';
+import { useAddress, useOverlayParams } from '@/hooks/useOverlayParams';
 import { SHOT_LAYOUTS, type ShotLayout, useShotTools } from '@/hooks/useShotTools';
 import { defaultBoard, type DesignBoard, isDesignBoard } from '@/lib/comparison';
+import { asksOverlay } from '@/lib/overlay-params';
 import type { Readings } from '@/lib/readings';
 import {
   DEV_STORYBOOK,
@@ -244,11 +246,12 @@ export function ShotView({ tier, shot, ledger, entry, ...heading }: ShotViewProp
   // A board equal to the tier's own is not a choice worth recording.
   const boardParam = (picked: DesignBoard) =>
     picked === defaultBoard(tier) ? null : picked;
+  // Called from handlers, after `overlay` below exists.
   const write = (picked: DesignBoard, crop: string | null) =>
     window.history.replaceState(
       null,
       '',
-      shotViewHref(label, shot.key, boardParam(picked), crop),
+      shotViewHref(label, shot.key, boardParam(picked), crop, overlay.query),
     );
   // A crop is in one board's pixels, so another board drops it.
   const pickBoard = (next: DesignBoard) => write(next, null);
@@ -258,7 +261,12 @@ export function ShotView({ tier, shot, ledger, entry, ...heading }: ShotViewProp
     story: shot.key,
     asked: params.get('crop'),
     onCropParam: (crop) => write(board, crop),
+    overlayAsked: asksOverlay(params),
   });
+  const overlay = useOverlayParams(params, tools.layout === 'overlay');
+  useAddress(
+    shotViewHref(label, shot.key, boardParam(board), params.get('crop'), overlay.query),
+  );
 
   const modal = entry === 'set';
 
@@ -311,6 +319,8 @@ export function ShotView({ tier, shot, ledger, entry, ...heading }: ShotViewProp
                 onAskCrop={tools.askCrop}
                 grid={grid}
                 zoom={tools.tools.sync ? tools.tools.view?.zoom : undefined}
+                params={overlay.params}
+                onParams={overlay.onParams}
               />
             ) : null,
         }}

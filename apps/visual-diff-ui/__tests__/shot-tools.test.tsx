@@ -3,7 +3,7 @@ import { cleanup, fireEvent, render, screen, within } from '@testing-library/rea
 // Imported explicitly rather than relying on `globals: true` — tsconfig's
 // `**/*.tsx` include means tsc typechecks this file.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { zoomIndexOf } from '../components/OverlayStage';
+import { zoomIndexOf } from '../lib/overlay-params';
 import { ShotView } from '../components/ShotView';
 import { setSearchParams } from './stubs/next-navigation';
 
@@ -414,5 +414,104 @@ describe('the overlay’s starting zoom', () => {
     expect([undefined, 1, 1.5, 2.25, 3.375, 3.4, 50].map(zoomIndexOf)).toEqual([
       0, 0, 1, 2, 3, 3, 5,
     ]);
+  });
+});
+
+describe('the overlay in the address', () => {
+  const crop = (container: HTMLElement) =>
+    container.querySelector<HTMLImageElement>('.vd-overlay__crop');
+
+  it('opens a shared overlay as it was left: blend, opacity, nudges and zoom', () => {
+    const { container } = renderView(
+      'crop=0,0,200,100&view=overlay&blend=difference&opacity=80&offset=-14,-11&shot=2,0&zoom=150',
+    );
+
+    expect({
+      blend: crop(container)?.dataset.blend,
+      opacity: crop(container)?.style.opacity,
+      left: crop(container)?.style.left,
+      shot: container.querySelector<HTMLImageElement>('.vd-overlay__shot')?.style.left,
+      zoom: screen.getByText('150%') !== null,
+      said: screen.getByText(/offset −14, −11/) !== null,
+    }).toEqual({
+      blend: 'difference',
+      opacity: '0.8',
+      left: '-21px',
+      shot: '3px',
+      zoom: true,
+      said: true,
+    });
+  });
+
+  it('writes the overlay into the address when it is laid on', () => {
+    renderView('crop=0,0,200,100');
+
+    fireEvent.click(within(viewGroup()).getByRole('button', { name: 'overlay' }));
+
+    expect(replaceState.mock.calls.at(-1)?.[2]).toBe(
+      `${AT}?crop=0,0,200,100&view=overlay`,
+    );
+  });
+
+  it('writes each change to the alignment, so the link follows it', () => {
+    renderView('crop=0,0,200,100&view=overlay');
+    const pane = screen.getByRole('group', {
+      name: 'the screenshot with the board crop over it',
+    });
+
+    fireEvent.click(
+      within(screen.getByRole('group', { name: 'blend' })).getByRole('button', {
+        name: 'difference',
+      }),
+    );
+    fireEvent.keyDown(pane, { key: 'ArrowLeft', shiftKey: true });
+
+    expect(replaceState.mock.calls.at(-1)?.[2]).toBe(
+      `${AT}?crop=0,0,200,100&view=overlay&blend=difference&offset=-10,0`,
+    );
+  });
+
+  it('takes the overlay out of the address when the view goes back beside', () => {
+    renderView('crop=0,0,200,100&view=overlay&blend=difference');
+
+    fireEvent.click(within(viewGroup()).getByRole('button', { name: 'side by side' }));
+
+    expect(replaceState.mock.calls.at(-1)?.[2]).toBe(`${AT}?crop=0,0,200,100`);
+  });
+
+  it('writes nothing on opening a link it can already read', () => {
+    renderView('crop=0,0,200,100&view=overlay&blend=difference');
+
+    expect(replaceState).not.toHaveBeenCalled();
+  });
+});
+
+// Regression, 19 Oct 2026: a link opening on the overlay found the screenshot
+// already loaded before hydration, so no load event came and the layers kept no
+// size — the crop zoomed to 759% over a screenshot left at 100%.
+describe('the overlay opened cold', () => {
+  afterEach(() => {
+    Reflect.deleteProperty(HTMLImageElement.prototype, 'naturalWidth');
+    Reflect.deleteProperty(HTMLImageElement.prototype, 'naturalHeight');
+    Reflect.deleteProperty(HTMLImageElement.prototype, 'complete');
+  });
+
+  it('sizes the layers from a screenshot that loaded before it could listen', () => {
+    for (const [name, value] of [
+      ['naturalWidth', 200],
+      ['naturalHeight', 25],
+      ['complete', true],
+    ] as const) {
+      Object.defineProperty(HTMLImageElement.prototype, name, {
+        configurable: true,
+        get: () => value,
+      });
+    }
+
+    const { container } = renderView('crop=0,0,200,100&view=overlay&zoom=150');
+
+    expect(container.querySelector<HTMLElement>('.vd-overlay__layers')?.style.width).toBe(
+      '300px',
+    );
   });
 });

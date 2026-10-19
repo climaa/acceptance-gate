@@ -16,8 +16,9 @@ import { useBoardCrop, useBoardTiles } from './useBoardCrop';
  * pixels — because it is a thing to point someone at: a link reproduces exactly
  * the region that was compared. With no crop in the address at all, the board
  * opens on the story's own tile, as Board 04 draws it; an empty `crop=` is the
- * reader asking for the whole board. Sync, cropping and the view are ways of looking,
- * held here, as the modal's split and grid are.
+ * reader asking for the whole board. The view starts where the address says
+ * (`view=overlay`, lib/overlay-params.ts), so a shared overlay opens as one; sync
+ * and cropping are ways of looking, held here, as the modal's split and grid are.
  */
 
 /** Both panes at rest: the whole image, fitted and centred in its pane. */
@@ -38,6 +39,8 @@ interface ShotToolsInput {
   asked: string | null;
   /** Writes the address with a new crop, or none. */
   onCropParam: (crop: string | null) => void;
+  /** Whether the address asks for the overlay. */
+  overlayAsked?: boolean;
 }
 
 /** A key the view answers to, unless the reader is typing or reaching for a
@@ -70,6 +73,7 @@ export function useShotTools({
   story,
   asked,
   onCropParam,
+  overlayAsked = false,
 }: ShotToolsInput): {
   /** What the stage is handed, exactly — the overlay is the host's to draw. */
   tools: Omit<ShotTools, 'overlay'>;
@@ -82,7 +86,9 @@ export function useShotTools({
   const [sync, setSync] = useState(true);
   const [view, setView] = useState<PanZoomView | undefined>(undefined);
   const [cropping, setCropping] = useState(false);
-  const [layout, setLayout] = useState<ShotLayout>('side by side');
+  const [layout, setLayout] = useState<ShotLayout>(
+    overlayAsked ? 'overlay' : 'side by side',
+  );
   const tiles = useBoardTiles(board);
   const tile = asked === null && tiles ? storyTile(tiles, story) : null;
   const rect = tile ? tile.rect : parseCrop(asked);
