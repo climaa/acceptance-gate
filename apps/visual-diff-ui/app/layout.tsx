@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import NextLink from 'next/link';
 import { Suspense } from 'react';
 import { Badge, SiteHeader } from '@gate/ui';
-import { Analytics } from '@vercel/analytics/next';
 import { resolveDataDir } from '@/lib/data';
 import {
   APP_DESCRIPTION,
@@ -17,6 +16,7 @@ import {
 } from '@/lib/site';
 import { SITE_SHARE_IMAGES } from '@/lib/share';
 import { THEME_SCRIPT } from '@/lib/theme';
+import { SiteAnalytics } from './site-analytics';
 import './globals.css';
 
 /** What a page that names no preview of its own — the 404 — still shares: the
@@ -111,7 +111,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             a <script> — no build's HTML carries the beacon's tag, because the
             package appends it in an effect. Read the network log, not the
             markup, when checking whether this works. */}
-        {process.env.VERCEL_ENV === 'production' && <Analytics />}
+        {process.env.VERCEL_ENV === 'production' && <SiteAnalytics />}
       </body>
     </html>
   );

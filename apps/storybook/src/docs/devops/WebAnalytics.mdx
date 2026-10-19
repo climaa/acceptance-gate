@@ -17,9 +17,11 @@ below were taken from; Storybook has no React shell to put a component in and ga
 string at build time instead. The Next.js mechanism comes first; the section on the fourth
 surface contradicts two of its conclusions, and says which two.
 
-This is the only thing these sites do that phones home. It is cookieless and writes no
-client-side storage, so it adds nothing to the one `localStorage` key each Next app's
-`lib/theme.ts` already owns. There is no consent banner, and none is required.
+This is the only thing these sites do that phones home. It is cookieless, and for a reader
+it writes no client-side storage, so it adds nothing to the one `localStorage` key each Next
+app's `lib/theme.ts` already owns. The single exception is the owner's opt-out below, which
+writes a `va-disable` key only in a browser that was opened with `?va-disable=1`. There is
+no consent banner, and none is required.
 
 ## The gate, in the Next.js apps
 
@@ -148,6 +150,34 @@ because the loader calls it on every beacon. `analytics-head.test.ts` enforces b
 running the emitted script rather than the imported binding, and recovering the handler off
 the queue it registers into — a closure that would work in the suite and fail in the
 browser fails in the suite too.
+
+## Keeping the owner's own visits out
+
+The production gate keeps reviewers out; it cannot tell the owner reading his own live site
+from a reader. A UTM tag does not help — it labels a visit rather than excluding it, and the
+Hobby plan does not break the dashboard down by it. What Vercel offers is `beforeSend`:
+return `null` and the event is never sent, and its documented pattern for "not me" is a
+`va-disable` flag in `localStorage`.
+
+All four surfaces register the same function for it, `optOutBeforeSend` from
+`@gate/logger/analytics`. Setting the flag by hand in DevTools — once per subdomain, once per
+browser, and impractical on a phone — is replaced by a link:
+
+| Open any page with | Effect on this origin, in this browser                          |
+| ------------------ | --------------------------------------------------------------- |
+| `?va-disable=1`    | Stores the flag; this visit and every later one are dropped     |
+| `?va-disable=0`    | Removes the flag; this visit is reported, without the parameter |
+
+`localStorage` is per origin, so it is one bookmark per surface. Every failure — no storage,
+blocked site data, an unparseable URL — sends the event as it came: miscounting the owner
+once is cheaper than losing a reader's view. Views already counted cannot be removed.
+
+Two wiring details. In the Next apps the function is passed from a small client component,
+`app/site-analytics.tsx`, because a server layout cannot hand a function to a client one; the
+production gate stays in the layout. In Storybook it is inlined via `.toString()` like the
+`?path=` rewrite — which is why it closes over nothing — and runs once from the manager head
+against the address it was opened at, before the manager's router can drop the parameter
+from the URL the first page view reports.
 
 ## Why `turbo.json` names the variables
 

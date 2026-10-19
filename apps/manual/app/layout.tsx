@@ -8,7 +8,6 @@ import { SiteFooter, SiteHeader } from '@gate/ui';
 import bodyFace from '@gate/ui/fonts/atkinson-hyperlegible-latin-400-normal.woff2';
 import bodyBoldFace from '@gate/ui/fonts/atkinson-hyperlegible-latin-700-normal.woff2';
 import displayFace from '@gate/ui/fonts/fraunces-latin-600-normal.woff2';
-import { Analytics } from '@vercel/analytics/next';
 import {
   FOOTER_LINKS,
   SITE_COPYRIGHT,
@@ -23,6 +22,7 @@ import {
 import { SITE_SHARE_IMAGES } from '@/lib/share';
 import { THEME_SCRIPT } from '@/lib/theme';
 import { SITE_VERSION } from '@/lib/version';
+import { SiteAnalytics } from './site-analytics';
 import './globals.css';
 
 /**
@@ -116,7 +116,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             is the component, not a <script> — no build's HTML carries the
             beacon's tag, because the package appends it in an effect. Read the
             network log, not the markup, when checking whether this works. */}
-        {process.env.VERCEL_ENV === 'production' && <Analytics />}
+        {process.env.VERCEL_ENV === 'production' && <SiteAnalytics />}
       </body>
     </html>
   );
