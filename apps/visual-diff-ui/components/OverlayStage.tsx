@@ -1,14 +1,15 @@
 'use client';
 
 import { type CSSProperties, type KeyboardEvent, useState } from 'react';
+import { Button, panZoomGridStep, SegmentedControl, Stack } from '@gate/ui';
+import { nudged, nudgeText } from '@/lib/board-crop';
 import {
-  Button,
-  PAN_ZOOM_STEP,
-  panZoomGridStep,
-  SegmentedControl,
-  Stack,
-} from '@gate/ui';
-import { type Nudge, nudged, nudgeText } from '@/lib/board-crop';
+  type Blend,
+  type OverlayAlignment,
+  ZOOMS,
+  zoomIndexOf,
+  zoomPercent,
+} from '@/lib/overlay-params';
 import type { BoardCrop } from '@/hooks/useBoardCrop';
 import type { DesignShot } from './DesignStage';
 
@@ -22,21 +23,11 @@ import type { DesignShot } from './DesignStage';
  * Both images are drawn at their CSS pixels times one zoom: the crop arrives
  * already in CSS pixels (hooks/useBoardCrop.ts), so a zoom moves them together.
  * The pane scrolls rather than drags — the arrow keys belong to the nudge.
+ *
+ * What a link should reproduce — blend, opacity, both nudges, zoom — is the
+ * host's, which keeps it in the address (lib/overlay-params.ts); which layer the
+ * arrows move stays here.
  */
-
-/** Zoom steps, as PanZoom steps them, from the shot's own size: six steps of
- *  PanZoom's own step, so the two views zoom alike. */
-const ZOOMS = Array.from({ length: 6 }, (_, at) => PAN_ZOOM_STEP ** at);
-
-/** The overlay step nearest a pane's zoom, so switching from side by side keeps
- *  the zoom the reader was at instead of dropping back to 100%. Both step by
- *  {@link PAN_ZOOM_STEP}, so a synced pane's zoom lands on one exactly. */
-export function zoomIndexOf(zoom: number | undefined): number {
-  if (!zoom || zoom <= 1) return 0;
-  const at = Math.round(Math.log(zoom) / Math.log(PAN_ZOOM_STEP));
-
-  return Math.min(Math.max(at, 0), ZOOMS.length - 1);
-}
 
 const OPACITY_LABEL = 'board opacity';
 
@@ -54,8 +45,6 @@ const LAYERS = [
  *  lights what drifts, so the eye finds the drift faster — still read by eye:
  *  no count, no verdict, so the board stays reference beside the screenshot and
  *  never a side of a comparison (D7, CONTEXT.md). */
-type Blend = 'normal' | 'difference';
-
 const BLENDS = [
   { value: 'normal', label: 'normal' },
   { value: 'difference', label: 'difference' },
@@ -71,8 +60,6 @@ const NUDGE_BUTTONS = [
   { key: 'ArrowDown', glyph: '↓', name: 'nudge down' },
 ] as const;
 
-const ORIGIN: Nudge = { x: 0, y: 0 };
-
 const NO_CROP =
   'Crop a region of the board to lay it over the screenshot — the whole board is never laid on a single shot.';
 
@@ -84,8 +71,12 @@ export interface OverlayStageProps {
   /** Lay the screenshot's own grid over it, as the panes do. The toolbar's grid
    *  toggle is shared with side by side, so the overlay has to honour it. */
   grid: boolean;
-  /** The zoom the panes were at, when they shared one, to start from. */
+  /** The zoom the panes were at, when they shared one, to start from when the
+   *  address names none. */
   zoom?: number;
+  /** Blend, opacity, nudges and zoom, as the address carries them. */
+  alignment: OverlayAlignment;
+  onAlignment: (alignment: OverlayAlignment) => void;
 }
 
 /** The overlay's own zoom: − the readout +, and the grid's step in words when
@@ -110,9 +101,7 @@ function OverlayZoom({
       >
         −
       </Button>
-      <span className="vd-overlay__readout vd-mono">
-        {Math.round((ZOOMS[at] ?? 1) * 100)}%
-      </span>
+      <span className="vd-overlay__readout vd-mono">{zoomPercent(at)}%</span>
       <Button
         variant="ghost"
         size="sm"
@@ -135,19 +124,20 @@ export function OverlayStage({
   onAskCrop,
   grid,
   zoom: from,
+  alignment,
+  onAlignment,
 }: OverlayStageProps) {
-  const [zoomAt, setZoomAt] = useState(() => zoomIndexOf(from));
+  const zoomAt = alignment.zoomAt ?? zoomIndexOf(from);
   // The screenshot's own size, read off it once it loads: a capture is one
   // device pixel per CSS pixel, so its natural size IS its CSS size.
   const [size, setSize] = useState<{ width: number; height: number } | null>(null);
-  const [opacity, setOpacity] = useState(50);
+  const measure = (img: HTMLImageElement) =>
+    setSize({ width: img.naturalWidth, height: img.naturalHeight });
   const [moving, setMoving] = useState<Layer>('board');
-  const [blend, setBlend] = useState<Blend>('normal');
-  const [nudges, setNudges] = useState<Record<Layer, Nudge>>({
-    board: ORIGIN,
-    shot: ORIGIN,
-  });
+  const { opacity, blend } = alignment;
+  const nudges = { board: alignment.board, shot: alignment.shot };
   const nudge = nudges[moving];
+  const set = (next: Partial<OverlayAlignment>) => onAlignment({ ...alignment, ...next });
   const zoom = ZOOMS[zoomAt] ?? 1;
   // Counted in the screenshot's own pixels, as PanZoom counts a pane's grid.
   const gridEvery = grid ? panZoomGridStep(zoom) : null;
@@ -157,7 +147,7 @@ export function OverlayStage({
     const next = crop && nudged(nudge, key, shift);
     if (!next) return false;
 
-    setNudges((all) => ({ ...all, [moving]: next }));
+    set({ [moving]: next });
     return true;
   };
 
@@ -174,7 +164,11 @@ export function OverlayStage({
     <div className="vd-overlay">
       <Stack direction="row" gap={3} align="center" className="vd-overlay__bar">
         <p className="vd-compare__caption vd-mono">{shot.caption} · board crop over it</p>
-        <OverlayZoom at={zoomAt} onAt={setZoomAt} gridEvery={gridEvery} />
+        <OverlayZoom
+          at={zoomAt}
+          onAt={(at) => set({ zoomAt: at })}
+          gridEvery={gridEvery}
+        />
       </Stack>
 
       <div
@@ -207,12 +201,13 @@ export function OverlayStage({
               left: `${nudges.shot.x * zoom}px`,
               top: `${nudges.shot.y * zoom}px`,
             }}
-            onLoad={(event) =>
-              setSize({
-                width: event.currentTarget.naturalWidth,
-                height: event.currentTarget.naturalHeight,
-              })
-            }
+            // A link that opens on the overlay can have the screenshot loaded
+            // before hydration, when no load event is left to hear: read the
+            // size off an image that is already complete, too.
+            ref={(img) => {
+              if (!size && img?.complete && img.naturalWidth) measure(img);
+            }}
+            onLoad={(event) => measure(event.currentTarget)}
           />
           {gridEvery !== null && (
             // PanZoom's grid layer, on the screenshot's pixels: it follows the
@@ -277,7 +272,7 @@ export function OverlayStage({
               label="blend"
               options={BLENDS}
               value={blend}
-              onChange={(value) => setBlend(value as Blend)}
+              onChange={(value) => set({ blend: value as Blend })}
             />
           </Stack>
           <label className="vd-overlay__label vd-mono">
@@ -288,7 +283,7 @@ export function OverlayStage({
               max={100}
               value={opacity}
               aria-label={OPACITY_LABEL}
-              onChange={(event) => setOpacity(Number(event.target.value))}
+              onChange={(event) => set({ opacity: Number(event.target.value) })}
             />
           </label>
           <p className="vd-compare__caption vd-mono" aria-live="polite">

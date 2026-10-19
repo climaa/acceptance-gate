@@ -142,13 +142,15 @@ export const setShotUrl = (label: string, file: string) =>
  *
  * A board is carried only when someone picked one, the rule `comparisonHref`
  * keeps — so a link stays bare and opens on the board the tier lives on. A crop
- * of it is carried as `x,y,w,h` in the board's own pixels (lib/board-crop.ts).
+ * of it is carried as `x,y,w,h` in the board's own pixels (lib/board-crop.ts),
+ * and the overlay as the query lib/overlay-params.ts writes for it.
  */
 export function shotViewHref(
   label: string,
   key: string,
   board?: string | null,
   crop?: string | null,
+  overlay = '',
 ): string {
   const at = `${setHref(label)}/shot/${encodeURIComponent(key)}`;
   const params = new URLSearchParams();
@@ -157,7 +159,7 @@ export function shotViewHref(
   // are, and URLSearchParams would spell every comma %2C. An empty crop is
   // kept as `crop=`: it is the reader asking for the whole board, where no
   // crop at all opens on the story's tile.
-  const query = [params.toString(), crop == null ? '' : `crop=${crop}`]
+  const query = [params.toString(), crop == null ? '' : `crop=${crop}`, overlay]
     .filter(Boolean)
     .join('&');
 

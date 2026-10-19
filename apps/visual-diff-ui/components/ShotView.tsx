@@ -6,8 +6,8 @@ import { type ReactNode, useEffect, useState } from 'react';
 import { Dialog, IconButton, SegmentedControl, Stack } from '@gate/ui';
 import type { Tier } from '@gate/visual-diff/policy';
 import { useMediaQuery, WIDE_VIEWPORT } from '@/hooks/useMediaQuery';
-import { SHOT_LAYOUTS, type ShotLayout, useShotTools } from '@/hooks/useShotTools';
-import { defaultBoard, type DesignBoard, isDesignBoard } from '@/lib/comparison';
+import { useShotAddress } from '@/hooks/useShotAddress';
+import { SHOT_LAYOUTS, type ShotLayout } from '@/hooks/useShotTools';
 import type { Readings } from '@/lib/readings';
 import {
   DEV_STORYBOOK,
@@ -15,7 +15,7 @@ import {
   showsDevStorybook,
   storybookLink,
 } from '@/lib/report-view';
-import { setHref, shotTitle, shotViewHref } from '@/lib/shots';
+import { setHref, shotTitle } from '@/lib/shots';
 import { APP_NAME } from '@/lib/site';
 import { type DesignShot, DesignStage, type Split } from './DesignStage';
 import { OverlayStage } from './OverlayStage';
@@ -233,31 +233,18 @@ export function ShotView({ tier, shot, ledger, entry, ...heading }: ShotViewProp
   const { label } = heading;
   const router = useRouter();
   const params = useSearchParams();
-  const asked = params.get('board');
   const wide = useMediaQuery(WIDE_VIEWPORT, true);
   // Ways of looking, not things to point someone at — out of the URL, as the
   // comparison modal keeps them.
   const [layout, setLayout] = useState<Split>('columns');
   const [grid, setGrid] = useState(false);
 
-  const board = isDesignBoard(asked) ? asked : defaultBoard(tier);
-  // A board equal to the tier's own is not a choice worth recording.
-  const boardParam = (picked: DesignBoard) =>
-    picked === defaultBoard(tier) ? null : picked;
-  const write = (picked: DesignBoard, crop: string | null) =>
-    window.history.replaceState(
-      null,
-      '',
-      shotViewHref(label, shot.key, boardParam(picked), crop),
-    );
-  // A crop is in one board's pixels, so another board drops it.
-  const pickBoard = (next: DesignBoard) => write(next, null);
-  const tools = useShotTools({
-    board,
+  const { board, pickBoard, tools, paneZoom, overlay } = useShotAddress({
+    label,
+    shotKey: shot.key,
     frameWidth: shot.width ?? 0,
-    story: shot.key,
-    asked: params.get('crop'),
-    onCropParam: (crop) => write(board, crop),
+    tier,
+    params,
   });
 
   const modal = entry === 'set';
@@ -310,7 +297,9 @@ export function ShotView({ tier, shot, ledger, entry, ...heading }: ShotViewProp
                 crop={tools.tools.crop}
                 onAskCrop={tools.askCrop}
                 grid={grid}
-                zoom={tools.tools.sync ? tools.tools.view?.zoom : undefined}
+                zoom={paneZoom}
+                alignment={overlay.alignment}
+                onAlignment={overlay.onAlignment}
               />
             ) : null,
         }}

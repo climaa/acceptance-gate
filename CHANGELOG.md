@@ -32,6 +32,7 @@ Merged to `main` since v1.6.0, not yet released:
 - fix(visual-diff-ui): a filtered set and a compare pair are links (#574)
 - docs(blog): the merge that passed every check and did not ship (#575)
 - design: the boards' Badge meets Badge.css — tiles on --color-bg, stage crops, the Accent label (#576)
+- feat(visual-diff-ui): the shot view's overlay is a link — view, blend, opacity, nudges and zoom (#577)
 
 ## v1.6.0 — a screenshot is read against its design board, down to the design token
 
