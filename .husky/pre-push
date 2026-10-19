@@ -1,0 +1,6 @@
+# The gate, before anything reaches the remote. Logic lives in the script — a
+# hook is a bad place for anything you would want to read twice.
+#
+# "$@" forwards git's own arguments: the remote's name and its URL. The script
+# needs the first to push the receipt to the same place as the commit.
+node scripts/gate/pre-push.mjs "$@"
