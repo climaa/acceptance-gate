@@ -63,14 +63,29 @@ export interface AddressParams {
 
 const INTEGER = /^-?\d+$/;
 
+/** How far a link may nudge a layer, either way, in CSS pixels. Far past any
+ *  screenshot the console captures: a hand alignment is a few pixels, a
+ *  shift-press ten. The bound is for a link someone wrote by hand, which would
+ *  otherwise lay a layer a 1e+23-pixel scroll away and write back a value the
+ *  next read cannot parse. */
+export const MAX_NUDGE = 10_000;
+
+/** One axis of a nudge, or null for anything but a whole pixel in bounds. */
+function axis(value: string | undefined): number | null {
+  if (!value || !INTEGER.test(value)) return null;
+  const n = Number(value);
+
+  return Math.abs(n) <= MAX_NUDGE ? n : null;
+}
+
 /** `x,y` in whole pixels, or the origin for anything else. */
 function parseNudge(value: string | null): Nudge {
-  const [x, y, extra] = (value ?? '').split(',');
-  if (extra !== undefined || !x || !y || !INTEGER.test(x) || !INTEGER.test(y)) {
-    return ORIGIN;
-  }
+  const [rawX, rawY, extra] = (value ?? '').split(',');
+  const x = axis(rawX);
+  const y = axis(rawY);
+  if (extra !== undefined || x === null || y === null) return ORIGIN;
 
-  return { x: Number(x), y: Number(y) };
+  return { x, y };
 }
 
 function parseOpacity(value: string | null): number {

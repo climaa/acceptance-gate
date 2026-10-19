@@ -39,6 +39,14 @@ describe('the overlay’s address', () => {
     expect(parsed).toEqual(OVERLAY_DEFAULTS);
   });
 
+  it('reads a nudge past the bound as no nudge, not a layer a scroll away', () => {
+    const [far, edge] = ['offset=99999999999999999999999,1', 'offset=-10000,10000'].map(
+      (q) => read(q).board,
+    );
+
+    expect({ far, edge }).toEqual({ far: { x: 0, y: 0 }, edge: { x: -10000, y: 10000 } });
+  });
+
   it('holds an opacity past either end to the end it passed', () => {
     const [low, high] = ['opacity=-5', 'opacity=250'].map((q) => read(q).opacity);
 
