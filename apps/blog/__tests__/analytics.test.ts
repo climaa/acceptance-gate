@@ -22,7 +22,16 @@ import RootLayout from '../app/layout';
 vi.mock('@vercel/analytics/next', async () => {
   const { createElement: h } = await import('react');
 
-  return { Analytics: () => h('div', { 'data-analytics': 'vercel' }) };
+  const { optOutBeforeSend } = await import('@gate/logger/analytics');
+
+  // Which `beforeSend` it was handed, as a yes/no the markup can carry.
+  return {
+    Analytics: (props: { beforeSend?: unknown }) =>
+      h('div', {
+        'data-analytics': 'vercel',
+        'data-owner-opt-out': String(props.beforeSend === optOutBeforeSend),
+      }),
+  };
 });
 
 /** The frame with no page in it — this decision is the same on every route. */
@@ -39,6 +48,16 @@ describe('the page-view beacon', () => {
     const html = shell();
 
     expect(html).toContain('data-analytics="vercel"');
+  });
+
+  // The owner's own visits — opted out once with ?va-disable=1 — are dropped in
+  // the browser, by the beforeSend @gate/logger/analytics exports.
+  it("drops the owner's own page views", () => {
+    vi.stubEnv('VERCEL_ENV', 'production');
+
+    const html = shell();
+
+    expect(html).toContain('data-owner-opt-out="true"');
   });
 
   // The case the gate exists for. Previews sit behind Vercel auth, so every
