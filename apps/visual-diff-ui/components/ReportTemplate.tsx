@@ -4,6 +4,7 @@ import { Badge, Stack } from '@gate/ui';
 import type { CanonicalSet } from '@/lib/baselines';
 import { reportSides } from '@/lib/report-view';
 import type { CaptureSet, Summary } from '@/lib/summary';
+import { DeleteReportFromPage } from './ConfirmDialogs';
 import { ReportResults } from './ReportResults';
 
 /**
@@ -118,9 +119,23 @@ export interface ReportTemplateProps {
   sets: readonly CaptureSet[];
   /** The committed corpus, or null where there is none to read (a deployment). */
   corpus?: CanonicalSet | null;
+  /**
+   * Whether this console can change nothing — deployed, or showing the committed
+   * fixtures. The header's delete is left out entirely then, as the tables leave
+   * out theirs (`DashboardTemplate` names the same flag). Frozen unless told
+   * otherwise: a caller that forgets to say gets no destructive control, rather
+   * than one every press of which the server refuses.
+   */
+  frozen?: boolean;
 }
 
-export function ReportTemplate({ id, report, sets, corpus = null }: ReportTemplateProps) {
+export function ReportTemplate({
+  id,
+  report,
+  sets,
+  corpus = null,
+  frozen = true,
+}: ReportTemplateProps) {
   const sides = reportSides(id);
   const byLabel = new Map(sets.map((set) => [set.label, set]));
 
@@ -145,6 +160,15 @@ export function ReportTemplate({ id, report, sets, corpus = null }: ReportTempla
                 so the count rides in the header as well as leading the chips. */}
             {report.counts.a11y > 0 && (
               <Badge tone="danger">a11y {report.counts.a11y}</Badge>
+            )}
+
+            {/* Last in the row and pushed to its end: Board 04 draws it at the
+                header's right edge, away from the id it would otherwise read as
+                a decoration of. The one client island in this header. */}
+            {frozen ? null : (
+              <span className="vd-report__delete">
+                <DeleteReportFromPage id={id} />
+              </span>
             )}
           </Stack>
 

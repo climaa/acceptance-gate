@@ -53,6 +53,22 @@
   color: var(--color-accent);
 }
 
+/* Filled, for a glyph that destroys something — Board 01 draws it as the trash
+   on a report's own header. The same three tokens as `ds-btn--danger`, so a
+   delete reads as one colour whether it is spelled out or drawn. After the
+   shared hover above on purpose: the two selectors weigh the same, so source
+   order is what keeps a hovered danger red rather than turning it subtle. */
+.ds-icon-btn--danger {
+  background: var(--color-danger-solid);
+  color: var(--color-on-danger-solid);
+  border: 1px solid transparent;
+}
+
+.ds-icon-btn--danger:hover:not(:disabled) {
+  background: var(--color-danger-solid-hover);
+  color: var(--color-on-danger-solid);
+}
+
 /* The 45% Board 01 gives every disabled control, and `pointer-events: none` so
    the hover above cannot fire on a button that would do nothing. */
 .ds-icon-btn:disabled {

@@ -62,6 +62,19 @@ export interface MutationRequest {
   body?: unknown;
   /** What to say if the server refused without prose. Names the action. */
   fallback: string;
+  /**
+   * Where to go once it has landed, instead of re-reading the page here.
+   *
+   * For a mutation that removes the page it was made from: the report's own
+   * delete. A re-read there would ask the server for a report that is gone and
+   * render the miss, before any caller code after `await run()` got the chance
+   * to leave — the re-read is this hook's last act, and it runs first. So the
+   * leaving is this hook's too. `replace`, not `push`, because Back into a
+   * deleted report is a 404 the reviewer would have walked into on purpose.
+   *
+   * Only a success leaves. A refusal stays where it is, with its sentence.
+   */
+  leaveTo?: string;
 }
 
 /** A success carries the parsed body so the caller can read a partial refusal
@@ -89,6 +102,7 @@ export function useMutation(): Mutation {
     method,
     body,
     fallback,
+    leaveTo,
   }: MutationRequest): Promise<MutationResult> => {
     setBusy(true);
     setRefusals([]);
@@ -97,6 +111,7 @@ export function useMutation(): Mutation {
     // server still has whatever this is about to remove — see lib/page-refresh.ts.
     const release = holdPage();
     let changed = false;
+    let landed = false;
 
     try {
       const response = await fetchWithin(url, {
@@ -120,6 +135,7 @@ export function useMutation(): Mutation {
       // read itself is `release`'s, below: it is the last thing this mutation
       // does, and it carries anything the poller asked for while it waited.
       changed = true;
+      landed = true;
 
       return { ok: true, body: await response.json().catch(() => ({})) };
     } catch (error) {
@@ -129,7 +145,12 @@ export function useMutation(): Mutation {
       return { ok: false };
     } finally {
       setBusy(false);
-      release(() => router.refresh(), changed);
+      // Leaving reads the destination fresh, so it settles this mutation's debt
+      // and the release below owes nothing of its own — only what the poller
+      // asked for meanwhile, which a re-read of the new page also answers.
+      const leaving = landed && leaveTo !== undefined;
+      if (leaving) router.replace(leaveTo);
+      release(() => router.refresh(), changed && !leaving);
     }
   };
 

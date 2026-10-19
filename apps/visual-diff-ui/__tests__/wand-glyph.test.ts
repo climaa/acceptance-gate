@@ -29,16 +29,24 @@ const STORY = path.join(
   'IconButton.stories.tsx',
 );
 
+/** Where each side's wand starts. The scan runs from there to the first
+ *  `</svg>`: the story file also draws the danger row's trash, so a whole-file
+ *  scan would compare two glyphs against one. */
 const SIDES = [
-  { side: 'RunPanel', file: RUN_PANEL },
-  { side: 'the IconButton story', file: STORY },
+  { side: 'RunPanel', file: RUN_PANEL, start: 'function WandGlyph(' },
+  { side: 'the IconButton story', file: STORY, start: 'const Wand = (' },
 ];
 
-/** The glyph one source file draws: its `<svg viewBox>` and every `<path d>`,
- *  in document order. Each of the two files holds exactly one `<svg>`, which is
- *  what lets the scan be whole-file rather than scoped to the glyph block. */
-function glyph(file: string): { viewBox: string | undefined; paths: string[] } {
-  const source = fs.readFileSync(file, 'utf8');
+/** The wand one source file draws: its `<svg viewBox>` and every `<path d>`,
+ *  in document order, inside the block that opens at `start`. */
+function glyph({ file, start }: { file: string; start: string }): {
+  viewBox: string | undefined;
+  paths: string[];
+} {
+  const whole = fs.readFileSync(file, 'utf8');
+  const from = whole.indexOf(start);
+  // A missing anchor scans nothing, which the `is found in` case below reports.
+  const source = from === -1 ? '' : whole.slice(from, whole.indexOf('</svg>', from));
 
   return {
     viewBox: source.match(/<svg\s[^>]*viewBox="([^"]+)"/)?.[1],
@@ -50,14 +58,16 @@ describe('the wand glyph', () => {
   // Without this, a rename or a reformat that stopped either side matching would
   // leave two empty scans comparing equal — green while asserting nothing, which
   // is the exact blindness the parity case below exists to end.
-  it.each(SIDES)('is found in $side', ({ file }) => {
-    const { viewBox, paths } = glyph(file);
+  it.each(SIDES)('is found in $side', (side) => {
+    const { viewBox, paths } = glyph(side);
 
     expect(viewBox).toBeDefined();
     expect(paths.length).toBeGreaterThan(0);
   });
 
   it('draws the same paths and viewBox in RunPanel and the IconButton story', () => {
-    expect(glyph(RUN_PANEL)).toEqual(glyph(STORY));
+    const [runPanel, story] = SIDES.map(glyph);
+
+    expect(runPanel).toEqual(story);
   });
 });
