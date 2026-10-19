@@ -7,7 +7,7 @@ import { CANONICAL_LABEL, readCanonicalSet } from '@/lib/baselines';
 import { readSets, resolveDataDir } from '@/lib/data';
 import { repoRoot } from '@/lib/git';
 import { SetLabelSchema } from '@/lib/job-contract';
-import { readSetShots } from '@/lib/set-shots';
+import { readSetShots, setFilterFrom } from '@/lib/set-shots';
 import { pageMetadata } from '@/lib/share';
 import { setHref } from '@/lib/shots';
 import { NOT_FOUND_TITLE } from '@/lib/site';
@@ -39,21 +39,28 @@ export async function generateMetadata({
   });
 }
 
-export default function SetPage({ params }: PageProps<'/set/[label]'>) {
+export default function SetPage({ params, searchParams }: PageProps<'/set/[label]'>) {
   return (
     <Stack gap={6}>
       {/* `params` is request data and the shots are read per request, so the
           whole body is a dynamic hole — awaited inside the boundary, never above
-          it, or the route would have no static shell at all. */}
+          it, or the route would have no static shell at all. `searchParams` is
+          awaited in the same hole, for the same reason: the filter a link names
+          is checked on the server, so a shared view opens filtered on first
+          paint, with or without JavaScript. */}
       <Suspense fallback={<Skeleton lines={4} />}>
-        <SetContents params={params} />
+        <SetContents params={params} searchParams={searchParams} />
       </Suspense>
     </Stack>
   );
 }
 
-async function SetContents({ params }: Pick<PageProps<'/set/[label]'>, 'params'>) {
+async function SetContents({
+  params,
+  searchParams,
+}: Pick<PageProps<'/set/[label]'>, 'params' | 'searchParams'>) {
   const { label } = await params;
+  const filter = setFilterFrom(await searchParams);
   const { dir } = await resolveDataDir();
   const root = repoRoot();
 
@@ -83,6 +90,7 @@ async function SetContents({ params }: Pick<PageProps<'/set/[label]'>, 'params'>
       corpus={shots.isCanonical ? corpus : null}
       set={registry.sets.find((entry) => entry.label === label) ?? null}
       shots={shots}
+      filter={filter}
     />
   );
 }

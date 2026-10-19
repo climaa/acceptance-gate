@@ -15,7 +15,7 @@ import { HISTORY_ANCHOR } from '../lib/anchors';
 import type { HistoryRecord } from '../lib/job-contract';
 import type { CaptureSet } from '../lib/summary';
 import type { ReportListEntry } from '../lib/data';
-import { pushCalls, replaceCalls } from './stubs/next-navigation';
+import { pushCalls, replaceCalls, setSearchParams } from './stubs/next-navigation';
 
 /**
  * The console's read surface: three tables, the compare seam, and the retention
@@ -389,6 +389,38 @@ describe('the same-sha badge', () => {
 });
 
 describe('the compare pickers', () => {
+  afterEach(() => setSearchParams(''));
+
+  // A link to a pair has to show that pair here as well as in the run panel,
+  // or one screen names two different comparisons.
+  it('open on the pair a shared link names', () => {
+    setSearchParams(`a=${DIRTY.label}&b=${CLEAN.label}&mode=compare`);
+
+    render(consoleWith());
+
+    expect((screen.getByRole('combobox', { name: 'A' }) as HTMLSelectElement).value).toBe(
+      DIRTY.label,
+    );
+    expect((screen.getByRole('combobox', { name: 'B' }) as HTMLSelectElement).value).toBe(
+      CLEAN.label,
+    );
+  });
+
+  // A set deleted since the link was written: a select naming no option
+  // renders with nothing chosen, so the default pair stands in.
+  it('fall back to the default pair for a label this instance does not hold', () => {
+    setSearchParams('a=main-1999-01-01&b=main-1999-01-02');
+
+    render(consoleWith());
+
+    expect((screen.getByRole('combobox', { name: 'A' }) as HTMLSelectElement).value).toBe(
+      CLEAN.label,
+    );
+    expect((screen.getByRole('combobox', { name: 'B' }) as HTMLSelectElement).value).toBe(
+      DIRTY.label,
+    );
+  });
+
   it('labels the two pickers A and B', () => {
     render(consoleWith());
 

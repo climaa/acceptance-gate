@@ -13,6 +13,7 @@ import {
   parseVariantKey,
 } from '@gate/visual-diff/policy';
 import { BASELINE_ENV, CANONICAL_LABEL, setShotsDir } from './baselines';
+import { DEFAULT_SEGMENT, type SetFilter } from './set-filter';
 import { SETS_TAG } from './tags';
 import { storyTitle } from './title';
 
@@ -337,6 +338,29 @@ export const VIEWPORT_SEGMENTS = ['auto', ...VIEWPORT_CHOICES] as const;
 
 export type ThemeChoice = (typeof THEME_CHOICES)[number];
 export type ViewportChoice = (typeof VIEWPORT_CHOICES)[number];
+
+/** A strip's segment, as the URL carries it. */
+export type ThemeSegment = (typeof THEME_SEGMENTS)[number];
+export type ViewportSegment = (typeof VIEWPORT_SEGMENTS)[number];
+
+/** One strip's segment from a query value — the value if the strip draws it,
+ *  `both` otherwise, so a hand-edited or stale link degrades to "everything"
+ *  rather than to a strip with nothing checked. */
+function segmentFrom<T extends string>(segments: readonly T[], raw: unknown): T {
+  return segments.find((segment) => segment === raw) ?? (DEFAULT_SEGMENT as T);
+}
+
+/** The filter a link asks for, from `?theme=` and `?viewport=`. Takes the
+ *  page's own `searchParams` shape, where a repeated key arrives as an array:
+ *  that is no filter this page draws, so it reads as the default. */
+export function setFilterFrom(
+  query: Record<string, string | string[] | undefined>,
+): SetFilter {
+  return {
+    theme: segmentFrom(THEME_SEGMENTS, query.theme),
+    viewport: segmentFrom(VIEWPORT_SEGMENTS, query.viewport),
+  };
+}
 
 /** `${theme}|${viewport}` — the nine cells of the filter matrix. */
 export type FilterKey = `${ThemeChoice}|${ViewportChoice}`;
