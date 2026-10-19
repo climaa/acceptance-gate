@@ -38,13 +38,26 @@ const ARTICLE_SLUG = ARTICLE?.slug ?? '';
 const MULTI_WORD_TAG = 'visual regression';
 
 /**
- * The home page shows only the newest four, so the multi-word specimen must
- * come from that slice — hardcoding one couples the test to publication order,
- * which a new post breaks. The guard below fails first if no post on the home
- * page carries one.
+ * Every tag a chip on the first page carries, each once. The home page and page
+ * 1 of the index show the newest four, so the chips change with every post that
+ * publishes; checking each against its own route holds whatever the four are.
+ * The multi-word case — the one an encoded href would get wrong — is pinned on
+ * the post page below with `MULTI_WORD_TAG`, which does not depend on order.
  */
-const MULTI_WORD_TAG_ON_HOME =
-  ON_HOME.flatMap((post) => post.tags).find((tag) => tag.includes(' ')) ?? '';
+const TAGS_ON_HOME = [...new Set(ON_HOME.flatMap((post) => post.tags))];
+
+/** Each chip lands on the route /tags/[tag] prerenders, never on an encoding of
+ *  its display text — a second URL for one page. */
+const expectPrerenderedTagHrefs = (html: string) => {
+  const hrefs = hrefsIn(html);
+
+  for (const tag of TAGS_ON_HOME) {
+    expect(hrefs).toContain(tagPath(tag));
+    if (tagPath(tag) !== `/tags/${encodeURIComponent(tag)}`) {
+      expect(hrefs).not.toContain(`/tags/${encodeURIComponent(tag)}`);
+    }
+  }
+};
 
 const headingLevels = (html: string) =>
   [...html.matchAll(/<h([1-6])\b/g)].map(([, level]) => Number(level));
@@ -80,7 +93,7 @@ describe('content/posts', () => {
   it('finds the published posts it was written against', () => {
     expect(PUBLISHED.length).toBeGreaterThan(0);
     expect(PUBLISHED.flatMap((post) => post.tags)).toContain(MULTI_WORD_TAG);
-    expect(MULTI_WORD_TAG_ON_HOME).not.toBe('');
+    expect(TAGS_ON_HOME.length).toBeGreaterThan(0);
   });
 });
 
@@ -112,12 +125,7 @@ describe('the home page', () => {
   // The chips must land on the pages /tags/[tag] prerenders. TagList's own
   // default would encode the display text, which is a second URL for one page.
   it('points every tag chip at the prerendered tag route', () => {
-    const html = renderPage(HomePage);
-
-    expect(hrefsIn(html)).toContain(tagPath(MULTI_WORD_TAG_ON_HOME));
-    expect(hrefsIn(html)).not.toContain(
-      `/tags/${encodeURIComponent(MULTI_WORD_TAG_ON_HOME)}`,
-    );
+    expectPrerenderedTagHrefs(renderPage(HomePage));
   });
 
   // Without its own metadata the home page inherited the layout's, which names
@@ -165,13 +173,8 @@ describe('the blog index', () => {
   });
 
   it('points every tag chip at the prerendered tag route', () => {
-    const html = renderPage(BlogIndexPage);
-
-    // The same specimen as the home page: page 1 is the newest four.
-    expect(hrefsIn(html)).toContain(tagPath(MULTI_WORD_TAG_ON_HOME));
-    expect(hrefsIn(html)).not.toContain(
-      `/tags/${encodeURIComponent(MULTI_WORD_TAG_ON_HOME)}`,
-    );
+    // The same four as the home page: page 1 is the newest four.
+    expectPrerenderedTagHrefs(renderPage(BlogIndexPage));
   });
 
   it('nests no anchor inside another', () => {

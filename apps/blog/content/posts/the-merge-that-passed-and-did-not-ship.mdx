@@ -2,8 +2,9 @@
 title: 'The merge that passed every check and did not ship'
 description: 'One person and a handful of agents merged eighteen pull requests across five repositories in twenty-four hours, and the last merge never reached production: Vercel refused it on a Hobby limit of 100 deployments a day. The account had created 111. Half of them never built, and I still cannot tell what the meter counted. The limit is the easy part of the story.'
 date: '2026-10-14'
+updated: '2026-10-19'
 tags: ['ci', 'vercel', 'agents', 'cost']
-draft: true
+draft: false
 ---
 
 The last pull request I merged on Wednesday went green on every required check and then did not ship. Its four Vercel statuses all said the same thing:
@@ -133,3 +134,26 @@ Every count above is a tally of those 111 records by `state`, `target`, `meta.gi
 Not *upgrade the plan*. The plan is the cheap half.
 
 It is this. Every platform you deploy to has a place where it is allowed to say no, and you designed your monitoring for the rate at which a human reaches those places. Hand the keyboard to an agent and you reach them several times faster, on every meter at once — and the first you hear of it may be a red check nobody was required to read.
+
+## Update, 19 October
+
+Five days on, this is what happened to the list above.
+
+**The refused merge shipped by itself.** The redeploy I had booked was never needed. At 02:25 UTC the next morning a Dependabot merge built all four projects to production, and #515 went out with it — about seven and a half hours after the refusal, on a commit that had nothing to do with it.
+
+**There were two meters, not one.** The same day, a second warning arrived: 75% of the plan's 10 GB of *deployment storage*. That is bytes of builds Vercel keeps, not deployments created — and unlike the daily count, deleting old deployments does free it. Every merge to `main` had been a production build kept for fourteen days. I deleted 265 of them and cut retention to seven days for production and one for everything else.
+
+**Production stopped following `main`.** Since 15 October every project — the four here and the children's — takes production from a branch called `production`. A merge to `main` ships nothing; production moves when I fast-forward that branch in a release session.
+
+**Then only production deploys.** On 17 October every `vercel.json` changed to `deploymentEnabled: { "**": false, "production": true }`. In the three private children that was enough. Here it was not: every push still created four deployments, each cancelled as unaffected and each, presumably, on the meter. The configuration and the project settings are the same in all four repositories; the only difference I can find is that this one is public, and I have not proved that is the cause. On 18 October I turned Git deployments off for these four projects instead, which stops every branch but `production`. A move of that branch still deploys, and v1.6.0 shipped that way the same day.
+
+So, the five items:
+
+- **What counts.** Still unknown. Nothing since has told me whether a skipped deployment is on the meter.
+- **The `sandcastle/*` opt-out.** It no longer matters, because no branch but `production` deploys. The leak itself was never explained, and the newer opt-out leaked here in the same way.
+- **The test that rebuilt four sites.** A merge to `main` now builds nothing at all, so a one-line test change cannot spend four deployments.
+- **The shared account.** Still shared. Release sessions keep the parent's spend to a few deployments a release rather than four a merge, which leaves the children room.
+- **The signal.** Still nothing. A refused deployment is still a red check that someone has to read, though it can now only happen when I am deliberately shipping.
+
+The fix that held was not a cleverer opt-out. It was deciding that deploying is something I do on purpose, at a time I choose, instead of something every merge does on its own. That is the same answer the agents needed anyway.
+
