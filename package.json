@@ -24,6 +24,8 @@
     "visual-diff:container": "node scripts/visual-diff-container.mjs",
     "typecheck:sandcastle": "tsc --noEmit -p .sandcastle/tsconfig.json",
     "test:sandcastle": "vitest run --config vitest.sandcastle.config.mts",
+    "gate": "node scripts/gate/run.mjs",
+    "prepare": "husky",
     "health:check": "turbo run health && node scripts/complexity-gate.mjs --scope .sandcastle/ && node scripts/index-integrity.mjs && node scripts/board-scale-integrity.mjs"
   },
   "devDependencies": {
@@ -31,6 +33,7 @@
     "@types/node": "^22.20.5",
     "dotenv": "^18.0.7",
     "fallow": "3.33.1",
+    "husky": "^9.1.7",
     "prettier": "^3.9.10",
     "tsx": "^4.23.15",
     "turbo": "^2.11.7",
