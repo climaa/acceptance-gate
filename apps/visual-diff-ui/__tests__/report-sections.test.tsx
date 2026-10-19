@@ -282,6 +282,30 @@ describe('the bucket chip row', () => {
 });
 
 describe('the report header', () => {
+  // A deployed console and one showing the committed fixtures refuse every
+  // mutation, so the header draws no delete there — and the template draws none
+  // unless its caller says the console can change things.
+  it('offers no delete on a console that can change nothing', () => {
+    renderReport();
+
+    const header = screen.getByRole('region', { name: 'report' });
+
+    expect(within(header).queryByRole('button', { name: 'delete report' })).toBeNull();
+  });
+
+  it('offers the report its own delete on a console that can change it', () => {
+    setSearchParams('');
+    render(
+      <main>
+        <ReportTemplate id={REPORT_ID} report={REPORT} sets={SETS} frozen={false} />
+      </main>,
+    );
+
+    const header = screen.getByRole('region', { name: 'report' });
+
+    expect(within(header).getByRole('button', { name: 'delete report' })).toBeDefined();
+  });
+
   it('identifies both capture sets', () => {
     renderReport();
 

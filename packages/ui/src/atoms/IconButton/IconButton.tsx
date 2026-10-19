@@ -1,6 +1,6 @@
 import type { ComponentPropsWithoutRef, ElementType, ReactNode } from 'react';
 
-export type IconButtonVariant = 'secondary' | 'ghost';
+export type IconButtonVariant = 'secondary' | 'ghost' | 'danger';
 export type IconButtonSize = 'sm' | 'md';
 
 interface IconButtonOwnProps<E extends ElementType> {

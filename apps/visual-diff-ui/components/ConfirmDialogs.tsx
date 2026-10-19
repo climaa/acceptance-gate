@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { Button, Dialog, Stack } from '@gate/ui';
+import { type ReactNode, useState } from 'react';
+import { Button, Dialog, IconButton, Stack } from '@gate/ui';
 import { useMutation } from '@/hooks/useMutation';
 import { PruneResponseSchema } from '@/lib/api-contract';
 
@@ -100,7 +100,9 @@ const SET_DETAIL =
  * implementation is how those become true of both, which is the reason to have
  * merged them; the lines saved are not.
  *
- * Four values differ, and they are the whole of the difference. `fallback` and
+ * Four values differ between the twins, and they are the whole of the
+ * difference; the report page's own delete adds the two optional ones, a glyph
+ * for a trigger and somewhere to leave for. `fallback` and
  * the confirm verb are NOT among them: both twins already derived those from the
  * name, so they stay derived here and cannot drift apart.
  *
@@ -114,6 +116,12 @@ function DeleteConfirmButton({
   url,
   noun,
   detail,
+  trigger = (open) => (
+    <Button variant="danger" size="sm" onClick={open}>
+      delete
+    </Button>
+  ),
+  leaveTo,
 }: {
   /** The thing's own name. The question names it, and so does the confirm verb
    *  the reviewer reads last before pressing it. */
@@ -135,6 +143,13 @@ function DeleteConfirmButton({
   /** The sentence, not the paragraph: this component owns the `<p>` and its
    *  class, so a caller cannot misspell or drop it. */
   detail: string;
+  /** What opens the dialog. A table row's `delete` by default; the report's own
+   *  header draws a glyph there instead (Board 04). Only the control differs —
+   *  the dialog behind it is this one either way, which is the point. */
+  trigger?: (open: () => void) => ReactNode;
+  /** Where to go after the delete lands, for a delete made from the page it
+   *  removes — see `MutationRequest.leaveTo`. */
+  leaveTo?: string;
 }) {
   const [open, setOpen] = useState(false);
   const { run, refusals, busy, clear } = useMutation();
@@ -149,6 +164,7 @@ function DeleteConfirmButton({
       url,
       method: 'DELETE',
       fallback: `could not delete ${name}`,
+      leaveTo,
     });
 
     if (result.ok) close();
@@ -156,9 +172,7 @@ function DeleteConfirmButton({
 
   return (
     <>
-      <Button variant="danger" size="sm" onClick={() => setOpen(true)}>
-        delete
-      </Button>
+      {trigger(() => setOpen(true))}
 
       <Dialog open={open} onClose={close} label="Confirm deletion">
         <Stack gap={4}>
@@ -200,6 +214,61 @@ export function DeleteReportButton({ id }: DeleteReportButtonProps) {
       url={`/api/reports/${encodeURIComponent(id)}`}
       noun="the report"
       detail={REPORT_DETAIL}
+    />
+  );
+}
+
+/**
+ * lucide's `trash-2`, as Board 04 draws it on the report header and Board 01 in
+ * the IconButton tile's danger row. Stroked, like `WandGlyph` in `RunPanel.tsx`,
+ * and for the same reason: no Icon atom (#339), so a glyph lives with the one
+ * control that has a reason to draw it.
+ */
+function TrashGlyph() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M10 11v6" />
+      <path d="M14 11v6" />
+      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
+      <path d="M3 6h18" />
+      <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+    </svg>
+  );
+}
+
+/** The trash's name, and the whole of it — what a screen reader announces and a
+ *  scenario finds it by. Not `delete`: the reports table's buttons are counted by
+ *  that exact name, and this one is not a row's. */
+export const DELETE_REPORT_LABEL = 'delete report';
+
+/**
+ * The report page's own delete: the same confirmation as the table's, opened
+ * from a glyph in the report header, and leaving for the console once it lands.
+ *
+ * Leaving is not a nicety. The page it was pressed on no longer exists, so the
+ * re-read every other delete ends in would render the miss; and `/` is where the
+ * reviewer sees that the row went.
+ */
+export function DeleteReportFromPage({ id }: DeleteReportButtonProps) {
+  return (
+    <DeleteConfirmButton
+      name={id}
+      url={`/api/reports/${encodeURIComponent(id)}`}
+      noun="the report"
+      detail={REPORT_DETAIL}
+      trigger={(open) => (
+        <IconButton variant="danger" size="sm" label={DELETE_REPORT_LABEL} onClick={open}>
+          <TrashGlyph />
+        </IconButton>
+      )}
+      leaveTo="/"
     />
   );
 }

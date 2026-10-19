@@ -18,6 +18,14 @@
   color: var(--color-text);
 }
 
+/* The report's own delete, at the far end of the title row (Board 04). Auto
+   margin, not `space-between` on the row: the row wraps, and a wrapped trash
+   should start its own line at the right rather than drag the badges apart. */
+.vd-report__delete {
+  margin-inline-start: auto;
+  align-self: center;
+}
+
 .vd-report-id {
   margin: 0;
   font-size: var(--text-base);

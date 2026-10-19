@@ -49,7 +49,7 @@ type Story = StoryObj<typeof IconButton>;
  * Every cell of the variant × size grid gets a story, which is NOT what
  * `Button.stories.tsx` beside it does — that file states the other convention
  * outright, keeping one story per variant at the default size and adding the
- * sizes once. Two variants and two sizes is a small enough grid to draw whole,
+ * sizes once. Three variants and two sizes is a small enough grid to draw whole,
  * and every cell is a captured baseline; if that trade stops being worth it,
  * collapsing to Button's shape is the change to make.
  */
@@ -67,6 +67,35 @@ export const Ghost: Story = {
 
 export const GhostSmall: Story = {
   args: { variant: 'ghost', size: 'sm' },
+};
+
+/**
+ * Board 01 draws the danger row with lucide's `trash-2`, the glyph it is for:
+ * a wand on a red ground would be a sample nobody will ever see.
+ */
+const Trash = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={2}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M10 11v6" />
+    <path d="M14 11v6" />
+    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
+    <path d="M3 6h18" />
+    <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+  </svg>
+);
+
+export const Danger: Story = {
+  args: { variant: 'danger', label: 'delete report', children: <Trash /> },
+};
+
+export const DangerSmall: Story = {
+  args: { variant: 'danger', size: 'sm', label: 'delete report', children: <Trash /> },
 };
 
 export const Disabled: Story = {

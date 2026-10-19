@@ -5,7 +5,7 @@ import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { TIMED_OUT, UNREACHABLE, refusalOf, useMutation } from '../hooks/useMutation';
 import { NETWORK_TIMEOUT_MS } from '../lib/network';
-import { refreshCalls } from './stubs/next-navigation';
+import { refreshCalls, replaceCalls } from './stubs/next-navigation';
 
 /**
  * The one lifecycle every mutation on this console runs.
@@ -23,6 +23,7 @@ import { refreshCalls } from './stubs/next-navigation';
 afterEach(() => {
   cleanup();
   refreshCalls.length = 0;
+  replaceCalls.length = 0;
   vi.unstubAllGlobals();
 });
 
@@ -80,6 +81,55 @@ describe('a mutation that landed', () => {
     });
 
     expect(result).toEqual({ ok: true, body: {} });
+  });
+});
+
+/**
+ * A mutation that removes the page it was made from — the report's own delete.
+ * The re-read every other mutation ends in would ask for what is gone, so this
+ * one leaves instead, and only when it landed.
+ */
+describe('a mutation that leaves once it has landed', () => {
+  it('replaces the page with its destination instead of re-reading it', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() => Promise.resolve(jsonResponse(200, { removed: 'r' }))),
+    );
+    const hook = harness();
+
+    await act(async () => {
+      await hook.current.run({
+        url: '/api/reports/r',
+        method: 'DELETE',
+        fallback: 'f',
+        leaveTo: '/',
+      });
+    });
+
+    expect(replaceCalls).toEqual([{ url: '/', options: undefined }]);
+    expect(refreshCalls).toHaveLength(0);
+  });
+
+  it('stays where it is when the server refused, with the sentence', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() =>
+        Promise.resolve(jsonResponse(409, { error: 'a job is already running' })),
+      ),
+    );
+    const hook = harness();
+
+    await act(async () => {
+      await hook.current.run({
+        url: '/api/reports/r',
+        method: 'DELETE',
+        fallback: 'f',
+        leaveTo: '/',
+      });
+    });
+
+    expect(replaceCalls).toHaveLength(0);
+    expect(hook.current.refusals).toEqual(['a job is already running']);
   });
 });
 

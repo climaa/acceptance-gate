@@ -4,11 +4,13 @@ import { cleanup, fireEvent, render, screen, within } from '@testing-library/rea
 // `**/*.tsx` include means tsc typechecks this file.
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
+  DELETE_REPORT_LABEL,
   DeleteReportButton,
+  DeleteReportFromPage,
   DeleteSetButton,
   PruneButton,
 } from '../components/ConfirmDialogs';
-import { refreshCalls } from './stubs/next-navigation';
+import { refreshCalls, replaceCalls } from './stubs/next-navigation';
 
 /**
  * D2 as a screen: nothing is deleted implicitly, and every refusal comes back in
@@ -27,6 +29,7 @@ afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
   refreshCalls.length = 0;
+  replaceCalls.length = 0;
 });
 
 const SET = 'main-2026-08-17';
@@ -246,6 +249,59 @@ describe('the delete confirmation', () => {
         cache: 'no-store',
       }),
     );
+  });
+});
+
+/**
+ * The same confirmation, opened from the report's own header. What is new is
+ * the control in front of it and where the reviewer ends up: the page they
+ * pressed it on is gone, so a landed delete leaves for the console.
+ */
+describe('the report page delete', () => {
+  const openTrash = () =>
+    fireEvent.click(screen.getByRole('button', { name: DELETE_REPORT_LABEL }));
+
+  it('opens the confirmation naming the report rather than deleting on the press', () => {
+    const fetchMock = stubFetch({});
+    render(<DeleteReportFromPage id={REPORT} />);
+
+    openTrash();
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(
+      dialog('Confirm deletion').querySelector('.vd-confirm__question')?.textContent,
+    ).toBe(`Delete the report ${REPORT}?`);
+  });
+
+  it('deletes the report and leaves for the console, without re-reading the page', async () => {
+    const fetchMock = stubFetch({ body: { removed: REPORT } });
+    render(<DeleteReportFromPage id={REPORT} />);
+    openTrash();
+
+    fireEvent.click(screen.getByRole('button', { name: `delete ${REPORT}` }));
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      `/api/reports/${REPORT}`,
+      expect.objectContaining({ method: 'DELETE' }),
+    );
+    await vi.waitFor(() =>
+      expect(replaceCalls).toEqual([{ url: '/', options: undefined }]),
+    );
+    expect(refreshCalls).toHaveLength(0);
+  });
+
+  it('stays on the report with the dialog open when the server refuses', async () => {
+    stubFetch({ ok: false, status: 409, body: { error: JOB_RUNNING } });
+    render(<DeleteReportFromPage id={REPORT} />);
+    openTrash();
+
+    fireEvent.click(screen.getByRole('button', { name: `delete ${REPORT}` }));
+
+    expect(await within(dialog('Confirm deletion')).findByRole('alert')).toHaveProperty(
+      'textContent',
+      JOB_RUNNING,
+    );
+    expect(replaceCalls).toHaveLength(0);
   });
 });
 
