@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { Activity } from 'react';
 // Imported explicitly rather than relying on `globals: true` — tsconfig's
 // `**/*.tsx` include means tsc typechecks this file.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -39,10 +40,8 @@ const AT = `/set/${SET}/shot/${KEY}`;
 
 const replaceState = vi.fn<History['replaceState']>();
 
-function renderView(query = '') {
-  setSearchParams(query);
-
-  return render(
+function shotView() {
+  return (
     <ShotView
       label={SET}
       story="Badge — Accent"
@@ -60,8 +59,14 @@ function renderView(query = '') {
       }}
       ledger={null}
       entry="direct"
-    />,
+    />
   );
+}
+
+function renderView(query = '') {
+  setSearchParams(query);
+
+  return render(shotView());
 }
 
 const pressed = (name: string) =>
@@ -513,5 +518,57 @@ describe('the overlay opened cold', () => {
     expect(container.querySelector<HTMLElement>('.vd-overlay__layers')?.style.width).toBe(
       '300px',
     );
+  });
+});
+
+describe('the overlay’s zoom in the address', () => {
+  it('writes the zoom it inherited from the panes, so a link opens at it', () => {
+    renderView('crop=0,0,200,100');
+    fireEvent.click(screen.getAllByRole('button', { name: 'zoom in' })[0]!);
+
+    fireEvent.click(within(viewGroup()).getByRole('button', { name: 'overlay' }));
+
+    expect(replaceState.mock.calls.at(-1)?.[2]).toBe(
+      `${AT}?crop=0,0,200,100&view=overlay&zoom=150`,
+    );
+  });
+
+  it('forgets its own zoom back beside the board, and starts from the panes again', () => {
+    renderView('crop=0,0,200,100&view=overlay&zoom=338');
+
+    fireEvent.click(within(viewGroup()).getByRole('button', { name: 'side by side' }));
+    fireEvent.click(within(viewGroup()).getByRole('button', { name: 'overlay' }));
+
+    expect({
+      readout: screen.getByText('100%') !== null,
+      address: replaceState.mock.calls.at(-1)?.[2],
+    }).toEqual({ readout: true, address: `${AT}?crop=0,0,200,100&view=overlay` });
+  });
+
+  it('offers no board picker over the overlay, so no pick can drop its alignment', () => {
+    renderView('crop=0,0,200,100&view=overlay&blend=difference');
+
+    expect(screen.queryByRole('group', { name: 'board' })).toBeNull();
+  });
+});
+
+// Regression, 19 Oct 2026: Next keeps a closed shot view mounted but hidden, so
+// reopening it from the set on a bare address brought back the overlay, nudged
+// and zoomed, under an address that named none of it.
+describe('the shot view shown again', () => {
+  it('takes the address it came back to, not the overlay it was left on', () => {
+    setSearchParams('crop=0,0,200,100&view=overlay&blend=difference&offset=2,0');
+    const { container, rerender } = render(
+      <Activity mode="visible">{shotView()}</Activity>,
+    );
+    rerender(<Activity mode="hidden">{shotView()}</Activity>);
+    setSearchParams('crop=0,0,200,100');
+
+    rerender(<Activity mode="visible">{shotView()}</Activity>);
+
+    expect({
+      overlay: container.querySelector('.vd-overlay'),
+      pressed: pressed('side by side'),
+    }).toEqual({ overlay: null, pressed: 'true' });
   });
 });

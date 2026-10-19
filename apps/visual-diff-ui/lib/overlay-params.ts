@@ -56,7 +56,8 @@ export const OVERLAY_DEFAULTS: OverlayParams = {
   zoomAt: undefined,
 };
 
-interface Params {
+/** What the address is read through: `useSearchParams()` or URLSearchParams. */
+export interface AddressParams {
   get: (name: string) => string | null;
 }
 
@@ -87,10 +88,10 @@ function parseZoom(value: string | null): number | undefined {
 }
 
 /** Whether the address asks for the overlay. */
-export const asksOverlay = (params: Params) => params.get('view') === 'overlay';
+export const asksOverlay = (params: AddressParams) => params.get('view') === 'overlay';
 
 /** The overlay the address carries; a value it cannot read is its default. */
-export function parseOverlay(params: Params): OverlayParams {
+export function parseOverlay(params: AddressParams): OverlayParams {
   return {
     blend: params.get('blend') === 'difference' ? 'difference' : 'normal',
     opacity: parseOpacity(params.get('opacity')),

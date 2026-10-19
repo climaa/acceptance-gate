@@ -7,6 +7,7 @@ import { Dialog, IconButton, SegmentedControl, Stack } from '@gate/ui';
 import type { Tier } from '@gate/visual-diff/policy';
 import { useMediaQuery, WIDE_VIEWPORT } from '@/hooks/useMediaQuery';
 import { useAddress, useOverlayParams } from '@/hooks/useOverlayParams';
+import { useReshow } from '@/hooks/useReshow';
 import { SHOT_LAYOUTS, type ShotLayout, useShotTools } from '@/hooks/useShotTools';
 import { defaultBoard, type DesignBoard, isDesignBoard } from '@/lib/comparison';
 import { asksOverlay } from '@/lib/overlay-params';
@@ -263,7 +264,14 @@ export function ShotView({ tier, shot, ledger, entry, ...heading }: ShotViewProp
     onCropParam: (crop) => write(board, crop),
     overlayAsked: asksOverlay(params),
   });
-  const overlay = useOverlayParams(params, tools.layout === 'overlay');
+  // The zoom the overlay starts from when the address names none.
+  const paneZoom = tools.tools.sync ? tools.tools.view?.zoom : undefined;
+  const overlay = useOverlayParams(params, tools.layout === 'overlay', paneZoom);
+  // Reopened from the set, the view takes the address it came back to.
+  useReshow(() => {
+    overlay.reset();
+    tools.onLayout(asksOverlay(params) ? 'overlay' : 'side by side');
+  });
   useAddress(
     shotViewHref(label, shot.key, boardParam(board), params.get('crop'), overlay.query),
   );
@@ -318,7 +326,7 @@ export function ShotView({ tier, shot, ledger, entry, ...heading }: ShotViewProp
                 crop={tools.tools.crop}
                 onAskCrop={tools.askCrop}
                 grid={grid}
-                zoom={tools.tools.sync ? tools.tools.view?.zoom : undefined}
+                zoom={paneZoom}
                 params={overlay.params}
                 onParams={overlay.onParams}
               />
