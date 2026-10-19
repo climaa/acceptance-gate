@@ -1038,7 +1038,12 @@
                           "id": "j0lNiR",
                           "type": "ref",
                           "ref": "XVO0t",
-                          "name": "i"
+                          "name": "i",
+                          "descendants": {
+                            "dXS0A": {
+                              "content": "Blog"
+                            }
+                          }
                         }
                       ]
                     }
