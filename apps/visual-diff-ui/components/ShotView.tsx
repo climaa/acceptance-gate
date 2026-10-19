@@ -6,11 +6,8 @@ import { type ReactNode, useEffect, useState } from 'react';
 import { Dialog, IconButton, SegmentedControl, Stack } from '@gate/ui';
 import type { Tier } from '@gate/visual-diff/policy';
 import { useMediaQuery, WIDE_VIEWPORT } from '@/hooks/useMediaQuery';
-import { useAddress, useOverlayParams } from '@/hooks/useOverlayParams';
-import { useReshow } from '@/hooks/useReshow';
-import { SHOT_LAYOUTS, type ShotLayout, useShotTools } from '@/hooks/useShotTools';
-import { defaultBoard, type DesignBoard, isDesignBoard } from '@/lib/comparison';
-import { asksOverlay } from '@/lib/overlay-params';
+import { useShotAddress } from '@/hooks/useShotAddress';
+import { SHOT_LAYOUTS, type ShotLayout } from '@/hooks/useShotTools';
 import type { Readings } from '@/lib/readings';
 import {
   DEV_STORYBOOK,
@@ -18,7 +15,7 @@ import {
   showsDevStorybook,
   storybookLink,
 } from '@/lib/report-view';
-import { setHref, shotTitle, shotViewHref } from '@/lib/shots';
+import { setHref, shotTitle } from '@/lib/shots';
 import { APP_NAME } from '@/lib/site';
 import { type DesignShot, DesignStage, type Split } from './DesignStage';
 import { OverlayStage } from './OverlayStage';
@@ -236,45 +233,19 @@ export function ShotView({ tier, shot, ledger, entry, ...heading }: ShotViewProp
   const { label } = heading;
   const router = useRouter();
   const params = useSearchParams();
-  const asked = params.get('board');
   const wide = useMediaQuery(WIDE_VIEWPORT, true);
   // Ways of looking, not things to point someone at — out of the URL, as the
   // comparison modal keeps them.
   const [layout, setLayout] = useState<Split>('columns');
   const [grid, setGrid] = useState(false);
 
-  const board = isDesignBoard(asked) ? asked : defaultBoard(tier);
-  // A board equal to the tier's own is not a choice worth recording.
-  const boardParam = (picked: DesignBoard) =>
-    picked === defaultBoard(tier) ? null : picked;
-  // Called from handlers, after `overlay` below exists.
-  const write = (picked: DesignBoard, crop: string | null) =>
-    window.history.replaceState(
-      null,
-      '',
-      shotViewHref(label, shot.key, boardParam(picked), crop, overlay.query),
-    );
-  // A crop is in one board's pixels, so another board drops it.
-  const pickBoard = (next: DesignBoard) => write(next, null);
-  const tools = useShotTools({
-    board,
+  const { board, pickBoard, tools, paneZoom, overlay } = useShotAddress({
+    label,
+    shotKey: shot.key,
     frameWidth: shot.width ?? 0,
-    story: shot.key,
-    asked: params.get('crop'),
-    onCropParam: (crop) => write(board, crop),
-    overlayAsked: asksOverlay(params),
+    tier,
+    params,
   });
-  // The zoom the overlay starts from when the address names none.
-  const paneZoom = tools.tools.sync ? tools.tools.view?.zoom : undefined;
-  const overlay = useOverlayParams(params, tools.layout === 'overlay', paneZoom);
-  // Reopened from the set, the view takes the address it came back to.
-  useReshow(() => {
-    overlay.reset();
-    tools.onLayout(asksOverlay(params) ? 'overlay' : 'side by side');
-  });
-  useAddress(
-    shotViewHref(label, shot.key, boardParam(board), params.get('crop'), overlay.query),
-  );
 
   const modal = entry === 'set';
 
@@ -327,8 +298,8 @@ export function ShotView({ tier, shot, ledger, entry, ...heading }: ShotViewProp
                 onAskCrop={tools.askCrop}
                 grid={grid}
                 zoom={paneZoom}
-                params={overlay.params}
-                onParams={overlay.onParams}
+                alignment={overlay.alignment}
+                onAlignment={overlay.onAlignment}
               />
             ) : null,
         }}

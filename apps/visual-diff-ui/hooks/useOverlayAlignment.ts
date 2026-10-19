@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import {
   type AddressParams,
-  type OverlayParams,
+  type OverlayAlignment,
   overlayQuery,
   parseOverlay,
   zoomIndexOf,
@@ -20,14 +20,14 @@ import {
  * reader zooms the overlay itself, that inherited zoom is the one written, so
  * a link opens at the zoom its sender was looking at.
  */
-export function useOverlayParams(
+export function useOverlayAlignment(
   params: AddressParams,
   overlaid: boolean,
   /** The panes' shared zoom, which the overlay starts from. */
   paneZoom: number | undefined,
 ): {
-  params: OverlayParams;
-  onParams: (next: OverlayParams) => void;
+  alignment: OverlayAlignment;
+  onAlignment: (next: OverlayAlignment) => void;
   query: string;
   /** Back to what the address says, for a view shown again (hooks/useReshow.ts). */
   reset: () => void;
@@ -42,28 +42,12 @@ export function useOverlayParams(
   }
 
   return {
-    params: overlay,
-    onParams: setOverlay,
+    alignment: overlay,
+    onAlignment: setOverlay,
     reset: () => setOverlay(parseOverlay(params)),
     query: overlayQuery(overlaid, {
       ...overlay,
       zoomAt: overlay.zoomAt ?? zoomIndexOf(paneZoom),
     }),
   };
-}
-
-/**
- * Writes the view's address whenever it changes after the first render — the
- * overlay, its alignment, the way into it. `replaceState`, as the crop is
- * written: an arrow key nudges a pixel, which is no history entry and no
- * navigation, and `useSearchParams` follows it all the same.
- */
-export function useAddress(href: string) {
-  const written = useRef(href);
-  useEffect(() => {
-    if (written.current === href) return;
-
-    written.current = href;
-    window.history.replaceState(null, '', href);
-  }, [href]);
 }

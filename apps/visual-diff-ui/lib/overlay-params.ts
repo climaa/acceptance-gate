@@ -36,7 +36,7 @@ export const zoomPercent = (at: number) => Math.round((ZOOMS[at] ?? 1) * 100);
 /** How the crop is laid on the screenshot. */
 export type Blend = 'normal' | 'difference';
 
-export interface OverlayParams {
+export interface OverlayAlignment {
   blend: Blend;
   /** The board's opacity, 0–100. */
   opacity: number;
@@ -48,7 +48,7 @@ export interface OverlayParams {
 
 export const ORIGIN: Nudge = { x: 0, y: 0 };
 
-export const OVERLAY_DEFAULTS: OverlayParams = {
+export const OVERLAY_DEFAULTS: OverlayAlignment = {
   blend: 'normal',
   opacity: 50,
   board: ORIGIN,
@@ -91,7 +91,7 @@ function parseZoom(value: string | null): number | undefined {
 export const asksOverlay = (params: AddressParams) => params.get('view') === 'overlay';
 
 /** The overlay the address carries; a value it cannot read is its default. */
-export function parseOverlay(params: AddressParams): OverlayParams {
+export function parseOverlay(params: AddressParams): OverlayAlignment {
   return {
     blend: params.get('blend') === 'difference' ? 'difference' : 'normal',
     opacity: parseOpacity(params.get('opacity')),
@@ -108,7 +108,7 @@ const moved = (at: Nudge) => at.x !== 0 || at.y !== 0;
  * digits and commas, which URLSearchParams would spell %2C. Empty when the view
  * is side by side, so a link to the panes stays as bare as it was.
  */
-export function overlayQuery(overlay: boolean, at: OverlayParams): string {
+export function overlayQuery(overlay: boolean, at: OverlayAlignment): string {
   if (!overlay) return '';
 
   return [

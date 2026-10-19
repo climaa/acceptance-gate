@@ -5,7 +5,7 @@ import { Button, panZoomGridStep, SegmentedControl, Stack } from '@gate/ui';
 import { nudged, nudgeText } from '@/lib/board-crop';
 import {
   type Blend,
-  type OverlayParams,
+  type OverlayAlignment,
   ZOOMS,
   zoomIndexOf,
   zoomPercent,
@@ -75,8 +75,8 @@ export interface OverlayStageProps {
    *  address names none. */
   zoom?: number;
   /** Blend, opacity, nudges and zoom, as the address carries them. */
-  params: OverlayParams;
-  onParams: (params: OverlayParams) => void;
+  alignment: OverlayAlignment;
+  onAlignment: (alignment: OverlayAlignment) => void;
 }
 
 /** The overlay's own zoom: − the readout +, and the grid's step in words when
@@ -124,20 +124,20 @@ export function OverlayStage({
   onAskCrop,
   grid,
   zoom: from,
-  params,
-  onParams,
+  alignment,
+  onAlignment,
 }: OverlayStageProps) {
-  const zoomAt = params.zoomAt ?? zoomIndexOf(from);
+  const zoomAt = alignment.zoomAt ?? zoomIndexOf(from);
   // The screenshot's own size, read off it once it loads: a capture is one
   // device pixel per CSS pixel, so its natural size IS its CSS size.
   const [size, setSize] = useState<{ width: number; height: number } | null>(null);
   const measure = (img: HTMLImageElement) =>
     setSize({ width: img.naturalWidth, height: img.naturalHeight });
   const [moving, setMoving] = useState<Layer>('board');
-  const { opacity, blend } = params;
-  const nudges = { board: params.board, shot: params.shot };
+  const { opacity, blend } = alignment;
+  const nudges = { board: alignment.board, shot: alignment.shot };
   const nudge = nudges[moving];
-  const set = (next: Partial<OverlayParams>) => onParams({ ...params, ...next });
+  const set = (next: Partial<OverlayAlignment>) => onAlignment({ ...alignment, ...next });
   const zoom = ZOOMS[zoomAt] ?? 1;
   // Counted in the screenshot's own pixels, as PanZoom counts a pane's grid.
   const gridEvery = grid ? panZoomGridStep(zoom) : null;
