@@ -26,12 +26,18 @@ describe('ShotContents', () => {
 
     const props = element.props as ShotViewProps;
     expect({
-      title: props.title,
+      story: props.story,
+      storyId: props.storyId,
+      viewport: props.viewport,
+      theme: props.theme,
       tier: props.tier,
       key: props.shot.key,
       src: props.shot.src,
     }).toEqual({
-      title: `Badge — Accent · desktop/light · ${SET}`,
+      story: 'Badge — Accent',
+      storyId: 'atoms-badge--accent',
+      viewport: 'desktop',
+      theme: 'light',
       tier: 'atoms',
       key: KEY,
       src: `/api/sets/${SET}/shots/${KEY}.png`,

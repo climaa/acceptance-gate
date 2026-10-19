@@ -3,7 +3,7 @@ import { resolveDataDir } from '@/lib/data';
 import { repoRoot } from '@/lib/git';
 import { readSetLedger } from '@/lib/set-ledger';
 import { readSetShots, type SetShot, type SetShots } from '@/lib/set-shots';
-import { setShotUrl, shotTitle } from '@/lib/shots';
+import { setShotUrl } from '@/lib/shots';
 import { type ShotEntry, ShotView } from './ShotView';
 
 /** The shot a key names in a set, with the title its story is grouped under. */
@@ -48,7 +48,10 @@ export async function ShotContents({
   return (
     <ShotView
       label={label}
-      title={shotTitle(title, shot.viewport, shot.theme, label)}
+      story={title}
+      storyId={shot.storyId}
+      viewport={shot.viewport}
+      theme={shot.theme}
       tier={shot.tier}
       shot={{
         key: shot.key,

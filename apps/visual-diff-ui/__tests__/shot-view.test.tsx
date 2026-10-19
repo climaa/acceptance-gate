@@ -3,7 +3,11 @@ import { cleanup, fireEvent, render, screen, within } from '@testing-library/rea
 // Imported explicitly rather than relying on `globals: true` — tsconfig's
 // `**/*.tsx` include means tsc typechecks this file.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { type ShotEntry, ShotView } from '../components/ShotView';
+import {
+  PUBLISHED_STORYBOOK_LABEL,
+  type ShotEntry,
+  ShotView,
+} from '../components/ShotView';
 import type { Readings } from '../lib/readings';
 import { backCalls, setSearchParams } from './stubs/next-navigation';
 
@@ -42,7 +46,10 @@ function renderView(entry: ShotEntry, query = '') {
   return render(
     <ShotView
       label={SET}
-      title={TITLE}
+      story="Badge — Accent"
+      storyId="atoms-badge--accent"
+      viewport="desktop"
+      theme="light"
       tier="atoms"
       shot={{
         key: KEY,
@@ -126,6 +133,53 @@ describe('the shot view, opened from its set', () => {
       open: `${TITLE} · visual-diff console`,
       closed: `${SET} · visual-diff console`,
     });
+  });
+});
+
+/**
+ * The title as the way out to the story itself (Board 04): the place half of it
+ * opens the dev Storybook while developing, and a glyph beside it opens the
+ * published one. Both in the shot's own theme, as the set viewer's links are.
+ */
+describe('the shot view’s title', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it('opens the story in the published Storybook, in the shot’s theme', () => {
+    renderView('direct');
+
+    const link = screen.getByRole('link', { name: PUBLISHED_STORYBOOK_LABEL });
+
+    expect(link.getAttribute('href')).toBe(
+      'https://storybook.carloslima.dev/index.html?path=/story/atoms-badge--accent&globals=colorScheme:light',
+    );
+    expect(link.getAttribute('target')).toBe('_blank');
+  });
+
+  it('draws the place as a link to the dev Storybook while developing', () => {
+    vi.stubEnv('NODE_ENV', 'development');
+    renderView('direct');
+
+    const link = screen.getByRole('link', {
+      name: `desktop/light · ${SET} — dev Storybook`,
+    });
+
+    expect(link.textContent).toBe(`desktop/light · ${SET}`);
+    expect(link.getAttribute('href')).toBe(
+      'http://localhost:6006/index.html?path=/story/atoms-badge--accent&globals=colorScheme:light',
+    );
+  });
+
+  // localhost:6006 answers nothing on a deployed console, and a dead link
+  // beside a live one is worse than none.
+  it('leaves the place as plain text anywhere but development', () => {
+    renderView('direct');
+
+    const heading = screen.getByRole('heading', { level: 2 });
+
+    expect(heading.textContent).toBe(TITLE);
+    expect(within(heading).queryByRole('link')).toBeNull();
   });
 });
 
