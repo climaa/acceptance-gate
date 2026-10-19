@@ -41,5 +41,7 @@ Feature: The whole loop, against my own console
     Then the deletion is refused because a job is running
     And the page behind the dialog announces only the running job
     When the lock is released
-    And I remove the set and the report
+    And I remove the report from its own page
+    Then I am back on the console and that report is no longer listed
+    When I remove the set
     Then the console holds nothing this run made

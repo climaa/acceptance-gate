@@ -16,3 +16,5 @@ Feature: Sample mode
   Scenario: Destructive controls are absent in sample mode
     When I visit the sample console
     Then nothing on the console offers to delete or prune
+    When I open the sample report
+    Then the report offers no delete either

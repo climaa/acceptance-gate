@@ -568,36 +568,58 @@ When('the lock is released', async ({ console: vd, mayWrite }) => {
 });
 
 /**
- * Take back both things this scenario made, through the console's own dialogs.
+ * Take back both things this scenario made, through the console's own dialogs —
+ * the report from its own page, the set from its row.
  *
  * They go through the same confirmations a reviewer answers, because "the
- * console can remove what it wrote" is part of what this scenario is for. There
- * is no third artifact any more: this lane used to promote a corpus into
- * `<dataDir>/__baselines__`, which had no screen and had to be unlinked by hand,
- * and the console's accept is gone with it.
+ * console can remove what it wrote" is part of what this scenario is for. The
+ * report goes from its own header rather than from the table because that is the
+ * path with something extra to prove: the page it was pressed on is gone, so the
+ * console has to leave it rather than re-read it. There is no third artifact any
+ * more: this lane used to promote a corpus into `<dataDir>/__baselines__`, which
+ * had no screen and had to be unlinked by hand, and the console's accept is gone
+ * with it.
  *
  * The committed corpus at `packages/visual-diff/__baselines__` is never touched.
  * It is a different directory, it is what CI compares against, and nothing in
  * this lane has any business near it.
  */
-When('I remove the set and the report', async ({ console: vd, localState, mayWrite }) => {
-  void mayWrite;
-  await vd.openHere();
+When(
+  'I remove the report from its own page',
+  async ({ report, localState, mayWrite }) => {
+    void mayWrite;
+    const reportId = localState.reportId ?? '';
 
-  const reportId = localState.reportId ?? '';
+    // Its own report, by id. The page streams its header behind a `Suspense`
+    // boundary, which the click's auto-wait covers.
+    await report.openHere(reportId);
+    await report.deleteFromHeader(reportId);
+
+    madeReportId = null;
+  },
+);
+
+Then(
+  'I am back on the console and that report is no longer listed',
+  async ({ page, console: vd, localState }) => {
+    // `replace`, not a reload: the URL is the console's, and the panel is read
+    // as the app drew it after leaving — no reload to ask the server instead.
+    await expect(page).toHaveURL(/\/$/);
+    await expect(vd.setsPanel).toBeVisible();
+    await expect(vd.reportRow(localState.reportId ?? '')).toHaveCount(0);
+  },
+);
+
+When('I remove the set', async ({ console: vd, localState, mayWrite }) => {
+  void mayWrite;
   const label = localState.capturedLabel ?? '';
 
-  // Its own report, by id — not every row in the table.
-  //
-  // The table is streamed: the panels live inside a `Suspense` boundary, so
-  // `goto` resolves on the shell and the rows arrive after it. Waiting for the
-  // row is what makes the click land at all, and `count()` would not have
-  // retried.
-  await expect(vd.reportRow(reportId)).toBeVisible();
-  await vd.deleteReport(reportId);
+  // The table is streamed: the panels live inside a `Suspense` boundary, so the
+  // row arrives after the shell. Waiting for it is what makes the click land.
+  await expect(vd.setRow(label)).toBeVisible();
   await vd.deleteSet(label);
 
-  // No reload before the assertion below, deliberately.
+  // No reload before the closing assertion, deliberately.
   //
   // This step used to end with one, to work around the console painting back a
   // row it had already deleted — two `router.refresh()` calls racing, which
@@ -608,7 +630,6 @@ When('I remove the set and the report', async ({ console: vd, localState, mayWri
   // being true.
 
   madeLabel = null;
-  madeReportId = null;
 });
 
 Then('the console holds nothing this run made', async ({ console: vd, localState }) => {

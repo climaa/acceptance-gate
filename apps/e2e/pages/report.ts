@@ -25,6 +25,7 @@ export class ReportPage {
   readonly nothingMoved: Locator;
   readonly a11ySection: Locator;
   readonly backToConsole: Locator;
+  readonly headerDelete: Locator;
 
   constructor(private readonly page: Page) {
     // `region`, not `banner`: the shell renders `SiteHeader` as the page's one
@@ -68,6 +69,10 @@ export class ReportPage {
     // and the word — because `ReportTemplate` gives it no `aria-label`, so the
     // U+2190 is part of the contract rather than decoration.
     this.backToConsole = page.getByRole('link', { name: '← console' });
+    // The report's own delete — a glyph, so its `aria-label` is its whole name.
+    // Scoped to the header, which is where it is drawn and the only place a
+    // second "delete report" could not come from.
+    this.headerDelete = this.header.getByRole('button', { name: 'delete report' });
   }
 
   async open(reportId: string, world: VdWorld = 'seeded') {
@@ -88,6 +93,17 @@ export class ReportPage {
   async openHere(reportId: string, params: Record<string, string> = {}) {
     const query = new URLSearchParams(params).toString();
     await this.page.goto(`/report/${reportId}${query ? `?${query}` : ''}`);
+  }
+
+  /** Retire the report on screen from its own header, through the same
+   *  confirmation the reports table opens. Where it leaves for is the app's
+   *  business and the caller's assertion. */
+  async deleteFromHeader(reportId: string) {
+    await this.headerDelete.click();
+    await this.page
+      .getByRole('dialog', { name: 'Confirm deletion' })
+      .getByRole('button', { name: `delete ${reportId}` })
+      .click();
   }
 
   bucketChip(bucket: string): Locator {

@@ -58,3 +58,11 @@ Then(
     await expect(consolePage.keepLatest).toHaveCount(0);
   },
 );
+
+Then('the report offers no delete either', async ({ report }) => {
+  // The header is asserted present first, so a count of zero cannot pass on a
+  // page that never drew the report at all — a miss, or a route still streaming.
+  await expect(report.header).toBeVisible();
+
+  await expect(report.headerDelete).toHaveCount(0);
+});
