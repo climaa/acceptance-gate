@@ -1,4 +1,5 @@
 import NextLink from 'next/link';
+import type { CSSProperties } from 'react';
 import { Badge, Table, type TableColumn, type TableRow } from '@gate/ui';
 import { UNKNOWN, formatBytes, shortSha } from '@/lib/outcome';
 import { setHref } from '@/lib/shots';
@@ -35,6 +36,23 @@ const SET_COLUMNS: readonly TableColumn[] = [
   // slice is narrower than the button standing in it.
   { header: '', width: '6rem' },
 ];
+
+/**
+ * The least room the label keeps before the table scrolls instead.
+ *
+ * The fixed columns above take 34.5rem whatever the panel's width, and the
+ * label gets what is left: at a 1280px viewport the panel is 562px, which left
+ * it 10px and the link that opens a set unclickable. So the table never shrinks
+ * below the fixed columns plus this, and its panel scrolls sideways past that
+ * point rather than squeezing the label to nothing.
+ */
+const LABEL_FLOOR = '10rem';
+
+/** The table's least width, read off the columns so the two cannot drift. */
+const TABLE_FLOOR = `calc(${[
+  ...SET_COLUMNS.flatMap((column) => (column.width ? [column.width] : [])),
+  LABEL_FLOOR,
+].join(' + ')})`;
 
 /**
  * The sets whose commit a newer set has captured again.
@@ -146,12 +164,18 @@ export function SetsTable({ sets, sizes, frozen }: SetsTableProps) {
   const superseded = supersededCaptures(sets);
 
   return (
-    <Table
-      label={SETS_TABLE_LABEL}
-      columns={SET_COLUMNS}
-      rows={sets.map((set) =>
-        setRow(set, sizes[set.label], frozen, superseded.has(set.label)),
-      )}
-    />
+    <div
+      className="vd-sets-scroll"
+      style={{ '--vd-sets-floor': TABLE_FLOOR } as CSSProperties}
+    >
+      <Table
+        label={SETS_TABLE_LABEL}
+        columns={SET_COLUMNS}
+        rows={sets.map((set) =>
+          setRow(set, sizes[set.label], frozen, superseded.has(set.label)),
+        )}
+        className="vd-sets-table"
+      />
+    </div>
   );
 }

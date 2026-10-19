@@ -139,3 +139,17 @@
   width: 5rem;
   font-variant-numeric: tabular-nums;
 }
+
+/* The sets table scrolls sideways inside its panel rather than squeezing its
+   label column to nothing (SetsTable.tsx, LABEL_FLOOR). Only where the table is
+   a table: below 768px Table draws each row as a card, and a floor there would
+   only push the cards off the screen. */
+.vd-sets-scroll {
+  overflow-x: auto;
+}
+
+@media (width >= 768px) {
+  .vd-sets-table {
+    min-width: var(--vd-sets-floor);
+  }
+}
