@@ -49,8 +49,8 @@
           "fill": "$accent-subtle",
           "cornerRadius": 9999,
           "padding": [
-            4,
-            12
+            2,
+            8
           ],
           "alignItems": "center",
           "children": [
@@ -60,10 +60,10 @@
               "name": "Label",
               "fill": "$accent",
               "content": "NEW",
+              "lineHeight": 1.4,
               "fontFamily": "$font-body",
-              "fontSize": 11,
-              "fontWeight": "700",
-              "letterSpacing": 0.8
+              "fontSize": 12,
+              "fontWeight": "700"
             }
           ]
         },

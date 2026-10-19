@@ -2,7 +2,7 @@
   "board": "Component Library — Atomic Design",
   "scale": 1.277206,
   "tiles": {
-    "Badge": [498, 588, 337, 63],
+    "Badge": [498, 588, 337, 62],
     "BlogIndexTemplate": [95, 4534, 375, 204],
     "BucketChip": [95, 5664, 279, 168],
     "Button": [95, 588, 337, 246],
