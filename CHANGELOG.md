@@ -30,6 +30,7 @@ Merged to `main` since v1.6.0, not yet released:
 - test(e2e): the report page's own delete, in the local loop and in sample mode (#572)
 - feat(visual-diff-ui): the shot view's title opens the story in Storybook (#573)
 - fix(visual-diff-ui): a filtered set and a compare pair are links (#574)
+- docs(blog): the merge that passed every check and did not ship (#575)
 
 ## v1.6.0 — a screenshot is read against its design board, down to the design token
 
