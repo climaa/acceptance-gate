@@ -50,6 +50,7 @@ Merged to `main` since v1.6.0, not yet released:
 - docs(agents): the agents learn a story ships with its tile (#596)
 - feat(designs): one .pen file per board (#597)
 - feat(gate): the boards check reads the board files themselves (#598)
+- feat(gate): images derived from the boards can sit beside their exports (#599)
 
 ## v1.6.0 — a screenshot is read against its design board, down to the design token
 
