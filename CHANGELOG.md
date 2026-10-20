@@ -43,6 +43,7 @@ Merged to `main` since v1.6.0, not yet released:
 - build(turbo): the console's tests read the committed design boards, so their cache keys on them (#585)
 - docs(designs): one structure for every .pen, written down before any board moves (#590)
 - design(designs): the parent .pen's colours follow the theme (#591)
+- feat(designs): tier boards, one tile per story, and every consumer renamed in one PR (#592)
 
 ## v1.6.0 — a screenshot is read against its design board, down to the design token
 
