@@ -5,7 +5,8 @@
  * Everything else in the design system consumes these variables; no component
  * hardcodes a value. Rebranding = editing this file.
  *
- * TOKEN CONTRACT (design board 01 mirrors this file). Four rules hold:
+ * TOKEN CONTRACT (the design boards' colour variables mirror this file, role for
+ * role; designs/STANDARD.md). Four rules hold:
  * 1. Zero --c- references outside this file. Components consume roles only.
  * 2. Every raw --c-* step declared here is referenced by at least one role.
  *    A token earns its place or leaves; re-add one the day a role wants it.

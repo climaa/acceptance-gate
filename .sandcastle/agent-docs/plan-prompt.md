@@ -37,6 +37,15 @@ plan.** Unlike `sandcastle:no-op`, this is not the record of a prior run that
 produced nothing; it is a deliberate pause, and it holds until a human removes the
 label.
 
+## STORIES NEED A TILE
+
+A story in `packages/ui` ships with its tile on its tier board (`designs/STANDARD.md`),
+and the gate's `boards` check fails without it. A tile is drawn in the Pencil app, which
+no agent here can reach. So an issue whose work adds a Storybook story, or renames one,
+is attended work unless its body says the tiles are already drawn (naming the PR or
+commit that drew them). **Exclude such an issue from the plan**, and say why in its
+entry's reasoning if you list it at all.
+
 ## SANDBOX CONSTRAINT
 
 The planner is read-only: it only reads and reasons about issues. This sandbox
