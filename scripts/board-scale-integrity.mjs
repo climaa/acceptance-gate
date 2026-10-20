@@ -39,6 +39,7 @@ import { planCaptures } from '../packages/visual-diff/src/storybook-index.mjs';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const EXPORTS = join(ROOT, 'designs', 'exports');
 const INDEX = join(ROOT, 'apps', 'storybook', 'storybook-static', 'index.json');
+const SHARED = join(ROOT, 'designs', 'shared-stories.json');
 
 /** The board each tier's tiles live on. A board that outgrows one export pages
  *  as `<stem>-1`, `<stem>-2`, … and is still that board. */
@@ -65,11 +66,17 @@ const named = ({ id, viewport, theme }) => `${id} (${viewport}, ${theme})`;
  * Every way the tier boards' tiles and the planned variants fail to join, one
  * sentence each, naming the story and the board.
  *
+ * A child project lists in `designs/shared-stories.json` the stories it shares
+ * with acceptance-gate. Those are drawn on the parent's boards, never the
+ * child's (its boards are product-only), so a shared story needs no tile here.
+ *
  * @param {Record<string, readonly string[]>} tileNames  Tile names by board stem.
  * @param {readonly string[]} planned  Every planned variant key.
+ * @param {readonly string[]} [shared]  Story ids drawn in the parent instead.
  * @returns {string[]}
  */
-export function joinProblems(tileNames, planned) {
+export function joinProblems(tileNames, planned, shared = []) {
+  const sharedIds = new Set(shared);
   const problems = [];
   const plannedKeys = new Set(planned);
   const drawnOn = new Map();
@@ -108,7 +115,7 @@ export function joinProblems(tileNames, planned) {
   for (const key of planned) {
     if (drawnOn.has(key)) continue;
     const variant = parseVariantKey(key);
-    if (!variant) continue;
+    if (!variant || sharedIds.has(variant.id)) continue;
     problems.push(
       `${named(variant)} has no tile on ${TIER_BOARDS[variant.tier]}: a new story ships with its tile (designs/STANDARD.md)`,
     );
@@ -189,7 +196,21 @@ function tileMapProblems() {
   return { problems, tileNames, maps: files.length };
 }
 
+/** The stories a child shares with the parent, or none in the parent itself. */
+const sharedStories = () => (existsSync(SHARED) ? readJson(SHARED).stories : []);
+
+/** The story ids this repository's Storybook plans, sorted: what a child's
+ *  `designs/shared-stories.json` lists when the parent prints it. */
+function printStories() {
+  const { variants } = planCaptures(Object.values(readJson(INDEX).entries));
+  const stories = [...new Set(variants.map((variant) => variant.id))].sort();
+  const shared = { from: 'climaa/acceptance-gate', stories };
+  console.log(JSON.stringify(shared, null, 2));
+}
+
 function main() {
+  if (process.argv.includes('--print-stories')) return printStories();
+
   const scales = scaleProblems();
   const maps = tileMapProblems();
   const problems = [...scales.problems, ...maps.problems];
@@ -200,6 +221,7 @@ function main() {
       ...joinProblems(
         maps.tileNames,
         variants.map((variant) => variant.key),
+        sharedStories(),
       ),
     );
   } else {

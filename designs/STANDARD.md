@@ -114,6 +114,20 @@ can prove that a sidecar matches the drawing. The gate's `boards` check
 is present, on its own tier's board, no tile is extra, and every name is a variant key. The match between drawing and sidecar rests on the export being the only thing that
 writes them.
 
+## In a child project
+
+A project that copies this standard draws only its own product on its boards. A story it
+shares with acceptance-gate is drawn here, on the parent's tier boards, and nowhere else.
+The child lists those stories in `designs/shared-stories.json`, and its `boards` check asks
+no tile of them. The parent prints the list:
+
+```sh
+node scripts/board-scale-integrity.mjs --print-stories > ../<child>/designs/shared-stories.json
+```
+
+Print it again whenever a shared story is added or renamed in the parent, in the same pass
+that ports the story to the child.
+
 ## Working on a .pen
 
 - Pencil's MCP edits the editor's **active** document whatever path it is given. Open

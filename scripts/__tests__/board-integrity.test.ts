@@ -12,8 +12,11 @@ const BADGE = 'atoms__desktop__light__atoms-badge--accent';
 const BADGE_DARK = 'atoms__desktop__dark__atoms-badge--accent';
 const CARD = 'molecules__desktop__light__molecules-card--default';
 
-const check = (tiles: Record<string, string[]>, planned: string[]): string[] =>
-  joinProblems(tiles, planned);
+const check = (
+  tiles: Record<string, string[]>,
+  planned: string[],
+  shared: string[] = [],
+): string[] => joinProblems(tiles, planned, shared);
 
 describe('joinProblems', () => {
   it('passes when every planned variant has exactly one tile on its tier board', () => {
@@ -80,6 +83,18 @@ describe('joinProblems', () => {
     const problems = check(
       { '00-foundations': ['Palette'], 'x-console-components': [BADGE] },
       [],
+    );
+
+    expect(problems).toEqual([]);
+  });
+
+  // A child's boards are product-only: a story it shares with the parent is
+  // drawn on the parent's boards, so the child needs no tile for it.
+  it('asks no tile of a story drawn in the parent', () => {
+    const problems = check(
+      { '01-atoms': [] },
+      [BADGE, BADGE_DARK],
+      ['atoms-badge--accent'],
     );
 
     expect(problems).toEqual([]);
