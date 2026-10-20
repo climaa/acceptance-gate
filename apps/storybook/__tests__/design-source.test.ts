@@ -3,8 +3,8 @@ import * as path from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
- * What `designs/*.pen` actually is, and what `.gitattributes` is allowed to say
- * about it.
+ * What the `.pen` files under `designs/` actually are, and what `.gitattributes`
+ * is allowed to say about them.
  *
  * This app is the only workspace that consumes `designs/` — `.storybook/main.ts`
  * serves `designs/exports` and `src/docs/system-design/Overview.mdx` names the
@@ -24,12 +24,16 @@ const REPO_ROOT = path.resolve(import.meta.dirname, '..', '..', '..');
 const GITATTRIBUTES = fs.readFileSync(path.join(REPO_ROOT, '.gitattributes'), 'utf8');
 
 /** The rule and the comment block immediately above it, whatever they say. */
-const RULE = /((?:^#.*\n)*)^designs\/\*\.pen (.+)$/m;
+const RULE = /((?:^#.*\n)*)^designs\/\*\*\/\*\.pen (.+)$/m;
 const [, comment = '', attributes = ''] = RULE.exec(GITATTRIBUTES) ?? [];
 
-const penSources = fs
-  .readdirSync(path.join(REPO_ROOT, 'designs'))
-  .filter((entry) => entry.endsWith('.pen'));
+/** Every board file and every template starter: one `.pen` per board in each. */
+const penSources = ['', 'template'].flatMap((dir) =>
+  fs
+    .readdirSync(path.join(REPO_ROOT, 'designs', dir))
+    .filter((entry) => entry.endsWith('.pen'))
+    .map((entry) => path.join(dir, entry)),
+);
 
 describe('the rule in .gitattributes', () => {
   it('exists', () => {
