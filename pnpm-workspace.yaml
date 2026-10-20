@@ -5,3 +5,9 @@ allowBuilds:
   esbuild: true
   sharp: true
   unrs-resolver: true
+# eslint-plugin-boundaries and @boundaries/elements pin handlebars to exactly 4.7.9,
+# which carries GHSA advisories fixed in 4.7.10, so no in-range refresh reaches the
+# patch. It only runs inside ESLint. Remove this entry once eslint-plugin-boundaries
+# ships with handlebars >=4.7.10.
+overrides:
+  handlebars: 4.7.10
