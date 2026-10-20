@@ -44,7 +44,10 @@ const nextConfig = {
   // without them and 500s on the first request instead of falling back to
   // sample mode. `/api/env` is absent on purpose: it reads no data directory.
   outputFileTracingIncludes: {
-    '/': ['./fixtures/**'],
+    // The tile maps too: the comparison and the shot view read them on the
+    // server to open a variant on the board that draws it (lib/board-homes.ts),
+    // and the bracketed keys below were measured to match nothing.
+    '/': ['./fixtures/**', '../../designs/exports/*.tiles.json'],
     '/report/[id]': ['./fixtures/**'],
     '/report/[id]/compare/[key]': ['./fixtures/**'],
     '/report/[id]/@modal/(.)compare/[key]': ['./fixtures/**'],

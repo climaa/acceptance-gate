@@ -6,6 +6,7 @@ import {
   type ComparisonMode,
   comparisonHref,
   DEFAULT_MODE,
+  type BoardHomes,
   type ComparisonView,
   comparisonTitle,
   DEFAULT_AGAINST,
@@ -46,6 +47,8 @@ export interface ComparisonRouteProps {
    *  comparison itself. Null for every comparison with no ledger report. */
   ledger: LedgerReport | null;
   entry: ComparisonEntry;
+  /** The board each variant's tile is drawn on (lib/board-homes.ts). */
+  homes: BoardHomes;
 }
 
 /**
@@ -70,6 +73,7 @@ export function ComparisonRoute({
   sides,
   ledger,
   entry,
+  homes,
 }: ComparisonRouteProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -120,7 +124,7 @@ export function ComparisonRoute({
   const pickBoard = (next: DesignBoard) =>
     write(key, mode, {
       ...view,
-      board: next === defaultBoard(variant.tier) ? null : next,
+      board: next === defaultBoard(variant, homes) ? null : next,
     });
 
   const close = () => {
@@ -137,7 +141,7 @@ export function ComparisonRoute({
       mode={mode}
       ledger={ledger}
       against={view.against ?? DEFAULT_AGAINST}
-      board={view.board ?? defaultBoard(variant.tier)}
+      board={view.board ?? defaultBoard(variant, homes)}
       onMode={(next) => write(key, next)}
       onAgainst={(next) => write(key, mode, { ...view, against: next })}
       onBoard={pickBoard}

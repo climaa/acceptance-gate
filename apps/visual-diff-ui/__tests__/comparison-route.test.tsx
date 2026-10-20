@@ -64,6 +64,7 @@ const routeElement = (entry: ComparisonEntry) => (
     sides={SIDES}
     ledger={null}
     entry={entry}
+    homes={{}}
   />
 );
 

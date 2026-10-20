@@ -8,6 +8,7 @@ import type { Tier } from '@gate/visual-diff/policy';
 import { useMediaQuery, WIDE_VIEWPORT } from '@/hooks/useMediaQuery';
 import { useShotAddress } from '@/hooks/useShotAddress';
 import { SHOT_LAYOUTS, type ShotLayout } from '@/hooks/useShotTools';
+import type { BoardHomes } from '@/lib/comparison';
 import type { Readings } from '@/lib/readings';
 import {
   DEV_STORYBOOK,
@@ -227,9 +228,18 @@ export interface ShotViewProps extends ShotHeading {
   shot: DesignShot;
   ledger: Readings | null;
   entry: ShotEntry;
+  /** The board each variant's tile is drawn on (lib/board-homes.ts). */
+  homes: BoardHomes;
 }
 
-export function ShotView({ tier, shot, ledger, entry, ...heading }: ShotViewProps) {
+export function ShotView({
+  tier,
+  shot,
+  ledger,
+  entry,
+  homes,
+  ...heading
+}: ShotViewProps) {
   const { label } = heading;
   const router = useRouter();
   const params = useSearchParams();
@@ -244,6 +254,7 @@ export function ShotView({ tier, shot, ledger, entry, ...heading }: ShotViewProp
     shotKey: shot.key,
     frameWidth: shot.width ?? 0,
     tier,
+    homes,
     params,
   });
 
