@@ -33,7 +33,7 @@
               "type": "text",
               "id": "GDEQ0",
               "name": "Label",
-              "fill": "#f5efe0",
+              "fill": "$text-inverted",
               "content": "Read the post",
               "fontFamily": "$font-body",
               "fontSize": 14,
@@ -380,8 +380,10 @@
           "name": "CodeBlock",
           "reusable": true,
           "width": 400,
-          "fill": "#141614",
+          "fill": "$code-bg",
           "cornerRadius": 10,
+          "stroke": "$border",
+          "strokeWidth": 1,
           "layout": "vertical",
           "gap": 4,
           "padding": 18,
@@ -390,7 +392,7 @@
               "type": "text",
               "id": "T95fq3",
               "name": "L1",
-              "fill": "#80ee64",
+              "fill": "$code-fg",
               "content": "pass ⟺ diffPixels <=",
               "fontFamily": "$font-mono",
               "fontSize": 13,
@@ -400,7 +402,7 @@
               "type": "text",
               "id": "Ayz3l",
               "name": "L2",
-              "fill": "#eef7ea",
+              "fill": "$code-fg",
               "content": "  max(40, 0.0005 × W × H)",
               "fontFamily": "$font-mono",
               "fontSize": 13,
@@ -410,7 +412,7 @@
               "type": "text",
               "id": "NQxuC",
               "name": "L3",
-              "fill": "#a9c2a0",
+              "fill": "$text-muted",
               "content": "// two-level threshold",
               "fontFamily": "$font-mono",
               "fontSize": 13,
@@ -2070,6 +2072,7 @@
                               "type": "frame",
                               "id": "vRxxz",
                               "name": "chip",
+                              "context": "colour-exempt: primitive swatch",
                               "width": 106,
                               "height": 52,
                               "fill": "#ffffff",
@@ -2112,6 +2115,7 @@
                               "type": "frame",
                               "id": "O5In4",
                               "name": "chip",
+                              "context": "colour-exempt: primitive swatch",
                               "width": 106,
                               "height": 52,
                               "fill": "#f8fafc",
@@ -2154,6 +2158,7 @@
                               "type": "frame",
                               "id": "odwYb",
                               "name": "chip",
+                              "context": "colour-exempt: primitive swatch",
                               "width": 106,
                               "height": 52,
                               "fill": "#f1f5f9",
@@ -2196,6 +2201,7 @@
                               "type": "frame",
                               "id": "kB2NO",
                               "name": "chip",
+                              "context": "colour-exempt: primitive swatch",
                               "width": 106,
                               "height": 52,
                               "fill": "#e2e8f0",
@@ -2238,6 +2244,7 @@
                               "type": "frame",
                               "id": "O3Fqm",
                               "name": "chip",
+                              "context": "colour-exempt: primitive swatch",
                               "width": 106,
                               "height": 52,
                               "fill": "#cbd5e1",
@@ -2280,6 +2287,7 @@
                               "type": "frame",
                               "id": "stPgs",
                               "name": "chip",
+                              "context": "colour-exempt: primitive swatch",
                               "width": 106,
                               "height": 52,
                               "fill": "#94a3b8",
@@ -2322,6 +2330,7 @@
                               "type": "frame",
                               "id": "n75hHg",
                               "name": "chip",
+                              "context": "colour-exempt: primitive swatch",
                               "width": 106,
                               "height": 52,
                               "fill": "#64748b",
@@ -2364,6 +2373,7 @@
                               "type": "frame",
                               "id": "c3xpx",
                               "name": "chip",
+                              "context": "colour-exempt: primitive swatch",
                               "width": 106,
                               "height": 52,
                               "fill": "#475569",
@@ -2406,6 +2416,7 @@
                               "type": "frame",
                               "id": "bbbWL",
                               "name": "chip",
+                              "context": "colour-exempt: primitive swatch",
                               "width": 106,
                               "height": 52,
                               "fill": "#334155",
@@ -2448,6 +2459,7 @@
                               "type": "frame",
                               "id": "llKx0",
                               "name": "chip",
+                              "context": "colour-exempt: primitive swatch",
                               "width": 106,
                               "height": 52,
                               "fill": "#1e293b",
@@ -2490,6 +2502,7 @@
                               "type": "frame",
                               "id": "nR5y3",
                               "name": "chip",
+                              "context": "colour-exempt: primitive swatch",
                               "width": 106,
                               "height": 52,
                               "fill": "#0f172a",
@@ -2532,6 +2545,7 @@
                               "type": "frame",
                               "id": "ttIOQ",
                               "name": "chip",
+                              "context": "colour-exempt: primitive swatch",
                               "width": 106,
                               "height": 52,
                               "fill": "#020617",
@@ -2611,6 +2625,7 @@
                               "type": "frame",
                               "id": "a5hb1",
                               "name": "chip",
+                              "context": "colour-exempt: primitive swatch",
                               "width": 106,
                               "height": 52,
                               "fill": "#eff6ff",
@@ -2653,6 +2668,7 @@
                               "type": "frame",
                               "id": "UoHrY",
                               "name": "chip",
+                              "context": "colour-exempt: primitive swatch",
                               "width": 106,
                               "height": 52,
                               "fill": "#dbeafe",
@@ -2695,6 +2711,7 @@
                               "type": "frame",
                               "id": "Pw7pj",
                               "name": "chip",
+                              "context": "colour-exempt: primitive swatch",
                               "width": 106,
                               "height": 52,
                               "fill": "#bfdbfe",
@@ -2737,6 +2754,7 @@
                               "type": "frame",
                               "id": "S9fCP",
                               "name": "chip",
+                              "context": "colour-exempt: primitive swatch",
                               "width": 106,
                               "height": 52,
                               "fill": "#93c5fd",
@@ -2779,6 +2797,7 @@
                               "type": "frame",
                               "id": "g75JK",
                               "name": "chip",
+                              "context": "colour-exempt: primitive swatch",
                               "width": 106,
                               "height": 52,
                               "fill": "#60a5fa",
@@ -2821,6 +2840,7 @@
                               "type": "frame",
                               "id": "Sip3f",
                               "name": "chip",
+                              "context": "colour-exempt: primitive swatch",
                               "width": 106,
                               "height": 52,
                               "fill": "#3b82f6",
@@ -2863,6 +2883,7 @@
                               "type": "frame",
                               "id": "ZCD9K",
                               "name": "chip",
+                              "context": "colour-exempt: primitive swatch",
                               "width": 106,
                               "height": 52,
                               "fill": "#2563eb",
@@ -2905,6 +2926,7 @@
                               "type": "frame",
                               "id": "BCEbc",
                               "name": "chip",
+                              "context": "colour-exempt: primitive swatch",
                               "width": 106,
                               "height": 52,
                               "fill": "#1d4ed8",
@@ -2983,6 +3005,7 @@
                               "type": "frame",
                               "id": "a0Jqtx",
                               "name": "chip",
+                              "context": "colour-exempt: primitive swatch",
                               "width": 106,
                               "height": 52,
                               "fill": "#141614",
@@ -3024,6 +3047,7 @@
                               "type": "frame",
                               "id": "UYsOl",
                               "name": "chip",
+                              "context": "colour-exempt: primitive swatch",
                               "width": 106,
                               "height": 52,
                               "fill": "#1b1e1b",
@@ -3065,6 +3089,7 @@
                               "type": "frame",
                               "id": "B0W5r3",
                               "name": "chip",
+                              "context": "colour-exempt: primitive swatch",
                               "width": 106,
                               "height": 52,
                               "fill": "#212525",
@@ -3106,6 +3131,7 @@
                               "type": "frame",
                               "id": "ECxzy",
                               "name": "chip",
+                              "context": "colour-exempt: primitive swatch",
                               "width": 106,
                               "height": 52,
                               "fill": "#2e332e",
@@ -3147,6 +3173,7 @@
                               "type": "frame",
                               "id": "x1iE9",
                               "name": "chip",
+                              "context": "colour-exempt: primitive swatch",
                               "width": 106,
                               "height": 52,
                               "fill": "#3d423d",
@@ -3188,6 +3215,7 @@
                               "type": "frame",
                               "id": "raZNl",
                               "name": "chip",
+                              "context": "colour-exempt: primitive swatch",
                               "width": 106,
                               "height": 52,
                               "fill": "#9ca69a",
@@ -3229,6 +3257,7 @@
                               "type": "frame",
                               "id": "edyTY",
                               "name": "chip",
+                              "context": "colour-exempt: primitive swatch",
                               "width": 106,
                               "height": 52,
                               "fill": "#f2f5f0",
@@ -3307,6 +3336,7 @@
                               "type": "frame",
                               "id": "fDG4P",
                               "name": "chip",
+                              "context": "colour-exempt: primitive swatch",
                               "width": 106,
                               "height": 52,
                               "fill": "#bff9b4",
@@ -3348,6 +3378,7 @@
                               "type": "frame",
                               "id": "EixXb",
                               "name": "chip",
+                              "context": "colour-exempt: primitive swatch",
                               "width": 106,
                               "height": 52,
                               "fill": "#80ee64",
@@ -3426,6 +3457,7 @@
                               "type": "frame",
                               "id": "bwk5D",
                               "name": "chip",
+                              "context": "colour-exempt: primitive swatch",
                               "width": 106,
                               "height": 52,
                               "fill": "#dcfce7",
@@ -3467,6 +3499,7 @@
                               "type": "frame",
                               "id": "Csbva",
                               "name": "chip",
+                              "context": "colour-exempt: primitive swatch",
                               "width": 106,
                               "height": 52,
                               "fill": "#22c55e",
@@ -3508,6 +3541,7 @@
                               "type": "frame",
                               "id": "WPUqp",
                               "name": "chip",
+                              "context": "colour-exempt: primitive swatch",
                               "width": 106,
                               "height": 52,
                               "fill": "#15803d",
@@ -3586,6 +3620,7 @@
                               "type": "frame",
                               "id": "hsUS1",
                               "name": "chip",
+                              "context": "colour-exempt: primitive swatch",
                               "width": 106,
                               "height": 52,
                               "fill": "#fef3c7",
@@ -3627,6 +3662,7 @@
                               "type": "frame",
                               "id": "BS53Q",
                               "name": "chip",
+                              "context": "colour-exempt: primitive swatch",
                               "width": 106,
                               "height": 52,
                               "fill": "#f59e0b",
@@ -3668,6 +3704,7 @@
                               "type": "frame",
                               "id": "Q4eBCE",
                               "name": "chip",
+                              "context": "colour-exempt: primitive swatch",
                               "width": 106,
                               "height": 52,
                               "fill": "#b45309",
@@ -3746,6 +3783,7 @@
                               "type": "frame",
                               "id": "E7hED",
                               "name": "chip",
+                              "context": "colour-exempt: primitive swatch",
                               "width": 106,
                               "height": 52,
                               "fill": "#fee2e2",
@@ -3787,6 +3825,7 @@
                               "type": "frame",
                               "id": "BsPoF",
                               "name": "chip",
+                              "context": "colour-exempt: primitive swatch",
                               "width": 106,
                               "height": 52,
                               "fill": "#ef4444",
@@ -3828,6 +3867,7 @@
                               "type": "frame",
                               "id": "L6KFL",
                               "name": "chip",
+                              "context": "colour-exempt: primitive swatch",
                               "width": 106,
                               "height": 52,
                               "fill": "#b91c1c",
@@ -3906,6 +3946,7 @@
                               "type": "frame",
                               "id": "wBFv8",
                               "name": "chip",
+                              "context": "colour-exempt: primitive swatch",
                               "width": 106,
                               "height": 52,
                               "fill": "#f5efe0",
@@ -3947,6 +3988,7 @@
                               "type": "frame",
                               "id": "O6tIv",
                               "name": "chip",
+                              "context": "colour-exempt: primitive swatch",
                               "width": 106,
                               "height": 52,
                               "fill": "#ede6d6",
@@ -3988,6 +4030,7 @@
                               "type": "frame",
                               "id": "ZwHBl",
                               "name": "chip",
+                              "context": "colour-exempt: primitive swatch",
                               "width": 106,
                               "height": 52,
                               "fill": "#e4dbc6",
@@ -4029,6 +4072,7 @@
                               "type": "frame",
                               "id": "zHvIM",
                               "name": "chip",
+                              "context": "colour-exempt: primitive swatch",
                               "width": 106,
                               "height": 52,
                               "fill": "#dcd2ba",
@@ -4070,6 +4114,7 @@
                               "type": "frame",
                               "id": "v294F",
                               "name": "chip",
+                              "context": "colour-exempt: primitive swatch",
                               "width": 106,
                               "height": 52,
                               "fill": "#d8cfbc",
@@ -4111,6 +4156,7 @@
                               "type": "frame",
                               "id": "B5zHb",
                               "name": "chip",
+                              "context": "colour-exempt: primitive swatch",
                               "width": 106,
                               "height": 52,
                               "fill": "#c2b69e",
@@ -4189,6 +4235,7 @@
                               "type": "frame",
                               "id": "m1Gg0Q",
                               "name": "chip",
+                              "context": "colour-exempt: primitive swatch",
                               "width": 106,
                               "height": 52,
                               "fill": "#b06a4a",
@@ -4230,6 +4277,7 @@
                               "type": "frame",
                               "id": "xzm3p",
                               "name": "chip",
+                              "context": "colour-exempt: primitive swatch",
                               "width": 106,
                               "height": 52,
                               "fill": "#713520",
@@ -4271,6 +4319,7 @@
                               "type": "frame",
                               "id": "T7HOxw",
                               "name": "chip",
+                              "context": "colour-exempt: primitive swatch",
                               "width": 106,
                               "height": 52,
                               "fill": "#5d2b1a",
@@ -4349,6 +4398,7 @@
                               "type": "frame",
                               "id": "tYo6m",
                               "name": "chip",
+                              "context": "colour-exempt: primitive swatch",
                               "width": 106,
                               "height": 52,
                               "fill": "#51483f",
@@ -4390,6 +4440,7 @@
                               "type": "frame",
                               "id": "UQKas",
                               "name": "chip",
+                              "context": "colour-exempt: primitive swatch",
                               "width": 106,
                               "height": 52,
                               "fill": "#11120d",
@@ -5726,8 +5777,10 @@
                               "name": "code",
                               "width": "fill_container",
                               "height": 20,
-                              "fill": "#0f172a",
-                              "cornerRadius": 4
+                              "fill": "$code-bg",
+                              "cornerRadius": 4,
+                              "stroke": "$border",
+                              "strokeWidth": 1
                             }
                           ]
                         }
@@ -6620,10 +6673,32 @@
                       "children": [
                         {
                           "type": "frame",
-                          "id": "h9jutF",
+                          "id": "qun53",
                           "name": "sk",
-                          "fill": "$accent",
+                          "fill": "$bg",
                           "cornerRadius": 6,
+                          "effect": [
+                            {
+                              "type": "shadow",
+                              "shadowType": "outer",
+                              "color": "#00000014",
+                              "offset": {
+                                "x": 0,
+                                "y": 10
+                              },
+                              "blur": 15
+                            },
+                            {
+                              "type": "shadow",
+                              "shadowType": "outer",
+                              "color": "#0000000A",
+                              "offset": {
+                                "x": 0,
+                                "y": 4
+                              },
+                              "blur": 6
+                            }
+                          ],
                           "padding": [
                             6,
                             12
@@ -6631,9 +6706,9 @@
                           "children": [
                             {
                               "type": "text",
-                              "id": "wQtcm",
+                              "id": "H1HM9",
                               "name": "t",
-                              "fill": "#ffffff",
+                              "fill": "$text",
                               "content": "Skip to content",
                               "fontFamily": "$font-body",
                               "fontSize": 12,
@@ -7962,8 +8037,10 @@
                               "id": "YraIR",
                               "name": "log",
                               "width": "fill_container",
-                              "fill": "#0f172a",
+                              "fill": "$code-bg",
                               "cornerRadius": 6,
+                              "stroke": "$border",
+                              "strokeWidth": 1,
                               "layout": "vertical",
                               "gap": 3,
                               "padding": 8,
@@ -7972,7 +8049,7 @@
                                   "type": "text",
                                   "id": "R1znV",
                                   "name": "l",
-                                  "fill": "#94f79c",
+                                  "fill": "$code-fg",
                                   "content": "> capture atoms-button--primary",
                                   "fontFamily": "$font-mono",
                                   "fontSize": 8,
@@ -7982,7 +8059,7 @@
                                   "type": "text",
                                   "id": "fPc17",
                                   "name": "l",
-                                  "fill": "#94f79c",
+                                  "fill": "$code-fg",
                                   "content": "> capture atoms-badge--tones",
                                   "fontFamily": "$font-mono",
                                   "fontSize": 8,
@@ -7992,7 +8069,7 @@
                                   "type": "text",
                                   "id": "gE10c",
                                   "name": "l",
-                                  "fill": "#94f79c",
+                                  "fill": "$code-fg",
                                   "content": "> 214/1021 · 3m 12s",
                                   "fontFamily": "$font-mono",
                                   "fontSize": 8,
@@ -8594,6 +8671,7 @@
                                       "type": "frame",
                                       "id": "GYrvk",
                                       "name": "shot",
+                                      "context": "colour-exempt: image content",
                                       "width": "fill_container",
                                       "height": 40,
                                       "fill": "#f5f2ec",
@@ -8607,6 +8685,7 @@
                                           "type": "frame",
                                           "id": "bxo2f",
                                           "name": "px",
+                                          "context": "colour-exempt: image content",
                                           "width": 34,
                                           "height": 9,
                                           "fill": "#c93035",
@@ -9381,8 +9460,9 @@
                               "theme": {
                                 "mode": "light"
                               },
+                              "opacity": 0.87,
                               "width": "fill_container",
-                              "fill": "#11120daa",
+                              "fill": "$text",
                               "cornerRadius": 6,
                               "padding": 8,
                               "justifyContent": "center",
@@ -9580,7 +9660,7 @@
                                           "name": "divider",
                                           "width": 2,
                                           "height": 34,
-                                          "fill": "#ffffff"
+                                          "fill": "$accent"
                                         },
                                         {
                                           "type": "ellipse",
@@ -9588,7 +9668,7 @@
                                           "x": 62,
                                           "y": 13,
                                           "name": "handle",
-                                          "fill": "#ffffff",
+                                          "fill": "$accent",
                                           "width": 10,
                                           "height": 10
                                         }
@@ -9945,6 +10025,7 @@
                                       "type": "frame",
                                       "id": "nQscg",
                                       "name": "shot",
+                                      "context": "colour-exempt: image content",
                                       "width": "fill_container",
                                       "height": 40,
                                       "fill": "#f5f2ec",
@@ -9958,6 +10039,7 @@
                                           "type": "frame",
                                           "id": "uQ2WX",
                                           "name": "px",
+                                          "context": "colour-exempt: image content",
                                           "width": 34,
                                           "height": 9,
                                           "fill": "#c93035",
@@ -10224,6 +10306,7 @@
                                       "type": "frame",
                                       "id": "bleoj",
                                       "name": "shot",
+                                      "context": "colour-exempt: image content",
                                       "width": "fill_container",
                                       "height": 40,
                                       "fill": "#f5f2ec",
@@ -10237,6 +10320,7 @@
                                           "type": "frame",
                                           "id": "N5xMi",
                                           "name": "px",
+                                          "context": "colour-exempt: image content",
                                           "width": 34,
                                           "height": 9,
                                           "fill": "#c93035",
@@ -11690,6 +11774,7 @@
                               "type": "frame",
                               "id": "XgZ1q",
                               "name": "pane",
+                              "context": "colour-exempt: image content",
                               "theme": {
                                 "mode": "light"
                               },
@@ -11773,6 +11858,7 @@
                                       "x": 0,
                                       "y": 0,
                                       "name": "px",
+                                      "context": "colour-exempt: image content",
                                       "fill": "#e9e3d6",
                                       "width": 28,
                                       "height": 20
@@ -11783,6 +11869,7 @@
                                       "x": 28,
                                       "y": 0,
                                       "name": "px",
+                                      "context": "colour-exempt: image content",
                                       "fill": "#e9e3d6",
                                       "width": 28,
                                       "height": 20
@@ -11793,6 +11880,7 @@
                                       "x": 56,
                                       "y": 0,
                                       "name": "px",
+                                      "context": "colour-exempt: image content",
                                       "fill": "#e9e3d6",
                                       "width": 28,
                                       "height": 20
@@ -11803,6 +11891,7 @@
                                       "x": 84,
                                       "y": 0,
                                       "name": "px",
+                                      "context": "colour-exempt: image content",
                                       "fill": "#e9e3d6",
                                       "width": 28,
                                       "height": 20
@@ -11813,6 +11902,7 @@
                                       "x": 0,
                                       "y": 20,
                                       "name": "px",
+                                      "context": "colour-exempt: image content",
                                       "fill": "#e9e3d6",
                                       "width": 28,
                                       "height": 20
@@ -11823,6 +11913,7 @@
                                       "x": 28,
                                       "y": 20,
                                       "name": "px",
+                                      "context": "colour-exempt: image content",
                                       "fill": "#713520",
                                       "width": 28,
                                       "height": 20
@@ -11833,6 +11924,7 @@
                                       "x": 56,
                                       "y": 20,
                                       "name": "px",
+                                      "context": "colour-exempt: image content",
                                       "fill": "#713520",
                                       "width": 28,
                                       "height": 20
@@ -11843,6 +11935,7 @@
                                       "x": 84,
                                       "y": 20,
                                       "name": "px",
+                                      "context": "colour-exempt: image content",
                                       "fill": "#e9e3d6",
                                       "width": 28,
                                       "height": 20
@@ -11853,6 +11946,7 @@
                                       "x": 0,
                                       "y": 40,
                                       "name": "px",
+                                      "context": "colour-exempt: image content",
                                       "fill": "#e9e3d6",
                                       "width": 28,
                                       "height": 20
@@ -11863,6 +11957,7 @@
                                       "x": 28,
                                       "y": 40,
                                       "name": "px",
+                                      "context": "colour-exempt: image content",
                                       "fill": "#713520",
                                       "width": 28,
                                       "height": 20
@@ -11873,6 +11968,7 @@
                                       "x": 56,
                                       "y": 40,
                                       "name": "px",
+                                      "context": "colour-exempt: image content",
                                       "fill": "#713520",
                                       "width": 28,
                                       "height": 20
@@ -11883,6 +11979,7 @@
                                       "x": 84,
                                       "y": 40,
                                       "name": "px",
+                                      "context": "colour-exempt: image content",
                                       "fill": "#e9e3d6",
                                       "width": 28,
                                       "height": 20
@@ -11893,6 +11990,7 @@
                                       "x": 0,
                                       "y": 60,
                                       "name": "px",
+                                      "context": "colour-exempt: image content",
                                       "fill": "#e9e3d6",
                                       "width": 28,
                                       "height": 20
@@ -11903,6 +12001,7 @@
                                       "x": 28,
                                       "y": 60,
                                       "name": "px",
+                                      "context": "colour-exempt: image content",
                                       "fill": "#e9e3d6",
                                       "width": 28,
                                       "height": 20
@@ -11913,6 +12012,7 @@
                                       "x": 56,
                                       "y": 60,
                                       "name": "px",
+                                      "context": "colour-exempt: image content",
                                       "fill": "#e9e3d6",
                                       "width": 28,
                                       "height": 20
@@ -11923,6 +12023,7 @@
                                       "x": 84,
                                       "y": 60,
                                       "name": "px",
+                                      "context": "colour-exempt: image content",
                                       "fill": "#e9e3d6",
                                       "width": 28,
                                       "height": 20
@@ -62873,7 +62974,7 @@
       "type": "color",
       "value": [
         {
-          "value": "#ede6d6",
+          "value": "#EDE6D6",
           "theme": {
             "mode": "light"
           }
@@ -62890,13 +62991,13 @@
       "type": "color",
       "value": [
         {
-          "value": "#e4dbc6",
+          "value": "#E4DBC6",
           "theme": {
             "mode": "light"
           }
         },
         {
-          "value": "#1b1e1b",
+          "value": "#1B1E1B",
           "theme": {
             "mode": "dark"
           }
@@ -62907,7 +63008,7 @@
       "type": "color",
       "value": [
         {
-          "value": "#dcd2ba",
+          "value": "#DCD2BA",
           "theme": {
             "mode": "light"
           }
@@ -62924,13 +63025,13 @@
       "type": "color",
       "value": [
         {
-          "value": "#d8cfbc",
+          "value": "#D8CFBC",
           "theme": {
             "mode": "light"
           }
         },
         {
-          "value": "#2e332e",
+          "value": "#2E332E",
           "theme": {
             "mode": "dark"
           }
@@ -62941,13 +63042,13 @@
       "type": "color",
       "value": [
         {
-          "value": "#c2b69e",
+          "value": "#C2B69E",
           "theme": {
             "mode": "light"
           }
         },
         {
-          "value": "#3d423d",
+          "value": "#3D423D",
           "theme": {
             "mode": "dark"
           }
@@ -62958,13 +63059,13 @@
       "type": "color",
       "value": [
         {
-          "value": "#11120d",
+          "value": "#11120D",
           "theme": {
             "mode": "light"
           }
         },
         {
-          "value": "#eef7ea",
+          "value": "#EEF7EA",
           "theme": {
             "mode": "dark"
           }
@@ -62975,13 +63076,13 @@
       "type": "color",
       "value": [
         {
-          "value": "#51483f",
+          "value": "#51483F",
           "theme": {
             "mode": "light"
           }
         },
         {
-          "value": "#a9c2a0",
+          "value": "#A9C2A0",
           "theme": {
             "mode": "dark"
           }
@@ -62998,7 +63099,7 @@
           }
         },
         {
-          "value": "#80ee64",
+          "value": "#80EE64",
           "theme": {
             "mode": "dark"
           }
@@ -63058,13 +63159,13 @@
       "type": "color",
       "value": [
         {
-          "value": "#dcfce7",
+          "value": "#DCFCE7",
           "theme": {
             "mode": "light"
           }
         },
         {
-          "value": "#16301a",
+          "value": "#16301A",
           "theme": {
             "mode": "dark"
           }
@@ -63075,13 +63176,13 @@
       "type": "color",
       "value": [
         {
-          "value": "#15803d",
+          "value": "#15803D",
           "theme": {
             "mode": "light"
           }
         },
         {
-          "value": "#bff9b4",
+          "value": "#BFF9B4",
           "theme": {
             "mode": "dark"
           }
@@ -63092,13 +63193,13 @@
       "type": "color",
       "value": [
         {
-          "value": "#fef3c7",
+          "value": "#FEF3C7",
           "theme": {
             "mode": "light"
           }
         },
         {
-          "value": "#3b2c10",
+          "value": "#3B2C10",
           "theme": {
             "mode": "dark"
           }
@@ -63109,13 +63210,13 @@
       "type": "color",
       "value": [
         {
-          "value": "#b45309",
+          "value": "#B45309",
           "theme": {
             "mode": "light"
           }
         },
         {
-          "value": "#f2cf7c",
+          "value": "#F2CF7C",
           "theme": {
             "mode": "dark"
           }
@@ -63126,13 +63227,13 @@
       "type": "color",
       "value": [
         {
-          "value": "#fee2e2",
+          "value": "#FEE2E2",
           "theme": {
             "mode": "light"
           }
         },
         {
-          "value": "#3d1a18",
+          "value": "#3D1A18",
           "theme": {
             "mode": "dark"
           }
@@ -63143,13 +63244,13 @@
       "type": "color",
       "value": [
         {
-          "value": "#b91c1c",
+          "value": "#B91C1C",
           "theme": {
             "mode": "light"
           }
         },
         {
-          "value": "#ffa8a0",
+          "value": "#FFA8A0",
           "theme": {
             "mode": "dark"
           }
@@ -63160,7 +63261,7 @@
       "type": "color",
       "value": [
         {
-          "value": "#f5efe0",
+          "value": "#F5EFE0",
           "theme": {
             "mode": "light"
           }
@@ -63177,13 +63278,13 @@
       "type": "color",
       "value": [
         {
-          "value": "#b91c1c",
+          "value": "#B91C1C",
           "theme": {
             "mode": "light"
           }
         },
         {
-          "value": "#b4272c",
+          "value": "#B4272C",
           "theme": {
             "mode": "dark"
           }
@@ -63194,13 +63295,183 @@
       "type": "color",
       "value": [
         {
-          "value": "#f5efe0",
+          "value": "#F5EFE0",
           "theme": {
             "mode": "light"
           }
         },
         {
-          "value": "#eef7ea",
+          "value": "#EEF7EA",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "accent-hover": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#5D2B1A",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#BFF9B4",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "focus-ring": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#B06A4A",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#80EE64",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "danger-solid-hover": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#991B1B",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#C93035",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "success-text": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#166534",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#BFF9B4",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "warning-text": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#92400E",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#F2CF7C",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "danger-text": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#991B1B",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#FFA8A0",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "skeleton-base": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#DCD2BA",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#212525",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "skeleton-sheen": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#EDE6D6",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#2E332E",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "code-bg": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#F5EFE0",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#1B1E1B",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "code-fg": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#11120D",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#EEF7EA",
           "theme": {
             "mode": "dark"
           }

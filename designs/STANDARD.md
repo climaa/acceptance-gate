@@ -67,7 +67,18 @@ canvas padding is what turns the 1280 and 390 px viewports (`policy.mjs:26-27`) 
 
 Every fill and stroke inside a tile is a variable. A raw hex never follows the theme, so
 a dark ref of a tile with hard-coded colours would draw the light colours on a dark
-board. The variables mirror `tokens.css` role for role.
+board. The variables mirror `tokens.css` role for role. Where a drawing and `tokens.css`
+disagree, the CSS wins: the board is read against screenshots of the shipping CSS.
+
+Two kinds of raw hex are exempt, and each exempt node says so in its `context` field
+(`colour-exempt: primitive swatch` or `colour-exempt: image content`). The tag goes in
+`context` because Pencil drops `metadata` on update.
+
+- **Primitive swatches** that show the palette itself.
+- **Image content:** the pixels of a screenshot being drawn, such as a diff's red marks.
+
+[`scripts/pen/check-colours.js`](../scripts/pen/check-colours.js) counts the rest. Run it
+through the Pencil MCP before an export; it must report 0.
 
 ## Sidecars
 
