@@ -44,6 +44,18 @@
       "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/scripts/complexity-gate.mjs"],
       "outputs": []
     },
+    "@gate/storybook#build": {
+      "dependsOn": ["^build"],
+      "env": [
+        "VERCEL_ENV",
+        "VERCEL_OBSERVABILITY_CLIENT_CONFIG",
+        "NEXT_PUBLIC_BUGSINK_DSN",
+        "BLOG_RELEASES_FIXTURE",
+        "GITHUB_TOKEN"
+      ],
+      "inputs": ["$TURBO_DEFAULT$", ".env*", "$TURBO_ROOT$/designs/exports/**"],
+      "outputs": ["storybook-static/**"]
+    },
     "@gate/manual#build": {
       "dependsOn": ["^build"],
       "inputs": [
