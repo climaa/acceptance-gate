@@ -1,0 +1,442 @@
+{
+  "version": "2.21",
+  "children": [
+    {
+      "type": "frame",
+      "id": "MyCd9",
+      "x": 0,
+      "y": 0,
+      "name": "03-organisms — Organisms",
+      "theme": {
+        "mode": "light"
+      },
+      "width": 2040,
+      "fill": "$paper",
+      "layout": "vertical",
+      "gap": 48,
+      "padding": 64,
+      "children": [
+        {
+          "type": "frame",
+          "id": "Grhbs",
+          "name": "Board Header",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 12,
+          "children": [
+            {
+              "type": "text",
+              "id": "dddCy",
+              "name": "Stem",
+              "fill": "$ink-muted",
+              "content": "03-organisms",
+              "fontFamily": "$font-mono",
+              "fontSize": 16,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "text",
+              "id": "Elwsc",
+              "name": "Title",
+              "fill": "$ink",
+              "content": "Organisms",
+              "fontFamily": "$font-body",
+              "fontSize": 48,
+              "fontWeight": "700"
+            },
+            {
+              "type": "text",
+              "id": "b52vMD",
+              "name": "Rule",
+              "fill": "$ink-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "One tile per organism story, desktop (1248) and mobile (358).",
+              "lineHeight": 1.4,
+              "fontFamily": "$font-body",
+              "fontSize": 20,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "rOSZL",
+          "name": "Variant · organisms/organisms-example--default · desktop",
+          "layout": "vertical",
+          "gap": 12,
+          "children": [
+            {
+              "type": "text",
+              "id": "dPwX5",
+              "name": "Key",
+              "fill": "$ink-muted",
+              "content": "organisms__desktop__light__organisms-example--default  ·  dark = ref, theme mode=dark",
+              "fontFamily": "$font-mono",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "GLfze",
+              "name": "Themes",
+              "layout": "vertical",
+              "gap": 32,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "kfuZh",
+                  "name": "organisms__desktop__light__organisms-example--default",
+                  "theme": {
+                    "mode": "light"
+                  },
+                  "reusable": true,
+                  "clip": true,
+                  "width": 1248,
+                  "height": 153,
+                  "fill": "$bg",
+                  "layout": "vertical",
+                  "gap": 16,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "c7eDQ",
+                      "name": "Card",
+                      "width": "fill_container",
+                      "fill": "$bg-subtle",
+                      "cornerRadius": 8,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "gap": 12,
+                      "padding": 24,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "O6vOl",
+                          "name": "Title",
+                          "fill": "$text",
+                          "content": "Card title",
+                          "fontFamily": "$font-body",
+                          "fontSize": 20,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "hideO",
+                          "name": "Body",
+                          "fill": "$text-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "An organism composes molecules and atoms. Its tile is drawn at the screenshot's width and hugs its content.",
+                          "lineHeight": 1.5,
+                          "fontFamily": "$font-body",
+                          "fontSize": 15,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "X8nTCm",
+                          "name": "Button",
+                          "fill": "$accent",
+                          "cornerRadius": 6,
+                          "padding": [
+                            8,
+                            16
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "ZDz51",
+                              "name": "Label",
+                              "fill": "$text-inverted",
+                              "content": "Button",
+                              "fontFamily": "$font-body",
+                              "fontSize": 14,
+                              "fontWeight": "600"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "ZbD5C",
+                  "type": "ref",
+                  "ref": "kfuZh",
+                  "name": "organisms__desktop__dark__organisms-example--default",
+                  "theme": {
+                    "mode": "dark"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "g8unx8",
+          "name": "Variant · organisms/organisms-example--default · mobile",
+          "layout": "vertical",
+          "gap": 12,
+          "children": [
+            {
+              "type": "text",
+              "id": "mr2Gf",
+              "name": "Key",
+              "fill": "$ink-muted",
+              "content": "organisms__mobile__light__organisms-example--default  ·  dark = ref, theme mode=dark",
+              "fontFamily": "$font-mono",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "P75HD2",
+              "name": "Themes",
+              "gap": 32,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "ZUDFL",
+                  "name": "organisms__mobile__light__organisms-example--default",
+                  "theme": {
+                    "mode": "light"
+                  },
+                  "reusable": true,
+                  "clip": true,
+                  "width": 358,
+                  "height": 199,
+                  "fill": "$bg",
+                  "layout": "vertical",
+                  "gap": 16,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "w190E",
+                      "name": "Card",
+                      "width": "fill_container",
+                      "fill": "$bg-subtle",
+                      "cornerRadius": 8,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "gap": 12,
+                      "padding": 24,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "T4S7zf",
+                          "name": "Title",
+                          "fill": "$text",
+                          "content": "Card title",
+                          "fontFamily": "$font-body",
+                          "fontSize": 20,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "L1mA4",
+                          "name": "Body",
+                          "fill": "$text-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "An organism composes molecules and atoms. Its tile is drawn at the screenshot's width and hugs its content.",
+                          "lineHeight": 1.5,
+                          "fontFamily": "$font-body",
+                          "fontSize": 15,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "OCzel",
+                          "name": "Button",
+                          "fill": "$accent",
+                          "cornerRadius": 6,
+                          "padding": [
+                            8,
+                            16
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "cEiCA",
+                              "name": "Label",
+                              "fill": "$text-inverted",
+                              "content": "Button",
+                              "fontFamily": "$font-body",
+                              "fontSize": 14,
+                              "fontWeight": "600"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "A4kV5z",
+                  "type": "ref",
+                  "ref": "ZUDFL",
+                  "name": "organisms__mobile__dark__organisms-example--default",
+                  "theme": {
+                    "mode": "dark"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "themes": {
+    "mode": [
+      "light",
+      "dark"
+    ]
+  },
+  "variables": {
+    "bg": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#ede6d6",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#141614",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "bg-subtle": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#e4dbc6",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#1b1e1b",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "border": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#d8cfbc",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#2e332e",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "text": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#11120d",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#eef7ea",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "text-muted": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#51483f",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#a9c2a0",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "accent": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#713520",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#80ee64",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "paper": {
+      "type": "color",
+      "value": "#f5f2ec"
+    },
+    "ink": {
+      "type": "color",
+      "value": "#1c1917"
+    },
+    "ink-muted": {
+      "type": "color",
+      "value": "#78716c"
+    },
+    "font-body": {
+      "type": "string",
+      "value": "Atkinson Hyperlegible"
+    },
+    "font-mono": {
+      "type": "string",
+      "value": "JetBrains Mono"
+    },
+    "text-inverted": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#f5efe0",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#141614",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    }
+  },
+  "fileToken": "fb0fcfd1-2de1-4a44-bdb0-30fb8790cb3c"
+}

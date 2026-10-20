@@ -198,7 +198,7 @@ export const isAgainst = (value: string | null): value is Against =>
 
 /**
  * The design boards a comparison can be read against: the PNGs exported from
- * `designs/acceptance-gate.pen` into `designs/exports/`, by file stem
+ * each board's `designs/<stem>.pen` into `designs/exports/`, by file stem
  * (designs/STANDARD.md). The four tier boards first, in tier order, then the
  * reference boards. The allowlist IS the route's confinement — a name not here
  * is never turned into a path.

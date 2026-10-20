@@ -59,6 +59,7 @@
     "//#boards:check": {
       "dependsOn": ["@gate/storybook#build"],
       "inputs": [
+        "$TURBO_ROOT$/designs/*.pen",
         "$TURBO_ROOT$/designs/exports/**",
         "$TURBO_ROOT$/scripts/board-scale-integrity.mjs",
         "$TURBO_ROOT$/packages/visual-diff/src/policy.mjs",

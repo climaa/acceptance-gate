@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
 // @ts-expect-error — plain .mjs with JSDoc types, no declaration file.
-import { joinProblems } from '../board-scale-integrity.mjs';
+import * as integrity from '../board-scale-integrity.mjs';
+
+const { fileProblems, joinProblems, variableProblems } = integrity;
 
 /**
  * The join between the tier boards' tiles and the variants Storybook plans
@@ -98,5 +100,48 @@ describe('joinProblems', () => {
     );
 
     expect(problems).toEqual([]);
+  });
+});
+
+describe('fileProblems', () => {
+  it('passes when every board file has its export and every export its file', () => {
+    expect(fileProblems(['01-atoms', '05-pages'], ['05-pages', '01-atoms'])).toEqual([]);
+  });
+
+  it('names a board file with no export, and an export with no board file', () => {
+    const problems = fileProblems(['01-atoms', '02-molecules'], ['01-atoms', 'pages']);
+
+    expect(problems).toEqual([
+      'designs/02-molecules.pen has no export: export the board',
+      'exports/pages.png has no designs/pages.pen it was exported from',
+    ]);
+  });
+});
+
+describe('variableProblems', () => {
+  it('passes when every board carries 00-foundations’ variables', () => {
+    expect(variableProblems({ '00-foundations': 'a1', '01-atoms': 'a1' })).toEqual([]);
+  });
+
+  it('names a board whose copy of the variables drifted', () => {
+    const problems = variableProblems({ '00-foundations': 'a1', '01-atoms': 'b2' });
+
+    expect(problems).toEqual([
+      "01-atoms.pen's variables differ from 00-foundations.pen's: copy them across, then export both",
+    ]);
+  });
+
+  it('names a board exported before fingerprints were recorded', () => {
+    const problems = variableProblems({ '00-foundations': 'a1', '01-atoms': undefined });
+
+    expect(problems).toEqual([
+      '01-atoms.json records no variables: export 01-atoms.pen again',
+    ]);
+  });
+
+  it('names the source board when it records none', () => {
+    expect(variableProblems({ '01-atoms': 'a1' })).toEqual([
+      '00-foundations.json records no variables: export 00-foundations.pen',
+    ]);
   });
 });
