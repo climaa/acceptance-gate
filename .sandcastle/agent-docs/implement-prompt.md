@@ -153,6 +153,13 @@ Once complete, output `<promise>COMPLETE</promise>` on its own line as your **ve
 If a scenario seems wrong, say so in the issue/PR and stop; the diff must not touch
 `features/`. Respect the issue's do-not-touch list.
 
+**A story ships with its tile, and you cannot draw one.** Tiles live in the `.pen`
+files under `designs/`, which only the Pencil app edits; `designs/exports/` is written by
+the export, never by hand. If `pnpm turbo run boards:check` fails because a story you
+added or renamed has no tile, do not touch `designs/`: comment on the issue that the
+story needs its tiles drawn (name the variant keys the check printed) and stop without
+pushing.
+
 ONLY WORK ON A SINGLE TASK.
 
 **Do not use `run_in_background: true` for any bash call.** Poll with foreground loops (`while sleep 30; do …; done`) so this process holds no open background handles when you emit `<promise>COMPLETE</promise>`. Sandcastle's completion-signal detector misses the signal if background tasks are pending.

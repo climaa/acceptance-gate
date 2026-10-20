@@ -47,6 +47,7 @@ Merged to `main` since v1.6.0, not yet released:
 - build(turbo): Storybook's build keys on the design boards it serves (#593)
 - feat(gate): every planned story has its tile, and every tile a story (#594)
 - feat(gate): a child's boards check skips the stories drawn in the parent (#595)
+- docs(agents): the agents learn a story ships with its tile (#596)
 - feat(designs): one .pen file per board (#597)
 
 ## v1.6.0 — a screenshot is read against its design board, down to the design token

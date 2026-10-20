@@ -75,6 +75,11 @@ no padding of its own (`apps/storybook/.storybook/preview.tsx:38-47`). Storybook
 canvas padding is what turns the 1280 and 390 px viewports (`policy.mjs:26-27`) into
 1248 and 358 px.
 
+The content's height is read off the baseline, not guessed from the drawing: a tile is a
+fixed-size frame exactly as tall as its screenshot in `packages/visual-diff/__baselines__`,
+clipping what overflows. A drawing that runs short or long then shows as a gap or a cut,
+not as a tile that quietly disagrees with the shot it is read against.
+
 ### Colour
 
 Every fill and stroke inside a tile is a variable. A raw hex never follows the theme, so

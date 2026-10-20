@@ -37,7 +37,9 @@ Check whether any of the listed files plausibly relate to issue #{{TASK_ID}} ("{
 Load `.sandcastle/agent-docs/CODING_STANDARDS.md` and review against it —
 especially the testing conventions (AAA, pyramid, regression-test-with-bugfix,
 no happy-path-only suites) and the `.feature`-files rule: a diff that edits
-`features/` to make a test pass is an automatic revision request.
+`features/` to make a test pass is an automatic revision request. So is a diff that
+edits a file under `designs/` by hand: the `.pen` files are edited only in the Pencil
+app, and `designs/exports/` is written only by the export (`designs/STANDARD.md`).
 
 1. **Understand the change**: Read the diff and commits above to understand the intent.
 
