@@ -5,8 +5,8 @@
 //
 // The snippet runs inside Pencil, where `Export` can write only images and names
 // each one after its node id. This renames each PNG to its board's stem, writes
-// `<stem>.json` (the board's size in design pixels, its export scale and its
-// variables' fingerprint) and, for a board with tiles, `<stem>.tiles.json` (each
+// `<stem>.json` (the board's size in design pixels and its export scale) and, for a
+// board with tiles, `<stem>.tiles.json` (each
 // tile's variant key and rectangle in that PNG's pixels).
 //
 // One manifest per board file, as many as were exported. A board whose
@@ -60,12 +60,9 @@ const tileMap = (board, scale, keys, tiles) =>
     '',
   ].join('\n');
 
-for (const { id, stem, board, width, height, scale, variables, tiles } of manifest) {
+for (const { id, stem, board, width, height, scale, tiles } of manifest) {
   renameSync(join(EXPORTS, `${id}.png`), join(EXPORTS, `${stem}.png`));
-  writeFileSync(
-    join(EXPORTS, `${stem}.json`),
-    json({ board, width, height, scale, variables }),
-  );
+  writeFileSync(join(EXPORTS, `${stem}.json`), json({ board, width, height, scale }));
 
   const keys = Object.keys(tiles).sort();
   const tileFile = join(EXPORTS, `${stem}.tiles.json`);

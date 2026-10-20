@@ -3,7 +3,8 @@ import { describe, expect, it } from 'vitest';
 // @ts-expect-error — plain .mjs with JSDoc types, no declaration file.
 import * as integrity from '../board-scale-integrity.mjs';
 
-const { fileProblems, joinProblems, variableProblems } = integrity;
+const { fileProblems, joinProblems, readBoard, syncProblems, variableProblems } =
+  integrity;
 
 /**
  * The join between the tier boards' tiles and the variants Storybook plans
@@ -119,29 +120,105 @@ describe('fileProblems', () => {
 });
 
 describe('variableProblems', () => {
-  it('passes when every board carries 00-foundations’ variables', () => {
+  it('passes when every board file carries 00-foundations’ variables', () => {
     expect(variableProblems({ '00-foundations': 'a1', '01-atoms': 'a1' })).toEqual([]);
   });
 
-  it('names a board whose copy of the variables drifted', () => {
+  it('names a board file whose copy of the variables drifted', () => {
     const problems = variableProblems({ '00-foundations': 'a1', '01-atoms': 'b2' });
 
     expect(problems).toEqual([
-      "01-atoms.pen's variables differ from 00-foundations.pen's: copy them across, then export both",
+      "01-atoms.pen's variables differ from 00-foundations.pen's: copy them across from 00-foundations.pen",
     ]);
   });
 
-  it('names a board exported before fingerprints were recorded', () => {
-    const problems = variableProblems({ '00-foundations': 'a1', '01-atoms': undefined });
+  it('names the source board file when it is missing', () => {
+    expect(variableProblems({ '01-atoms': 'a1' })).toEqual([
+      "designs/00-foundations.pen is missing: it is the variables' source",
+    ]);
+  });
+});
+
+describe('readBoard', () => {
+  const VARIABLES = { bg: { type: 'color', value: '#fff' } };
+  const document = (children: unknown[], variables: unknown = VARIABLES) => ({
+    version: '1',
+    themes: { mode: ['light', 'dark'] },
+    variables,
+    children,
+  });
+  const tile = (name: string, children: unknown[] = []) => ({
+    type: 'frame',
+    name,
+    children,
+  });
+
+  it('reads the tiles under the board, without descending into a tile', () => {
+    const board = tile('01-atoms — Atoms', [
+      tile('atoms-badge--accent', [
+        tile('Tiles', [
+          tile(BADGE, [tile('atoms__inner__light__x--y')]),
+          tile(BADGE_DARK),
+        ]),
+      ]),
+    ]);
+
+    const read = readBoard(document([tile('Components'), board]), '01-atoms');
+
+    expect({ problems: read.problems, tiles: read.tileNames }).toEqual({
+      problems: [],
+      tiles: [BADGE, BADGE_DARK],
+    });
+  });
+
+  it('names a file whose board is named for another stem', () => {
+    const read = readBoard(document([tile('01-atom — Atoms')]), '01-atoms');
+
+    expect(read.problems).toEqual([
+      'designs/01-atoms.pen must hold one board, named "01-atoms — <title>"; it holds 01-atom',
+    ]);
+  });
+
+  it('names a file that holds two boards', () => {
+    const read = readBoard(
+      document([tile('01-atoms — Atoms'), tile('02-molecules — Molecules')]),
+      '01-atoms',
+    );
+
+    expect(read.problems).toEqual([
+      'designs/01-atoms.pen must hold one board, named "01-atoms — <title>"; it holds 01-atoms, 02-molecules',
+    ]);
+  });
+
+  // Key order is how Pencil happens to write a file, not what its variables are.
+  it('fingerprints the variables, not the order their keys were written in', () => {
+    const a = readBoard(document([], { x: { value: 1, type: 'n' } }), '00-foundations');
+    const b = readBoard(document([], { x: { type: 'n', value: 1 } }), '00-foundations');
+    const c = readBoard(document([], { x: { type: 'n', value: 2 } }), '00-foundations');
+
+    expect({
+      same: a.fingerprint === b.fingerprint,
+      other: a.fingerprint === c.fingerprint,
+    }).toEqual({
+      same: true,
+      other: false,
+    });
+  });
+});
+
+describe('syncProblems', () => {
+  it('passes when the tile map lists exactly the tiles the board draws', () => {
+    expect(syncProblems('01-atoms', [BADGE, BADGE_DARK], [BADGE_DARK, BADGE])).toEqual(
+      [],
+    );
+  });
+
+  it('names a tile drawn since the export, and one deleted since', () => {
+    const problems = syncProblems('01-atoms', [BADGE], [BADGE_DARK]);
 
     expect(problems).toEqual([
-      '01-atoms.json records no variables: export 01-atoms.pen again',
-    ]);
-  });
-
-  it('names the source board when it records none', () => {
-    expect(variableProblems({ '01-atoms': 'a1' })).toEqual([
-      '00-foundations.json records no variables: export 00-foundations.pen',
+      `01-atoms.pen draws ${BADGE}, which 01-atoms.tiles.json lacks: export 01-atoms.pen again`,
+      `01-atoms.tiles.json has ${BADGE_DARK}, which 01-atoms.pen no longer draws: export 01-atoms.pen again`,
     ]);
   });
 });

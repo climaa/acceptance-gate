@@ -35,9 +35,8 @@ file and its exports are one name. The boards, in order:
   below 1× splits into `01-atoms-1.pen`, `01-atoms-2.pen`, …, never into a renamed board.
 - **Variables are copied, not shared.** A Pencil document holds its own variables and
   themes, so every board file carries the same set. `00-foundations.pen` is the source:
-  change a variable there, copy it to every other board file, and export them all. Each
-  export records a fingerprint of its file's variables, and the `boards` check fails on a
-  board whose fingerprint differs from `00-foundations`'.
+  change a variable there and copy it to every other board file. The `boards` check reads
+  each file's variables and fails on a copy that differs from `00-foundations.pen`'s.
 - **Components a board instances live in that board's file.** A board that draws instances
   of reusable components (`05-pages`, `06-flows-decisions` and `x-visual-diff-pages` here)
   keeps its own `Components` frame beside the board. It is not exported.
@@ -50,12 +49,12 @@ A tile is the frame on a tier board that draws one story.
   `tier__viewport__theme__storyId` (`packages/visual-diff/src/policy.mjs:95-104`), for
   example `atoms__desktop__light__atoms-badge--accent`. A name is either a variant key or
   the tile is not a tile.
-- **Dark is a theme, not a drawing.** The light tile is a reusable frame; the dark tile is a `ref` of it with
-  `theme: {mode: "dark"}` and the `dark` key. Only the `--color-*` roles change under
-  `[data-theme='dark']` (`packages/ui/src/tokens.css:238`), and a ref resolves the same
-  variables in the other mode.
-- **Mobile only where a mobile screenshot exists.** That covers organisms and templates, plus any
-  story tagged `visual-diff:all-viewports` (`policy.mjs:34-39`, `:60`).
+- **Dark is a theme, not a drawing.** The light tile is a reusable frame; the dark tile is
+  a `ref` of it with `theme: {mode: "dark"}` and the `dark` key. Only the `--color-*`
+  roles change under `[data-theme='dark']` (`packages/ui/src/tokens.css:238`), and a ref
+  resolves the same variables in the other mode.
+- **Mobile only where a mobile screenshot exists.** That covers organisms and templates,
+  plus any story tagged `visual-diff:all-viewports` (`policy.mjs:34-39`, `:60`).
 - **Which tiles are required** is the planned variants (`planCaptures`,
   `packages/visual-diff/src/storybook-index.mjs:162`). Stories tagged `visual-diff:skip`
   (`policy.mjs:51`) and MDX docs pages have no screenshot, so they have no tile.
@@ -107,8 +106,7 @@ Every board is exported to `exports/<stem>.png`, at 2× or at the scale that put
 side at 8192 px when that is smaller. Two JSON files sit beside it, both written by the
 export and never edited by hand:
 
-- `<stem>.json`: the board's size in design pixels, the scale it was exported at, and the
-  fingerprint of its file's variables.
+- `<stem>.json`: the board's size in design pixels and the scale it was exported at.
 - `<stem>.tiles.json`, on a tier board only: for each tile, its variant key and its
   rectangle in that PNG's pixels, at that scale.
 
@@ -122,14 +120,23 @@ To export, for each board file that changed:
    the PNGs by stem, writes the sidecars, and deletes the exports of any board whose
    `.pen` no longer exists.
 
-[`scripts/board-scale-integrity.mjs`](../scripts/board-scale-integrity.mjs) holds each PNG to
-its sidecar.
+## The boards check
 
-**The trust boundary.** A `.pen` is only read through the Pencil app, so no headless check
-can prove that a sidecar matches the drawing. The gate's `boards` check
-(`pnpm turbo run boards:check`) proves the sidecars against Storybook: every required tile
-is present, on its own tier's board, no tile is extra, and every name is a variant key. The match between drawing and sidecar rests on the export being the only thing that
-writes them.
+`pnpm turbo run boards:check` runs
+[`scripts/board-scale-integrity.mjs`](../scripts/board-scale-integrity.mjs) after a
+Storybook build, as the gate's `boards` check. A `.pen` is plain JSON, so the check reads
+the board files themselves, not an export's account of them. It fails when:
+
+- a board file holds anything but one board named for its stem, or has no export, or an
+  export has no board file;
+- a board file's variables differ from `00-foundations.pen`'s;
+- a PNG's size disagrees with its sidecar, or a tile lies outside its PNG;
+- a tier board's tile map lists other tiles than the board file draws: export it again;
+- a planned variant has no tile, a tile has no planned variant, a tile sits on another
+  tier's board or is drawn twice.
+
+What it cannot see is the drawing itself: whether a tile looks like its screenshot is
+judged by eye, beside the screenshot, in the console.
 
 ## In a child project
 
@@ -147,7 +154,24 @@ that ports the story to the child.
 
 ## Working on a .pen
 
-- Pencil's MCP edits the editor's **active** document whatever path it is given. Open
-  the file first with `open -a Pen <path>` and confirm it with `get_app_state` before
-  the first edit.
+- Edit a `.pen` only in Pencil, never by hand: a hand edit can save a document Pencil will
+  not reopen.
+- Pencil's MCP edits the editor's **active** document whatever path it is given. Open the
+  file first with `open -a Pen <path>` and confirm it with `get_app_state`. When a snippet
+  runs across several files, have it assert something only the intended file has, such as
+  its board's name, so a file that failed to open is not the one edited.
+- Pencil writes a document to disk only on Cmd+S, one tab at a time. Save every tab you
+  edited before committing, and close the tab of a file you deleted without saving it, or
+  the save writes the file back.
 - A story and its tile ship in the same pull request.
+
+## Starting from the template
+
+Copy [`template/`](template/) into the new project's `designs/`, one file per board, then:
+
+- Rename the stems and titles that do not fit, and copy `x-example.pen` once per project
+  board, renaming it `x-<what it holds>`.
+- Delete the example tiles on `01`–`04` (`*-example--default`): they draw no story, so the
+  `boards` check fails on each until they are gone.
+- Set the variables in `00-foundations.pen` to the project's `tokens.css` and copy them to
+  every other file.
