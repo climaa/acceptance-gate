@@ -1,6 +1,7 @@
-// Design-board integrity. Fails when a board PNG in designs/exports/ and the
-// sidecar that states its scale disagree, or when the tier boards' tiles and
-// Storybook's planned variants do not join one to one.
+// Design-board integrity. Fails when a board file, its exports and Storybook's
+// planned variants disagree: a PNG and the sidecar stating its scale, a board file
+// and its export, a board's drawn tiles and its tile map, or the tiles and the
+// planned variants, which must join one to one.
 //
 // WHY THIS EXISTS. The console's shot view lays a crop of a board over a
 // screenshot, and needs to know how many PNG pixels one design pixel became:
@@ -15,18 +16,20 @@
 //
 // THE FILES. Each board is its own file, `designs/<stem>.pen`, exported to
 // `exports/<stem>.png`: a board file with no export, or an export with no board
-// file, is red. Variables live inside each document, so every board file carries
-// a copy; each sidecar records its copy's fingerprint, and every board's must
-// match 00-foundations'.
+// file, is red, and each file holds exactly one board, named for its stem. A
+// `.pen` is plain JSON, so it is read here directly. Variables live inside each
+// document, so every board file carries a copy, and each copy must match
+// 00-foundations.pen's.
 //
 // THE TILES. A tier board also carries `<board>.tiles.json`: each tile's variant
 // key and its rectangle in that PNG's pixels, which the shot view opens its crop
-// on. Each tile file must state its board's scale, and every tile must lie
-// inside the PNG.
+// on. Each tile file must state its board's scale, every tile must lie inside
+// the PNG, and the map must list exactly the tiles the board file draws — a tile
+// drawn or deleted since the export makes the console crop by a stale map.
 //
-// THE JOIN. Every variant Storybook plans has exactly one tile, on its own
-// tier's board; every tile there is a variant Storybook plans. A story added
-// without its tile is red, which is the rule "a new story ships with its tile":
+// THE JOIN. Read off the board files themselves: every variant Storybook plans
+// has exactly one tile, on its own tier's board; every tile there is a variant
+// Storybook plans. A story added without its tile is red, which is the rule "a new story ships with its tile":
 // a story an agent writes needs the attended board step before it can pass.
 // The planned variants are read off `storybook-static/index.json` by the
 // differ's own `planCaptures`, so the join cannot disagree with what is
@@ -34,8 +37,9 @@
 //
 // WHY A ROOT TURBO TASK (`boards:check`) AND NOT A WORKSPACE TEST: designs/
 // belongs to no workspace, and the join needs a Storybook build. The task names
-// designs/exports/** and this script in its `inputs` and depends on
+// designs/*.pen, designs/exports/** and this script in its `inputs` and depends on
 // `@gate/storybook#build`, so the cache answers only for files it has read.
+import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -134,6 +138,58 @@ export function joinProblems(tileNames, planned, shared = []) {
 /** The board whose variables every other board's are held to. */
 export const VARIABLES_SOURCE = '00-foundations';
 
+const BOARD_FRAME = /^(\d\d-[a-z0-9-]+|x-[a-z0-9-]+) — /;
+const TILE_NAME = /^(atoms|molecules|organisms|templates)__/;
+
+/** JSON with every object's keys sorted, so the same value always prints the same. */
+const canonical = (value) =>
+  Array.isArray(value)
+    ? `[${value.map(canonical).join(',')}]`
+    : value && typeof value === 'object'
+      ? `{${Object.keys(value)
+          .sort()
+          .map((key) => `${JSON.stringify(key)}:${canonical(value[key])}`)
+          .join(',')}}`
+      : JSON.stringify(value);
+
+/** Every node under `node` whose name starts like a variant key, without descending
+ *  into one: a tile's own children are its drawing, not more tiles. */
+function tileNamesUnder(node) {
+  return (node.children ?? []).flatMap((child) =>
+    TILE_NAME.test(child.name ?? '') ? [child.name] : tileNamesUnder(child),
+  );
+}
+
+/**
+ * What one board file holds, read straight off the document: a `.pen` is plain JSON
+ * (apps/storybook/__tests__/design-source.test.ts pins that), so the drawing itself
+ * is checked rather than an export's account of it.
+ *
+ * @param {{ children?: unknown[], themes?: unknown, variables?: unknown }} document
+ * @param {string} stem  The file's stem, which its one board frame must carry.
+ * @returns {{ problems: string[], tileNames: string[], fingerprint: string }}
+ */
+export function readBoard(document, stem) {
+  const frames = (document.children ?? []).filter((node) =>
+    BOARD_FRAME.test(node.name ?? ''),
+  );
+  const stems = frames.map((node) => BOARD_FRAME.exec(node.name)[1]);
+  const problems =
+    stems.length === 1 && stems[0] === stem
+      ? []
+      : [
+          `designs/${stem}.pen must hold one board, named "${stem} — <title>"; it holds ${
+            stems.length === 0 ? 'none' : stems.join(', ')
+          }`,
+        ];
+  const fingerprint = createHash('sha256')
+    .update(canonical({ themes: document.themes, variables: document.variables }))
+    .digest('hex')
+    .slice(0, 12);
+
+  return { problems, tileNames: frames.flatMap(tileNamesUnder), fingerprint };
+}
+
 /**
  * Every board file against its exports: each `designs/<stem>.pen` is one board, so
  * each has a `<stem>.png`, and each PNG a board file it was exported from.
@@ -159,27 +215,53 @@ export function fileProblems(penStems, pngStems) {
 }
 
 /**
- * Every board's variables against the source board's. Variables live inside each
- * document, so each board file carries a copy; its sidecar records the copy's
- * fingerprint at export, and a copy that differs from 00-foundations' has drifted.
+ * A tier board's drawing against its tile map. The map is what the console crops
+ * by; a tile drawn since the last export, or one deleted since, makes it lie.
  *
- * @param {Readonly<Record<string, string | undefined>>} fingerprints  By board stem.
+ * @param {string} stem
+ * @param {readonly string[]} drawn  Tile names in designs/<stem>.pen.
+ * @param {readonly string[]} exported  Tile names in exports/<stem>.tiles.json.
+ * @returns {string[]}
+ */
+export function syncProblems(stem, drawn, exported) {
+  const inMap = new Set(exported);
+  const onBoard = new Set(drawn);
+
+  return [
+    ...drawn
+      .filter((name) => !inMap.has(name))
+      .map(
+        (name) =>
+          `${stem}.pen draws ${name}, which ${stem}.tiles.json lacks: export ${stem}.pen again`,
+      ),
+    ...exported
+      .filter((name) => !onBoard.has(name))
+      .map(
+        (name) =>
+          `${stem}.tiles.json has ${name}, which ${stem}.pen no longer draws: export ${stem}.pen again`,
+      ),
+  ];
+}
+
+/**
+ * Every board file's variables against the source board's. A Pencil document holds
+ * its own variables and themes, so each board file carries a copy, and a copy that
+ * differs from 00-foundations' has drifted.
+ *
+ * @param {Readonly<Record<string, string>>} fingerprints  By board stem.
  * @returns {string[]}
  */
 export function variableProblems(fingerprints) {
   const source = fingerprints[VARIABLES_SOURCE];
   if (source === undefined) {
-    return [
-      `${VARIABLES_SOURCE}.json records no variables: export ${VARIABLES_SOURCE}.pen`,
-    ];
+    return [`designs/${VARIABLES_SOURCE}.pen is missing: it is the variables' source`];
   }
 
   return Object.entries(fingerprints)
     .filter(([, fingerprint]) => fingerprint !== source)
-    .map(([stem, fingerprint]) =>
-      fingerprint === undefined
-        ? `${stem}.json records no variables: export ${stem}.pen again`
-        : `${stem}.pen's variables differ from ${VARIABLES_SOURCE}.pen's: copy them across, then export both`,
+    .map(
+      ([stem]) =>
+        `${stem}.pen's variables differ from ${VARIABLES_SOURCE}.pen's: copy them across from ${VARIABLES_SOURCE}.pen`,
     );
 }
 
@@ -192,10 +274,9 @@ function pngSize(file) {
 
 const readJson = (file) => JSON.parse(readFileSync(file, 'utf8'));
 
-/** Each PNG against its sidecar; returns each board's variables fingerprint. */
+/** Each PNG against its sidecar. */
 function scaleProblems() {
   const problems = [];
-  const fingerprints = {};
   const pngs = readdirSync(EXPORTS).filter((name) => name.endsWith('.png'));
 
   for (const png of pngs) {
@@ -208,7 +289,6 @@ function scaleProblems() {
       continue;
     }
 
-    fingerprints[stem] = sidecar.variables;
     const actual = pngSize(join(EXPORTS, png));
     for (const side of ['width', 'height']) {
       const stated = Math.round(sidecar[side] * sidecar.scale);
@@ -220,7 +300,7 @@ function scaleProblems() {
     }
   }
 
-  return { problems, fingerprints, boards: pngs.length };
+  return { problems, boards: pngs.length };
 }
 
 /** Each tile map against its board's scale and PNG; returns the names it read. */
@@ -269,27 +349,51 @@ function printStories() {
   console.log(JSON.stringify(shared, null, 2));
 }
 
+/** Every board file, read: its problems, its tiles and its variables' fingerprint. */
+function boardFiles() {
+  const problems = [];
+  const tileNames = {};
+  const fingerprints = {};
+  const stems = readdirSync(DESIGNS)
+    .filter((name) => name.endsWith('.pen'))
+    .map((name) => name.slice(0, -'.pen'.length));
+
+  for (const stem of stems) {
+    const board = readBoard(readJson(join(DESIGNS, `${stem}.pen`)), stem);
+    problems.push(...board.problems);
+    tileNames[stem] = board.tileNames;
+    fingerprints[stem] = board.fingerprint;
+  }
+
+  return { problems, tileNames, fingerprints, stems };
+}
+
 function main() {
   if (process.argv.includes('--print-stories')) return printStories();
 
+  const boards = boardFiles();
   const scales = scaleProblems();
   const maps = tileMapProblems();
-  const stemsOf = (dir, ext) =>
-    readdirSync(dir)
-      .filter((name) => name.endsWith(ext))
-      .map((name) => name.slice(0, -ext.length));
+  const pngStems = readdirSync(EXPORTS)
+    .filter((name) => name.endsWith('.png'))
+    .map((name) => name.slice(0, -'.png'.length));
+  const tierStems = boards.stems.filter((stem) => tierBoardOf(stem));
   const problems = [
-    ...fileProblems(stemsOf(DESIGNS, '.pen'), stemsOf(EXPORTS, '.png')),
+    ...boards.problems,
+    ...fileProblems(boards.stems, pngStems),
     ...scales.problems,
-    ...variableProblems(scales.fingerprints),
+    ...variableProblems(boards.fingerprints),
     ...maps.problems,
+    ...tierStems.flatMap((stem) =>
+      syncProblems(stem, boards.tileNames[stem], maps.tileNames[stem] ?? []),
+    ),
   ];
 
   if (existsSync(INDEX)) {
     const { variants } = planCaptures(Object.values(readJson(INDEX).entries));
     problems.push(
       ...joinProblems(
-        maps.tileNames,
+        boards.tileNames,
         variants.map((variant) => variant.key),
         sharedStories(),
       ),
@@ -310,7 +414,7 @@ function main() {
   }
 
   console.log(
-    `✓ design boards OK — ${scales.boards} boards, ${maps.maps} tile maps, every planned variant drawn once.`,
+    `✓ design boards OK — ${boards.stems.length} board files, ${maps.maps} tile maps, every planned variant drawn once.`,
   );
 }
 
