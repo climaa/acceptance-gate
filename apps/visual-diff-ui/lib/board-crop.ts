@@ -1,4 +1,5 @@
 import type { PanZoomRect } from '@gate/ui';
+import { storyTitle } from './title';
 
 /**
  * A crop of a design board, as the shot view keeps it: in the board PNG's own
@@ -29,35 +30,32 @@ export function parseCrop(value: string | null): PanZoomRect | null {
   return width > 0 && height > 0 ? { x, y, width, height } : null;
 }
 
-/** A board's component tiles, in its PNG's pixels, as
- *  designs/exports/<board>.tiles.json holds them: x, y, width, height. */
+/** A board's tiles, in its PNG's pixels, as designs/exports/<board>.tiles.json
+ *  holds them: x, y, width, height, keyed by variant key. */
 export type BoardTiles = Readonly<
   Record<string, readonly [number, number, number, number]>
 >;
 
-/** A name with its case and punctuation dropped: Storybook writes `BucketChip`
- *  as `bucketchip` in an id, and the board names its tile `BucketChip`. */
-const loose = (name: string) => name.toLowerCase().replace(/[^a-z0-9]/g, '');
-
 /**
- * The tile a variant's story is drawn in on the board, as a crop — or null for
- * a story the board draws no tile for, which then opens on the whole board.
+ * The tile a variant is drawn in on the board, as a crop — or null for a variant
+ * the board draws no tile for, which then opens on the whole board.
  *
- * The component is read off the variant key's story id: `atoms-badge--accent`
- * is the Badge, whatever the story, so every variant of it opens on one tile.
+ * An exact lookup: a tile's frame is named with the variant key it draws
+ * (designs/STANDARD.md), so the key a screenshot is filed under is the key its
+ * tile is found by. Nothing is guessed from the story's name. The name returned
+ * is the story's, as a reader says it.
  */
 export function storyTile(
   tiles: BoardTiles,
   variantKey: string,
 ): { name: string; rect: PanZoomRect } | null {
-  const storyId = variantKey.split('__').at(-1) ?? '';
-  const component = loose((storyId.split('--')[0] ?? '').replace(/^[a-z]+-/, ''));
-  const hit = Object.entries(tiles).find(([name]) => loose(name) === component);
+  const hit = Object.hasOwn(tiles, variantKey) ? tiles[variantKey] : undefined;
   if (!hit) return null;
 
-  const [name, [x, y, width, height]] = hit;
+  const [x, y, width, height] = hit;
+  const storyId = variantKey.split('__').at(-1) ?? variantKey;
 
-  return { name, rect: { x, y, width, height } };
+  return { name: storyTitle(storyId), rect: { x, y, width, height } };
 }
 
 /** A crop as the address carries it. */

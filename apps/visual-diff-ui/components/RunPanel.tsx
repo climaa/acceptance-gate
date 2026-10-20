@@ -401,7 +401,7 @@ function useLabelSuggestion(apply: (label: string) => void) {
 }
 
 /**
- * The glyph, lucide's `wand-sparkles` — the one Board 01 draws in the
+ * The glyph, lucide's `wand-sparkles` — the one 01-atoms draws in the
  * IconButton tile.
  *
  * Stroked rather than filled, like `Dialog`'s close and unlike `ThemeToggle`'s
@@ -411,7 +411,7 @@ function useLabelSuggestion(apply: (label: string) => void) {
  * No `aria-hidden` here: `IconButton` wraps whatever it is handed in one, which
  * is exactly why that wrapper is the atom's job rather than the caller's.
  *
- * An `Icon` atom was considered for Board 01 and declined (#339): a glyph stays
+ * An `Icon` atom was considered for the atoms board and declined (#339): a glyph stays
  * children of `IconButton`/`EmptyState`, so this block and its twin stay apart
  * deliberately rather than pending a collapse.
  */

@@ -72,3 +72,8 @@ apps/visual-diff-ui/fixtures/sets/*/*.ledger.json
 # not read .gitignore, so a local e2e run left the copied ledgers above for this
 # glob to flag.
 apps/e2e/.worlds/
+
+# Board tile maps: scripts/pen/finish-export.mjs's own bytes, one tile to a line so
+# a re-export diffs by the tiles that moved. Prettier would wrap the long keys'
+# arrays over three lines and turn every regeneration into a diff.
+designs/exports/*.tiles.json

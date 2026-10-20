@@ -5,8 +5,9 @@ import { Meta } from '@storybook/addon-docs/blocks';
 # System design
 
 `designs/acceptance-gate.pen` is the source of truth for this design system — every token,
-component, flow and decision starts there before it exists in code. The four boards below are
-its current exported snapshot. This page narrates them; the other Docs pages are where the same
+component, flow and decision starts there before it exists in code. The boards below are its
+current exported snapshot, laid out by [`designs/STANDARD.md`](https://github.com/climaa/acceptance-gate/blob/main/designs/STANDARD.md).
+This page narrates them; the other Docs pages are where the same
 decisions are enforced or live-rendered — [Layering Rule](?path=/docs/docs-atomic-design-layering-rule--docs)
 runs the tier rule as a lint, [Tokens](?path=/docs/docs-system-design-tokens--docs) renders the live token
 sheet, [Diff Policy](?path=/docs/docs-qa-diff-policy--docs) and
@@ -14,44 +15,40 @@ sheet, [Diff Policy](?path=/docs/docs-qa-diff-policy--docs) and
 A board can drift from the code it described; a live-rendered page cannot. Where this page
 found drift, it says so rather than repeating the board.
 
-## Board 01 — Component library
+## 01–04 — The tier boards
 
 <img
-  src="/designs/component-library.png"
-  alt="Component Library — Atomic Design board"
+  src="/designs/01-atoms.png"
+  alt="01-atoms: one tile per atom story"
   style={{ width: '100%' }}
 />
 
-The normative inventory: every component named here is tier-assigned on this board, and issue
-bodies transcribe it rather than re-deciding tiers downstream. Two things this board records
-that no other Docs page does:
+The normative inventory, one board per tier: `01-atoms`, `02-molecules`, `03-organisms` and
+`04-templates`. Each draws **one tile per story**, at 1:1 with the screenshot the differ takes
+of it, and names the tile with that screenshot's variant key — so a story and its drawing are
+joined by name, not by a hand-kept map. Dark is not a second drawing: each dark tile is a
+reference to the light one, resolved in the dark theme, so the boards cannot hold a dark design
+the light one does not. Tiers are assigned here, and issue bodies transcribe them rather than
+re-deciding them downstream. Two things the boards record that no other Docs page does:
 
 - **The layering enforcement mechanism** (which import direction is a lint error, not just a
   convention) lives on [Layering Rule](?path=/docs/docs-atomic-design-layering-rule--docs) — same `TIERS`
   array, read live rather than redrawn here.
-- **The live token values** this board's raw `--c-*` palette resolves to as consumable
-  `--color-*` roles are on [Tokens](?path=/docs/docs-system-design-tokens--docs), rendered straight out of
-  `tokens.css` so they can't drift from what components actually use.
+- **The live token values** the boards' colour variables mirror are on
+  [Tokens](?path=/docs/docs-system-design-tokens--docs), rendered straight out of `tokens.css`
+  so they can't drift from what components actually use.
 
-**Status, checked against the filesystem, not assumed from the board**: the board's "Named
-candidates" row still lists five components as open — `Tag`, `PostMeta`, `Pagination`,
-`SkipLink`, `EmptyState`. All five exist as real components today
-(`packages/ui/src/{atoms,molecules}/`); `Pagination`, the last of them, landed on
-2026-10-09 (#486) with its four states drawn on the tile first. The board _has_ been
-re-exported since — but that row still reads as open, so this page is where the gap gets
-corrected until the row is folded into its tiers.
+`00-foundations` holds the palette and the type specimen as reference. The console's own
+compositions — the story card, the three-up viewer, the tables, the modal's contents — have no
+story, so they are drawn on `x-console-components` instead of a tier board: a generic primitive
+(`BucketChip`, `TriStateCheckbox`, `SegmentedControl`, `Thumbnail`, `Table`, `Dialog`) enters
+`packages/ui` and gets tiles; everything that knows the visual-diff domain stays an app-local
+composition. `x-visual-diff-pages` narrates the pages they compose.
 
-That 2026-08-17 revision added a second inventory to this board: the **Visual-diff console**
-tier section — the NET-NEW components `apps/visual-diff-ui` needs, each tile carrying its
-settled home. The generic primitives (`BucketChip`, `TriStateCheckbox`, `SegmentedControl`,
-`Thumbnail`, and the extracted `Table` and `Dialog`) enter `packages/ui` and its capture
-matrix; everything that knows the visual-diff domain stays an app-local composition. Board 04
-narrates the pages they compose.
-
-## Board 02 — Flows & decisions
+## 06-flows-decisions — Flows & decisions
 
 <img
-  src="/designs/flows-decisions.png"
+  src="/designs/06-flows-decisions.png"
   alt="Flows & Decisions board"
   style={{ width: '100%' }}
 />
@@ -105,12 +102,12 @@ F4 and D3 were redrawn on 2026-08-25. Both had depicted the console performing t
 and F4's artifact node named the committed corpus — which the console never wrote: it
 spawned `promote` into its own gitignored data directory. They now describe the two paths
 that do write it, the `accept-baselines` dispatch and the pinned container, and the console
-has no accept tab to draw. They belong to the pages on Board 04, and are narrated there.
+has no accept tab to draw. They belong to the pages on `x-visual-diff-pages`, and are narrated there.
 
-## Board 03 — Pages: the capture matrix
+## 05-pages — Pages: the capture matrix
 
 <img
-  src="/designs/pages.png"
+  src="/designs/05-pages.png"
   alt="Pages — the capture matrix board"
   style={{ width: '100%' }}
 />
@@ -133,10 +130,10 @@ variants is shaped exactly like that wide sweep, not like the tight, gated set t
 for. If this ever gets built, that's the distinction to build it against — not a straight
 port of the story-level matrix to routes.
 
-## Board 04 — Pages: the visual-diff console
+## x-visual-diff-pages — Pages: the visual-diff console
 
 <img
-  src="/designs/visual-diff-pages.png"
+  src="/designs/x-visual-diff-pages.png"
   alt="Pages — visual-diff console board"
   style={{ width: '100%' }}
 />
@@ -144,16 +141,16 @@ port of the story-level matrix to routes.
 The design for `apps/visual-diff-ui` — a console over the capture pipeline that
 [Diff Policy](?path=/docs/docs-qa-diff-policy--docs) and
 [Visual Diff Workflow](?path=/docs/docs-qa-visual-diff-workflow--docs) document. Two routes,
-`/` and `/report/[id]`, drawn in the same four variants as Board 03, plus the comparison
+`/` and `/report/[id]`, drawn in the same four variants as `05-pages`, plus the comparison
 modal in both of its presentations: a floating overlay on desktop, and a full-screen bottom
 sheet on mobile with every control moved into thumb reach and `actual size` yielding to
 native pinch-zoom.
 
-Like Board 03, this is **intent, not shipped behavior** — no `apps/visual-diff-ui` workspace
-exists yet. Unlike Board 03, it is drawn as a buildable spec, and its structural decisions
+Like `05-pages`, this was drawn as **intent, before the code** — no `apps/visual-diff-ui` workspace
+existed yet. Unlike `05-pages`, it is drawn as a buildable spec, and its structural decisions
 are already settled rather than deferred:
 
-- **Component homes are decided on Board 01.** The generic primitives enter `packages/ui`
+- **Component homes are decided on the tier boards.** The generic primitives enter `packages/ui`
   and its capture matrix; everything that knows about a comparison's data — the story card,
   the three-up viewer, the tables, the modal's contents — stays an app-local composition.
   Domain semantics never leak into the design system, and the pixel budget grows by

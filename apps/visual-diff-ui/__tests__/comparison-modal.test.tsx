@@ -81,7 +81,7 @@ function renderModal(
   mode: ComparisonMode = 'diff',
   subject: Variant = PROSE,
   against: Against = 'before',
-  board: DesignBoard = 'component-library',
+  board: DesignBoard = '01-atoms',
   /** What the spacing did on this variant. Null is the common case and the
    *  default: a report written before the console measured anything, and every
    *  comparison in the committed fixtures. */
@@ -377,7 +377,7 @@ describe('the copy-link status', () => {
       sides={SIDES}
       mode={mode}
       against={against}
-      board="component-library"
+      board="01-atoms"
       ledger={null}
       onMode={() => {}}
       onAgainst={() => {}}
@@ -535,20 +535,20 @@ describe('the design view', () => {
   });
 
   it('shows the picked board in a pane the reader can move around in', () => {
-    renderModal('diff', PROSE, 'design', 'visual-diff-pages');
+    renderModal('diff', PROSE, 'design', 'x-visual-diff-pages');
 
     const board = within(modal()).getByRole('img', { name: 'the console design board' });
 
-    expect(board.getAttribute('src')).toBe(designBoardUrl('visual-diff-pages'));
+    expect(board.getAttribute('src')).toBe(designBoardUrl('x-visual-diff-pages'));
     expect(within(modal()).getByRole('group', { name: 'design board' })).toBeTruthy();
   });
 
-  it('presses the board on show, among all four', () => {
-    renderModal('diff', PROSE, 'design', 'pages');
+  it('presses the board on show, among all seven', () => {
+    renderModal('diff', PROSE, 'design', '05-pages');
 
     const picker = within(modal()).getByRole('group', { name: 'board' });
 
-    expect(within(picker).getAllByRole('button')).toHaveLength(4);
+    expect(within(picker).getAllByRole('button')).toHaveLength(7);
     expect(pressedIn(picker)).toEqual(['pages']);
   });
 
@@ -558,7 +558,7 @@ describe('the design view', () => {
     const picker = within(modal()).getByRole('group', { name: 'board' });
     fireEvent.click(within(picker).getByRole('button', { name: 'flows' }));
 
-    expect(handlers.onBoard).toHaveBeenCalledWith('flows-decisions');
+    expect(handlers.onBoard).toHaveBeenCalledWith('06-flows-decisions');
   });
 
   it('puts the after screenshot beside the board', () => {
@@ -674,7 +674,7 @@ describe('the design view', () => {
    * panes rather than inside either.
    */
   describe('the spacing readings', () => {
-    /** The dialog's real regression, as Board 04 draws it: the button's padding
+    /** The dialog's real regression, as x-visual-diff-pages draws it: the button's padding
      *  falling off the scale to the browser's own 6px. */
     const reading = (
       property: string,
@@ -724,7 +724,7 @@ describe('the design view', () => {
     const elementIn = (property: string) => within(rowFor(property)).getByRole('button');
 
     it('lists what moved, in a row of its own below both panes', () => {
-      renderModal('diff', PROSE, 'design', 'component-library', LEDGER);
+      renderModal('diff', PROSE, 'design', '01-atoms', LEDGER);
 
       expect(within(readings()).getAllByRole('row')).toHaveLength(4);
       // Below the panes, never inside one: the design view exposes no toolbar,
@@ -743,7 +743,7 @@ describe('the design view', () => {
     });
 
     it('is not offered when reading against before', () => {
-      renderModal('diff', PROSE, 'before', 'component-library', LEDGER);
+      renderModal('diff', PROSE, 'before', '01-atoms', LEDGER);
 
       expect(
         within(modal()).queryByRole('table', { name: 'Spacing readings' }),
@@ -755,7 +755,7 @@ describe('the design view', () => {
     // variant would be a panel describing one screenshot beside another — and
     // boxes drawn on the wrong image.
     it('says nothing about a variant its readings were not read for', () => {
-      renderModal('diff', PROSE_DARK, 'design', 'component-library', LEDGER);
+      renderModal('diff', PROSE_DARK, 'design', '01-atoms', LEDGER);
 
       expect(
         within(modal()).queryByRole('table', { name: 'Spacing readings' }),
@@ -769,7 +769,7 @@ describe('the design view', () => {
     // asserts the modes toolbar is absent here, and a panel of controls is
     // exactly the kind of thing that would bring one back.
     it('exposes no toolbar, readings and all', () => {
-      renderModal('diff', PROSE, 'design', 'component-library', LEDGER);
+      renderModal('diff', PROSE, 'design', '01-atoms', LEDGER);
 
       expect(within(modal()).queryByRole('toolbar')).toBeNull();
     });
@@ -778,7 +778,7 @@ describe('the design view', () => {
       measuredPanes();
 
       it('outlines one box per element the readings name', () => {
-        renderModal('diff', PROSE, 'design', 'component-library', LEDGER);
+        renderModal('diff', PROSE, 'design', '01-atoms', LEDGER);
 
         loadBothPanes();
 
@@ -789,7 +789,7 @@ describe('the design view', () => {
       });
 
       it('emphasizes the box of the row a reader presses', () => {
-        renderModal('diff', PROSE, 'design', 'component-library', LEDGER);
+        renderModal('diff', PROSE, 'design', '01-atoms', LEDGER);
         loadBothPanes();
 
         fireEvent.click(elementIn('padding-right'));
@@ -799,7 +799,7 @@ describe('the design view', () => {
       });
 
       it('previews a box while the pointer is over its row, and lets it go', () => {
-        renderModal('diff', PROSE, 'design', 'component-library', LEDGER);
+        renderModal('diff', PROSE, 'design', '01-atoms', LEDGER);
         loadBothPanes();
 
         fireEvent.mouseEnter(elementIn('row-gap'));
@@ -813,7 +813,7 @@ describe('the design view', () => {
       // The keyboard's hover: a reader tabbing down the rows sees each box light
       // up without having to press it.
       it('previews a box while its row has focus, and lets it go on blur', () => {
-        renderModal('diff', PROSE, 'design', 'component-library', LEDGER);
+        renderModal('diff', PROSE, 'design', '01-atoms', LEDGER);
         loadBothPanes();
 
         fireEvent.focus(elementIn('row-gap'));
@@ -825,7 +825,7 @@ describe('the design view', () => {
       });
 
       it('keeps the pressed box once focus leaves another row', () => {
-        renderModal('diff', PROSE, 'design', 'component-library', LEDGER);
+        renderModal('diff', PROSE, 'design', '01-atoms', LEDGER);
         loadBothPanes();
         fireEvent.click(elementIn('padding-right'));
 
@@ -837,7 +837,7 @@ describe('the design view', () => {
       });
 
       it('draws the boxes from the start, and puts its toggle on the after pane', () => {
-        renderModal('diff', PROSE, 'design', 'component-library', LEDGER);
+        renderModal('diff', PROSE, 'design', '01-atoms', LEDGER);
         loadBothPanes();
 
         const bar = within(modal()).getByRole('group', {
@@ -850,7 +850,7 @@ describe('the design view', () => {
       });
 
       it('takes the boxes off the screenshot when the toggle is released', () => {
-        renderModal('diff', PROSE, 'design', 'component-library', LEDGER);
+        renderModal('diff', PROSE, 'design', '01-atoms', LEDGER);
         loadBothPanes();
 
         fireEvent.click(boxToggle());
@@ -868,7 +868,7 @@ describe('the design view', () => {
           ...LEDGER,
           changes: [{ ...reading('padding-right', null), change: 'gone', after: null }],
         };
-        renderModal('diff', PROSE, 'design', 'component-library', gone);
+        renderModal('diff', PROSE, 'design', '01-atoms', gone);
 
         loadBothPanes();
 
@@ -952,10 +952,10 @@ describe('the design view', () => {
       pick(png());
 
       const picker = within(modal()).getByRole('group', { name: 'board' });
-      fireEvent.click(within(picker).getByRole('button', { name: 'components' }));
+      fireEvent.click(within(picker).getByRole('button', { name: 'atoms' }));
 
       expect(
-        within(modal()).getByRole('img', { name: 'the components design board' }),
+        within(modal()).getByRole('img', { name: 'the atoms design board' }),
       ).toBeTruthy();
       expect(revoked).toEqual(['blob:local/1']);
     });
@@ -967,7 +967,7 @@ describe('the design view', () => {
 
       expect(created).toEqual([]);
       expect(
-        within(modal()).getByRole('img', { name: 'the components design board' }),
+        within(modal()).getByRole('img', { name: 'the atoms design board' }),
       ).toBeTruthy();
     });
   });

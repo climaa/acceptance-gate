@@ -23,13 +23,16 @@ import type { ShotTools } from './DesignStage';
  * the upload, the crop) are this pane's alone.
  */
 
-/** How a reader names each board in the picker — what Board 01, 03, 04 and
- *  Flows & Decisions are for, in one word each. */
+/** How a reader names each board in the picker — what each board is for, in one
+ *  word. */
 const BOARD_LABELS: Readonly<Record<DesignBoard, string>> = {
-  'component-library': 'components',
-  pages: 'pages',
-  'visual-diff-pages': 'console',
-  'flows-decisions': 'flows',
+  '01-atoms': 'atoms',
+  '02-molecules': 'molecules',
+  '03-organisms': 'organisms',
+  '04-templates': 'templates',
+  '05-pages': 'pages',
+  'x-visual-diff-pages': 'console',
+  '06-flows-decisions': 'flows',
 };
 
 /** The upload button's name, pinned: it is how a scenario presses it. */
@@ -82,10 +85,10 @@ export function BoardPane({
         lead={<CropLabel board={board} tile={tools?.tile} onClear={tools?.onClearCrop} />}
         {...follow}
         // A crop is a small region a reader came to read: it opens with the
-        // region filling the pane, as Board 04 draws it at 400%, and the synced
+        // region filling the pane, as x-visual-diff-pages draws it at 400%, and the synced
         // screenshot pane follows the same view, so the two stay at one scale.
         fitTo={{ x: 0, y: 0, ...crop.region }}
-        // Still on the zoom row, as Board 04 draws it beside a pinned crop:
+        // Still on the zoom row, as x-visual-diff-pages draws it beside a pinned crop:
         // pressing it goes back to the whole board, ready to draw the region
         // again, so a crop can be refined rather than only cleared.
         actions={
@@ -132,7 +135,7 @@ export function BoardPane({
   );
 }
 
-/** What a pinned crop is — the story's tile, as Board 04 names it, or a region
+/** What a pinned crop is — the story's tile, as x-visual-diff-pages names it, or a region
  *  of a board — and the way back to the whole board. */
 function CropLabel({
   board,
@@ -172,7 +175,7 @@ function CropToggle({ on, onToggle }: { on: boolean; onToggle: (on: boolean) => 
   );
 }
 
-/** lucide's `crop`, the glyph Board 04 draws on the board's zoom row. */
+/** lucide's `crop`, the glyph x-visual-diff-pages draws on the board's zoom row. */
 function CropGlyph() {
   return (
     <svg
@@ -206,7 +209,7 @@ function XGlyph() {
   );
 }
 
-/** The four boards, named the way Board 04 names them — with the word the
+/** The boards, each by its picker name — with the word the
  *  group is called by shown before it, not only announced. */
 function BoardPicker({
   board,
@@ -268,7 +271,7 @@ export function useLocalImage(): [LocalImage | null, (next: LocalImage | null) =
   return [local, setLocal];
 }
 
-/** lucide's `image-up`, the glyph Board 04 draws on the board's zoom row. */
+/** lucide's `image-up`, the glyph x-visual-diff-pages draws on the board's zoom row. */
 function ImageUpGlyph() {
   return (
     <svg

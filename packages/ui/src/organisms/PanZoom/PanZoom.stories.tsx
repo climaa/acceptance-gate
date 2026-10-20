@@ -55,7 +55,7 @@ export const WithMarks: Story = {
 };
 
 /** One view, handed to two panes: both at 225%, both a fifth of the way in and a
- *  tenth of the way down, so the same part of each shows. Board 01's "following
+ *  tenth of the way down, so the same part of each shows. 03-organisms' "following
  *  a view" tile. */
 export const FollowingAView: Story = {
   render: (args) => (
@@ -67,13 +67,13 @@ export const FollowingAView: Story = {
 };
 
 /** A kept crop, handed back by the host: the second tile, outlined in the accent
- *  over a light wash. Board 01's "cropping" tile. */
+ *  over a light wash. 03-organisms' "cropping" tile. */
 export const WithCrop: Story = {
   args: { crop: { x: 430, y: 120, width: 350, height: 330 } },
 };
 
 /** Magnified past the board's own pixels — 600%, where 400% is its natural size
- *  in this frame — as the set's shot view asks for. Board 01's "magnified" tile. */
+ *  in this frame — as the set's shot view asks for. 03-organisms' "magnified" tile. */
 export const Magnified: Story = {
   args: { magnify: 8, defaultZoom: 6 },
 };

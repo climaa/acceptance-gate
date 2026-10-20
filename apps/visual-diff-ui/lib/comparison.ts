@@ -14,7 +14,7 @@ import { storyTitle } from './title';
 /**
  * Every mode, in the order the toolbar draws them: the three shots first, then
  * the two ways of looking at both at once, then the one that stops scaling
- * them. Board 04 draws exactly this row.
+ * them. x-visual-diff-pages draws exactly this row.
  */
 export const COMPARISON_MODES = [
   'baseline',
@@ -198,15 +198,19 @@ export const isAgainst = (value: string | null): value is Against =>
 
 /**
  * The design boards a comparison can be read against: the PNGs exported from
- * `designs/acceptance-gate.pen` into `designs/exports/`, by file stem. The
- * allowlist IS the route's confinement — a name not here is never turned into
- * a path.
+ * `designs/acceptance-gate.pen` into `designs/exports/`, by file stem
+ * (designs/STANDARD.md). The four tier boards first, in tier order, then the
+ * reference boards. The allowlist IS the route's confinement — a name not here
+ * is never turned into a path.
  */
 export const DESIGN_BOARDS = [
-  'component-library',
-  'pages',
-  'visual-diff-pages',
-  'flows-decisions',
+  '01-atoms',
+  '02-molecules',
+  '03-organisms',
+  '04-templates',
+  '05-pages',
+  'x-visual-diff-pages',
+  '06-flows-decisions',
 ] as const;
 
 export type DesignBoard = (typeof DESIGN_BOARDS)[number];
@@ -214,13 +218,17 @@ export type DesignBoard = (typeof DESIGN_BOARDS)[number];
 export const isDesignBoard = (value: string | null): value is DesignBoard =>
   DESIGN_BOARDS.some((board) => board === value);
 
-/**
- * The board a variant most likely lives on. Templates are drawn as pages on
- * Board 03; every other tier is a tile in Board 01's component library. A
- * guess, and stated as one — the reviewer can always pick another board.
- */
-export const defaultBoard = (tier: Variant['tier']): DesignBoard =>
-  tier === 'templates' ? 'pages' : 'component-library';
+/** The tier board a variant is drawn on: one tile per story, named by the variant
+ *  key, on the board of the story's own tier. */
+const TIER_BOARDS: Readonly<Record<Variant['tier'], DesignBoard>> = {
+  atoms: '01-atoms',
+  molecules: '02-molecules',
+  organisms: '03-organisms',
+  templates: '04-templates',
+};
+
+/** The board a variant opens on: its tier's. The reviewer can always pick another. */
+export const defaultBoard = (tier: Variant['tier']): DesignBoard => TIER_BOARDS[tier];
 
 /** Where a board's bytes are served. */
 export const designBoardUrl = (board: DesignBoard) =>
@@ -231,7 +239,7 @@ export const designBoardUrl = (board: DesignBoard) =>
 export const designBoardScaleUrl = (board: DesignBoard) =>
   `/api/designs?${new URLSearchParams({ board, format: 'json' }).toString()}`;
 
-/** Where a board's tile map is served: each component's tile, in the board's
- *  PNG pixels. Only Board 01 has one; any other board answers 404. */
+/** Where a board's tile map is served: each variant's tile, in the board's PNG
+ *  pixels. Only the four tier boards have one; any other board answers 404. */
 export const designBoardTilesUrl = (board: DesignBoard) =>
   `/api/designs?${new URLSearchParams({ board, format: 'tiles' }).toString()}`;

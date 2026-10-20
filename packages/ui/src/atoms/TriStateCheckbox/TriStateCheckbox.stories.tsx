@@ -12,7 +12,7 @@ export default meta;
 
 type Story = StoryObj<typeof TriStateCheckbox>;
 
-/** The three states side by side, exactly as Board 01 draws them. The control
+/** The three states side by side, exactly as 01-atoms draws them. The control
  *  is controlled, so a capture of one state per story would need three stories
  *  and three baselines to show what one deterministic row already shows. */
 export const States: Story = {

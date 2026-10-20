@@ -10,7 +10,7 @@ export interface PaginationProps {
   pageCount: number;
   /**
    * Builds the href for a page. Defaults to `/blog` for page 1 and
-   * `/blog/page/${n}` after it — the addressing Board 01 rules on — so a caller
+   * `/blog/page/${n}` after it — the addressing 02-molecules rules on — so a caller
    * can render the control without supplying one; the prop exists so this
    * package never hardcodes an app's route shape.
    */
@@ -43,7 +43,7 @@ const defaultHrefFor = (page: number): string =>
   page === 1 ? '/blog' : `/blog/page/${page}`;
 
 /**
- * The window Board 01 draws: the first page, the last, the current one and one
+ * The window 02-molecules draws: the first page, the last, the current one and one
  * neighbour on each side always stay; every run of hidden pages collapses to a
  * single gap. Pure, so the test can pin it without rendering anything.
  */

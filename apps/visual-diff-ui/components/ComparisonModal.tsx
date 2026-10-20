@@ -386,7 +386,7 @@ function ComparisonHead({
           after screenshot is being read, and the split only exists once the
           toggle says design. */}
       <Stack direction="row" gap={2} align="center">
-        {/* The group's name, shown as well as announced — Board 04 draws it.
+        {/* The group's name, shown as well as announced — x-visual-diff-pages draws it.
             Hidden from the tree: the control already carries it as its name. */}
         <span className="vd-compare__label vd-mono" aria-hidden="true">
           {AGAINST_LABEL}

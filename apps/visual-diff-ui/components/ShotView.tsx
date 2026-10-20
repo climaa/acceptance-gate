@@ -51,7 +51,7 @@ const HINT = 's sync · o overlay · c crop · drag to pan · + − zoom · 0 re
 /** The sync toggle's name, pinned: it is how a scenario presses it. */
 const SYNC_LABEL = 'zoom and pan both panes together';
 
-/** lucide's `link`, the glyph Board 04 draws on the sync toggle. */
+/** lucide's `link`, the glyph x-visual-diff-pages draws on the sync toggle. */
 function LinkGlyph() {
   return (
     <svg
@@ -68,7 +68,7 @@ function LinkGlyph() {
   );
 }
 
-/** lucide's `square-arrow-out-up-right`, the glyph Board 04 draws beside the
+/** lucide's `square-arrow-out-up-right`, the glyph x-visual-diff-pages draws beside the
  *  title for the published Storybook. */
 function OutGlyph() {
   return (
@@ -92,7 +92,7 @@ function OutGlyph() {
 export const PUBLISHED_STORYBOOK_LABEL = 'open in the published Storybook';
 
 /**
- * The title, as the way out to the story itself (Board 04).
+ * The title, as the way out to the story itself (x-visual-diff-pages).
  *
  * `viewport/theme · set` opens the dev Storybook, and is a link only while the
  * console runs in development — `localhost:6006` answers nothing anywhere else,

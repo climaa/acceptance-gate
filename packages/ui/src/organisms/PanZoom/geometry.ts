@@ -109,7 +109,7 @@ const clampAxis = (at: number, pane: number, image: number) =>
   image < pane ? (pane - image) / 2 : clamp(at, pane - image, 0);
 
 /** An offset the image can actually sit at. An image smaller than the pane on an
- *  axis sits in the middle of it — Board 04 draws a 1248×25 screenshot centred,
+ *  axis sits in the middle of it — x-visual-diff-pages draws a 1248×25 screenshot centred,
  *  not as a sliver in the pane's corner. */
 export function clampOffset(offset: Offset, pane: Size, image: Size): Offset {
   return {

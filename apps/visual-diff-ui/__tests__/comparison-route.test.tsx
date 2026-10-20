@@ -212,11 +212,11 @@ describe('reading against a design board', () => {
       .filter((button) => button.getAttribute('aria-pressed') === 'true')
       .map((button) => button.textContent);
 
-    expect(pressed).toEqual(['components']);
+    expect(pressed).toEqual(['atoms']);
   });
 
   it('opens the board an address names', () => {
-    renderRoute('direct', 'against=design&board=visual-diff-pages');
+    renderRoute('direct', 'against=design&board=x-visual-diff-pages');
 
     expect(
       within(modal()).getByRole('img', { name: 'the console design board' }),
@@ -227,7 +227,7 @@ describe('reading against a design board', () => {
     renderRoute('direct', 'against=design&board=../secrets');
 
     expect(
-      within(modal()).getByRole('img', { name: 'the components design board' }),
+      within(modal()).getByRole('img', { name: 'the atoms design board' }),
     ).toBeTruthy();
   });
 
@@ -249,17 +249,15 @@ describe('reading against a design board', () => {
     fireEvent.click(within(modalGroup('board')).getByRole('button', { name: 'pages' }));
 
     expect(lastWritten()).toBe(
-      comparisonHref(REPORT, LIGHT.key, null, { against: 'design', board: 'pages' }),
+      comparisonHref(REPORT, LIGHT.key, null, { against: 'design', board: '05-pages' }),
     );
   });
 
   // Picking the board the variant opens on anyway is not a choice to record.
   it('drops the board from the address when the default one is picked again', () => {
-    renderRoute('report', 'against=design&board=pages');
+    renderRoute('report', 'against=design&board=05-pages');
 
-    fireEvent.click(
-      within(modalGroup('board')).getByRole('button', { name: 'components' }),
-    );
+    fireEvent.click(within(modalGroup('board')).getByRole('button', { name: 'atoms' }));
 
     expect(lastWritten()).toBe(
       comparisonHref(REPORT, LIGHT.key, null, { against: 'design' }),
@@ -267,12 +265,12 @@ describe('reading against a design board', () => {
   });
 
   it('keeps the design view when the arrows walk to another variant', () => {
-    renderRoute('report', 'against=design&board=pages');
+    renderRoute('report', 'against=design&board=05-pages');
 
     fireEvent.keyDown(document, { key: 'ArrowRight' });
 
     expect(lastWritten()).toBe(
-      comparisonHref(REPORT, DARK.key, null, { against: 'design', board: 'pages' }),
+      comparisonHref(REPORT, DARK.key, null, { against: 'design', board: '05-pages' }),
     );
   });
 });

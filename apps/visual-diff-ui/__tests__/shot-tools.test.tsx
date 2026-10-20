@@ -16,7 +16,7 @@ import { setSearchParams } from './stubs/next-navigation';
  * canvas — needs a browser jsdom does not have, so the hook that makes it is
  * replaced by one that hands back a crop for any rect it is given. What is
  * asserted is the view around it. The tile map is a stub each test sets: none
- * by default, so the board opens whole unless a test hands it Board 01's tiles.
+ * by default, so the board opens whole unless a test hands it a tier board's tiles.
  */
 
 const tileMap = vi.hoisted(() => ({ tiles: null as Record<string, number[]> | null }));
@@ -138,10 +138,8 @@ describe('the shot view’s crop', () => {
     renderView('crop=325,487,130,65');
 
     expect({
-      label: screen.getByText('crop · components') !== null,
-      alt:
-        screen.getByRole('img', { name: 'a crop of the components design board' }) !==
-        null,
+      label: screen.getByText('crop · atoms') !== null,
+      alt: screen.getByRole('img', { name: 'a crop of the atoms design board' }) !== null,
     }).toEqual({ label: true, alt: true });
   });
 
@@ -183,15 +181,18 @@ describe('the shot view’s crop', () => {
   });
 
   it('opens on the story’s tile when the address carries no crop', () => {
-    tileMap.tiles = { Badge: [476, 528, 384, 148], Button: [71, 528, 384, 331] };
+    tileMap.tiles = {
+      [KEY]: [93, 555, 1823, 37],
+      'atoms__desktop__light__atoms-button--primary': [93, 1312, 1823, 58],
+    };
 
     renderView();
 
-    expect(screen.getByText('crop · Badge tile')).not.toBeNull();
+    expect(screen.getByText('crop · Badge — Accent tile')).not.toBeNull();
   });
 
   it('opens on the whole board when the address asks for it with an empty crop', () => {
-    tileMap.tiles = { Badge: [476, 528, 384, 148] };
+    tileMap.tiles = { [KEY]: [93, 555, 1823, 37] };
 
     renderView('crop=');
 
@@ -199,7 +200,9 @@ describe('the shot view’s crop', () => {
   });
 
   it('opens on the whole board for a story the board draws no tile for', () => {
-    tileMap.tiles = { Button: [71, 528, 384, 331] };
+    tileMap.tiles = {
+      'atoms__desktop__light__atoms-button--primary': [93, 1312, 1823, 58],
+    };
 
     renderView();
 
@@ -216,7 +219,7 @@ describe('the shot view’s crop', () => {
       }),
     );
 
-    expect(replaceState.mock.calls.at(-1)?.[2]).toBe(`${AT}?board=pages`);
+    expect(replaceState.mock.calls.at(-1)?.[2]).toBe(`${AT}?board=05-pages`);
   });
 });
 

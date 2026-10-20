@@ -128,12 +128,12 @@ describe('parseComparisonPath', () => {
 });
 
 describe('defaultBoard', () => {
-  // Templates are drawn as pages; everything else is a component-library tile.
+  // Every tier has its own board, and a variant opens on its tier's.
   it.each([
-    ['templates', 'pages'],
-    ['organisms', 'component-library'],
-    ['molecules', 'component-library'],
-    ['atoms', 'component-library'],
+    ['templates', '04-templates'],
+    ['organisms', '03-organisms'],
+    ['molecules', '02-molecules'],
+    ['atoms', '01-atoms'],
   ] as const)('opens a %s variant on the %s board', (tier, board) => {
     const chosen = defaultBoard(tier);
 
@@ -171,17 +171,20 @@ describe('comparisonHref with a design view', () => {
   it('carries a picked board alongside it, after the mode', () => {
     const href = comparisonHref(REPORT, KEY, 'slider', {
       against: 'design',
-      board: 'pages',
+      board: '05-pages',
     });
 
     expect(href).toBe(
-      `${comparisonPath(REPORT, KEY)}?mode=slider&against=design&board=pages`,
+      `${comparisonPath(REPORT, KEY)}?mode=slider&against=design&board=05-pages`,
     );
   });
 
   // `before` is the default, and a board means nothing while reading against it.
   it('leaves both out when the comparison is read against before', () => {
-    const href = comparisonHref(REPORT, KEY, null, { against: 'before', board: 'pages' });
+    const href = comparisonHref(REPORT, KEY, null, {
+      against: 'before',
+      board: '05-pages',
+    });
 
     expect(href).toBe(comparisonPath(REPORT, KEY));
   });

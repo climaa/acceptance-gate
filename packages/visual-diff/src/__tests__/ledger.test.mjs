@@ -1112,7 +1112,7 @@ const ledgerAround = (elements, origin = 'document') => ({
 });
 
 /** The dialog's button as the design system styles it, and as the browser does
- *  when the class is gone: the real regression Board 04 draws. */
+ *  when the class is gone: the real regression x-visual-diff-pages draws. */
 const STYLED = element({
   readings: [
     reads('padding-top', 8),

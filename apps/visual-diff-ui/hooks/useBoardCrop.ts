@@ -57,8 +57,8 @@ function useBoardScale(board: DesignBoard): number | null {
   );
 }
 
-/** The board's component tiles, or null until they are known and for good on
- *  a board with no tile map — every board but Board 01. */
+/** The board's tiles, or null until they are known and for good on a board with
+ *  no tile map — every board but the four tier boards. */
 export function useBoardTiles(board: DesignBoard): BoardTiles | null {
   return useJsonOnMount(
     designBoardTilesUrl(board),

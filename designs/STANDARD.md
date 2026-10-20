@@ -25,10 +25,12 @@ its number. The exported PNG is named after the board's stem.
 - **Reference only** means the board is shown beside a screenshot but is never a join
   target. No app page is ever photographed: the differ captures `packages/ui` stories
   only, so `05-pages` has no screenshot to match.
-- **Project boards** take an `x-` prefix (`x-tables-practice`, `x-visual-diff-pages`) and sit
-  after `06`. The tier rules do not apply to them.
-- **Paging.** Pencil caps an export's long side at 8192 px. A tier board that outgrows it
-  splits into `01-atoms-1`, `01-atoms-2`, …, never into a renamed board.
+- **Project boards** take an `x-` prefix (`x-console-components`, `x-visual-diff-pages`) and
+  sit after `06`. The tier rules do not apply to them. A component with no story of its own
+  is drawn on one, in a frame named `Drawing <Name>`; once it gains a story it moves to its
+  tier board as tiles.
+- **Paging.** Pencil caps an export's long side at 8192 px. A tier board that would export
+  below 1× splits into `01-atoms-1`, `01-atoms-2`, …, never into a renamed board.
 
 ## Tiles
 
@@ -77,23 +79,40 @@ Two kinds of raw hex are exempt, and each exempt node says so in its `context` f
 - **Primitive swatches** that show the palette itself.
 - **Image content:** the pixels of a screenshot being drawn, such as a diff's red marks.
 
+An image a drawing shows, such as the fixture a `PanZoom` story pans, lives in
+[`assets/`](assets/) and is filled from there. Never fill from `exports/`: an export is
+rewritten, and its old boards deleted, every time the boards move.
+
 [`scripts/pen/check-colours.js`](../scripts/pen/check-colours.js) counts the rest. Run it
 through the Pencil MCP before an export; it must report 0.
 
-## Sidecars
+## Exports and sidecars
 
-Each exported board carries two JSON files beside its PNG, both written by the export
-snippet and never edited by hand:
+Every board is exported to `exports/<stem>.png`, at 2× or at the scale that puts its long
+side at 8192 px when that is smaller. Two JSON files sit beside it, both written by the
+export and never edited by hand:
 
 - `<stem>.json`: the board's size in design pixels and the scale it was exported at.
-- `<stem>.tiles.json`: for each tile, its variant key and its rectangle in that PNG's
-  pixels, at that scale.
+- `<stem>.tiles.json`, on a tier board only: for each tile, its variant key and its
+  rectangle in that PNG's pixels, at that scale.
 
-**The trust boundary.** A `.pen` is encrypted and only the Pencil app reads it, so no
-headless check can prove that a sidecar matches the drawing. The gate proves the
-sidecars against Storybook: every required tile is present, no tile is extra, and every
-name is a variant key. The match between drawing and sidecar rests on the export snippet
-being the only thing that writes them.
+To export, with the `.pen` open as the active document:
+
+1. Run [`scripts/pen/export-boards.js`](../scripts/pen/export-boards.js) through the
+   Pencil MCP. It writes each board's PNG (named by node id, the only name `Export` can
+   give it) and prints one line starting `MANIFEST`.
+2. Save that line to a file and run `node scripts/pen/finish-export.mjs <file>`. It names
+   the PNGs by stem, writes the sidecars, and deletes anything in `exports/` that is no
+   longer a board.
+
+[`scripts/board-scale-integrity.mjs`](../scripts/board-scale-integrity.mjs) holds each PNG to
+its sidecar.
+
+**The trust boundary.** A `.pen` is only read through the Pencil app, so no headless check
+can prove that a sidecar matches the drawing. The gate proves the sidecars against
+Storybook: every required tile is present, no tile is extra, and every name is a variant
+key. The match between drawing and sidecar rests on the export being the only thing that
+writes them.
 
 ## Working on a .pen
 

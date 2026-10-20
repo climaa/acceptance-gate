@@ -144,7 +144,7 @@ function DeleteConfirmButton({
    *  class, so a caller cannot misspell or drop it. */
   detail: string;
   /** What opens the dialog. A table row's `delete` by default; the report's own
-   *  header draws a glyph there instead (Board 04). Only the control differs —
+   *  header draws a glyph there instead (x-visual-diff-pages). Only the control differs —
    *  the dialog behind it is this one either way, which is the point. */
   trigger?: (open: () => void) => ReactNode;
   /** Where to go after the delete lands, for a delete made from the page it
@@ -219,7 +219,7 @@ export function DeleteReportButton({ id }: DeleteReportButtonProps) {
 }
 
 /**
- * lucide's `trash-2`, as Board 04 draws it on the report header and Board 01 in
+ * lucide's `trash-2`, as x-visual-diff-pages draws it on the report header and 01-atoms in
  * the IconButton tile's danger row. Stroked, like `WandGlyph` in `RunPanel.tsx`,
  * and for the same reason: no Icon atom (#339), so a glyph lives with the one
  * control that has a reason to draw it.

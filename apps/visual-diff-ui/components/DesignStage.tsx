@@ -280,7 +280,7 @@ export function DesignStage({
         )}
       </div>
 
-      {/* A full-width row below both panes, as Board 04 draws it — never in the
+      {/* A full-width row below both panes, as x-visual-diff-pages draws it — never in the
           modal's head, which is what keeps the design view free of a toolbar. */}
       <SpacingReadings
         ledger={readings}
@@ -294,7 +294,7 @@ export function DesignStage({
   );
 }
 
-/** lucide's `square-dashed`, the glyph Board 04 draws on the box toggle — an
+/** lucide's `square-dashed`, the glyph x-visual-diff-pages draws on the box toggle — an
  *  outline of the thing the toggle outlines. */
 function SquareDashedGlyph() {
   return (

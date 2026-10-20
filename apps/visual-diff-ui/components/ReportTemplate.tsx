@@ -162,7 +162,7 @@ export function ReportTemplate({
               <Badge tone="danger">a11y {report.counts.a11y}</Badge>
             )}
 
-            {/* Last in the row and pushed to its end: Board 04 draws it at the
+            {/* Last in the row and pushed to its end: x-visual-diff-pages draws it at the
                 header's right edge, away from the id it would otherwise read as
                 a decoration of. The one client island in this header. */}
             {frozen ? null : (

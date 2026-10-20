@@ -65,36 +65,39 @@ describe('nudgeText', () => {
 
 describe('shotViewHref with a crop', () => {
   it('carries the crop with its commas as they are', () => {
-    expect(shotViewHref('main-2026-10-16', 'k', 'pages', '1,2,3,4')).toBe(
-      '/set/main-2026-10-16/shot/k?board=pages&crop=1,2,3,4',
+    expect(shotViewHref('main-2026-10-16', 'k', '05-pages', '1,2,3,4')).toBe(
+      '/set/main-2026-10-16/shot/k?board=05-pages&crop=1,2,3,4',
     );
   });
 });
 
 describe('storyTile', () => {
   const tiles = {
-    Badge: [476, 528, 384, 148],
-    BucketChip: [71, 5599, 327, 251],
-    PanZoom: [420, 6958, 327, 755],
+    'atoms__desktop__light__atoms-badge--accent': [93, 555, 1823, 37],
+    'atoms__desktop__dark__atoms-badge--accent': [1986, 555, 1823, 37],
+    'atoms__desktop__light__atoms-bucketchip--tones': [93, 1163, 1823, 34],
   } as const;
 
-  it('finds the tile a story’s component is drawn in, whatever the story', () => {
-    expect(storyTile(tiles, 'atoms__desktop__light__atoms-badge--accent')).toEqual({
-      name: 'Badge',
-      rect: { x: 476, y: 528, width: 384, height: 148 },
+  it('finds the tile named by the variant’s own key', () => {
+    expect(storyTile(tiles, 'atoms__desktop__dark__atoms-badge--accent')).toEqual({
+      name: 'Badge — Accent',
+      rect: { x: 1986, y: 555, width: 1823, height: 37 },
     });
   });
 
-  it('matches a component whose id Storybook writes without its capitals', () => {
-    expect(storyTile(tiles, 'atoms__mobile__dark__atoms-bucketchip--changed')?.name).toBe(
-      'BucketChip',
-    );
+  // The loose match this replaced opened every Badge story on one Badge tile.
+  it('does not stand one story’s tile in for another story of its component', () => {
+    expect(storyTile(tiles, 'atoms__desktop__light__atoms-badge--danger')).toBeNull();
   });
 
-  it('is null for a story the board draws no tile for', () => {
+  it('is null for a variant the board draws no tile for', () => {
     expect(
       storyTile(tiles, 'organisms__desktop__light__organisms-dialog--open'),
     ).toBeNull();
+  });
+
+  it('is null for a key that names something every object has', () => {
+    expect(storyTile(tiles, 'constructor')).toBeNull();
   });
 });
 
