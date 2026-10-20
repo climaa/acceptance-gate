@@ -76,7 +76,7 @@ opposite personalities — editorial parchment with terracotta in light,
 terminal lime on green-black in dark — so a theme-wiring bug can never hide
 as "both themes look the same":
 
-![Component library](designs/exports/component-library.png)
+![The atoms board: one tile per story, light beside dark](designs/exports/01-atoms.png)
 
 ## Quick start
 

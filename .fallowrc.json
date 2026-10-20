@@ -29,6 +29,8 @@
   //                                 machine and directly on the pinned image
   //   scripts/seed-visual-diff.mjs  spawned by apps/e2e/playwright.config.ts
   //   scripts/apply-ruleset.mjs     run by hand; see .github/rulesets/README.md
+  //   scripts/pen/finish-export.mjs run by hand after a board export; see
+  //                                 designs/STANDARD.md
   //
   // `entry` and not `ignorePatterns`: these files are not exceptions to the
   // analysis, they are roots of it. Declaring them keeps what they import
@@ -42,6 +44,7 @@
   "entry": [
     "apps/visual-diff-ui/scripts/capture-set.mjs",
     "apps/e2e/scripts/seed-visual-diff.mjs",
-    "scripts/apply-ruleset.mjs"
+    "scripts/apply-ruleset.mjs",
+    "scripts/pen/finish-export.mjs"
   ]
 }

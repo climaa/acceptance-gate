@@ -39,7 +39,7 @@ The design for this project is `designs/acceptance-gate.pen`, a [Pencil](https:/
 - **Board 02 — Flows & Decisions:** the reasons. Typography, dark mode, the console's four flows and four decisions. It carries an explicit scope line: *"Engineering decisions live in the plan document — this board records design choices only."*
 - **Board 03 — Pages** and **Board 04 — visual-diff console pages:** every route, in all four capture variants.
 
-<img src="/images/designs/board-01-component-library.jpg" alt="Top of Board 01, Component Library — Atomic Design: three header notes on normative inventory, the visual inventory count, and the enforced layering rule, above the Atoms row showing Button, Badge, Skeleton, ThemeToggle, Link and IconButton tiles with their variants and captions." />
+<img src="/images/designs/board-01-inventory.jpg" alt="Top of Board 01, Component Library — Atomic Design: three header notes on normative inventory, the visual inventory count, and the enforced layering rule, above the Atoms row showing Button, Badge, Skeleton, ThemeToggle, Link and IconButton tiles with their variants and captions." />
 
 The word doing the work in that paragraph is *committed*. The `.pen` file moves with the branch. It shows up in the pull request. It is present in any checkout the agent is given, including a sandbox with no network and no browser. A Figma URL is none of those things — it cannot be opened from inside the box the agent runs in, it does not travel with the branch, and it never appears in `git log`.
 
@@ -53,10 +53,10 @@ A design that nobody is required to read is a mood board. `AGENTS.md` at the rep
 
 | Before touching…         | Read first                              | Why                                                                                              |
 | ------------------------ | --------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| `packages/ui` components | [`designs/exports/component-library.png`](https://github.com/climaa/acceptance-gate/blob/main/designs/exports/component-library.png) | The normative inventory — names, tiers, variants are decided there, **never re-decided in code** |
+| `packages/ui` components | [`designs/exports/01-atoms.png`](https://github.com/climaa/acceptance-gate/blob/main/designs/exports/01-atoms.png) | The normative inventory — names, tiers, variants are decided there, **never re-decided in code** |
 | Anything visual          | [`packages/ui/src/tokens.css`](https://github.com/climaa/acceptance-gate/blob/main/packages/ui/src/tokens.css)            | Token-only styling                                                                               |
-| Page layouts             | [`designs/exports/pages.png`](https://github.com/climaa/acceptance-gate/blob/main/designs/exports/pages.png)             | Index/post/tag in all four capture variants                                                      |
-| Design rationale         | [`designs/exports/flows-decisions.png`](https://github.com/climaa/acceptance-gate/blob/main/designs/exports/flows-decisions.png)   | Typography and dark-mode decisions with their whys, plus the console's flows and decisions       |
+| Page layouts             | [`designs/exports/05-pages.png`](https://github.com/climaa/acceptance-gate/blob/main/designs/exports/05-pages.png)             | Index/post/tag in all four capture variants                                                      |
+| Design rationale         | [`designs/exports/06-flows-decisions.png`](https://github.com/climaa/acceptance-gate/blob/main/designs/exports/06-flows-decisions.png)   | Typography and dark-mode decisions with their whys, plus the console's flows and decisions       |
 
 *Never re-decided in code.* An issue body in this repo transcribes the board; it does not reopen it. When the agent needs a name, the name already exists in one place.
 

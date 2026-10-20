@@ -1,0 +1,26 @@
+{
+  "board": "04-templates — Templates",
+  "scale": 2,
+  "tiles": {
+    "templates__desktop__dark__templates-blogindextemplate--empty": [2720, 2070, 2496, 310],
+    "templates__desktop__dark__templates-blogindextemplate--paged": [2720, 3716, 2496, 1350],
+    "templates__desktop__dark__templates-blogindextemplate--three-posts": [2720, 552, 2496, 1158],
+    "templates__desktop__dark__templates-blogindextemplate--with-intro": [2720, 2538, 2496, 876],
+    "templates__desktop__dark__templates-posttemplate--default": [2720, 5426, 2496, 964],
+    "templates__desktop__light__templates-blogindextemplate--empty": [128, 2070, 2496, 310],
+    "templates__desktop__light__templates-blogindextemplate--paged": [128, 3716, 2496, 1350],
+    "templates__desktop__light__templates-blogindextemplate--three-posts": [128, 552, 2496, 1158],
+    "templates__desktop__light__templates-blogindextemplate--with-intro": [128, 2538, 2496, 876],
+    "templates__desktop__light__templates-posttemplate--default": [128, 5426, 2496, 964],
+    "templates__mobile__dark__templates-blogindextemplate--empty": [6124, 2070, 716, 310],
+    "templates__mobile__dark__templates-blogindextemplate--paged": [6124, 3716, 716, 1552],
+    "templates__mobile__dark__templates-blogindextemplate--three-posts": [6124, 552, 716, 1360],
+    "templates__mobile__dark__templates-blogindextemplate--with-intro": [6124, 2538, 716, 1020],
+    "templates__mobile__dark__templates-posttemplate--default": [6124, 5426, 716, 1148],
+    "templates__mobile__light__templates-blogindextemplate--empty": [5312, 2070, 716, 310],
+    "templates__mobile__light__templates-blogindextemplate--paged": [5312, 3716, 716, 1552],
+    "templates__mobile__light__templates-blogindextemplate--three-posts": [5312, 552, 716, 1360],
+    "templates__mobile__light__templates-blogindextemplate--with-intro": [5312, 2538, 716, 1020],
+    "templates__mobile__light__templates-posttemplate--default": [5312, 5426, 716, 1148]
+  }
+}

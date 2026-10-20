@@ -86,7 +86,7 @@ describe('clampOffset', () => {
   });
 
   // Changed 18 Oct 2026: a short image was pinned to the pane's top, and a
-  // 1248×25 screenshot sat as a sliver in the corner of an empty pane. Board 04
+  // 1248×25 screenshot sat as a sliver in the corner of an empty pane. x-visual-diff-pages
   // draws it in the middle; the axis it fits on has nothing to pan, so it centres.
   it('centres an image shorter than the pane, and holds it there', () => {
     const offset = clampOffset({ x: 0, y: -40 }, pane, { width: 400, height: 100 });

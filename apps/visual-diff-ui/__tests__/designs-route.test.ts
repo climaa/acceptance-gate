@@ -44,7 +44,7 @@ describe('GET /api/designs', () => {
   });
 
   it('lets the CDN keep a board, and a browser for an hour', async () => {
-    const response = await ask('?board=pages');
+    const response = await ask('?board=05-pages');
 
     expect(response.headers.get('cache-control')).toBe(BOARD_CACHE_CONTROL);
   });

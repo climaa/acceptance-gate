@@ -3,12 +3,12 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { IconButton } from './IconButton';
 
 /**
- * The glyph Board 01 draws in this tile — lucide's `wand-sparkles`, stroked, the
+ * The glyph 01-atoms draws in this tile — lucide's `wand-sparkles`, stroked, the
  * way `Dialog`'s close is stroked. It is a sample rather than part of the atom:
  * `IconButton` takes whatever glyph it is handed, and the one the visual-diff
  * console hands it lives with the panel that has a reason to.
  *
- * An `Icon` atom was considered for Board 01 and declined (#339); the twin in
+ * An `Icon` atom was considered for 01-atoms and declined (#339); the twin in
  * `RunPanel.tsx` stays where it is for that reason, not for want of a decision.
  */
 const Wand = () => (
@@ -70,7 +70,7 @@ export const GhostSmall: Story = {
 };
 
 /**
- * Board 01 draws the danger row with lucide's `trash-2`, the glyph it is for:
+ * 01-atoms draws the danger row with lucide's `trash-2`, the glyph it is for:
  * a wand on a red ground would be a sample nobody will ever see.
  */
 const Trash = () => (

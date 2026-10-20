@@ -265,7 +265,7 @@
 
 /* ---- The design view's spacing readings ---------------------------------- */
 
-/* A full-width row below both panes, as Board 04 draws it: a panel in the same
+/* A full-width row below both panes, as x-visual-diff-pages draws it: a panel in the same
    ink as the console's, holding a heading, the mode it is reading in, and the
    table. Never in the modal's head — the design view exposes no toolbar. */
 .vd-readings {
@@ -356,7 +356,7 @@
   min-width: 0;
 }
 
-/* The dev Storybook, drawn on `viewport/theme · set` — underlined, as Board 04
+/* The dev Storybook, drawn on `viewport/theme · set` — underlined, as x-visual-diff-pages
    draws it, because nothing else says the words are a way out. */
 .vd-shot__storybook {
   color: var(--color-accent);
@@ -424,7 +424,7 @@
 
 /* Both images at their CSS pixels times the zoom the component writes; the
    crop sits where the nudge puts it, over the shot, never catching a pointer.
-   Centred in the pane, as Board 04's overlay frame draws it. Auto margins
+   Centred in the pane, as x-visual-diff-pages' overlay frame draws it. Auto margins
    rather than `place-content: center`: a flex item's auto margin collapses to
    zero once the layers outgrow the pane, so a zoomed shot still scrolls to its
    top-left edge instead of overflowing where no scrollbar can reach. */

@@ -15,7 +15,7 @@ export async function generateMetadata({
  * A comparison loaded cold — a shared link, a refresh: its report, with the
  * modal already open over it.
  *
- * The report rather than a page of its own, because Board 04 draws the modal
+ * The report rather than a page of its own, because x-visual-diff-pages draws the modal
  * over the report and nowhere else, and because closing it should leave the
  * reader somewhere: in the run the comparison belongs to.
  */

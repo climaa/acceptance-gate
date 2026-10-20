@@ -177,7 +177,7 @@
   outline-offset: 2px;
 }
 
-/* A shot opens its shot view: the ring Board 04 draws on hover says so before
+/* A shot opens its shot view: the ring x-visual-diff-pages draws on hover says so before
    the press does. */
 @media (hover: hover) {
   .vd-cell__open:hover {

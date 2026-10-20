@@ -31,7 +31,7 @@ import type { DesignShot } from './DesignStage';
 
 const OPACITY_LABEL = 'board opacity';
 
-/** Which layer the nudge moves. Board 04 draws the toggle first in the row:
+/** Which layer the nudge moves. x-visual-diff-pages draws the toggle first in the row:
  *  choose the layer, then align it. Aligning by moving only the board was hard
  *  when the drift was easier to read off the screenshot. */
 type Layer = 'board' | 'shot';

@@ -83,8 +83,8 @@ describe('the overlay’s address', () => {
   });
 
   it('follows the board and the crop in a shot view’s link', () => {
-    const href = shotViewHref('s', 'k', 'pages', '1,2,3,4', 'view=overlay');
+    const href = shotViewHref('s', 'k', '05-pages', '1,2,3,4', 'view=overlay');
 
-    expect(href).toBe('/set/s/shot/k?board=pages&crop=1,2,3,4&view=overlay');
+    expect(href).toBe('/set/s/shot/k?board=05-pages&crop=1,2,3,4&view=overlay');
   });
 });

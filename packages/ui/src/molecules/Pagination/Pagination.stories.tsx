@@ -11,7 +11,7 @@ export default meta;
 
 type Story = StoryObj<typeof Pagination>;
 
-/** The four states Board 01 draws, in the order the tile stacks them. */
+/** The four states 02-molecules draws, in the order the tile stacks them. */
 export const FirstPage: Story = {
   args: { page: 1, pageCount: 3 },
 };

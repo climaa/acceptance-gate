@@ -2,7 +2,7 @@
  * How `/blog` is cut into pages.
  *
  * Page 1 is `/blog` itself and every later page is `/blog/page/N`, the addressing
- * Board 01's Pagination tile rules on, so one page has one address and the index
+ * 02-molecules' Pagination tiles rules on, so one page has one address and the index
  * keeps the URL it has always had. Pure functions over a count, so the routes,
  * the sitemap and the proxy all derive the same page set from the same number.
  */

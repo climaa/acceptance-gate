@@ -37,7 +37,7 @@ export type IconButtonProps<E extends ElementType = 'button'> = IconButtonOwnPro
 /**
  * A button whose whole content is one glyph.
  *
- * Board 01 names it and settles its tier; it is a primitive rather than
+ * 01-atoms names it and settles its tier; it is a primitive rather than
  * anything this repo's domain knows about, which is what puts it here beside
  * `Button` instead of in the app that first asked for it.
  *

@@ -137,7 +137,7 @@ describe('the shot view, opened from its set', () => {
 });
 
 /**
- * The title as the way out to the story itself (Board 04): the place half of it
+ * The title as the way out to the story itself (x-visual-diff-pages): the place half of it
  * opens the dev Storybook while developing, and a glyph beside it opens the
  * published one. Both in the shot's own theme, as the set viewer's links are.
  */
@@ -205,26 +205,24 @@ describe('the shot view’s board', () => {
   it('opens on the board the tier lives on', () => {
     renderView('direct');
 
-    expect(pressedIn(screen.getByRole('group', { name: 'board' }))).toEqual([
-      'components',
-    ]);
+    expect(pressedIn(screen.getByRole('group', { name: 'board' }))).toEqual(['atoms']);
   });
 
   it('opens on the board the address names', () => {
-    renderView('direct', 'board=pages');
+    renderView('direct', 'board=05-pages');
 
     expect(pressedIn(screen.getByRole('group', { name: 'board' }))).toEqual(['pages']);
   });
 
   it('writes a picked board into the address, and keeps the tier’s own board bare', () => {
-    renderView('direct', 'board=pages');
+    renderView('direct', 'board=05-pages');
     const picker = screen.getByRole('group', { name: 'board' });
 
     fireEvent.click(within(picker).getByRole('button', { name: 'flows' }));
-    fireEvent.click(within(picker).getByRole('button', { name: 'components' }));
+    fireEvent.click(within(picker).getByRole('button', { name: 'atoms' }));
 
     expect(replaceState.mock.calls.map((call) => call[2])).toEqual([
-      `/set/${SET}/shot/${KEY}?board=flows-decisions`,
+      `/set/${SET}/shot/${KEY}?board=06-flows-decisions`,
       `/set/${SET}/shot/${KEY}`,
     ]);
   });

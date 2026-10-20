@@ -488,7 +488,7 @@ function JobView({ job, running, reportExists, log }: JobViewProps) {
 }
 
 /**
- * The glyph, lucide's `x` — the one Board 04 draws in the CURRENT JOB title row.
+ * The glyph, lucide's `x` — the one x-visual-diff-pages draws in the CURRENT JOB title row.
  *
  * Copied by hand rather than pulled from a package: this repo has no icon
  * dependency, and every glyph in it is inline SVG. No `width`, no `height` and

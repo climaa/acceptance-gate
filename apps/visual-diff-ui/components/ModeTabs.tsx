@@ -17,7 +17,7 @@ import type { KeyboardEvent } from 'react';
  * baselines per variant, and the tab labels here ARE the job modes. Moving it
  * would mean either a component that renders `capture`/`compare` inside a design
  * system that must not know what a job is, or a generic `Tabs` designed on the
- * board first. The second is the right shape — and Board 01 has now answered it:
+ * board first. The second is the right shape — and the design board has now answered it:
  * a generic `Tabs` was considered and declined (#365). Twice-used is what earns
  * design-system status on that board, and this strip is the only consumer. It
  * stays here, and the inventory note records why.

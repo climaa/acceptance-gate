@@ -32,16 +32,16 @@ When('I pick the console board', async ({ modal }) => {
 });
 
 When('I open a comparison link naming the pages board', async ({ page }) => {
-  await page.goto(`${COMPARISON_URL}?against=design&board=pages`);
+  await page.goto(`${COMPARISON_URL}?against=design&board=05-pages`);
 });
 
 Then('a design board is shown beside the after screenshot', async ({ modal }) => {
-  // A template opens on Board 03, the pages board.
-  await expect(modal.board('pages')).toBeVisible();
+  // A template opens on its tier's board.
+  await expect(modal.board('templates')).toBeVisible();
   await expect(modal.shotNamed('candidate')).toBeVisible();
   await expect
     .poll(() =>
-      modal.board('pages').evaluate((img: HTMLImageElement) => img.naturalWidth),
+      modal.board('templates').evaluate((img: HTMLImageElement) => img.naturalWidth),
     )
     .toBeGreaterThan(0);
 });

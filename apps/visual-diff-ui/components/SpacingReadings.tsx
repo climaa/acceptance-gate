@@ -192,7 +192,7 @@ function TokenCell({ change }: { change: ReadingRow }) {
   );
 }
 
-/** Sized to what they hold, in the proportions Board 04 draws: the element
+/** Sized to what they hold, in the proportions x-visual-diff-pages draws: the element
  *  column carries a control, and `table-layout: fixed` will not grow a cell for
  *  its contents. The design-token column takes whatever is left. One screenshot
  *  has no after to set against a before, so its value is just the value. */
@@ -318,7 +318,7 @@ export function SpacingReadings({
     <div className="vd-readings">
       <Stack direction="row" gap={3} align="baseline" wrap>
         <h3 className="vd-readings__heading">
-          {/* Board 04's fold marker. Decoration: the button below carries the
+          {/* x-visual-diff-pages' fold marker. Decoration: the button below carries the
               state, as aria-expanded. */}
           {foldable && (
             <span className="vd-readings__chevron" aria-hidden="true">

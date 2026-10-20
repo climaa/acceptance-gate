@@ -15,7 +15,7 @@ import { useBoardCrop, useBoardTiles } from './useBoardCrop';
  * The crop is the one part in the address — `?crop=x,y,w,h`, in the board's own
  * pixels — because it is a thing to point someone at: a link reproduces exactly
  * the region that was compared. With no crop in the address at all, the board
- * opens on the story's own tile, as Board 04 draws it; an empty `crop=` is the
+ * opens on the story's own tile, as x-visual-diff-pages draws it; an empty `crop=` is the
  * reader asking for the whole board. The view starts where the address says
  * (`view=overlay`, lib/overlay-params.ts), so a shared overlay opens as one; sync
  * and cropping are ways of looking, held here, as the modal's split and grid are.

@@ -32,7 +32,7 @@ function imageThat(loads: boolean) {
 }
 
 function Probe({ rect, frame }: { rect: PanZoomRect | null; frame?: number }) {
-  const crop = useBoardCrop('component-library', rect, frame);
+  const crop = useBoardCrop('01-atoms', rect, frame);
 
   return <p>{crop ? `${crop.url} ${crop.width}×${crop.height}` : 'no crop'}</p>;
 }

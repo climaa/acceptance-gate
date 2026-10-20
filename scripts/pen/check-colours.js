@@ -6,18 +6,20 @@
 // behind designs/STANDARD.md's colour rule, run before an export.
 //
 // A raw hex never follows the `mode` theme, so inside a component it draws the
-// light colours on a dark board. Three kinds are reported:
-//   content — a raw hex inside a reusable component or a "Tile …" frame: must be 0;
+// light colours on a dark board. It looks inside every reusable frame (each light
+// tile is one) and every "Drawing …" frame on a reference board, and reports three
+// kinds:
+//   content — a raw hex there: must be 0;
 //   exempt  — tagged `context: "colour-exempt: <reason>"`: a primitive
 //             swatch or image content (the pixels of a screenshot being depicted);
-//   chrome  — a tile's own card and its "home" chip, rebuilt when the boards move
-//             to one tile per story (#588).
+//   chrome  — a drawing's own card and its "home" chip: the board's paper, which
+//             no theme ref ever resolves.
 // Fully transparent fills (#00000000) are not colours and are skipped.
 // The tag lives in `context` because Pencil drops `metadata` on Update.
 const isRaw = (v) =>
   typeof v === 'string' && !v.startsWith('$') && v.toUpperCase() !== '#00000000';
 const roots = Get((n, c) => {
-  if (n.reusable || /^Tile\b/.test(n.name || '')) {
+  if (n.reusable || /^Drawing\b/.test(n.name || '')) {
     c.skipChildren();
     return { id: n.id, name: n.name };
   }
