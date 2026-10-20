@@ -70,6 +70,11 @@ Light or dark.
 One cell of the capture matrix — a story at one tier, viewport and theme. The
 addressable unit a screenshot belongs to.
 
+**variant key**:
+The string that names a variant: tier, viewport, theme and story id, joined by `__`.
+A screenshot's file name and a tile's frame name are both a variant key.
+_Avoid_: screenshot key, shot key.
+
 **baselines**:
 The screenshot set committed to this repository, which captures are judged
 against. Changed by a commit, never by the console. _Canonical_ describes its
@@ -105,6 +110,12 @@ One of the board images exported from `designs/acceptance-gate.pen` into
 `designs/exports/`. Shown beside an _after_ screenshot as reference only: it is
 never a side of a comparison and never carries a bucket. Short form: _board_.
 _Avoid_: design for the screenshot, mock or baseline for the board.
+
+**tile**:
+The frame on a design board that draws one story, named by its variant key. Like the
+board it sits on, it is reference beside a comparison and never a side of one.
+_Avoid_: card, cell, crop. A _crop_ is the region a reader cuts from a board, which may or
+may not be a tile.
 
 **token ledger**:
 The spacing one capture measured on one variant, each value named by the design
