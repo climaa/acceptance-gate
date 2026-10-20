@@ -56,6 +56,16 @@
       "inputs": ["$TURBO_DEFAULT$", ".env*", "$TURBO_ROOT$/designs/exports/**"],
       "outputs": ["storybook-static/**"]
     },
+    "//#boards:check": {
+      "dependsOn": ["@gate/storybook#build"],
+      "inputs": [
+        "$TURBO_ROOT$/designs/exports/**",
+        "$TURBO_ROOT$/scripts/board-scale-integrity.mjs",
+        "$TURBO_ROOT$/packages/visual-diff/src/policy.mjs",
+        "$TURBO_ROOT$/packages/visual-diff/src/storybook-index.mjs"
+      ],
+      "outputs": []
+    },
     "@gate/manual#build": {
       "dependsOn": ["^build"],
       "inputs": [
