@@ -76,7 +76,8 @@
         "$TURBO_DEFAULT$",
         "$TURBO_ROOT$/.github/workflows/pr.yml",
         "$TURBO_ROOT$/.github/workflows/changelog-check.yml",
-        "$TURBO_ROOT$/packages/ui/src/atoms/IconButton/IconButton.stories.tsx"
+        "$TURBO_ROOT$/packages/ui/src/atoms/IconButton/IconButton.stories.tsx",
+        "$TURBO_ROOT$/designs/exports/**"
       ]
     }
   }
