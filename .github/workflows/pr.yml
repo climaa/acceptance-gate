@@ -65,7 +65,7 @@ env:
 # carry that case is a silent footgun. Say it out loud instead.
 #
 # Repeated per job because GitHub Actions does not support YAML anchors. The
-# `checks` matrix below shares the six per-command jobs' steps, but a matrix
+# `checks` matrix below shares the seven per-command jobs' steps, but a matrix
 # cannot share this guard line, so all five jobs (checks, sandcastle, e2e,
 # visual-diff, gate) still carry their own copy. A new job added in a later
 # wave needs this line too — and, unless it's meant to stay informational like
@@ -80,7 +80,7 @@ env:
 # time, so pnpm must already be on PATH.
 jobs:
   checks:
-    # lint/typecheck/build/test/format/health collapsed into one matrix — they
+    # lint/typecheck/build/test/format/health/boards collapsed into one matrix — they
     # were byte-identical but for the final `run:` line (GitHub Actions has no
     # YAML anchors to share that block with instead).
     #
@@ -93,8 +93,8 @@ jobs:
     #
     # fail-fast: false is load-bearing. The default cancels the surviving legs
     # on the first failure; the run goes red either way (gate counts cancelled
-    # as failure too), but losing those five results defeats the whole reason
-    # six checks exist.
+    # as failure too), but losing those six results defeats the whole reason
+    # seven checks exist.
     #
     # name: ${{ matrix.name }} keeps the check names byte-identical to the
     # pre-matrix jobs (lint, typecheck, …). Without it each leg renders as
@@ -128,6 +128,9 @@ jobs:
           # + a standalone .sandcastle/ check (orchestrator scripts, not a turbo
           # workspace).
           - { name: health, run: pnpm health:check }
+          # Every planned story has its tile, every board PNG its scale; needs the
+          # Storybook build, so it is a turbo root task (designs/STANDARD.md).
+          - { name: boards, run: pnpm turbo run boards:check }
     steps:
       - uses: actions/checkout@v7
       - run: corepack enable
@@ -402,10 +405,10 @@ jobs:
     # reports even when a needed job fails; it fails unless every result is
     # exactly 'success' (skipped/cancelled count as failure).
     #
-    # needs.checks.result is a single aggregate over the six matrix legs: any
+    # needs.checks.result is a single aggregate over the seven matrix legs: any
     # leg failure -> failure, any leg cancelled -> cancelled, draft PR (the
     # job-level guard skips the whole job) -> skipped. The one thing lost
-    # versus six separate jobs: the failure echo below no longer names which
+    # versus seven separate jobs: the failure echo below no longer names which
     # leg failed — the checks list still does, the log line just doesn't
     # repeat it.
     needs: [checks, sandcastle, e2e]

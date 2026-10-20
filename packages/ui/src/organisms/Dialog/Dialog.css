@@ -4,7 +4,7 @@
    which is what makes "the sheet is presentation, not a different component"
    a fact about this file rather than a promise in the docs.
 
-   The scrim is deliberately dark in BOTH themes (board 04 draws it as one ink at
+   The scrim is deliberately dark in BOTH themes (x-visual-diff-pages draws it as one ink at
    ~0.87 alpha over the light and the dark page alike): a scrim is a dimming, and
    a veil that goes lighter in the dark theme dims nothing. tokens.css has no
    scrim role, and this component may not add one, so the two roles that are dark
@@ -46,7 +46,7 @@
   flex-direction: column;
   gap: var(--space-2);
   width: 100%;
-  /* The page-peek from board 04: the sheet stops short of the top edge so the
+  /* The page-peek from x-visual-diff-pages: the sheet stops short of the top edge so the
      dimmed page behind stays visible and the sheet reads as over it, not as a
      new screen. */
   max-height: calc(100% - var(--space-8));
