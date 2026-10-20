@@ -1,3 +1,8 @@
+# The format scripts pass this file, .gitignore and .git/info/exclude as ignore paths, so
+# anything git ignores on one machine only is not formatted either: a checkout's private
+# notes cannot fail the gate's format step. A missing ignore file is skipped, which is
+# what a linked worktree, whose .git is a file, gets.
+
 node_modules
 .next
 dist

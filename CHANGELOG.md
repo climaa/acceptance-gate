@@ -37,6 +37,7 @@ Merged to `main` since v1.6.0, not yet released:
 - build(gate): the gate runs locally, before every push (#580)
 - fix(visual-diff-ui): the sets table keeps room for the label and scrolls past it (#579)
 - docs(releasing): with the workflows disabled, publishing no longer refreshes /changelog (#581)
+- build(format): Prettier skips what git ignores on one machine only (#582)
 
 ## v1.6.0 — a screenshot is read against its design board, down to the design token
 
