@@ -227,13 +227,14 @@ async function listedLabels(vd: ConsolePage): Promise<string[]> {
  * ones the report drew", which admits none. The caller decides what to assert
  * about each case; this one only reports what it found.
  *
- * The progress figure is the settle point the card assertion used to be by
- * accident. It is drawn either way — `reviewed 0/0` on a clean run — so waiting
- * for it means a count of zero is the report's answer rather than a race with
- * its first paint.
+ * The settle point is whichever of the two verdicts the report draws: the
+ * progress figure when there are rows, or the "Nothing moved" note on a clean
+ * run, which since #563 draws no review controls at all. Waiting for one of them
+ * means a count of zero is the report's answer rather than a race with its first
+ * paint.
  */
 async function markEverySection(report: ReportPage): Promise<number> {
-  await expect(report.reviewProgress).toBeVisible();
+  await expect(report.reviewProgress.or(report.nothingMoved)).toBeVisible();
 
   const sections = report.resultSections;
   const drawn = await sections.count();
@@ -489,8 +490,10 @@ When('I read the whole report through', async ({ console: vd, report, localState
 
 /** The pinned `reviewed N/M` format, asserted as N === M through a backreference
  *  rather than against a number this lane may not know. Anchored at both ends:
- *  `toHaveText` does not anchor a RegExp for you. True of both branches — a clean
- *  run reads `reviewed 0/0`.
+ *  `toHaveText` does not anchor a RegExp for you. A clean run has no variant to
+ *  mark and, since #563, no progress figure either: there the claim holds because
+ *  the report says nothing moved, and draws no review control that could say
+ *  otherwise.
  *
  *  Its own step now, and the read-through's payoff. It used to be the last line
  *  of the step above, because what came next was the accept gate opening — the
@@ -498,7 +501,13 @@ When('I read the whole report through', async ({ console: vd, report, localState
  *  console's accept wrote a corpus nothing read), so the marks are the outcome
  *  this scenario asserts rather than a precondition for the next one. */
 Then('every variant of it is marked reviewed', async ({ report }) => {
-  await expect(report.reviewProgress).toHaveText(/^reviewed (\d+)\/\1$/);
+  await expect(report.reviewProgress.or(report.nothingMoved)).toBeVisible();
+
+  if (await report.nothingMoved.isVisible()) {
+    await expect(report.reviewProgress).toHaveCount(0);
+  } else {
+    await expect(report.reviewProgress).toHaveText(/^reviewed (\d+)\/\1$/);
+  }
 });
 
 Given('my newest run is holding the job lock', async ({ console: vd, mayWrite }) => {
