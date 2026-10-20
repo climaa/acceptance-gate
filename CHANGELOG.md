@@ -42,6 +42,7 @@ Merged to `main` since v1.6.0, not yet released:
 - test(e2e): the local loop reads a clean run by its note, since #563 drew no review controls there
 - build(turbo): the console's tests read the committed design boards, so their cache keys on them (#585)
 - docs(designs): one structure for every .pen, written down before any board moves (#590)
+- design(designs): the parent .pen's colours follow the theme (#591)
 
 ## v1.6.0 — a screenshot is read against its design board, down to the design token
 
