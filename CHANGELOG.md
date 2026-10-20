@@ -40,6 +40,7 @@ Merged to `main` since v1.6.0, not yet released:
 - build(format): Prettier skips what git ignores on one machine only (#582)
 - fix(deps): mermaid 12.2.0 for katex 0.18, and handlebars 4.7.10 by override (#583)
 - test(e2e): the local loop reads a clean run by its note, since #563 drew no review controls there
+- build(turbo): the console's tests read the committed design boards, so their cache keys on them (#585)
 
 ## v1.6.0 — a screenshot is read against its design board, down to the design token
 
