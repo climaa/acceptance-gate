@@ -139,6 +139,10 @@ export function joinProblems(tileNames, planned, shared = []) {
 export const VARIABLES_SOURCE = '00-foundations';
 
 const BOARD_FRAME = /^(\d\d-[a-z0-9-]+|x-[a-z0-9-]+) — /;
+
+/** A board's PNG, by name. Anything else in exports/ is derived from the boards
+ *  by another script and is not this check's to hold to a sidecar. */
+const BOARD_PNG = /^(\d\d-[a-z0-9-]+|x-[a-z0-9-]+)\.png$/;
 const TILE_NAME = /^(atoms|molecules|organisms|templates)__/;
 
 /** JSON with every object's keys sorted, so the same value always prints the same. */
@@ -277,7 +281,7 @@ const readJson = (file) => JSON.parse(readFileSync(file, 'utf8'));
 /** Each PNG against its sidecar. */
 function scaleProblems() {
   const problems = [];
-  const pngs = readdirSync(EXPORTS).filter((name) => name.endsWith('.png'));
+  const pngs = readdirSync(EXPORTS).filter((name) => BOARD_PNG.test(name));
 
   for (const png of pngs) {
     const stem = png.slice(0, -'.png'.length);
@@ -375,7 +379,7 @@ function main() {
   const scales = scaleProblems();
   const maps = tileMapProblems();
   const pngStems = readdirSync(EXPORTS)
-    .filter((name) => name.endsWith('.png'))
+    .filter((name) => BOARD_PNG.test(name))
     .map((name) => name.slice(0, -'.png'.length));
   const tierStems = boards.stems.filter((stem) => tierBoardOf(stem));
   const problems = [

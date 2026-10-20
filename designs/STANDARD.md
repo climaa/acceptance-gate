@@ -110,6 +110,11 @@ export and never edited by hand:
 - `<stem>.tiles.json`, on a tier board only: for each tile, its variant key and its
   rectangle in that PNG's pixels, at that scale.
 
+Only files named like a board's exports (`NN-…` or `x-…`) belong to the export. An image
+another script derives from the boards, such as a stitched page or a social card, may sit
+beside them in `exports/` under any other name; the export and the `boards` check leave it
+alone.
+
 To export, for each board file that changed:
 
 1. Make it the active document (`open -a Pen designs/<stem>.pen`) and run

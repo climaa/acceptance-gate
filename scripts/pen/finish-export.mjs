@@ -11,7 +11,9 @@
 //
 // One manifest per board file, as many as were exported. A board whose
 // `designs/<stem>.pen` no longer exists leaves its exports behind, so those are
-// deleted: the folder holds exactly what the board files draw.
+// deleted. Only files named like a board's exports are touched: an image another
+// script derives from the boards (a stitched page, a social card) can sit beside
+// them in exports/ and is left alone.
 //
 // Each manifest file is the line the snippet printed, with or without its
 // `MANIFEST ` prefix.
@@ -70,13 +72,17 @@ for (const { id, stem, board, width, height, scale, tiles } of manifest) {
   else if (existsSync(tileFile)) rmSync(tileFile);
 }
 
-/** `01-atoms.tiles.json` → `01-atoms`: the board an export belongs to. */
-const stemOf = (name) => name.replace(/(\.tiles)?\.(png|json)$/, '');
+/** `01-atoms.tiles.json` → `01-atoms`: the board a board export belongs to, or
+ *  null for anything else in exports/ — an image another script derives from the
+ *  boards, which this leaves alone. */
+const stemOf = (name) =>
+  /^(\d\d-[a-z0-9-]+|x-[a-z0-9-]+)(\.tiles)?\.(png|json)$/.exec(name)?.[1] ?? null;
 
 for (const name of readdirSync(EXPORTS)) {
-  if (existsSync(join(DESIGNS, `${stemOf(name)}.pen`))) continue;
+  const stem = stemOf(name);
+  if (stem === null || existsSync(join(DESIGNS, `${stem}.pen`))) continue;
   rmSync(join(EXPORTS, name));
-  console.log(`removed ${name}: there is no designs/${stemOf(name)}.pen`);
+  console.log(`removed ${name}: there is no designs/${stem}.pen`);
 }
 
 console.log(`${manifest.length} boards written to designs/exports/`);
