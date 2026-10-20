@@ -22,7 +22,10 @@ body:
     id: task
     attributes:
       label: Task
-      description: What should change, concretely.
+      description: >-
+        What should change, concretely. A new or renamed Storybook story ships with its
+        tile on its tier board (designs/STANDARD.md), which is attended Pencil work: say
+        here who draws it.
     validations:
       required: true
   - type: textarea

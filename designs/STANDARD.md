@@ -109,9 +109,9 @@ To export, with the `.pen` open as the active document:
 its sidecar.
 
 **The trust boundary.** A `.pen` is only read through the Pencil app, so no headless check
-can prove that a sidecar matches the drawing. The gate proves the sidecars against
-Storybook: every required tile is present, no tile is extra, and every name is a variant
-key. The match between drawing and sidecar rests on the export being the only thing that
+can prove that a sidecar matches the drawing. The gate's `boards` check
+(`pnpm turbo run boards:check`) proves the sidecars against Storybook: every required tile
+is present, on its own tier's board, no tile is extra, and every name is a variant key. The match between drawing and sidecar rests on the export being the only thing that
 writes them.
 
 ## Working on a .pen

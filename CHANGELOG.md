@@ -45,6 +45,7 @@ Merged to `main` since v1.6.0, not yet released:
 - design(designs): the parent .pen's colours follow the theme (#591)
 - feat(designs): tier boards, one tile per story, and every consumer renamed in one PR (#592)
 - build(turbo): Storybook's build keys on the design boards it serves (#593)
+- feat(gate): every planned story has its tile, and every tile a story (#594)
 
 ## v1.6.0 — a screenshot is read against its design board, down to the design token
 

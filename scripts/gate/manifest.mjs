@@ -86,6 +86,13 @@ export const CHECKS = [
     why: 'Cognitive-complexity ceiling of 20 per function, plus .sandcastle/.',
   },
   {
+    name: 'boards',
+    job: 'checks',
+    command: 'pnpm turbo run boards:check',
+    tier: 'fast',
+    why: 'Every planned story has its tile on its tier board, and every board PNG its scale.',
+  },
+  {
     name: 'sandcastle',
     job: 'own',
     command: 'pnpm typecheck:sandcastle && pnpm test:sandcastle',
