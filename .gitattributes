@@ -4,4 +4,4 @@
 # merge of two saves can land a document Pencil will not reopen. What changes on
 # a save is coordinates and ids, so the review happens against the PNG exports
 # beside them, which stay diffable.
-designs/*.pen binary -diff
+designs/**/*.pen binary -diff

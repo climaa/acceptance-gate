@@ -13,6 +13,12 @@
 // WHAT IT CHECKS. Every PNG has a sidecar, and the PNG's own size is the
 // sidecar's board size times its scale, to the pixel the exporter rounds to.
 //
+// THE FILES. Each board is its own file, `designs/<stem>.pen`, exported to
+// `exports/<stem>.png`: a board file with no export, or an export with no board
+// file, is red. Variables live inside each document, so every board file carries
+// a copy; each sidecar records its copy's fingerprint, and every board's must
+// match 00-foundations'.
+//
 // THE TILES. A tier board also carries `<board>.tiles.json`: each tile's variant
 // key and its rectangle in that PNG's pixels, which the shot view opens its crop
 // on. Each tile file must state its board's scale, and every tile must lie
@@ -37,7 +43,8 @@ import { parseVariantKey } from '../packages/visual-diff/src/policy.mjs';
 import { planCaptures } from '../packages/visual-diff/src/storybook-index.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const EXPORTS = join(ROOT, 'designs', 'exports');
+const DESIGNS = join(ROOT, 'designs');
+const EXPORTS = join(DESIGNS, 'exports');
 const INDEX = join(ROOT, 'apps', 'storybook', 'storybook-static', 'index.json');
 const SHARED = join(ROOT, 'designs', 'shared-stories.json');
 
@@ -124,6 +131,58 @@ export function joinProblems(tileNames, planned, shared = []) {
   return problems;
 }
 
+/** The board whose variables every other board's are held to. */
+export const VARIABLES_SOURCE = '00-foundations';
+
+/**
+ * Every board file against its exports: each `designs/<stem>.pen` is one board, so
+ * each has a `<stem>.png`, and each PNG a board file it was exported from.
+ *
+ * @param {readonly string[]} penStems  Stems of the board files in designs/.
+ * @param {readonly string[]} pngStems  Stems of the PNGs in designs/exports/.
+ * @returns {string[]}
+ */
+export function fileProblems(penStems, pngStems) {
+  const pens = new Set(penStems);
+  const pngs = new Set(pngStems);
+
+  return [
+    ...penStems
+      .filter((stem) => !pngs.has(stem))
+      .map((stem) => `designs/${stem}.pen has no export: export the board`),
+    ...pngStems
+      .filter((stem) => !pens.has(stem))
+      .map(
+        (stem) => `exports/${stem}.png has no designs/${stem}.pen it was exported from`,
+      ),
+  ];
+}
+
+/**
+ * Every board's variables against the source board's. Variables live inside each
+ * document, so each board file carries a copy; its sidecar records the copy's
+ * fingerprint at export, and a copy that differs from 00-foundations' has drifted.
+ *
+ * @param {Readonly<Record<string, string | undefined>>} fingerprints  By board stem.
+ * @returns {string[]}
+ */
+export function variableProblems(fingerprints) {
+  const source = fingerprints[VARIABLES_SOURCE];
+  if (source === undefined) {
+    return [
+      `${VARIABLES_SOURCE}.json records no variables: export ${VARIABLES_SOURCE}.pen`,
+    ];
+  }
+
+  return Object.entries(fingerprints)
+    .filter(([, fingerprint]) => fingerprint !== source)
+    .map(([stem, fingerprint]) =>
+      fingerprint === undefined
+        ? `${stem}.json records no variables: export ${stem}.pen again`
+        : `${stem}.pen's variables differ from ${VARIABLES_SOURCE}.pen's: copy them across, then export both`,
+    );
+}
+
 /** A PNG's width and height, off its IHDR chunk: bytes 16–23, big-endian. */
 function pngSize(file) {
   const header = readFileSync(file).subarray(16, 24);
@@ -133,9 +192,10 @@ function pngSize(file) {
 
 const readJson = (file) => JSON.parse(readFileSync(file, 'utf8'));
 
-/** Each PNG against its sidecar. */
+/** Each PNG against its sidecar; returns each board's variables fingerprint. */
 function scaleProblems() {
   const problems = [];
+  const fingerprints = {};
   const pngs = readdirSync(EXPORTS).filter((name) => name.endsWith('.png'));
 
   for (const png of pngs) {
@@ -148,6 +208,7 @@ function scaleProblems() {
       continue;
     }
 
+    fingerprints[stem] = sidecar.variables;
     const actual = pngSize(join(EXPORTS, png));
     for (const side of ['width', 'height']) {
       const stated = Math.round(sidecar[side] * sidecar.scale);
@@ -159,7 +220,7 @@ function scaleProblems() {
     }
   }
 
-  return { problems, boards: pngs.length };
+  return { problems, fingerprints, boards: pngs.length };
 }
 
 /** Each tile map against its board's scale and PNG; returns the names it read. */
@@ -213,7 +274,16 @@ function main() {
 
   const scales = scaleProblems();
   const maps = tileMapProblems();
-  const problems = [...scales.problems, ...maps.problems];
+  const stemsOf = (dir, ext) =>
+    readdirSync(dir)
+      .filter((name) => name.endsWith(ext))
+      .map((name) => name.slice(0, -ext.length));
+  const problems = [
+    ...fileProblems(stemsOf(DESIGNS, '.pen'), stemsOf(EXPORTS, '.png')),
+    ...scales.problems,
+    ...variableProblems(scales.fingerprints),
+    ...maps.problems,
+  ];
 
   if (existsSync(INDEX)) {
     const { variants } = planCaptures(Object.values(readJson(INDEX).entries));

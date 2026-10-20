@@ -29,7 +29,7 @@ findings, never from ambition.
 - **No component hardcodes a visual value.** Everything resolves through a custom
   property in `packages/ui/src/tokens.css`; dark mode remaps semantic roles only.
 - **A new story ships with its tile.** Every story the differ captures is drawn on its
-  tier board in `designs/acceptance-gate.pen`, one tile per variant, named by its variant
+  tier board (`designs/<stem>.pen`, one file per board), one tile per variant, named by its variant
   key (`designs/STANDARD.md`). `pnpm turbo run boards:check` fails on a story with no tile,
   a tile with no story, and a tile not named by a variant key. The `.pen` is edited only in
   the Pencil app, so a story an agent adds is not done until someone draws its tile: say so

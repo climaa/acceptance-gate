@@ -5,12 +5,14 @@ it. The structure exists so that a design board lines up with Storybook one stor
 time. That makes a board's sidecars a join that tooling can check, not a hand-tuned map.
 
 This repository owns the standard. A project that copies it starts from
-[`template.pen`](template.pen) and changes this file only by a pull request here first.
+[`template/`](template/), one starter file per board, and changes this file only by a pull
+request here first.
 
 ## Boards
 
-A `.pen` holds one top-level frame per board, in this order. The frame's name starts with
-its number. The exported PNG is named after the board's stem.
+Each board is its own file, `designs/<stem>.pen`, holding one top-level frame named
+`<stem> — <title>`. The exported PNG and its sidecars take the same stem, so a board, its
+file and its exports are one name. The boards, in order:
 
 | Stem                 | Holds                                           | Tiles          |
 | -------------------- | ----------------------------------------------- | -------------- |
@@ -30,7 +32,15 @@ its number. The exported PNG is named after the board's stem.
   is drawn on one, in a frame named `Drawing <Name>`; once it gains a story it moves to its
   tier board as tiles.
 - **Paging.** Pencil caps an export's long side at 8192 px. A tier board that would export
-  below 1× splits into `01-atoms-1`, `01-atoms-2`, …, never into a renamed board.
+  below 1× splits into `01-atoms-1.pen`, `01-atoms-2.pen`, …, never into a renamed board.
+- **Variables are copied, not shared.** A Pencil document holds its own variables and
+  themes, so every board file carries the same set. `00-foundations.pen` is the source:
+  change a variable there, copy it to every other board file, and export them all. Each
+  export records a fingerprint of its file's variables, and the `boards` check fails on a
+  board whose fingerprint differs from `00-foundations`'.
+- **Components a board instances live in that board's file.** A board that draws instances
+  of reusable components (`05-pages`, `06-flows-decisions` and `x-visual-diff-pages` here)
+  keeps its own `Components` frame beside the board. It is not exported.
 
 ## Tiles
 
@@ -92,18 +102,20 @@ Every board is exported to `exports/<stem>.png`, at 2× or at the scale that put
 side at 8192 px when that is smaller. Two JSON files sit beside it, both written by the
 export and never edited by hand:
 
-- `<stem>.json`: the board's size in design pixels and the scale it was exported at.
+- `<stem>.json`: the board's size in design pixels, the scale it was exported at, and the
+  fingerprint of its file's variables.
 - `<stem>.tiles.json`, on a tier board only: for each tile, its variant key and its
   rectangle in that PNG's pixels, at that scale.
 
-To export, with the `.pen` open as the active document:
+To export, for each board file that changed:
 
-1. Run [`scripts/pen/export-boards.js`](../scripts/pen/export-boards.js) through the
-   Pencil MCP. It writes each board's PNG (named by node id, the only name `Export` can
-   give it) and prints one line starting `MANIFEST`.
-2. Save that line to a file and run `node scripts/pen/finish-export.mjs <file>`. It names
-   the PNGs by stem, writes the sidecars, and deletes anything in `exports/` that is no
-   longer a board.
+1. Make it the active document (`open -a Pen designs/<stem>.pen`) and run
+   [`scripts/pen/export-boards.js`](../scripts/pen/export-boards.js) through the Pencil
+   MCP. It writes the board's PNG (named by node id, the only name `Export` can give it)
+   and prints one line starting `MANIFEST`. Save that line to a file.
+2. Run `node scripts/pen/finish-export.mjs <file>…` with every manifest saved. It names
+   the PNGs by stem, writes the sidecars, and deletes the exports of any board whose
+   `.pen` no longer exists.
 
 [`scripts/board-scale-integrity.mjs`](../scripts/board-scale-integrity.mjs) holds each PNG to
 its sidecar.

@@ -106,7 +106,7 @@ screenshots behind them. Rendered by the console's pages; the differ's own
 standalone HTML rendering has been retired.
 
 **design board**:
-One of the board images exported from `designs/acceptance-gate.pen` into
+One of the board images exported from its `designs/<stem>.pen` file into
 `designs/exports/`. Shown beside an _after_ screenshot as reference only: it is
 never a side of a comparison and never carries a bucket. Short form: _board_.
 _Avoid_: design for the screenshot, mock or baseline for the board.

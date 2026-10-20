@@ -71,7 +71,7 @@ packages/
                        screenshot, each spacing reading classified against the
                        design-token scale
   tsconfig/            shared TS configs
-designs/               acceptance-gate.pen (Pencil source) + exports/*.png
+designs/               <stem>.pen per board (Pencil source) + exports/*.png + template/
 scripts/               complexity-gate.mjs (the health gate) · index-integrity.mjs
                        (this file, checked against the repo it describes) · apply-ruleset.mjs
 .claude/skills/        four committed Next.js agent skills (+ PROVENANCE.md)
