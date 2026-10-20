@@ -127,7 +127,9 @@ that rendered as an unbroken wall of text.
    a title shaped any other way is printed whole.
 
    Publishing comes last on purpose: it is what puts the release on `/changelog` — see
-   [Publishing is what updates /changelog](#publishing-is-what-updates-changelog).
+   [Publishing is what updates /changelog](#publishing-is-what-updates-changelog). While
+   the workflows are disabled it updates nothing on its own — pick one of the options in
+   [Both workflows are disabled](#both-workflows-are-disabled) first.
 
 Get the headline signed off **before** step 6. It becomes the tag message, the GitHub
 Release title and the permanent `/changelog` entry.
@@ -188,3 +190,24 @@ changelog nothing could rebuild.
 
 `changelog-check.yml` reads the deployed page back once a day and fails if it is showing
 its unavailable note, or no releases at all.
+
+### Both workflows are disabled
+
+Since 2026-10-20 every workflow in this repository is disabled on GitHub, these two
+included: Actions minutes ran out, and the gate moved to a local `pre-push` hook (#580).
+The files are kept. So step 8 publishes the release and **nothing rebuilds the blog** —
+`/changelog` keeps the previous list until something does, and no daily check notices.
+
+Each release session picks one of these, before step 8:
+
+- **Re-enable it for the release.** `gh workflow enable changelog-deploy.yml`, publish,
+  watch the run go green, then `gh workflow disable changelog-deploy.yml`. It spends
+  Actions minutes, so it only works while the month has some left.
+- **Fire the hook by hand.** The same request the workflow makes, from a terminal, with
+  the hook URL copied from the Vercel dashboard (the GitHub secret cannot be read back):
+  `curl -X POST "<hook URL>?buildCache=false"`. Then load `/changelog` and look for the
+  tag — a deployment happening is not the proof, the tag on the page is.
+- **Accept a stale `/changelog`** until the next blog build without its cache, and say so
+  in the release session's notes.
+
+Re-enabling either workflow for good is `gh workflow enable <name>.yml`.

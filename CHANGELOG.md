@@ -36,6 +36,7 @@ Merged to `main` since v1.6.0, not yet released:
 - fix(visual-diff-ui): the overlay's stage takes its own height on a wide screen too (#578)
 - build(gate): the gate runs locally, before every push (#580)
 - fix(visual-diff-ui): the sets table keeps room for the label and scrolls past it (#579)
+- docs(releasing): with the workflows disabled, publishing no longer refreshes /changelog
 
 ## v1.6.0 — a screenshot is read against its design board, down to the design token
 
