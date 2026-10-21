@@ -1,25 +1,9 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { isDesignBoard } from '@/lib/comparison';
+import { DESIGN_EXPORTS_DIR } from '@/lib/design-exports';
 
 const notFound = () => new Response('Not found', { status: 404 });
-
-/**
- * Where the design boards are, by real path.
- *
- * Off `process.cwd()` — this app's directory under `next dev`, `next start` and
- * a deployed function alike — and never through a workspace link: the file
- * tracer records a symlinked file under its target, so a read through a link
- * works on every machine with an install and is ENOENT on a deployment. The
- * blog's cards answered 500 until they learned this (`apps/blog/lib/og.tsx`).
- */
-export const DESIGN_EXPORTS_DIR = path.join(
-  process.cwd(),
-  '..',
-  '..',
-  'designs',
-  'exports',
-);
 
 /**
  * Cacheable for an hour in a browser and a year on the CDN, whose copy is per

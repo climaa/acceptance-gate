@@ -218,17 +218,36 @@ export type DesignBoard = (typeof DESIGN_BOARDS)[number];
 export const isDesignBoard = (value: string | null): value is DesignBoard =>
   DESIGN_BOARDS.some((board) => board === value);
 
-/** The tier board a variant is drawn on: one tile per story, named by the variant
- *  key, on the board of the story's own tier. */
-const TIER_BOARDS: Readonly<Record<Variant['tier'], DesignBoard>> = {
+/** The tier board each tier's tiles are drawn on. A board that outgrows one export
+ *  pages as `<stem>-1`, `<stem>-2`, … (designs/STANDARD.md) and is still that board. */
+const TIER_STEMS: Readonly<Record<Variant['tier'], string>> = {
   atoms: '01-atoms',
   molecules: '02-molecules',
   organisms: '03-organisms',
   templates: '04-templates',
 };
 
-/** The board a variant opens on: its tier's. The reviewer can always pick another. */
-export const defaultBoard = (tier: Variant['tier']): DesignBoard => TIER_BOARDS[tier];
+/** A tier's board, or its pages in order when it is paged. */
+export const tierBoards = (tier: Variant['tier']): DesignBoard[] => {
+  const own = new RegExp(`^${TIER_STEMS[tier]}(-\\d+)?$`);
+
+  return DESIGN_BOARDS.filter((board) => own.test(board));
+};
+
+/**
+ * The board each variant's tile is drawn on, by variant key: read off the tier
+ * boards' tile maps on the server (lib/board-homes.ts). On an unpaged tier it
+ * only confirms what the tier already says; on a paged one it is the only way to
+ * know which page holds the tile.
+ */
+export type BoardHomes = Readonly<Partial<Record<string, DesignBoard>>>;
+
+/** The board a variant opens on: the one that draws its tile, else its tier's
+ *  first. The reviewer can always pick another. */
+export const defaultBoard = (
+  variant: { tier: Variant['tier']; key: string },
+  homes: BoardHomes,
+): DesignBoard => homes[variant.key] ?? tierBoards(variant.tier)[0] ?? DESIGN_BOARDS[0];
 
 /** Where a board's bytes are served. */
 export const designBoardUrl = (board: DesignBoard) =>

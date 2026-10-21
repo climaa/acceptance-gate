@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import { readBoardHomes } from '@/lib/board-homes';
 import { resolveDataDir } from '@/lib/data';
 import { repoRoot } from '@/lib/git';
 import { readSetLedger } from '@/lib/set-ledger';
@@ -65,6 +66,7 @@ export async function ShotContents({
         ...(shot.width === null ? {} : { width: shot.width }),
       }}
       ledger={await readSetLedger(label, key)}
+      homes={await readBoardHomes()}
       entry={entry}
     />
   );

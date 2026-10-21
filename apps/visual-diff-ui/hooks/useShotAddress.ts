@@ -2,7 +2,12 @@
 
 import { useEffect, useRef } from 'react';
 import type { Tier } from '@gate/visual-diff/policy';
-import { defaultBoard, type DesignBoard, isDesignBoard } from '@/lib/comparison';
+import {
+  type BoardHomes,
+  defaultBoard,
+  type DesignBoard,
+  isDesignBoard,
+} from '@/lib/comparison';
 import { type AddressParams, asksOverlay } from '@/lib/overlay-params';
 import { shotViewHref } from '@/lib/shots';
 import { useOverlayAlignment } from './useOverlayAlignment';
@@ -24,19 +29,21 @@ export function useShotAddress({
   shotKey,
   frameWidth,
   tier,
+  homes,
   params,
 }: {
   label: string;
   shotKey: string;
   frameWidth: number;
   tier: Tier;
+  homes: BoardHomes;
   params: AddressParams;
 }) {
   const asked = params.get('board');
-  const board = isDesignBoard(asked) ? asked : defaultBoard(tier);
-  // A board equal to the tier's own is not a choice worth recording.
-  const boardParam = (picked: DesignBoard) =>
-    picked === defaultBoard(tier) ? null : picked;
+  const home = defaultBoard({ tier, key: shotKey }, homes);
+  const board = isDesignBoard(asked) ? asked : home;
+  // A board equal to the one the tile is drawn on is not a choice worth recording.
+  const boardParam = (picked: DesignBoard) => (picked === home ? null : picked);
   // Called from handlers, after `overlay` below exists.
   const write = (picked: DesignBoard, crop: string | null) =>
     window.history.replaceState(

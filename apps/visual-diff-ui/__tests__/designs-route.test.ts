@@ -3,7 +3,8 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { BOARD_CACHE_CONTROL, DESIGN_EXPORTS_DIR, GET } from '../app/api/designs/route';
+import { BOARD_CACHE_CONTROL, GET } from '../app/api/designs/route';
+import { DESIGN_EXPORTS_DIR } from '../lib/design-exports';
 import { DESIGN_BOARDS, designBoardScaleUrl, designBoardUrl } from '../lib/comparison';
 
 /**

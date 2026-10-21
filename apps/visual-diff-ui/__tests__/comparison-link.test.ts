@@ -5,6 +5,7 @@ import {
   comparisonHref,
   comparisonPath,
   defaultBoard,
+  tierBoards,
   isAgainst,
   isComparisonPath,
   isDesignBoard,
@@ -128,16 +129,33 @@ describe('parseComparisonPath', () => {
 });
 
 describe('defaultBoard', () => {
-  // Every tier has its own board, and a variant opens on its tier's.
+  // Every tier has its own board, and a variant with no tile map read opens on
+  // its tier's.
   it.each([
     ['templates', '04-templates'],
     ['organisms', '03-organisms'],
     ['molecules', '02-molecules'],
     ['atoms', '01-atoms'],
   ] as const)('opens a %s variant on the %s board', (tier, board) => {
-    const chosen = defaultBoard(tier);
+    const chosen = defaultBoard({ tier, key: `${tier}__desktop__light__x--y` }, {});
 
     expect(chosen).toBe(board);
+  });
+
+  it('opens a variant on the board its tile map says draws it', () => {
+    const key = 'templates__desktop__light__templates-home--default';
+
+    const chosen = defaultBoard({ tier: 'templates', key }, { [key]: '05-pages' });
+
+    expect(chosen).toBe('05-pages');
+  });
+});
+
+describe('tierBoards', () => {
+  it('is the tier board alone on a tier that is not paged', () => {
+    const boards = tierBoards('atoms');
+
+    expect(boards).toEqual(['01-atoms']);
   });
 });
 

@@ -33,6 +33,8 @@ file and its exports are one name. The boards, in order:
   tier board as tiles.
 - **Paging.** Pencil caps an export's long side at 8192 px. A tier board that would export
   below 1× splits into `01-atoms-1.pen`, `01-atoms-2.pen`, …, never into a renamed board.
+  The console lists each page as a board of its own and opens a variant on the page whose
+  tile map holds it.
 - **Variables are copied, not shared.** A Pencil document holds its own variables and
   themes, so every board file carries the same set. `00-foundations.pen` is the source:
   change a variable there and copy it to every other board file. The `boards` check reads

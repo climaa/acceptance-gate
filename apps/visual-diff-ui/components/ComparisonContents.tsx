@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import { readBoardHomes } from '@/lib/board-homes';
 import { readComparison } from '@/lib/comparison-meta';
 import { resolveDataDir } from '@/lib/data';
 import { readLedgerReport } from '@/lib/ledger';
@@ -38,6 +39,7 @@ export async function ComparisonContents({
       variants={comparison.variants}
       sides={reportSides(id)}
       ledger={await readLedgerReport(id, key)}
+      homes={await readBoardHomes()}
       entry={entry}
     />
   );

@@ -51,6 +51,7 @@ function renderView(entry: ShotEntry, query = '') {
       viewport="desktop"
       theme="light"
       tier="atoms"
+      homes={{}}
       shot={{
         key: KEY,
         src: `/api/sets/${SET}/shots/${KEY}.png`,
