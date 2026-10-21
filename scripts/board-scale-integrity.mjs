@@ -145,7 +145,8 @@ const BOARD_FRAME = /^(\d\d-[a-z0-9-]+|x-[a-z0-9-]+) — /;
 /** A board's PNG, by name. Anything else in exports/ is derived from the boards
  *  by another script and is not this check's to hold to a sidecar. */
 const BOARD_PNG = /^(\d\d-[a-z0-9-]+|x-[a-z0-9-]+)\.png$/;
-const TILE_NAME = /^(atoms|molecules|organisms|templates)__/;
+/** A tile's name starts with the tier it belongs to: any tier that has a board. */
+const TILE_NAME = new RegExp(`^(${Object.keys(TIER_BOARDS).join('|')})__`);
 
 /** JSON with every object's keys sorted, so the same value always prints the same. */
 const canonical = (value) =>
