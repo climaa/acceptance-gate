@@ -1,6 +1,6 @@
 # Project Index: acceptance-gate
 
-Version 1.6.0 · generated 2026-10-18 (regenerate with `/sc:index-repo` — a stale date here
+Version 1.7.0 · generated 2026-10-21 (regenerate with `/sc:index-repo` — a stale date here
 means the index needs a refresh)
 
 ## 📁 Project Structure
@@ -16,7 +16,7 @@ means the index needs a refresh)
                        plan-parse · pr-queue (+ gh) · sandbox hooks · turbo cache ·
                        variables · orchestrator
   agent-docs/          the four phase prompts + CODING_STANDARDS.md
-  __tests__/           41 hermetic vitest files (680 tests) guarding the contracts
+  __tests__/           43 hermetic vitest files (706 tests) guarding the contracts
 apps/
   blog/                Next.js 16 App Router + MDX (English) — index (paged four posts
                        at a time, each page at its own address), post, tag, about,
@@ -45,8 +45,11 @@ apps/
                        a comparison is a link you can send, read beside its
                        design board with the token ledger's spacing readings
                        named in design-token terms; a set's screenshot opens in
-                       a shot view beside its board — synced, cropped, overlaid
-                       and magnified through PanZoom;
+                       a shot view on its story's tile of the board — synced,
+                       cropped, overlaid (with a difference blend and a layer
+                       nudge) and magnified through PanZoom; the overlay's
+                       settings, a filtered set and a compare pair are links,
+                       and a report can be deleted from its own page;
                        every browser request bounded at 30 s (`lib/network.ts`), so
                        a stalled link fails with a sentence instead of hanging;
                        web analytics on the production deployment only; Bugsink error
@@ -72,10 +75,12 @@ packages/
                        design-token scale
   tsconfig/            shared TS configs
 designs/               <stem>.pen per board (Pencil source) + exports/*.png + template/
-scripts/               complexity-gate.mjs (the health gate) · index-integrity.mjs
-                       (this file, checked against the repo it describes) · apply-ruleset.mjs
+scripts/               gate/ (the gate, run by `.husky/pre-push`) · complexity-gate.mjs
+                       (the health gate) · index-integrity.mjs (this file, checked
+                       against the repo it describes) · board-scale-integrity.mjs ·
+                       apply-ruleset.mjs
 .claude/skills/        four committed Next.js agent skills (+ PROVENANCE.md)
-.github/               pr.yml (the gate) · changelog-deploy.yml + changelog-check.yml
+.github/               pr.yml (the gate until #580, now disabled) · changelog-deploy.yml + changelog-check.yml
                        (the release → /changelog edge, and the alarm that reads the
                        deployed page back) · dependabot.yml · auto-merge · rulesets/ ·
                        CODEOWNERS · SECURITY.md · issue and PR templates
@@ -90,7 +95,7 @@ scripts/               complexity-gate.mjs (the health gate) · index-integrity.
 - Acceptance suite: `pnpm turbo run e2e` (builds the blog and the visual-diff console first, seeds the three worlds, then runs the scenarios)
 - Manual: `pnpm --filter @gate/manual dev` on :3400
 - Visual diff: `pnpm visual-diff` / `pnpm visual-diff:accept`
-- CI: `.github/workflows/pr.yml` → `gate` aggregator (only required check)
+- Gate: `pnpm gate` (`scripts/gate/`), run by `.husky/pre-push` before every push; `pnpm gate --tier full` adds visual-diff in the pinned container. The per-PR workflows (`pr.yml`) are disabled on GitHub since #580
 - Orchestrator tests: `pnpm test:sandcastle` → `vitest.sandcastle.config.mts`
 
 ## 📦 Core Modules
@@ -109,7 +114,7 @@ scripts/               complexity-gate.mjs (the health gate) · index-integrity.
 - `turbo.json` — `build`/`lint`/`typecheck`/`test` (+`dependsOn: ["^build"]`), `e2e` (dependsOn `@gate/blog#build` and `@gate/visual-diff-ui#build`, uncached), `health` (whose `inputs` include `$TURBO_ROOT$/scripts/complexity-gate.mjs`, so editing the gate script busts every cached result), `dev`, `clean`. `build.env` is `VERCEL_ENV`, `NEXT_PUBLIC_BUGSINK_DSN`, `BLOG_RELEASES_FIXTURE` and `GITHUB_TOKEN` — the values a build reads, so a fixture build and a real one never share a cache entry. `BUGSINK_DSN` is deliberately absent: the server reads it per request, so changing it must not invalidate a build
 - `pnpm-workspace.yaml` — apps/* + packages/*; `allowBuilds` for sharp, unrs-resolver
 - `package.json` — pnpm 11.20.0 pinned (sha512), Node `>=22.14.0 <23`, turbo ^2.11.7. `@types/node` is deliberately held on the `^22` line: it describes the runtime `engines` pins and `.sandcastle/Dockerfile` (`node:22-bookworm`) runs, so a newer major would type built-ins that do not exist here. It moves when the runtime moves, not when `ncu` says so
-- `.github/rulesets/main.json` — the branch ruleset as committed JSON: PR required, squash-only, `gate` the sole required status check, no bypass actors
+- `.github/rulesets/main.json` — the branch ruleset as committed JSON: PR required, squash-only, `gate` the sole required status check, no bypass actors. Since #580 the applied ruleset requires no status check, so this file no longer matches what `main` enforces
 - `.gitattributes` — `designs/*.pen` binary
 - Exact pins that are never bot-bumped: `@playwright/test` and `playwright` at `1.62.1`, matched to the `mcr.microsoft.com/playwright:v1.62.1-noble` capture container
 
@@ -126,8 +131,8 @@ scripts/               complexity-gate.mjs (the health gate) · index-integrity.
 
 ## 🧪 Tests
 
-- Orchestrator hermetic suite: 41 files / 680 tests (prompt contracts, merge flow, override grammar, worktree safety, provenance guard)
-- Workspace suites, all in the `test` gate job: `packages/ui` 38 files / 630 tests (70% coverage floor), `apps/blog` 28 / 563 (560 passed, 3 skipped — one per draft post), `packages/visual-diff` 11 / 458, `apps/storybook` 7 / 200, `apps/visual-diff-ui` 74 / 1242 (1 skipped) (floors 93/87/92/94), `packages/logger` 2 / 20, `apps/manual` 10 / 117, `packages/links` 1 / 10
+- Orchestrator hermetic suite: 43 files / 706 tests (prompt contracts, merge flow, override grammar, worktree safety, provenance guard)
+- Workspace suites, all in the `test` gate job: `packages/ui` 38 files / 634 tests (70% coverage floor), `apps/blog` 28 / 576 (573 passed, 3 skipped — one per draft post), `packages/visual-diff` 11 / 458, `apps/storybook` 7 / 235, `apps/visual-diff-ui` 76 / 1312 (floors 93/87/92/94), `packages/logger` 3 / 32, `apps/manual` 10 / 118, `packages/links` 1 / 10
 - `apps/e2e`: 87 acceptance scenarios across smoke, blog, the changelog's release conversations, /about, axe a11y, the visual-diff console, sample mode, the report and its accessibility treatment — in `gate.needs`, blocking. `EXPECTED_SCENARIOS` in `apps/e2e/scripts/suite-integrity.mjs` is the count that must agree. A second lane, `features/local/`, is two scenarios that write to your own tree and clean up after themselves — one captures, compares, reviews and accepts against your `.visual-diff`, the other proves the dev server reflects `apps/blog/content/posts` as it is, which no built app can claim (`EXPECTED_LOCAL_SCENARIOS`). It refuses to run under `CI` and gates nothing
 - `packages/visual-diff`: 204 committed baselines; the capture/compare job runs on every PR but is deliberately never in `gate.needs` (see `packages/visual-diff/README.md#ci-status`)
 
