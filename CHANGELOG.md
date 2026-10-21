@@ -7,53 +7,68 @@ transcribed from the GitHub Releases that existed when this file was created (20
 
 ## Unreleased
 
-Merged to `main` since v1.6.0, not yet released:
+## v1.7.0 — every story has its tile on the board, and the gate holds them to each other
 
-- docs(releasing): ship by the ref move alone — production still deploys with Git off (#554)
-- build(deps): bump pixelmatch from 7.2.0 to 8.0.0 (#517)
-- docs(visual-diff): pixelmatch 8 measures in OKLab with HyAB, not YIQ (#555)
-- docs: CHANGELOG.md is the changelog's source, and the release body is copied from it (#556)
-- fix(visual-diff-ui): the filter bar's tier links put their key before the spread (#557)
-- fix(visual-diff-ui): the shot view's overlay sits centred in its pane, as Board 04 draws it (#558)
-- feat(visual-diff-ui): the overlay chooses which layer the nudge moves, and nudges by touch (#559)
-- fix(visual-diff-ui): the grid toggle draws a grid on the overlay too (#560)
-- feat(visual-diff-ui): a difference blend on the overlay, to see the drift by eye (#561)
-- fix(visual-diff-ui): reports list in run order, durations under a second say so, and the label placeholder stops looking like a date (#562)
-- fix(visual-diff-ui): a report names the canonical corpus, and a clean run draws no review controls (#563)
-- fix(visual-diff-ui): the sets table gives the label the room, so two sets of one day read apart (#564)
-- fix(visual-diff-ui): the crop toggle stays beside a pinned crop, and the overlay keeps the panes' zoom (#565)
-- feat(ui): PanZoom centres an image smaller than its pane (#566)
-- feat(visual-diff-ui): a pinned crop opens filling its pane, and the screenshot follows at one scale (#567)
-- feat(visual-diff-ui): the shot view opens on the story's tile of the board (#568)
-- fix(visual-diff-ui): clearing a crop opens the whole board fitted, not at the crop's zoom (#569)
-- feat(visual-diff-ui): a report can be deleted from its own page (#571)
-- test(e2e): the report page's own delete, in the local loop and in sample mode (#572)
-- feat(visual-diff-ui): the shot view's title opens the story in Storybook (#573)
-- fix(visual-diff-ui): a filtered set and a compare pair are links (#574)
-- docs(blog): the merge that passed every check and did not ship (#575)
-- design: the boards' Badge meets Badge.css — tiles on --color-bg, stage crops, the Accent label (#576)
-- feat(visual-diff-ui): the shot view's overlay is a link — view, blend, opacity, nudges and zoom (#577)
-- fix(visual-diff-ui): the overlay's stage takes its own height on a wide screen too (#578)
-- build(gate): the gate runs locally, before every push (#580)
-- fix(visual-diff-ui): the sets table keeps room for the label and scrolls past it (#579)
-- docs(releasing): with the workflows disabled, publishing no longer refreshes /changelog (#581)
-- build(format): Prettier skips what git ignores on one machine only (#582)
-- fix(deps): mermaid 12.2.0 for katex 0.18, and handlebars 4.7.10 by override (#583)
-- test(e2e): the local loop reads a clean run by its note, since #563 drew no review controls there
-- build(turbo): the console's tests read the committed design boards, so their cache keys on them (#585)
-- docs(designs): one structure for every .pen, written down before any board moves (#590)
-- design(designs): the parent .pen's colours follow the theme (#591)
-- feat(designs): tier boards, one tile per story, and every consumer renamed in one PR (#592)
-- build(turbo): Storybook's build keys on the design boards it serves (#593)
-- feat(gate): every planned story has its tile, and every tile a story (#594)
-- feat(gate): a child's boards check skips the stories drawn in the parent (#595)
-- docs(agents): the agents learn a story ships with its tile (#596)
-- feat(designs): one .pen file per board (#597)
-- feat(gate): the boards check reads the board files themselves (#598)
-- feat(gate): derived images beside the exports, and sidecars that state the scale drawn (#599)
-- feat(visual-diff-ui): a variant opens on the board page that draws its tile, and a worktree can push (#600)
-- feat(designs): a fifth tier board, 05-screens, for a project that captures its pages (#601)
-- feat(designs): page tiles drawn from the rendered stories, checked in the baselines' container (#602)
+_Released 2026-10-21._
+
+Forty-six PRs since [v1.6.0](https://github.com/climaa/acceptance-gate/releases/tag/v1.6.0) (#517, #554 → #602), telling one story: **every story has its tile on the board, and the gate holds them to each other.**
+
+### What earns the minor
+
+| Layer                                                                                                                                                                                                                                                                                                                                                                             | PRs                                                  |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| The design boards are the inventory, built to one standard: one `.pen` per board, the four tier boards draw one tile per story named by its variant key, colours follow the theme, every export carries a sidecar stating the scale drawn, page tiles are drawn from the rendered stories, and a fifth tier board, `05-screens`, is defined for a project that captures its pages | #576, #590, #591, #592, #597, #599, #601, #602       |
+| The `boards` check holds that inventory to the tree: every planned story has its tile and every tile a story, read from the board files themselves, with a child skipping the stories its parent draws, and the agents are told a story ships with its tile                                                                                                                       | #594, #595, #596, #598                               |
+| The shot view reads a screenshot against its tile: it opens on the story's tile of the board, a pinned crop fills its pane with the screenshot following at one scale, clearing a crop fits the whole board, a variant opens on the board page that draws it, and the title opens the story in Storybook                                                                          | #565, #566, #567, #568, #569, #573, #600             |
+| The overlay becomes an instrument: a difference blend to see drift by eye, a choice of which layer the nudge moves, nudges by touch, a grid, a centred stage at its own height, and every one of those settings in the URL                                                                                                                                                        | #558, #559, #560, #561, #577, #578                   |
+| The console's states are links, and its pages tidy their own house: a filtered set and a compare pair are addresses, a report is deleted from its own page, reports list in run order, a clean run draws no review controls, and the sets table keeps room for the label                                                                                                          | #557, #562, #563, #564, #571, #572, #574, #579, #584 |
+| The gate runs on your machine: `.husky/pre-push` runs `pnpm gate` before every push, the per-PR workflows are off, and `RELEASING.md` ships by the `production` ref move alone                                                                                                                                                                                                    | #554, #580, #581, #582                               |
+| `CHANGELOG.md` is the changelog's source, and this body is copied from it                                                                                                                                                                                                                                                                                                         | #556                                                 |
+| Turbo's cache keys on the committed design boards wherever a task reads them: the console's tests and Storybook's build                                                                                                                                                                                                                                                           | #585, #593                                           |
+| The differ measures colour distance with pixelmatch 8 (OKLab with HyAB, not YIQ), and no baseline had to be accepted again                                                                                                                                                                                                                                                        | #517, #555                                           |
+| The owner's own page views can be opted out of analytics with `?va-disable=1`                                                                                                                                                                                                                                                                                                     | #570                                                 |
+| The blog: _the merge that passed every check and did not ship_                                                                                                                                                                                                                                                                                                                    | #575                                                 |
+| Dependencies: mermaid 12.2.0 for katex 0.18, and handlebars 4.7.10 by the repository's first `pnpm` override                                                                                                                                                                                                                                                                      | #583                                                 |
+
+v1.6.0 put the design board beside the screenshot. This cycle made the board something that can be wrong. Each story is drawn once, as a tile named by the same variant key as its screenshot, and the `boards` check fails when a story has no tile or a tile has no story. The shot view and the overlay are the reading side of that contract: they open on the tile, not on the whole board, and everything they show can be sent as a link. A tile is still reference beside a comparison. It is never a side of one and never carries a bucket.
+
+The gate moved in the same cycle, for a reason that has nothing to do with design. Actions minutes ran out, so the checks `pr.yml` ran now run in a `pre-push` hook from one list in `scripts/gate/manifest.mjs`. Nothing that was gated before goes ungated, but a hook can be skipped where a required check could not. That is named below rather than smoothed over.
+
+### Eleven manifests
+
+The same eleven as v1.6.0 move to 1.7.0 together. Nothing publishes to npm and every workspace is private, so the version is a coherence marker rather than a distribution fact. Every internal dependency is `workspace:*`, and `pnpm install --frozen-lockfile` resolves with `pnpm-lock.yaml` untouched, verified rather than assumed.
+
+### The index, measured rather than adjusted
+
+`PROJECT_INDEX.md` was stamped 2026-10-18. Every count was measured again with the turbo cache forced off (0 of 8 test tasks cached):
+
+| Claim                                          | Corrected to                                                                                                                               |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Orchestrator suite 41 files / 680 tests        | **43 / 706**                                                                                                                               |
+| `packages/ui` 38 / 630                         | **38 / 634**                                                                                                                               |
+| `apps/blog` 28 / 563 (560 passed, 3 skipped)   | **28 / 576** (573 passed, 3 skipped)                                                                                                       |
+| `apps/storybook` 7 / 200                       | **7 / 235**                                                                                                                                |
+| `apps/visual-diff-ui` 74 / 1242 (1 skipped)    | **76 / 1312** (none skipped)                                                                                                               |
+| `apps/manual` 10 / 117                         | **10 / 118**                                                                                                                               |
+| `packages/logger` 2 / 20                       | **3 / 32**                                                                                                                                 |
+| CI: `pr.yml`'s `gate`, the only required check | **`pnpm gate` from `.husky/pre-push`**; the applied ruleset requires no check, and the committed `rulesets/main.json` no longer matches it |
+| README: four exported boards                   | **nine**                                                                                                                                   |
+
+The structure tree now describes the shot view opening on a tile, the overlay's link and the report's own delete, and lists `scripts/gate/`. Unchanged, and measured: `packages/visual-diff` 11 / 458, `packages/links` 1 / 10, 87 acceptance scenarios (162 tests), the two-scenario local lane, 29 stories, 19 docs pages, 27 orchestrator modules, `next` ^16.4.0 and `turbo` ^2.11.7. The committed baselines went from 200 to 204 with #571, and `index-integrity` held the index to that count when it landed.
+
+### Known gaps
+
+**The gate is a hook, not a check.** Every workflow is disabled and `main` requires no status check. A push with `--no-verify`, or from a fresh worktree before `pnpm install` has installed the hook, reaches `main` ungated.
+
+**The README still tells the Actions story.** Its `pr` badge, its pipeline diagram and its loop section describe `pr.yml`'s `gate` and `gate.needs`. This release corrected the counts; rewriting that narrative is its own change.
+
+**Publishing does not refresh `/changelog` by itself.** `changelog-deploy.yml` is disabled with the rest, so each release session rebuilds the blog by hand or accepts a stale page, as `RELEASING.md` describes.
+
+**The ledger still reads spacing only.** Colour, type and radius are not measured.
+
+**Upstream and unchanged:** [#68](https://github.com/climaa/acceptance-gate/issues/68) ESLint 10 is unreachable, and [#47](https://github.com/climaa/acceptance-gate/issues/47) TypeScript 7 is blocked. Dependabot ignores both majors on purpose.
+
+**Full changelog:** https://github.com/climaa/acceptance-gate/compare/v1.6.0...v1.7.0
 
 ## v1.6.0 — a screenshot is read against its design board, down to the design token
 
