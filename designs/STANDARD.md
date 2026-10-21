@@ -178,6 +178,35 @@ that ports the story to the child.
   the save writes the file back.
 - A story and its tile ship in the same pull request.
 
+## Drawing page tiles from the stories
+
+A tile that draws a whole page — a template here, a screen in a child — goes stale as soon
+as the page changes, and drawing it again by hand is most of the work of a board.
+`scripts/pen/tiles-from-dom.mjs` draws those tiles from the rendered stories instead. It
+opens each planned variant the way the differ captures it (same index, viewports, theme
+global, launch flags, frozen clock), in light and in dark, and writes one SVG per light
+tile whose colours are named by the design token whose light and dark values both match.
+
+```sh
+pnpm turbo run build --filter=@gate/storybook
+node scripts/pen/tiles-from-dom.mjs --static apps/storybook/storybook-static \
+  --out /tmp/tiles --tier templates --preview
+```
+
+Then, for each board file: open it with `open -a Pen`, paste its tiles
+(`node scripts/pen/paste-tiles.mjs /tmp/tiles/<key>.svg…`, macOS), run `/tmp/tiles/place.js`
+through the Pencil MCP, save, and compare what it exported with the baselines
+(`--verify /tmp/tiles/pen --out /tmp/tiles`). Export the board as usual afterwards.
+
+- Run it in the baselines' own container (`.github/workflows/tiles-from-dom.yml` does, on
+  every change to it): on a macOS host text lays out a few pixels differently, and the
+  preview reports a size mismatch.
+- A tile drawn this way mirrors the page; it no longer records a design the page is built
+  from. Use it for pages, not for components that are still being designed.
+- It draws boxes, borders, text, SVG shapes, the hatch of a repeating gradient and native
+  selects and radios. It reports an image or any other gradient instead of drawing it, and
+  does not draw a dialog's backdrop.
+
 ## Starting from the template
 
 Copy [`template/`](template/) into the new project's `designs/`, one file per board, then:

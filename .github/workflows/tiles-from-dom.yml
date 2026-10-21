@@ -1,0 +1,68 @@
+# Draws the templates tier's tiles from the rendered stories and checks every one
+# against its baseline, on the same pinned arm64 Playwright container the baselines
+# were captured in (packages/visual-diff/src/policy.mjs `HOST`).
+#
+# Why a workflow of its own: scripts/pen/tiles-from-dom.mjs only means anything when
+# its page is laid out exactly as the baseline's was — same Chromium, same fonts, same
+# launch flags — and a macOS host lays text out a few pixels differently. The local
+# gate runs on the host; this runs where the baselines come from. It is informational
+# (not part of the Husky gate, which stays the merge check) and runs only when the
+# converter, the capture code it borrows, or the baselines change, or by hand.
+#
+# The SVGs, their light previews and place.js are uploaded, so a reviewer can paste a
+# tile into Pen without building anything.
+name: tiles-from-dom
+
+on:
+  pull_request:
+    paths:
+      - scripts/pen/tiles-from-dom.mjs
+      - scripts/pen/tiles-from-dom/**
+      - scripts/pen/place-tiles.js
+      - packages/visual-diff/src/**
+      - packages/visual-diff/__baselines__/templates__*
+      - .github/workflows/tiles-from-dom.yml
+  workflow_dispatch:
+    inputs:
+      tier:
+        description: Tier to draw (templates draws whole pages)
+        default: templates
+
+permissions:
+  contents: read
+
+jobs:
+  tiles:
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 20
+    container: mcr.microsoft.com/playwright:v1.62.1-noble
+    env:
+      TIER: ${{ inputs.tier || 'templates' }}
+    steps:
+      - uses: actions/checkout@v7
+      - run: corepack enable
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm turbo run build --filter=@gate/storybook
+      - name: Draw the tiles and compare them with the baselines
+        run: >-
+          node scripts/pen/tiles-from-dom.mjs
+          --static apps/storybook/storybook-static
+          --out /tmp/tiles-from-dom
+          --tier "$TIER"
+          --preview
+      # A plain directory upload sees nothing written inside `container:` — see the
+      # same step in pr.yml — so the output is archived first and uploaded as one file.
+      - name: Archive the tiles
+        if: always()
+        run: tar -C /tmp/tiles-from-dom -czf /tmp/tiles-from-dom.tar.gz .
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: tiles-from-dom-${{ env.TIER }}
+          path: /tmp/tiles-from-dom.tar.gz
+          retention-days: 14
