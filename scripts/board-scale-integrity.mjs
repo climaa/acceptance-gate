@@ -59,6 +59,8 @@ export const TIER_BOARDS = {
   molecules: '02-molecules',
   organisms: '03-organisms',
   templates: '04-templates',
+  // A child whose differ captures its app's pages as a `screens` tier.
+  screens: '05-screens',
 };
 
 const PAGE_SUFFIX = /-\d+$/;

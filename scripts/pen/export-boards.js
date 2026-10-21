@@ -18,7 +18,7 @@
 // its parent, so a tile's place on the board is the sum up the chain.
 const STEM = /^(\d\d-[a-z0-9-]+|x-[a-z0-9-]+) — /;
 const VARIANT_KEY =
-  /^(atoms|molecules|organisms|templates)__(desktop|mobile)__(light|dark)__[a-z0-9-]+--[a-z0-9-]+$/;
+  /^(atoms|molecules|organisms|templates|screens)__(desktop|mobile)__(light|dark)__[a-z0-9-]+--[a-z0-9-]+$/;
 const LONG_SIDE = 8192;
 const MAX_SCALE = 2;
 

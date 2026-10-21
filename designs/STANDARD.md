@@ -22,11 +22,15 @@ file and its exports are one name. The boards, in order:
 | `03-organisms`       | One tile per organism story                     | Required       |
 | `04-templates`       | One tile per template story                     | Required       |
 | `05-pages`           | App pages, as the apps compose them             | Reference only |
+| `05-screens`         | One tile per screen story, where there are any  | Required       |
 | `06-flows-decisions` | Flows and the decisions behind the design       | None           |
 
 - **Reference only** means the board is shown beside a screenshot but is never a join
-  target. No app page is ever photographed: the differ captures `packages/ui` stories
-  only, so `05-pages` has no screenshot to match.
+  target. This repository's differ captures `packages/ui` stories only, so `05-pages`
+  has no screenshot to match.
+- **Screens** are whole app pages that a project's own differ captures as a fifth tier,
+  `screens`. Such a project draws each one as a tile on `05-screens`, under the same
+  rules as the other tiers. A project with no `screens` tier has no `05-screens` board.
 - **Project boards** take an `x-` prefix (`x-console-components`, `x-visual-diff-pages`) and
   sit after `06`. The tier rules do not apply to them. A component with no story of its own
   is drawn on one, in a frame named `Drawing <Name>`; once it gains a story it moves to its
@@ -55,7 +59,8 @@ A tile is the frame on a tier board that draws one story.
   a `ref` of it with `theme: {mode: "dark"}` and the `dark` key. Only the `--color-*`
   roles change under `[data-theme='dark']` (`packages/ui/src/tokens.css:238`), and a ref
   resolves the same variables in the other mode.
-- **Mobile only where a mobile screenshot exists.** That covers organisms and templates,
+- **Mobile only where a mobile screenshot exists.** That covers organisms, templates and
+  screens,
   plus any story tagged `visual-diff:all-viewports` (`policy.mjs:34-39`, `:60`).
 - **Which tiles are required** is the planned variants (`planCaptures`,
   `packages/visual-diff/src/storybook-index.mjs:162`). Stories tagged `visual-diff:skip`
@@ -70,6 +75,7 @@ A tile is drawn at 1:1 with the screenshot it is read against.
 | Desktop                                  | 1248 px                   | the content's |
 | Mobile                                   | 358 px                    | the content's |
 | `visual-diff:fullpage` (`policy.mjs:55`) | the viewport, 1280 or 390 | 800 or 844    |
+| A screen                                 | the viewport, 1280 or 390 | the page's    |
 
 The differ shoots `#storybook-root` (`policy.mjs:62`) with its display set to block and
 no padding of its own (`apps/storybook/.storybook/preview.tsx:38-47`). Storybook's 16 px
