@@ -52,6 +52,7 @@ Merged to `main` since v1.6.0, not yet released:
 - feat(gate): the boards check reads the board files themselves (#598)
 - feat(gate): derived images beside the exports, and sidecars that state the scale drawn (#599)
 - feat(visual-diff-ui): a variant opens on the board page that draws its tile, and a worktree can push (#600)
+- feat(designs): a fifth tier board, 05-screens, for a project that captures its pages (#601)
 
 ## v1.6.0 — a screenshot is read against its design board, down to the design token
 
