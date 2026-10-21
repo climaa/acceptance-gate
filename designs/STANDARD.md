@@ -39,6 +39,12 @@ file and its exports are one name. The boards, in order:
   below 1× splits into `01-atoms-1.pen`, `01-atoms-2.pen`, …, never into a renamed board.
   The console lists each page as a board of its own and opens a variant on the page whose
   tile map holds it.
+- **One app's pages.** A monorepo with more than one app names each app's page boards for
+  its directory under `apps/`: `05-pages-<app>`, paged as `05-pages-<app>-1`,
+  `05-pages-<app>-2`, … (`05-pages-web-1`, `05-pages-tables-1`). The app comes before the
+  page number, so `ls designs` groups a product's boards the way `ls apps` does, and the
+  files stay flat: every reader of `designs/` lists it one level deep and finds a board by
+  its stem. A project with one app keeps `05-pages`.
 - **Variables are copied, not shared.** A Pencil document holds its own variables and
   themes, so every board file carries the same set. `00-foundations.pen` is the source:
   change a variable there and copy it to every other board file. The `boards` check reads
