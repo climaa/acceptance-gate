@@ -3,8 +3,13 @@ import * as os from 'node:os';
 import * as path from 'node:path';
 // Imported explicitly rather than relying on `globals: true` — tsconfig's
 // `**/*.ts` include means tsc typechecks this file.
-import { afterAll, describe, expect, it } from 'vitest';
-import { CANONICAL_LABEL, baselinesPath, readCanonicalSet } from '../lib/baselines';
+import { afterAll, afterEach, describe, expect, it, vi } from 'vitest';
+import {
+  CANONICAL_LABEL,
+  baselinesPath,
+  parseStamp,
+  readCanonicalSet,
+} from '../lib/baselines';
 import { SetLabelSchema } from '../lib/job-contract';
 
 /**
@@ -97,5 +102,47 @@ describe('readCanonicalSet', () => {
     expect(corpus?.stories).toBeGreaterThan(0);
     expect(corpus?.sha).toMatch(/^[0-9a-f]{7,}$/);
     expect(corpus?.acceptedAt).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  });
+});
+
+describe('parseStamp', () => {
+  it('reads the sha and the date a build stamped', () => {
+    expect(parseStamp('e4d6576 2026-10-19')).toEqual({
+      sha: 'e4d6576',
+      date: '2026-10-19',
+    });
+  });
+
+  // The empty stamp is what a build that could not read git writes — and an
+  // unset variable is what every non-Next reader of this module sees.
+  it.each(['', undefined, 'e4d6576', 'not-a-sha 2026-10-19', 'e4d6576 yesterday'])(
+    'reads %j as no commit',
+    (stamp) => {
+      expect(parseStamp(stamp)).toBeNull();
+    },
+  );
+});
+
+describe('readCanonicalSet on a deployment', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  // A deployment has the corpus but no git, so the commit comes from the build.
+  it('falls back to the build stamp where git cannot say', async () => {
+    vi.stubEnv('VISUAL_DIFF_BASELINES_ACCEPTED', 'e4d6576 2026-10-19');
+
+    const corpus = await readCanonicalSet(checkoutWith(['a__b__c__d.png']));
+
+    expect(corpus).toMatchObject({ sha: 'e4d6576', acceptedAt: '2026-10-19' });
+  });
+
+  // Git, where it can answer, outranks a stamp from whichever build ran last.
+  it('prefers git over the stamp in a checkout', async () => {
+    vi.stubEnv('VISUAL_DIFF_BASELINES_ACCEPTED', 'fffffff 1999-01-01');
+
+    const corpus = await readCanonicalSet(REPO_ROOT);
+
+    expect(corpus?.sha).not.toBe('fffffff');
   });
 });

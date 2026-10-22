@@ -416,4 +416,62 @@ describe('GET /api/sets/[label]/shots/[file]', () => {
 
     expect(response.status).toBe(404);
   });
+
+  describe('on a deployment', () => {
+    const DEPLOYMENT = 'dpl_test';
+
+    beforeEach(() => {
+      process.env.VERCEL_DEPLOYMENT_ID = DEPLOYMENT;
+    });
+
+    afterEach(() => {
+      delete process.env.VERCEL_DEPLOYMENT_ID;
+    });
+
+    // The corpus was traced into this deployment and cannot change under it, so
+    // the CDN may keep it for the deployment's life — `no-cache` here made every
+    // shot of every visit a function call.
+    it('lets the CDN keep a corpus screenshot', async () => {
+      const response = await getSetShot(
+        request,
+        context({ label: 'baselines', file: CORPUS_SHOT }),
+      );
+
+      expect(response.headers.get('Cache-Control')).toBe(
+        'public, max-age=0, s-maxage=31536000',
+      );
+      expect(response.headers.get('ETag')).toContain(DEPLOYMENT);
+    });
+
+    it('answers a corpus revisit with 304', async () => {
+      const first = await getSetShot(
+        request,
+        context({ label: 'baselines', file: CORPUS_SHOT }),
+      );
+
+      const second = await getSetShot(
+        new Request('http://localhost:3300/', {
+          headers: { 'if-none-match': first.headers.get('ETag') ?? '' },
+        }),
+        context({ label: 'baselines', file: CORPUS_SHOT }),
+      );
+
+      expect(second.status).toBe(304);
+      expect(second.headers.get('Cache-Control')).toBe(
+        'public, max-age=0, s-maxage=31536000',
+      );
+    });
+
+    // A capture label can be deleted and recaptured behind the same URL, on a
+    // deployment as anywhere else.
+    it('still revalidates a capture set screenshot', async () => {
+      const response = await getSetShot(
+        request,
+        context({ label: 'main-2026-08-30', file: CORPUS_SHOT }),
+      );
+
+      expect(response.status).toBe(200);
+      expect(response.headers.get('Cache-Control')).toBe('no-cache');
+    });
+  });
 });

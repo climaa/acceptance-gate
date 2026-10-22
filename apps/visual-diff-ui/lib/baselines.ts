@@ -21,8 +21,10 @@ import { setDirOf } from './paths';
  *    way to delete it and refuses if asked anyway;
  *  - its provenance is a commit rather than a branch and a working tree.
  *
- * An instance with no checkout behind it — a deployment — has no corpus to offer,
- * and says nothing rather than inventing one.
+ * A deployment has no git, but it does have the corpus: next.config.mjs
+ * traces it into the function beside the workspace marker `repoRoot()` walks up
+ * to, and inlines the commit that accepted it. An instance whose corpus is not
+ * there says nothing rather than inventing one.
  */
 
 /**
@@ -87,10 +89,33 @@ export interface CanonicalSet {
 const PNG = '.png';
 
 /**
+ * The build's stamp, `<short sha> <YYYY-MM-DD>` — what a deployment knows about
+ * the accepting commit when git is not there to ask. Anything else, the empty
+ * stamp a build that could not read git writes included, is null: the card
+ * draws a dash rather than a guess.
+ */
+export function parseStamp(
+  stamp: string | undefined,
+): { sha: string; date: string } | null {
+  const match = /^([0-9a-f]{7,40}) (\d{4}-\d{2}-\d{2})$/.exec(stamp ?? '');
+
+  const [, sha, date] = match ?? [];
+
+  return sha && date ? { sha, date } : null;
+}
+
+/** Git when this is a checkout, the build's stamp when it is not. */
+function acceptedBy(root: string): { sha: string; date: string } | null {
+  return (
+    lastCommit(root, BASELINES) ?? parseStamp(process.env.VISUAL_DIFF_BASELINES_ACCEPTED)
+  );
+}
+
+/**
  * The corpus as a row, or null when there is none to read.
  *
  * Null covers three cases and deliberately does not distinguish them, because
- * the answer on screen is the same for all: no checkout (a deployment), no
+ * the answer on screen is the same for all: no checkout, no
  * `__baselines__` directory, or a directory holding no shots. Any of them is a
  * console with nothing canonical to compare against.
  *
@@ -139,7 +164,7 @@ export async function readCanonicalSet(
     (total, name) => total + fs.statSync(path.join(dir, name)).size,
     0,
   );
-  const commit = lastCommit(root, BASELINES);
+  const commit = acceptedBy(root);
 
   return {
     label: CANONICAL_LABEL,

@@ -77,6 +77,9 @@ export default defineConfig({
         'instrumentation.ts',
         'instrumentation-client.ts',
         'scripts/capture-set.mjs',
+        // Next loads it from next.config.mjs at build; the stamp it writes is the
+        // only provenance a deployed corpus has.
+        'scripts/baselines-stamp.mjs',
       ],
       // `scripts/capture-set.mjs` is named, and it is the one entry here that had
       // to be earned. It ran `check` at module scope against real deps — a

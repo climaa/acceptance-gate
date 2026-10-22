@@ -1,3 +1,6 @@
+import * as path from 'node:path';
+import { baselinesStamp } from './scripts/baselines-stamp.mjs';
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Every read here is a filesystem read of a directory chosen at request time,
@@ -29,7 +32,18 @@ const nextConfig = {
   // every page — 438 KB, measured, to decide not to report. Normalising unset
   // to `''` makes the guard `if ('')`, which the bundler drops along with the
   // import, the chunk, and the instrumentation entry itself.
-  env: { NEXT_PUBLIC_BUGSINK_DSN: process.env.NEXT_PUBLIC_BUGSINK_DSN ?? '' },
+  //
+  // The corpus stamp rides the same mechanism for the opposite reason: it MUST
+  // be inlined, because the deployed function has the corpus (traced below) but
+  // no git to ask which commit accepted it. Read here, at build, from the
+  // checkout the build runs in — scripts/baselines-stamp.mjs says why a shallow
+  // clone answers `''` rather than its boundary commit.
+  env: {
+    NEXT_PUBLIC_BUGSINK_DSN: process.env.NEXT_PUBLIC_BUGSINK_DSN ?? '',
+    VISUAL_DIFF_BASELINES_ACCEPTED: baselinesStamp(
+      path.resolve(import.meta.dirname, '..', '..'),
+    ),
+  },
   // The differ runs, it does not get bundled. Two reasons, both fatal to a
   // built server that tries: `commands.mjs` derives its repo root from
   // `new URL('../../..', import.meta.url)`, which the bundler reads as an asset
@@ -47,7 +61,17 @@ const nextConfig = {
     // The tile maps too: the comparison and the shot view read them on the
     // server to open a variant on the board that draws it (lib/board-homes.ts),
     // and the bracketed keys below were measured to match nothing.
-    '/': ['./fixtures/**', '../../designs/exports/*.tiles.json'],
+    //
+    // And the committed corpus, so a deployment draws the canonical card and the
+    // set viewer can open it — read off its real path, which is why the workspace
+    // marker comes too: `repoRoot()` finds the corpus by walking up to it. Only
+    // under this key, the one measured to ship files to every route.
+    '/': [
+      './fixtures/**',
+      '../../designs/exports/*.tiles.json',
+      '../../pnpm-workspace.yaml',
+      '../../packages/visual-diff/__baselines__/**',
+    ],
     '/report/[id]': ['./fixtures/**'],
     '/report/[id]/compare/[key]': ['./fixtures/**'],
     '/report/[id]/@modal/(.)compare/[key]': ['./fixtures/**'],
