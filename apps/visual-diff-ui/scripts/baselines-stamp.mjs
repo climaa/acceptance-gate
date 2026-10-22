@@ -19,7 +19,10 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const BASELINES = 'packages/visual-diff/__baselines__';
+/** The corpus, repo-root-relative. A third spelling of the path lib/baselines.ts
+ *  names — exported so the suite pins the two together, since a drift here would
+ *  stamp nothing and every deployed card would draw a dash without a test going red. */
+export const BASELINES = 'packages/visual-diff/__baselines__';
 
 /** Same bounds lib/git.ts sets, for the same reason: a locked index must not
  *  hang a build. */

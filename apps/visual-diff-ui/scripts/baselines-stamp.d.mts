@@ -3,6 +3,9 @@
  * declaration for the reason scripts/capture-set.d.mts sets out.
  */
 
+/** The corpus, repo-root-relative — the path lib/baselines.ts names. */
+export declare const BASELINES: string;
+
 /** `<short sha> <YYYY-MM-DD>` from `git log`'s `%H`, `%h`, `%ad` lines, or `''`
  *  when the log is empty or names a shallow clone's boundary. */
 export function stampFrom(log: string, boundaries: readonly string[]): string;

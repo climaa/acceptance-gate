@@ -5,7 +5,8 @@ import * as path from 'node:path';
 // Imported explicitly rather than relying on `globals: true` — tsconfig's
 // `**/*.ts` include means tsc typechecks this file.
 import { afterAll, describe, expect, it } from 'vitest';
-import { baselinesStamp, stampFrom } from '../scripts/baselines-stamp.mjs';
+import { BASELINES, baselinesStamp, stampFrom } from '../scripts/baselines-stamp.mjs';
+import { baselinesPath, parseStamp } from '../lib/baselines';
 
 /**
  * The build-time stamp a deployment shows as the corpus's provenance.
@@ -96,5 +97,22 @@ describe('baselinesStamp', () => {
     git(os.tmpdir(), 'clone', '--quiet', '--depth', '1', `file://${source}`, clone);
 
     expect(baselinesStamp(clone)).toBe('');
+  });
+});
+
+// The two halves of one protocol, written in two modules: the build writes the
+// stamp, the server reads it. Each is tested alone above, so a change to either
+// side would leave both suites green and every deployed card drawing a dash.
+describe('the stamp between build and server', () => {
+  it('reads back what the build wrote', () => {
+    const stamp = stampFrom(`${'a'.repeat(40)}\naaaaaaa\n2026-10-19`, []);
+
+    expect(parseStamp(stamp)).toEqual({ sha: 'aaaaaaa', date: '2026-10-19' });
+  });
+
+  it('stamps the same corpus the server reads', () => {
+    const root = path.join(os.tmpdir(), 'root');
+
+    expect(path.join(root, BASELINES)).toBe(baselinesPath(root));
   });
 });
