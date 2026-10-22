@@ -117,7 +117,7 @@ export interface ReportTemplateProps {
   report: Summary;
   /** Every registered capture set — the two sides are looked up in it by label. */
   sets: readonly CaptureSet[];
-  /** The committed corpus, or null where there is none to read (a deployment). */
+  /** The committed corpus, or null where there is none to read. */
   corpus?: CanonicalSet | null;
   /**
    * Whether this console can change nothing — deployed, or showing the committed

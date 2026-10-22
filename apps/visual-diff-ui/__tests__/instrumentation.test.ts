@@ -138,7 +138,7 @@ describe('keeping the browser SDK out of a build with no DSN', () => {
     const config = appFile('next.config.mjs');
 
     expect(config).toMatch(
-      /env: \{ NEXT_PUBLIC_BUGSINK_DSN: process\.env\.NEXT_PUBLIC_BUGSINK_DSN \?\? '' \}/,
+      /NEXT_PUBLIC_BUGSINK_DSN: process\.env\.NEXT_PUBLIC_BUGSINK_DSN \?\? '',/,
     );
   });
 

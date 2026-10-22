@@ -63,9 +63,11 @@ rows are `NOTHING_COMPARED` zeros, which the console now declines to print at
 all.
 
 Side A is labelled `baselines` and has no entry in `sets.json`, because the
-committed corpus is not a capture set. The console says so in the report header
-— "no capture set recorded under this label" — which is itself a state worth
-demoing.
+committed corpus is not a capture set. The report header reads that side from the
+corpus the console has — traced into a deployment beside the fixtures — so it
+names today's accepting commit and story count, not the 2026-08-24 corpus this
+run actually compared against. That is the header's rule everywhere, not a
+fixture quirk: a `baselines` side always describes the corpus as it is now.
 
 ## 3. `main-2026-09-17__main-2026-10-13` — the corpus's latest movement
 
