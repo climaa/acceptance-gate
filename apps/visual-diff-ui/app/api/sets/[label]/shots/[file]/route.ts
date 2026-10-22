@@ -1,5 +1,6 @@
 import * as fs from 'node:fs';
 import { resolveDataDir, resolveSetShotPath } from '@/lib/data';
+import { CANONICAL_LABEL } from '@/lib/baselines';
 import { repoRoot } from '@/lib/git';
 
 const notFound = () => new Response('Not found', { status: 404 });
@@ -28,7 +29,29 @@ const notFound = () => new Response('Not found', { status: 404 });
  * The ETag is size and mtime, so a revisit costs a `stat` and a 304 rather than
  * re-reading the file. Buffered rather than streamed, as the report route is and
  * for its reason: policy caps one committed shot at 512 KB.
+ *
+ * ONE EXCEPTION: the corpus on a deployment. There no accept and no `git pull`
+ * can reach it — it was traced into this deployment and leaves with it — so the
+ * reason for `no-cache` is gone, and keeping it made the CDN call this function
+ * for every shot of every visit. The CDN may keep it for as long as the
+ * deployment lives, and a new deployment starts with an empty cache, so the
+ * corpus can never show the previous one's pixels. The browser still
+ * revalidates (`max-age=0`), against an ETag that names the deployment rather
+ * than trusting an mtime the bundle may not preserve.
  */
+function caching(label: string, size: number, mtimeMs: number) {
+  const deployment = process.env.VERCEL_DEPLOYMENT_ID;
+
+  if (label === CANONICAL_LABEL && deployment) {
+    return {
+      etag: `"${deployment}-${size}"`,
+      cacheControl: 'public, max-age=0, s-maxage=31536000',
+    };
+  }
+
+  return { etag: `"${size}-${Math.trunc(mtimeMs)}"`, cacheControl: 'no-cache' };
+}
+
 export async function GET(
   request: Request,
   { params }: RouteContext<'/api/sets/[label]/shots/[file]'>,
@@ -41,12 +64,12 @@ export async function GET(
 
   try {
     const stat = await fs.promises.stat(shot);
-    const etag = `"${stat.size}-${Math.trunc(stat.mtimeMs)}"`;
+    const { etag, cacheControl } = caching(label, stat.size, stat.mtimeMs);
 
     if (request.headers.get('if-none-match') === etag) {
       return new Response(null, {
         status: 304,
-        headers: { ETag: etag, 'Cache-Control': 'no-cache' },
+        headers: { ETag: etag, 'Cache-Control': cacheControl },
       });
     }
 
@@ -57,7 +80,7 @@ export async function GET(
         'Content-Type': 'image/png',
         'Content-Length': String(bytes.byteLength),
         ETag: etag,
-        'Cache-Control': 'no-cache',
+        'Cache-Control': cacheControl,
       },
     });
   } catch {
