@@ -3,8 +3,15 @@ import { describe, expect, it } from 'vitest';
 // @ts-expect-error — plain .mjs with JSDoc types, no declaration file.
 import * as integrity from '../board-scale-integrity.mjs';
 
-const { fileProblems, joinProblems, readBoard, syncProblems, variableProblems } =
-  integrity;
+const {
+  fileProblems,
+  joinProblems,
+  rawValueProblems,
+  readBoard,
+  sizeScaleDeclared,
+  syncProblems,
+  variableProblems,
+} = integrity;
 
 /**
  * The join between the tier boards' tiles and the variants Storybook plans
@@ -220,5 +227,100 @@ describe('syncProblems', () => {
       `01-atoms.pen draws ${BADGE}, which 01-atoms.tiles.json lacks: export 01-atoms.pen again`,
       `01-atoms.tiles.json has ${BADGE_DARK}, which 01-atoms.pen no longer draws: export 01-atoms.pen again`,
     ]);
+  });
+});
+
+describe('rawValueProblems', () => {
+  /** A board with one light tile holding `nodes`. */
+  const boardWith = (...nodes: object[]) => ({
+    children: [
+      {
+        name: '01-atoms — Atoms',
+        children: [{ name: BADGE, reusable: true, fill: '#ffffff', children: nodes }],
+      },
+    ],
+  });
+  const colours = { sizes: false };
+  const sizes = { sizes: true };
+
+  it('passes a tile drawn only in variables', () => {
+    const board = boardWith({ name: 'Label', fill: '$text', fontSize: '$text-sm' });
+
+    expect(rawValueProblems(board, '01-atoms', sizes)).toEqual([]);
+  });
+
+  it('names a raw colour inside a tile', () => {
+    const board = boardWith({ name: 'Label', fill: '#111111' });
+
+    expect(rawValueProblems(board, '01-atoms', colours)).toEqual([
+      `01-atoms › ${BADGE} › Label has a raw fill #111111: use a variable, or tag the node colour-exempt: <reason>`,
+    ]);
+  });
+
+  it('passes a tagged swatch, a transparent fill and the tile’s own card', () => {
+    const board = boardWith(
+      { name: 'Swatch', fill: '#ff0000', context: 'colour-exempt: primitive swatch' },
+      { name: 'Clear', fill: '#00000000' },
+    );
+
+    expect(rawValueProblems(board, '01-atoms', colours)).toEqual([]);
+  });
+
+  it('asks nothing of sizes until the size scale is declared', () => {
+    const board = boardWith({ name: 'Label', fontSize: 14, gap: 4 });
+
+    expect(rawValueProblems(board, '01-atoms', colours)).toEqual([]);
+  });
+
+  it('names a raw size once the size scale is declared', () => {
+    const board = boardWith({ name: 'Row', padding: [2, '$space-1'] });
+
+    expect(rawValueProblems(board, '01-atoms', sizes)).toEqual([
+      `01-atoms › ${BADGE} › Row has a raw padding [2,"$space-1"]: use a size variable, or tag the node size-exempt: <reason>`,
+    ]);
+  });
+
+  it('passes a zero size and a tagged stand-in for a computed one', () => {
+    const board = boardWith(
+      { name: 'Flush', padding: 0, gap: 0 },
+      {
+        name: 'Link · underlined (drawn)',
+        gap: 1,
+        context: 'size-exempt: underline offset',
+      },
+    );
+
+    expect(rawValueProblems(board, '01-atoms', sizes)).toEqual([]);
+  });
+
+  it('holds a Drawing frame on a project board to the same rule', () => {
+    const board = {
+      children: [
+        {
+          name: 'x-example — Example',
+          children: [
+            {
+              name: 'Drawing Panel',
+              fill: '#ffffff',
+              children: [{ name: 'Edge', stroke: '#e2e2e2' }],
+            },
+          ],
+        },
+      ],
+    };
+
+    expect(rawValueProblems(board, 'x-example', colours)).toEqual([
+      'x-example › Drawing Panel › Edge has a raw stroke #e2e2e2: use a variable, or tag the node colour-exempt: <reason>',
+    ]);
+  });
+});
+
+describe('sizeScaleDeclared', () => {
+  it('is on once 00-foundations declares a number variable, and off before', () => {
+    expect({
+      colourOnly: sizeScaleDeclared({ text: { type: 'color', value: '#111111' } }),
+      withScale: sizeScaleDeclared({ 'space-1': { type: 'number', value: 4 } }),
+      none: sizeScaleDeclared(undefined),
+    }).toEqual({ colourOnly: false, withScale: true, none: false });
   });
 });

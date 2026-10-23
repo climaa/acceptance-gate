@@ -2,8 +2,9 @@
 //
 // Run it through the Pencil MCP against the open document (open it first with
 // `open -a Pen <path>`; the MCP edits the active editor whatever path it is given).
-// A .pen is encrypted, so this cannot run in the gate: it is the attended check
-// behind designs/STANDARD.md's colour rule, run before an export.
+// It is the attended check behind designs/STANDARD.md's colour rule, run while a
+// board is open, before an export. The gate's `boards` check
+// (scripts/board-scale-integrity.mjs) holds the same rule headless: a .pen is plain JSON.
 //
 // A raw hex never follows the `mode` theme, so inside a component it draws the
 // light colours on a dark board. It looks inside every reusable frame (each light

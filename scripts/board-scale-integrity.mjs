@@ -27,6 +27,14 @@
 // the PNG, and the map must list exactly the tiles the board file draws — a tile
 // drawn or deleted since the export makes the console crop by a stale map.
 //
+// THE VALUES. A raw hex inside a tile never follows the theme, so every fill and
+// stroke there is a variable unless its node is tagged `colour-exempt:`. Once a
+// project's 00-foundations declares its size scale as number variables, every
+// size Pencil can bind (font size and weight, line height, letter spacing, gap,
+// padding, radius, stroke width) is held to the same rule, with `size-exempt:` for
+// a drawn stand-in of something CSS computes. A project without that scale (this
+// one, so far) is checked for colours only.
+//
 // THE JOIN. Read off the board files themselves: every variant Storybook plans
 // has exactly one tile, on its own tier's board; every tile there is a variant
 // Storybook plans. A story added without its tile is red, which is the rule "a new story ships with its tile":
@@ -197,6 +205,97 @@ export function readBoard(document, stem) {
   return { problems, tileNames: frames.flatMap(tileNamesUnder), fingerprint };
 }
 
+/** The sizes Pencil can bind to a variable. Width and height it cannot, so they carry
+ *  their token in the node's name (designs/STANDARD.md § Sizes). */
+const SIZE_PROPS = [
+  'fontSize',
+  'fontWeight',
+  'lineHeight',
+  'letterSpacing',
+  'gap',
+  'padding',
+  'cornerRadius',
+  'strokeWidth',
+];
+const TILE_ROOT = /^Drawing\b/;
+const isVariable = (value) => typeof value === 'string' && value.startsWith('$');
+const isTransparent = (value) => value.toUpperCase() === '#00000000';
+/** One size, a `[t, r, b, l]`-style list or a per-side object, as its values. */
+const sizeValues = (value) =>
+  value !== null && typeof value === 'object' ? Object.values(value) : [value];
+const tagged = (node, tag) => (node.context ?? '').includes(`${tag}:`);
+
+/**
+ * Whether a project's size scale is on its boards: 00-foundations declares it as
+ * number variables. Until it does, the size rule asks nothing of its boards.
+ *
+ * @param {Record<string, { type?: string }> | undefined} variables  00's variables.
+ */
+export const sizeScaleDeclared = (variables) =>
+  Object.values(variables ?? {}).some((variable) => variable.type === 'number');
+
+/** A node's raw fill and stroke. A drawing's own card (the tile root) and its "home"
+ *  chip are the board's paper, which no theme ref ever resolves. */
+function rawColours(node, root, where) {
+  if (tagged(node, 'colour-exempt') || node === root || ['home', 'h'].includes(node.name))
+    return [];
+  return ['fill', 'stroke']
+    .filter((prop) => {
+      const value = node[prop];
+      return typeof value === 'string' && !isVariable(value) && !isTransparent(value);
+    })
+    .map(
+      (prop) =>
+        `${where} has a raw ${prop} ${node[prop]}: use a variable, or tag the node colour-exempt: <reason>`,
+    );
+}
+
+/** A node's raw sizes. Zero is no size at all, so it passes. */
+function rawSizes(node, where) {
+  if (tagged(node, 'size-exempt')) return [];
+  return SIZE_PROPS.filter(
+    (prop) =>
+      prop in node &&
+      !sizeValues(node[prop]).every((value) => value === 0 || isVariable(value)),
+  ).map(
+    (prop) =>
+      `${where} has a raw ${prop} ${JSON.stringify(node[prop])}: use a size variable, or tag the node size-exempt: <reason>`,
+  );
+}
+
+/** The raw colours and sizes in one tile (or `Drawing …` frame), as sentences. */
+function rawInTile(stem, root, sizes) {
+  const visit = (node) => {
+    const where = `${stem} › ${root.name} › ${node.name ?? node.id}`;
+    return [
+      ...rawColours(node, root, where),
+      ...(sizes ? rawSizes(node, where) : []),
+      ...(node.children ?? []).flatMap(visit),
+    ];
+  };
+  return visit(root);
+}
+
+/**
+ * Every raw colour inside a tile, and every raw size once the project's size scale
+ * is on its boards (designs/STANDARD.md § Colour, § Sizes). A tile is a reusable
+ * frame; a `Drawing …` frame on a project board is held to the same rule.
+ *
+ * @param {{ children?: unknown[] }} document  One board file.
+ * @param {string} stem
+ * @param {{ sizes: boolean }} rules  Whether sizes are checked (sizeScaleDeclared).
+ * @returns {string[]}
+ */
+export function rawValueProblems(document, stem, { sizes }) {
+  const roots = [];
+  const find = (node) => {
+    if (node.reusable || TILE_ROOT.test(node.name ?? '')) roots.push(node);
+    else for (const child of node.children ?? []) find(child);
+  };
+  for (const node of document.children ?? []) find(node);
+  return roots.flatMap((root) => rawInTile(stem, root, sizes));
+}
+
 /**
  * Every board file against its exports: each `designs/<stem>.pen` is one board, so
  * each has a `<stem>.png`, and each PNG a board file it was exported from.
@@ -364,10 +463,17 @@ function boardFiles() {
   const stems = readdirSync(DESIGNS)
     .filter((name) => name.endsWith('.pen'))
     .map((name) => name.slice(0, -'.pen'.length));
+  const documents = Object.fromEntries(
+    stems.map((stem) => [stem, readJson(join(DESIGNS, `${stem}.pen`))]),
+  );
+  const sizes = sizeScaleDeclared(documents[VARIABLES_SOURCE]?.variables);
 
   for (const stem of stems) {
-    const board = readBoard(readJson(join(DESIGNS, `${stem}.pen`)), stem);
-    problems.push(...board.problems);
+    const board = readBoard(documents[stem], stem);
+    problems.push(
+      ...board.problems,
+      ...rawValueProblems(documents[stem], stem, { sizes }),
+    );
     tileNames[stem] = board.tileNames;
     fingerprints[stem] = board.fingerprint;
   }
