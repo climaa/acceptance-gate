@@ -111,8 +111,28 @@ An image a drawing shows, such as the fixture a `PanZoom` story pans, lives in
 [`assets/`](assets/) and is filled from there. Never fill from `exports/`: an export is
 rewritten, and its old boards deleted, every time the boards move.
 
-[`scripts/pen/check-colours.js`](../scripts/pen/check-colours.js) counts the rest. Run it
-through the Pencil MCP before an export; it must report 0.
+The `boards` check fails on any other raw fill or stroke inside a tile or a `Drawing …`
+frame. [`scripts/pen/check-colours.js`](../scripts/pen/check-colours.js) counts the same
+through the Pencil MCP, for use while a board is open, before an export.
+
+### Sizes
+
+Once a project's `00-foundations.pen` declares its size scale as number variables
+(`space-*`, `radius-*`, `text-*`, `leading-*`, `weight-*` and the like, mirroring
+`tokens.css`), every size Pencil can bind inside a tile is a variable too: font size and
+weight, line height, letter spacing, gap, padding, corner radius and stroke width. A zero
+is no size and passes. Until a project declares the scale, the rule asks nothing of its
+boards; this repository's boards do not declare it yet.
+
+- **Width and height** cannot be bound in Pencil. A frame whose width or height is a
+  token carries the token in its name (`Status · col-status`, `Bar · space-4`).
+- **A value that is not on the scale** earns a token in `00-foundations.pen` if
+  components reuse it, or moves to the nearest step if not. A board does not keep an
+  off-scale size the code would not have.
+- **A drawn stand-in for something CSS computes** keeps its raw value and says so in its
+  `context` field, `size-exempt: <reason>`: a drawn underline's offset (Pencil drops
+  `underline`), a hatch drawn as stripes, a bottom padding that stands for a safe-area
+  inset. Like the colour tag, it goes in `context` because Pencil drops `metadata`.
 
 ## Exports and sidecars
 
@@ -149,6 +169,8 @@ the board files themselves, not an export's account of them. It fails when:
 - a board file holds anything but one board named for its stem, or has no export, or an
   export has no board file;
 - a board file's variables differ from `00-foundations.pen`'s;
+- a tile or a `Drawing …` frame holds a raw colour, or a raw size once the project's size
+  scale is declared (§ Colour, § Sizes);
 - a PNG's size disagrees with its sidecar, or a tile lies outside its PNG;
 - a tier board's tile map lists other tiles than the board file draws: export it again;
 - a planned variant has no tile, a tile has no planned variant, a tile sits on another
@@ -222,4 +244,5 @@ Copy [`template/`](template/) into the new project's `designs/`, one file per bo
 - Delete the example tiles on `01`–`04` (`*-example--default`): they draw no story, so the
   `boards` check fails on each until they are gone.
 - Set the variables in `00-foundations.pen` to the project's `tokens.css` and copy them to
-  every other file.
+  every other file. Declare the size scale with them, so the `boards` check holds sizes as
+  well as colours (§ Sizes).
