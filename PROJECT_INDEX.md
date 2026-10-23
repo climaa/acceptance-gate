@@ -159,6 +159,7 @@ own. Their gate is a Husky `pre-push` hook, not Actions.
 | `climaa/portafolio`      | `@portafolio/*` |
 | `climaa/trucutru`        | `@trucutru/*`   |
 | `climaa/jardinero-gerad` | `@grm/*`        |
+| `climaa/torn`            | `@torn/*`       |
 
 A change to that shared tooling here is ported to every child, one PR each, in
 the same pass — the copies drift otherwise, and a fix that reaches one console
