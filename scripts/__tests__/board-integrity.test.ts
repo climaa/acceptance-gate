@@ -26,7 +26,8 @@ const check = (
   tiles: Record<string, string[]>,
   planned: string[],
   shared: string[] = [],
-): string[] => joinProblems(tiles, planned, shared);
+  drawnAhead: string[] = [],
+): string[] => joinProblems(tiles, planned, shared, drawnAhead);
 
 describe('joinProblems', () => {
   it('passes when every planned variant has exactly one tile on its tier board', () => {
@@ -108,6 +109,49 @@ describe('joinProblems', () => {
     );
 
     expect(problems).toEqual([]);
+  });
+
+  // A project drew its boards before writing its stories: the tiles stand
+  // until each story lands, and the list of such stories only shrinks.
+  it('passes a tile drawn ahead of its story', () => {
+    const problems = check(
+      { '01-atoms': [BADGE, BADGE_DARK] },
+      [],
+      [],
+      ['atoms-badge--accent'],
+    );
+
+    expect(problems).toEqual([]);
+  });
+
+  it('names a drawn-ahead story that is written now', () => {
+    const problems = check(
+      { '01-atoms': [BADGE, BADGE_DARK] },
+      [BADGE, BADGE_DARK],
+      [],
+      ['atoms-badge--accent'],
+    );
+
+    expect(problems).toEqual([
+      'atoms-badge--accent is written now: strike it off designs/drawn-ahead-stories.json',
+    ]);
+  });
+
+  it('names a drawn-ahead story that no board draws', () => {
+    const problems = check({ '01-atoms': [] }, [], [], ['atoms-badge--accent']);
+
+    expect(problems).toEqual([
+      'designs/drawn-ahead-stories.json lists atoms-badge--accent, which no tier board draws: strike it off',
+    ]);
+  });
+
+  it('still names an unplanned tile whose story is not on the list', () => {
+    const problems = check({ '01-atoms': [BADGE] }, [], [], ['molecules-card--default']);
+
+    expect(problems).toEqual([
+      '01-atoms draws atoms-badge--accent (desktop, light), a variant Storybook does not plan: delete the tile with the story, or rename it with the story',
+      'designs/drawn-ahead-stories.json lists molecules-card--default, which no tier board draws: strike it off',
+    ]);
   });
 });
 
