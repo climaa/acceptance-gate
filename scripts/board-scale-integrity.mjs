@@ -59,6 +59,7 @@ const DESIGNS = join(ROOT, 'designs');
 const EXPORTS = join(DESIGNS, 'exports');
 const INDEX = join(ROOT, 'apps', 'storybook', 'storybook-static', 'index.json');
 const SHARED = join(ROOT, 'designs', 'shared-stories.json');
+const DRAWN_AHEAD = join(ROOT, 'designs', 'drawn-ahead-stories.json');
 
 /** The board each tier's tiles live on. A board that outgrows one export pages
  *  as `<stem>-1`, `<stem>-2`, … and is still that board. */
@@ -91,13 +92,20 @@ const named = ({ id, viewport, theme }) => `${id} (${viewport}, ${theme})`;
  * with acceptance-gate. Those are drawn on the parent's boards, never the
  * child's (its boards are product-only), so a shared story needs no tile here.
  *
+ * A project whose boards were drawn before its stories were written lists those
+ * stories in `designs/drawn-ahead-stories.json`: their tiles may stand before
+ * Storybook plans them. The list only shrinks. A story is struck off once
+ * Storybook plans it, and an entry no board draws any more is stale.
+ *
  * @param {Record<string, readonly string[]>} tileNames  Tile names by board stem.
  * @param {readonly string[]} planned  Every planned variant key.
  * @param {readonly string[]} [shared]  Story ids drawn in the parent instead.
+ * @param {readonly string[]} [drawnAhead]  Story ids drawn before they are written.
  * @returns {string[]}
  */
-export function joinProblems(tileNames, planned, shared = []) {
+export function joinProblems(tileNames, planned, shared = [], drawnAhead = []) {
   const sharedIds = new Set(shared);
+  const aheadIds = new Set(drawnAhead);
   const problems = [];
   const plannedKeys = new Set(planned);
   const drawnOn = new Map();
@@ -119,7 +127,7 @@ export function joinProblems(tileNames, planned, shared = []) {
           `${stem} draws ${named(variant)}, whose tier board is ${TIER_BOARDS[variant.tier]}`,
         );
       }
-      if (!plannedKeys.has(name)) {
+      if (!plannedKeys.has(name) && !aheadIds.has(variant.id)) {
         problems.push(
           `${stem} draws ${named(variant)}, a variant Storybook does not plan: delete the tile with the story, or rename it with the story`,
         );
@@ -140,6 +148,20 @@ export function joinProblems(tileNames, planned, shared = []) {
     problems.push(
       `${named(variant)} has no tile on ${TIER_BOARDS[variant.tier]}: a new story ships with its tile (designs/STANDARD.md)`,
     );
+  }
+
+  const plannedIds = new Set(planned.map((key) => parseVariantKey(key)?.id));
+  const drawnIds = new Set([...drawnOn.keys()].map((key) => parseVariantKey(key)?.id));
+  for (const id of aheadIds) {
+    if (plannedIds.has(id)) {
+      problems.push(
+        `${id} is written now: strike it off designs/drawn-ahead-stories.json`,
+      );
+    } else if (!drawnIds.has(id)) {
+      problems.push(
+        `designs/drawn-ahead-stories.json lists ${id}, which no tier board draws: strike it off`,
+      );
+    }
   }
 
   return problems;
@@ -446,6 +468,10 @@ function tileMapProblems() {
 /** The stories a child shares with the parent, or none in the parent itself. */
 const sharedStories = () => (existsSync(SHARED) ? readJson(SHARED).stories : []);
 
+/** The stories a project drew before writing them, or none. */
+const drawnAheadStories = () =>
+  existsSync(DRAWN_AHEAD) ? readJson(DRAWN_AHEAD).stories : [];
+
 /** The story ids this repository's Storybook plans, sorted: what a child's
  *  `designs/shared-stories.json` lists when the parent prints it. */
 function printStories() {
@@ -509,6 +535,7 @@ function main() {
         boards.tileNames,
         variants.map((variant) => variant.key),
         sharedStories(),
+        drawnAheadStories(),
       ),
     );
   } else {

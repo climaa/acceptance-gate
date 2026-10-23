@@ -193,6 +193,12 @@ node scripts/board-scale-integrity.mjs --print-stories > ../<child>/designs/shar
 Print it again whenever a shared story is added or renamed in the parent, in the same pass
 that ports the story to the child.
 
+A child seeded after its boards were drawn has tiles for stories it has not written yet.
+It lists those stories in `designs/drawn-ahead-stories.json`, in the same shape, and the
+`boards` check lets their tiles stand. The list only shrinks: once Storybook plans a listed
+story the check is red until the story is struck off, and so is an entry no tier board
+draws. A story is written by striking it off in the same pull request.
+
 ## Working on a .pen
 
 - Edit a `.pen` only in Pencil, never by hand: a hand edit can save a document Pencil will
