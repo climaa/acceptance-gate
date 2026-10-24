@@ -4,7 +4,7 @@ Here are the open issues in the repo:
 
 <issues-json>
 
-!`gh issue list --state open --author climaa --json number,title,body,labels,comments --jq '[.[] | {number, title, body, labels: [.labels[].name], comments: [.comments[].body]}]'`
+!`gh issue list --state open --author climaa --limit 1000 --json number,title,body,labels,comments --jq '[.[] | {number, title, body, labels: [.labels[].name], comments: [.comments[].body]}]'`
 
 </issues-json>
 
