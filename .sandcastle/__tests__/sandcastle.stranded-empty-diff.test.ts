@@ -85,8 +85,10 @@ describe('main.mts wiring', () => {
   it('passes the iteration number to both rescue call sites', () => {
     // The retirement comment is stamped with the iteration, exactly like the
     // one partitionOutcomes' no-ops get.
-    expect(main).toMatch(/collectStrandedIssues\(new Set\(\), iteration\)/);
-    expect(main).toMatch(/collectStrandedIssues\(queuedBranches, iteration\)/);
+    expect(main).toMatch(/collectStrandedIssues\(rescuedBranches, iteration\)/);
+    expect(main).toMatch(
+      /collectStrandedIssues\(\s*new Set\(\[\.\.\.queuedBranches, \.\.\.rescuedBranches\]\),\s*iteration,\s*\)/,
+    );
   });
 
   it('carries the no-op reason from the partition into the comment', () => {
