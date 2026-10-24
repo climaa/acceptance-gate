@@ -59,10 +59,10 @@ describe('the overlay’s address', () => {
     expect(query).toBe('');
   });
 
-  it('writes an untouched overlay as the one word that asks for it', () => {
+  it('writes an untouched overlay as the view and the blend it opens on', () => {
     const query = overlayQuery(true, OVERLAY_DEFAULTS);
 
-    expect(query).toBe('view=overlay');
+    expect(query).toBe('view=overlay&blend=difference');
   });
 
   it('writes what was changed, commas as they are, and reads it back the same', () => {
