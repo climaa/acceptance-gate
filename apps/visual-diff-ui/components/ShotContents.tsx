@@ -3,7 +3,12 @@ import { readBoardHomes } from '@/lib/board-homes';
 import { resolveDataDir } from '@/lib/data';
 import { repoRoot } from '@/lib/git';
 import { readSetLedger } from '@/lib/set-ledger';
-import { readSetShots, type SetShot, type SetShots } from '@/lib/set-shots';
+import {
+  neighbourKeys,
+  readSetShots,
+  type SetShot,
+  type SetShots,
+} from '@/lib/set-shots';
 import { setShotUrl } from '@/lib/shots';
 import { type ShotEntry, ShotView } from './ShotView';
 
@@ -44,10 +49,14 @@ export async function ShotContents({
   if (!found) notFound();
 
   const { shot, title } = found;
+  const { prev, next } = neighbourKeys(shots.sections, key);
   const size = shot.width !== null && shot.height !== null;
 
   return (
+    // Keyed by the shot, so a walk to the next one starts its tools afresh
+    // instead of carrying this one's crop and nudges over.
     <ShotView
+      key={key}
       label={label}
       story={title}
       storyId={shot.storyId}
@@ -68,6 +77,8 @@ export async function ShotContents({
       ledger={await readSetLedger(label, key)}
       homes={await readBoardHomes()}
       entry={entry}
+      {...(prev ? { prevKey: prev } : {})}
+      {...(next ? { nextKey: next } : {})}
     />
   );
 }

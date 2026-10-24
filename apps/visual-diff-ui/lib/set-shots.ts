@@ -461,3 +461,23 @@ export function tierAxes(section: ShotSection): TierAxes {
     ),
   };
 }
+
+/**
+ * The shots either side of one, in the order the set page draws them: tier,
+ * then story, then viewport and theme. Nothing past either end: a walk stops at
+ * the last shot rather than wrapping to the first, as the comparison's does.
+ */
+export function neighbourKeys(
+  sections: readonly ShotSection[],
+  key: string,
+): { prev?: string; next?: string } {
+  const order = sections.flatMap((section) =>
+    section.groups.flatMap((group) => group.shots.map((shot) => shot.key)),
+  );
+  const at = order.indexOf(key);
+  if (at === -1) return {};
+  const prev = order[at - 1];
+  const next = order[at + 1];
+
+  return { ...(prev ? { prev } : {}), ...(next ? { next } : {}) };
+}

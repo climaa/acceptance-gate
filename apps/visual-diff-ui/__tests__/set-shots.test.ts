@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import {
   filterCounts,
   groupShots,
+  neighbourKeys,
   parseShotName,
   readSetShots,
   type SetShot,
@@ -97,6 +98,39 @@ describe('parseShotName', () => {
     const cell = parseShotName(name);
 
     expect(cell).toBeNull();
+  });
+});
+
+describe('neighbourKeys', () => {
+  // Shuffled on purpose: the order is the set page's, not the input's.
+  const sections = groupShots([
+    shot('atoms__desktop__dark__atoms-badge--danger'),
+    shot('atoms__desktop__light__atoms-badge--accent'),
+    shot('atoms__desktop__light__atoms-badge--danger'),
+    shot('atoms__desktop__dark__atoms-badge--accent'),
+  ]);
+  const ACCENT_LIGHT = 'atoms__desktop__light__atoms-badge--accent';
+  const ACCENT_DARK = 'atoms__desktop__dark__atoms-badge--accent';
+  const DANGER_LIGHT = 'atoms__desktop__light__atoms-badge--danger';
+  const DANGER_DARK = 'atoms__desktop__dark__atoms-badge--danger';
+
+  it('walks light, then dark, then the next story, as the set page draws them', () => {
+    const steps = [ACCENT_DARK, DANGER_LIGHT].map((key) => neighbourKeys(sections, key));
+
+    expect(steps).toEqual([
+      { prev: ACCENT_LIGHT, next: DANGER_LIGHT },
+      { prev: ACCENT_DARK, next: DANGER_DARK },
+    ]);
+  });
+
+  it('stops at either end rather than wrapping', () => {
+    const ends = [ACCENT_LIGHT, DANGER_DARK].map((key) => neighbourKeys(sections, key));
+
+    expect(ends).toEqual([{ next: ACCENT_DARK }, { prev: DANGER_LIGHT }]);
+  });
+
+  it('has no neighbours for a key the set does not hold', () => {
+    expect(neighbourKeys(sections, 'atoms__desktop__light__nope')).toEqual({});
   });
 });
 

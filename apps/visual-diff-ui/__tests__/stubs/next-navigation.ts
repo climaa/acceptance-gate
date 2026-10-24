@@ -43,6 +43,9 @@ export const backCalls: 'back'[] = [];
  *  test has anything to say about. Clear it between tests. */
 export const refreshCalls: 'refresh'[] = [];
 
+/** Every `router.prefetch` this render performed, in call order. Clear it between tests. */
+export const prefetchCalls: string[] = [];
+
 export function useRouter() {
   return {
     replace(url: string, options?: NavigationOptions): void {
@@ -56,6 +59,9 @@ export function useRouter() {
     },
     refresh(): void {
       refreshCalls.push('refresh');
+    },
+    prefetch(url: string): void {
+      prefetchCalls.push(url);
     },
   };
 }

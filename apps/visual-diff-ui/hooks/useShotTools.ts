@@ -43,18 +43,17 @@ interface ShotToolsInput {
   overlayAsked?: boolean;
 }
 
+/** Whether a key went to a field the reader is typing into. A key pressed on
+ *  the document itself has no element to have typed into. */
+export const typedInField = ({ target }: KeyboardEvent): boolean =>
+  target instanceof Element &&
+  target.closest('input, textarea, select, [contenteditable="true"]') !== null;
+
 /** A key the view answers to, unless the reader is typing or reaching for a
  *  browser shortcut. */
 function shortcut(event: KeyboardEvent): string | null {
   if (event.metaKey || event.ctrlKey || event.altKey) return null;
-  // A key pressed on the document itself has no element to have typed into.
-  const { target } = event;
-  if (
-    target instanceof Element &&
-    target.closest('input, textarea, select, [contenteditable="true"]')
-  ) {
-    return null;
-  }
+  if (typedInField(event)) return null;
 
   return event.key;
 }
