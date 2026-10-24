@@ -62,6 +62,7 @@ export async function ShotContents({
       storyId={shot.storyId}
       viewport={shot.viewport}
       theme={shot.theme}
+      {...(shot.locale === undefined ? {} : { locale: shot.locale })}
       tier={shot.tier}
       shot={{
         key: shot.key,
@@ -70,7 +71,7 @@ export async function ShotContents({
         // anyway: a pane is never left blank without a sentence.
         absent: 'This screenshot could not be read.',
         caption: `screenshot · ${label}${size ? ` · ${shot.width}×${shot.height}` : ''}`,
-        alt: `${shot.storyId}, ${shot.viewport} ${shot.theme}`,
+        alt: `${shot.storyId}, ${shot.viewport} ${shot.theme}${shot.locale === undefined ? '' : ` ${shot.locale}`}`,
         label: 'screenshot',
         ...(shot.width === null ? {} : { width: shot.width }),
       }}

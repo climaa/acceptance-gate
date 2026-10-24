@@ -3,7 +3,12 @@ import vm from 'node:vm';
 import { describe, expect, it } from 'vitest';
 
 import { PINNED_NOW_ISO, PINNED_TIMEZONE } from '../determinism.mjs';
-import { COLOR_SCHEME_GLOBAL, DETERMINISM, VIEWPORTS } from '../policy.mjs';
+import {
+  COLOR_SCHEME_GLOBAL,
+  DETERMINISM,
+  LOCALE_GLOBAL,
+  VIEWPORTS,
+} from '../policy.mjs';
 import {
   ERROR_OVERLAY_EXPRESSION,
   STORY_PHASES_EXPRESSION,
@@ -18,6 +23,7 @@ import {
   isLoopbackUrl,
   isZeroSizeError,
   filterNeedles,
+  localeSanity,
   matchesFilter,
   pngSize,
   shotResult,
@@ -112,6 +118,20 @@ describe('buildStoryUrl', () => {
     const url = buildStoryUrl(`${BASE_URL}/`, { id: STORY_ID, theme: 'light' });
 
     expect(url).not.toContain('//iframe.html');
+  });
+
+  it("sets a listed story's locale as a second global beside the theme", () => {
+    const url = buildStoryUrl(BASE_URL, { id: STORY_ID, theme: 'dark', locale: 'es' });
+
+    expect(url).toContain(`globals=${COLOR_SCHEME_GLOBAL}:dark;${LOCALE_GLOBAL}:es`);
+  });
+
+  it('sets no locale global for a story with no locale, so its URL is the one it had', () => {
+    const url = buildStoryUrl(BASE_URL, { id: STORY_ID, theme: 'dark' });
+
+    expect(url).toBe(
+      `${BASE_URL}/iframe.html?id=${STORY_ID}&globals=${COLOR_SCHEME_GLOBAL}:dark`,
+    );
   });
 });
 
@@ -442,6 +462,66 @@ describe('themeSanity', () => {
     const shots = themePair({}, { identical: true });
 
     expect(() => themeSanity(shots)).toThrow(new RegExp(COLOR_SCHEME_GLOBAL));
+  });
+
+  it('pairs within one locale, so two locales do not collapse into one theme cell', () => {
+    // Identical across themes in `en` and in `es`: had the locales shared one set,
+    // the second `light` would have overwritten the first and the dead wiring
+    // would hide behind a set that differs only by language.
+    const shots = [
+      shot({ locale: 'en', theme: 'light', bytes: png(1280, 800, 1) }),
+      shot({ locale: 'en', theme: 'dark', bytes: png(1280, 800, 1) }),
+      shot({ locale: 'es', theme: 'light', bytes: png(1280, 800, 2) }),
+      shot({ locale: 'es', theme: 'dark', bytes: png(1280, 800, 2) }),
+    ];
+
+    expect(() => themeSanity(shots)).toThrow(SanityError);
+  });
+});
+
+/** One story at one viewport and theme in two locales, differing in their pixel
+ *  bytes unless `identical` says the locale wiring is dead. */
+const localePair = (overrides = {}, { identical = false } = {}) => [
+  shot({ locale: 'en', bytes: png(1280, 800, 1), ...overrides }),
+  shot({ locale: 'es', bytes: png(1280, 800, identical ? 1 : 2), ...overrides }),
+];
+
+describe('localeSanity', () => {
+  it('passes when a listed story renders differently in two locales', () => {
+    const shots = localePair();
+
+    expect(() => localeSanity(shots)).not.toThrow();
+  });
+
+  it('trips when every locale pair came back byte-identical', () => {
+    const shots = [
+      ...localePair({ id: 'a' }, { identical: true }),
+      ...localePair({ id: 'b' }, { identical: true }),
+    ];
+
+    expect(() => localeSanity(shots)).toThrow(SanityError);
+  });
+
+  it('passes when no story was captured in more than one locale', () => {
+    // The parent lists no story, and an unlisted shot carries no locale at all.
+    const shots = [...themePair()];
+
+    expect(() => localeSanity(shots)).not.toThrow();
+  });
+
+  it('pairs within one theme, never across two', () => {
+    const shots = [
+      shot({ locale: 'en', theme: 'light', bytes: png(1280, 800, 1) }),
+      shot({ locale: 'es', theme: 'dark', bytes: png(1280, 800, 1) }),
+    ];
+
+    expect(() => localeSanity(shots)).not.toThrow();
+  });
+
+  it('names the locale global, so the reader knows where to look', () => {
+    const shots = localePair({}, { identical: true });
+
+    expect(() => localeSanity(shots)).toThrow(new RegExp(LOCALE_GLOBAL));
   });
 });
 

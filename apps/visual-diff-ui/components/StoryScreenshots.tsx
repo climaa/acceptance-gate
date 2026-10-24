@@ -6,7 +6,7 @@ import {
   storybookLink,
 } from '@/lib/report-view';
 import type { SetShot, ShotGroup } from '@/lib/set-shots';
-import { setShotUrl, shotViewHref } from '@/lib/shots';
+import { cellName, setShotUrl, shotViewHref } from '@/lib/shots';
 
 /**
  * One story's screenshots in one set.
@@ -66,7 +66,7 @@ function VariantCell({
         className="vd-cell__open"
         href={shotViewHref(label, shot.key)}
         scroll={false}
-        aria-label={`${title} · ${shot.viewport}/${shot.theme}`}
+        aria-label={`${title} · ${cellName(shot.viewport, shot.theme, shot.locale)}`}
       >
         {/* eslint-disable-next-line @next/next/no-img-element -- `next/image`
             resamples and re-encodes, and this page exists to show the committed

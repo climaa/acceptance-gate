@@ -66,12 +66,20 @@ Desktop or mobile.
 **theme**:
 Light or dark.
 
+**locale**:
+The language a story listed for the locale axis is captured in, one of
+`LOCALES` in the differ's policy. Only listed stories have one; this repository
+lists none.
+
 **variant**:
-One cell of the capture matrix — a story at one tier, viewport and theme. The
-addressable unit a screenshot belongs to.
+One cell of the capture matrix — a story at one tier, viewport and theme, and
+at one locale for a story listed for the locale axis. The addressable unit a
+screenshot belongs to.
 
 **variant key**:
 The string that names a variant: tier, viewport, theme and story id, joined by `__`.
+A story listed for the locale axis carries its locale between the theme and the
+story id; every other key has the four parts.
 A screenshot's file name and a tile's frame name are both a variant key.
 _Avoid_: screenshot key, shot key.
 

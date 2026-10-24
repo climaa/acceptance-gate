@@ -29,11 +29,13 @@ declare module '@gate/visual-diff/policy' {
 
   export type ViewportName = 'desktop' | 'mobile';
 
-  /** One cell of the capture matrix. */
+  /** One cell of the capture matrix. `locale` only on a story listed for the
+   *  locale axis; every other variant has no such field. */
   export interface Variant {
     tier: Tier;
     viewport: ViewportName;
     theme: Theme;
+    locale?: string;
     id: string;
   }
 
@@ -72,8 +74,9 @@ declare module '@gate/visual-diff/policy' {
    *  sidecar suffix a capture writes beside each shot. */
   export const LEDGER: Readonly<{ fileSuffix: string; reportDir: string }>;
 
-  /** `${tier}__${viewport}__${theme}__${storyId}` parsed back, or `null` for a
-   *  key naming a cell outside the matrix. */
+  /** `${tier}__${viewport}__${theme}__${storyId}` — or, for a story listed for
+   *  the locale axis, `${tier}__${viewport}__${theme}__${locale}__${storyId}` —
+   *  parsed back, or `null` for a key naming a cell outside the matrix. */
   export function parseVariantKey(key: string): Variant | null;
 
   /** The tier a story belongs to, derived from its `importPath`. Anything outside

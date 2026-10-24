@@ -179,7 +179,7 @@ async function preview({ out, written, palette }) {
   const max = Number(args['max-diff']);
   let worst = 0;
   try {
-    const firstStory = written[0]?.split('__')[3] ?? '';
+    const firstStory = written[0]?.split('__').at(-1) ?? '';
     await page.goto(
       `http://127.0.0.1:${server.port}/iframe.html?id=${encodeURIComponent(firstStory)}&globals=${COLOR_SCHEME_GLOBAL}:light`,
     );

@@ -123,7 +123,16 @@ export const shotTitle = (
   viewport: string,
   theme: string,
   label: string,
-) => `${story} · ${viewport}/${theme} · ${label}`;
+  locale?: string,
+) => `${story} · ${cellName(viewport, theme, locale)} · ${label}`;
+
+/**
+ * A cell of the matrix as a reader names it: `desktop/dark`, and
+ * `desktop/dark/es` for a story listed for the locale axis, whose two languages
+ * would otherwise be two shots under one name.
+ */
+export const cellName = (viewport: string, theme: string, locale?: string) =>
+  locale === undefined ? `${viewport}/${theme}` : `${viewport}/${theme}/${locale}`;
 
 /**
  * One screenshot of a capture set, on the route that serves a set's own tree.

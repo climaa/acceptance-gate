@@ -7,6 +7,13 @@ transcribed from the GitHub Releases that existed when this file was created (20
 
 ## Unreleased
 
+- The visual-diff capture matrix has a locale axis for listed stories only. A story tagged
+  `visual-diff:locales` is captured once per entry in `LOCALES`, and its variant key becomes
+  `tier__viewport__theme__locale__id`; every other key keeps its four parts byte for byte, so no
+  baseline is renamed. A third sanity gate fails a run whose listed stories come back identical
+  across locales. This repository ships English only, so it lists no story: the axis is here for
+  the children that translate their UI.
+
 ## v1.7.0 — every story has its tile on the board, and the gate holds them to each other
 
 _Released 2026-10-21._

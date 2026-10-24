@@ -19,6 +19,7 @@ import {
   captureAll,
   filterNeedles,
   launchBrowser,
+  localeSanity,
   matchesFilter,
   themeSanity,
   viewportSanity,
@@ -201,7 +202,7 @@ async function runCapture(deps, at, variants) {
   }
 }
 
-/** Both gates, over the shots that are actually shots: an errored variant carries
+/** All three gates, over the shots that are actually shots: an errored variant carries
  *  whatever the page looked like when it failed, and judging the theme axis by those
  *  would fire the gate on a story bug.
  *  @param {readonly CaptureResult[]} captures @throws {import('./capture.mjs').SanityError} */
@@ -210,6 +211,7 @@ function assertSane(captures) {
 
   themeSanity(shots);
   viewportSanity(shots);
+  localeSanity(shots);
 }
 
 /** One committed baseline, as the `[key, bytes]` pair its map is built from: the key is

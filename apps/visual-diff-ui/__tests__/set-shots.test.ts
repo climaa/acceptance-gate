@@ -89,7 +89,27 @@ describe('parseShotName', () => {
     expect(cell?.viewport).toBe('mobile');
   });
 
+  it("reads a listed story's locale back from its filename", () => {
+    const cell = parseShotName(
+      'organisms__mobile__dark__en__organisms-siteheader--default.png',
+    );
+
+    expect(cell).toMatchObject({
+      viewport: 'mobile',
+      theme: 'dark',
+      locale: 'en',
+      storyId: 'organisms-siteheader--default',
+    });
+  });
+
+  it('gives a filename with no locale part no locale, as before the axis', () => {
+    const cell = parseShotName('atoms__desktop__light__atoms-badge--accent.png');
+
+    expect(cell).not.toHaveProperty('locale');
+  });
+
   it.each([
+    ['a locale outside the policy list', 'atoms__desktop__light__xx__x--y.png'],
     ['a file that is not a PNG', 'BASELINE_ENV.json'],
     ['a name with too few segments', 'atoms__desktop__atoms-badge.png'],
     ['a tier outside the matrix', 'pages__desktop__light__x--y.png'],

@@ -25,7 +25,13 @@ export async function shotMetadata(
     return { title: NOT_FOUND_TITLE };
   }
 
-  const title = shotTitle(storyTitle(cell.id), cell.viewport, cell.theme, label);
+  const title = shotTitle(
+    storyTitle(cell.id),
+    cell.viewport,
+    cell.theme,
+    label,
+    cell.locale,
+  );
 
   return pageMetadata({
     path: shotViewHref(label, key),
