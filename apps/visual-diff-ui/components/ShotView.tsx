@@ -7,6 +7,7 @@ import { Dialog, IconButton, SegmentedControl, Stack } from '@gate/ui';
 import type { Tier } from '@gate/visual-diff/policy';
 import { useMediaQuery, WIDE_VIEWPORT } from '@/hooks/useMediaQuery';
 import { useShotAddress } from '@/hooks/useShotAddress';
+import { useShotWalk } from '@/hooks/useShotWalk';
 import { SHOT_LAYOUTS, type ShotLayout } from '@/hooks/useShotTools';
 import type { BoardHomes } from '@/lib/comparison';
 import type { Readings } from '@/lib/readings';
@@ -47,7 +48,8 @@ const DIALOG_LABEL = 'Screenshot';
 
 const NOTE = 'design board — reference beside the screenshot, never a side';
 
-const HINT = 's sync · o overlay · c crop · drag to pan · + − zoom · 0 reset';
+const HINT =
+  '⌥ ← → shot · s sync · o overlay · c crop · drag to pan · + − zoom · 0 reset';
 
 /** The sync toggle's name, pinned: it is how a scenario presses it. */
 const SYNC_LABEL = 'zoom and pan both panes together';
@@ -230,6 +232,9 @@ export interface ShotViewProps extends ShotHeading {
   entry: ShotEntry;
   /** The board each variant's tile is drawn on (lib/board-homes.ts). */
   homes: BoardHomes;
+  /** The shots either side of this one in the set's order, for ⌥ ← →. */
+  prevKey?: string;
+  nextKey?: string;
 }
 
 export function ShotView({
@@ -238,6 +243,8 @@ export function ShotView({
   ledger,
   entry,
   homes,
+  prevKey,
+  nextKey,
   ...heading
 }: ShotViewProps) {
   const { label } = heading;
@@ -259,6 +266,8 @@ export function ShotView({
   });
 
   const modal = entry === 'set';
+
+  useShotWalk(label, params, prevKey, nextKey);
 
   useModalTitle(modal, headingText(heading).title, label);
 

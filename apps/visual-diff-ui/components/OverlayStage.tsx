@@ -152,6 +152,9 @@ export function OverlayStage({
   };
 
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    // An arrow with ⌥, Ctrl or ⌘ is someone else's: the walk to the next shot,
+    // or the browser's own.
+    if (event.altKey || event.ctrlKey || event.metaKey) return;
     if (!nudgeBy(event.key, event.shiftKey)) return;
 
     // Claimed from the scroll and from any walk listening above: an arrow here
