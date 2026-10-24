@@ -131,6 +131,33 @@ ensureImageFreshness();
 // on the issue itself; this set is what still works when `gh` is unavailable.
 const noOpIssueIds = new Set<string>();
 
+// Branches this run has already sent through the stranded-branch rescue. Also
+// run-scoped, for the same reason: a rescued branch whose push was refused is
+// still ahead of base with no PR next iteration, so without this the rescue
+// picks it up again, the merger fails the same push and comments again, and the
+// run spends every remaining iteration on it (trucutru #614 collected 64
+// comments; torn re-rescued #20 and #21 on 23 Oct 2026). Whatever stopped the
+// push once will stop it again within one run; a person resolves it, and the
+// next run tries again.
+const rescuedBranches = new Set<string>();
+
+// The host push that publishes a branch: the pre-push gate runs here, where
+// Chromium and the gate's binaries exist, not in the merger's container. A
+// failure is non-fatal so one refused branch doesn't block the rest — the
+// merger still attempts its own push.
+function pushFromHost(refs: readonly { branch: string }[]): void {
+  for (const { branch } of refs) {
+    try {
+      console.log(`[ci-trigger] pushing ${branch} to origin from host`);
+      execSync(`git push origin ${branch}`, { stdio: 'inherit' });
+    } catch (err) {
+      console.warn(
+        `  ⚠ host push of ${branch} failed (merger will retry its own push): ${(err as Error).message}`,
+      );
+    }
+  }
+}
+
 for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
   // Graceful shutdown: a SIGINT/SIGTERM between iterations stops
   // the orchestrator from starting a fresh Plan→Execute→Merge cycle. Work
@@ -233,7 +260,7 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
     // branches with commits ahead of main and no PR (e.g. previous reviewer
     // crashed mid-pipeline). Rescue them directly into the merge phase before
     // exiting, otherwise the orchestrator declares done with stranded work.
-    const stranded = collectStrandedIssues(new Set(), iteration);
+    const stranded = collectStrandedIssues(rescuedBranches, iteration);
     if (stranded.length === 0) {
       console.log(
         planned.length > 0
@@ -247,6 +274,7 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
     );
     for (const s of stranded) {
       console.log(`  ${s.branch} (#${s.id})`);
+      rescuedBranches.add(s.branch);
     }
     // A crashed prior run is exactly the case where the branch's build state is
     // unknown — build-verify each rescued branch before merging (build-gate hardening).
@@ -267,6 +295,10 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
       console.log('No rescued branches passed build-verify. Exiting.');
       break;
     }
+    // A rescued branch gets the same host push the planned path makes before
+    // its merge; without it, it reaches origin only through the merger's own
+    // push, which the container's gate refuses.
+    pushFromHost(verified);
     const mergeResult = await guardPhase(
       () => runMerger(verified, abortSignal),
       () => abortSignal.aborted,
@@ -461,13 +493,17 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
     completedIssues.map((i) => i.branch),
     failedBranches,
   );
-  const stranded = collectStrandedIssues(queuedBranches, iteration);
+  const stranded = collectStrandedIssues(
+    new Set([...queuedBranches, ...rescuedBranches]),
+    iteration,
+  );
   if (stranded.length > 0) {
     console.log(
       `\nFound ${stranded.length} stranded branch(es) ahead of ${BASE_BRANCH} not in this iteration's plan:`,
     );
     for (const s of stranded) {
       console.log(`  ${s.branch} (#${s.id})`);
+      rescuedBranches.add(s.branch);
     }
     // Build-verify rescued branches before merging — a crashed prior run is
     // exactly when the branch's build state is unknown (build-gate hardening). Failing
@@ -520,19 +556,9 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
   // triggers Actions. Doing it here, before runMerger, means the PR is
   // opened on a branch whose required checks are already running, so auto-merge
   // lands it without any manual nudge. The commits are already on the host
-  // branch via syncOut, so this is a normal push. Failures are non-fatal — the
-  // merger still attempts its own push — so one bad branch doesn't block the rest.
+  // branch via syncOut, so this is a normal push — see pushFromHost.
   // -------------------------------------------------------------------------
-  for (const { branch } of completedIssues) {
-    try {
-      console.log(`[ci-trigger] pushing ${branch} to origin from host`);
-      execSync(`git push origin ${branch}`, { stdio: 'inherit' });
-    } catch (err) {
-      console.warn(
-        `  ⚠ host push of ${branch} failed (merger will retry its own push): ${(err as Error).message}`,
-      );
-    }
-  }
+  pushFromHost(completedIssues);
 
   // -------------------------------------------------------------------------
   // Phase 3: Merge — see sandcastle-merge.mts. GitHub handles ordering via
