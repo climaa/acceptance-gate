@@ -342,22 +342,22 @@ describe('the shot view’s overlay', () => {
     }).toEqual({ drawn: true, said: true });
   });
 
-  it('lays the crop normally until the difference blend is chosen', () => {
+  it('opens the overlay on the difference blend, and lays it normally once normal is chosen', () => {
     const { container } = renderView('crop=0,0,200,100');
     fireEvent.click(within(viewGroup()).getByRole('button', { name: 'overlay' }));
     const blend = screen.getByRole('group', { name: 'blend' });
     const crop = () => container.querySelector<HTMLImageElement>('.vd-overlay__crop');
     const before = crop()?.dataset.blend;
 
-    fireEvent.click(within(blend).getByRole('button', { name: 'difference' }));
+    fireEvent.click(within(blend).getByRole('button', { name: 'normal' }));
 
     expect({
       before,
       after: crop()?.dataset.blend,
       pressed: within(blend)
-        .getByRole('button', { name: 'difference' })
+        .getByRole('button', { name: 'normal' })
         .getAttribute('aria-pressed'),
-    }).toEqual({ before: 'normal', after: 'difference', pressed: 'true' });
+    }).toEqual({ before: 'difference', after: 'normal', pressed: 'true' });
   });
 
   it('zooms the shot and the crop together', () => {
@@ -458,7 +458,7 @@ describe('the overlay in the address', () => {
     fireEvent.click(within(viewGroup()).getByRole('button', { name: 'overlay' }));
 
     expect(replaceState.mock.calls.at(-1)?.[2]).toBe(
-      `${AT}?crop=0,0,200,100&view=overlay`,
+      `${AT}?crop=0,0,200,100&view=overlay&blend=difference`,
     );
   });
 
@@ -470,13 +470,13 @@ describe('the overlay in the address', () => {
 
     fireEvent.click(
       within(screen.getByRole('group', { name: 'blend' })).getByRole('button', {
-        name: 'difference',
+        name: 'normal',
       }),
     );
     fireEvent.keyDown(pane, { key: 'ArrowLeft', shiftKey: true });
 
     expect(replaceState.mock.calls.at(-1)?.[2]).toBe(
-      `${AT}?crop=0,0,200,100&view=overlay&blend=difference&offset=-10,0`,
+      `${AT}?crop=0,0,200,100&view=overlay&blend=normal&offset=-10,0`,
     );
   });
 
@@ -533,7 +533,7 @@ describe('the overlay’s zoom in the address', () => {
     fireEvent.click(within(viewGroup()).getByRole('button', { name: 'overlay' }));
 
     expect(replaceState.mock.calls.at(-1)?.[2]).toBe(
-      `${AT}?crop=0,0,200,100&view=overlay&zoom=150`,
+      `${AT}?crop=0,0,200,100&view=overlay&blend=difference&zoom=150`,
     );
   });
 
@@ -546,7 +546,10 @@ describe('the overlay’s zoom in the address', () => {
     expect({
       readout: screen.getByText('100%') !== null,
       address: replaceState.mock.calls.at(-1)?.[2],
-    }).toEqual({ readout: true, address: `${AT}?crop=0,0,200,100&view=overlay` });
+    }).toEqual({
+      readout: true,
+      address: `${AT}?crop=0,0,200,100&view=overlay&blend=difference`,
+    });
   });
 
   it('offers no board picker over the overlay, so no pick can drop its alignment', () => {

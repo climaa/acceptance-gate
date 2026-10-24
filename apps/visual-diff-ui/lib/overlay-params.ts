@@ -6,10 +6,13 @@ import type { Nudge } from './board-crop';
  * alignment someone made, not on a fresh one they have to make again.
  *
  * `view=overlay` lays the crop on the screenshot; the rest only means anything
- * there, so it is written only then. Each value is left out at its default, the
- * rule `shotViewHref` keeps for the board, so an untouched overlay is one word:
+ * there, so it is written only then. The overlay opens on the difference blend,
+ * where a misaligned edge shows as a bright line, and the blend is always
+ * written, so the address says which blend is on. Every other value is left out
+ * at its default, the rule `shotViewHref` keeps for the board, so an untouched
+ * overlay is `view=overlay&blend=difference`, and a moved one reads:
  *
- *   view=overlay&blend=difference&opacity=60&offset=-14,-11&shot=2,0&zoom=759
+ *   view=overlay&blend=normal&opacity=60&offset=-14,-11&shot=2,0&zoom=759
  *
  * `offset` is the board's nudge and `shot` the screenshot's, in the screenshot's
  * CSS pixels; `zoom` is the readout, in percent. Which layer the arrows move is
@@ -49,7 +52,7 @@ export interface OverlayAlignment {
 export const ORIGIN: Nudge = { x: 0, y: 0 };
 
 export const OVERLAY_DEFAULTS: OverlayAlignment = {
-  blend: 'normal',
+  blend: 'difference',
   opacity: 50,
   board: ORIGIN,
   shot: ORIGIN,
@@ -108,7 +111,7 @@ export const asksOverlay = (params: AddressParams) => params.get('view') === 'ov
 /** The overlay the address carries; a value it cannot read is its default. */
 export function parseOverlay(params: AddressParams): OverlayAlignment {
   return {
-    blend: params.get('blend') === 'difference' ? 'difference' : 'normal',
+    blend: params.get('blend') === 'normal' ? 'normal' : 'difference',
     opacity: parseOpacity(params.get('opacity')),
     board: parseNudge(params.get('offset')),
     shot: parseNudge(params.get('shot')),
@@ -128,7 +131,7 @@ export function overlayQuery(overlay: boolean, at: OverlayAlignment): string {
 
   return [
     'view=overlay',
-    at.blend === 'normal' ? '' : `blend=${at.blend}`,
+    `blend=${at.blend}`,
     at.opacity === OVERLAY_DEFAULTS.opacity ? '' : `opacity=${at.opacity}`,
     moved(at.board) ? `offset=${at.board.x},${at.board.y}` : '',
     moved(at.shot) ? `shot=${at.shot.x},${at.shot.y}` : '',
