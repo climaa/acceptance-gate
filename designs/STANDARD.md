@@ -210,6 +210,11 @@ draws. A story is written by striking it off in the same pull request.
 - Pencil writes a document to disk only on Cmd+S, one tab at a time. Save every tab you
   edited before committing, and close the tab of a file you deleted without saving it, or
   the save writes the file back.
+- The `pen` CLI (`@pen.dev/cli`, its own `pen login`) edits a file with no window:
+  `pen interactive -i <path> -o <path>` takes the same `execute` calls, names the file on
+  the command line, and writes it only on `save()`, so neither trap above applies. An
+  untouched open and `save()` writes the file back byte for byte. Its text layout is not
+  Pencil's, though, and not stable between calls: export from Pencil, never from the CLI.
 - A story and its tile ship in the same pull request.
 
 ## Drawing page tiles from the stories
