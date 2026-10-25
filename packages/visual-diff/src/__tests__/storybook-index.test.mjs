@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest';
 import {
   ALL_VIEWPORTS_TAG,
   FULLPAGE_TAG,
+  LOCALES,
+  LOCALES_TAG,
   SKIP_TAG,
   THEMES,
   VIEWPORTS,
@@ -187,6 +189,46 @@ describe('planCaptures', () => {
 
     expect(new Set(variants.map((variant) => variant.viewport))).toEqual(
       new Set(Object.keys(VIEWPORTS)),
+    );
+  });
+
+  it(`captures a ${LOCALES_TAG} atom once per locale in every theme`, () => {
+    const entries = readIndex(indexJson(storyEntry({ tags: [LOCALES_TAG] })));
+
+    const { variants } = planCaptures(entries);
+
+    expect(variants.map((variant) => variant.key)).toEqual(
+      THEMES.flatMap((theme) =>
+        LOCALES.map((locale) =>
+          variantKey({
+            tier: 'atoms',
+            viewport: 'desktop',
+            theme,
+            locale,
+            id: 'atoms-button--primary',
+          }),
+        ),
+      ),
+    );
+  });
+
+  it('gives an unlisted story no locale, so its keys are the ones it had before the axis', () => {
+    const entries = readIndex(indexJson(storyEntry(), templateEntry()));
+
+    const { variants } = planCaptures(entries);
+
+    expect(variants.some((variant) => 'locale' in variant)).toBe(false);
+  });
+
+  it(`crosses ${LOCALES_TAG} with ${ALL_VIEWPORTS_TAG} rather than letting one replace the other`, () => {
+    const entries = readIndex(
+      indexJson(storyEntry({ tags: [LOCALES_TAG, ALL_VIEWPORTS_TAG] })),
+    );
+
+    const { variants } = planCaptures(entries);
+
+    expect(variants).toHaveLength(
+      Object.keys(VIEWPORTS).length * THEMES.length * LOCALES.length,
     );
   });
 

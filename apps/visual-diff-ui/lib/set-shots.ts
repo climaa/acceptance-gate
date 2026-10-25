@@ -67,6 +67,8 @@ export interface SetShot {
   tier: Tier;
   viewport: ViewportName;
   theme: Theme;
+  /** Only on a story listed for the locale axis. */
+  locale?: string;
   storyId: string;
   /** Read out of the PNG header, never recorded anywhere — the committed bytes
    *  are what the gate protects. Null for a file whose header would not parse,
@@ -139,6 +141,7 @@ export function parseShotName(name: string): ShotCell | null {
     tier: variant.tier,
     viewport: variant.viewport,
     theme: variant.theme,
+    ...(variant.locale === undefined ? {} : { locale: variant.locale }),
     storyId: variant.id,
   };
 }

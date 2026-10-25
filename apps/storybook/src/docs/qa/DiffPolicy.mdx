@@ -2,6 +2,8 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 import {
   ALL_VIEWPORTS_TAG,
+  LOCALES,
+  LOCALES_TAG,
   MODES,
   SKIP_TAG,
   TIER_VIEWPORTS,
@@ -67,7 +69,7 @@ both get the full `desktop` + `mobile` pair.
 
 ## Story-level tags
 
-Two tags a story's own `tags: [...]` array can carry, named here from the module that defines
+Three tags a story's own `tags: [...]` array can carry, named here from the module that defines
 them rather than retyped as string literals:
 
 export const storyTags = [
@@ -84,6 +86,18 @@ export const storyTags = [
         viewport in <code>VIEWPORTS</code>, whatever its tier's default is. For the one
         component that does reflow with width without the rest of its tier needing the
         same promotion.
+      </>
+    ),
+  },
+  {
+    tag: LOCALES_TAG,
+    description: (
+      <>
+        lists a story for the locale axis: it is captured once per entry in{' '}
+        <code>LOCALES</code> ({LOCALES.join(', ')} here), and its variant key gains the
+        locale between the theme and the story id. Nothing here is listed — this
+        repository ships English only — so every key keeps the four-part shape. A child
+        with translated UI lists its own stories and locales.
       </>
     ),
   },

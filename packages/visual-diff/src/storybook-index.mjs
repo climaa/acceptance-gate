@@ -12,6 +12,8 @@
 import {
   ALL_VIEWPORTS_TAG,
   FULLPAGE_TAG,
+  LOCALES,
+  LOCALES_TAG,
   MODES,
   SKIP_TAG,
   TIERS,
@@ -30,9 +32,10 @@ import {
  *              tags: readonly string[] }} IndexEntry */
 
 /** One cell of the capture matrix for one story: everything `capture.mjs` needs to
- *  take the shot and name the file it writes.
+ *  take the shot and name the file it writes. `locale` only on a {@link LOCALES_TAG}
+ *  story.
  *  @typedef {{ id: string, tier: Tier, viewport: ViewportName, theme: Theme,
- *              fullPage: boolean, key: string }} PlannedVariant */
+ *              locale?: string, fullPage: boolean, key: string }} PlannedVariant */
 
 /** The gate is broken: the corpus could not be enumerated at all. Its own class because
  *  the CLI answers it differently from a diff — a diff means the UI changed and the
@@ -131,6 +134,16 @@ function modesFor(tier, allViewports) {
   );
 }
 
+/** The modes again, once per locale for a {@link LOCALES_TAG} story — and untouched
+ *  otherwise, so an unlisted story's cells carry no `locale` field at all.
+ *  @param {Mode[]} modes @param {boolean} listed
+ *  @returns {(Mode & { locale?: string })[]} */
+function localesFor(modes, listed) {
+  if (!listed) return modes;
+
+  return modes.flatMap((mode) => LOCALES.map((locale) => ({ ...mode, locale })));
+}
+
 /** @param {IndexEntry} entry @returns {PlannedVariant[]} */
 function variantsOf(entry) {
   const tier = tierOf(entry.importPath);
@@ -144,7 +157,8 @@ function variantsOf(entry) {
   }
 
   const fullPage = entry.tags.includes(FULLPAGE_TAG);
-  return modesFor(tier, entry.tags.includes(ALL_VIEWPORTS_TAG)).map((mode) => ({
+  const modes = modesFor(tier, entry.tags.includes(ALL_VIEWPORTS_TAG));
+  return localesFor(modes, entry.tags.includes(LOCALES_TAG)).map((mode) => ({
     ...mode,
     id: entry.id,
     fullPage,

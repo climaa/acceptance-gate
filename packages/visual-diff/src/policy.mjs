@@ -9,7 +9,9 @@
 /** @typedef {'light' | 'dark'} Theme */
 /** @typedef {'desktop' | 'mobile'} ViewportName */
 /** @typedef {{ tier: Tier, viewport: ViewportName, theme: Theme }} Mode */
-/** @typedef {Mode & { id: string }} Variant */
+/** `locale` is present only on a story listed with {@link LOCALES_TAG}; every other
+ *  variant has no such field, which is what keeps its key the one it always had.
+ *  @typedef {Mode & { locale?: string, id: string }} Variant */
 
 /** Atomic-design tiers, innermost first. Import order matters: the layering rule
  *  allows a tier to import only from tiers earlier in this array.
@@ -59,6 +61,21 @@ export const FULLPAGE_TAG = 'visual-diff:fullpage';
  *  width — a molecule carrying a container query — without promoting its whole tier. */
 export const ALL_VIEWPORTS_TAG = 'visual-diff:all-viewports';
 
+/** Per-story opt-in to the locale axis: capture once per entry in {@link LOCALES},
+ *  in every theme and viewport the story already has. Only listed stories get the
+ *  axis, because a story whose text never changes with the language would double its
+ *  baselines and catch nothing — the same argument {@link TIER_VIEWPORTS} makes for
+ *  viewports. */
+export const LOCALES_TAG = 'visual-diff:locales';
+
+/** The locales a {@link LOCALES_TAG} story is captured in, as the language subtags
+ *  the Storybook {@link LOCALE_GLOBAL} takes. This repository ships English only, so
+ *  the axis is declared and inert here: no story is listed, and a child with
+ *  translated UI lists its own locales (torn: `en`, `es`). Lowercase letters only, so
+ *  a key still splits back into its fields on {@link KEY_SEPARATOR}.
+ *  @type {readonly string[]} */
+export const LOCALES = ['en'];
+
 /** Storybook's story root: the element every non-fullpage shot is taken of. */
 export const CAPTURE_TARGET = '#storybook-root';
 
@@ -68,6 +85,12 @@ export const CAPTURE_TARGET = '#storybook-root';
  *  `colorScheme` in the URL and every dark capture silently renders light, which lands
  *  as byte-identical dark baselines that look exactly like a passing gate. */
 export const COLOR_SCHEME_GLOBAL = 'colorScheme';
+
+/** The Storybook *global* carrying a listed story's locale, for the same reason the
+ *  theme is one: only a global can be set from the capture URL. Absent from an
+ *  unlisted story's URL entirely, so its page renders exactly as it did before the
+ *  locale axis existed. */
+export const LOCALE_GLOBAL = 'locale';
 
 const UI_SRC = ['packages', 'ui', 'src'];
 
@@ -98,10 +121,18 @@ const VIEWPORT_NAMES = /** @type {readonly ViewportName[]} */ (Object.keys(VIEWP
 
 /** The baseline filename contract — one key per captured variant, `.png` appended by
  *  the writer. `parseVariantKey(variantKey(v))` deep-equals `v`.
+ *
+ *  `tier__viewport__theme__id`, and `tier__viewport__theme__locale__id` for a story
+ *  listed with {@link LOCALES_TAG}. The locale sits with the other matrix fields and
+ *  the story id stays last, so a reader that takes the last field as the id is right
+ *  for both shapes.
  *  @param {Variant} variant
  *  @returns {string} */
-export function variantKey({ tier, viewport, theme, id }) {
-  return [tier, viewport, theme, id].join(KEY_SEPARATOR);
+export function variantKey({ tier, viewport, theme, locale, id }) {
+  const cell =
+    locale === undefined ? [tier, viewport, theme] : [tier, viewport, theme, locale];
+
+  return [...cell, id].join(KEY_SEPARATOR);
 }
 
 /** The inverse of {@link variantKey}. `null` for a key naming a cell outside the
@@ -110,8 +141,33 @@ export function variantKey({ tier, viewport, theme, id }) {
  *  @param {string} key
  *  @returns {Variant | null} */
 export function parseVariantKey(key) {
-  const [tier, viewport, theme, ...rest] = key.split(KEY_SEPARATOR);
-  const id = rest.join(KEY_SEPARATOR);
+  const fields = key.split(KEY_SEPARATOR);
+  // A story id never holds the separator, so five fields can only be a listed story's.
+  if (fields.length === 5) return parseLocaleKey(fields);
+  if (fields.length !== 4) return null;
+
+  const [tier, viewport, theme, id] = fields;
+  return parseCell(tier, viewport, theme, id);
+}
+
+/** @param {readonly string[]} fields @returns {Variant | null} */
+function parseLocaleKey([tier, viewport, theme, locale, id]) {
+  const cell = parseCell(tier, viewport, theme, id);
+  if (cell === null || !LOCALES.includes(locale ?? '')) return null;
+
+  return {
+    tier: cell.tier,
+    viewport: cell.viewport,
+    theme: cell.theme,
+    locale,
+    id: cell.id,
+  };
+}
+
+/** @param {string | undefined} tier @param {string | undefined} viewport
+ *  @param {string | undefined} theme @param {string | undefined} id
+ *  @returns {Variant | null} */
+function parseCell(tier, viewport, theme, id) {
   if (!id) return null;
 
   const knownTier = TIERS.find((candidate) => candidate === tier);

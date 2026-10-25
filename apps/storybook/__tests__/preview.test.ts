@@ -9,6 +9,7 @@ import * as path from 'node:path';
 import {
   CAPTURE_TARGET,
   COLOR_SCHEME_GLOBAL,
+  LOCALE_GLOBAL,
   THEMES,
   VIEWPORTS,
 } from '@gate/visual-diff/policy';
@@ -68,6 +69,7 @@ const renderWith = (globals: Record<string, string>) => {
 
 beforeEach(() => {
   delete document.documentElement.dataset.theme;
+  document.documentElement.removeAttribute('lang');
   document.body.innerHTML = '';
 });
 
@@ -94,6 +96,36 @@ describe('the colorScheme global', () => {
     const start = initialGlobals[COLOR_SCHEME_GLOBAL];
 
     expect(THEMES).toContain(start);
+  });
+});
+
+describe('the locale global', () => {
+  it('is keyed by the name policy hands the capture URL', () => {
+    const names = Object.keys(globalTypes);
+
+    expect(names).toContain(LOCALE_GLOBAL);
+  });
+
+  it('starts unset, so a story nobody listed renders as it did before the axis', () => {
+    const start = initialGlobals[LOCALE_GLOBAL];
+
+    expect(start).toBeUndefined();
+  });
+});
+
+describe('the locale decorator', () => {
+  it('reaches <html> as lang', () => {
+    renderWith({ [LOCALE_GLOBAL]: 'es' });
+
+    expect(document.documentElement.getAttribute('lang')).toBe('es');
+  });
+
+  it('puts back the lang the page loaded with once no locale is set', () => {
+    renderWith({ [LOCALE_GLOBAL]: 'es' });
+
+    renderWith({});
+
+    expect(document.documentElement.hasAttribute('lang')).toBe(false);
   });
 });
 

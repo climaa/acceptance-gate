@@ -8,6 +8,7 @@
 import {
   CAPTURE_TARGET,
   COLOR_SCHEME_GLOBAL,
+  LOCALE_GLOBAL,
   THEMES,
   VIEWPORTS,
 } from '@gate/visual-diff/policy';
@@ -19,6 +20,7 @@ import type { Decorator, Preview } from '@storybook/nextjs-vite';
 import '@gate/ui/styles.css';
 
 import { applyColorScheme, UNSET_THEME } from './color-scheme';
+import { applyLocale } from './locale';
 import { ThemedDocsContainer } from './ThemedDocsContainer';
 
 /** `data-theme` on `<html>`, never the OS colour-scheme media query: a media query
@@ -27,6 +29,15 @@ import { ThemedDocsContainer } from './ThemedDocsContainer';
  *  a pure-MDX docs page needs its own hook into the same global. */
 const withColorScheme: Decorator = (Story, { globals }) => {
   applyColorScheme(globals[COLOR_SCHEME_GLOBAL] ?? UNSET_THEME);
+
+  return Story();
+};
+
+/** `lang` on `<html>` for a story captured on the locale axis. The global is only
+ *  ever set by the capture URL of a listed story, so every other render leaves the
+ *  attribute as the page shipped it. */
+const withLocale: Decorator = (Story, { globals }) => {
+  applyLocale(globals[LOCALE_GLOBAL]);
 
   return Story();
 };
@@ -77,6 +88,12 @@ const preview: Preview = {
         // looking at.
         dynamicTitle: true,
       },
+    },
+    // Declared so a capture URL may set it — Storybook drops a URL global it has no
+    // type for — but with no toolbar and no initial value: this repository lists no
+    // story for the locale axis, and an unset global changes no render.
+    [LOCALE_GLOBAL]: {
+      description: 'Locale a listed story renders in',
     },
   },
   initialGlobals: { [COLOR_SCHEME_GLOBAL]: UNSET_THEME },
@@ -164,7 +181,7 @@ const preview: Preview = {
       },
     },
   },
-  decorators: [withColorScheme, withFlatRoot],
+  decorators: [withColorScheme, withLocale, withFlatRoot],
 };
 
 export default preview;

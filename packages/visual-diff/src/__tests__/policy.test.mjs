@@ -11,6 +11,9 @@ import {
   FULLPAGE_TAG,
   HOST,
   LEDGER,
+  LOCALES,
+  LOCALES_TAG,
+  LOCALE_GLOBAL,
   MODES,
   PATHS,
   SKIP_TAG,
@@ -151,6 +154,79 @@ describe('variantKey / parseVariantKey', () => {
 
     expect(parsed).toBeNull();
   });
+
+  it('writes a variant with no locale as tier, viewport, theme and id, as before the axis', () => {
+    const variant = { tier: 'atoms', viewport: 'desktop', theme: 'dark', id: STORY_ID };
+
+    const key = variantKey(variant);
+
+    expect(key).toBe(`atoms__desktop__dark__${STORY_ID}`);
+  });
+
+  it("puts a listed story's locale between the theme and the story id", () => {
+    const variant = {
+      tier: 'organisms',
+      viewport: 'mobile',
+      theme: 'light',
+      locale: LOCALES[0],
+      id: STORY_ID,
+    };
+
+    const key = variantKey(variant);
+
+    expect(key).toBe(`organisms__mobile__light__${LOCALES[0]}__${STORY_ID}`);
+  });
+
+  it('round-trips a variant in every locale', () => {
+    const variants = LOCALES.map((locale) => ({
+      tier: 'templates',
+      viewport: 'desktop',
+      theme: 'dark',
+      locale,
+      id: 'templates-post-template--with-long-title',
+    }));
+
+    const roundTripped = variants.map((variant) => parseVariantKey(variantKey(variant)));
+
+    expect(roundTripped).toEqual(variants);
+  });
+
+  it('returns null for a key naming a locale outside LOCALES', () => {
+    const parsed = parseVariantKey(`atoms__desktop__light__xx__${STORY_ID}`);
+
+    expect(parsed).toBeNull();
+  });
+
+  it('reads every committed baseline back as a variant with no locale', () => {
+    const keys = readdirSync(new URL('../../__baselines__/', import.meta.url))
+      .filter((name) => name.endsWith('.png'))
+      .map((name) => name.slice(0, -'.png'.length));
+
+    const parsed = keys.map(parseVariantKey);
+
+    expect(keys.length).toBeGreaterThan(0);
+    expect(parsed.every((variant) => variant !== null && !('locale' in variant))).toBe(
+      true,
+    );
+  });
+});
+
+describe('LOCALES', () => {
+  it('lists at least the locale Storybook renders when no locale is set', () => {
+    expect(LOCALES.length).toBeGreaterThan(0);
+    expect(new Set(LOCALES).size).toBe(LOCALES.length);
+  });
+
+  it('holds only lowercase language subtags, so a key still splits on its separator', () => {
+    expect(LOCALES.every((locale) => /^[a-z]{2,3}$/.test(locale))).toBe(true);
+  });
+});
+
+describe('LOCALE_GLOBAL', () => {
+  it('is its own global, never the theme one', () => {
+    expect(LOCALE_GLOBAL.length).toBeGreaterThan(0);
+    expect(LOCALE_GLOBAL).not.toBe(COLOR_SCHEME_GLOBAL);
+  });
 });
 
 describe('COLOR_SCHEME_GLOBAL', () => {
@@ -161,8 +237,8 @@ describe('COLOR_SCHEME_GLOBAL', () => {
 });
 
 describe('story tags', () => {
-  it('namespaces three distinct opt-ins', () => {
-    const tags = [SKIP_TAG, FULLPAGE_TAG, ALL_VIEWPORTS_TAG];
+  it('namespaces four distinct opt-ins', () => {
+    const tags = [SKIP_TAG, FULLPAGE_TAG, ALL_VIEWPORTS_TAG, LOCALES_TAG];
 
     expect(new Set(tags).size).toBe(tags.length);
     for (const tag of tags) {

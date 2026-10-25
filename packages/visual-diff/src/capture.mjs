@@ -30,6 +30,7 @@ import { axOf, buildLedger, ledgerExpression } from './ledger.mjs';
 import {
   CAPTURE_TARGET,
   COLOR_SCHEME_GLOBAL,
+  LOCALE_GLOBAL,
   DETERMINISM,
   LEDGER,
   VIEWPORTS,
@@ -48,13 +49,20 @@ const WORKER_PAGES = 4;
  *  The `globals` colon is written literally and must stay that way: percent-encode it
  *  and Storybook drops the parameter, which lands as a dark capture rendered light —
  *  byte-identical baselines that look exactly like a passing gate.
+ *
+ *  A listed story's locale is a second global, `;`-separated as Storybook reads them;
+ *  an unlisted story sets none, so its URL is byte-for-byte the one it always had.
  *  @param {string} baseUrl origin of the served `storybook-static`
- *  @param {{ id: string, theme: string }} variant
+ *  @param {{ id: string, theme: string, locale?: string }} variant
  *  @returns {string} */
-export function buildStoryUrl(baseUrl, { id, theme }) {
+export function buildStoryUrl(baseUrl, { id, theme, locale }) {
   const origin = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+  const globals =
+    locale === undefined
+      ? `${COLOR_SCHEME_GLOBAL}:${theme}`
+      : `${COLOR_SCHEME_GLOBAL}:${theme};${LOCALE_GLOBAL}:${locale}`;
 
-  return `${origin}/iframe.html?id=${encodeURIComponent(id)}&globals=${COLOR_SCHEME_GLOBAL}:${theme}`;
+  return `${origin}/iframe.html?id=${encodeURIComponent(id)}&globals=${globals}`;
 }
 
 /** The substrings a filter asks for, as a list, with the empty ones dropped.
@@ -202,8 +210,10 @@ export function pngSize(bytes) {
 }
 
 /** What either gate reads off a capture. Story ids are unique across the corpus, so an
- *  id plus the axis being held constant identifies a sibling set on its own.
- *  @typedef {{ id: string, viewport: string, theme: string,
+ *  id plus the axes being held constant identifies a sibling set on its own. `locale`
+ *  is held constant too wherever it is not the axis: two locales sharing one set would
+ *  overwrite each other's cell.
+ *  @typedef {{ id: string, viewport: string, theme: string, locale?: string,
  *              bytes?: Uint8Array | null }} SanityShot */
 
 /** Shots grouped into sibling sets that differ only along one axis, keyed by that axis.
@@ -232,8 +242,11 @@ function siblingSets(shots, groupOf, axisOf, valueOf) {
   return [...sets.values()].filter((set) => set.cells.size > 1);
 }
 
-/** @param {Map<string, Uint8Array>} cells theme → the bytes captured in it */
-function anyThemeDiffers(cells) {
+/** @param {SanityShot} shot */
+const localeOf = (shot) => shot.locale ?? '';
+
+/** @param {Map<string, Uint8Array>} cells axis value → the bytes captured in it */
+function anyCellDiffers(cells) {
   const [first, ...rest] = [...cells.values()];
   if (first === undefined) return false;
 
@@ -251,18 +264,44 @@ function anyThemeDiffers(cells) {
 export function themeSanity(shots) {
   const sets = siblingSets(
     shots,
-    (shot) => `${shot.id} ${shot.viewport}`,
+    (shot) => `${shot.id} ${shot.viewport} ${localeOf(shot)}`,
     (shot) => shot.theme,
     (shot) => shot.bytes ?? null,
   );
 
   if (sets.length === 0) return;
-  if (sets.some((set) => anyThemeDiffers(set.cells))) return;
+  if (sets.some((set) => anyCellDiffers(set.cells))) return;
 
   throw new SanityError(
     `all ${sets.length} stories captured in more than one theme came back ` +
       `byte-identical across themes — the ${COLOR_SCHEME_GLOBAL} global is not ` +
       'reaching the page, so every dark baseline is a light one',
+  );
+}
+
+/** Sanity gate: the locale axis is live.
+ *
+ *  The theme gate's argument, for language: every listed story coming back
+ *  byte-identical across its locales means the locale global never reached the page,
+ *  and a Spanish baseline that is secretly the English one passes forever. Unlisted
+ *  shots carry no locale and form no set, so a corpus that lists nothing passes.
+ *  @param {readonly SanityShot[]} shots
+ *  @throws {SanityError} */
+export function localeSanity(shots) {
+  const sets = siblingSets(
+    shots.filter((shot) => shot.locale !== undefined),
+    (shot) => `${shot.id} ${shot.viewport} ${shot.theme}`,
+    localeOf,
+    (shot) => shot.bytes ?? null,
+  );
+
+  if (sets.length === 0) return;
+  if (sets.some((set) => anyCellDiffers(set.cells))) return;
+
+  throw new SanityError(
+    `all ${sets.length} stories captured in more than one locale came back ` +
+      `byte-identical across locales — the ${LOCALE_GLOBAL} global is not ` +
+      'reaching the page, so every translated baseline is the untranslated one',
   );
 }
 
@@ -292,7 +331,7 @@ function reflowed(cells) {
 export function viewportSanity(shots) {
   const sets = siblingSets(
     shots,
-    (shot) => `${shot.id} ${shot.theme}`,
+    (shot) => `${shot.id} ${shot.theme} ${localeOf(shot)}`,
     (shot) => shot.viewport,
     (shot) => pngSize(shot.bytes)?.width ?? null,
   );

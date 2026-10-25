@@ -1,7 +1,7 @@
 // Imported explicitly rather than relying on `globals: true` — tsconfig's
 // `**/*.ts` include means tsc typechecks this file.
 import { describe, expect, it } from 'vitest';
-import { shotSources, shotUrl } from '../lib/shots';
+import { shotSources, shotTitle, shotUrl } from '../lib/shots';
 import type { Variant } from '../lib/summary';
 
 /**
@@ -141,5 +141,19 @@ describe('the shots a variant has', () => {
     expect(shots.baseline).toBeDefined();
     expect(shots.candidate).toBeDefined();
     expect(shots.diff).toBeUndefined();
+  });
+});
+
+describe('shotTitle', () => {
+  it('names the cell as viewport and theme for a story with no locale', () => {
+    const title = shotTitle('Atoms/Badge · Accent', 'desktop', 'light', 'v1.7.0');
+
+    expect(title).toBe('Atoms/Badge · Accent · desktop/light · v1.7.0');
+  });
+
+  it("adds a listed story's locale to the cell, so its two languages are two titles", () => {
+    const title = shotTitle('Atoms/Badge · Accent', 'desktop', 'light', 'v1.7.0', 'en');
+
+    expect(title).toBe('Atoms/Badge · Accent · desktop/light/en · v1.7.0');
   });
 });

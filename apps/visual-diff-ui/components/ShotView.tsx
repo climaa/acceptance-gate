@@ -17,7 +17,7 @@ import {
   showsDevStorybook,
   storybookLink,
 } from '@/lib/report-view';
-import { setHref, shotTitle } from '@/lib/shots';
+import { cellName, setHref, shotTitle } from '@/lib/shots';
 import { APP_NAME } from '@/lib/site';
 import { type DesignShot, DesignStage, type Split } from './DesignStage';
 import { OverlayStage } from './OverlayStage';
@@ -154,14 +154,16 @@ interface ShotHeading {
   storyId: string;
   viewport: string;
   theme: string;
+  /** Only on a story listed for the locale axis. */
+  locale?: string;
 }
 
 /** The sentence the shot is known by — the tab's title and the heading's
  *  tooltip — and the half of it the dev Storybook link is drawn on. */
-function headingText({ label, story, viewport, theme }: ShotHeading) {
+function headingText({ label, story, viewport, theme, locale }: ShotHeading) {
   return {
-    title: shotTitle(story, viewport, theme, label),
-    place: `${viewport}/${theme} · ${label}`,
+    title: shotTitle(story, viewport, theme, label, locale),
+    place: `${cellName(viewport, theme, locale)} · ${label}`,
   };
 }
 
