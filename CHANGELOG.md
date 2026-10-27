@@ -7,6 +7,13 @@ transcribed from the GitHub Releases that existed when this file was created (20
 
 ## Unreleased
 
+- A pixel perfect session starts from the console's shot view, which is its only input:
+  `/pixel-perfect-session <URL>` reads that screenshot against its tile by pixel rows. It
+  derives the story, its source, the Storybook addresses, the baseline and the board from the
+  URL, then fixes the component on-token and stops before accepting. It covers the four
+  `packages/ui` tiers and the console's `screens`. The skill lives in
+  `.claude/skills/pixel-perfect-session/`, and its page is `Docs/Skills/Pixel Perfect Session`.
+
 - Every console screen now has its tiles: the report, the comparison modal, the set viewer and
   the shot view are drawn on `05-screens` from the hand-drawn pages on `x-visual-diff-pages`,
   each at 1:1 with its baseline and its dark tile a theme of the light one. A report tile is 7841

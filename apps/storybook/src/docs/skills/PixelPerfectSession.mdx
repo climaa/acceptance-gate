@@ -1,0 +1,168 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs/Skills/Pixel Perfect Session" />
+
+# `pixel-perfect-session`
+
+This skill reads a story's screenshot against its tile on the design board, **by pixel
+rows**. It names each gap as the CSS property that moves it, then brings the component to the
+tile using the design tokens, never the tile's literals. It is the one skill in
+`.claude/skills/` written for this repository rather than vendored.
+
+The console's shot view overlays a tile on its screenshot and shows drift. This skill turns
+the drift into numbers, and the numbers into a change the gate accepts.
+
+## Invoke it
+
+Paste the shot view you are already looking at. That URL is the whole invocation:
+
+```text
+/pixel-perfect-session http://127.0.0.1:3300/set/baselines/shot/atoms__desktop__light__atoms-badge--accent?view=overlay&blend=difference
+```
+
+The path names the **set** (`baselines`) and the **variant key**. The skill derives every
+other address from those two. The query string (`?view=overlay&blend=difference`) is what
+you were looking at, and the skill ignores it.
+
+| Input                  | Default                 | What it does                                                                                                                 |
+| ---------------------- | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `<shot view URL>`      | asks                    | Any `/set/<label>/shot/<key>` address on a running console. A bare variant key also works, and reads the committed baseline. |
+| `--report`             | off                     | Measures and proposes the properties and tokens, then stops without editing anything                                         |
+| `--storybook <origin>` | `http://localhost:6006` | Where Storybook dev runs, for the story's source file and for live geometry while changing CSS                               |
+
+You can also ask in words: "pixel perfect session on this shot", "the overlay shows the badge
+is off", followed by the URL.
+
+The set in the URL decides which screenshot is read:
+
+- **`baselines`** reads the committed corpus.
+- **A capture label** reads a fresh capture taken in the console. This is how a change is
+  judged against its tile before anything is accepted.
+
+## What it derives from the URL
+
+For the variant above, the measurement script prints these first, so the session reads its
+addresses off one place and never rebuilds one by hand:
+
+| Name         | Address                                                                                                   |
+| ------------ | --------------------------------------------------------------------------------------------------------- |
+| `shot view`  | `http://127.0.0.1:3300/set/baselines/shot/atoms__desktop__light__atoms-badge--accent`                     |
+| `overlay`    | the same, with `?view=overlay&blend=difference`                                                           |
+| `story`      | `http://localhost:6006/?path=/story/atoms-badge--accent&globals=colorScheme:light;viewport.value:desktop` |
+| `captured`   | `http://localhost:6006/iframe.html?id=atoms-badge--accent&globals=colorScheme:light`                      |
+| `source`     | `packages/ui/src/atoms/Badge/Badge.stories.tsx`, from Storybook's `index.json`                            |
+| `screenshot` | `http://127.0.0.1:3300/api/sets/baselines/shots/atoms__desktop__light__atoms-badge--accent.png`           |
+| `baseline`   | `packages/visual-diff/__baselines__/atoms__desktop__light__atoms-badge--accent.png`                       |
+| `board`      | `designs/01-atoms.pen`, the frame named by the variant key                                                |
+| `export`     | `designs/exports/01-atoms.png` at the scale and rectangle `01-atoms.tiles.json` records                   |
+
+How each one is built:
+
+- **`captured`** is the address `packages/visual-diff/src/capture.mjs` photographs. The theme
+  travels as the `colorScheme` global. The viewport is set by Playwright rather than by a
+  `viewport` global, which a directly navigated iframe cannot read.
+- **`screenshot`** is fetched from the console that served the URL, so any set reads the same
+  way.
+- **A `screens` variant** resolves just as well: its source is under
+  `apps/visual-diff-ui/app/_screens/`, and its tile is on one of the pages `05-screens-1…4`.
+
+## Before you run it
+
+- **The console is up** at the URL's origin. With it down, pass the bare variant key instead;
+  the script then reads the baseline from disk.
+- **The board exports are current.** The tile is read off `designs/exports/<stem>.png`. A board
+  edited and not exported measures its previous drawing.
+- **Storybook dev** (`pnpm --filter @gate/storybook dev`) is needed for the `source` line and
+  for live geometry while fixing. The measurement itself does not need it.
+- **Docker** is needed for the differ: `check` and `accept` run in the pinned container. See
+  the [visual diff workflow](?path=/docs/docs-qa-visual-diff-workflow--docs).
+- **Pencil and its MCP** are needed only for the last step, the tile's height. Without them the
+  skill leaves the tile and says so.
+
+## What it does
+
+The measurement is a script, committed with the skill:
+
+```sh
+node .claude/skills/pixel-perfect-session/scripts/tile-rows.mjs '<shot view URL>'
+```
+
+It prints both images as runs of rows:
+
+- `ink` for text;
+- `tint` for a wash or band;
+- `plain` for ground.
+
+It then pairs the ink runs and prints the screenshot's offset from the tile on each. An ink
+run also prints its column span, which is how a weight, a face or a tracking shows up: as a
+width. Here is the variant above:
+
+```text
+tile  designs/exports/01-atoms.png @1.318737 — 1248×25
+  tint     0–9    (10)
+  ink     10–20   (11)  cols 9–33 (25)
+  tint    21–24   (4)
+
+shot  http://127.0.0.1:3300/api/sets/baselines/shots/atoms__desktop__light__atoms-badge--accent.png — 1248×25
+  tint     0–8    (9)
+  ink      9–18   (10)  cols 9–32 (24)
+  tint    19–24   (6)
+
+ink rows, tile → shot (1 vs 1 runs)
+   1  10–20      9–18       -1
+```
+
+Two corrections apply when reading this output:
+
+- **Top edge.** The export draws a frame's stroke inside its bounds, while the differ
+  photographs the DOM border as a row of its own. At the top edge, a pair reading `+1` is
+  aligned.
+- **Clipping.** A tile is a fixed-height frame that clips. Once the first card drifts, every
+  card below drifts one card's worth more, so the skill judges the **first** repeat of a
+  pattern and computes the rest.
+
+From there, the procedure is the one a careful reviewer would follow by hand, written down so
+it is followed every time:
+
+1. **Read the tile's claims.** A `.pen` is plain JSON. The skill dumps the tile's nodes and
+   sets each `padding`, `gap`, `fontSize`, `lineHeight`, `fontWeight`, `letterSpacing` and
+   `fontFamily` beside the token the CSS uses.
+2. **Name each gap as one property:**
+   - an offset that carries down is a padding or a gap;
+   - one that grows with the font size is a line-height;
+   - a width at the same rows is a weight or a face;
+   - a width that grows with the character count is a tracking.
+3. **Classify the tile's value:**
+   - **a token:** use it;
+   - **off the scale:** take the token whose ink lands within a pixel, and say which;
+   - **against a foundation** (board 00, `tokens.css`): keep the foundation and list the value
+     for the owner.
+4. **Fix on-token.** The CSS goes in `packages/ui/src/<tier>/` for the four component tiers, or
+   in the console's `apps/visual-diff-ui/app/styles/` for a screen. When the gap is inside a
+   `packages/ui` component the screen composes, the fix goes in that component.
+5. **Verify, then ask.** Build Storybook, run the differ's check in the container and read its
+   summary. The change must explain every `changed` variant. The session **stops here** and
+   asks before running `accept`, because accepting rewrites the committed baselines.
+6. **Measure again and resize the tile.** After accepting, the session runs the script on the
+   same URL; the ink pairs should read `0`. It then resizes each moved tile in Pencil to its
+   new baseline's height and re-exports the board.
+
+## What it does not decide
+
+A tile that disagrees with a foundation is not a reason to change either one in a pull
+request. The skill's report carries two tables:
+
+- the rows it moved;
+- the values the tile draws against the foundation they contradict.
+
+The second table is the owner's to settle.
+
+## Related
+
+- [Visual Diff Workflow](?path=/docs/docs-qa-visual-diff-workflow--docs): capture, check and
+  accept, which this skill runs in order.
+- [Diff Policy](?path=/docs/docs-qa-diff-policy--docs): the matrix that says which viewports
+  and themes a tile has to be read at.
+- [System Design](?path=/docs/docs-system-design-overview--docs): the boards the tiles live on.
+- [Overview](?path=/docs/docs-skills-overview--docs): the other skills committed to this
+  repository.
