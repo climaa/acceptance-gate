@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import NextLink from 'next/link';
 import { Suspense } from 'react';
-import { preload } from 'react-dom';
 import { Badge, SiteHeader, Text } from '@gate/ui';
 import { resolveDataDir } from '@/lib/data';
 import {
@@ -53,15 +52,6 @@ export const metadata: Metadata = {
  */
 const ABOVE_THE_FOLD_FACES = [bodyFace, bodyBoldFace, displayFace, monoFace];
 
-// `crossorigin` is not optional even same-origin: fonts are fetched in CORS mode
-// whatever the origin, and a preload without it lands in a different cache
-// partition than the stylesheet's request — so the face downloads twice.
-const FONT_PRELOAD = {
-  as: 'font',
-  type: 'font/woff2',
-  crossOrigin: 'anonymous',
-} as const;
-
 /**
  * The badge every screen fed from `fixtures/` carries.
  *
@@ -104,10 +94,6 @@ const BRAND = (
 );
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  // React hoists these ahead of the stylesheet link it injects, which is the
-  // whole point: discovery has to beat the CSS the faces are declared in.
-  for (const face of ABOVE_THE_FOLD_FACES) preload(face, FONT_PRELOAD);
-
   return (
     // The script below sets `data-theme` on this element before React sees the
     // document, so the server's markup and the hydrated DOM disagree by design.
@@ -119,6 +105,23 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <head>, and the paint it would otherwise flash through is waiting on
             that same stylesheet. */}
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+        {/* Written into <head> as links, not through react-dom's `preload()`:
+            from a server layout that call reaches the page only as a Flight hint
+            at the end of <body>, which the browser acts on after it has already
+            found the faces in the stylesheet — the served HTML carried no
+            preload at all. `crossOrigin` is not optional even same-origin: fonts
+            are fetched in CORS mode, and a preload without it lands in a
+            different cache partition, so the face downloads twice. */}
+        {ABOVE_THE_FOLD_FACES.map((face) => (
+          <link
+            key={face}
+            rel="preload"
+            href={face}
+            as="font"
+            type="font/woff2"
+            crossOrigin="anonymous"
+          />
+        ))}
       </head>
       <body>
         {/* `as={NextLink}` once, forwarded to the brand: the design system

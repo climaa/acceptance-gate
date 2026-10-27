@@ -128,7 +128,7 @@ export function StoryScreenshots({ label, group }: StoryScreenshotsProps) {
   return (
     <article className="vd-story" aria-labelledby={headingId}>
       <header className="vd-story__head">
-        <Text variant="title" className="vd-story__title" id={headingId}>
+        <Text variant="title" id={headingId}>
           {group.title}
         </Text>
         <span className="vd-mono vd-story__id" title={group.storyId}>

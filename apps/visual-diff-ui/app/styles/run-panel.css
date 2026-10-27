@@ -203,6 +203,14 @@
   font-size: var(--text-base);
 }
 
+/* The name the action lands on. Set in mono, which has no bold to emphasize
+   it with, so it is marked the way a code token is: a muted chip. */
+.vd-confirm__question strong {
+  padding-inline: var(--space-1);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-muted);
+}
+
 .vd-confirm__detail {
   margin: 0;
   font-size: var(--text-sm);

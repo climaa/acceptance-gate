@@ -99,6 +99,12 @@
   scroll-margin-block-start: var(--space-4);
 }
 
+/* The count rides inside the heading but is not part of the title: a heading's
+   step on a figure would outweigh the tier it counts. */
+.vd-tier__title .vd-count {
+  font-size: var(--text-sm);
+}
+
 .vd-story {
   display: flex;
   flex-direction: column;

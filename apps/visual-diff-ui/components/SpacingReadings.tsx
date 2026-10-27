@@ -318,7 +318,7 @@ export function SpacingReadings({
   return (
     <div className="vd-readings">
       <Stack direction="row" gap={3} align="baseline" wrap>
-        <Text variant="title" className="vd-readings__heading">
+        <Text variant="title">
           {/* x-visual-diff-pages' fold marker. Decoration: the button below carries the
               state, as aria-expanded. */}
           {foldable && (

@@ -150,7 +150,10 @@ export function ReportTemplate({
               ← console
             </NextLink>
 
-            <Text variant="heading-2" as="h1" className="vd-report-id" title={id}>
+            {/* A heading's step in the mono face: an id is read character by
+                character, which the display serif's proportional figures do not
+                serve. `.vd-mono` pins the one weight JetBrains Mono ships. */}
+            <Text variant="heading-2" as="h1" className="vd-report-id vd-mono" title={id}>
               {id}
             </Text>
 

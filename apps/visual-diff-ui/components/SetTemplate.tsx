@@ -112,7 +112,14 @@ export function SetTemplate({
             <NextLink className="vd-set__back vd-mono" href="/">
               ← console
             </NextLink>
-            <Text variant="heading-2" as="h1" className="vd-set__label">
+            {/* Mono for the reason the report id is; `title` because the label
+                is cut with an ellipsis and would otherwise be unreadable whole. */}
+            <Text
+              variant="heading-2"
+              as="h1"
+              className="vd-set__label vd-mono"
+              title={shots.label}
+            >
               {shots.label}
             </Text>
             {shots.isCanonical && <Badge tone="success">canonical</Badge>}
@@ -148,7 +155,7 @@ export function SetTemplate({
         >
           <Stack gap={3}>
             <Text
-              variant="label"
+              variant="heading-3"
               as="h2"
               className="vd-tier__title"
               id={`vd-tier-${section.tier}`}
