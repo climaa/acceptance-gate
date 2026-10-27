@@ -15,8 +15,9 @@ Only the `description` stays in context permanently. The body loads when the ski
 invoked, and any reference files load when the body points at them — so a skill can ship
 tens of kilobytes of procedure without spending tens of kilobytes of context.
 
-`.claude/skills/` holds four of them, committed rather than installed. That distinction is
-the whole reason this page exists.
+`.claude/skills/` holds five of them, committed rather than installed. Four are vendored
+from `vercel/next.js`; [one](#and-one-of-this-repos-own) is written here. Committing rather
+than installing is the whole reason this page exists.
 
 ## Why committed, not installed
 
@@ -49,6 +50,14 @@ Each has its own page covering how to invoke it, what it needs, and the commands
 | [`next-partial-prefetching-adoption`](https://github.com/climaa/acceptance-gate/tree/main/.claude/skills/next-partial-prefetching-adoption) | Turns Partial Prefetching on and works through the insights it raises                                                                       | `cacheComponents: true`          |
 | [`next-dev-loop`](https://github.com/climaa/acceptance-gate/tree/main/.claude/skills/next-dev-loop)                                         | Confirms a change actually works in a running app, rather than merely compiling — combines Next's own `/_next/mcp` view with a real browser | A running `next dev`             |
 
+## And one of this repo's own
+
+[`pixel-perfect-session`](https://github.com/climaa/acceptance-gate/tree/main/.claude/skills/pixel-perfect-session)
+takes a shot view URL from the visual-diff console and reads that screenshot against its tile
+on the design board, by pixel rows. It then fixes the component on-token until the two line
+up. It needs a running console and the board exports, and it shares nothing with the four
+above. Its page is [Pixel Perfect Session](?path=/docs/docs-skills-pixel-perfect-session--docs).
+
 ## They are not independent
 
 Three of the four sit behind one flag. Reading the "Needs" column as a graph:
@@ -77,7 +86,7 @@ recorded in the skills' own prerequisites rather than in someone's memory.
 
 ## Provenance and integrity
 
-All four are copied **unmodified** from
+The four vendored skills are copied **unmodified** from
 [`vercel/next.js`](https://github.com/vercel/next.js/tree/canary/skills), pinned to commit
 `ec1a44d0f112d7a3dd7ce5138ddde19a3a1a876b`, MIT licensed, vendored 2026-08-12.
 [`.claude/skills/PROVENANCE.md`](https://github.com/climaa/acceptance-gate/blob/main/.claude/skills/PROVENANCE.md)
@@ -109,7 +118,7 @@ and the skill reads as self-contradictory. After re-copying, regenerate the chec
 ## One thing to watch: scope precedence
 
 The same skill can exist in more than one place. A skill in `~/.claude/skills/` is personal to
-one machine; the four here are project scope; installed plugins contribute a third, namespaced
+one machine; the five here are project scope; installed plugins contribute a third, namespaced
 set.
 
 When a name exists in two scopes the agent loads one of them, and **which one is not visible

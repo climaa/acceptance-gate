@@ -171,6 +171,10 @@ const preview: Preview = {
               'Cache Components Optimizer',
               'Partial Prefetching Adoption',
               'Dev Loop',
+              // The one skill of this repo's own closes the folder: it reads a
+              // story against its tile, which only makes sense once the reader
+              // has met the boards and the differ the pages above describe.
+              'Pixel Perfect Session',
             ],
           ],
           'Atoms',
