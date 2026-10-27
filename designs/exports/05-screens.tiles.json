@@ -1,0 +1,10 @@
+{
+  "board": "05-screens — Screens",
+  "scale": 1.828979,
+  "tiles": {
+    "screens__desktop__dark__screens-console-dashboard--sample": [2546, 505, 2341, 3342],
+    "screens__desktop__light__screens-console-dashboard--sample": [117, 505, 2341, 3342],
+    "screens__mobile__dark__screens-console-dashboard--sample": [5776, 505, 713, 7570],
+    "screens__mobile__light__screens-console-dashboard--sample": [4975, 505, 713, 7570]
+  }
+}
