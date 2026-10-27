@@ -3,7 +3,13 @@ import path from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { accept, capture, check, defaultDeps, mismatchedHostKeys } from '../commands.mjs';
-import { BASELINE_PNG_BUDGET_BYTES, EXIT, HOST, PATHS } from '../policy.mjs';
+import {
+  BASELINE_BUDGET_BYTES,
+  BASELINE_PNG_BUDGET_BYTES,
+  EXIT,
+  HOST,
+  PATHS,
+} from '../policy.mjs';
 
 const ROOT = '/repo';
 const at = (relative) => path.join(ROOT, relative);
@@ -498,8 +504,10 @@ describe('accept', () => {
 
   it('refuses, writing nothing, when the corpus is over budget', async () => {
     // Every PNG is under the per-file cap: it is the set that does not fit, which is
-    // the failure the corpus budget exists for.
-    const stories = Array.from({ length: 6 }, (_, index) => ({
+    // the failure the corpus budget exists for. An atom is two PNGs, one per theme,
+    // so one story past half as many as the corpus holds at the cap.
+    const fit = Math.floor(BASELINE_BUDGET_BYTES / BASELINE_PNG_BUDGET_BYTES / 2);
+    const stories = Array.from({ length: fit + 1 }, (_, index) => ({
       ...STORY,
       id: `atoms-button--variant-${index}`,
     }));

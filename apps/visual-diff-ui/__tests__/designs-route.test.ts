@@ -5,7 +5,8 @@ import * as path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { BOARD_CACHE_CONTROL, GET } from '../app/api/designs/route';
 import { DESIGN_EXPORTS_DIR } from '../lib/design-exports';
-import { DESIGN_BOARDS, designBoardScaleUrl, designBoardUrl } from '../lib/comparison';
+import { DESIGN_BOARDS } from '../lib/comparison';
+import { designBoardScaleUrl, designBoardUrl } from '../lib/design-urls';
 
 /**
  * The design boards' route: the four committed exports and nothing else.

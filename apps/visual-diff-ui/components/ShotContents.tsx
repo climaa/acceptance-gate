@@ -3,26 +3,9 @@ import { readBoardHomes } from '@/lib/board-homes';
 import { resolveDataDir } from '@/lib/data';
 import { repoRoot } from '@/lib/git';
 import { readSetLedger } from '@/lib/set-ledger';
-import {
-  neighbourKeys,
-  readSetShots,
-  type SetShot,
-  type SetShots,
-} from '@/lib/set-shots';
-import { setShotUrl } from '@/lib/shots';
+import { readSetShots } from '@/lib/set-shots';
+import { shotProps } from '@/lib/shot-props';
 import { type ShotEntry, ShotView } from './ShotView';
-
-/** The shot a key names in a set, with the title its story is grouped under. */
-function findShot(shots: SetShots, key: string): { shot: SetShot; title: string } | null {
-  for (const section of shots.sections) {
-    for (const group of section.groups) {
-      const shot = group.shots.find((candidate) => candidate.key === key);
-      if (shot) return { shot, title: group.title };
-    }
-  }
-
-  return null;
-}
 
 /**
  * One screenshot of a set, read and handed to the shot view.
@@ -45,41 +28,18 @@ export async function ShotContents({
   const { label, key } = await params;
   const { dir } = await resolveDataDir();
   const shots = await readSetShots(dir, repoRoot(), label);
-  const found = shots && findShot(shots, key);
-  if (!found) notFound();
-
-  const { shot, title } = found;
-  const { prev, next } = neighbourKeys(shots.sections, key);
-  const size = shot.width !== null && shot.height !== null;
+  const props = shots && shotProps(label, shots, key);
+  if (!props) notFound();
 
   return (
     // Keyed by the shot, so a walk to the next one starts its tools afresh
     // instead of carrying this one's crop and nudges over.
     <ShotView
       key={key}
-      label={label}
-      story={title}
-      storyId={shot.storyId}
-      viewport={shot.viewport}
-      theme={shot.theme}
-      {...(shot.locale === undefined ? {} : { locale: shot.locale })}
-      tier={shot.tier}
-      shot={{
-        key: shot.key,
-        src: setShotUrl(label, shot.file),
-        // Unreachable while the set's reader is the one that found it, and said
-        // anyway: a pane is never left blank without a sentence.
-        absent: 'This screenshot could not be read.',
-        caption: `screenshot · ${label}${size ? ` · ${shot.width}×${shot.height}` : ''}`,
-        alt: `${shot.storyId}, ${shot.viewport} ${shot.theme}${shot.locale === undefined ? '' : ` ${shot.locale}`}`,
-        label: 'screenshot',
-        ...(shot.width === null ? {} : { width: shot.width }),
-      }}
+      {...props}
       ledger={await readSetLedger(label, key)}
       homes={await readBoardHomes()}
       entry={entry}
-      {...(prev ? { prevKey: prev } : {})}
-      {...(next ? { nextKey: next } : {})}
     />
   );
 }

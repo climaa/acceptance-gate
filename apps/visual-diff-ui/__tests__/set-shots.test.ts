@@ -2,15 +2,15 @@ import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
+import { readSetShots } from '../lib/set-shots';
 import {
   filterCounts,
   groupShots,
   neighbourKeys,
   parseShotName,
-  readSetShots,
   type SetShot,
   tierAxes,
-} from '../lib/set-shots';
+} from '../lib/set-view';
 
 /**
  * What a screenshot set holds, read off its filenames and its PNG headers.

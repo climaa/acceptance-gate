@@ -17,7 +17,7 @@ import { SAMPLE_REPORTS, SAMPLE_SETS, SAMPLE_SIZES } from './dashboard-sample';
  * this baseline on every accept.
  */
 const meta = {
-  title: 'Screens/Console/Dashboard',
+  title: 'Screens/Visual-diff-ui/Dashboard',
   component: DashboardTemplate,
 };
 

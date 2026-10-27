@@ -6,7 +6,7 @@ import {
   showsDevStorybook,
   storybookLink,
 } from '@/lib/report-view';
-import type { SetShot, ShotGroup } from '@/lib/set-shots';
+import type { SetShot, ShotGroup } from '@/lib/set-view';
 import { cellName, setShotUrl, shotViewHref } from '@/lib/shots';
 
 /**

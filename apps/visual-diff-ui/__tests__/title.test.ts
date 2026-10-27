@@ -36,6 +36,12 @@ describe('storyTitle', () => {
     expect(title).toBe('CodeBlock — With Language');
   });
 
+  it('names a console screen by its app, with the acronym upper-cased', () => {
+    const title = storyTitle('screens-visual-diff-ui-dashboard--sample');
+
+    expect(title).toBe('Visual Diff UI Dashboard — Sample');
+  });
+
   it('keeps a slug that carries no variant half to one title', () => {
     const title = storyTitle('organisms-siteheader');
 

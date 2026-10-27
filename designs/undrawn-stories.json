@@ -1,0 +1,9 @@
+{
+  "stories": [
+    "screens-visual-diff-ui-comparison--sample",
+    "screens-visual-diff-ui-report--changed",
+    "screens-visual-diff-ui-report--removed",
+    "screens-visual-diff-ui-set--sample",
+    "screens-visual-diff-ui-shot--sample"
+  ]
+}

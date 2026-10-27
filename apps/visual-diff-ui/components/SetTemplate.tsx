@@ -2,7 +2,7 @@ import NextLink from 'next/link';
 import { Badge, Stack, Text } from '@gate/ui';
 import type { CanonicalSet } from '@/lib/baselines';
 import { UNKNOWN, formatBytes, shortSha } from '@/lib/outcome';
-import { filterCounts, type SetShots, tierFilterCounts } from '@/lib/set-shots';
+import { filterCounts, type SetShots, tierFilterCounts } from '@/lib/set-view';
 import type { CaptureSet } from '@/lib/summary';
 import { Field } from './Field';
 import { DEFAULT_SEGMENT, type SetFilter } from '@/lib/set-filter';

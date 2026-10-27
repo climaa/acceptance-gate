@@ -204,7 +204,7 @@ it first.
 ### Accepting baselines
 
 `accept` is all-or-nothing: if any capture errored, nothing is written. Before writing
-anything it checks a budget — 512,000 bytes per PNG, 5,000,000 bytes for the whole
+anything it checks a budget — 512,000 bytes per PNG, 8,000,000 bytes for the whole
 corpus — and refuses the entire accept if either is exceeded. An unfiltered accept prunes
 baseline keys nothing in the run claimed (deleted or renamed stories); a filtered accept
 (`--filter`) leaves out-of-scope baselines untouched instead.

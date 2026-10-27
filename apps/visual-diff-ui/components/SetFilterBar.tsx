@@ -8,7 +8,7 @@ import {
   tierAxes,
   VIEWPORT_CHOICES,
   VIEWPORT_SEGMENTS,
-} from '@/lib/set-shots';
+} from '@/lib/set-view';
 import type { SetFilter } from '@/lib/set-filter';
 import { SetFilterUrl } from './SetFilterUrl';
 

@@ -4,12 +4,12 @@ import { useEffect, useState } from 'react';
 import type { PanZoomRect } from '@gate/ui';
 import { z } from 'zod';
 import { type BoardTiles, cssSize } from '@/lib/board-crop';
+import type { DesignBoard } from '@/lib/comparison';
 import {
-  type DesignBoard,
   designBoardScaleUrl,
   designBoardTilesUrl,
   designBoardUrl,
-} from '@/lib/comparison';
+} from '@/lib/design-urls';
 import { useJsonOnMount } from './useJsonOnMount';
 
 /**

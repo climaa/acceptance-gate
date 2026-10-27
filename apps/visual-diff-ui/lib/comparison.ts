@@ -250,17 +250,3 @@ export const defaultBoard = (
   variant: { tier: Variant['tier']; key: string },
   homes: BoardHomes,
 ): DesignBoard => homes[variant.key] ?? tierBoards(variant.tier)[0] ?? DESIGN_BOARDS[0];
-
-/** Where a board's bytes are served. */
-export const designBoardUrl = (board: DesignBoard) =>
-  `/api/designs?${new URLSearchParams({ board }).toString()}`;
-
-/** Where a board's export sidecar is served: its size in design pixels and the
- *  scale its PNG was exported at (app/api/designs/route.ts). */
-export const designBoardScaleUrl = (board: DesignBoard) =>
-  `/api/designs?${new URLSearchParams({ board, format: 'json' }).toString()}`;
-
-/** Where a board's tile map is served: each variant's tile, in the board's PNG
- *  pixels. Only the four tier boards have one; any other board answers 404. */
-export const designBoardTilesUrl = (board: DesignBoard) =>
-  `/api/designs?${new URLSearchParams({ board, format: 'tiles' }).toString()}`;

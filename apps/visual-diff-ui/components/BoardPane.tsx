@@ -8,12 +8,8 @@ import {
   SegmentedControl,
   Stack,
 } from '@gate/ui';
-import {
-  DESIGN_BOARDS,
-  type DesignBoard,
-  designBoardUrl,
-  isDesignBoard,
-} from '@/lib/comparison';
+import { DESIGN_BOARDS, type DesignBoard, isDesignBoard } from '@/lib/comparison';
+import { designBoardUrl } from '@/lib/design-urls';
 import type { ShotTools } from './DesignStage';
 
 /**
