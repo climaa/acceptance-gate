@@ -9,9 +9,17 @@
  */
 
 /** Stripped from the front of a slug, longest first so `templates-` never loses
- *  to a shorter sibling. `pages-` is here because Storybook allows the tier and
+ *  to a shorter sibling. `screens-` is the console's own pages (policy's
+ *  `APP_ROOTS`). `pages-` is here because Storybook allows the tier and
  *  the summary schema does not: a slug that carries it still reads correctly. */
-const TIER_PREFIXES = ['molecules-', 'organisms-', 'templates-', 'atoms-', 'pages-'];
+const TIER_PREFIXES = [
+  'molecules-',
+  'organisms-',
+  'templates-',
+  'screens-',
+  'atoms-',
+  'pages-',
+];
 
 /**
  * Compound component names, whose internal capitals a lowercased id cannot

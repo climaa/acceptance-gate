@@ -164,6 +164,22 @@ describe('useBoardCrop', () => {
     expect(drawImage).not.toHaveBeenCalled();
   });
 
+  // A screen's tile is a page: the console's mobile dashboard is 390×4141, taller
+  // than the old 4096 side limit, which dropped the crop for the whole board.
+  it('cuts a page-tall tile', async () => {
+    vi.stubGlobal(
+      'Image',
+      class extends imageThat(true) {
+        naturalWidth = 1000;
+        naturalHeight = 10_000;
+      },
+    );
+    render(<Probe rect={{ x: 0, y: 0, width: 780, height: 8282 }} />);
+    await settle();
+
+    expect(screen.getByText('blob:crop 390×4141')).toBeTruthy();
+  });
+
   // The frame is what lets two synced panes share a scale: the crop is drawn at
   // its own CSS size, at the top-left of an image as wide as the screenshot.
   it('frames the cut to the screenshot it is read beside', async () => {

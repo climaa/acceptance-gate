@@ -67,9 +67,14 @@ export function useBoardTiles(board: DesignBoard): BoardTiles | null {
   );
 }
 
-/** The largest side a cut is drawn at, in CSS pixels: past it a crop is a
- *  board, not a region of one, and a canvas that size is memory, not a view. */
-const MAX_CUT = 4096;
+/** The most a cut is drawn at, in CSS pixels: past it a crop is a board, not a
+ *  region of one, and a canvas that size is memory, not a view. An area, not a
+ *  side, because a screen's tile is a page — 390 wide and 4141 tall for the
+ *  console's mobile dashboard — and a side limit of 4096 refused it, so the shot
+ *  view fell back to the whole board. The side limit stays, at the size every
+ *  engine draws a canvas side at. */
+const MAX_CUT_AREA = 4096 * 4096;
+const MAX_CUT_SIDE = 16_384;
 
 /** A crop held to the board it is a crop of: an address can carry any numbers,
  *  and a box past the board's edges is pixels that do not exist. */
@@ -111,7 +116,9 @@ async function cutBoard(
   const size = cssSize(rect, scale);
   const width = Math.round(Math.max(size.width, frameWidth));
   const height = Math.round(size.height);
-  if (width > MAX_CUT || height > MAX_CUT) return null;
+  const tooBig =
+    width > MAX_CUT_SIDE || height > MAX_CUT_SIDE || width * height > MAX_CUT_AREA;
+  if (tooBig) return null;
 
   const canvas = document.createElement('canvas');
   canvas.width = width;

@@ -19,6 +19,7 @@ import {
   SKIP_TAG,
   THEMES,
   TIERS,
+  UI_TIERS,
   VIEWPORTS,
   parseVariantKey,
   tierOf,
@@ -36,14 +37,18 @@ const themesFor = (tier, viewport) =>
   );
 
 describe('TIERS', () => {
-  it('lists the four atomic-design tiers, innermost first', () => {
-    expect(TIERS).toEqual(['atoms', 'molecules', 'organisms', 'templates']);
+  it('lists the four atomic-design tiers, innermost first, then screens', () => {
+    expect(TIERS).toEqual(['atoms', 'molecules', 'organisms', 'templates', 'screens']);
+  });
+
+  it('keeps screens out of the tiers that are packages/ui folders', () => {
+    expect(UI_TIERS).toEqual(['atoms', 'molecules', 'organisms', 'templates']);
   });
 });
 
 describe('MODES', () => {
-  it('has 12 entries: atoms 1x2, molecules 1x2, organisms 2x2, templates 2x2', () => {
-    expect(MODES).toHaveLength(12);
+  it('has 16 entries: atoms 1x2, molecules 1x2, organisms, templates and screens 2x2', () => {
+    expect(MODES).toHaveLength(16);
   });
 
   it('uses only viewports that exist in VIEWPORTS', () => {
@@ -87,13 +92,13 @@ describe('MODES', () => {
 
 describe('tierOf', () => {
   it('derives the tier from a story path in each tier folder', () => {
-    const paths = TIERS.map(
+    const paths = UI_TIERS.map(
       (tier) => `packages/ui/src/${tier}/Widget/Widget.stories.tsx`,
     );
 
     const tiers = paths.map((path) => tierOf(path));
 
-    expect(tiers).toEqual(TIERS);
+    expect(tiers).toEqual(UI_TIERS);
   });
 
   it("resolves an importPath relative to Storybook's config dir", () => {
@@ -114,6 +119,33 @@ describe('tierOf', () => {
 
   it('returns null for a tier-named folder outside packages/ui', () => {
     const path = 'apps/blog/src/atoms/Widget/Widget.stories.tsx';
+
+    const tier = tierOf(path);
+
+    expect(tier).toBeNull();
+  });
+
+  it("places a story under the console's app directory in screens", () => {
+    const paths = [
+      'apps/visual-diff-ui/app/DashboardScreen.stories.tsx',
+      '../visual-diff-ui/app/DashboardScreen.stories.tsx',
+    ];
+
+    const tiers = paths.map((path) => tierOf(path));
+
+    expect(tiers).toEqual(['screens', 'screens']);
+  });
+
+  it("returns null for another app's app directory", () => {
+    const path = '../blog/app/Page.stories.tsx';
+
+    const tier = tierOf(path);
+
+    expect(tier).toBeNull();
+  });
+
+  it('never reads a packages/ui folder named screens as a tier', () => {
+    const path = 'packages/ui/src/screens/Widget/Widget.stories.tsx';
 
     const tier = tierOf(path);
 

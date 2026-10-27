@@ -68,7 +68,12 @@
         "BLOG_RELEASES_FIXTURE",
         "GITHUB_TOKEN"
       ],
-      "inputs": ["$TURBO_DEFAULT$", ".env*", "$TURBO_ROOT$/designs/exports/**"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        ".env*",
+        "$TURBO_ROOT$/designs/exports/**",
+        "$TURBO_ROOT$/apps/visual-diff-ui/{app,components,lib,hooks,fixtures}/**"
+      ],
       "outputs": ["storybook-static/**"]
     },
     "//#boards:check": {

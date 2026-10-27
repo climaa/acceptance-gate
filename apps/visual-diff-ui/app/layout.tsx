@@ -1,15 +1,10 @@
 import type { Metadata } from 'next';
-import NextLink from 'next/link';
 import { Suspense } from 'react';
-import { Badge, SiteHeader, Text } from '@gate/ui';
+import { ConsoleFrame, SampleBanner } from '@/components/ConsoleChrome';
 import { resolveDataDir } from '@/lib/data';
 import {
   APP_DESCRIPTION,
   APP_NAME,
-  MANUAL_NAV,
-  APP_TAGLINE,
-  SAMPLE_LABEL,
-  SAMPLE_NOTE,
   SITE_OPEN_GRAPH,
   SITE_URL,
   TITLE_TEMPLATE,
@@ -53,45 +48,19 @@ export const metadata: Metadata = {
 const ABOVE_THE_FOLD_FACES = [bodyFace, bodyBoldFace, displayFace, monoFace];
 
 /**
- * The badge every screen fed from `fixtures/` carries.
+ * The sample banner, on an instance serving `fixtures/`.
  *
  * Async, and behind its own `<Suspense>`, because `resolveDataDir()` is a
  * request-time answer: rendered inline it would resolve during prerendering,
  * and `next build` runs with no data directory configured — so a deployment
  * with real data would serve a static shell claiming to be sample data, and
  * every e2e world booted off one build would inherit it.
- *
- * `role="status"` with an explicit name: a live region takes its accessible
- * name from a label, not from its contents, and the note beside the badge is
- * the explanation rather than the name.
  */
 async function SampleNotice() {
   const { isSample } = await resolveDataDir();
-  if (!isSample) return null;
 
-  return (
-    <div className="vd-sample" role="status" aria-label={SAMPLE_LABEL}>
-      <Badge tone="accent">{SAMPLE_LABEL}</Badge>
-      <span className="vd-sample__note">{SAMPLE_NOTE}</span>
-    </div>
-  );
+  return isSample ? <SampleBanner /> : null;
 }
-
-/**
- * The brand line is the console's `h1`: the board draws the wordmark and its
- * tagline as the top row and gives the page no second title, so a heading below
- * it would be a title this design does not have. `/report/[id]` inherits it
- * until the issue that owns that page gives the report its own heading level.
- */
-const BRAND = (
-  <span className="vd-brand">
-    <h1 className="vd-brand__mark">{APP_NAME}</h1>
-    {/* A caption, not the brand's display face it would otherwise inherit. */}
-    <Text variant="caption" className="vd-brand__tagline">
-      {APP_TAGLINE}
-    </Text>
-  </span>
-);
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -124,20 +93,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         ))}
       </head>
       <body>
-        {/* `as={NextLink}` once, forwarded to the brand: the design system
-            depends on no framework, so this is where the app names its router
-            link. The header supplies the skip link and the theme toggle. */}
-        <SiteHeader brand={BRAND} nav={MANUAL_NAV} as={NextLink} container="full" />
-
-        {/* The id is SkipLink's default target, and the landmark the header's
-            first tab stop jumps to. */}
-        <main id="main" className="ds-container ds-container--full">
-          <Suspense fallback={null}>
-            <SampleNotice />
-          </Suspense>
-
+        <ConsoleFrame
+          notice={
+            <Suspense fallback={null}>
+              <SampleNotice />
+            </Suspense>
+          }
+        >
           {children}
-        </main>
+        </ConsoleFrame>
 
         {/* Production deployments only. The package's own detection keys off
             NODE_ENV, which reads "production" on every preview build too — so

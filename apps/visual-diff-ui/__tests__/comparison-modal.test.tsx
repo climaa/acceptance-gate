@@ -543,12 +543,12 @@ describe('the design view', () => {
     expect(within(modal()).getByRole('group', { name: 'design board' })).toBeTruthy();
   });
 
-  it('presses the board on show, among all seven', () => {
+  it('presses the board on show, among all eight', () => {
     renderModal('diff', PROSE, 'design', '05-pages');
 
     const picker = within(modal()).getByRole('group', { name: 'board' });
 
-    expect(within(picker).getAllByRole('button')).toHaveLength(7);
+    expect(within(picker).getAllByRole('button')).toHaveLength(8);
     expect(pressedIn(picker)).toEqual(['pages']);
   });
 

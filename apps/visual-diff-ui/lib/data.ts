@@ -16,6 +16,7 @@ import {
   summaryFile,
 } from './paths';
 import { setShotsDir } from './baselines';
+import { newestFirst } from './report-order';
 import {
   type Bucket,
   type SetsFile,
@@ -98,14 +99,6 @@ function parseFile<T>(schema: z.ZodType<T>, value: unknown, file: string): T {
     .map((issue) => `${issue.path.join('.') || '(root)'}: ${issue.message}`)
     .join('; ');
   throw new Error(`${file} does not match the visual-diff schema: ${issues}`);
-}
-
-/** Code-unit order, descending — a deterministic order, not a date order: an id
- *  can lead with `baselines` as well as a dated label. The reports table puts
- *  them in run order (ReportsTable's `byRunDate`), from the history it holds. */
-function newestFirst(left: string, right: string): number {
-  if (left === right) return 0;
-  return left < right ? 1 : -1;
 }
 
 async function loadSummary(dataDir: string, id: string): Promise<Summary | null> {

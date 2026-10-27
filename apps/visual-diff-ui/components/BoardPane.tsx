@@ -30,6 +30,7 @@ const BOARD_LABELS: Readonly<Record<DesignBoard, string>> = {
   '02-molecules': 'molecules',
   '03-organisms': 'organisms',
   '04-templates': 'templates',
+  '05-screens': 'screens',
   '05-pages': 'pages',
   'x-visual-diff-pages': 'console',
   '06-flows-decisions': 'flows',

@@ -123,13 +123,15 @@
   border: 0;
 }
 
-/* The four tiers, one column at a time until there is room for two.
+/* The tiers, one column at a time until there is room for two.
 
    `grid-auto-flow: column` over two explicit rows fills DOWN rather than across,
    so the reading order of a column is the corpus's own order: atoms, molecules,
-   then organisms, templates. Four is not a guess — `TIERS` in
-   packages/visual-diff/src/policy.mjs is Atomic Design's four, so two rows is
-   exactly two columns.
+   then organisms, templates, then screens. Two rows and no explicit column
+   count, because the number of boxes is whatever `TIERS` in
+   packages/visual-diff/src/policy.mjs names: Atomic Design's four and the
+   console's `screens`. The fifth box opens a third column and keeps the
+   column-first order; it does not reflow the two beside it.
 
    `align-items: start` because a tier expands in place: opening `atoms` makes
    its row as tall as thirteen components, and the tier beside it should stay at

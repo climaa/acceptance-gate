@@ -56,7 +56,8 @@ describe('story globs', () => {
  *
  * The differ files a baseline under the tier it reads out of the story's
  * `importPath`. `tierOf` returns `null` for a path outside
- * `packages/ui/src/<tier>/`, and `variantsOf` throws `IndexError` rather than
+ * `packages/ui/src/<tier>/` and the console's `app/` (its `screens`), and
+ * `variantsOf` throws `IndexError` rather than
  * shoot it under a layer it is not in — which `commands.mjs` maps to
  * `EXIT.broken`. So a single `.stories.tsx` glob pointing anywhere else does not
  * cost that story its baseline; it costs the run its verdict, and every
@@ -71,6 +72,8 @@ describe('story globs', () => {
  */
 describe('the corpus boundary', () => {
   const CORPUS = path.join(REPO_ROOT, 'packages', 'ui', 'src');
+  // The console's pages, the one app root policy's `APP_ROOTS` names.
+  const SCREENS = path.join(REPO_ROOT, 'apps', 'visual-diff-ui', 'app');
   const storyModuleGlobs = storyGlobs.filter((glob) => glob.endsWith('.stories.tsx'));
 
   // Without this, every `it.each` below passes on an empty list the day the
@@ -79,16 +82,27 @@ describe('the corpus boundary', () => {
     expect(storyModuleGlobs.length).toBeGreaterThan(0);
   });
 
-  it.each(storyModuleGlobs)('%s resolves inside the tiered corpus', (glob) => {
-    expect(globRoot(glob).startsWith(CORPUS)).toBe(true);
-  });
+  it.each(storyModuleGlobs)(
+    '%s resolves inside the tiered corpus or the screens root',
+    (glob) => {
+      const root = globRoot(glob);
+
+      const placed = root.startsWith(CORPUS) || root.startsWith(SCREENS);
+
+      expect(placed).toBe(true);
+    },
+  );
 
   // Asserted against the differ rather than restated here. The rule belongs to
   // `tierOf`; if it ever stops refusing a path outside the corpus, this case
   // says so, instead of guarding a hazard that no longer exists.
   it('is the boundary tierOf enforces', () => {
     expect(tierOf('packages/ui/src/atoms/Badge/Badge.stories.tsx')).toBe('atoms');
+    expect(tierOf('../visual-diff-ui/app/_screens/Dashboard.stories.tsx')).toBe(
+      'screens',
+    );
     expect(tierOf('apps/storybook/src/RunPanel.stories.tsx')).toBeNull();
+    expect(tierOf('../blog/app/Page.stories.tsx')).toBeNull();
   });
 
   // Exact equality, not a `toContain`: the point is that nothing but docs comes

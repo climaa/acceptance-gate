@@ -7,6 +7,15 @@ transcribed from the GitHub Releases that existed when this file was created (20
 
 ## Unreleased
 
+- The visual-diff capture matrix has a fifth tier, `screens`: whole pages of the console,
+  storied under `apps/visual-diff-ui/app/_screens/` and baselined at both viewports in both
+  themes. The set viewer shows them behind a `screens` button after `templates`, and the
+  `05-screens` board draws their tiles. The first is the dashboard as a deployment serving the
+  sample data draws it, four baselines that keep the corpus at 3.5 MB, inside its 5 MB budget.
+  Storybook 10.5's Next.js framework mounts an App Router context that Next 16.4's
+  `useRouter()` cannot read, so `@storybook/nextjs-vite` carries a one-line `pnpm patch` until
+  upstream catches up.
+
 - The visual-diff capture matrix has a locale axis for listed stories only. A story tagged
   `visual-diff:locales` is captured once per entry in `LOCALES`, and its variant key becomes
   `tier__viewport__theme__locale__id`; every other key keeps its four parts byte for byte, so no

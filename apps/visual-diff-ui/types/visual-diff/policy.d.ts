@@ -21,8 +21,8 @@
  */
 
 declare module '@gate/visual-diff/policy' {
-  /** Atomic-design tiers, innermost first. */
-  export type Tier = 'atoms' | 'molecules' | 'organisms' | 'templates';
+  /** Atomic-design tiers, innermost first, then the app pages `screens`. */
+  export type Tier = 'atoms' | 'molecules' | 'organisms' | 'templates' | 'screens';
 
   /** Selected via `data-theme` on `<html>` — never `prefers-color-scheme`. */
   export type Theme = 'light' | 'dark';
@@ -40,6 +40,8 @@ declare module '@gate/visual-diff/policy' {
   }
 
   export const TIERS: readonly Tier[];
+  /** Every tier but `screens`: the ones that are folders of `packages/ui/src/`. */
+  export const UI_TIERS: readonly Tier[];
   export const THEMES: readonly Theme[];
 
   /** Capture viewports, in CSS pixels at deviceScaleFactor 1. */
