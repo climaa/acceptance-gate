@@ -26,8 +26,8 @@ file and its exports are one name. The boards, in order:
 | `06-flows-decisions` | Flows and the decisions behind the design       | None           |
 
 - **Reference only** means the board is shown beside a screenshot but is never a join
-  target. This repository's differ captures `packages/ui` stories only, so `05-pages`
-  has no screenshot to match.
+  target. This repository's differ captures `packages/ui` stories and the console's own
+  pages, never the blog's or the manual's, so `05-pages` has no screenshot to match.
 - **Screens** are whole app pages that a project's own differ captures as a fifth tier,
   `screens`. Such a project draws each one as a tile on `05-screens`, under the same
   rules as the other tiers. A project with no `screens` tier has no `05-screens` board.

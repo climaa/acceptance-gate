@@ -1,13 +1,10 @@
 import type { Metadata } from 'next';
-import NextLink from 'next/link';
 import { Suspense } from 'react';
-import { SiteHeader } from '@gate/ui';
-import { Brand, SampleBanner } from '@/components/ConsoleChrome';
+import { ConsoleFrame, SampleBanner } from '@/components/ConsoleChrome';
 import { resolveDataDir } from '@/lib/data';
 import {
   APP_DESCRIPTION,
   APP_NAME,
-  MANUAL_NAV,
   SITE_OPEN_GRAPH,
   SITE_URL,
   TITLE_TEMPLATE,
@@ -96,20 +93,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         ))}
       </head>
       <body>
-        {/* `as={NextLink}` once, forwarded to the brand: the design system
-            depends on no framework, so this is where the app names its router
-            link. The header supplies the skip link and the theme toggle. */}
-        <SiteHeader brand={<Brand />} nav={MANUAL_NAV} as={NextLink} container="full" />
-
-        {/* The id is SkipLink's default target, and the landmark the header's
-            first tab stop jumps to. */}
-        <main id="main" className="ds-container ds-container--full">
-          <Suspense fallback={null}>
-            <SampleNotice />
-          </Suspense>
-
+        <ConsoleFrame
+          notice={
+            <Suspense fallback={null}>
+              <SampleNotice />
+            </Suspense>
+          }
+        >
           {children}
-        </main>
+        </ConsoleFrame>
 
         {/* Production deployments only. The package's own detection keys off
             NODE_ENV, which reads "production" on every preview build too — so

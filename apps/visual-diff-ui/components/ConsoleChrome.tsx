@@ -1,5 +1,7 @@
-import { Badge, Text } from '@gate/ui';
-import { APP_NAME, APP_TAGLINE, SAMPLE_LABEL, SAMPLE_NOTE } from '@/lib/site';
+import type { ReactNode } from 'react';
+import NextLink from 'next/link';
+import { Badge, SiteHeader, Text } from '@gate/ui';
+import { APP_NAME, APP_TAGLINE, MANUAL_NAV, SAMPLE_LABEL, SAMPLE_NOTE } from '@/lib/site';
 
 /**
  * What the root layout draws around every page, as presentational pieces.
@@ -41,5 +43,32 @@ export function SampleBanner() {
       <Badge tone="accent">{SAMPLE_LABEL}</Badge>
       <span className="vd-sample__note">{SAMPLE_NOTE}</span>
     </div>
+  );
+}
+
+/**
+ * The header and the `main` landmark every page sits in. `notice` goes first
+ * inside `main`, where the layout puts the sample banner.
+ *
+ * `as={NextLink}` once, forwarded to the brand: the design system depends on no
+ * framework, so this is where the app names its router link. The header supplies
+ * the skip link and the theme toggle. The `main` id is SkipLink's default
+ * target, and the landmark the header's first tab stop jumps to.
+ */
+export function ConsoleFrame({
+  notice,
+  children,
+}: {
+  notice: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <>
+      <SiteHeader brand={<Brand />} nav={MANUAL_NAV} as={NextLink} container="full" />
+      <main id="main" className="ds-container ds-container--full">
+        {notice}
+        {children}
+      </main>
+    </>
   );
 }

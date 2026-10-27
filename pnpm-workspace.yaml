@@ -11,5 +11,9 @@ allowBuilds:
 # ships with handlebars >=4.7.10.
 overrides:
   handlebars: 4.7.10
+# Next 16.4's useRouter() reads parentRenderTree off the router context Storybook
+# mounts, and @storybook/nextjs-vite 10.5 does not set it, so every screen story
+# (apps/visual-diff-ui/app/_screens) failed to render. Remove this entry once a
+# release sets the field; apps/storybook/.storybook/main.ts says the same.
 patchedDependencies:
   '@storybook/nextjs-vite@10.5.7': patches/@storybook__nextjs-vite@10.5.7.patch
