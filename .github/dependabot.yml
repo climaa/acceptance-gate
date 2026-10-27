@@ -40,7 +40,7 @@
 # TRACKS THE RUNTIME — majors only, and not because anything upstream is
 # broken. The version is pinned to something else in this repo, so the bump is
 # not wrong, it is early:
-# - @types/node: engines pins node to >=22.14.0 <23.0.0 and .nvmrc is 22.14.0,
+# - @types/node: engines pins node to >=22.19.0 <23.0.0 and .nvmrc is 22.23.4,
 #   which is what every CI job installs. Types must describe the runtime
 #   that actually runs the code; on @types/node 26 tsc green-lights Node 26
 #   APIs that throw on 22, and typecheck goes green precisely because it has
@@ -59,24 +59,24 @@ updates:
       minor-and-patch:
         applies-to: version-updates
         update-types: [minor, patch]
-        patterns: ["*"]
+        patterns: ['*']
     ignore:
       - dependency-name: playwright
-      - dependency-name: "@playwright/*"
+      - dependency-name: '@playwright/*'
       - dependency-name: storybook
-      - dependency-name: "@storybook/*"
+      - dependency-name: '@storybook/*'
       - dependency-name: pnpm
-      - dependency-name: "@axe-core/*"
+      - dependency-name: '@axe-core/*'
       # Scoped to majors on purpose — see the header. A 9.x or 5.x bump is
       # still wanted and still flows through the weekly group.
       - dependency-name: eslint
-        update-types: ["version-update:semver-major"]
+        update-types: ['version-update:semver-major']
       - dependency-name: typescript
-        update-types: ["version-update:semver-major"]
+        update-types: ['version-update:semver-major']
       # Pinned to .nvmrc/engines rather than to upstream — see the header.
       # Moves with the Node major, in that commit, not by bot.
-      - dependency-name: "@types/node"
-        update-types: ["version-update:semver-major"]
+      - dependency-name: '@types/node'
+        update-types: ['version-update:semver-major']
 
   - package-ecosystem: github-actions
     directory: /
