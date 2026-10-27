@@ -2615,7 +2615,7 @@
                   "id": "UFPrI",
                   "name": "src",
                   "fill": "$ink-muted",
-                  "content": "tokens.css · rendered live in Storybook Typeset (Wave 2) · why these faces → D1, board 02",
+                  "content": "tokens.css · rendered live in Storybook Atoms/Text · why these faces → D1, board 06",
                   "fontFamily": "$font-body",
                   "fontSize": 11,
                   "fontWeight": "normal"
@@ -2946,6 +2946,19 @@
                   "textGrowth": "fixed-width",
                   "width": "fill_container",
                   "content": "headings (2xl–4xl) render Fraunces 600 · body (xs–xl) renders Atkinson Hyperlegible · line heights: tight 1.25 for headings, relaxed 1.7 for article body",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$font-body",
+                  "fontSize": 11,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "JH1X8",
+                  "name": "roles",
+                  "fill": "$ink-muted",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Atoms/Text roles · heading-1 3xl · heading-2 2xl · heading-3 xl — Fraunces 600 · title base 700 · body base · body-sm sm · caption xs — Atkinson · label xs · code sm — JetBrains Mono, always 400: it ships no bold",
                   "lineHeight": 1.4,
                   "fontFamily": "$font-body",
                   "fontSize": 11,

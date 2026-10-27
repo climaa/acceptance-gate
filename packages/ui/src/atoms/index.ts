@@ -29,6 +29,7 @@ export { SkipLink, type SkipLinkProps } from './SkipLink/SkipLink';
 export { Spinner, type SpinnerProps } from './Spinner/Spinner';
 export { Stack, type StackProps } from './Stack/Stack';
 export { Tag, type TagProps } from './Tag/Tag';
+export { Text, TEXT_VARIANTS, type TextProps, type TextVariant } from './Text/Text';
 export { ThemeToggle, type ThemeToggleProps } from './ThemeToggle/ThemeToggle';
 // Not through ThemeToggle.tsx: re-exporting a value from a `'use client'` module
 // hands a server component a client reference rather than the string itself.
