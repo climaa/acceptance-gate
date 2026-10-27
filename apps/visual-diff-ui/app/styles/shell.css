@@ -36,7 +36,6 @@ main {
 }
 
 .vd-brand__tagline {
-  font-size: var(--text-xs);
   color: var(--color-text-muted);
 }
 
@@ -57,8 +56,10 @@ main {
 /* Counts, pixel numbers and ids: figures that line up column-wise, and a key
    that has to be readable character by character when a variant is looked up. */
 .vd-count,
-.vd-report-id,
 .vd-mono {
   font-family: var(--font-mono);
+  /* Pinned, not inherited: these sit inside bold labels, headings and links, and
+     JetBrains Mono ships no 700 — an inherited bold would be synthesized. */
+  font-weight: var(--weight-normal);
   font-variant-numeric: tabular-nums;
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Stack, TriStateCheckbox } from '@gate/ui';
+import { Button, Stack, Text, TriStateCheckbox } from '@gate/ui';
 
 /**
  * Where the reviewer stands, and the four controls that move them.
@@ -69,9 +69,14 @@ export function ReviewBar({
   return (
     <Stack direction="row" gap={4} align="center" wrap className="vd-review">
       <Stack direction="row" gap={2} align="center" className="vd-field">
-        <label className="vd-field__label" htmlFor="vd-report-filter">
+        <Text
+          variant="label"
+          as="label"
+          className="vd-field__label"
+          htmlFor="vd-report-filter"
+        >
           {FILTER_LABEL}
-        </label>
+        </Text>
         <input
           id="vd-report-filter"
           name="filter"

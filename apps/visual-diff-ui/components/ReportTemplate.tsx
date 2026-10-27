@@ -1,6 +1,6 @@
 import NextLink from 'next/link';
 import { Fragment } from 'react';
-import { Badge, Stack } from '@gate/ui';
+import { Badge, Stack, Text } from '@gate/ui';
 import type { CanonicalSet } from '@/lib/baselines';
 import { reportSides } from '@/lib/report-view';
 import type { CaptureSet, Summary } from '@/lib/summary';
@@ -61,7 +61,9 @@ function SetLine({
 }) {
   return (
     <>
-      <dt className="vd-report__side">{side}</dt>
+      <Text variant="label" as="dt" className="vd-report__side">
+        {side}
+      </Text>
       <dd className="vd-report__identity">
         <span className="vd-mono vd-report__label" title={label}>
           {label}
@@ -148,9 +150,9 @@ export function ReportTemplate({
               ← console
             </NextLink>
 
-            <h1 className="vd-report-id" title={id}>
+            <Text variant="heading-2" as="h1" className="vd-report-id" title={id}>
               {id}
-            </h1>
+            </Text>
 
             <Badge tone={report.exitCode === 0 ? 'success' : 'warning'}>
               exit {report.exitCode}

@@ -6,7 +6,7 @@
    cannot show a re-encoded copy of the evidence. */
 
 import { useEffect, useRef, useState } from 'react';
-import { Dialog, SegmentedControl, Stack } from '@gate/ui';
+import { Dialog, SegmentedControl, Stack, Text } from '@gate/ui';
 import type { LedgerReport } from '@gate/visual-diff/ledger';
 import { REDUCED_MOTION, useMediaQuery, WIDE_VIEWPORT } from '@/hooks/useMediaQuery';
 import {
@@ -378,9 +378,9 @@ function ComparisonHead({
 }: ComparisonHeadProps) {
   return (
     <Stack direction="row" gap={3} align="baseline" wrap className="vd-compare__head">
-      <h2 className="vd-compare__title vd-mono" title={title}>
+      <Text variant="code" as="h2" className="vd-compare__title" title={title}>
         {title}
-      </h2>
+      </Text>
 
       {/* The toggle and the split button travel together: both say how the
           after screenshot is being read, and the split only exists once the

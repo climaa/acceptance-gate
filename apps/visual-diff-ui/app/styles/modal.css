@@ -11,9 +11,6 @@
 }
 
 .vd-compare__title {
-  margin: 0;
-  font-size: var(--text-sm);
-  font-weight: var(--weight-bold);
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -276,12 +273,6 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   background-color: var(--color-bg-subtle);
-}
-
-.vd-readings__heading {
-  margin: 0;
-  font-size: var(--text-sm);
-  font-weight: var(--weight-bold);
 }
 
 /* The mode, and what wrote a browser-default value: the two asides in the panel,

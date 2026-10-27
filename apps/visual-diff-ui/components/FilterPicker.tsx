@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Stack, TriStateCheckbox } from '@gate/ui';
+import { Stack, Text, TriStateCheckbox } from '@gate/ui';
 import { Note } from './Note';
 import type { StoryTier } from '@/lib/api-contract';
 
@@ -111,7 +111,9 @@ export function FilterPicker({ tiers, value, onChange, disabled }: FilterPickerP
   if (tiers.length === 0) {
     return (
       <Stack gap={1} className="vd-filter">
-        <span className="vd-field__label">--filter</span>
+        <Text variant="label" className="vd-field__label">
+          --filter
+        </Text>
         <Note name="no corpus yet">
           no Storybook build to read yet — this run captures the whole corpus, and the
           components appear here once it has built one
@@ -122,7 +124,9 @@ export function FilterPicker({ tiers, value, onChange, disabled }: FilterPickerP
 
   return (
     <fieldset className="vd-filter" disabled={disabled}>
-      <legend className="vd-field__label">--filter</legend>
+      <Text variant="label" as="legend" className="vd-field__label">
+        --filter
+      </Text>
       <Stack gap={2}>
         {/* A plain div, not a `Stack`: the tiers lay out as a grid (globals.css)
             and a flex container would fight it. The note below stays outside, or

@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import NextLink from 'next/link';
 import { Suspense } from 'react';
-import { Badge, SiteHeader } from '@gate/ui';
+import { preload } from 'react-dom';
+import { Badge, SiteHeader, Text } from '@gate/ui';
 import { resolveDataDir } from '@/lib/data';
 import {
   APP_DESCRIPTION,
@@ -16,6 +17,13 @@ import {
 } from '@/lib/site';
 import { SITE_SHARE_IMAGES } from '@/lib/share';
 import { THEME_SCRIPT } from '@/lib/theme';
+// Imported for the URL, not the bytes: the bundler emits the same hashed asset
+// the design system's `@font-face` already points at, so the preload and the
+// stylesheet ask for one file rather than two.
+import bodyFace from '@gate/ui/fonts/atkinson-hyperlegible-latin-400-normal.woff2';
+import bodyBoldFace from '@gate/ui/fonts/atkinson-hyperlegible-latin-700-normal.woff2';
+import displayFace from '@gate/ui/fonts/fraunces-latin-600-normal.woff2';
+import monoFace from '@gate/ui/fonts/jetbrains-mono-latin-400-normal.woff2';
 import { SiteAnalytics } from './site-analytics';
 import './globals.css';
 
@@ -32,6 +40,27 @@ export const metadata: Metadata = {
   openGraph: { ...SITE_OPEN_GRAPH, images: SITE_SHARE_IMAGES },
   twitter: { card: 'summary_large_image', images: SITE_SHARE_IMAGES },
 };
+
+/**
+ * The faces above the fold on every route: the wordmark (display), the nav and
+ * notes (regular), the badges and table heads (bold) — and, unlike the blog,
+ * JetBrains Mono, because the console's first screen is panel labels, shas and
+ * counts set in it.
+ *
+ * Preloaded because `fonts.css` sets `font-display: block` for capture
+ * determinism: text stays invisible until its face arrives, and without this the
+ * browser only discovers a face after the stylesheet parses.
+ */
+const ABOVE_THE_FOLD_FACES = [bodyFace, bodyBoldFace, displayFace, monoFace];
+
+// `crossorigin` is not optional even same-origin: fonts are fetched in CORS mode
+// whatever the origin, and a preload without it lands in a different cache
+// partition than the stylesheet's request — so the face downloads twice.
+const FONT_PRELOAD = {
+  as: 'font',
+  type: 'font/woff2',
+  crossOrigin: 'anonymous',
+} as const;
 
 /**
  * The badge every screen fed from `fixtures/` carries.
@@ -67,11 +96,18 @@ async function SampleNotice() {
 const BRAND = (
   <span className="vd-brand">
     <h1 className="vd-brand__mark">{APP_NAME}</h1>
-    <span className="vd-brand__tagline">{APP_TAGLINE}</span>
+    {/* A caption, not the brand's display face it would otherwise inherit. */}
+    <Text variant="caption" className="vd-brand__tagline">
+      {APP_TAGLINE}
+    </Text>
   </span>
 );
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  // React hoists these ahead of the stylesheet link it injects, which is the
+  // whole point: discovery has to beat the CSS the faces are declared in.
+  for (const face of ABOVE_THE_FOLD_FACES) preload(face, FONT_PRELOAD);
+
   return (
     // The script below sets `data-theme` on this element before React sees the
     // document, so the server's markup and the hydrated DOM disagree by design.

@@ -1,5 +1,5 @@
 import { useId } from 'react';
-import { Stack, TriStateCheckbox } from '@gate/ui';
+import { Stack, Text, TriStateCheckbox } from '@gate/ui';
 import type { ComparisonMode } from '@/lib/comparison';
 import {
   countReviewed,
@@ -76,7 +76,7 @@ export function TierSection({
             onChange={(next) => onToggleSection(section, next)}
           />
 
-          <h2 className="vd-section__title">
+          <Text variant="label" as="h2" className="vd-section__title">
             {/* The name is the checkbox's visible label beside this heading, so
                 it is not repeated on screen — but a heading reading "(6) 2/6"
                 names nothing, and this is a landmark's heading. */}
@@ -85,7 +85,7 @@ export function TierSection({
             <span className="vd-count">
               {done}/{total}
             </span>
-          </h2>
+          </Text>
 
           <button
             type="button"

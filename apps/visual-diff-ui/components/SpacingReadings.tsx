@@ -8,6 +8,7 @@ import {
   Table,
   type TableColumn,
   type TableRow,
+  Text,
 } from '@gate/ui';
 import type { Classification } from '@gate/visual-diff/ledger';
 import type { ReadingRow, ReadingSide, Readings, ReadingsMode } from '@/lib/readings';
@@ -317,7 +318,7 @@ export function SpacingReadings({
   return (
     <div className="vd-readings">
       <Stack direction="row" gap={3} align="baseline" wrap>
-        <h3 className="vd-readings__heading">
+        <Text variant="title" className="vd-readings__heading">
           {/* x-visual-diff-pages' fold marker. Decoration: the button below carries the
               state, as aria-expanded. */}
           {foldable && (
@@ -326,7 +327,7 @@ export function SpacingReadings({
             </span>
           )}
           {HEADING}
-        </h3>
+        </Text>
         {mode !== null && (
           <p className="vd-readings__caption vd-mono">
             {shut ? foldSummary(rows) : CAPTIONS[mode]}

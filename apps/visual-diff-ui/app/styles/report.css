@@ -27,9 +27,6 @@
 }
 
 .vd-report-id {
-  margin: 0;
-  font-size: var(--text-base);
-  font-weight: var(--weight-bold);
   overflow-wrap: anywhere;
 }
 
@@ -67,9 +64,6 @@
 }
 
 .vd-report__side {
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  font-weight: var(--weight-bold);
   color: var(--color-text-muted);
 }
 
@@ -225,10 +219,6 @@
 }
 
 .vd-section__title {
-  margin: 0;
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  font-weight: var(--weight-normal);
   color: var(--color-text-muted);
 }
 
