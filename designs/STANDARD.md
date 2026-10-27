@@ -199,6 +199,13 @@ It lists those stories in `designs/drawn-ahead-stories.json`, in the same shape,
 story the check is red until the story is struck off, and so is an entry no tier board
 draws. A story is written by striking it off in the same pull request.
 
+The reverse is a story written before its tiles are drawn, when the drawing is large
+enough to be a pull request of its own. It is listed in `designs/undrawn-stories.json`,
+in the same shape, and the `boards` check asks no tile of it. That list only shrinks too:
+once a tier board draws a listed story the check is red until it is struck off, and so is
+an entry Storybook no longer plans. The tiles land by striking the story off in the same
+pull request.
+
 ## Working on a .pen
 
 - Edit a `.pen` only in Pencil, never by hand: a hand edit can save a document Pencil will

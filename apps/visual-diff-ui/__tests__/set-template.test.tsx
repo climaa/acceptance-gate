@@ -5,8 +5,8 @@ import { cleanup, fireEvent, render, screen, within } from '@testing-library/rea
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { SetTemplate } from '../components/SetTemplate';
 import type { CanonicalSet as Corpus } from '../lib/baselines';
-import type { SetShot, SetShots } from '../lib/set-shots';
-import { groupShots, parseShotName, setFilterFrom } from '../lib/set-shots';
+import type { SetShot, SetShots } from '../lib/set-view';
+import { groupShots, parseShotName, setFilterFrom } from '../lib/set-view';
 import { setFilterQuery } from '../lib/set-filter';
 
 /**

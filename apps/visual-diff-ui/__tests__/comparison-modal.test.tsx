@@ -13,8 +13,8 @@ import {
   comparisonHref,
   comparisonPath,
   type DesignBoard,
-  designBoardUrl,
 } from '../lib/comparison';
+import { designBoardUrl } from '../lib/design-urls';
 import type { CaptureSet, Summary, Variant } from '../lib/summary';
 import { storyTitle } from '../lib/title';
 import { pushCalls, setPathname, setSearchParams } from './stubs/next-navigation';

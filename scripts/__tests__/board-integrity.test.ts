@@ -27,7 +27,8 @@ const check = (
   planned: string[],
   shared: string[] = [],
   drawnAhead: string[] = [],
-): string[] => joinProblems(tiles, planned, shared, drawnAhead);
+  undrawn: string[] = [],
+): string[] => joinProblems(tiles, planned, shared, drawnAhead, undrawn);
 
 describe('joinProblems', () => {
   it('passes when every planned variant has exactly one tile on its tier board', () => {
@@ -151,6 +152,57 @@ describe('joinProblems', () => {
     expect(problems).toEqual([
       '01-atoms draws atoms-badge--accent (desktop, light), a variant Storybook does not plan: delete the tile with the story, or rename it with the story',
       'designs/drawn-ahead-stories.json lists molecules-card--default, which no tier board draws: strike it off',
+    ]);
+  });
+
+  // A story written before its tiles are drawn, the reverse: no tile is asked
+  // of it while it is listed, and the list only shrinks.
+  it('asks no tile of a story written ahead of its drawing', () => {
+    const problems = check(
+      { '01-atoms': [] },
+      [BADGE, BADGE_DARK],
+      [],
+      [],
+      ['atoms-badge--accent'],
+    );
+
+    expect(problems).toEqual([]);
+  });
+
+  it('names an undrawn story that a board draws now', () => {
+    const problems = check(
+      { '01-atoms': [BADGE, BADGE_DARK] },
+      [BADGE, BADGE_DARK],
+      [],
+      [],
+      ['atoms-badge--accent'],
+    );
+
+    expect(problems).toEqual([
+      'atoms-badge--accent is drawn now: strike it off designs/undrawn-stories.json',
+    ]);
+  });
+
+  it('names an undrawn story that Storybook does not plan', () => {
+    const problems = check({ '01-atoms': [] }, [], [], [], ['atoms-badge--accent']);
+
+    expect(problems).toEqual([
+      'designs/undrawn-stories.json lists atoms-badge--accent, which Storybook does not plan: strike it off',
+    ]);
+  });
+
+  it('still asks a tile of a planned story that is not on the list', () => {
+    const problems = check(
+      { '01-atoms': [] },
+      [BADGE],
+      [],
+      [],
+      ['molecules-card--default'],
+    );
+
+    expect(problems).toEqual([
+      'atoms-badge--accent (desktop, light) has no tile on 01-atoms: a new story ships with its tile (designs/STANDARD.md)',
+      'designs/undrawn-stories.json lists molecules-card--default, which Storybook does not plan: strike it off',
     ]);
   });
 });

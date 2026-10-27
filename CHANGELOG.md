@@ -7,6 +7,16 @@ transcribed from the GitHub Releases that existed when this file was created (20
 
 ## Unreleased
 
+- Every console page drawn on `x-visual-diff-pages` now has a screen story: the report (one
+  story per bucket it holds, `?bucket=changed` and `?bucket=removed`), the comparison modal over
+  it, the set viewer and the shot view over it, all on the sample data and held to `fixtures/` by
+  a test. The modals are captured one window tall, as a visitor sees them. The screens are titled
+  `Screens/Visual-diff-ui/…`, after the app's directory as the children title theirs, so the
+  dashboard's four baselines are renamed with no pixel changed. The corpus is 230 baselines at
+  7.6 MB, and its budget rises from 5 to 8 MB. Their tiles follow in their own pull request:
+  `designs/undrawn-stories.json` lists a story written before it is drawn, the reverse of
+  `drawn-ahead-stories.json`, and only shrinks.
+
 - The visual-diff capture matrix has a fifth tier, `screens`: whole pages of the console,
   storied under `apps/visual-diff-ui/app/_screens/` and baselined at both viewports in both
   themes. The set viewer shows them behind a `screens` button after `templates`, and the

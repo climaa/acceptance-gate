@@ -62,7 +62,7 @@
         {
           "type": "frame",
           "id": "R4O8N",
-          "name": "screens-console-dashboard--sample",
+          "name": "screens-visual-diff-ui-dashboard--sample",
           "layout": "vertical",
           "gap": 12,
           "children": [
@@ -70,7 +70,7 @@
               "type": "text",
               "id": "MlqIB",
               "fill": "$ink-muted",
-              "content": "screens-console-dashboard--sample",
+              "content": "screens-visual-diff-ui-dashboard--sample",
               "lineHeight": 1.2,
               "fontFamily": "$font-mono",
               "fontSize": 16,
@@ -85,7 +85,7 @@
                 {
                   "type": "frame",
                   "id": "fR9I9",
-                  "name": "screens__desktop__light__screens-console-dashboard--sample",
+                  "name": "screens__desktop__light__screens-visual-diff-ui-dashboard--sample",
                   "theme": {
                     "mode": "light"
                   },
@@ -3184,7 +3184,7 @@
                   "id": "TTlRP",
                   "type": "ref",
                   "ref": "fR9I9",
-                  "name": "screens__desktop__dark__screens-console-dashboard--sample",
+                  "name": "screens__desktop__dark__screens-visual-diff-ui-dashboard--sample",
                   "theme": {
                     "mode": "dark"
                   }
@@ -3192,7 +3192,7 @@
                 {
                   "type": "frame",
                   "id": "hWHba",
-                  "name": "screens__mobile__light__screens-console-dashboard--sample",
+                  "name": "screens__mobile__light__screens-visual-diff-ui-dashboard--sample",
                   "theme": {
                     "mode": "light"
                   },
@@ -4631,7 +4631,7 @@
                   "id": "BTStT",
                   "type": "ref",
                   "ref": "hWHba",
-                  "name": "screens__mobile__dark__screens-console-dashboard--sample",
+                  "name": "screens__mobile__dark__screens-visual-diff-ui-dashboard--sample",
                   "theme": {
                     "mode": "dark"
                   }

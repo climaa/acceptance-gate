@@ -45,6 +45,8 @@ const CANONICAL_NAMES: Record<string, string> = {
   themetoggle: 'ThemeToggle',
   thumbnail: 'Thumbnail',
   tristatecheckbox: 'TriStateCheckbox',
+  // An acronym rather than a compound: `screens-visual-diff-ui-…` names the app.
+  ui: 'UI',
 };
 
 /** Component half and variant half, as Storybook writes them. */

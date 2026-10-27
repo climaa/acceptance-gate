@@ -20,6 +20,27 @@ const CONSOLE_DIR = join(
   'visual-diff-ui',
 );
 
+/** The sample fixtures a screen's screenshots come from, served at the console's
+ *  own shot routes: those routes take a path, so a static directory answers them
+ *  byte for byte. Only what a screen story draws — the report it opens and the
+ *  one set that ships shots. */
+const SCREEN_REPORTS = ['main-2026-10-13__main-2026-09-17'];
+const SCREEN_SETS = ['main-2026-08-30'];
+
+const screenShots = [
+  ...SCREEN_REPORTS.map((id) => ({
+    from: `../../visual-diff-ui/fixtures/reports/${id}/shots`,
+    to: `/api/shots/${id}`,
+  })),
+  ...SCREEN_SETS.map((label) => ({
+    from: `../../visual-diff-ui/fixtures/sets/${label}`,
+    to: `/api/sets/${label}/shots`,
+  })),
+];
+
+/** The console's board addresses, swapped for the static files (design-urls.ts). */
+const DESIGN_URLS = join(dirname(fileURLToPath(import.meta.url)), 'design-urls.ts');
+
 type Alias = NonNullable<InlineConfig['resolve']>['alias'];
 
 /** Vite takes `resolve.alias` as an object or as a list; the list keeps a regex. */
@@ -73,7 +94,9 @@ const config: StorybookConfig = {
   // module doesn't get Vite's asset-URL rewrite applied here — it resolves to
   // the raw module namespace object instead of a string, `?url` included.
   // staticDirs sidesteps that pipeline entirely.
-  staticDirs: [{ from: '../../../designs/exports', to: '/designs' }],
+  // A screen's shots ride the same mechanism, at the addresses the console's
+  // components build (`lib/shots.ts`), so no story rewrites a URL.
+  staticDirs: [{ from: '../../../designs/exports', to: '/designs' }, ...screenShots],
   // addon-docs: autodocs (`tags: ['autodocs']` in preview.ts) plus the thirteen
   // hand-written docs pages under src/docs, whose subdirectories mirror the
   // sidebar folders their <Meta title> puts them in. addon-a11y: axe in the panel, an
@@ -145,7 +168,9 @@ const config: StorybookConfig = {
   //
   // `resolve.alias` gives a screen the console's `@/…`. One entry, because one
   // app is storied; a second storied app would need its own prefix, since both
-  // would claim `@/`. The console's `'use client'` modules warn as the design
+  // would claim `@/`. `@/lib/design-urls` is swapped first: a board is served
+  // by a route with a query, which a static build cannot answer, so a screen
+  // reads the same files off `/designs` instead. The console's `'use client'` modules warn as the design
   // system's do, for the same reason, so its tree joins the silenced sources.
   viteFinal: async (viteConfig) => {
     const previousOnwarn = viteConfig.build?.rolldownOptions?.onwarn;
@@ -156,6 +181,7 @@ const config: StorybookConfig = {
         ...viteConfig.resolve,
         alias: [
           ...aliasEntries(viteConfig.resolve?.alias),
+          { find: /^@\/lib\/design-urls$/, replacement: DESIGN_URLS },
           { find: /^@\//, replacement: `${CONSOLE_DIR}/` },
         ],
       },

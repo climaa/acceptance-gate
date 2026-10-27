@@ -331,8 +331,10 @@ export const EXIT = {
 };
 
 /** Total budget for the committed baseline set. Baselines live in git forever, so the
- *  ceiling is on the whole directory. */
-export const BASELINE_BUDGET_BYTES = 5_000_000;
+ *  ceiling is on the whole directory. 8 MB since the console's own pages joined as
+ *  `screens`: five of them, each a page tall at both viewports in both themes, where
+ *  the four design-system tiers fit in under 3 MB. */
+export const BASELINE_BUDGET_BYTES = 8_000_000;
 
 /** Ceiling on one committed baseline. Under the total on purpose: a single PNG this
  *  large is a story rendering something it should not — a whole page shot as an atom,
