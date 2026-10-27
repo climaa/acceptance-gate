@@ -4629,6 +4629,330 @@
         },
         {
           "type": "frame",
+          "id": "heRT8",
+          "name": "atoms-text--roles",
+          "layout": "vertical",
+          "gap": 12,
+          "children": [
+            {
+              "type": "text",
+              "id": "yd5NX",
+              "name": "id",
+              "fill": "$ink-muted",
+              "content": "atoms-text--roles",
+              "lineHeight": 1.2,
+              "fontFamily": "$font-mono",
+              "fontSize": 16,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "fjH66",
+              "name": "Tiles",
+              "gap": 48,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "tavlV",
+                  "name": "atoms__desktop__light__atoms-text--roles",
+                  "theme": {
+                    "mode": "light"
+                  },
+                  "reusable": true,
+                  "clip": true,
+                  "width": 1248,
+                  "height": 524,
+                  "fill": "$bg",
+                  "layout": "vertical",
+                  "gap": 16,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "LiL1D",
+                      "name": "heading-1",
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "BVyqF",
+                          "name": "role",
+                          "fill": "$text",
+                          "content": "heading-1",
+                          "lineHeight": 1.5,
+                          "fontFamily": "$font-mono",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "RTRum",
+                          "name": "sample",
+                          "fill": "$text",
+                          "content": "The gate blocks what the eye would miss.",
+                          "lineHeight": 1.25,
+                          "fontFamily": "$font-display",
+                          "fontSize": 30,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "KQsXU",
+                      "name": "heading-2",
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "Nry8u",
+                          "name": "role",
+                          "fill": "$text",
+                          "content": "heading-2",
+                          "lineHeight": 1.5,
+                          "fontFamily": "$font-mono",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "bjWBG",
+                          "name": "sample",
+                          "fill": "$text",
+                          "content": "The gate blocks what the eye would miss.",
+                          "lineHeight": 1.25,
+                          "fontFamily": "$font-display",
+                          "fontSize": 24,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "k1dY35",
+                      "name": "heading-3",
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "sZznI",
+                          "name": "role",
+                          "fill": "$text",
+                          "content": "heading-3",
+                          "lineHeight": 1.5,
+                          "fontFamily": "$font-mono",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "TeLG5",
+                          "name": "sample",
+                          "fill": "$text",
+                          "content": "The gate blocks what the eye would miss.",
+                          "lineHeight": 1.25,
+                          "fontFamily": "$font-display",
+                          "fontSize": 20,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "iO4MX",
+                      "name": "title",
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "TIJpl",
+                          "name": "role",
+                          "fill": "$text",
+                          "content": "title",
+                          "lineHeight": 1.5,
+                          "fontFamily": "$font-mono",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "vWM3Z",
+                          "name": "sample",
+                          "fill": "$text",
+                          "content": "The gate blocks what the eye would miss.",
+                          "lineHeight": 1.5,
+                          "fontFamily": "$font-body",
+                          "fontSize": 16,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "KFRfr",
+                      "name": "body",
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "QseiR",
+                          "name": "role",
+                          "fill": "$text",
+                          "content": "body",
+                          "lineHeight": 1.5,
+                          "fontFamily": "$font-mono",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "XKS0T",
+                          "name": "sample",
+                          "fill": "$text",
+                          "content": "The gate blocks what the eye would miss.",
+                          "lineHeight": 1.5,
+                          "fontFamily": "$font-body",
+                          "fontSize": 16,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "RWqO3",
+                      "name": "body-sm",
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "q32S5x",
+                          "name": "role",
+                          "fill": "$text",
+                          "content": "body-sm",
+                          "lineHeight": 1.5,
+                          "fontFamily": "$font-mono",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "p7YGB",
+                          "name": "sample",
+                          "fill": "$text",
+                          "content": "The gate blocks what the eye would miss.",
+                          "lineHeight": 1.5,
+                          "fontFamily": "$font-body",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "V9flkF",
+                      "name": "caption",
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "eIcmy",
+                          "name": "role",
+                          "fill": "$text",
+                          "content": "caption",
+                          "lineHeight": 1.5,
+                          "fontFamily": "$font-mono",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "cufF0",
+                          "name": "sample",
+                          "fill": "$text",
+                          "content": "The gate blocks what the eye would miss.",
+                          "lineHeight": 1.5,
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "a9eyW",
+                      "name": "label",
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "Ei4J2",
+                          "name": "role",
+                          "fill": "$text",
+                          "content": "label",
+                          "lineHeight": 1.5,
+                          "fontFamily": "$font-mono",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "bc9r7",
+                          "name": "sample",
+                          "fill": "$text",
+                          "content": "The gate blocks what the eye would miss.",
+                          "lineHeight": 1.5,
+                          "fontFamily": "$font-mono",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Od4mh",
+                      "name": "code",
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "dxSmX",
+                          "name": "role",
+                          "fill": "$text",
+                          "content": "code",
+                          "lineHeight": 1.5,
+                          "fontFamily": "$font-mono",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "eL2FD",
+                          "name": "sample",
+                          "fill": "$text",
+                          "content": "The gate blocks what the eye would miss.",
+                          "lineHeight": 1.5,
+                          "fontFamily": "$font-mono",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "RVWyy",
+                  "type": "ref",
+                  "ref": "tavlV",
+                  "name": "atoms__desktop__dark__atoms-text--roles",
+                  "theme": {
+                    "mode": "dark"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
           "id": "hMAAT",
           "name": "atoms-themetoggle--default",
           "layout": "vertical",

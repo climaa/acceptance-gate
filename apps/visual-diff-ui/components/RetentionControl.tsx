@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Stack } from '@gate/ui';
+import { Stack, Text } from '@gate/ui';
 import { PruneButton } from './ConfirmDialogs';
 
 /**
@@ -35,9 +35,9 @@ export function RetentionControl({ labels }: RetentionControlProps) {
 
   return (
     <Stack direction="row" gap={3} align="center" wrap className="vd-retention">
-      <label className="vd-retention__label" htmlFor={KEEP_ID}>
+      <Text variant="label" as="label" className="vd-retention__label" htmlFor={KEEP_ID}>
         keep latest
-      </label>
+      </Text>
       <input
         id={KEEP_ID}
         className="vd-retention__count"

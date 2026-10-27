@@ -30,7 +30,6 @@
 
 .vd-tab--selected {
   color: var(--color-text);
-  font-weight: var(--weight-bold);
   border-block-end-color: var(--color-accent);
 }
 
@@ -52,9 +51,6 @@
 }
 
 .vd-field__label {
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  font-weight: var(--weight-bold);
   color: var(--color-text-muted);
 }
 
@@ -207,6 +203,14 @@
   font-size: var(--text-base);
 }
 
+/* The name the action lands on. Set in mono, which has no bold to emphasize
+   it with, so it is marked the way a code token is: a muted chip. */
+.vd-confirm__question strong {
+  padding-inline: var(--space-1);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-muted);
+}
+
 .vd-confirm__detail {
   margin: 0;
   font-size: var(--text-sm);
@@ -214,10 +218,7 @@
 }
 
 .vd-confirm__list-title {
-  margin: 0 0 var(--space-1);
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  font-weight: var(--weight-bold);
+  margin-block-end: var(--space-1);
   color: var(--color-text-muted);
 }
 

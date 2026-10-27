@@ -1,5 +1,5 @@
 import NextLink from 'next/link';
-import { Badge, Stack } from '@gate/ui';
+import { Badge, Stack, Text } from '@gate/ui';
 import type { CanonicalSet } from '@/lib/baselines';
 import { UNKNOWN, formatBytes, shortSha } from '@/lib/outcome';
 import { filterCounts, type SetShots, tierFilterCounts } from '@/lib/set-shots';
@@ -112,7 +112,16 @@ export function SetTemplate({
             <NextLink className="vd-set__back vd-mono" href="/">
               ← console
             </NextLink>
-            <h1 className="vd-set__label vd-mono">{shots.label}</h1>
+            {/* Mono for the reason the report id is; `title` because the label
+                is cut with an ellipsis and would otherwise be unreadable whole. */}
+            <Text
+              variant="heading-2"
+              as="h1"
+              className="vd-set__label vd-mono"
+              title={shots.label}
+            >
+              {shots.label}
+            </Text>
             {shots.isCanonical && <Badge tone="success">canonical</Badge>}
           </Stack>
 
@@ -145,7 +154,12 @@ export function SetTemplate({
           key={section.tier}
         >
           <Stack gap={3}>
-            <h2 className="vd-tier__title" id={`vd-tier-${section.tier}`}>
+            <Text
+              variant="heading-3"
+              as="h2"
+              className="vd-tier__title"
+              id={`vd-tier-${section.tier}`}
+            >
               {section.tier}{' '}
               <span className="vd-count vd-mono">
                 {/* Follows the filter for the reason the bar's count does: a
@@ -158,7 +172,7 @@ export function SetTemplate({
                   }
                 />
               </span>
-            </h2>
+            </Text>
 
             {section.groups.map((group) => (
               <StoryScreenshots group={group} key={group.key} label={shots.label} />

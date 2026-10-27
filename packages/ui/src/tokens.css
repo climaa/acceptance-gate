@@ -184,6 +184,10 @@
   --leading-normal: 1.5;
   --leading-relaxed: 1.7;
 
+  /* The one tracking step: an uppercase run of the mono label, opened up so the
+   * capitals read as a word rather than a block. */
+  --tracking-wide: 0.08em;
+
   /* Every step here has a face of its own in fonts.css. A weight with no face is
    * drawn as a synthesized bold, which each engine slants and thickens its own
    * way — so an unbacked step reintroduces exactly the drift self-hosting removes.

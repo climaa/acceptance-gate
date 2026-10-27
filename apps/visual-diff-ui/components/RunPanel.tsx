@@ -9,7 +9,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import { Button, IconButton, Spinner, Stack } from '@gate/ui';
+import { Button, IconButton, Spinner, Stack, Text } from '@gate/ui';
 import { type Mode, ModeTabs, PANEL_ID, isMode, tabId } from '@/components/ModeTabs';
 import { useDismissedJob } from '@/hooks/useDismissedJob';
 import { useJsonOnMount } from '@/hooks/useJsonOnMount';
@@ -141,9 +141,9 @@ function Field({
     // `flex-direction` and `gap` inline, and inline style beats the 768px rule
     // that makes this a labelled row. The axis lives in `run-panel.css`.
     <div className="vd-field">
-      <label className="vd-field__label" htmlFor={id}>
+      <Text variant="label" as="label" className="vd-field__label" htmlFor={id}>
         {label}
-      </label>
+      </Text>
       <div className="vd-field__control">
         <input
           id={id}

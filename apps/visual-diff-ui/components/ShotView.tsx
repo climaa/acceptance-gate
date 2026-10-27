@@ -3,7 +3,7 @@
 import NextLink from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { type ReactNode, useEffect, useState } from 'react';
-import { Dialog, IconButton, SegmentedControl, Stack } from '@gate/ui';
+import { Dialog, IconButton, SegmentedControl, Stack, Text } from '@gate/ui';
 import type { Tier } from '@gate/visual-diff/policy';
 import { useMediaQuery, WIDE_VIEWPORT } from '@/hooks/useMediaQuery';
 import { useShotAddress } from '@/hooks/useShotAddress';
@@ -113,7 +113,7 @@ function ShotTitle({ heading }: { heading: ShotHeading }) {
 
   return (
     <span className="vd-shot__title">
-      <h2 className="vd-compare__title vd-mono" title={title}>
+      <Text variant="code" as="h2" className="vd-compare__title" title={title}>
         {story} ·{' '}
         {showsDevStorybook() ? (
           <a
@@ -128,7 +128,7 @@ function ShotTitle({ heading }: { heading: ShotHeading }) {
         ) : (
           place
         )}
-      </h2>
+      </Text>
       <a
         className="vd-shot__published"
         href={storybookLink(PUBLISHED_STORYBOOK, storyId, theme)}

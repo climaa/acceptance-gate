@@ -11,7 +11,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import { EmptyState, IconButton, Link, Stack } from '@gate/ui';
+import { EmptyState, IconButton, Link, Stack, Text } from '@gate/ui';
 import { useDismissedJob } from '@/hooks/useDismissedJob';
 import { type CurrentJobResponse, CurrentJobResponseSchema } from '@/lib/api-contract';
 import type { HistoryRecord } from '@/lib/job-contract';
@@ -548,9 +548,9 @@ export function CurrentJob() {
             heading would append its own name to the region's — which is the
             string `apps/e2e/pages/console.ts` finds this panel by. */}
         <Stack direction="row" gap={2} justify="space-between" align="center">
-          <h2 className="vd-panel__title" id={titleId}>
+          <Text variant="label" as="h2" className="vd-panel__title" id={titleId}>
             {CURRENT_JOB_TITLE}
-          </h2>
+          </Text>
 
           {job !== null && !state.running && (
             <IconButton

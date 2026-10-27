@@ -1,4 +1,4 @@
-import { Stack } from '@gate/ui';
+import { Stack, Text } from '@gate/ui';
 
 /**
  * One labelled fact in a row of them — the grammar the corpus row and the set
@@ -12,7 +12,9 @@ import { Stack } from '@gate/ui';
 export function Field({ label, value }: { label: string; value: string }) {
   return (
     <Stack direction="row" gap={2} align="center">
-      <span className="vd-field__label">{label}</span>
+      <Text variant="label" className="vd-field__label">
+        {label}
+      </Text>
       <span className="vd-mono">{value}</span>
     </Stack>
   );

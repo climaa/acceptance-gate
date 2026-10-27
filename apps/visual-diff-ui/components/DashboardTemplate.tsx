@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { EmptyState, Stack } from '@gate/ui';
+import { EmptyState, Stack, Text } from '@gate/ui';
 import { HISTORY_ANCHOR } from '@/lib/anchors';
 import type { CanonicalSet as Corpus } from '@/lib/baselines';
 import type { ReportListEntry } from '@/lib/data';
@@ -78,9 +78,9 @@ function Panel({ id, title, count, children }: PanelProps) {
   return (
     <section aria-labelledby={id} className="vd-panel">
       <Stack gap={4}>
-        <h2 className="vd-panel__title" id={id}>
+        <Text variant="label" as="h2" className="vd-panel__title" id={id}>
           {title} {count !== undefined && <span className="vd-count">({count})</span>}
-        </h2>
+        </Text>
         {children}
       </Stack>
     </section>

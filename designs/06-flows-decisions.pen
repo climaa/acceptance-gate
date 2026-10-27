@@ -1656,7 +1656,7 @@
                   "fill": "$ink-muted",
                   "textGrowth": "fixed-width",
                   "width": "fill_container",
-                  "content": "Why: Atkinson Hyperlegible is designed for maximum legibility — the body face itself backs the repo's WCAG story. Fraunces gives the editorial voice; JetBrains Mono is the engineering register. All three self-hosted as woff2 (font-display: block, preload in the root layout) — the capture-determinism rule. This tile records the WHY; the full type scale reference lives on board 01 → Prose Typeset.",
+                  "content": "Why: Atkinson Hyperlegible is designed for maximum legibility — the body face itself backs the repo's WCAG story. Fraunces gives the editorial voice; JetBrains Mono is the engineering register. All three self-hosted as woff2 (font-display: block, preload in the root layout) — the capture-determinism rule. This tile records the WHY; the full type scale reference lives on board 00 → Drawing Prose typeset, as Atoms/Text roles.",
                   "lineHeight": 1.5,
                   "fontFamily": "$font-body",
                   "fontSize": 12,

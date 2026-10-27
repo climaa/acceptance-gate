@@ -96,9 +96,13 @@
    here and not on the section around it — landing on `#vd-tier-atoms` otherwise
    puts the heading flush against the top of the viewport. */
 .vd-tier__title {
-  margin: 0;
   scroll-margin-block-start: var(--space-4);
-  font-size: var(--text-base);
+}
+
+/* The count rides inside the heading but is not part of the title: a heading's
+   step on a figure would outweigh the tier it counts. */
+.vd-tier__title .vd-count {
+  font-size: var(--text-sm);
 }
 
 .vd-story {
@@ -116,11 +120,6 @@
   flex-wrap: wrap;
   align-items: baseline;
   gap: var(--space-2);
-}
-
-.vd-story__title {
-  margin: 0;
-  font-size: var(--text-sm);
 }
 
 .vd-story__id {

@@ -52,7 +52,11 @@ function reportRow(
     cells: [
       {
         content: (
-          <Link as={NextLink} href={`/report/${report.id}`} className="vd-report-id">
+          <Link
+            as={NextLink}
+            href={`/report/${report.id}`}
+            className="vd-report-id vd-mono"
+          >
             {report.id}
           </Link>
         ),

@@ -22,9 +22,8 @@
 }
 
 .vd-card__title {
-  margin: 0;
-  font-size: var(--text-base);
-  font-weight: var(--weight-semibold);
+  /* Type from <Text variant="title">: this rule asked Atkinson Hyperlegible for a
+     600 it has no face for. */
   min-width: 0;
 }
 

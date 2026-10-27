@@ -120,3 +120,80 @@ describe('the stylesheet is attached to the markup', () => {
     expect(imported.at(-1)).toBe('wide.css');
   });
 });
+
+/**
+ * The determinism rule `packages/ui`'s token suite holds its own sheets to, held
+ * to the console's: every family asked for a weight must ship a face at that
+ * weight. The design system's test never read these sheets, and the console had
+ * asked JetBrains Mono — committed at 400 alone — for bold in seven rules, each
+ * one drawn as a synthesized bold that every engine thickens its own way.
+ *
+ * Per rule, as the design system's is: a rule that names no family is checked
+ * against `--font-sans`, the family `body` sets. A bold arriving by inheritance
+ * cannot be seen from here, which is why `.vd-mono` pins its own weight.
+ */
+describe('the stylesheet asks each family only for a weight it has a face for', () => {
+  const UI_SRC = path.join(APP_ROOT, '..', '..', 'packages', 'ui', 'src');
+  const tokens = fs.readFileSync(path.join(UI_SRC, 'tokens.css'), 'utf8');
+  const fonts = fs.readFileSync(path.join(UI_SRC, 'fonts.css'), 'utf8');
+
+  /** A token's value as `:root` declares it; the first definition wins. */
+  const tokenValue = (name: string) =>
+    new RegExp(`--${name}:\\s*([^;]+);`).exec(tokens)?.[1]?.trim() ?? '';
+
+  /** The token a `var(--x)` value names, or undefined for a literal. */
+  const tokenOf = (value: string) => /^var\(--([a-z0-9-]+)\)$/.exec(value.trim())?.[1];
+
+  const facesByFamily = new Map<string, Set<string>>();
+  for (const [, body = ''] of fonts.matchAll(/@font-face\s*\{([^}]*)\}/g)) {
+    const family = /font-family:\s*'([^']+)'/.exec(body)?.[1] ?? '';
+    const weight = /font-weight:\s*(\d+)/.exec(body)?.[1] ?? '';
+    facesByFamily.set(family, (facesByFamily.get(family) ?? new Set()).add(weight));
+  }
+
+  /** Every innermost `selector { declarations }`, with the file it came from. */
+  const rules = fs
+    .readdirSync(STYLES)
+    .sort()
+    .flatMap((file) =>
+      [
+        ...fs
+          .readFileSync(path.join(STYLES, file), 'utf8')
+          .replace(/\/\*[\s\S]*?\*\//g, '')
+          .matchAll(/([^{}]+)\{([^{}]*)\}/g),
+      ].map(([, selector = '', body = '']) => ({
+        file,
+        selector: selector.trim(),
+        body,
+      })),
+    );
+
+  const declared = (body: string, prop: string) =>
+    new RegExp(`(?:^|;)\\s*${prop}:\\s*([^;]+)`).exec(body)?.[1];
+
+  it('reads the faces it checks against', () => {
+    expect(facesByFamily.get('JetBrains Mono')).toEqual(new Set(['400']));
+    expect(rules.length).toBeGreaterThan(100);
+  });
+
+  it('pairs no rule with a weight its family does not ship', () => {
+    const offenders = rules.flatMap(({ file, selector, body }) => {
+      const weight = declared(body, 'font-weight');
+      if (weight === undefined) return [];
+
+      const weightToken = tokenOf(weight);
+      if (weightToken === undefined)
+        return [`${file}: ${selector}: ${weight} is not a token`];
+
+      const familyToken = tokenOf(declared(body, 'font-family') ?? 'var(--font-sans)');
+      const family = /'([^']+)'/.exec(tokenValue(familyToken ?? ''))?.[1] ?? '';
+      const asked = tokenValue(weightToken);
+
+      return facesByFamily.get(family)?.has(asked)
+        ? []
+        : [`${file}: ${selector}: ${family || 'no family'} has no ${asked} face`];
+    });
+
+    expect(offenders).toEqual([]);
+  });
+});

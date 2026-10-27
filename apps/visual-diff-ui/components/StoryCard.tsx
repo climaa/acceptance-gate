@@ -1,5 +1,5 @@
 import { useId } from 'react';
-import { BucketChip, Stack, TriStateCheckbox } from '@gate/ui';
+import { BucketChip, Stack, Text, TriStateCheckbox } from '@gate/ui';
 import type { ComparisonMode } from '@/lib/comparison';
 import {
   cardElementId,
@@ -88,9 +88,9 @@ export function StoryCard({
           count={card.variants.length}
         />
 
-        <h3 className="vd-card__title" id={titleId}>
+        <Text variant="title" className="vd-card__title" id={titleId}>
           {card.title}
-        </h3>
+        </Text>
 
         {/* `worst` is the biggest shared-area difference any of this card's
             variants recorded — which only means something where a shared area

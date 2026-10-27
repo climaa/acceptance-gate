@@ -115,3 +115,47 @@ describe('the sample badge', () => {
     expect(html).not.toContain(SAMPLE_LABEL);
   });
 });
+
+/**
+ * The faces the first screen paints in, spelled out rather than imported: an
+ * expectation that reads the layout's own list cannot catch that list being
+ * wrong. Four, where the blog has three — the console's first screen is set in
+ * JetBrains Mono as much as in anything else.
+ */
+const ABOVE_THE_FOLD_FACES = [
+  'atkinson-hyperlegible-latin-400-normal.woff2',
+  'atkinson-hyperlegible-latin-700-normal.woff2',
+  'fraunces-latin-600-normal.woff2',
+  'jetbrains-mono-latin-400-normal.woff2',
+];
+
+const fontPreloads = async () => {
+  const html = await shell();
+  const head = html.slice(0, html.indexOf('</head>'));
+
+  return (head.match(/<link\b[^>]*>/g) ?? []).filter((tag) => /\bas="font"/.test(tag));
+};
+
+/** The committed file name behind a bundled asset URL, hash and query stripped. */
+const faceOf = (tag: string) =>
+  (/href="([^"]*)"/.exec(tag)?.[1] ?? '')
+    .replace(/^.*\//, '')
+    .replace(/\?.*$/, '')
+    .replace(/\.[^.]+\.woff2$/, '.woff2');
+
+describe('the font preloads', () => {
+  // `font-display: block` holds text invisible until its face arrives; without
+  // a preload the browser only discovers a face once the stylesheet parses.
+  it('covers the faces the first screen paints in', async () => {
+    const preloaded = (await fontPreloads()).map(faceOf);
+
+    expect(preloaded.sort()).toEqual(ABOVE_THE_FOLD_FACES);
+  });
+
+  it('declares crossorigin and the woff2 type on every face', async () => {
+    const preloads = await fontPreloads();
+
+    expect(preloads.every((tag) => /\bcrossorigin=/.test(tag))).toBe(true);
+    expect(preloads.every((tag) => tag.includes('type="font/woff2"'))).toBe(true);
+  });
+});

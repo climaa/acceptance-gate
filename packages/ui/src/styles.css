@@ -22,6 +22,9 @@
 @import './base.css';
 @import './utilities.css';
 
+/* First of the components: a role is the baseline every component and app sheet
+   below may restate at equal specificity, never the other way round. */
+@import './atoms/Text/Text.css';
 @import './atoms/Button/Button.css';
 @import './atoms/Link/Link.css';
 @import './atoms/Badge/Badge.css';

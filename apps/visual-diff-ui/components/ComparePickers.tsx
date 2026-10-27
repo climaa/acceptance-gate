@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
-import { Button, Stack } from '@gate/ui';
+import { Button, Stack, Text } from '@gate/ui';
 import { useCompareStart } from './CompareStart';
 import { Note } from './Note';
 
@@ -60,9 +60,9 @@ function Picker({ name, value, labels, onChange }: PickerProps) {
 
   return (
     <Stack direction="row" gap={2} align="center" className="vd-picker">
-      <label className="vd-picker__label" htmlFor={id}>
+      <Text variant="label" as="label" className="vd-picker__label" htmlFor={id}>
         {name}
-      </label>
+      </Text>
       <select
         id={id}
         className="vd-picker__select"

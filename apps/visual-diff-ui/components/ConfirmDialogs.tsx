@@ -1,7 +1,7 @@
 'use client';
 
 import { type ReactNode, useState } from 'react';
-import { Button, Dialog, IconButton, Stack } from '@gate/ui';
+import { Button, Dialog, IconButton, Stack, Text } from '@gate/ui';
 import { useMutation } from '@/hooks/useMutation';
 import { PruneResponseSchema } from '@/lib/api-contract';
 
@@ -311,7 +311,9 @@ export interface PruneButtonProps {
 function SetList({ title, labels }: { title: string; labels: readonly string[] }) {
   return (
     <div className="vd-confirm__list">
-      <p className="vd-confirm__list-title">{title}</p>
+      <Text variant="label" as="p" className="vd-confirm__list-title">
+        {title}
+      </Text>
       {labels.length === 0 ? (
         <p className="vd-confirm__detail">nothing</p>
       ) : (
