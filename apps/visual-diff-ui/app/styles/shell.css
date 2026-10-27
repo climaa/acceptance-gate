@@ -27,14 +27,6 @@ main {
   flex-wrap: wrap;
 }
 
-.vd-brand__mark {
-  margin: 0;
-  font-family: var(--font-display);
-  font-size: var(--text-lg);
-  font-weight: var(--weight-semibold);
-  line-height: var(--leading-tight);
-}
-
 .vd-brand__tagline {
   color: var(--color-text-muted);
 }
@@ -49,7 +41,6 @@ main {
 }
 
 .vd-sample__note {
-  font-size: var(--text-sm);
   color: var(--color-text-muted);
 }
 

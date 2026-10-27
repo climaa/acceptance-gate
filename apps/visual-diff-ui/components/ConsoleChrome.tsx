@@ -21,7 +21,10 @@ import { APP_NAME, APP_TAGLINE, MANUAL_NAV, SAMPLE_LABEL, SAMPLE_NOTE } from '@/
 export function Brand() {
   return (
     <span className="vd-brand">
-      <h1 className="vd-brand__mark">{APP_NAME}</h1>
+      {/* The display face's smallest heading role, at the page's one `h1`. */}
+      <Text variant="heading-3" as="h1">
+        {APP_NAME}
+      </Text>
       {/* A caption, not the brand's display face it would otherwise inherit. */}
       <Text variant="caption" className="vd-brand__tagline">
         {APP_TAGLINE}
@@ -41,7 +44,9 @@ export function SampleBanner() {
   return (
     <div className="vd-sample" role="status" aria-label={SAMPLE_LABEL}>
       <Badge tone="accent">{SAMPLE_LABEL}</Badge>
-      <span className="vd-sample__note">{SAMPLE_NOTE}</span>
+      <Text variant="body-sm" as="span" className="vd-sample__note">
+        {SAMPLE_NOTE}
+      </Text>
     </div>
   );
 }
