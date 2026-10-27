@@ -127,7 +127,7 @@ scripts/               gate/ (the gate, run by `.husky/pre-push`) · complexity-
 - `apps/storybook/src/docs/` — the published written half: System Design, Atomic Design, QA, DevOps, Skills
 - `packages/visual-diff/README.md` — capture matrix, determinism controls, exit codes, and why the job never joins `gate.needs`
 - `apps/e2e/README.md` — the three-layer split, the tag→project matrix and the three visual-diff worlds
-- `designs/exports/` — one PNG per board (`designs/STANDARD.md`): `00-foundations`, the tier boards `01-atoms`–`04-templates` and `05-screens` (normative inventory, one tile per story, each with a `.tiles.json` keyed by variant key; `05-screens` draws the console's own pages), `05-pages`, `06-flows-decisions`, `x-console-components`, `x-visual-diff-pages` (console `/` and `/report/[id]`)
+- `designs/exports/` — one PNG per board (`designs/STANDARD.md`): `00-foundations`, the tier boards `01-atoms`–`04-templates` and `05-screens` (normative inventory, one tile per story, each with a `.tiles.json` keyed by variant key; `05-screens` draws the console's own pages, paged as `05-screens-1`–`05-screens-4`), `05-pages`, `06-flows-decisions`, `x-console-components`, `x-visual-diff-pages` (console `/` and `/report/[id]`)
 
 ## 🧪 Tests
 

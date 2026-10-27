@@ -48,9 +48,9 @@ describe('answerAsSample', () => {
     globalThis.fetch = served;
     restore = answerAsSample();
 
-    await fetch('/designs/05-screens.json');
+    await fetch('/designs/05-screens-1.json');
 
-    expect(served).toHaveBeenCalledWith('/designs/05-screens.json', undefined);
+    expect(served).toHaveBeenCalledWith('/designs/05-screens-1.json', undefined);
   });
 
   it('answers a route it does not know 404, and says which', async () => {

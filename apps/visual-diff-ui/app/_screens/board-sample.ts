@@ -3,7 +3,10 @@ import atoms from '../../../../designs/exports/01-atoms.tiles.json';
 import molecules from '../../../../designs/exports/02-molecules.tiles.json';
 import organisms from '../../../../designs/exports/03-organisms.tiles.json';
 import templates from '../../../../designs/exports/04-templates.tiles.json';
-import screens from '../../../../designs/exports/05-screens.tiles.json';
+import screens1 from '../../../../designs/exports/05-screens-1.tiles.json';
+import screens2 from '../../../../designs/exports/05-screens-2.tiles.json';
+import screens3 from '../../../../designs/exports/05-screens-3.tiles.json';
+import screens4 from '../../../../designs/exports/05-screens-4.tiles.json';
 
 /**
  * The board each variant's tile is drawn on, as `readBoardHomes`
@@ -17,7 +20,10 @@ const TILE_MAPS = [
   ['02-molecules', molecules],
   ['03-organisms', organisms],
   ['04-templates', templates],
-  ['05-screens', screens],
+  ['05-screens-1', screens1],
+  ['05-screens-2', screens2],
+  ['05-screens-3', screens3],
+  ['05-screens-4', screens4],
 ] as const;
 
 const homes: Record<string, (typeof TILE_MAPS)[number][0]> = {};

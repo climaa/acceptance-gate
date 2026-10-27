@@ -80,7 +80,10 @@ export class ComparisonModal {
       | 'molecules'
       | 'organisms'
       | 'templates'
-      | 'screens'
+      | 'screens 1'
+      | 'screens 2'
+      | 'screens 3'
+      | 'screens 4'
       | 'pages'
       | 'console'
       | 'flows',
