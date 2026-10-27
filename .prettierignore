@@ -23,7 +23,10 @@ apps/blog/content/**/*.md
 # Vendored third-party skills, copied unmodified from vercel/next.js at a pinned
 # commit. PROVENANCE.md records a SHA-256 per file, so reformatting them would
 # invalidate every checksum and break the "copied unmodified" claim they rest on.
-.claude/skills/
+# pixel-perfect-session is this repository's own, so it is formatted like any
+# other source: un-ignored by name, which a vendored skill added later is not.
+.claude/skills/*
+!.claude/skills/pixel-perfect-session/
 
 # Playwright's run artifacts, both the acceptance pair and the -local pair the
 # real-data lane writes. Gitignored via apps/e2e/.gitignore, but Prettier does

@@ -34,7 +34,9 @@ import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const REPO_ROOT = resolve(fileURLToPath(new URL('../../../..', import.meta.url)));
-const { PNG } = createRequire(join(REPO_ROOT, 'packages/visual-diff/package.json'))('pngjs');
+const { PNG } = createRequire(join(REPO_ROOT, 'packages/visual-diff/package.json'))(
+  'pngjs',
+);
 const { COLOR_SCHEME_GLOBAL, LOCALE_GLOBAL } = await import(
   join(REPO_ROOT, 'packages/visual-diff/src/policy.mjs')
 );
@@ -64,7 +66,8 @@ function parseTarget(arg) {
 
   const url = new URL(arg);
   const match = url.pathname.match(/^\/set\/([^/]+)\/shot\/([^/]+)\/?$/);
-  if (!match) throw new Error(`${arg} is not a shot view — expected /set/<label>/shot/<key>`);
+  if (!match)
+    throw new Error(`${arg} is not a shot view — expected /set/<label>/shot/<key>`);
 
   return {
     origin: url.origin,
@@ -89,23 +92,46 @@ function parseKey(key) {
   throw new Error(`${key} is not a variant key — tier__viewport__theme__story-id`);
 }
 
+const USAGE =
+  'usage: tile-rows.mjs <shot URL | variant key> [--png <file>] [--storybook <origin>]';
+
+/** A failure the reader caused: printed as one line, with the usage, and no
+ *  stack — a missing argument is not a bug in this script. @param {string} why */
+function usageError(why) {
+  process.stderr.write(`${why}\n${USAGE}\n`);
+  process.exit(2);
+}
+
 /** @param {string} argv0 @param {string[]} rest */
 function parseArgs(argv0, rest) {
+  /** @type {{ png: string | undefined, storybook: string }} */
   const flags = { png: undefined, storybook: STORYBOOK };
   for (let i = 0; i < rest.length; i += 2) {
-    if (rest[i] === '--png') flags.png = resolve(rest[i + 1]);
-    else if (rest[i] === '--storybook') flags.storybook = rest[i + 1].replace(/\/$/, '');
-    else throw new Error(`unknown flag ${rest[i]}`);
+    const [flag, value] = [rest[i], rest[i + 1]];
+    if (value === undefined || value.startsWith('--'))
+      usageError(`${flag} needs a value`);
+    if (flag === '--png') flags.png = resolve(value);
+    else if (flag === '--storybook') flags.storybook = value.replace(/\/$/, '');
+    else usageError(`unknown flag ${flag}`);
   }
   return { target: parseTarget(argv0), ...flags };
 }
+
+/** How long the console or Storybook may take to answer. Both are local dev
+ *  servers: past this, one is hung, and waiting longer would not change that. */
+const FETCH_TIMEOUT_MS = 5000;
+
+/** @param {string} url */
+const fetchLocal = (url) => fetch(url, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
 
 /** Where a variant's tile is drawn: the export PNG, the rectangle in its pixels
  *  and the scale it was exported at — read from the tile maps, which the export
  *  writes and nothing edits (designs/STANDARD.md, "Exports and sidecars").
  *  @param {string} key @returns {{ stem: string, png: string, rect: number[], scale: number }} */
 function locateTile(key) {
-  for (const file of readdirSync(EXPORTS).filter((name) => name.endsWith('.tiles.json'))) {
+  for (const file of readdirSync(EXPORTS).filter((name) =>
+    name.endsWith('.tiles.json'),
+  )) {
     const map = JSON.parse(readFileSync(join(EXPORTS, file), 'utf8'));
     const rect = map.tiles?.[key];
     if (rect) {
@@ -124,8 +150,12 @@ async function readShot({ target, png }) {
 
   if (target.origin) {
     const url = `${target.origin}/api/sets/${encodeURIComponent(target.label)}/shots/${target.key}.png`;
-    const response = await fetch(url);
-    if (!response.ok) throw new Error(`${url} answered ${response.status} — is the console up?`);
+    const response = await fetchLocal(url).catch(() => null);
+    if (!response?.ok) {
+      throw new Error(
+        `${url} answered ${response?.status ?? 'nothing'} — is the console up?`,
+      );
+    }
     return { from: url, image: PNG.sync.read(Buffer.from(await response.arrayBuffer())) };
   }
 
@@ -139,10 +169,11 @@ async function readShot({ target, png }) {
  *  @param {string} storybook @param {string} storyId @returns {Promise<string | null>} */
 async function storySource(storybook, storyId) {
   try {
-    const response = await fetch(`${storybook}/index.json`);
+    const response = await fetchLocal(`${storybook}/index.json`);
     if (!response.ok) return null;
     const entry = (await response.json()).entries?.[storyId];
-    return entry ? join('apps/storybook', entry.importPath).replace(/^apps\/storybook\/\.\.\//, 'apps/') : null;
+    // An importPath is relative to apps/storybook; join resolves its `..`.
+    return entry ? join('apps/storybook', entry.importPath) : null;
   } catch {
     return null;
   }
@@ -162,24 +193,39 @@ function globalsOf(variant) {
  *  @param {ReturnType<typeof parseArgs>} args @param {Variant} variant
  *  @param {ReturnType<typeof locateTile>} tile @param {string} shotFrom */
 async function printAddresses({ target, storybook }, variant, tile, shotFrom) {
-  const shotView = target.origin ? `${target.origin}/set/${target.label}/shot/${target.key}` : null;
+  const shotView = target.origin
+    ? `${target.origin}/set/${target.label}/shot/${target.key}`
+    : null;
   const globals = globalsOf(variant);
   const lines = [
     ['variant', target.key],
-    ['tier', `${variant.tier} · ${variant.viewport} · ${variant.theme}${variant.locale ? ` · ${variant.locale}` : ''}`],
+    [
+      'tier',
+      `${variant.tier} · ${variant.viewport} · ${variant.theme}${variant.locale ? ` · ${variant.locale}` : ''}`,
+    ],
     ['set', target.label],
     ['shot view', shotView ?? '— (no console URL given)'],
     ['overlay', shotView ? `${shotView}?view=overlay&blend=difference` : '—'],
-    ['story', `${storybook}/?path=/story/${variant.storyId}&globals=${globals};viewport.value:${variant.viewport}`],
+    [
+      'story',
+      `${storybook}/?path=/story/${variant.storyId}&globals=${globals};viewport.value:${variant.viewport}`,
+    ],
     ['captured', `${storybook}/iframe.html?id=${variant.storyId}&globals=${globals}`],
-    ['source', (await storySource(storybook, variant.storyId)) ?? '— (Storybook not reachable)'],
+    [
+      'source',
+      (await storySource(storybook, variant.storyId)) ?? '— (Storybook not reachable)',
+    ],
     ['screenshot', shotFrom.replace(`${REPO_ROOT}/`, '')],
     ['baseline', `packages/visual-diff/__baselines__/${target.key}.png`],
     ['board', `designs/${tile.stem}.pen — frame "${target.key}"`],
-    ['export', `designs/exports/${tile.stem}.png @${tile.scale}, rect [${tile.rect.join(', ')}]`],
+    [
+      'export',
+      `designs/exports/${tile.stem}.png @${tile.scale}, rect [${tile.rect.join(', ')}]`,
+    ],
   ];
   process.stdout.write('addresses\n');
-  for (const [name, value] of lines) process.stdout.write(`  ${name.padEnd(11)} ${value}\n`);
+  for (const [name, value] of lines)
+    process.stdout.write(`  ${name.padEnd(11)} ${value}\n`);
 }
 
 /** The tile's crop, box-averaged from the export's scale down to design pixels.
@@ -221,7 +267,11 @@ function averageCell(board, left, top, scale) {
       count += 1;
     }
   }
-  return [Math.round(sum[0] / count), Math.round(sum[1] / count), Math.round(sum[2] / count)];
+  return [
+    Math.round(sum[0] / count),
+    Math.round(sum[1] / count),
+    Math.round(sum[2] / count),
+  ];
 }
 
 /** @param {Image} image @param {number} x @param {number} y @returns {[number, number, number]} */
@@ -322,23 +372,24 @@ function printInkPairs(tile, shot) {
     const s = b[i] ? `${b[i].from}–${b[i].to}` : '—';
     const offset = a[i] && b[i] ? b[i].from - a[i].from : null;
     const delta = offset === null ? '' : `${offset > 0 ? '+' : ''}${offset}`;
-    process.stdout.write(`  ${String(i + 1).padStart(2)}  ${t.padEnd(10)} ${s.padEnd(10)} ${delta}\n`);
+    process.stdout.write(
+      `  ${String(i + 1).padStart(2)}  ${t.padEnd(10)} ${s.padEnd(10)} ${delta}\n`,
+    );
   }
 }
 
 async function main() {
   const [first, ...rest] = process.argv.slice(2);
-  if (!first) {
-    process.stderr.write(
-      'usage: tile-rows.mjs <shot URL | variant key> [--png <file>] [--storybook <origin>]\n',
-    );
-    process.exit(2);
-  }
+  if (!first) usageError('no shot URL or variant key');
   const args = parseArgs(first, rest);
   const variant = parseKey(args.target.key);
   const tile = locateTile(args.target.key);
   const shot = await readShot(args);
-  const tileImage = cropToDesignPixels(PNG.sync.read(readFileSync(tile.png)), tile.rect, tile.scale);
+  const tileImage = cropToDesignPixels(
+    PNG.sync.read(readFileSync(tile.png)),
+    tile.rect,
+    tile.scale,
+  );
 
   await printAddresses(args, variant, tile, shot.from);
   printImage(`tile  designs/exports/${tile.stem}.png @${tile.scale}`, tileImage);

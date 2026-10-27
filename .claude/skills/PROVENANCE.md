@@ -21,7 +21,8 @@ exist inside the sandbox.
 | `next-dev-loop` | Driving a dev-server iteration loop |
 | `next-partial-prefetching-adoption` | Adopting partial prefetching |
 
-That is the complete current set. `skills/.claude-plugin/` is deliberately not copied — it is
+That is the complete current vendored set. `pixel-perfect-session/` sits beside it but is
+this repository's own, so it carries no checksum and is formatted like any other source. `skills/.claude-plugin/` is deliberately not copied — it is
 the marketplace manifest, not a skill.
 
 ## What is deliberately *not* here

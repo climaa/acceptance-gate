@@ -1,7 +1,7 @@
 ---
 name: pixel-perfect-session
 description: Take a shot view URL from the visual-diff console (`/set/<label>/shot/<variant key>`), read the screenshot against its tile on the design board by pixel rows, name each gap as the CSS property that moves it, and fix the component on-token until its ink lands on the tile's rows. Use for a "pixel perfect session", when the user pastes a console shot or overlay URL, compares a shot with its tile or board, or the overlay shows drift between a component and its drawing.
-argument-hint: '<shot view URL> [--report] [--storybook <origin>]'
+argument-hint: '<shot view URL> [--report] [--png <file>] [--storybook <origin>]'
 ---
 
 # Pixel perfect session
@@ -35,11 +35,12 @@ The default session compares and corrects. It measures, names each gap, fixes th
 on-token and verifies with the differ's check. Then it **stops before accepting**, because
 `accept` rewrites the committed baselines. It shows the check's summary and asks.
 
-| Input                 | Default                 | Effect                                                                                                                                         |
-| --------------------- | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `<shot view URL>`     | ask                     | Any `/set/<label>/shot/<key>` URL. The query (`?view=overlay&blend=difference`) is ignored. A bare variant key also works and reads the committed baseline. With nothing given, ask; never guess a story from the open files. |
-| `--report`            | off                     | Stop after step 2 and report the proposed properties and tokens without editing anything.                                                      |
-| `--storybook <origin>` | `http://localhost:6006` | Where Storybook dev runs. The script reads the story's source file from its `index.json`, and the fix measures live geometry there.           |
+| Input                  | Default                 | Effect                                                                                                                                                                                                                        |
+| ---------------------- | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `<shot view URL>`      | ask                     | Any `/set/<label>/shot/<key>` URL. The query (`?view=overlay&blend=difference`) is ignored. A bare variant key also works and reads the committed baseline. With nothing given, ask; never guess a story from the open files. |
+| `--report`             | off                     | Stop after step 2 and report the proposed properties and tokens without editing anything.                                                                                                                                     |
+| `--png <file>`         | the URL's screenshot    | Measure this PNG against the tile instead, such as a capture on disk that no console serves. Passed straight to the script.                                                                                                   |
+| `--storybook <origin>` | `http://localhost:6006` | Where Storybook dev runs. The script reads the story's source file from its `index.json`, and the fix measures live geometry there.                                                                                           |
 
 The set in the URL decides which screenshot is read. Pass `baselines` to read the committed
 corpus. Pass a capture label taken in the console to read a fresh capture against the tile
@@ -99,19 +100,19 @@ Every `padding`, `gap`, `fontSize`, `lineHeight`, `fontWeight`, `letterSpacing` 
 Name one CSS property for every ink pair with a non-zero offset and every column span that
 differs:
 
-| What the rows show                                                | The property                          |
-| ----------------------------------------------------------------- | ------------------------------------- |
-| An offset that starts at one line and carries down                | A padding or a gap                    |
-| An offset that grows with the font size and changes the height    | A line-height                         |
-| A width at the same rows                                          | A weight or a face                    |
-| A width that grows with the character count                       | A tracking (letter-spacing)           |
+| What the rows show                                             | The property                |
+| -------------------------------------------------------------- | --------------------------- |
+| An offset that starts at one line and carries down             | A padding or a gap          |
+| An offset that grows with the font size and changes the height | A line-height               |
+| A width at the same rows                                       | A weight or a face          |
+| A width that grows with the character count                    | A tracking (letter-spacing) |
 
 Then classify the tile's value:
 
-| The tile's value is…                                                            | Do                                                                 |
-| ------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| A token (`--space-3`, `--text-14`, `--weight-semibold`)                          | Use it.                                                            |
-| Off the scale (14px, 15px, line-height 1.1)                                      | Take the token whose ink lands within a pixel, and say which and why. |
+| The tile's value is…                                                                | Do                                                                     |
+| ----------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| A token (`--space-3`, `--text-14`, `--weight-semibold`)                             | Use it.                                                                |
+| Off the scale (14px, 15px, line-height 1.1)                                         | Take the token whose ink lands within a pixel, and say which and why.  |
 | Against a foundation (tracking below board 00's floor, a raw hex, a gradient angle) | Keep the foundation and list it for the owner. Do not change the tile. |
 
 The owner decides a deviation; a pull request does not. With `--report`, the session ends
@@ -121,10 +122,10 @@ here with the report (step 6).
 
 The tier in the key decides where the CSS lives:
 
-| Tier                                         | Edit                                                                                                  |
-| -------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `atoms`, `molecules`, `organisms`, `templates` | The component's CSS in `packages/ui/src/<tier>/`, beside the `source` the script printed              |
-| `screens`                                    | The console's CSS: `apps/visual-diff-ui/app/styles/*.css` and `app/globals.css`, for the component the story renders |
+| Tier                                           | Edit                                                                                                                 |
+| ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `atoms`, `molecules`, `organisms`, `templates` | The component's CSS in `packages/ui/src/<tier>/`, beside the `source` the script printed                             |
+| `screens`                                      | The console's CSS: `apps/visual-diff-ui/app/styles/*.css` and `app/globals.css`, for the component the story renders |
 
 Make each change the smallest one that moves the named line. In the comment, say which rows
 it was measured against. Three rules apply:
@@ -197,25 +198,14 @@ The report has two tables:
 
 ## Worked example
 
-Take the variant `molecules__mobile__light__molecules-factrow--card`, from portafolio's #194,
-where version 1 of this skill was written.
+`atoms__desktop__light__atoms-badge--accent`, read from the URL at the top of this file:
 
-**Measured.** In the tile the number's ink began at row 65; in the shot, at 61. The note sat
-at 112 in the tile and 107 in the shot. "2,351" was 80 px wide in the shot against 78 in the
-tile.
+```text
+ink rows, tile → shot (1 vs 1 runs)
+   1  10–20      9–18       -1
+```
 
-**Named and fixed:**
-
-| Found                                 | Fix                                                                       |
-| ------------------------------------- | ------------------------------------------------------------------------- |
-| 14 px of body padding, off the scale  | `--space-3`                                                               |
-| A 12 px gap                           | Kept `--space-2`, because the line-height's half-leading supplies the rest |
-| Weight 700                            | `--weight-semibold`                                                       |
-| The unit inheriting Manrope           | `--font-sans`                                                             |
-
-**After accepting,** the pairs read 65/65 and 112/112, and the width 78/78.
-
-**Left to the owner:**
-- tracking 1.6 against the floor's 1.2;
-- a vertical band against the 20° the foundations set;
-- a 15 px unit that is not on the type ladder.
+- **Rows.** The label's ink starts at 9 in the shot against 10 in the tile, and ends at 18 against 20. The shot's ink is 10 rows tall to the tile's 11. A top-edge pair reads `+1` when aligned, so the shot sits two rows high, and its line is one row shorter.
+- **Columns.** The ink spans 24 px in the shot against 25 in the tile.
+- **Naming.** Two rows high at the top edge and a shorter line point at the badge's vertical padding and its line-height. A narrower word at the same rows points at a weight or a tracking. The tile's `padding`, `lineHeight`, `fontWeight` and `letterSpacing` decide which, set beside the tokens `packages/ui/src/atoms/Badge` uses.
+- **Classifying.** The badge's `padding-top` is exempt in the token ledger as a "pill half-step". A tile value below it is listed for the owner, not fixed.
