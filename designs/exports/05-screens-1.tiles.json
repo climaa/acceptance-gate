@@ -1,0 +1,18 @@
+{
+  "board": "05-screens-1 — Screens",
+  "scale": 1.294768,
+  "tiles": {
+    "screens__desktop__dark__screens-visual-diff-ui-comparison--sample": [1802, 5821, 1657, 1036],
+    "screens__desktop__dark__screens-visual-diff-ui-dashboard--sample": [1802, 357, 1657, 2366],
+    "screens__desktop__dark__screens-visual-diff-ui-shot--sample": [1802, 7016, 1657, 1036],
+    "screens__desktop__light__screens-visual-diff-ui-comparison--sample": [83, 5821, 1657, 1036],
+    "screens__desktop__light__screens-visual-diff-ui-dashboard--sample": [83, 357, 1657, 2366],
+    "screens__desktop__light__screens-visual-diff-ui-shot--sample": [83, 7016, 1657, 1036],
+    "screens__mobile__dark__screens-visual-diff-ui-comparison--sample": [4089, 5821, 505, 1093],
+    "screens__mobile__dark__screens-visual-diff-ui-dashboard--sample": [4089, 357, 505, 5362],
+    "screens__mobile__dark__screens-visual-diff-ui-shot--sample": [4089, 7016, 505, 1093],
+    "screens__mobile__light__screens-visual-diff-ui-comparison--sample": [3522, 5821, 505, 1093],
+    "screens__mobile__light__screens-visual-diff-ui-dashboard--sample": [3522, 357, 505, 5362],
+    "screens__mobile__light__screens-visual-diff-ui-shot--sample": [3522, 7016, 505, 1093]
+  }
+}

@@ -7,6 +7,13 @@ transcribed from the GitHub Releases that existed when this file was created (20
 
 ## Unreleased
 
+- Every console screen now has its tiles: the report, the comparison modal, the set viewer and
+  the shot view are drawn on `05-screens` from the hand-drawn pages on `x-visual-diff-pages`,
+  each at 1:1 with its baseline and its dark tile a theme of the light one. A report tile is 7841
+  px tall on mobile, so `05-screens` is the first board this repository pages:
+  `05-screens-1`–`05-screens-4`, each exported at 1× or better, and the console's board picker
+  lists the four pages. `designs/undrawn-stories.json` is empty again, and gone.
+
 - Every console page drawn on `x-visual-diff-pages` now has a screen story: the report (one
   story per bucket it holds, `?bucket=changed` and `?bucket=removed`), the comparison modal over
   it, the set viewer and the shot view over it, all on the sample data and held to `fixtures/` by

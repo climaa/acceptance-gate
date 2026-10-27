@@ -1,0 +1,10 @@
+{
+  "board": "05-screens-3 — Screens",
+  "scale": 1.001344,
+  "tiles": {
+    "screens__desktop__dark__screens-visual-diff-ui-report--changed": [1394, 276, 1282, 2195],
+    "screens__desktop__light__screens-visual-diff-ui-report--changed": [64, 276, 1282, 2195],
+    "screens__mobile__dark__screens-visual-diff-ui-report--changed": [3162, 276, 391, 7852],
+    "screens__mobile__light__screens-visual-diff-ui-report--changed": [2724, 276, 391, 7852]
+  }
+}

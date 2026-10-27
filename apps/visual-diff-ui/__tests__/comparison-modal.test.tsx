@@ -12,6 +12,7 @@ import {
   type ComparisonMode,
   comparisonHref,
   comparisonPath,
+  DESIGN_BOARDS,
   type DesignBoard,
 } from '../lib/comparison';
 import { designBoardUrl } from '../lib/design-urls';
@@ -543,12 +544,12 @@ describe('the design view', () => {
     expect(within(modal()).getByRole('group', { name: 'design board' })).toBeTruthy();
   });
 
-  it('presses the board on show, among all eight', () => {
+  it('presses the board on show, among every board', () => {
     renderModal('diff', PROSE, 'design', '05-pages');
 
     const picker = within(modal()).getByRole('group', { name: 'board' });
 
-    expect(within(picker).getAllByRole('button')).toHaveLength(8);
+    expect(within(picker).getAllByRole('button')).toHaveLength(DESIGN_BOARDS.length);
     expect(pressedIn(picker)).toEqual(['pages']);
   });
 
