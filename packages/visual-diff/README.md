@@ -25,8 +25,8 @@ spacing in design-token terms beside a comparison and never changes its bucket.
 
 ### The capture matrix
 
-Every Storybook story under `packages/ui/src/{atoms,molecules,organisms,templates}/`
-is captured across a tier-dependent axis of viewport and theme, defined once in
+Every Storybook story under `packages/ui/src/{atoms,molecules,organisms,templates}/`,
+and every story under `apps/visual-diff-ui/app/` as the `screens` tier, is captured across a tier-dependent axis of viewport and theme, defined once in
 `src/policy.mjs` and consumed identically by capture, Storybook's own preview decorator,
 and the atomic-design boundary lint — one set of numbers, named once:
 
@@ -36,11 +36,18 @@ and the atomic-design boundary lint — one set of numbers, named once:
 | `molecules` | desktop          | light + dark | 2           |
 | `organisms` | desktop + mobile | light + dark | 4           |
 | `templates` | desktop + mobile | light + dark | 4           |
+| `screens`   | desktop + mobile | light + dark | 4           |
 
 (`desktop` 1280×800, `mobile` 390×844, `deviceScaleFactor: 1`.) A story can opt out of
 this default with a tag: `visual-diff:skip` excludes it entirely (reported, not hidden),
 `visual-diff:fullpage` shoots the whole page instead of the `#storybook-root` capture
 target, `visual-diff:all-viewports` widens an atom/molecule to both viewports.
+
+`screens` is a whole page of the console, drawn by a story beside the route it stands
+for (`apps/visual-diff-ui/app/_screens/`). The tier's roots are `APP_ROOTS` in
+`src/policy.mjs`, and this repository names one, the console: here it is the product, so
+its pages are photographed on purpose. A child project lists its own app there and keeps
+the console out.
 
 Each shot is keyed `{tier}__{viewport}__{theme}__{storyId}.png` — Storybook ids are
 `[a-z0-9-]` only, so the `__` separator can't collide — and lands in

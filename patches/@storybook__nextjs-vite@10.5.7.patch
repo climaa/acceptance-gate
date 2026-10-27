@@ -1,0 +1,14 @@
+diff --git a/dist/_browser-chunks/chunk-342N7CWU.js b/dist/_browser-chunks/chunk-342N7CWU.js
+index 342f9b9b78c04e71bef8f43a5b6d1a00d14a45c1..bb934c8a29618620cc74e4665332ee5ce8467592 100644
+--- a/dist/_browser-chunks/chunk-342N7CWU.js
++++ b/dist/_browser-chunks/chunk-342N7CWU.js
+@@ -114,6 +114,9 @@ var getParallelRoutes = (segmentsList) => {
+           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+           // @ts-ignore Only available in Next.js >= v15.1.1
+           parentTree: tree,
++          // Next.js >= v16.4: `useRouter()` reads `parentRenderTree.data.bfcacheId`
++          // and throws on a context without it. Patched in acceptance-gate.
++          parentRenderTree: { data: { bfcacheId: 0 } },
+           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+           // @ts-ignore Only available in Next.js >= v15.1.1
+           parentCacheNode: newLazyCacheNode,

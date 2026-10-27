@@ -1,7 +1,7 @@
 // Tier names are read from policy.mjs and never copied here: the same array drives
 // the Storybook globals and the visual-diff capture matrix, so adding a tier there
 // extends this rule with no edit in this file.
-import { TIERS } from '@gate/visual-diff/policy';
+import { UI_TIERS as TIERS } from '@gate/visual-diff/policy';
 import tsParser from '@typescript-eslint/parser';
 import boundaries from 'eslint-plugin-boundaries';
 

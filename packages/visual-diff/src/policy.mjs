@@ -5,7 +5,7 @@
 // CLI, so it stays zero-import and side-effect free: `preview.tsx` loads it through
 // Vite, and `capture.mjs` is the only module allowed a `playwright` import.
 
-/** @typedef {'atoms' | 'molecules' | 'organisms' | 'templates'} Tier */
+/** @typedef {'atoms' | 'molecules' | 'organisms' | 'templates' | 'screens'} Tier */
 /** @typedef {'light' | 'dark'} Theme */
 /** @typedef {'desktop' | 'mobile'} ViewportName */
 /** @typedef {{ tier: Tier, viewport: ViewportName, theme: Theme }} Mode */
@@ -15,8 +15,15 @@
 
 /** Atomic-design tiers, innermost first. Import order matters: the layering rule
  *  allows a tier to import only from tiers earlier in this array.
+ *
+ *  `screens` is last and is not a folder of `packages/ui`: it is a whole page of an
+ *  app in {@link APP_ROOTS}, baselined like a template at both viewports.
  *  @type {readonly Tier[]} */
-export const TIERS = ['atoms', 'molecules', 'organisms', 'templates'];
+export const TIERS = ['atoms', 'molecules', 'organisms', 'templates', 'screens'];
+
+/** The tiers that are folders of `packages/ui/src/` — every tier but `screens`.
+ *  @type {readonly Tier[]} */
+export const UI_TIERS = TIERS.filter((tier) => tier !== 'screens');
 
 /** Theme values. Selected via `data-theme` on <html> — never prefers-color-scheme.
  *  @type {readonly Theme[]} */
@@ -38,6 +45,7 @@ export const TIER_VIEWPORTS = {
   molecules: ['desktop'],
   organisms: ['desktop', 'mobile'],
   templates: ['desktop', 'mobile'],
+  screens: ['desktop', 'mobile'],
 };
 
 /** The full capture matrix: one entry per (tier, viewport, theme) cell.
@@ -94,23 +102,57 @@ export const LOCALE_GLOBAL = 'locale';
 
 const UI_SRC = ['packages', 'ui', 'src'];
 
-/** @param {readonly string[]} segments @param {number} index */
-const uiSrcStartsAt = (segments, index) =>
-  UI_SRC.every((segment, offset) => segments[index + offset] === segment);
+/** The app directories whose stories are `screens`, named one by one rather than
+ *  matched as every app's `app/`. Here the one listed is the console itself, the
+ *  reverse of every child project's list: in this repository the console is the
+ *  product, so its pages are photographed on purpose. A child keeps
+ *  `apps/visual-diff-ui` out, because there it is the tool, not the thing shot.
+ *  @type {readonly (readonly string[])[]} */
+export const APP_ROOTS = [['apps', 'visual-diff-ui', 'app']];
 
-/** The tier a story belongs to, derived from its `importPath`. Anything outside
- *  `packages/ui/src/<tier>/` — the barrels, a path in another workspace — is `null`
- *  rather than a guess: a story the matrix cannot place is reported, never captured
- *  under a tier it does not have.
+/** Where Storybook runs, and so what a `./` or `../` `importPath` is relative to:
+ *  `../visual-diff-ui/app/…` is `apps/visual-diff-ui/app/…` read from here. */
+const STORYBOOK_DIR = ['apps', 'storybook'];
+
+/** @param {readonly string[]} segments @param {readonly string[]} run
+ *  @param {number} index */
+const runStartsAt = (segments, run, index) =>
+  run.every((segment, offset) => segments[index + offset] === segment);
+
+/** @param {readonly string[]} segments @param {readonly string[]} run */
+const indexOfRun = (segments, run) =>
+  segments.findIndex((_, index) => runStartsAt(segments, run, index));
+
+/** A story path as repo-root segments. A relative `importPath` is resolved against
+ *  {@link STORYBOOK_DIR}; anything else is read as it is written.
+ *  @param {string} storyPath @returns {string[]} */
+function segmentsOf(storyPath) {
+  const written = storyPath.replaceAll('\\', '/').split('/');
+  if (written[0] !== '.' && written[0] !== '..') return written;
+
+  return [...STORYBOOK_DIR, ...written].reduce((resolved, segment) => {
+    if (segment === '..') resolved.pop();
+    else if (segment !== '.') resolved.push(segment);
+    return resolved;
+  }, /** @type {string[]} */ ([]));
+}
+
+/** The tier a story belongs to, derived from its `importPath`. A story under
+ *  `packages/ui/src/<tier>/` is in that tier, and one under an {@link APP_ROOTS}
+ *  directory is a `screens` story. Anything else — the barrels, a path in another
+ *  workspace — is `null` rather than a guess: a story the matrix cannot place is
+ *  reported, never captured under a tier it does not have.
  *  @param {string} storyPath
  *  @returns {Tier | null} */
 export function tierOf(storyPath) {
-  const segments = storyPath.replaceAll('\\', '/').split('/');
-  const start = segments.findIndex((_, index) => uiSrcStartsAt(segments, index));
+  const segments = segmentsOf(storyPath);
+  if (APP_ROOTS.some((root) => indexOfRun(segments, root) !== -1)) return 'screens';
+
+  const start = indexOfRun(segments, UI_SRC);
   if (start === -1) return null;
 
   const candidate = segments[start + UI_SRC.length];
-  return TIERS.find((tier) => tier === candidate) ?? null;
+  return UI_TIERS.find((tier) => tier === candidate) ?? null;
 }
 
 /** Storybook ids are `[a-z0-9-]` only, so a doubled underscore cannot occur inside

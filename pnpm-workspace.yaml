@@ -11,3 +11,5 @@ allowBuilds:
 # ships with handlebars >=4.7.10.
 overrides:
   handlebars: 4.7.10
+patchedDependencies:
+  '@storybook/nextjs-vite@10.5.7': patches/@storybook__nextjs-vite@10.5.7.patch

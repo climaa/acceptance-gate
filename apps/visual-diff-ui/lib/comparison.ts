@@ -199,7 +199,7 @@ export const isAgainst = (value: string | null): value is Against =>
 /**
  * The design boards a comparison can be read against: the PNGs exported from
  * each board's `designs/<stem>.pen` into `designs/exports/`, by file stem
- * (designs/STANDARD.md). The four tier boards first, in tier order, then the
+ * (designs/STANDARD.md). The tier boards first, in tier order, then the
  * reference boards. The allowlist IS the route's confinement — a name not here
  * is never turned into a path.
  */
@@ -208,6 +208,7 @@ export const DESIGN_BOARDS = [
   '02-molecules',
   '03-organisms',
   '04-templates',
+  '05-screens',
   '05-pages',
   'x-visual-diff-pages',
   '06-flows-decisions',
@@ -225,6 +226,7 @@ const TIER_STEMS: Readonly<Record<Variant['tier'], string>> = {
   molecules: '02-molecules',
   organisms: '03-organisms',
   templates: '04-templates',
+  screens: '05-screens',
 };
 
 /** A tier's board, or its pages in order when it is paged. */

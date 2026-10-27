@@ -72,7 +72,7 @@
 /* The tier you jumped to, marked on its own badge.
    `:target` lands on the HEADING — that is where the id is — so `:has()` reads
    which one is targeted from the root and matches the badge by the href that
-   points at it. Four rules, one per tier, for the same reason the nine counts
+   points at it. Five rules, one per tier, for the same reason the nine counts
    are nine: CSS relates elements, it does not compute over them.
 
    This is the zero-JavaScript half of "activate the one you are in": it answers
@@ -82,7 +82,8 @@
 .vd-set-view:has(#vd-tier-atoms:target) .vd-set__jump[href='#vd-tier-atoms'],
 .vd-set-view:has(#vd-tier-molecules:target) .vd-set__jump[href='#vd-tier-molecules'],
 .vd-set-view:has(#vd-tier-organisms:target) .vd-set__jump[href='#vd-tier-organisms'],
-.vd-set-view:has(#vd-tier-templates:target) .vd-set__jump[href='#vd-tier-templates'] {
+.vd-set-view:has(#vd-tier-templates:target) .vd-set__jump[href='#vd-tier-templates'],
+.vd-set-view:has(#vd-tier-screens:target) .vd-set__jump[href='#vd-tier-screens'] {
   border-color: var(--color-accent);
   background: var(--color-accent-subtle);
 }

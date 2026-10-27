@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { StorybookConfig } from '@storybook/nextjs-vite';
+import type { InlineConfig } from 'vite';
 import remarkGfm from 'remark-gfm';
 
 // The extension is explicit because Storybook loads this file with its own
@@ -9,6 +10,27 @@ import remarkGfm from 'remark-gfm';
 // FAQ, "extensionless imports in storybook/main.ts"); tsconfig.json allows it.
 import { analyticsHead } from './analytics-head.ts';
 import { linkPreviewHead } from './link-preview-head.ts';
+
+/** The one app whose screens are storied: the console. Its `@/…` imports mean
+ *  this directory, as `apps/visual-diff-ui/tsconfig.json`'s `paths` says. */
+const CONSOLE_DIR = join(
+  dirname(fileURLToPath(import.meta.url)),
+  '..',
+  '..',
+  'visual-diff-ui',
+);
+
+type Alias = NonNullable<InlineConfig['resolve']>['alias'];
+
+/** Vite takes `resolve.alias` as an object or as a list; the list keeps a regex. */
+function aliasEntries(alias: Alias | undefined) {
+  if (Array.isArray(alias)) return alias;
+
+  return Object.entries(alias ?? {}).map(([find, replacement]) => ({
+    find,
+    replacement,
+  }));
+}
 
 /** The page the root redirect lands on, whose words a shared link previews with. */
 const WELCOME_MDX = join(
@@ -21,26 +43,30 @@ const WELCOME_MDX = join(
 
 const config: StorybookConfig = {
   // Resolved against this directory, not the workspace root: three levels up is
-  // the repo. The design system's stories, then this app's own docs pages.
+  // the repo. The design system's stories, the console's screens, then this
+  // app's own docs pages.
   //
-  // There is deliberately no glob for app-composition stories, and the reason is
-  // not taste. A story outside the design system does not merely go uncaptured —
-  // it takes the whole gate down. The differ places a baseline by `importPath`:
-  // `tierOf` (@gate/visual-diff/policy) reads the tier out of
-  // `packages/ui/src/<tier>/` and returns `null` for anything else, and
-  // `variantsOf` (storybook-index.mjs) throws `IndexError` rather than file a
-  // shot under a layer it is not in. `commands.mjs` maps that to `EXIT.broken`,
-  // so one `.stories.tsx` under `apps/` reports every committed variant as
-  // unverified, for a reason unrelated to whoever added it.
-  //
-  // This glob used to read `../src/**/*.stories.tsx`, inviting exactly that. The
-  // directory was empty, so the invitation had never been accepted.
+  // A story glob goes only where `tierOf` (@gate/visual-diff/policy) can place
+  // what it finds, and the reason is not taste. A story outside those roots does
+  // not merely go uncaptured — it takes the whole gate down. The differ places a
+  // baseline by `importPath`: `tierOf` reads the tier out of
+  // `packages/ui/src/<tier>/`, calls a story under an `APP_ROOTS` directory a
+  // `screens` story, and returns `null` for anything else; `variantsOf`
+  // (storybook-index.mjs) throws `IndexError` rather than file a shot under a
+  // layer it is not in, and `commands.mjs` maps that to `EXIT.broken`. So the
+  // screens glob names `apps/visual-diff-ui/app`, the one app root, and no
+  // wider: a glob over `apps/` would report every committed variant as
+  // unverified the day another app grew a story.
   //
   // The `.mdx` glob is safe where a `.stories.tsx` one is not: docs entries are
   // indexed as `type: 'docs'` and `planCaptures` drops them before any tier is
   // asked for. `corpus-globs.test.mjs` is the tripwire, and it fails in `test`
   // rather than leaving this to a bare exit 2 in the differ.
-  stories: ['../../../packages/ui/src/**/*.stories.tsx', '../src/**/*.mdx'],
+  stories: [
+    '../../../packages/ui/src/**/*.stories.tsx',
+    '../../visual-diff-ui/app/**/*.stories.tsx',
+    '../src/**/*.mdx',
+  ],
   framework: '@storybook/nextjs-vite',
   // The design boards System Design embeds. A plain <img src="/designs/..."> in
   // an MDX doc, not a JS import: an ES import of a .png inside an MDX-compiled
@@ -109,11 +135,23 @@ const config: StorybookConfig = {
   // `rolldownOptions`, not `rollupOptions`: Vite 8 bundles with Rolldown, and
   // when both are set the deprecated `rollupOptions` alias loses — a hook put
   // there is never called. Vite 8.3.1 is where that started to show.
+  //
+  // `resolve.alias` gives a screen the console's `@/…`. One entry, because one
+  // app is storied; a second storied app would need its own prefix, since both
+  // would claim `@/`. The console's `'use client'` modules warn as the design
+  // system's do, for the same reason, so its tree joins the silenced sources.
   viteFinal: async (viteConfig) => {
     const previousOnwarn = viteConfig.build?.rolldownOptions?.onwarn;
 
     return {
       ...viteConfig,
+      resolve: {
+        ...viteConfig.resolve,
+        alias: [
+          ...aliasEntries(viteConfig.resolve?.alias),
+          { find: /^@\//, replacement: `${CONSOLE_DIR}/` },
+        ],
+      },
       build: {
         ...viteConfig.build,
         // Vite's 500 kB default is a budget for pages a visitor waits on. This
@@ -128,6 +166,7 @@ const config: StorybookConfig = {
           onwarn(warning, warn) {
             const fromClientDirective =
               (warning.id?.includes('/packages/ui/src/') ||
+                warning.id?.includes('/apps/visual-diff-ui/') ||
                 warning.id?.includes('/node_modules/next/dist/')) &&
               (warning.code === 'MODULE_LEVEL_DIRECTIVE' ||
                 warning.code === 'SOURCEMAP_ERROR');
