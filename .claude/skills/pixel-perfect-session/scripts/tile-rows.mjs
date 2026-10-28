@@ -229,15 +229,23 @@ async function printAddresses({ target, storybook }, variant, tile, shotFrom) {
 }
 
 /** The tile's crop, box-averaged from the export's scale down to design pixels.
+ *
+ *  The tile map rounds each frame's edges to whole export pixels, so the first and
+ *  last export pixel on each side can be a blend of the tile and whatever the board
+ *  draws next to it. A dark tile beside the light half of its board reads that
+ *  seam as a column of ink on every row. The crop is therefore sampled one export
+ *  pixel in from each edge: an edge cell takes its colour from its inner neighbour.
  *  @param {Image} board @param {number[]} rect @param {number} scale @returns {Image} */
 function cropToDesignPixels(board, [x0, y0, w, h], scale) {
   const width = Math.round(w / scale);
   const height = Math.round(h / scale);
   const data = new Uint8Array(width * height * 4);
+  /** @type {Inset} */
+  const inset = { x: [x0 + 1, x0 + w - 2], y: [y0 + 1, y0 + h - 2] };
 
   for (let y = 0; y < height; y += 1) {
     for (let x = 0; x < width; x += 1) {
-      const [r, g, b] = averageCell(board, x0 + x * scale, y0 + y * scale, scale);
+      const [r, g, b] = averageCell(board, x0 + x * scale, y0 + y * scale, scale, inset);
       const o = (y * width + x) * 4;
       data[o] = r;
       data[o + 1] = g;
@@ -248,16 +256,28 @@ function cropToDesignPixels(board, [x0, y0, w, h], scale) {
   return { width, height, data };
 }
 
+/** @typedef {{ x: [number, number], y: [number, number] }} Inset
+ *  The first and last export pixel, per axis, a cell may read: the tile's own,
+ *  past the blended seam at each edge. */
+
+/** The export pixels one design pixel covers along an axis, kept inside the inset
+ *  so an edge cell reads its inner neighbour rather than the seam.
+ *  @param {number} start @param {number} scale @param {[number, number]} bounds
+ *  @returns {[number, number]} first pixel, and one past the last */
+function sourceSpan(start, scale, [first, last]) {
+  const from = Math.min(Math.max(Math.floor(start), first), last);
+  const to = Math.min(Math.max(from + 1, Math.floor(start + scale)), last + 1);
+  return [from, to];
+}
+
 /** One design pixel's colour: the mean of the export pixels it covers.
  *  @param {Image} board @param {number} left @param {number} top @param {number} scale
- *  @returns {[number, number, number]} */
-function averageCell(board, left, top, scale) {
+ *  @param {Inset} inset @returns {[number, number, number]} */
+function averageCell(board, left, top, scale, inset) {
   const sum = [0, 0, 0];
   let count = 0;
-  const sx0 = Math.floor(left);
-  const sx1 = Math.max(sx0 + 1, Math.floor(left + scale));
-  const sy0 = Math.floor(top);
-  const sy1 = Math.max(sy0 + 1, Math.floor(top + scale));
+  const [sx0, sx1] = sourceSpan(left, scale, inset.x);
+  const [sy0, sy1] = sourceSpan(top, scale, inset.y);
   for (let sy = sy0; sy < sy1; sy += 1) {
     for (let sx = sx0; sx < sx1; sx += 1) {
       const i = (sy * board.width + sx) * 4;

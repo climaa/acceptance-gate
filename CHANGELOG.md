@@ -7,6 +7,8 @@ transcribed from the GitHub Releases that existed when this file was created (20
 
 ## Unreleased
 
+- The pixel perfect session no longer misreads a tile drawn beside a seam on its board. The tile map rounds each frame to whole export pixels, so a dark tile's first column blended into the light half next to it and read as ink on every row. The crop is now sampled one export pixel inside each edge. 24 dark tiles that read as a solid block now match their light twins, and no light reading changed.
+
 - A pixel perfect session starts from the console's shot view, which is its only input:
   `/pixel-perfect-session <URL>` reads that screenshot against its tile by pixel rows. It
   derives the story, its source, the Storybook addresses, the baseline and the board from the
