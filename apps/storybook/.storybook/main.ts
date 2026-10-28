@@ -161,8 +161,8 @@ const config: StorybookConfig = {
   //
   // A screen renders the console's client components, and those call Next's
   // `useRouter()`. Next 16.4 reads `parentRenderTree` off the LayoutRouterContext
-  // the framework mounts, which `@storybook/nextjs-vite` 10.5 does not provide, so
-  // `patches/@storybook__nextjs-vite@10.5.7.patch` adds it. The patch is keyed to
+  // the framework mounts, which `@storybook/nextjs-vite` 10.5–10.6 does not provide, so
+  // `patches/@storybook__nextjs-vite@10.6.2.patch` adds it. The patch is keyed to
   // that exact version, so a bump leaves it unused, which pnpm refuses: the bump
   // has to carry it forward or, once a release mounts the field itself, drop it.
   //
