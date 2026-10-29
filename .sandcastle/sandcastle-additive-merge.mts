@@ -33,7 +33,7 @@
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { basename, dirname, join } from 'node:path';
 
 // @ts-expect-error — plain .mjs with JSDoc types, no declaration file.
 import { withoutAmbientGit } from '../scripts/gate/git-env.mjs';
@@ -298,18 +298,25 @@ export function resolveDirtyBranch(
 
 /**
  * Why a push from `root` would not run the gate, or null when it would. The hook
- * lives in `core.hooksPath` (Husky's `.husky/_`, which `pnpm install` makes), and
- * `SC_SKIP_GATE=1` turns it into a no-op.
+ * lives in `core.hooksPath` (Husky's `.husky/_`, which `pnpm install` makes).
+ * Husky's stub there exits 0 without running anything when `HUSKY=0` is set or
+ * when the script it calls, `.husky/pre-push`, is missing, and `SC_SKIP_GATE=1`
+ * turns the script itself into a no-op, so each of those is refused too.
  */
 export function ungatedPush(
   root: string,
   env: NodeJS.ProcessEnv = process.env,
 ): string | null {
   if (env.SC_SKIP_GATE === '1') return 'SC_SKIP_GATE=1 would skip the gate on the push';
+  if (env.HUSKY === '0') return 'HUSKY=0 would skip every Git hook, the gate with them';
   const hooks = gitIn(root)('config', 'core.hooksPath').stdout.trim() || '.git/hooks';
-  return existsSync(join(root, hooks, 'pre-push'))
+  if (!existsSync(join(root, hooks, 'pre-push'))) {
+    return `no pre-push hook in ${hooks}; run pnpm install so the push is gated`;
+  }
+  const script = basename(hooks) === '_' ? join(dirname(hooks), 'pre-push') : null;
+  return script === null || existsSync(join(root, script))
     ? null
-    : `no pre-push hook in ${hooks}; run pnpm install so the push is gated`;
+    : `no ${script} for Husky's hook to run; the push would not be gated`;
 }
 
 /** The IO against this host: a frozen install in the scratch worktree, and a

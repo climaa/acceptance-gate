@@ -425,13 +425,17 @@ describe('ungatedPush', () => {
     dir = undefined;
   });
 
-  /** A repository whose hooks live in `.husky/_`, with or without a pre-push. */
-  function repoWithHooks(prePush: boolean): string {
+  /**
+   * A repository whose hooks live in `.husky/_`, with or without Husky's
+   * pre-push stub, and with or without the `.husky/pre-push` script it runs.
+   */
+  function repoWithHooks(prePush: boolean, script = prePush): string {
     const root = mkdtempSync(join(tmpdir(), 'additive-merge-hooks-'));
     execFileSync('git', ['init', '-q'], { cwd: root });
     execFileSync('git', ['config', 'core.hooksPath', '.husky/_'], { cwd: root });
     mkdirSync(join(root, '.husky/_'), { recursive: true });
     if (prePush) writeFileSync(join(root, '.husky/_/pre-push'), '#!/bin/sh\n');
+    if (script) writeFileSync(join(root, '.husky/pre-push'), 'pnpm gate\n');
     return root;
   }
 
@@ -466,5 +470,29 @@ describe('ungatedPush', () => {
 
     // Assert
     expect(reason).toMatch(/SC_SKIP_GATE/);
+  });
+
+  it('refuses a push that HUSKY=0 would leave ungated, though the hook is installed', () => {
+    // Arrange
+    dir = repoWithHooks(true);
+
+    // Act
+    const reason = ungatedPush(dir, { HUSKY: '0' });
+
+    // Assert
+    expect(reason).toMatch(/HUSKY=0/);
+  });
+
+  it('refuses a push whose Husky stub has no .husky/pre-push to run', () => {
+    // Arrange
+    dir = repoWithHooks(true, false);
+
+    // Act
+    const reason = ungatedPush(dir, {});
+
+    // Assert
+    expect(reason).toBe(
+      "no .husky/pre-push for Husky's hook to run; the push would not be gated",
+    );
   });
 });
