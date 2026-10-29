@@ -1,3 +1,5 @@
+import { Text } from '../../atoms/Text/Text';
+
 export interface PostMetaProps {
   /** ISO `YYYY-MM-DD` date string; also carried verbatim on `<time dateTime>`. */
   date: string;
@@ -20,10 +22,16 @@ function formatPostDate(iso: string): string {
 
 export function PostMeta({ date, readingMinutes, className }: PostMetaProps) {
   return (
-    <div className={['ds-post-meta', className].filter(Boolean).join(' ')}>
+    // The caption role sets the row's type — face, size, weight and leading —
+    // rather than inheriting three of the four from wherever it is placed.
+    <Text
+      as="div"
+      variant="caption"
+      className={['ds-post-meta', className].filter(Boolean).join(' ')}
+    >
       <time dateTime={date}>{formatPostDate(date)}</time>
       <span aria-hidden="true">·</span>
       <span>{readingMinutes} min</span>
-    </div>
+    </Text>
   );
 }

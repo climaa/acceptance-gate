@@ -66,6 +66,14 @@
   overscroll-behavior: contain;
 }
 
+/* A scroll container keeps its last child's bottom margin inside it, so a
+   closing `<p>` left 16px of UA margin under the text, above the surface's own
+   --space-6 of padding (dialog--long-content: 486px against the tile's 464).
+   `:where()` keeps it at 0,1,0 so content that sets its own margin still wins. */
+.ds-dialog__content > :where(:last-child) {
+  margin-block-end: 0;
+}
+
 /* Full-bleed row so the whole top of the sheet answers the drag, not just the
    36x4 bar the reader aims at. */
 .ds-dialog__grabber {

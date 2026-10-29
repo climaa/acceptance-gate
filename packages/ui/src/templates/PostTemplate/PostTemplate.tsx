@@ -1,6 +1,6 @@
 import type { ElementType, ReactNode } from 'react';
 
-import { Prose, Stack } from '../../atoms';
+import { Prose, Stack, Text } from '../../atoms';
 import { PostMeta, TagList } from '../../molecules';
 
 export interface PostTemplateProps {
@@ -55,7 +55,9 @@ export function PostTemplate({
       className={['ds-post-template', className].filter(Boolean).join(' ')}
     >
       <Stack as="header" gap={3}>
-        <h1 className="ds-post-template__title">{title}</h1>
+        <Text variant="heading-1" className="ds-post-template__title">
+          {title}
+        </Text>
         <PostMeta date={date} readingMinutes={readingMinutes} />
         <TagList tags={tags} hrefFor={tagHref} as={as} />
       </Stack>
