@@ -18,6 +18,8 @@
 import { spawnSync } from 'node:child_process';
 import { join } from 'node:path';
 
+// @ts-expect-error — plain .mjs with JSDoc types, no declaration file.
+import { withoutAmbientGit } from '../scripts/gate/git-env.mjs';
 import { BASE_BRANCH } from './sandcastle-config.mts';
 import { execOrNull } from './sandcastle-git.mts';
 
@@ -25,23 +27,48 @@ import { execOrNull } from './sandcastle-git.mts';
  *  not hold the end of a run, which also runs after a Ctrl-C. */
 const TIMEOUT_MS = 60_000;
 
+/** The host's git, never a hook's `GIT_DIR`, and never waiting on a prompt: a
+ *  credential prompt fails at once instead of at the timeout. */
+const GIT_ENV = {
+  ...withoutAmbientGit(),
+  GIT_TERMINAL_PROMPT: '0',
+  GIT_SSH_COMMAND: process.env.GIT_SSH_COMMAND ?? 'ssh -o BatchMode=yes',
+};
+
 /** `--verify`'s answer: its exit 0 and 1, or anything else (the check broke). */
 export type Verdict = 'verified' | 'no-receipt' | 'broken';
 
+/** What the fetch got: `main` (false means a stale `origin/main` would answer for
+ *  it), and the receipts written on other machines (false when this host's have
+ *  diverged from origin's, so a receipt pushed elsewhere may be missing here). */
+export interface Fetched {
+  main: boolean;
+  notes: boolean;
+}
+
 /** What the report needs from git and the gate, so it can be tested without either. */
 export interface ReceiptProbe {
-  /** Fetch `main` and the receipts written on other machines; false when `main`
-   *  could not be fetched, since a stale `origin/main` would answer for it. */
-  fetch(): boolean;
+  fetch(): Fetched;
   /** The commit `origin/main` points at, or null when it cannot be read. */
   head(): string | null;
   /** Whether `origin/main`'s tree has a receipt. */
   verify(): Verdict;
 }
 
-/** The commands that give `main` a receipt, in the order they have to run. */
+/** The commands that give `main` a receipt, in the order they have to run. The
+ *  notes fetch comes first so the push at the end is a fast-forward; it fails, and
+ *  stops the chain, when the notes have diverged, which `MERGE_NOTES` mends. */
 export const FIX_COMMANDS =
+  'git fetch origin refs/notes/gate:refs/notes/gate && ' +
   `git checkout ${BASE_BRANCH} && git pull --ff-only && pnpm gate && ` +
+  'git push origin refs/notes/gate';
+
+/** Joins this host's receipts with origin's when the two have diverged, keeping
+ *  this host's note where both hold one for a commit (either is a receipt), and
+ *  publishes the result. */
+export const MERGE_NOTES =
+  'git fetch origin +refs/notes/gate:refs/notes/gate-origin && ' +
+  'git notes --ref=gate merge -s ours refs/notes/gate-origin && ' +
   'git push origin refs/notes/gate';
 
 /**
@@ -54,7 +81,8 @@ export function mainReceiptReport(
   before: string | null,
   probe: ReceiptProbe,
 ): string | null {
-  if (!probe.fetch()) {
+  const fetched = probe.fetch();
+  if (!fetched.main) {
     return `${BASE_BRANCH} receipt unknown: origin/${BASE_BRANCH} could not be fetched after the run`;
   }
   const after = probe.head();
@@ -69,14 +97,23 @@ export function mainReceiptReport(
   if (verdict === 'broken') {
     return `${BASE_BRANCH} receipt unknown for ${short}: \`pnpm gate --verify origin/${BASE_BRANCH}\` broke; run it to see why`;
   }
+  if (!fetched.notes) {
+    return (
+      `${BASE_BRANCH} receipt unknown for ${short}: this host's receipts have diverged ` +
+      `from origin's, so one written elsewhere may be missing here. Join them, then ask again:\n  ${MERGE_NOTES}`
+    );
+  }
   return `${BASE_BRANCH} has no receipt ${short}. To give it one:\n  ${FIX_COMMANDS}`;
 }
 
 /** `origin/main`'s commit on this host, or null. */
 export function originHead(cwd: string): string | null {
   return (
-    execOrNull(`git rev-parse origin/${BASE_BRANCH}`, { cwd, stdio: 'pipe' })?.trim() ??
-    null
+    execOrNull(`git rev-parse origin/${BASE_BRANCH}`, {
+      cwd,
+      stdio: 'pipe',
+      env: GIT_ENV,
+    })?.trim() ?? null
   );
 }
 
@@ -87,6 +124,7 @@ function fetchMain(cwd: string): boolean {
       cwd,
       stdio: 'ignore',
       timeout: TIMEOUT_MS,
+      env: GIT_ENV,
     }).status === 0
   );
 }
@@ -97,45 +135,42 @@ export function startingMain(cwd: string): string | null {
   return fetchMain(cwd) ? originHead(cwd) : null;
 }
 
-/** `--verify`'s exit code, read as a verdict. */
-export const verdictOf = (status: number | null): Verdict =>
-  status === 0 ? 'verified' : status === 1 ? 'no-receipt' : 'broken';
+/** `--verify`'s exit code and output, read as a verdict. Exit 1 alone is not "no
+ *  receipt": an uncaught throw (a bad ref, a missing script) exits 1 too, so the
+ *  gate's own `✗ no receipt` line has to be there. */
+export const verdictOf = (status: number | null, output = ''): Verdict =>
+  status === 0
+    ? 'verified'
+    : status === 1 && output.includes('✗ no receipt for')
+      ? 'no-receipt'
+      : 'broken';
 
 /**
  * The probe against this host's checkout.
  *
  * The notes fetch is not forced, so a receipt written on this host and not yet
  * pushed is never overwritten. When the two diverge that fetch is refused, and
- * the check reads the local receipts it has; a warning says so.
+ * the report does not trust a "no receipt" read off this host's notes alone.
  */
 export function hostReceiptProbe(cwd: string): ReceiptProbe {
   return {
     fetch() {
-      if (!fetchMain(cwd)) return false;
+      if (!fetchMain(cwd)) return { main: false, notes: false };
       const notes = spawnSync(
         'git',
         ['fetch', '-q', 'origin', 'refs/notes/*:refs/notes/*'],
-        {
-          cwd,
-          stdio: 'ignore',
-          timeout: TIMEOUT_MS,
-        },
+        { cwd, stdio: 'ignore', timeout: TIMEOUT_MS, env: GIT_ENV },
       );
-      if (notes.status !== 0) {
-        console.warn(
-          '  ⚠ could not fetch refs/notes from origin; reading the receipts this host has',
-        );
-      }
-      return true;
+      return { main: true, notes: notes.status === 0 };
     },
     head: () => originHead(cwd),
-    verify: () =>
-      verdictOf(
-        spawnSync(
-          process.execPath,
-          [join(cwd, 'scripts/gate/run.mjs'), '--verify', `origin/${BASE_BRANCH}`],
-          { cwd, stdio: 'ignore', timeout: TIMEOUT_MS },
-        ).status,
-      ),
+    verify() {
+      const run = spawnSync(
+        process.execPath,
+        [join(cwd, 'scripts/gate/run.mjs'), '--verify', `origin/${BASE_BRANCH}`],
+        { cwd, stdio: 'pipe', encoding: 'utf8', timeout: TIMEOUT_MS, env: GIT_ENV },
+      );
+      return verdictOf(run.status, `${run.stdout ?? ''}${run.stderr ?? ''}`);
+    },
   };
 }
