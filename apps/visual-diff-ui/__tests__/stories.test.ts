@@ -135,6 +135,7 @@ describe('readStories', () => {
   // workspace does not depend on `@gate/storybook`, so `turbo run test`'s `^build`
   // never makes one. Asserting unconditionally would be a case that only ever
   // passes on a machine that happens to have captured recently.
+  // reason: there is no Storybook build to read in a plain test run
   it.skipIf(!BUILT)("reads this repo's own corpus", () => {
     const tiers = readStories();
 
