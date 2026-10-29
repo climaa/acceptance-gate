@@ -113,6 +113,51 @@ describe('resolveAdditive', () => {
     expect(resolution.ok).toBe(false);
   });
 
+  it('refuses a line both sides added, which keeping both would repeat', () => {
+    // Arrange — a re-landed or cherry-picked entry: diff3 does not trim it.
+    const text = [
+      '<<<<<<< HEAD',
+      '- shared entry',
+      '- branch entry',
+      '||||||| 037c6d8',
+      '=======',
+      '- shared entry',
+      '>>>>>>> origin/main',
+    ].join('\n');
+
+    // Act
+    const resolution = resolveAdditive('CHANGELOG.md', text);
+
+    // Assert
+    expect(resolution).toEqual({
+      ok: false,
+      reason:
+        'CHANGELOG.md gains the same line on both sides (- shared entry); keeping both would repeat it',
+    });
+  });
+
+  it("refuses when an added line looks like a closing marker, rather than leaving git's behind", () => {
+    // Arrange — main's entry quotes a marker, which closes the hunk early.
+    const text = [
+      '<<<<<<< HEAD',
+      '- branch entry',
+      '||||||| 037c6d8',
+      '=======',
+      '>>>>>>> quoted in an entry',
+      '- main entry',
+      '>>>>>>> origin/main',
+    ].join('\n');
+
+    // Act
+    const resolution = resolveAdditive('CHANGELOG.md', text);
+
+    // Assert
+    expect(resolution).toEqual({
+      ok: false,
+      reason: 'CHANGELOG.md still holds a conflict marker after resolving; refusing',
+    });
+  });
+
   it('refuses a file with no conflict in it', () => {
     // Arrange
     const text = '## Unreleased\n';
@@ -168,13 +213,14 @@ describe('resolveDirtyBranch', () => {
 
     const pushed: string[] = [];
     const installs: string[] = [];
-    const io = (installs_ok = true): MergeIO => ({
+    const io = (installs_ok = true, push_ok = true): MergeIO => ({
       install: (dir) => {
         installs.push(dir);
         return installs_ok;
       },
       push: (sha, branch) => {
         pushed.push(sha);
+        if (!push_ok) return false;
         git(host, 'push', '-q', 'origin', `${sha}:refs/heads/${branch}`);
         return true;
       },
@@ -312,6 +358,47 @@ describe('resolveDirtyBranch', () => {
       reason: 'CHANGELOG.md was deleted on one side; refusing',
     });
     expect(repo.pushed).toEqual([]);
+  });
+
+  it('offers one more look when main is already in the branch, as GitHub lags a push', () => {
+    // Arrange — the branch already holds main, so the merge here is a no-op.
+    const repo = crossed(
+      { 'CHANGELOG.md': changelog(), 'a.ts': '1\n' },
+      { 'a.ts': '2\n' },
+      { 'b.ts': '1\n' },
+    );
+    repo.git(repo.host, 'checkout', '-q', 'branch');
+    repo.git(repo.host, 'merge', '-q', '--no-edit', 'main');
+    repo.git(repo.host, 'push', '-q', 'origin', 'branch');
+
+    // Act
+    const outcome = resolveDirtyBranch('branch', repo.host, repo.io());
+
+    // Assert
+    expect(outcome).toEqual({
+      ok: false,
+      reason: 'main is already in branch here, though GitHub reports a conflict',
+      retry: true,
+    });
+    expect(repo.pushed).toEqual([]);
+  });
+
+  it('asks for a retry when the host push is refused, and leaves origin as it was', () => {
+    // Arrange
+    const repo = crossed(
+      { 'CHANGELOG.md': changelog() },
+      { 'CHANGELOG.md': changelog('- main entry') },
+      { 'CHANGELOG.md': changelog('- branch entry') },
+    );
+    const before = repo.git(repo.host, 'rev-parse', 'origin/branch');
+
+    // Act
+    const outcome = resolveDirtyBranch('branch', repo.host, repo.io(true, false));
+
+    // Assert
+    expect(outcome).toMatchObject({ ok: false, retry: true });
+    repo.git(repo.host, 'fetch', '-q', 'origin');
+    expect(repo.git(repo.host, 'rev-parse', 'origin/branch')).toBe(before);
   });
 
   it('leaves no scratch worktree behind', () => {

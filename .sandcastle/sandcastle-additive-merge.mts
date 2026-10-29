@@ -57,6 +57,20 @@ const THEIRS = /^>{7}(?: |$)/;
 
 type Hunk = { ours: string[]; base: string[] | null; theirs: string[] };
 
+const isMarker = (line: string) =>
+  OURS.test(line) || BASE.test(line) || SPLIT.test(line) || THEIRS.test(line);
+
+/** Why a hunk with an empty base still cannot be kept whole, or null. diff3
+ *  does not trim what the two sides share, so a line both added (a re-landed
+ *  entry) would come out twice. */
+function sharedAddition(file: string, { ours, theirs }: Hunk): string | null {
+  const mine = new Set(ours.filter((line) => line.trim() !== ''));
+  const twice = theirs.find((line) => mine.has(line));
+  return twice === undefined
+    ? null
+    : `${file} gains the same line on both sides (${twice.slice(0, 60)}); keeping both would repeat it`;
+}
+
 /**
  * Read one hunk starting after its `<<<<<<<` line: it and the index after its
  * `>>>>>>>`, or null for anything but one ours, at most one base, exactly one
@@ -118,11 +132,21 @@ export function resolveAdditive(file: string, text: string): Resolution {
         reason: `${file} has a hunk where a side changed an existing line; only pure additions are resolved`,
       };
     }
+    const twice = sharedAddition(file, hunk);
+    if (twice !== null) return { ok: false, reason: twice };
     out.push(...hunk.ours, ...hunk.theirs);
     hunks++;
     i = next;
   }
   if (hunks === 0) return { ok: false, reason: `${file} holds no conflict to resolve` };
+  // A marker-shaped line in the added content closes a hunk early and leaves git's
+  // own marker behind as text; a resolution is never allowed to carry one.
+  if (out.some(isMarker)) {
+    return {
+      ok: false,
+      reason: `${file} still holds a conflict marker after resolving; refusing`,
+    };
+  }
   return { ok: true, text: out.join('\n') };
 }
 
@@ -203,11 +227,14 @@ function mergeCheckPush(dir: string, branch: string, io: MergeIO): MergeOutcome 
     return merged;
   }
   // GitHub said DIRTY, but here main merges in as nothing: the two views
-  // disagree, and pushing the same tip again would only loop.
+  // disagree, and pushing the same tip again would only loop. GitHub's
+  // mergeability lags a push, so a resolution pushed a pass ago can still read
+  // DIRTY: worth one more look before a human is called.
   if (merged.sha === git('rev-parse', `origin/${branch}`).stdout.trim()) {
     return {
       ok: false,
       reason: `${BASE_BRANCH} is already in ${branch} here, though GitHub reports a conflict`,
+      retry: true,
     };
   }
   const lockMoved =
@@ -291,8 +318,11 @@ export function ungatedPush(
 export function hostMergeIO(root: string): MergeIO {
   return {
     install: (dir) =>
-      spawnSync('pnpm', ['install', '--frozen-lockfile'], { cwd: dir, stdio: 'inherit' })
-        .status === 0,
+      spawnSync('pnpm', ['install', '--frozen-lockfile'], {
+        cwd: dir,
+        stdio: 'inherit',
+        env: withoutAmbientGit(),
+      }).status === 0,
     push: (sha, branch) => {
       const ungated = ungatedPush(root);
       if (ungated !== null) {
