@@ -7,6 +7,8 @@ transcribed from the GitHub Releases that existed when this file was created (20
 
 ## Unreleased
 
+- A `pnpm sandcastle` run that moved `origin/main` now ends by saying whether `main`'s tree has a gate receipt. It prints `main verified <sha>`, or `main has no receipt <sha>` with the commands that give it one. Each PR is verified on its head, but the commit that lands on `main` has a tree of its own once two branches crossed, and nothing used to report that gap. The run fetches `main` and `refs/notes/*` first, and it only reports: it never runs the gate. When this host's receipts have diverged from origin's, or `--verify` broke, it says the answer is unknown rather than "no receipt", with the commands that join the receipts in the first case.
+
 - The gate refuses to run on a Node whose major.minor differs from `.nvmrc`. It exits 2 before any check, naming both versions and `nvm use`/`fnm use`, so no receipt is written for a runtime the repository does not declare. `pnpm install` now also fails, instead of warning, when a dependency's `engines` excludes the running Node (`engineStrict: true` in `pnpm-workspace.yaml`); the root `engines` floor rises to 22.22.2, the lowest Node jsdom 30 accepts, so the two never disagree.
 
 - build(deps): Storybook 10.5.7 → 10.6.2 and dompurify 3.4.16 → 3.4.17 (through mermaid), which close the open Dependabot alerts: 4 critical, 4 high, 1 low. The `@storybook/nextjs-vite` patch is carried forward to 10.6.2 unchanged, because 10.6.2 still does not set `parentRenderTree` on the router context.
