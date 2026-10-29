@@ -73,6 +73,11 @@ import {
 import { runMerger } from './sandcastle-merge.mts';
 import { runIssue } from './sandcastle-run-issue.mts';
 import { formatUnresolvedSummary } from './sandcastle-issue-pipeline.mts';
+import {
+  hostReceiptProbe,
+  mainReceiptReport,
+  startingMain,
+} from './sandcastle-main-receipt.mts';
 import * as sandcastle from '@ai-hero/sandcastle';
 
 // ---------------------------------------------------------------------------
@@ -119,6 +124,10 @@ reapExitedContainers();
 // rather than run the batch against the wrong toolchain and report ten
 // independent "push failed" comments.
 ensureImageFreshness();
+
+// Where `origin/main` stood before anything ran, so the run can tell at the end
+// whether it landed anything there (sandcastle-main-receipt.mts).
+const mainAtStart = startingMain(process.cwd());
 
 // ---------------------------------------------------------------------------
 // Main loop
@@ -587,3 +596,8 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
 }
 
 console.log('\nAll done.');
+
+// Last line, and only when `main` moved: whether its tree has a receipt. It
+// reports; it never runs the gate.
+const mainReceipt = mainReceiptReport(mainAtStart, hostReceiptProbe(process.cwd()));
+if (mainReceipt !== null) console.log(`\n${mainReceipt}`);
