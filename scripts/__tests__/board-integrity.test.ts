@@ -1,15 +1,23 @@
-import { describe, expect, it } from 'vitest';
+import { execFileSync } from 'node:child_process';
+import { mkdirSync, mkdtempSync, rmSync, unlinkSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+import { afterEach, describe, expect, it } from 'vitest';
 
 // @ts-expect-error — plain .mjs with JSDoc types, no declaration file.
 import * as integrity from '../board-scale-integrity.mjs';
 
 const {
+  filesIn,
   fileProblems,
+  gitNamesIn,
   joinProblems,
   rawValueProblems,
   rawValueReport,
   readBoard,
   rulesLine,
+  rulesOnlyReport,
   sizeScaleDeclared,
   syncProblems,
   variableProblems,
@@ -439,7 +447,10 @@ describe('rawValueReport', () => {
     const { problems, tally } = rawValueReport(board, '01-atoms', { sizes: true });
 
     expect(tally).toEqual({ colour: 1, size: 1, exempt: 2, chrome: 2 });
-    expect(problems).toEqual(rawValueProblems(board, '01-atoms', { sizes: true }));
+    expect(problems).toEqual([
+      `01-atoms › ${BADGE} › Label has a raw fill #111111: use a variable, or tag the node colour-exempt: <reason>`,
+      `01-atoms › ${BADGE} › Label has a raw fontSize 14: use a size variable, or tag the node size-exempt: <reason>`,
+    ]);
   });
 });
 
@@ -484,5 +495,155 @@ describe('sizeScaleDeclared', () => {
       withScale: sizeScaleDeclared({ 'space-1': { type: 'number', value: 4 } }),
       none: sizeScaleDeclared(undefined),
     }).toEqual({ colourOnly: false, withScale: true, none: false });
+  });
+});
+
+/**
+ * The check reads what git tracks, so a clean checkout and a working tree agree.
+ * What it does not read it names: a board deleted without `git rm`, a board that
+ * is not JSON, and (in `--rules-only`) an untracked board, which is skipped.
+ */
+describe('tracked board files', () => {
+  let root: string | undefined;
+
+  afterEach(() => {
+    if (root !== undefined) rmSync(root, { recursive: true, force: true });
+    root = undefined;
+  });
+
+  /** A board file holding one frame named for its stem, with one variable. */
+  const board = (stem: string) =>
+    JSON.stringify({
+      children: [{ name: `${stem} — Board`, children: [] }],
+      variables: { a: 1 },
+    });
+
+  /** A repository whose `designs/` holds `committed` boards, then `loose` ones on disk. */
+  function repo(committed: Record<string, string>, loose: Record<string, string> = {}) {
+    const dir = mkdtempSync(join(tmpdir(), 'board-tracked-'));
+    const git = (...args: string[]) => execFileSync('git', args, { cwd: dir });
+    git('init', '-q');
+    mkdirSync(join(dir, 'designs'));
+    for (const [name, text] of Object.entries(committed)) {
+      writeFileSync(join(dir, 'designs', name), text);
+    }
+    git('add', '.');
+    git('-c', 'user.name=t', '-c', 'user.email=t@t', 'commit', '-qm', 'boards');
+    for (const [name, text] of Object.entries(loose)) {
+      writeFileSync(join(dir, name), text);
+    }
+    return dir;
+  }
+
+  it('names a file outside ASCII as itself, not as git quotes it', () => {
+    // Arrange
+    root = repo({ 'x-café.pen': board('x-café') });
+
+    // Act
+    const names = gitNamesIn(root, join(root, 'designs'));
+
+    // Assert
+    expect(names).toEqual(['x-café.pen']);
+  });
+
+  it('sorts files into tracked, deleted and untracked, and leaves gitignored ones out', () => {
+    // Arrange
+    root = repo(
+      {
+        '00-foundations.pen': board('00-foundations'),
+        '01-atoms.pen': board('01-atoms'),
+      },
+      {
+        '.gitignore': 'designs/x-scratch.pen\n',
+        'designs/x-scratch.pen': '{}',
+        'designs/07-new.pen': board('07-new'),
+      },
+    );
+    unlinkSync(join(root, 'designs', '01-atoms.pen'));
+
+    // Act
+    const files = filesIn(root, join(root, 'designs'));
+
+    // Assert
+    expect(files).toEqual({
+      tracked: ['00-foundations.pen'],
+      deleted: ['01-atoms.pen'],
+      untracked: ['07-new.pen'],
+    });
+  });
+
+  it('passes clean boards one line each and skips an untracked one without failing', () => {
+    // Arrange
+    root = repo(
+      {
+        '00-foundations.pen': board('00-foundations'),
+        '01-atoms.pen': board('01-atoms'),
+      },
+      { 'designs/07-new.pen': board('07-new') },
+    );
+
+    // Act
+    const { ok, lines } = rulesOnlyReport(root);
+
+    // Assert
+    expect(ok).toBe(true);
+    expect(lines).toEqual([
+      'ok   00-foundations.pen         colour 0 · size 0 · exempt 0 · chrome 0 · variables 1',
+      'ok   01-atoms.pen               colour 0 · size 0 · exempt 0 · chrome 0 · variables 1',
+      'skip 07-new.pen                 untracked: `git add` it to check it',
+    ]);
+  });
+
+  it('fails a tracked board deleted from disk instead of dropping it from the list', () => {
+    // Arrange
+    root = repo({
+      '00-foundations.pen': board('00-foundations'),
+      '01-atoms.pen': board('01-atoms'),
+    });
+    unlinkSync(join(root, 'designs', '01-atoms.pen'));
+
+    // Act
+    const { ok, lines } = rulesOnlyReport(root);
+
+    // Assert
+    expect(ok).toBe(false);
+    expect(lines[0]).toBe(
+      'FAIL 01-atoms.pen               is deleted but still tracked: `git rm` it or restore it',
+    );
+  });
+
+  it('fails a board that is not JSON with a line of its own, not a stack trace', () => {
+    // Arrange
+    root = repo({
+      '00-foundations.pen': board('00-foundations'),
+      '01-atoms.pen': '{ nope',
+    });
+
+    // Act
+    const { ok, lines } = rulesOnlyReport(root);
+
+    // Assert
+    expect(ok).toBe(false);
+    expect(lines[0]).toMatch(/^FAIL 01-atoms\.pen +is not readable JSON \(/);
+    expect(lines).toContain(
+      'ok   00-foundations.pen         colour 0 · size 0 · exempt 0 · chrome 0 · variables 1',
+    );
+  });
+
+  it('fails a board whose frame is not named for its file', () => {
+    // Arrange
+    root = repo({
+      '00-foundations.pen': board('00-foundations'),
+      '01-atoms.pen': board('02-molecules'),
+    });
+
+    // Act
+    const { ok, lines } = rulesOnlyReport(root);
+
+    // Assert
+    expect(ok).toBe(false);
+    expect(lines).toContain(
+      '      designs/01-atoms.pen must hold one board, named "01-atoms — <title>"; it holds 02-molecules',
+    );
   });
 });

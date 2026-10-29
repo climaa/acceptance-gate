@@ -56,13 +56,18 @@
 //   ok   05-screens-3.pen           colour 0 · size 0 · exempt 10 · chrome 0 · variables 37
 //
 // TRACKED FILES ONLY. Boards, their PNGs and their tile maps are listed with `git
-// ls-files`, never off the disk: a designer's untracked scratch board and its
-// export would otherwise turn a working tree red while a clean checkout of the
-// same commit passes. `--rules-only` names an untracked board it skipped, so a
-// new board is not mistaken for a passing one.
+// ls-files`, never off the disk, so what is checked is what a clean checkout of
+// the commit holds. A file git does not track, and that is not gitignored, is
+// still refused by the default mode rather than skipped: turbo hashes the working
+// tree whether git tracks a file or not, so a pass that skipped a new board would
+// be cached and replayed after `git add`, unread. A scratch board belongs in
+// .gitignore. `--rules-only` is never cached, so it names an untracked board it
+// skipped instead, and a new board is not mistaken for a passing one. A tracked
+// file deleted from disk without `git rm`, and a board that is not JSON, are
+// named in both modes rather than dropped or crashed on.
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { parseVariantKey } from '../packages/visual-diff/src/policy.mjs';
@@ -501,10 +506,11 @@ function pngSize(file) {
 
 const readJson = (file) => JSON.parse(readFileSync(file, 'utf8'));
 
-/** Each PNG against its sidecar. */
-function scaleProblems() {
+/** Each PNG against its sidecar.
+ *  @param {string[]} exported  The tracked names in designs/exports/. */
+function scaleProblems(exported) {
   const problems = [];
-  const pngs = trackedIn(EXPORTS).filter((name) => BOARD_PNG.test(name));
+  const pngs = exported.filter((name) => BOARD_PNG.test(name));
 
   for (const png of pngs) {
     const stem = png.slice(0, -'.png'.length);
@@ -530,11 +536,12 @@ function scaleProblems() {
   return { problems, boards: pngs.length };
 }
 
-/** Each tile map against its board's scale and PNG; returns the names it read. */
-function tileMapProblems() {
+/** Each tile map against its board's scale and PNG; returns the names it read.
+ *  @param {string[]} exported  The tracked names in designs/exports/. */
+function tileMapProblems(exported) {
   const problems = [];
   const tileNames = {};
-  const files = trackedIn(EXPORTS).filter((name) => name.endsWith('.tiles.json'));
+  const files = exported.filter((name) => name.endsWith('.tiles.json'));
 
   for (const file of files) {
     const stem = file.slice(0, -'.tiles.json'.length);
@@ -584,52 +591,94 @@ function printStories() {
 }
 
 /**
- * The names of the files directly in `dir` that git tracks and that are still on
- * disk, sorted. An untracked scratch board, or its export, is the designer's, not
- * the repository's, and is never read. A tracked file deleted without `git rm` is
- * gone from the tree being checked, so it is left out too rather than crashing the
- * read.
+ * The names of the files directly in `dir` that `git ls-files <args>` lists,
+ * sorted. `-z`, so a name outside ASCII comes back as itself and not quoted.
  *
- * @param {string} dir  Absolute, under ROOT.
+ * @param {string} root  The repository's top level.
+ * @param {string} dir  Absolute, under `root`.
+ * @param {string[]} [args]
  * @returns {string[]}
  */
-function trackedIn(dir) {
-  const out = execFileSync('git', ['ls-files', '--', dir], {
-    cwd: ROOT,
+export function gitNamesIn(root, dir, args = []) {
+  const out = execFileSync('git', ['ls-files', '-z', ...args, '--', dir], {
+    cwd: root,
     encoding: 'utf8',
   });
   return out
-    .split('\n')
-    .map((path) => relative(dir, join(ROOT, path)))
-    .filter((name) => name !== '' && !name.includes(sep) && existsSync(join(dir, name)))
+    .split('\0')
+    .filter((path) => path !== '')
+    .map((path) => relative(dir, join(root, path)))
+    .filter((name) => !name.includes(sep))
     .sort();
 }
 
-/** The stems of the board files git tracks in designs/. */
-const trackedPenStems = () =>
-  trackedIn(DESIGNS)
-    .filter((name) => name.endsWith('.pen'))
-    .map((name) => name.slice(0, -'.pen'.length));
+/**
+ * What git makes of the files directly in `dir`: `tracked` and on disk, the ones
+ * read; `deleted` from disk while still tracked; and `untracked`, not gitignored.
+ *
+ * @param {string} root @param {string} dir
+ * @returns {{ tracked: string[], deleted: string[], untracked: string[] }}
+ */
+export function filesIn(root, dir) {
+  const deleted = gitNamesIn(root, dir, ['--deleted']);
+  return {
+    tracked: gitNamesIn(root, dir).filter((name) => !deleted.includes(name)),
+    deleted,
+    untracked: gitNamesIn(root, dir, ['--others', '--exclude-standard']),
+  };
+}
 
-/** The board files in designs/ that git does not track: named, never read. */
-const untrackedPenStems = (tracked) =>
-  readdirSync(DESIGNS)
-    .filter((name) => name.endsWith('.pen'))
-    .map((name) => name.slice(0, -'.pen'.length))
-    .filter((stem) => !tracked.includes(stem));
+const isPen = (name) => name.endsWith('.pen');
+const stemOf = (name) => name.slice(0, -'.pen'.length);
 
-/** Every tracked board file, parsed, by stem. */
-const readBoardFiles = (stems) =>
-  Object.fromEntries(stems.map((stem) => [stem, readJson(join(DESIGNS, `${stem}.pen`))]));
+/**
+ * Every tracked board file, parsed, by stem; one sentence for each tracked board
+ * that is deleted or is not JSON, keyed by its file name.
+ *
+ * @param {string} root
+ */
+function loadBoards(root) {
+  const designs = join(root, 'designs');
+  const pens = filesIn(root, designs);
+  /** @type {Record<string, any>} */
+  const documents = {};
+  /** @type {Record<string, string>} */
+  const unreadable = {};
+
+  for (const name of pens.tracked.filter(isPen)) {
+    try {
+      documents[stemOf(name)] = readJson(join(designs, name));
+    } catch (error) {
+      unreadable[name] = `is not readable JSON (${/** @type {Error} */ (error).message})`;
+    }
+  }
+  for (const name of pens.deleted.filter(isPen)) {
+    unreadable[name] = 'is deleted but still tracked: `git rm` it or restore it';
+  }
+
+  return {
+    stems: Object.keys(documents),
+    listed: pens.tracked.filter(isPen).map(stemOf),
+    documents,
+    unreadable,
+    untracked: pens.untracked.filter(isPen),
+    sizes: sizeScaleDeclared(documents[VARIABLES_SOURCE]?.variables),
+  };
+}
 
 /** Every board file, read: its problems, its tiles and its variables' fingerprint. */
 function boardFiles() {
-  const problems = [];
+  const { stems, listed, documents, unreadable, untracked, sizes } = loadBoards(ROOT);
+  const problems = [
+    ...Object.entries(unreadable).map(([name, why]) => `designs/${name} ${why}`),
+    ...untracked.map(
+      (name) =>
+        `designs/${name} is not tracked: \`git add\` it, or gitignore it as a scratch board; ` +
+        `an untracked board is never checked, and the cache cannot tell it apart`,
+    ),
+  ];
   const tileNames = {};
   const fingerprints = {};
-  const stems = trackedPenStems();
-  const documents = readBoardFiles(stems);
-  const sizes = sizeScaleDeclared(documents[VARIABLES_SOURCE]?.variables);
 
   for (const stem of stems) {
     const board = readBoard(documents[stem], stem);
@@ -641,61 +690,98 @@ function boardFiles() {
     fingerprints[stem] = board.fingerprint;
   }
 
-  return { problems, tileNames, fingerprints, stems };
+  return { problems, tileNames, fingerprints, stems: listed };
 }
 
-/** `--rules-only`: the values and variables rules, one line per board. */
-function rulesOnly() {
-  const stems = trackedPenStems();
-  const documents = readBoardFiles(stems);
-  const sizes = sizeScaleDeclared(documents[VARIABLES_SOURCE]?.variables);
+/** The `--rules-only` line of one readable board. */
+function rulesLineOf(stem, documents, boards, source, sizes) {
+  const report = rawValueReport(documents[stem], stem, { sizes });
+  const variables = {
+    count: Object.keys(documents[stem].variables ?? {}).length,
+    differ: source !== undefined && boards[stem].fingerprint !== source,
+  };
+  return rulesLine(
+    stem,
+    { ...report, problems: [...boards[stem].problems, ...report.problems] },
+    variables,
+  );
+}
+
+/**
+ * `--rules-only`: the values and variables rules, one line per board, and whether
+ * every board passed. An untracked board is a `skip` line, not a failure.
+ *
+ * @param {string} [root]
+ * @returns {{ ok: boolean, lines: string[] }}
+ */
+export function rulesOnlyReport(root = ROOT) {
+  const { stems, documents, unreadable, untracked, sizes } = loadBoards(root);
   const boards = Object.fromEntries(
     stems.map((stem) => [stem, readBoard(documents[stem], stem)]),
   );
   const source = boards[VARIABLES_SOURCE]?.fingerprint;
   // With no source there is nothing to compare against, so no board is blamed for
-  // drifting from it: the one missing-source line says what is wrong.
-  const missing = source === undefined ? variableProblems({}) : [];
-  for (const problem of missing) console.log(`FAIL ${problem}`);
-  let failed = missing.length > 0;
+  // drifting from it: the one missing-source line says what is wrong. A source
+  // that is tracked but unreadable has its own line below.
+  const missing =
+    source === undefined && !(`${VARIABLES_SOURCE}.pen` in unreadable)
+      ? variableProblems({})
+      : [];
+  const lines = [
+    ...missing.map((problem) => `FAIL ${problem}`),
+    ...Object.entries(unreadable).map(([name, why]) => `FAIL ${name.padEnd(26)} ${why}`),
+  ];
+  let ok = lines.length === 0;
 
   for (const stem of stems) {
-    const report = rawValueReport(documents[stem], stem, { sizes });
-    const variables = {
-      count: Object.keys(documents[stem].variables ?? {}).length,
-      differ: source !== undefined && boards[stem].fingerprint !== source,
-    };
-    const { ok, lines } = rulesLine(
-      stem,
-      { ...report, problems: [...boards[stem].problems, ...report.problems] },
-      variables,
-    );
-    failed ||= !ok;
-    for (const line of lines) console.log(line);
+    const line = rulesLineOf(stem, documents, boards, source, sizes);
+    ok &&= line.ok;
+    lines.push(...line.lines);
+  }
+  for (const name of untracked) {
+    lines.push(`skip ${name.padEnd(26)} untracked: \`git add\` it to check it`);
   }
 
-  for (const stem of untrackedPenStems(stems)) {
-    console.log(`skip ${`${stem}.pen`.padEnd(26)} untracked: \`git add\` it to check it`);
-  }
+  return { ok, lines };
+}
 
+function rulesOnly() {
+  const { ok, lines } = rulesOnlyReport();
+  for (const line of lines) console.log(line);
   // exitCode, not exit(): stdout to a pipe is asynchronous, and exiting at once can
   // cut the per-board lines off before they are written.
-  process.exitCode = failed ? 1 : 0;
+  process.exitCode = ok ? 0 : 1;
 }
+
+/** The exports git does not hold as they are on disk: refused, for the same cache
+ *  reason as an untracked board. */
+const exportProblems = ({ deleted, untracked }) => [
+  ...deleted.map(
+    (name) =>
+      `designs/exports/${name} is deleted but still tracked: \`git rm\` it or restore it`,
+  ),
+  ...untracked.map(
+    (name) =>
+      `designs/exports/${name} is not tracked: \`git add\` it or delete it; ` +
+      `an untracked export is never checked, and the cache cannot tell it apart`,
+  ),
+];
 
 function main() {
   if (process.argv.includes('--print-stories')) return printStories();
   if (process.argv.includes('--rules-only')) return rulesOnly();
 
   const boards = boardFiles();
-  const scales = scaleProblems();
-  const maps = tileMapProblems();
-  const pngStems = trackedIn(EXPORTS)
+  const exported = filesIn(ROOT, EXPORTS);
+  const scales = scaleProblems(exported.tracked);
+  const maps = tileMapProblems(exported.tracked);
+  const pngStems = exported.tracked
     .filter((name) => BOARD_PNG.test(name))
     .map((name) => name.slice(0, -'.png'.length));
   const tierStems = boards.stems.filter((stem) => tierBoardOf(stem));
   const problems = [
     ...boards.problems,
+    ...exportProblems(exported),
     ...fileProblems(boards.stems, pngStems),
     ...scales.problems,
     ...variableProblems(boards.fingerprints),
