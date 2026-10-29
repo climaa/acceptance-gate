@@ -9,13 +9,25 @@ const meta: Meta<typeof SkipLink> = {
 
 export default meta;
 
+/** The box an absent render is shot in. `#storybook-root` already spans the
+ *  viewport but has no height when the story leaves no ink, so this frame lends it
+ *  one — a minimum, never a fixed height, so anything that does start rendering
+ *  grows the shot instead of being cropped out of it. */
+const ABSENCE_FRAME = { minBlockSize: 'var(--space-8)' };
+
 type Story = StoryObj<typeof SkipLink>;
 
-// Unfocused, `.ds-visually-hidden` clips the link to nothing — there is no box for
-// visual-diff to capture, and there is nothing else this story could show. The
-// revealed appearance is baselined by `Revealed` below instead.
+// Unfocused, `.ds-visually-hidden` clips the link to nothing, so the shot is the
+// empty absence frame — and that emptiness is the assertion: a link that leaks out
+// of its clip lands ink in it. The revealed appearance is baselined by `Revealed`.
 export const Default: Story = {
-  tags: ['visual-diff:skip'],
+  decorators: [
+    (Story) => (
+      <div style={ABSENCE_FRAME}>
+        <Story />
+      </div>
+    ),
+  ],
 };
 
 /**

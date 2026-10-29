@@ -2,8 +2,9 @@
  * The corpus-wide skip contract.
  *
  * `visual-diff:skip` is the only tag that takes a story out of the gate
- * altogether. The two that carry it earn it — both render no box for the
- * capturer to shoot, and each says so beside itself — but "this story cannot be
+ * altogether, and no story carries it. The ones that once did rendered no box
+ * for the capturer to shoot; each is now shot inside an absence frame, whose
+ * empty baseline says the state still leaves no ink. "This story cannot be
  * captured" and "this story is inconvenient to capture" are written identically,
  * and the gate cannot tell them apart. A skip added for the second reason still
  * exits 0; the only trace is one more name on the report's warning line, which
@@ -14,8 +15,8 @@
  * not a tripwire. Adding a skip is now a two-line diff that has to name the story
  * and say why, which is the review this decision deserves.
  *
- * Exact equality, not a floor — a floor of two would permit a third. REMOVING an
- * entry is the good direction and only ever means a story became capturable.
+ * Exact equality against an empty set. Adding an entry is the reviewed
+ * direction, and should be rare: a state with no box gets an absence frame first.
  *
  * Lexical, deliberately: it reads the committed source rather than importing the
  * modules, so it sees what Storybook's static CSF indexer sees. Comments are
@@ -23,18 +24,16 @@
  * Dialog.stories.tsx names `visual-diff:fullpage` in prose and must not read as
  * carrying it.
  *
- * Two things this deliberately does not reach, both covered where they belong.
- * It keys on the FILE, so a second skip added inside a file already listed here
- * is invisible to it — each component's own `capture contract` block pins the
+ * It keys on the FILE, so once a file is listed here a second skip inside it is
+ * invisible to this test — the component's own `capture contract` block pins the
  * exact set of skipping exports for that reason, and those blocks are
- * load-bearing rather than decorative. And the match is a substring, so a
- * typo'd `visual-diff:skipped` inside a listed file still reads as skipping;
- * the same blocks assert the tag equals SKIP_TAG exactly. The substring is the
- * safe direction here: for "has a new skip appeared", over-matching costs a
- * look and under-matching costs the guard.
+ * load-bearing rather than decorative. The match is a substring, so a typo'd
+ * `visual-diff:skipped` still reads as skipping. That is the safe direction: for
+ * "has a new skip appeared", over-matching costs a look and under-matching costs
+ * the guard.
  *
- * An empty scan cannot pass it: `EXPECTED_SKIPS` is non-empty, so a glob that
- * stopped matching fails on the comparison below rather than approving silence.
+ * An empty scan cannot pass it: the scan is asserted non-empty first, so a glob
+ * that stopped matching fails rather than approving silence.
  *
  * Structural, never appearance: which stories the gate shoots, never what any of
  * them looks like.
@@ -53,23 +52,10 @@ const SRC = resolve(dirname(fileURLToPath(import.meta.url)), '..');
  *
  * Paths, not story ids: an id is Storybook's own derivation from the title and
  * the export name, and recomputing it here would be a second implementation of
- * someone else's algorithm. The report prints the ids —
- * `atoms-skiplink--default` and `molecules-taglist--empty`.
+ * someone else's algorithm. Empty: SkipLink's `Default`, and the `null` renders
+ * of TagList, StepList and Pagination, are shot inside absence frames instead.
  */
-const EXPECTED_SKIPS: Readonly<Record<string, string>> = {
-  // Unfocused, `.ds-visually-hidden` clips the link to nothing. `Revealed` is
-  // the story that baselines it on screen, and SkipLink.test.tsx holds it there.
-  'atoms/SkipLink/SkipLink.stories.tsx': 'no box: clipped until focused',
-  // An empty tag array renders `null`, so there is no `#storybook-root` box.
-  // `ThreeTags` and `OneTag` stay captured; TagList.test.tsx holds them there.
-  'molecules/TagList/TagList.stories.tsx': 'no box: renders null',
-  // No steps renders `null` too, so the same applies. `Scenario` stays captured;
-  // StepList.test.tsx holds it there.
-  'molecules/StepList/StepList.stories.tsx': 'no box: renders null',
-  // One page renders `null` as well. The four drawn states stay captured;
-  // Pagination.test.tsx holds them there.
-  'molecules/Pagination/Pagination.stories.tsx': 'no box: renders null',
-};
+const EXPECTED_SKIPS: Readonly<Record<string, string>> = {};
 
 /** Every story module committed under src/, as paths relative to it. */
 const storyFilesOnDisk = () =>
@@ -86,8 +72,10 @@ const codeOf = (file: string) =>
 
 describe('the corpus-wide skip contract', () => {
   it('skips exactly the stories that cannot be captured', () => {
-    const skipping = storyFilesOnDisk().filter((file) => codeOf(file).includes(SKIP_TAG));
+    const files = storyFilesOnDisk();
+    const skipping = files.filter((file) => codeOf(file).includes(SKIP_TAG));
 
+    expect(files.length).toBeGreaterThan(0);
     expect(skipping).toEqual(Object.keys(EXPECTED_SKIPS).sort());
   });
 });

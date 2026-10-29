@@ -9,6 +9,12 @@ const meta: Meta<typeof Pagination> = {
 
 export default meta;
 
+/** The box an absent render is shot in. `#storybook-root` already spans the
+ *  viewport but has no height when the story leaves no ink, so this frame lends it
+ *  one — a minimum, never a fixed height, so anything that does start rendering
+ *  grows the shot instead of being cropped out of it. */
+const ABSENCE_FRAME = { minBlockSize: 'var(--space-8)' };
+
 type Story = StoryObj<typeof Pagination>;
 
 /** The four states 02-molecules draws, in the order the tile stacks them. */
@@ -30,10 +36,15 @@ export const Window: Story = {
 };
 
 // The edge case Pagination.test.tsx pins: one page renders nothing at all, not an
-// empty <nav>. Skipped from visual-diff for the same reason TagList's Empty is:
-// `null` leaves no `#storybook-root` box for the capturer to shoot, and there is
-// no alternate state of this story that renders instead.
+// empty <nav>. Shot inside the absence frame, so the baseline is an empty box —
+// an empty <nav> with padding, or any stray control, would change it.
 export const SinglePage: Story = {
   args: { page: 1, pageCount: 1 },
-  tags: ['visual-diff:skip'],
+  decorators: [
+    (Story) => (
+      <div style={ABSENCE_FRAME}>
+        <Story />
+      </div>
+    ),
+  ],
 };

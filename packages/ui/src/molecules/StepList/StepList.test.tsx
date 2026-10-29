@@ -3,7 +3,7 @@ import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { StepList } from './StepList';
-import { Empty } from './StepList.stories';
+import * as stepListStories from './StepList.stories';
 
 // `globals` is off in vitest.config.ts, so Testing Library registers no automatic
 // cleanup — without this every render stacks in the same document and the queries
@@ -159,8 +159,12 @@ describe('runs', () => {
 });
 
 describe('stories', () => {
-  it('skips the one state that has no box to capture', () => {
-    expect(Empty.tags).toContain(SKIP_TAG);
+  it('skips no story — the empty state is shot inside an absence frame', () => {
+    const skipping = Object.entries(stepListStories).filter(([, story]) =>
+      (story as { tags?: readonly string[] })?.tags?.includes(SKIP_TAG),
+    );
+
+    expect(skipping).toEqual([]);
   });
 });
 

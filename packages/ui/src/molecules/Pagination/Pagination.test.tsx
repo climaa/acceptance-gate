@@ -5,7 +5,6 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import { Pagination, paginationWindow } from './Pagination';
 import * as paginationStories from './Pagination.stories';
-import { SinglePage } from './Pagination.stories';
 
 // `globals` is off in vitest.config.ts, so Testing Library registers no automatic
 // cleanup — without this every render stacks in the same document and the queries
@@ -184,17 +183,10 @@ const skippingStories = (module: Record<string, { tags?: readonly string[] }>) =
     .sort();
 
 describe('the capture contract', () => {
-  it('skips the single-page story, with the string policy.mjs declares', () => {
-    // Storybook indexes CSF statically and rejects a non-literal tag, so the
-    // story file has to write the string out; this is where that literal is
-    // checked against the policy that reads it.
-    expect(SinglePage.tags).toEqual([SKIP_TAG]);
-  });
-
-  it('skips that story and no other in the file', () => {
+  it('skips no story in the file', () => {
     // Exact, over every export: the corpus-wide pin in src/__tests__ keys on the
-    // file, so it cannot see a *second* skip added here. The four drawn states
-    // are what baseline the component at all.
-    expect(skippingStories(paginationStories)).toEqual(['SinglePage']);
+    // file, so it cannot see a skip added here. `SinglePage` renders `null` and is
+    // shot inside an absence frame instead of skipped.
+    expect(skippingStories(paginationStories)).toEqual([]);
   });
 });

@@ -4165,6 +4165,57 @@
         },
         {
           "type": "frame",
+          "id": "JFqLP",
+          "name": "atoms-skiplink--default",
+          "layout": "vertical",
+          "gap": 12,
+          "children": [
+            {
+              "type": "text",
+              "id": "LidLv",
+              "name": "Label",
+              "fill": "$ink-muted",
+              "content": "atoms-skiplink--default",
+              "lineHeight": 1.2,
+              "fontFamily": "$font-mono",
+              "fontSize": 16,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "u1pdux",
+              "name": "Tiles",
+              "gap": 48,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "tSMhp",
+                  "name": "atoms__desktop__light__atoms-skiplink--default",
+                  "theme": {
+                    "mode": "light"
+                  },
+                  "reusable": true,
+                  "clip": true,
+                  "width": 1248,
+                  "height": 32,
+                  "fill": "$bg",
+                  "layout": "vertical"
+                },
+                {
+                  "id": "BLRLA",
+                  "type": "ref",
+                  "ref": "tSMhp",
+                  "name": "atoms__desktop__dark__atoms-skiplink--default",
+                  "theme": {
+                    "mode": "dark"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
           "id": "BHxhi",
           "name": "atoms-skiplink--revealed",
           "layout": "vertical",
