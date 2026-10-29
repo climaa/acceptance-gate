@@ -70,7 +70,7 @@ Read the rows with two corrections:
 
 - **Top edge.** The export draws a frame's stroke inside its bounds, while the differ
   photographs the DOM border as a row of its own. At the top edge the tile's rows therefore
-  read **one lower** than the shot's, and a pair reading `+1` is aligned.
+  read **one higher** than the shot's, and a pair reading `+1` is aligned.
 - **Clipping.** A tile is a fixed-height frame that clips. Once the first card drifts, every
   card below drifts one card's worth more. Judge the **first** repeat of a pattern and compute
   the rest.
@@ -130,10 +130,11 @@ The tier in the key decides where the CSS lives:
 Make each change the smallest one that moves the named line. In the comment, say which rows
 it was measured against. Three rules apply:
 
-- **Weights need their family.** `packages/ui/src/__tests__/tokens.test.ts` reads every rule
-  that declares a `font-weight`, requires the weight to be a token, and resolves the family
-  from the **same rule**, assuming the sans when none is declared. A weight on a rule without
-  its `font-family` fails if that family ships no face at that weight.
+- **Weights need their family.** `packages/ui/src/__tests__/tokens.test.ts` for the design
+  system's sheets, and `apps/visual-diff-ui/__tests__/styles.test.ts` for the console's, read
+  every rule that declares a `font-weight`. They require the weight to be a token and resolve
+  the family from the **same rule**, assuming the sans when none is declared. A weight on a
+  rule without its `font-family` fails if that family ships no face at that weight.
 - **Spacing is read by the token ledger.** The console's token ledger classifies spacing as
   `token`, `raw-on-scale` or `off-scale`. A literal that is not a token shows up there as a
   finding.
