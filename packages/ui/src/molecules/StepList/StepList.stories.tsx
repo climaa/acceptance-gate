@@ -9,6 +9,12 @@ const meta: Meta<typeof StepList> = {
 
 export default meta;
 
+/** The box an absent render is shot in. `#storybook-root` already spans the
+ *  viewport but has no height when the story leaves no ink, so this frame lends it
+ *  one — a minimum, never a fixed height, so anything that does start rendering
+ *  grows the shot instead of being cropped out of it. */
+const ABSENCE_FRAME = { minBlockSize: 'var(--space-8)' };
+
 type Story = StoryObj<typeof StepList>;
 
 /**
@@ -43,9 +49,15 @@ export const Scenario: Story = {
 // Neither is worth a prop permutation nothing renders today.
 
 // The edge case StepList.test.tsx pins: no steps renders nothing at all, not an
-// empty list. Skipped for the reason TagList's Empty is — `null` leaves no
-// `#storybook-root` box to shoot, and there is no alternate state to baseline.
+// empty list. Shot inside the absence frame, so the baseline is an empty box —
+// an empty <ol> with its margins would change it.
 export const Empty: Story = {
   args: { steps: [] },
-  tags: ['visual-diff:skip'],
+  decorators: [
+    (Story) => (
+      <div style={ABSENCE_FRAME}>
+        <Story />
+      </div>
+    ),
+  ],
 };
