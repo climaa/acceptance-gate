@@ -1,12 +1,13 @@
 /* The layout itself is .ds-stack's — the template composes Stack rather than
-   declaring flex here — and the body's measure is .ds-prose's --width-prose,
-   so the only rule this block owns is the title's face. It needs one: the h1
-   sits outside .ds-prose and would otherwise inherit --font-sans from `body`
-   like every other block, the same reason .ds-prose h2 states its family. */
+   declaring flex here — and the body's measure is .ds-prose's --width-prose.
+   The title's face is Text's heading-1 role, so the only rule this block owns
+   is the air around the title.
+
+   Text zeroes a heading's margin, and the board draws the space the UA's 0.67em
+   used to give the h1: 20px above it and 32px between it and the meta, which is
+   this margin plus the header's --space-3 gap (posttemplate--default, title ink
+   at 28 and meta ink at 95 on the tile). Atoms load before templates, so this
+   wins over `.ds-text` on source order at the same weight. */
 .ds-post-template__title {
-  font-family: var(--font-display);
-  font-size: var(--text-3xl);
-  font-weight: var(--weight-semibold);
-  line-height: var(--leading-tight);
-  letter-spacing: -0.02em;
+  margin-block: var(--space-5);
 }

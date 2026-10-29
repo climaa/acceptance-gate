@@ -8,6 +8,11 @@
    both must draw the same card, so neither UA size nor UA margin may survive. */
 .ds-post-card__title {
   margin: 0;
+  /* The heading's own face, not only the link's. Left on the inherited sans, the
+     h2's strut and the Fraunces link inside it share a line box and their
+     baselines spread it to 27.5px against the tile's 27, which carried every line
+     below it down (description ink at 64 against the tile's 61). */
+  font-family: var(--font-display);
   font-size: var(--text-lg);
 }
 

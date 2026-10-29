@@ -9,6 +9,16 @@
   padding: var(--space-5);
 }
 
+/* The header's margin-bottom is the separation between a title and the body. A
+   body `<p>` kept its UA margin of 1em, which collapsed with that --space-3 and
+   won: the body line sat 4 rows below the board's tile (card--with-header-title,
+   ink at 63 against 58) and the card carried 16px of air under its last line.
+   `:where()` keeps this at 0,1,0, so a consumer's own class on the paragraph
+   still decides its margin. */
+.ds-card > :where(p) {
+  margin-block: 0;
+}
+
 .ds-card--interactive:hover {
   box-shadow: var(--shadow-md);
   border-color: var(--color-border-strong);
