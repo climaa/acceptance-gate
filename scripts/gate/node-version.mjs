@@ -12,6 +12,9 @@
 //
 // MAJOR.MINOR, NOT THE PATCH. Patch releases do not move the ICU version; minors
 // have. `.nvmrc` pins the patch for `nvm use`, the comparison does not.
+//
+// THE HOST'S NODE ONLY. The full tier's visual-diff runs in a container with its
+// own pinned Node; this check cannot see that one and does not try.
 import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -40,9 +43,20 @@ function majorMinorOf(version) {
  *
  * @param {string | null} nvmrc  `.nvmrc`'s text, or `null` when the file is missing.
  * @param {string} processVersion  `process.version`, e.g. `v22.23.4`.
+ * @param {string} [at]  The `--at` revision `.nvmrc` was read from, if any.
  * @returns {Verdict}
  */
-export function compareNodeVersion(nvmrc, processVersion) {
+export function compareNodeVersion(nvmrc, processVersion, at) {
+  if (nvmrc === null && at !== undefined) {
+    return {
+      ok: false,
+      message:
+        `✗ gate refused: cannot read .nvmrc at ${at}: the revision is unknown or ` +
+        `holds no .nvmrc\n` +
+        `  running ${processVersion}. Check the revision; the gate does not guess.\n`,
+    };
+  }
+
   if (nvmrc === null) {
     return {
       ok: false,
@@ -72,7 +86,7 @@ export function compareNodeVersion(nvmrc, processVersion) {
       message:
         `✗ gate refused: running Node ${processVersion}, .nvmrc declares ` +
         `${nvmrc.trim()} (major.minor must match)\n` +
-        `  \`nvm use\` selects the declared version. The runtime's Intl data and V8 ` +
+        `  Switch to the Node in .nvmrc (\`nvm use\` or \`fnm use\`). The runtime's Intl data and V8 ` +
         `are part of what a receipt vouches for, so a run on another Node proves less.\n`,
     };
   }

@@ -213,7 +213,7 @@ export function run(argv) {
   // follow it. `--list` and `--verify` above read data and run nothing, so they
   // answer on any Node. Under `--at`, the `.nvmrc` of the commit being verified:
   // the receipt is for that tree, so the tree's declared Node is the one to match.
-  const node = compareNodeVersion(readNvmrc(REPO_ROOT, at), process.version);
+  const node = compareNodeVersion(readNvmrc(REPO_ROOT, at), process.version, at);
 
   if (!node.ok) {
     process.stdout.write(node.message);

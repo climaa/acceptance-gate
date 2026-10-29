@@ -50,6 +50,7 @@ describe('compareNodeVersion', () => {
     expect(verdict.message).toContain('v22.14.0');
     expect(verdict.message).toContain('22.23.4');
     expect(verdict.message).toContain('nvm use');
+    expect(verdict.message).toContain('fnm use');
   });
 
   it('refuses a different major', () => {
@@ -76,6 +77,20 @@ describe('compareNodeVersion', () => {
     expect(verdict.ok).toBe(false);
     expect(verdict.message).toContain('.nvmrc');
     expect(verdict.message).toContain('missing');
+  });
+
+  it('names the revision, not a missing file, when .nvmrc cannot be read at --at', () => {
+    // Arrange
+    const nvmrc = null;
+    const at = 'deadbeef';
+
+    // Act
+    const verdict = compareNodeVersion(nvmrc, 'v22.23.4', at);
+
+    // Assert
+    expect(verdict.ok).toBe(false);
+    expect(verdict.message).toContain('cannot read .nvmrc at deadbeef');
+    expect(verdict.message).not.toContain('missing');
   });
 
   it('refuses an .nvmrc with no major.minor to compare against', () => {

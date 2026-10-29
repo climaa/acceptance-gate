@@ -7,7 +7,7 @@ transcribed from the GitHub Releases that existed when this file was created (20
 
 ## Unreleased
 
-- The gate refuses to run on a Node whose major.minor differs from `.nvmrc`. It exits 2 before any check, naming both versions and `nvm use`, so no receipt is written for a runtime the repository does not declare. `pnpm install` now also fails, instead of warning, when a dependency's `engines` excludes the running Node (`engineStrict: true` in `pnpm-workspace.yaml`).
+- The gate refuses to run on a Node whose major.minor differs from `.nvmrc`. It exits 2 before any check, naming both versions and `nvm use`/`fnm use`, so no receipt is written for a runtime the repository does not declare. `pnpm install` now also fails, instead of warning, when a dependency's `engines` excludes the running Node (`engineStrict: true` in `pnpm-workspace.yaml`); the root `engines` floor rises to 22.22.2, the lowest Node jsdom 30 accepts, so the two never disagree.
 
 - build(deps): Storybook 10.5.7 → 10.6.2 and dompurify 3.4.16 → 3.4.17 (through mermaid), which close the open Dependabot alerts: 4 critical, 4 high, 1 low. The `@storybook/nextjs-vite` patch is carried forward to 10.6.2 unchanged, because 10.6.2 still does not set `parentRenderTree` on the router context.
 
