@@ -11,7 +11,7 @@
 // sandcastle-pr-queue-gh.mts, for the reason sandcastle-worktree-safety.mts
 // and sandcastle-git-parse.mts already established: a decision that writes to
 // GitHub should be testable against fabricated states, without a round-trip.
-// Imports nothing on purpose.
+// Imports nothing on purpose: resolving a conflict is the gateway's IO.
 
 /**
  * GitHub's `mergeStateStatus` enum. Anything outside it — the enum can grow —
@@ -56,7 +56,8 @@ export type QueuedPr = {
   changedFiles: number | null;
 };
 
-export type QueueActionKind = 'update-branch' | 'arm-auto-merge' | 'needs-human' | 'wait';
+export type QueueActionKind =
+  'update-branch' | 'arm-auto-merge' | 'resolve-conflict' | 'needs-human' | 'wait';
 
 export type QueueAction = {
   kind: QueueActionKind;
@@ -68,7 +69,11 @@ export type QueueAction = {
 
 /** Does this action write to GitHub? `needs-human` and `wait` never do. */
 export function isWriteAction(action: QueueAction): boolean {
-  return action.kind === 'update-branch' || action.kind === 'arm-auto-merge';
+  return (
+    action.kind === 'update-branch' ||
+    action.kind === 'arm-auto-merge' ||
+    action.kind === 'resolve-conflict'
+  );
 }
 
 function normalizeMergeState(raw: string): PrMergeState {
@@ -79,10 +84,13 @@ function normalizeMergeState(raw: string): PrMergeState {
 /**
  * What to do about one PR this pass.
  *
- * Only two states earn a write: BEHIND (strict protection will not update it
- * for us) and a lost auto-merge arming. DIRTY is a real conflict and produces
- * no write at all — auto-resolving one is what shipped a nested `@media` block
- * in a previous incident, so it is reported and left. DRAFT likewise: arming
+ * Three states earn a write: BEHIND (strict protection will not update it for
+ * us), a lost auto-merge arming, and DIRTY, once. A DIRTY PR is handed to the
+ * additive-file resolver (sandcastle-additive-merge.mts), which settles only a
+ * conflict where both sides added lines to CHANGELOG.md and refuses the rest.
+ * General auto-resolution is what shipped a nested `@media` block in a previous
+ * incident, which is why that resolver is so narrow. A PR it refused is in
+ * `unresolvable` from then on, and is reported and left. DRAFT likewise: arming
  * auto-merge on a draft fails, so a repeating failed write would be the only
  * result. Everything else is CI doing its job — wait and look again next pass.
  *
@@ -97,7 +105,10 @@ function normalizeMergeState(raw: string): PrMergeState {
  * zero. A withheld write costs one pass and self-heals; a disarm would take down
  * a legitimate PR on a transient reading.
  */
-export function decideActions(queued: QueuedPr): QueueAction[] {
+export function decideActions(
+  queued: QueuedPr,
+  unresolvable: ReadonlySet<number> = new Set(),
+): QueueAction[] {
   if (queued.state !== 'OPEN') return [];
   const { number: pr, branch, changedFiles } = queued;
 
@@ -116,12 +127,19 @@ export function decideActions(queued: QueuedPr): QueueAction[] {
   const status = normalizeMergeState(queued.mergeStateStatus);
   if (status === 'DIRTY') {
     return [
-      {
-        kind: 'needs-human',
-        pr,
-        branch,
-        reason: 'merge conflict — Sandcastle never resolves conflicts',
-      },
+      unresolvable.has(pr)
+        ? {
+            kind: 'needs-human',
+            pr,
+            branch,
+            reason: 'merge conflict the queue does not resolve',
+          }
+        : {
+            kind: 'resolve-conflict',
+            pr,
+            branch,
+            reason: 'merge conflict — trying the additive-file resolver',
+          },
     ];
   }
   if (status === 'DRAFT') {
@@ -154,8 +172,31 @@ export function decideActions(queued: QueuedPr): QueueAction[] {
 }
 
 /** Every action this pass, in PR order. */
-export function planPass(prs: QueuedPr[]): QueueAction[] {
-  return prs.flatMap(decideActions);
+export function planPass(
+  prs: QueuedPr[],
+  unresolvable: ReadonlySet<number> = new Set(),
+): QueueAction[] {
+  const actions = prs.flatMap((queued) => decideActions(queued, unresolvable));
+  return oneResolutionPerPass(actions);
+}
+
+/**
+ * Only the first DIRTY PR goes to the resolver in one pass; the rest wait.
+ * Resolving them all against the same `main` costs a gate run each, and the
+ * first one to land makes every sibling conflict again, so the others are better
+ * resolved once it has landed.
+ */
+function oneResolutionPerPass(actions: QueueAction[]): QueueAction[] {
+  const first = actions.find((action) => action.kind === 'resolve-conflict');
+  return actions.map((action) =>
+    action.kind === 'resolve-conflict' && action !== first
+      ? {
+          ...action,
+          kind: 'wait' as const,
+          reason: `conflict waits for #${first!.pr} to settle first`,
+        }
+      : action,
+  );
 }
 
 type RawPr = {
@@ -216,6 +257,11 @@ export type QueueGateway = {
   updateBranch: (action: QueueAction) => boolean;
   /** `gh pr merge --squash --auto` — true when it succeeded. */
   armAutoMerge: (action: QueueAction) => boolean;
+  /** Merge the base into a DIRTY PR's branch and push it, when every conflict is
+   *  an addition to an additive file; otherwise the reason it was refused. */
+  resolveConflict: (
+    action: QueueAction,
+  ) => { ok: true } | { ok: false; reason: string; retry?: boolean };
   /** Let CI move before looking again. `pass` is the pass just finished. */
   waitBeforeNextPass: (pass: number) => Promise<void>;
   log: (line: string) => void;
@@ -225,6 +271,8 @@ export type QueueOutcome = {
   passes: number;
   updated: number[];
   armed: number[];
+  /** DIRTY PRs whose additive conflict the queue resolved and pushed. */
+  resolved: number[];
   /** Writes gh refused. */
   failed: number[];
   /** DIRTY, DRAFT, or nothing changed — reported, never touched. */
@@ -249,6 +297,7 @@ export function summarizeQueueOutcome(outcome: QueueOutcome): string {
   const parts = [`${outcome.passes} pass(es)`];
   if (outcome.updated.length > 0) parts.push(`updated ${list(outcome.updated)}`);
   if (outcome.armed.length > 0) parts.push(`re-armed ${list(outcome.armed)}`);
+  if (outcome.resolved.length > 0) parts.push(`resolved ${list(outcome.resolved)}`);
   if (outcome.failed.length > 0) parts.push(`gh refused ${list(outcome.failed)}`);
   if (outcome.conflicted.length > 0) {
     // No longer only conflicts — a PR that changes nothing lands here too, and
@@ -266,12 +315,45 @@ export function summarizeQueueOutcome(outcome: QueueOutcome): string {
 type Tally = {
   updated: Set<number>;
   armed: Set<number>;
+  resolved: Set<number>;
   failed: Set<number>;
   conflicted: Set<number>;
+  /** PRs the resolver refused this run: never offered to it again. */
+  unresolvable: Set<number>;
+  /** Refusals the resolver called passing, by PR: one earns a second try. */
+  retried: Set<number>;
 };
 
-function applyAction(gateway: QueueGateway, action: QueueAction, tally: Tally): void {
+/** Hand a DIRTY PR to the resolver. True when it is now a human's. */
+function resolveConflict(
+  gateway: QueueGateway,
+  action: QueueAction,
+  tally: Tally,
+): boolean {
+  const { pr, branch } = action;
+  const result = gateway.resolveConflict(action);
+  if (result.ok) {
+    tally.resolved.add(pr);
+    gateway.log(
+      `  ↻ #${pr} (${branch}) resolved: base merged in, both sides kept, pushed`,
+    );
+    return false;
+  }
+  if (result.retry === true && !tally.retried.has(pr)) {
+    tally.retried.add(pr);
+    gateway.log(`  ⚠ #${pr} (${branch}) not resolved, will retry: ${result.reason}`);
+    return false;
+  }
+  tally.unresolvable.add(pr);
+  tally.conflicted.add(pr);
+  gateway.log(`  ⚠ #${pr} (${branch}) needs a human: ${result.reason}`);
+  return true;
+}
+
+/** Apply one action. True when, after it, the PR is waiting on a human. */
+function applyAction(gateway: QueueGateway, action: QueueAction, tally: Tally): boolean {
   const { kind, pr, branch, reason } = action;
+  if (kind === 'resolve-conflict') return resolveConflict(gateway, action, tally);
   if (kind === 'update-branch' || kind === 'arm-auto-merge') {
     const ok =
       kind === 'update-branch'
@@ -281,12 +363,14 @@ function applyAction(gateway: QueueGateway, action: QueueAction, tally: Tally): 
     if (ok) done.add(pr);
     else tally.failed.add(pr);
     gateway.log(`  ${ok ? '↻' : '⚠'} #${pr} (${branch}) ${kind}: ${reason}`);
-    return;
+    return false;
   }
   if (kind === 'needs-human') {
     tally.conflicted.add(pr);
     gateway.log(`  ⚠ #${pr} (${branch}) needs a human: ${reason}`);
+    return true;
   }
+  return false;
 }
 
 /**
@@ -296,9 +380,8 @@ function applyAction(gateway: QueueGateway, action: QueueAction, tally: Tally): 
  * merge that follows makes every sibling stale again. Each pass therefore
  * re-reads the queue rather than acting on the previous pass's view.
  *
- * Stops early on two states — no open PRs left (done), and nothing but
- * conflicted ones (waiting cannot change a conflict, and this loop will not
- * resolve one).
+ * Stops early on two states — no open PRs left (done), and nothing but PRs that
+ * need a human (waiting cannot change a conflict the resolver refused).
  */
 export async function reconcilePrQueue(
   gateway: QueueGateway,
@@ -307,8 +390,11 @@ export async function reconcilePrQueue(
   const tally: Tally = {
     updated: new Set(),
     armed: new Set(),
+    resolved: new Set(),
     failed: new Set(),
     conflicted: new Set(),
+    unresolvable: new Set(),
+    retried: new Set(),
   };
   let pass = 0;
   let stillOpen: number[] = [];
@@ -317,13 +403,13 @@ export async function reconcilePrQueue(
   while (pass < maxPasses) {
     pass++;
     const prs = await gateway.listOwnedPrs();
-    const actions = planPass(prs);
+    const actions = planPass(prs, tally.unresolvable);
     stillOpen = prs.filter((p) => p.state === 'OPEN').map((p) => p.number);
     if (stillOpen.length === 0) break;
 
-    for (const action of actions) applyAction(gateway, action, tally);
+    const human = actions.map((action) => applyAction(gateway, action, tally));
 
-    if (actions.every((a) => a.kind === 'needs-human')) {
+    if (human.every(Boolean)) {
       humanBlocked = true;
       gateway.log('  Every open PR needs a human — stopping the queue loop.');
       break;
@@ -344,6 +430,7 @@ export async function reconcilePrQueue(
     passes: pass,
     updated: [...tally.updated],
     armed: [...tally.armed],
+    resolved: [...tally.resolved],
     failed: [...tally.failed],
     conflicted: [...tally.conflicted],
     stillOpen,

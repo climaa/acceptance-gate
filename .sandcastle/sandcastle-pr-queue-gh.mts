@@ -6,6 +6,7 @@
 // a human, on a branch no issue in this batch produced, is never read and never
 // written to.
 import { execSync } from 'node:child_process';
+import { hostMergeIO, resolveDirtyBranch } from './sandcastle-additive-merge.mts';
 import { BASE_BRANCH } from './sandcastle-config.mts';
 import {
   type QueueGateway,
@@ -82,6 +83,15 @@ export function ghQueueGateway(
     // auto-merge will not refresh one.
     updateBranch: ({ pr }) => ghWrite(`gh pr update-branch ${pr}`),
     armAutoMerge: ({ pr }) => ghWrite(`gh pr merge ${pr} --squash --auto`),
+    // Host-side and deterministic: merges the base into the branch in a scratch
+    // worktree and pushes from the host, so pre-push gates the merge commit.
+    resolveConflict: ({ branch }) => {
+      // Each resolution can take a gate run; a Ctrl-C must not start another.
+      if (abortSignal.aborted) return { ok: false, reason: 'run aborted', retry: true };
+      const root = process.cwd();
+      const outcome = resolveDirtyBranch(branch, root, hostMergeIO(root));
+      return outcome.ok ? { ok: true } : outcome;
+    },
     waitBeforeNextPass: () => sleep(QUEUE_PASS_INTERVAL_MS, abortSignal),
     log: (line) => console.log(line),
   };

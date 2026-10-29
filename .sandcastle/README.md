@@ -25,12 +25,12 @@ Both forms run `main.mts` and iterate until the backlog is clear (or
 
 Each iteration executes in order:
 
-| Phase       | Agent             | Prompt file                      | What it does                                                                              |
-| ----------- | ----------------- | -------------------------------- | ----------------------------------------------------------------------------------------- |
-| 1 Plan      | Opus 5.5 · medium | `agent-docs/plan-prompt.md`      | Reads open issues, builds a dependency graph, outputs a `<plan>` JSON of unblocked issues |
-| 2 Implement | Opus 5.5 · medium | `agent-docs/implement-prompt.md` | Writes code, tests, and commits on the issue branch                                       |
-| 3 Review    | Opus 5.5 · medium | `agent-docs/review-prompt.md`    | Checks the branch for correctness/style; may push fixup commits                           |
-| 4 Merge     | Sonnet 5.5 · low  | `agent-docs/merge-prompt.md`     | Opens a PR per branch, enables squash auto-merge, waits for CI, closes the issue          |
+| Phase       | Agent             | Prompt file                      | What it does                                                                                                                                                                                                                                                           |
+| ----------- | ----------------- | -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1 Plan      | Opus 5.5 · medium | `agent-docs/plan-prompt.md`      | Reads open issues, builds a dependency graph, outputs a `<plan>` JSON of unblocked issues                                                                                                                                                                              |
+| 2 Implement | Opus 5.5 · medium | `agent-docs/implement-prompt.md` | Writes code, tests, and commits on the issue branch                                                                                                                                                                                                                    |
+| 3 Review    | Opus 5.5 · medium | `agent-docs/review-prompt.md`    | Checks the branch for correctness/style; may push fixup commits                                                                                                                                                                                                        |
+| 4 Merge     | Sonnet 5.5 · low  | `agent-docs/merge-prompt.md`     | Opens a PR per branch, enables squash auto-merge, waits for CI, closes the issue. Never resolves a conflict: the host queue (`sandcastle-pr-queue.mts`) resolves only a CHANGELOG.md conflict where both sides added lines, and leaves every other conflict to a human |
 
 Model and effort per role are pinned in `sandcastle-agent-profiles.mts` — that
 file is the source of truth; this table mirrors it.
