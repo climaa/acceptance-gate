@@ -25,6 +25,7 @@ import { fileURLToPath } from 'node:url';
 
 import { withoutAmbientGit } from './git-env.mjs';
 import { CHECKS, checksFor } from './manifest.mjs';
+import { compareNodeVersion, readNvmrc } from './node-version.mjs';
 import { findReceipt, NOTES_REF, noteFor, treeOf } from './receipt.mjs';
 import { worktreeAt } from './worktree.mjs';
 
@@ -205,6 +206,19 @@ export function run(argv) {
     process.stdout.write(`${JSON.stringify(CHECKS)}\n`);
 
     return EXIT.ok;
+  }
+
+  // Before any check and before any worktree: a run on a Node other than the one
+  // `.nvmrc` declares is refused outright, never warned about, so no receipt can
+  // follow it. `--list` and `--verify` above read data and run nothing, so they
+  // answer on any Node. Under `--at`, the `.nvmrc` of the commit being verified:
+  // the receipt is for that tree, so the tree's declared Node is the one to match.
+  const node = compareNodeVersion(readNvmrc(REPO_ROOT, at), process.version, at);
+
+  if (!node.ok) {
+    process.stdout.write(node.message);
+
+    return EXIT.broken;
   }
 
   const checks = checksFor(tier);
