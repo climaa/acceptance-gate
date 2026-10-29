@@ -1,6 +1,12 @@
 packages:
   - "apps/*"
   - "packages/*"
+# pnpm already refuses this repository's own `engines`; this makes a DEPENDENCY whose
+# `engines.node` excludes the running Node an install failure instead of a warning,
+# as the gate refuses a Node off .nvmrc (scripts/gate/node-version.mjs): a runtime a
+# package says it does not support should not go unremarked either. Here and not in
+# .npmrc, which pnpm 11 reads only for auth and registry.
+engineStrict: true
 allowBuilds:
   esbuild: true
   sharp: true
