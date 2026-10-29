@@ -54,12 +54,23 @@ describe('decideActions', () => {
     expect(actions.map((a) => a.kind)).toEqual(['update-branch', 'arm-auto-merge']);
   });
 
-  it('never writes to a DIRTY PR — a real conflict is a human’s', () => {
+  it('hands a DIRTY PR to the additive-file resolver once, and only that', () => {
     // Arrange
     const dirty = pr({ mergeStateStatus: 'DIRTY', autoMergeEnabled: false });
 
     // Act
     const actions = decideActions(dirty);
+
+    // Assert
+    expect(actions.map((a) => a.kind)).toEqual(['resolve-conflict']);
+  });
+
+  it('never writes to a DIRTY PR the resolver already refused — that conflict is a human’s', () => {
+    // Arrange
+    const dirty = pr({ number: 7, mergeStateStatus: 'DIRTY', autoMergeEnabled: false });
+
+    // Act
+    const actions = decideActions(dirty, new Set([7]));
 
     // Assert
     expect(actions.map((a) => a.kind)).toEqual(['needs-human']);
@@ -204,7 +215,7 @@ describe('planPass', () => {
     // Assert
     expect(actions.map((a) => [a.pr, a.kind])).toEqual([
       [1, 'update-branch'],
-      [2, 'needs-human'],
+      [2, 'resolve-conflict'],
       [4, 'arm-auto-merge'],
     ]);
   });
@@ -287,12 +298,21 @@ describe('parsePrQueueJson', () => {
   });
 });
 
-type Recorded = { updated: number[]; armed: number[]; waits: number[]; logs: string[] };
+type Recorded = {
+  updated: number[];
+  armed: number[];
+  resolved: number[];
+  waits: number[];
+  logs: string[];
+};
 
+/** By default the resolver refuses, as it does for any conflict outside
+ *  CHANGELOG.md; `'retry'` refuses with a cause that can pass on its own. */
 function fakeGateway(
   passes: QueuedPr[][],
   recorded: Recorded,
   updateSucceeds = true,
+  resolves: boolean | 'retry' = false,
 ): QueueGateway {
   let pass = 0;
   return {
@@ -305,6 +325,13 @@ function fakeGateway(
       recorded.armed.push(action.pr);
       return true;
     },
+    resolveConflict: (action) => {
+      recorded.resolved.push(action.pr);
+      if (resolves === 'retry') return { ok: false, reason: 'push refused', retry: true };
+      return resolves
+        ? { ok: true }
+        : { ok: false, reason: 'conflict in src/a.ts, which the queue never resolves' };
+    },
     waitBeforeNextPass: (n) => {
       recorded.waits.push(n);
       return Promise.resolve();
@@ -314,7 +341,7 @@ function fakeGateway(
 }
 
 function recorder(): Recorded {
-  return { updated: [], armed: [], waits: [], logs: [] };
+  return { updated: [], armed: [], resolved: [], waits: [], logs: [] };
 }
 
 describe('reconcilePrQueue', () => {
@@ -399,6 +426,98 @@ describe('reconcilePrQueue', () => {
     expect(recorded.waits).toEqual([1, 2]);
   });
 
+  it('resolves an additive conflict and lets the PR land', async () => {
+    // Arrange — pass 1 DIRTY on CHANGELOG.md, pass 2 merged.
+    const recorded = recorder();
+    const gateway = fakeGateway(
+      [
+        [pr({ number: 8, mergeStateStatus: 'DIRTY' })],
+        [pr({ number: 8, state: 'MERGED' })],
+      ],
+      recorded,
+      true,
+      true,
+    );
+
+    // Act
+    const outcome = await reconcilePrQueue(gateway);
+
+    // Assert
+    expect(recorded.resolved).toEqual([8]);
+    expect(outcome.resolved).toEqual([8]);
+    expect(outcome.conflicted).toEqual([]);
+    expect(outcome.stillOpen).toEqual([]);
+  });
+
+  it('offers a refused PR to the resolver once, then leaves it to a human', async () => {
+    // Arrange — a sibling keeps the loop going, so a second pass happens.
+    const recorded = recorder();
+    const gateway = fakeGateway(
+      [
+        [
+          pr({ number: 6, mergeStateStatus: 'DIRTY' }),
+          pr({ number: 5, mergeStateStatus: 'BEHIND' }),
+        ],
+      ],
+      recorded,
+    );
+
+    // Act
+    const outcome = await reconcilePrQueue(gateway, 3);
+
+    // Assert
+    expect(recorded.resolved).toEqual([6]);
+    expect(outcome.conflicted).toEqual([6]);
+    expect(recorded.logs.join('\n')).toMatch(/#6.*src\/a\.ts/);
+  });
+
+  it('gives a refusal that can pass on its own one more try, then calls a human', async () => {
+    // Arrange
+    const recorded = recorder();
+    const gateway = fakeGateway(
+      [[pr({ number: 9, mergeStateStatus: 'DIRTY' })]],
+      recorded,
+      true,
+      'retry',
+    );
+
+    // Act
+    const outcome = await reconcilePrQueue(gateway, 5);
+
+    // Assert
+    expect(recorded.resolved).toEqual([9, 9]);
+    expect(outcome.conflicted).toEqual([9]);
+    expect(outcome.passes).toBe(2);
+  });
+
+  it('resolves one DIRTY PR per pass; the others wait for it to settle', async () => {
+    // Arrange
+    const recorded = recorder();
+    const gateway = fakeGateway(
+      [
+        [
+          pr({ number: 1, mergeStateStatus: 'DIRTY' }),
+          pr({ number: 2, mergeStateStatus: 'DIRTY' }),
+        ],
+        [
+          pr({ number: 1, state: 'MERGED' }),
+          pr({ number: 2, mergeStateStatus: 'DIRTY' }),
+        ],
+        [pr({ number: 1, state: 'MERGED' }), pr({ number: 2, state: 'MERGED' })],
+      ],
+      recorded,
+      true,
+      true,
+    );
+
+    // Act
+    const outcome = await reconcilePrQueue(gateway);
+
+    // Assert
+    expect(recorded.resolved).toEqual([1, 2]);
+    expect(outcome.stillOpen).toEqual([]);
+  });
+
   it('makes no write and does not wait when every open PR is conflicted', async () => {
     // Arrange
     const recorded = recorder();
@@ -410,9 +529,10 @@ describe('reconcilePrQueue', () => {
     // Act
     const outcome = await reconcilePrQueue(gateway, 5);
 
-    // Assert
+    // Assert — the one write is the resolver's attempt, which it refused.
     expect(recorded.updated).toEqual([]);
     expect(recorded.armed).toEqual([]);
+    expect(recorded.resolved).toEqual([6]);
     expect(recorded.waits).toEqual([]);
     expect(outcome.passes).toBe(1);
     expect(outcome.conflicted).toEqual([6]);
@@ -482,12 +602,13 @@ describe('reconcilePrQueue', () => {
 });
 
 describe('summarizeQueueOutcome', () => {
-  it('names the updated, conflicted and still-open PRs', () => {
+  it('names the updated, resolved, conflicted and still-open PRs', () => {
     // Arrange
     const outcome = {
       passes: 3,
       updated: [1],
       armed: [2],
+      resolved: [5],
       failed: [],
       conflicted: [3],
       stillOpen: [3, 4],
@@ -502,6 +623,7 @@ describe('summarizeQueueOutcome', () => {
     expect(summary).toMatch(/#1/);
     expect(summary).toMatch(/#3/);
     expect(summary).toMatch(/#4/);
+    expect(summary).toMatch(/resolved #5/);
   });
 
   it('says so plainly when there was nothing to do', () => {
@@ -510,6 +632,7 @@ describe('summarizeQueueOutcome', () => {
       passes: 1,
       updated: [],
       armed: [],
+      resolved: [],
       failed: [],
       conflicted: [],
       stillOpen: [],
@@ -595,7 +718,7 @@ describe('merge-prompt.md — the merger unsticks its own PRs while it waits', (
     expect(content).toMatch(/mergeStateStatus/);
   });
 
-  it('leaves a DIRTY PR to a human and never resolves the conflict', () => {
+  it('leaves a DIRTY PR to the host queue and never resolves the conflict itself', () => {
     expect(content).toMatch(/DIRTY/);
     const dirtyIdx = content.indexOf('DIRTY');
     expect(content.slice(dirtyIdx, dirtyIdx + 600)).toMatch(

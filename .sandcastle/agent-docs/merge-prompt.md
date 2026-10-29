@@ -243,7 +243,11 @@ done
   does not clear it.
 - `DIRTY` → a genuine conflict. **Do not resolve it, do not rebase, do not merge
   `main` locally.** Break out of the poll loop and take the not-merged path in
-  Step 5 — a human owns this one.
+  Step 5. After you exit, the host-side queue resolves one kind of conflict
+  itself: a branch and `main` that both only added lines to `CHANGELOG.md`. It
+  merges `main` in, keeps both entries and pushes from the host through the
+  gate. Every other conflict, and any edited line even in `CHANGELOG.md`, stays
+  a human's.
 - `CLEAN` (or `HAS_HOOKS`, `UNSTABLE`) **with no auto-merge armed** → the
   arming was lost, or never took (see Step 3). Nothing else will merge it, so
   run `gh pr merge --squash --auto` again: on a mergeable PR it merges at once.
