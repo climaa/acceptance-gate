@@ -47,9 +47,28 @@
 // belongs to no workspace, and the join needs a Storybook build. The task names
 // designs/*.pen, designs/exports/** and this script in its `inputs` and depends on
 // `@gate/storybook#build`, so the cache answers only for files it has read.
+//
+// THE RULES ALONE (`--rules-only`). The values and variables rules need nothing but
+// the board files, so this mode applies only those, with no Storybook join and no
+// export checks, and prints one line per board. It is for boards that come before
+// their stories, and for a designer iterating on a `.pen`:
+//
+//   ok   05-screens-3.pen           colour 0 · size 0 · exempt 10 · chrome 0 · variables 37
+//
+// TRACKED FILES ONLY. Boards, their PNGs and their tile maps are listed with `git
+// ls-files`, never off the disk, so what is checked is what a clean checkout of
+// the commit holds. A file git does not track, and that is not gitignored, is
+// still refused by the default mode rather than skipped: turbo hashes the working
+// tree whether git tracks a file or not, so a pass that skipped a new board would
+// be cached and replayed after `git add`, unread. A scratch board belongs in
+// .gitignore. `--rules-only` is never cached, so it names an untracked board it
+// skipped instead, and a new board is not mistaken for a passing one. A tracked
+// file deleted from disk without `git rm`, and a board that is not JSON, are
+// named in both modes rather than dropped or crashed on.
+import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
+import { existsSync, readFileSync } from 'node:fs';
+import { dirname, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { parseVariantKey } from '../packages/visual-diff/src/policy.mjs';
 import { planCaptures } from '../packages/visual-diff/src/storybook-index.mjs';
@@ -279,42 +298,67 @@ const tagged = (node, tag) => (node.context ?? '').includes(`${tag}:`);
 export const sizeScaleDeclared = (variables) =>
   Object.values(variables ?? {}).some((variable) => variable.type === 'number');
 
+/**
+ * How many raw values a board's tiles hold, by what became of them: named as a
+ * problem (`colour`, `size`), let through by a tag (`exempt`), or the board's paper
+ * (`chrome`). The `--rules-only` line prints these.
+ *
+ * @typedef {{ colour: number, size: number, exempt: number, chrome: number }} Tally
+ */
+
+/** @returns {Tally} */
+const emptyTally = () => ({ colour: 0, size: 0, exempt: 0, chrome: 0 });
+
 /** A node's raw fill and stroke. A drawing's own card (the tile root) and its "home"
- *  chip are the board's paper, which no theme ref ever resolves. */
-function rawColours(node, root, where) {
-  if (tagged(node, 'colour-exempt') || node === root || ['home', 'h'].includes(node.name))
+ *  chip are the board's paper, which no theme ref ever resolves.
+ *  @param {Tally} tally */
+function rawColours(node, root, where, tally) {
+  const raw = ['fill', 'stroke'].filter((prop) => {
+    const value = node[prop];
+    return typeof value === 'string' && !isVariable(value) && !isTransparent(value);
+  });
+  if (tagged(node, 'colour-exempt')) {
+    tally.exempt += raw.length;
     return [];
-  return ['fill', 'stroke']
-    .filter((prop) => {
-      const value = node[prop];
-      return typeof value === 'string' && !isVariable(value) && !isTransparent(value);
-    })
-    .map(
-      (prop) =>
-        `${where} has a raw ${prop} ${node[prop]}: use a variable, or tag the node colour-exempt: <reason>`,
-    );
+  }
+  if (node === root || ['home', 'h'].includes(node.name)) {
+    tally.chrome += raw.length;
+    return [];
+  }
+  tally.colour += raw.length;
+  return raw.map(
+    (prop) =>
+      `${where} has a raw ${prop} ${node[prop]}: use a variable, or tag the node colour-exempt: <reason>`,
+  );
 }
 
-/** A node's raw sizes. Zero is no size at all, so it passes. */
-function rawSizes(node, where) {
-  if (tagged(node, 'size-exempt')) return [];
-  return SIZE_PROPS.filter(
+/** A node's raw sizes. Zero is no size at all, so it passes.
+ *  @param {Tally} tally */
+function rawSizes(node, where, tally) {
+  const raw = SIZE_PROPS.filter(
     (prop) =>
       prop in node &&
       !sizeValues(node[prop]).every((value) => value === 0 || isVariable(value)),
-  ).map(
+  );
+  if (tagged(node, 'size-exempt')) {
+    tally.exempt += raw.length;
+    return [];
+  }
+  tally.size += raw.length;
+  return raw.map(
     (prop) =>
       `${where} has a raw ${prop} ${JSON.stringify(node[prop])}: use a size variable, or tag the node size-exempt: <reason>`,
   );
 }
 
-/** The raw colours and sizes in one tile (or `Drawing …` frame), as sentences. */
-function rawInTile(stem, root, sizes) {
+/** The raw colours and sizes in one tile (or `Drawing …` frame), as sentences.
+ *  @param {Tally} tally */
+function rawInTile(stem, root, sizes, tally) {
   const visit = (node) => {
     const where = `${stem} › ${root.name} › ${node.name ?? node.id}`;
     return [
-      ...rawColours(node, root, where),
-      ...(sizes ? rawSizes(node, where) : []),
+      ...rawColours(node, root, where, tally),
+      ...(sizes ? rawSizes(node, where, tally) : []),
       ...(node.children ?? []).flatMap(visit),
     ];
   };
@@ -332,13 +376,50 @@ function rawInTile(stem, root, sizes) {
  * @returns {string[]}
  */
 export function rawValueProblems(document, stem, { sizes }) {
+  return rawValueReport(document, stem, { sizes }).problems;
+}
+
+/**
+ * `rawValueProblems`, with the tally of every raw value it met.
+ *
+ * @param {{ children?: unknown[] }} document  One board file.
+ * @param {string} stem
+ * @param {{ sizes: boolean }} rules
+ * @returns {{ problems: string[], tally: Tally }}
+ */
+export function rawValueReport(document, stem, { sizes }) {
   const roots = [];
   const find = (node) => {
     if (node.reusable || TILE_ROOT.test(node.name ?? '')) roots.push(node);
     else for (const child of node.children ?? []) find(child);
   };
   for (const node of document.children ?? []) find(node);
-  return roots.flatMap((root) => rawInTile(stem, root, sizes));
+  const tally = emptyTally();
+  const problems = roots.flatMap((root) => rawInTile(stem, root, sizes, tally));
+  return { problems, tally };
+}
+
+/**
+ * One board's line in `--rules-only` mode, then the problems beneath it (the first
+ * 20, so one broken board cannot bury the others).
+ *
+ * @param {string} stem
+ * @param {{ problems: string[], tally: Tally }} report  Its `rawValueReport`.
+ * @param {{ count: number, differ: boolean }} variables  Its variables against 00's.
+ * @returns {{ ok: boolean, lines: string[] }}
+ */
+export function rulesLine(stem, { problems, tally }, variables) {
+  const ok = problems.length === 0 && !variables.differ;
+  const counts =
+    `colour ${tally.colour} · size ${tally.size} · exempt ${tally.exempt} · ` +
+    `chrome ${tally.chrome} · variables ${variables.count}`;
+  const lines = [
+    `${ok ? 'ok  ' : 'FAIL'} ${`${stem}.pen`.padEnd(26)} ${counts}` +
+      (variables.differ ? ` (differ from ${VARIABLES_SOURCE}.pen)` : ''),
+    ...problems.slice(0, 20).map((problem) => `      ${problem}`),
+  ];
+  if (problems.length > 20) lines.push(`      … ${problems.length - 20} more`);
+  return { ok, lines };
 }
 
 /**
@@ -425,10 +506,11 @@ function pngSize(file) {
 
 const readJson = (file) => JSON.parse(readFileSync(file, 'utf8'));
 
-/** Each PNG against its sidecar. */
-function scaleProblems() {
+/** Each PNG against its sidecar.
+ *  @param {string[]} exported  The tracked names in designs/exports/. */
+function scaleProblems(exported) {
   const problems = [];
-  const pngs = readdirSync(EXPORTS).filter((name) => BOARD_PNG.test(name));
+  const pngs = exported.filter((name) => BOARD_PNG.test(name));
 
   for (const png of pngs) {
     const stem = png.slice(0, -'.png'.length);
@@ -454,11 +536,12 @@ function scaleProblems() {
   return { problems, boards: pngs.length };
 }
 
-/** Each tile map against its board's scale and PNG; returns the names it read. */
-function tileMapProblems() {
+/** Each tile map against its board's scale and PNG; returns the names it read.
+ *  @param {string[]} exported  The tracked names in designs/exports/. */
+function tileMapProblems(exported) {
   const problems = [];
   const tileNames = {};
-  const files = readdirSync(EXPORTS).filter((name) => name.endsWith('.tiles.json'));
+  const files = exported.filter((name) => name.endsWith('.tiles.json'));
 
   for (const file of files) {
     const stem = file.slice(0, -'.tiles.json'.length);
@@ -507,18 +590,95 @@ function printStories() {
   console.log(JSON.stringify(shared, null, 2));
 }
 
+/**
+ * The names of the files directly in `dir` that `git ls-files <args>` lists,
+ * sorted. `-z`, so a name outside ASCII comes back as itself and not quoted.
+ *
+ * @param {string} root  The repository's top level.
+ * @param {string} dir  Absolute, under `root`.
+ * @param {string[]} [args]
+ * @returns {string[]}
+ */
+export function gitNamesIn(root, dir, args = []) {
+  const out = execFileSync('git', ['ls-files', '-z', ...args, '--', dir], {
+    cwd: root,
+    encoding: 'utf8',
+  });
+  return out
+    .split('\0')
+    .filter((path) => path !== '')
+    .map((path) => relative(dir, join(root, path)))
+    .filter((name) => !name.includes(sep))
+    .sort();
+}
+
+/**
+ * What git makes of the files directly in `dir`: `tracked` and on disk, the ones
+ * read; `deleted` from disk while still tracked; and `untracked`, not gitignored.
+ *
+ * @param {string} root @param {string} dir
+ * @returns {{ tracked: string[], deleted: string[], untracked: string[] }}
+ */
+export function filesIn(root, dir) {
+  const deleted = gitNamesIn(root, dir, ['--deleted']);
+  return {
+    tracked: gitNamesIn(root, dir).filter((name) => !deleted.includes(name)),
+    deleted,
+    untracked: gitNamesIn(root, dir, ['--others', '--exclude-standard']),
+  };
+}
+
+const isPen = (name) => name.endsWith('.pen');
+const stemOf = (name) => name.slice(0, -'.pen'.length);
+
+/**
+ * Every tracked board file, parsed, by stem; one sentence for each tracked board
+ * that is deleted or is not JSON, keyed by its file name.
+ *
+ * @param {string} root
+ */
+function loadBoards(root) {
+  const designs = join(root, 'designs');
+  const pens = filesIn(root, designs);
+  /** @type {Record<string, any>} */
+  const documents = {};
+  /** @type {Record<string, string>} */
+  const unreadable = {};
+
+  for (const name of pens.tracked.filter(isPen)) {
+    try {
+      documents[stemOf(name)] = readJson(join(designs, name));
+    } catch (error) {
+      unreadable[name] = `is not readable JSON (${/** @type {Error} */ (error).message})`;
+    }
+  }
+  for (const name of pens.deleted.filter(isPen)) {
+    unreadable[name] = 'is deleted but still tracked: `git rm` it or restore it';
+  }
+
+  return {
+    stems: Object.keys(documents),
+    listed: pens.tracked.filter(isPen).map(stemOf),
+    documents,
+    unreadable,
+    untracked: pens.untracked.filter(isPen),
+    sizes: sizeScaleDeclared(documents[VARIABLES_SOURCE]?.variables),
+  };
+}
+
 /** Every board file, read: its problems, its tiles and its variables' fingerprint. */
 function boardFiles() {
-  const problems = [];
+  const { stems, listed, documents, unreadable, untracked, sizes } = loadBoards(ROOT);
+  const problems = [
+    ...Object.entries(unreadable).map(([name, why]) => `designs/${name} ${why}`),
+    ...untracked.map(
+      (name) =>
+        `designs/${name} is not tracked: \`git add\` it, or gitignore it as a scratch board; ` +
+        `an untracked board is never checked, and the cache cannot tell it apart`,
+    ),
+  ];
   const tileNames = {};
   const fingerprints = {};
-  const stems = readdirSync(DESIGNS)
-    .filter((name) => name.endsWith('.pen'))
-    .map((name) => name.slice(0, -'.pen'.length));
-  const documents = Object.fromEntries(
-    stems.map((stem) => [stem, readJson(join(DESIGNS, `${stem}.pen`))]),
-  );
-  const sizes = sizeScaleDeclared(documents[VARIABLES_SOURCE]?.variables);
 
   for (const stem of stems) {
     const board = readBoard(documents[stem], stem);
@@ -530,21 +690,98 @@ function boardFiles() {
     fingerprints[stem] = board.fingerprint;
   }
 
-  return { problems, tileNames, fingerprints, stems };
+  return { problems, tileNames, fingerprints, stems: listed };
 }
+
+/** The `--rules-only` line of one readable board. */
+function rulesLineOf(stem, documents, boards, source, sizes) {
+  const report = rawValueReport(documents[stem], stem, { sizes });
+  const variables = {
+    count: Object.keys(documents[stem].variables ?? {}).length,
+    differ: source !== undefined && boards[stem].fingerprint !== source,
+  };
+  return rulesLine(
+    stem,
+    { ...report, problems: [...boards[stem].problems, ...report.problems] },
+    variables,
+  );
+}
+
+/**
+ * `--rules-only`: the values and variables rules, one line per board, and whether
+ * every board passed. An untracked board is a `skip` line, not a failure.
+ *
+ * @param {string} [root]
+ * @returns {{ ok: boolean, lines: string[] }}
+ */
+export function rulesOnlyReport(root = ROOT) {
+  const { stems, documents, unreadable, untracked, sizes } = loadBoards(root);
+  const boards = Object.fromEntries(
+    stems.map((stem) => [stem, readBoard(documents[stem], stem)]),
+  );
+  const source = boards[VARIABLES_SOURCE]?.fingerprint;
+  // With no source there is nothing to compare against, so no board is blamed for
+  // drifting from it: the one missing-source line says what is wrong. A source
+  // that is tracked but unreadable has its own line below.
+  const missing =
+    source === undefined && !(`${VARIABLES_SOURCE}.pen` in unreadable)
+      ? variableProblems({})
+      : [];
+  const lines = [
+    ...missing.map((problem) => `FAIL ${problem}`),
+    ...Object.entries(unreadable).map(([name, why]) => `FAIL ${name.padEnd(26)} ${why}`),
+  ];
+  let ok = lines.length === 0;
+
+  for (const stem of stems) {
+    const line = rulesLineOf(stem, documents, boards, source, sizes);
+    ok &&= line.ok;
+    lines.push(...line.lines);
+  }
+  for (const name of untracked) {
+    lines.push(`skip ${name.padEnd(26)} untracked: \`git add\` it to check it`);
+  }
+
+  return { ok, lines };
+}
+
+function rulesOnly() {
+  const { ok, lines } = rulesOnlyReport();
+  for (const line of lines) console.log(line);
+  // exitCode, not exit(): stdout to a pipe is asynchronous, and exiting at once can
+  // cut the per-board lines off before they are written.
+  process.exitCode = ok ? 0 : 1;
+}
+
+/** The exports git does not hold as they are on disk: refused, for the same cache
+ *  reason as an untracked board. */
+const exportProblems = ({ deleted, untracked }) => [
+  ...deleted.map(
+    (name) =>
+      `designs/exports/${name} is deleted but still tracked: \`git rm\` it or restore it`,
+  ),
+  ...untracked.map(
+    (name) =>
+      `designs/exports/${name} is not tracked: \`git add\` it or delete it; ` +
+      `an untracked export is never checked, and the cache cannot tell it apart`,
+  ),
+];
 
 function main() {
   if (process.argv.includes('--print-stories')) return printStories();
+  if (process.argv.includes('--rules-only')) return rulesOnly();
 
   const boards = boardFiles();
-  const scales = scaleProblems();
-  const maps = tileMapProblems();
-  const pngStems = readdirSync(EXPORTS)
+  const exported = filesIn(ROOT, EXPORTS);
+  const scales = scaleProblems(exported.tracked);
+  const maps = tileMapProblems(exported.tracked);
+  const pngStems = exported.tracked
     .filter((name) => BOARD_PNG.test(name))
     .map((name) => name.slice(0, -'.png'.length));
   const tierStems = boards.stems.filter((stem) => tierBoardOf(stem));
   const problems = [
     ...boards.problems,
+    ...exportProblems(exported),
     ...fileProblems(boards.stems, pngStems),
     ...scales.problems,
     ...variableProblems(boards.fingerprints),
