@@ -52,12 +52,14 @@ describe('PostMeta', () => {
     screen.getByText('1 min');
   });
 
-  it('carries only the block class when no className is supplied', () => {
+  it('carries only the caption role and the block class when no className is supplied', () => {
     const { container } = render(<PostMeta date="2026-08-09" readingMinutes={7} />);
 
     // Exact, not `toContain`: an omitted `className` must be filtered out rather
     // than joined in as a trailing empty or `undefined` class.
-    expect(container.firstElementChild?.className).toBe('ds-post-meta');
+    expect(container.firstElementChild?.className).toBe(
+      'ds-text ds-text--caption ds-post-meta',
+    );
   });
 
   it('appends a caller-supplied className', () => {
@@ -65,6 +67,8 @@ describe('PostMeta', () => {
       <PostMeta date="2026-08-09" readingMinutes={7} className="u-mt-2" />,
     );
 
-    expect(container.firstElementChild?.className).toBe('ds-post-meta u-mt-2');
+    expect(container.firstElementChild?.className).toBe(
+      'ds-text ds-text--caption ds-post-meta u-mt-2',
+    );
   });
 });
