@@ -108,6 +108,7 @@ scripts/               gate/ (the gate, run by `.husky/pre-push`) · complexity-
 - **`packages/visual-diff/src/policy.mjs`** — the one literal: tiers, themes, viewports, capture modes and the pinned `HOST` fingerprint, consumed identically by capture, Storybook's preview decorator and the layering lint
 - **`apps/blog/lib/posts.ts`** — MDX read, Zod-validated frontmatter, reading time
 - **`scripts/complexity-gate.mjs`** — cognitive-complexity ceiling of 20 per function; workspace mode for turbo, `--scope` mode for `.sandcastle/`
+- `scripts/vitest-control-scan.mjs` — `health:check` step: no `.skip`/`.todo`/`.only`/`.skipIf`/`.runIf` Vitest call in a unit test without a same-line `// reason:`
 
 ## 🔧 Configuration
 

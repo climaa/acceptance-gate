@@ -83,7 +83,7 @@ export const CHECKS = [
     job: 'checks',
     command: 'pnpm health:check',
     tier: 'fast',
-    why: 'Cognitive-complexity ceiling of 20 per function, plus .sandcastle/.',
+    why: 'Cognitive-complexity ceiling of 20 per function, plus .sandcastle/; no Vitest skip/only.',
   },
   {
     name: 'boards',
