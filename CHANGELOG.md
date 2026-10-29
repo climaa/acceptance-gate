@@ -7,6 +7,8 @@ transcribed from the GitHub Releases that existed when this file was created (20
 
 ## Unreleased
 
+- `node scripts/board-scale-integrity.mjs --rules-only` applies the colour, size and variable rules to every board file with no Storybook build and no export checks, and prints one line per board with its counts, for example `ok   05-screens-3.pen   colour 0 · size 0 · exempt 10 · chrome 0 · variables 37`. A failure names the board to open, and a pass shows how many exemptions each board leans on. Both modes now read only the board files, PNGs and tile maps git tracks, so an untracked scratch board and its export can no longer turn a working tree red while a clean checkout passes. `--rules-only` lists any untracked board it skipped.
+
 - build(deps): Storybook 10.5.7 → 10.6.2 and dompurify 3.4.16 → 3.4.17 (through mermaid), which close the open Dependabot alerts: 4 critical, 4 high, 1 low. The `@storybook/nextjs-vite` patch is carried forward to 10.6.2 unchanged, because 10.6.2 still does not set `parentRenderTree` on the router context.
 
 - The pixel perfect session no longer misreads a tile drawn beside a seam on its board. The tile map rounds each frame to whole export pixels, so a dark tile's first column blended into the light half next to it and read as ink on every row. The crop is now sampled one export pixel inside each edge. 24 dark tiles that read as a solid block now match their light twins, and no light reading changed.

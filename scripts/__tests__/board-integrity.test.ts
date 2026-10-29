@@ -7,7 +7,9 @@ const {
   fileProblems,
   joinProblems,
   rawValueProblems,
+  rawValueReport,
   readBoard,
+  rulesLine,
   sizeScaleDeclared,
   syncProblems,
   variableProblems,
@@ -408,6 +410,70 @@ describe('rawValueProblems', () => {
     expect(rawValueProblems(board, 'x-example', colours)).toEqual([
       'x-example › Drawing Panel › Edge has a raw stroke #e2e2e2: use a variable, or tag the node colour-exempt: <reason>',
     ]);
+  });
+});
+
+describe('rawValueReport', () => {
+  it('tallies what became of every raw value: named, exempt, or the board’s paper', () => {
+    const board = {
+      children: [
+        {
+          name: '01-atoms — Atoms',
+          children: [
+            {
+              name: BADGE,
+              reusable: true,
+              fill: '#ffffff',
+              children: [
+                { name: 'Label', fill: '#111111', fontSize: 14 },
+                { name: 'Swatch', fill: '#ff0000', context: 'colour-exempt: swatch' },
+                { name: 'Offset', gap: 1, context: 'size-exempt: underline offset' },
+                { name: 'home', fill: '#eeeeee' },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+
+    const { problems, tally } = rawValueReport(board, '01-atoms', { sizes: true });
+
+    expect(tally).toEqual({ colour: 1, size: 1, exempt: 2, chrome: 2 });
+    expect(problems).toEqual(rawValueProblems(board, '01-atoms', { sizes: true }));
+  });
+});
+
+describe('rulesLine', () => {
+  const clean = { problems: [], tally: { colour: 0, size: 0, exempt: 6, chrome: 0 } };
+
+  it('prints one ok line per clean board, in the per-board format', () => {
+    expect(rulesLine('05-pages', clean, { count: 119, differ: false })).toEqual({
+      ok: true,
+      lines: [
+        'ok   05-pages.pen               colour 0 · size 0 · exempt 6 · chrome 0 · variables 119',
+      ],
+    });
+  });
+
+  it('fails a board whose variables differ from 00-foundations, and says so', () => {
+    const { ok, lines } = rulesLine('01-atoms', clean, { count: 3, differ: true });
+
+    expect(ok).toBe(false);
+    expect(lines[0]).toMatch(
+      /^FAIL 01-atoms\.pen .* \(differ from 00-foundations\.pen\)$/,
+    );
+  });
+
+  it('lists the first 20 problems beneath a failing board, then how many more', () => {
+    const problems = Array.from({ length: 22 }, (_, i) => `problem ${i}`);
+    const report = { problems, tally: { colour: 22, size: 0, exempt: 0, chrome: 0 } };
+
+    const { ok, lines } = rulesLine('02-molecules', report, { count: 37, differ: false });
+
+    expect(ok).toBe(false);
+    expect(lines).toHaveLength(22);
+    expect(lines[1]).toBe('      problem 0');
+    expect(lines[21]).toBe('      … 2 more');
   });
 });
 
