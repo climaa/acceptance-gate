@@ -41,7 +41,10 @@ function stderrOf(err: unknown): string {
 // try/execSync/catch-return-default shape into one place. NOT for the probes
 // above (they must see WHY the command failed) or markIssueNoOp's writes (each
 // catch has its own warning).
-function execOrNull(command: string, options: ExecSyncOptions = {}): string | null {
+export function execOrNull(
+  command: string,
+  options: ExecSyncOptions = {},
+): string | null {
   try {
     return execSync(command, { ...options, encoding: 'utf8' });
   } catch {

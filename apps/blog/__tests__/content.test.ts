@@ -95,6 +95,7 @@ describe('content/posts', () => {
     // left in a published post is a silent gap on the live site rather than a
     // visible note. Drafts are exempt — there an author note is doing its job —
     // and `skipIf` keeps that exemption visible in the report.
+    // reason: a draft may hold an author note; only published posts are checked
     it.skipIf(post.data.draft === true)('ships no unrendered TODO placeholder', () => {
       expect(post.content).not.toMatch(/\{\/\*[\s\S]*?TODO[\s\S]*?\*\/\}/);
     });

@@ -4,7 +4,7 @@
   "private": true,
   "packageManager": "pnpm@11.20.0+sha512.9a6f330a95b66446ea088faf1521405a8a01f07fde7124cc9958dfed52d4bb436737e65b08f85f37b46fcba375092558ac51262b816844b22f63406ed166bfee",
   "engines": {
-    "node": ">=22.19.0 <23.0.0"
+    "node": ">=22.22.2 <23.0.0"
   },
   "scripts": {
     "dev": "dotenv run -q --override -- turbo run dev",
@@ -27,7 +27,7 @@
     "gate": "node scripts/gate/run.mjs",
     "prepare": "husky",
     "boards:check": "node scripts/board-scale-integrity.mjs",
-    "health:check": "turbo run health && node scripts/complexity-gate.mjs --scope .sandcastle/ && node scripts/complexity-gate.mjs --scope .claude/skills/pixel-perfect-session/ && node scripts/index-integrity.mjs"
+    "health:check": "turbo run health && node scripts/complexity-gate.mjs --scope .sandcastle/ && node scripts/complexity-gate.mjs --scope .claude/skills/pixel-perfect-session/ && node scripts/index-integrity.mjs && node scripts/vitest-control-scan.mjs"
   },
   "devDependencies": {
     "@ai-hero/sandcastle": "0.12.0",

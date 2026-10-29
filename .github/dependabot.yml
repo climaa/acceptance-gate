@@ -40,7 +40,7 @@
 # TRACKS THE RUNTIME — majors only, and not because anything upstream is
 # broken. The version is pinned to something else in this repo, so the bump is
 # not wrong, it is early:
-# - @types/node: engines pins node to >=22.19.0 <23.0.0 and .nvmrc is 22.23.4,
+# - @types/node: engines pins node to >=22.22.2 <23.0.0 and .nvmrc is 22.23.4,
 #   which is what every CI job installs. Types must describe the runtime
 #   that actually runs the code; on @types/node 26 tsc green-lights Node 26
 #   APIs that throw on 22, and typecheck goes green precisely because it has
