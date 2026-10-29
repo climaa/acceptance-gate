@@ -2,7 +2,7 @@
 //
 // The unit tests carry no Vitest control vocabulary: the rule the Gherkin lanes
 // enforce for `@skip`, `@only` and friends, applied to `describe`, `it`, `test`
-// and `bench`. It is promoted from a child project.
+// `bench` and `suite`. It is promoted from a child project.
 //
 // A `.skip` or `.todo` is collected, counted and never run, and the suite stays
 // green; a `.only` narrows the run to one test and still exits 0. `skipIf` and
@@ -11,10 +11,11 @@
 // anything downstream would notice, so this is the tripwire.
 //
 // A scan that read nothing is refused, not passed: every `SCANNED_DIRS` entry
-// must hold at least one test file, so a moved directory turns this red rather
-// than silently switching it off.
+// must hold at least one test file, and so must each workspace a `*` matches
+// that has a `vitest.config.*`. A workspace that moves its tests elsewhere turns
+// this red rather than silently dropping out of the scan.
 //
-// The one documented escape is a `// reason:` comment on the same line, or a
+// The one documented escape is a `// reason: <text>` comment on the same line, or a
 // comment line that is only that, directly above the call. The line above is
 // there because Prettier moves a trailing comment off a call it wraps, so a
 // same-line rule alone would fight the formatter. The escape does not make the
@@ -23,7 +24,10 @@
 //
 //   node scripts/vitest-control-scan.mjs              every scanned test file
 //   node scripts/vitest-control-scan.mjs <file>...    these files, for checking a copy
-import { readdirSync, readFileSync } from 'node:fs';
+//
+// Exit 0: every control call documented. 1: one without a reason. 2: the scan
+// could not judge (blind, or a named file unreadable).
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -46,17 +50,31 @@ export const SCANNED_DIRS = [
 const TEST_FILE = /\.test\.(ts|tsx|mts|mjs)$/;
 
 /** `it.skip(`, `describe.only (`, `it.only.each(`, `test.skipIf(` … at the start
- *  of a line, where a Vitest call sits. Anchored so the same text inside a string
- *  or a comment is not a finding; a control call hidden mid-line is a shape
- *  nobody writes. `describe.each(` alone is not a control call. */
+ *  of a line, where a Vitest call sits. Anchored so the same text mid-line, in a
+ *  one-line string or after `//` is not a finding; a control call hidden mid-line
+ *  is a shape nobody writes. A line inside a template literal or a `/* *\/` block
+ *  that starts with one is still a finding: the scan reads lines, not syntax, and
+ *  errs towards blocking. `describe.each(` alone is not a control call. */
 const CONTROL_CALL =
-  /^\s*(describe|it|test|bench)(?:\.\w+)*?\.(skip|todo|only|skipIf|runIf)\s*[.(]/;
+  /^\s*(describe|it|test|bench|suite)(?:\.\w+)*?\.(skip|todo|only|skipIf|runIf)\s*[.(]/;
 
-/** The escape: a comment on the call's line that gives the reason… */
-const REASON = /\/\/\s*reason:/;
+/** The escape: a comment on the call's line that gives a reason, not an empty
+ *  `reason:`… */
+const REASON = /\/\/\s*reason:\s*\S/;
 
-/** …or a line directly above that is nothing but that comment. */
-const REASON_LINE = /^\s*\/\/\s*reason:/;
+/** …or a line directly above that is nothing but that comment. A reason that
+ *  runs over several `//` lines starts with the `reason:` line, so that one sits
+ *  directly above the call. */
+const REASON_LINE = /^\s*\/\/\s*reason:\s*\S/;
+
+/** What a documented call does to the run, for the line the gate prints. */
+const EFFECT = {
+  skip: 'not running',
+  todo: 'not running',
+  only: 'narrowing the run to itself',
+  skipIf: 'running only when its condition allows',
+  runIf: 'running only when its condition allows',
+};
 
 /**
  * Every control call in `text`, with its line and whether the line documents it.
@@ -77,16 +95,38 @@ export function controlCalls(text) {
   });
 }
 
-/** The directories one `SCANNED_DIRS` entry names; none when absent.
- *  @param {string} root @param {string} pattern @returns {string[]} */
+/** A workspace Vitest runs: it carries its own config. */
+const VITEST_CONFIG = /^vitest\.config\.[cm]?[jt]s$/;
+
+/** @param {string} dir @returns {boolean} */
+function hasVitestConfig(dir) {
+  try {
+    return readdirSync(dir).some((name) => VITEST_CONFIG.test(name));
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * The directories one `SCANNED_DIRS` entry names; none when absent. `required`
+ * marks the ones that must hold a test file on their own: a plain entry, and a
+ * `*` workspace with a Vitest config.
+ *
+ * @param {string} root @param {string} pattern
+ * @returns {{ label: string, dir: string, required: boolean }[]}
+ */
 function expand(root, pattern) {
   const [parent, star, ...rest] = pattern.split('/');
-  if (star !== '*') return [join(root, pattern)];
+  if (star !== '*') return [{ label: pattern, dir: join(root, pattern), required: true }];
 
   try {
     return readdirSync(join(root, parent), { withFileTypes: true })
       .filter((entry) => entry.isDirectory())
-      .map((entry) => join(root, parent, entry.name, ...rest));
+      .map((entry) => ({
+        label: [parent, entry.name, ...rest].join('/'),
+        dir: join(root, parent, entry.name, ...rest),
+        required: hasVitestConfig(join(root, parent, entry.name)),
+      }));
   } catch {
     return [];
   }
@@ -112,23 +152,28 @@ function testFiles(dir) {
 }
 
 /**
- * Every test file the scan reads under `root`, and the `SCANNED_DIRS` entries
- * that matched none: those make the scan blind, so the CLI refuses them.
+ * Every test file the scan reads under `root`, and what the scan is blind to:
+ * each `SCANNED_DIRS` entry that matched no test file, and each required
+ * directory inside a `*` entry that holds none. The CLI refuses both.
  *
  * @param {string} [root]
  * @returns {{ files: string[], empty: string[] }}
  */
 export function scannedFiles(root = ROOT) {
-  const byPattern = SCANNED_DIRS.map((pattern) => ({
-    pattern,
-    files: expand(root, pattern).flatMap(testFiles),
-  }));
+  const dirs = SCANNED_DIRS.flatMap((pattern) =>
+    expand(root, pattern).map((dir) => ({ ...dir, pattern, files: testFiles(dir.dir) })),
+  );
+  const blindPatterns = SCANNED_DIRS.filter((pattern) =>
+    dirs.every((dir) => dir.pattern !== pattern || dir.files.length === 0),
+  );
+  const blindDirs = dirs.filter(
+    (dir) =>
+      dir.required && dir.files.length === 0 && !blindPatterns.includes(dir.pattern),
+  );
 
   return {
-    files: byPattern.flatMap(({ files }) => files),
-    empty: byPattern
-      .filter(({ files }) => files.length === 0)
-      .map(({ pattern }) => pattern),
+    files: dirs.flatMap(({ files }) => files),
+    empty: [...blindPatterns, ...blindDirs.map(({ label }) => label)],
   };
 }
 
@@ -141,7 +186,8 @@ function filesToScan() {
   if (empty.length > 0) {
     console.error(
       `vitest-control-scan: no test file under ${empty.join(', ')}. A scan that reads ` +
-        `nothing proves nothing; fix SCANNED_DIRS in scripts/vitest-control-scan.mjs`,
+        `nothing proves nothing; move the tests back or fix SCANNED_DIRS in ` +
+        `scripts/vitest-control-scan.mjs`,
     );
     process.exit(2);
   }
@@ -152,6 +198,14 @@ function filesToScan() {
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const files = filesToScan();
 
+  const unreadable = files.filter((file) => !existsSync(file));
+  if (unreadable.length > 0) {
+    console.error(
+      `vitest-control-scan: no such file ${unreadable.map((file) => relative(ROOT, file)).join(', ')}`,
+    );
+    process.exit(2);
+  }
+
   const findings = files.flatMap((file) =>
     controlCalls(readFileSync(file, 'utf8')).map((call) => ({
       ...call,
@@ -160,7 +214,8 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   );
 
   for (const { file, line, call, documented } of findings) {
-    const note = documented ? 'documented with a reason, not running' : 'no reason given';
+    const effect = EFFECT[/** @type {keyof typeof EFFECT} */ (call.split('.')[1])];
+    const note = documented ? `documented with a reason, ${effect}` : 'no reason given';
     console.error(`  ${file}:${line} — ${call}( — ${note}`);
   }
 

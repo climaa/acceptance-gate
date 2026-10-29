@@ -7,7 +7,7 @@ transcribed from the GitHub Releases that existed when this file was created (20
 
 ## Unreleased
 
-- `health:check` fails on a Vitest `describe`, `it`, `test` or `bench` call with `.skip`, `.todo`, `.only`, `.skipIf` or `.runIf` (chained forms such as `it.only.each` included) at the start of a line in any unit test the gate runs, naming the file and line. A skipped test is counted and never run, and a `.only` narrows the run, while the suite stays green either way. A `// reason:` comment on the same line is the one escape: the call is still printed, but it no longer fails the check. A scanned directory with no test file fails it too, so the check cannot go blind.
+- `health:check` fails on a Vitest `describe`, `it`, `test`, `bench` or `suite` call with `.skip`, `.todo`, `.only`, `.skipIf` or `.runIf` (chained forms such as `it.only.each` included) at the start of a line in any unit test the gate runs, naming the file and line. A skipped test is counted and never run, and a `.only` narrows the run, while the suite stays green either way. A `// reason: <text>` comment on the same line or alone on the line above is the one escape: the call is still printed, but it no longer fails the check. A scanned directory with no test file fails it with exit 2, and so does a workspace with a Vitest config whose tests left the scanned directory, so the check cannot go blind.
 
 - build(deps): Storybook 10.5.7 → 10.6.2 and dompurify 3.4.16 → 3.4.17 (through mermaid), which close the open Dependabot alerts: 4 critical, 4 high, 1 low. The `@storybook/nextjs-vite` patch is carried forward to 10.6.2 unchanged, because 10.6.2 still does not set `parentRenderTree` on the router context.
 
