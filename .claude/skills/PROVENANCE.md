@@ -63,3 +63,18 @@ Verify a copy with `shasum -a 256`:
 | `next-cache-components-optimizer/test-template.md` | `7e58cf538ce3c42dcbc084fa4ae702d5e8a42fc4015a0c1eda2305de4bc614d1` |
 | `next-dev-loop/SKILL.md` | `07c8721871d56e7a0f19296bce8472ad518f8bf1c69065d06cec337fc1fdb491` |
 | `next-partial-prefetching-adoption/SKILL.md` | `cababb0e870d19d527295b3e6c0cf4c882741e23ec76b6909391a3be1b5debc1` |
+
+## `ui-ux-pro-max` (vendored 2026-10-30)
+
+| | |
+| --- | --- |
+| Source | <https://github.com/nextlevelbuilder/ui-ux-pro-max-skill/tree/main/.claude/skills/ui-ux-pro-max> |
+| Pinned commit | `28b3b8dee8c976df4fa3e94aed4e092ad43fcb03` (v2.15.0) |
+| Licence | MIT (Next Level Builder) |
+
+Copied with two deliberate differences from upstream:
+
+- `scripts/tests/` was left out.
+- `SKILL.md`'s `${CLAUDE_PLUGIN_ROOT}/.claude/skills/ui-ux-pro-max/scripts/search.py` was rewritten to `.claude/skills/ui-ux-pro-max/scripts/search.py`. That is the path upstream's own project install (`uipro init --ai claude`) writes; the plugin variable is unset in a project skill.
+
+The scripts are standard-library Python with no network access. The only thing they write is `design-system/<project>/`, and only with `--persist`.
