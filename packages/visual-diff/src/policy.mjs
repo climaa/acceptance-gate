@@ -69,6 +69,13 @@ export const FULLPAGE_TAG = 'visual-diff:fullpage';
  *  width — a molecule carrying a container query — without promoting its whole tier. */
 export const ALL_VIEWPORTS_TAG = 'visual-diff:all-viewports';
 
+/** Per-story override of {@link TIER_VIEWPORTS} the other way: capture at the mobile
+ *  viewport alone, whatever the tier says. For a component that only exists on a
+ *  phone — a React Native one rendered through react-native-web — whose desktop shot
+ *  would be a phone layout stretched to 1280 px, a baseline of something no user
+ *  sees. A story carrying both this and {@link ALL_VIEWPORTS_TAG} is refused. */
+export const MOBILE_ONLY_TAG = 'visual-diff:mobile-only';
+
 /** Per-story opt-in to the locale axis: capture once per entry in {@link LOCALES},
  *  in every theme and viewport the story already has. Only listed stories get the
  *  axis, because a story whose text never changes with the language would double its
@@ -100,7 +107,15 @@ export const COLOR_SCHEME_GLOBAL = 'colorScheme';
  *  locale axis existed. */
 export const LOCALE_GLOBAL = 'locale';
 
-const UI_SRC = ['packages', 'ui', 'src'];
+/** The component packages whose `src/<tier>/` folders hold tiered stories: the web
+ *  one, and the React Native one a child with a native app keeps beside it, whose
+ *  stories its own Storybook renders through react-native-web. A repository without
+ *  `packages/ui-native` simply has no story there.
+ *  @type {readonly (readonly string[])[]} */
+const UI_SRCS = [
+  ['packages', 'ui', 'src'],
+  ['packages', 'ui-native', 'src'],
+];
 
 /** The app directories whose stories are `screens`, named one by one rather than
  *  matched as every app's `app/`. Here the one listed is the console itself, the
@@ -148,11 +163,15 @@ export function tierOf(storyPath) {
   const segments = segmentsOf(storyPath);
   if (APP_ROOTS.some((root) => indexOfRun(segments, root) !== -1)) return 'screens';
 
-  const start = indexOfRun(segments, UI_SRC);
-  if (start === -1) return null;
+  for (const src of UI_SRCS) {
+    const start = indexOfRun(segments, src);
+    if (start === -1) continue;
 
-  const candidate = segments[start + UI_SRC.length];
-  return UI_TIERS.find((tier) => tier === candidate) ?? null;
+    const candidate = segments[start + src.length];
+    return UI_TIERS.find((tier) => tier === candidate) ?? null;
+  }
+
+  return null;
 }
 
 /** Storybook ids are `[a-z0-9-]` only, so a doubled underscore cannot occur inside
@@ -308,7 +327,12 @@ export const PATHS = {
   diffs: `${ARTIFACTS}/diffs`,
   summaryJson: `${ARTIFACTS}/summary.json`,
   summaryMd: `${ARTIFACTS}/summary.md`,
-  storybookStatic: 'apps/storybook/storybook-static',
+
+  /** Every Storybook build the differ reads, each with its own `index.json` and
+   *  served on its own for its own stories: Storybook refs never merge into a static
+   *  index, so a composed Storybook's stories are read from the build that owns them.
+   *  One here; a child with a native Storybook lists its build second. */
+  storybookStatics: ['apps/storybook/storybook-static'],
 };
 
 /** Process exit codes. Three, and no more: a reader of a red CI job has to learn from

@@ -75,7 +75,8 @@ const under = (rootDir) => (relative) => path.join(rootDir, relative);
  *              compare: typeof compareAll,
  *              writeArtifacts: typeof writeArtifacts,
  *              host: () => Promise<Record<string, string>>,
- *              env: Record<string, string | undefined> }} Deps */
+ *              env: Record<string, string | undefined>,
+ *              storybookStatics: readonly string[] }} Deps */
 
 /** @typedef {{ rootDir?: string, filter?: string | readonly string[],
  *              allowHostMismatch?: boolean }} Options */
@@ -144,6 +145,7 @@ export function defaultDeps() {
     writeArtifacts,
     host: probeHost,
     env: process.env,
+    storybookStatics: PATHS.storybookStatics,
   };
 }
 
@@ -153,28 +155,39 @@ const messageOf = (cause) => (cause instanceof Error ? cause.message : String(ca
 /** @param {string} message @returns {CommandResult} */
 const broken = (message) => ({ exitCode: EXIT.broken, message });
 
-/** The variants one run captures. Every failure here is `EXIT.broken`, never a quietly
- *  smaller run: a differ that captures fewer stories than the build contains reports
- *  green over an unexamined UI.
- *  @param {Deps} deps @param {(relative: string) => string} at
- *  @param {string | readonly string[]} [filter]
- *  @returns {Promise<{ variants: PlannedVariant[], skipped: string[] }>} */
-async function readPlan(deps, at, filter) {
-  const indexPath = at(`${PATHS.storybookStatic}/index.json`);
-
+/** One Storybook build's entries, each carrying the build it came from. A build that
+ *  is missing is a broken run, never a smaller one. A build after the first may list
+ *  no entries yet — a package whose first story has not landed — and reads as none.
+ *  @param {Deps} deps @param {(relative: string) => string} at @param {string} root
+ *  @param {boolean} allowEmpty */
+async function readRoot(deps, at, root, allowEmpty) {
   let text;
   try {
-    text = await deps.fs.readFile(indexPath, 'utf8');
+    text = await deps.fs.readFile(at(`${root}/index.json`), 'utf8');
   } catch {
-    throw new Error(
-      `no Storybook build at ${PATHS.storybookStatic} — run \`pnpm --filter @gate/storybook build\` first`,
-    );
+    throw new Error(`no Storybook build at ${root} — run \`pnpm turbo run build\` first`);
   }
 
-  const entries = deps.readIndex(text).filter((entry) => matchesFilter(filter, entry));
+  return deps.readIndex(text, root, { allowEmpty });
+}
+
+/** The variants one run captures, from every build in `deps.storybookStatics`.
+ *  Every failure here is `EXIT.broken`, never a quietly smaller run: a differ that
+ *  captures fewer stories than the builds contain reports green over an unexamined UI.
+ *  @param {Deps} deps @param {(relative: string) => string} at
+ *  @param {string | readonly string[]} [filter]
+ *  @returns {Promise<{ variants: PlannedVariant[], skipped: string[],
+ *                     emptyRoots: string[] }>} */
+async function readPlan(deps, at, filter) {
+  const roots = deps.storybookStatics;
+  const read = await Promise.all(
+    roots.map((root, index) => readRoot(deps, at, root, index > 0)),
+  );
+  const emptyRoots = roots.filter((_, index) => read[index]?.length === 0);
+  const entries = read.flat().filter((entry) => matchesFilter(filter, entry));
   if (entries.length === 0) {
     throw new Error(
-      `--filter ${filterNeedles(filter).join(', ')} matched no story in ${PATHS.storybookStatic}`,
+      `--filter ${filterNeedles(filter).join(', ')} matched no story in ${roots.join(', ')}`,
     );
   }
 
@@ -185,21 +198,40 @@ async function readPlan(deps, at, filter) {
     );
   }
 
-  return { variants, skipped };
+  return { variants, skipped, emptyRoots };
 }
 
-/** Serve the build, capture against it, and close the server however the capture ended —
- *  a leaked server holds the process open long after the last shot.
- *  @param {Deps} deps @param {(relative: string) => string} at
+/** Serve one build, capture its variants against it, and close the server however the
+ *  capture ended — a leaked server holds the process open long after the last shot.
+ *  @param {Deps} deps @param {(relative: string) => string} at @param {string} root
  *  @param {PlannedVariant[]} variants @returns {Promise<CaptureRun>} */
-async function runCapture(deps, at, variants) {
-  const server = await deps.serve(at(PATHS.storybookStatic));
+async function captureRoot(deps, at, root, variants) {
+  const server = await deps.serve(at(root));
 
   try {
     return await deps.capture({ variants, baseUrl: server.baseUrl });
   } finally {
     await server.close();
   }
+}
+
+/** Every build's variants, each shot against the build that holds it, one build at a
+ *  time, in `deps.storybookStatics` order: a story's `iframe.html` is its own build's.
+ *  A variant naming no build is the first build's.
+ *  @param {Deps} deps @param {(relative: string) => string} at
+ *  @param {PlannedVariant[]} variants @returns {Promise<CaptureRun>} */
+async function runCapture(deps, at, variants) {
+  const [first] = deps.storybookStatics;
+  const runs = [];
+  for (const root of deps.storybookStatics) {
+    const own = variants.filter((variant) => (variant.root ?? first) === root);
+    if (own.length > 0) runs.push(await captureRoot(deps, at, root, own));
+  }
+
+  return {
+    captures: runs.flatMap((run) => run.captures),
+    chromium: runs[0]?.chromium ?? '',
+  };
 }
 
 /** All three gates, over the shots that are actually shots: an errored variant carries
@@ -335,6 +367,10 @@ function coveredBaselines(baselines, covered) {
   return new Map([...baselines].filter(([key]) => keys.has(key)));
 }
 
+/** @param {readonly string[]} emptyRoots */
+const emptyBuildWarnings = (emptyRoots) =>
+  emptyRoots.map((root) => `the Storybook build at ${root} lists no story yet`);
+
 /** A skipped story is reported, never hidden: `policy.SKIP_TAG` promises the report
  *  lists them, and a hole in the corpus that nothing mentions reads as coverage.
  *  @param {readonly string[]} skipped @returns {string[]} */
@@ -420,7 +456,7 @@ export async function check(deps = defaultDeps(), opts = {}) {
   const at = under(rootDir);
 
   try {
-    const { variants, skipped } = await readPlan(deps, at, filter);
+    const { variants, skipped, emptyRoots } = await readPlan(deps, at, filter);
     const committed = await readBaselines(deps.fs, at(PATHS.baselines));
     const baselines =
       filterNeedles(filter).length > 0
@@ -442,7 +478,11 @@ export async function check(deps = defaultDeps(), opts = {}) {
     const comparedAt = now();
 
     const summary = buildSummary(results, { ...(await deps.host()), chromium });
-    summary.warnings.push(...guard.warnings, ...skipWarnings(skipped));
+    summary.warnings.push(
+      ...guard.warnings,
+      ...skipWarnings(skipped),
+      ...emptyBuildWarnings(emptyRoots),
+    );
 
     await deps.writeArtifacts(deps.fs, {
       rootDir,
