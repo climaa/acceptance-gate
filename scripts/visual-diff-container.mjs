@@ -58,13 +58,10 @@ export const STORYBOOK_BUILD = ['turbo', 'run', 'build', '--filter=@gate/storybo
 export function run(argv, { spawn = spawnSync, exists = existsSync } = {}) {
   // Unconditional: both commands capture, so both need the build as it is now.
   const build = spawn('pnpm', STORYBOOK_BUILD, { cwd: REPO_ROOT, stdio: 'inherit' });
-  if (
-    build.error ||
-    build.status !== 0 ||
-    !exists(join(REPO_ROOT, PATHS.storybookStatic))
-  ) {
+  const missing = PATHS.storybookStatics.filter((root) => !exists(join(REPO_ROOT, root)));
+  if (build.error || build.status !== 0 || missing.length > 0) {
     process.stderr.write(
-      `the Storybook build failed or left no ${PATHS.storybookStatic} — nothing was ` +
+      `the Storybook build failed or left no ${missing.join(', ') || 'build'} — nothing was ` +
         `captured. Run it on its own to see why:\n\n  pnpm ${STORYBOOK_BUILD.join(' ')}\n`,
     );
     return EXIT.broken;

@@ -26,7 +26,7 @@ import { repoRoot } from './git';
  * answer for a deployment.
  */
 
-/** Where `check` serves the corpus from, per `policy.PATHS.storybookStatic`. */
+/** Where `check` serves the corpus from, the first of `policy.PATHS.storybookStatics`. */
 const INDEX = path.join('apps', 'storybook', 'storybook-static', 'index.json');
 
 /** Only the four fields this module reads, so a Storybook that adds a fifth is
