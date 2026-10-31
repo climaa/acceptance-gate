@@ -41,7 +41,16 @@ and the atomic-design boundary lint — one set of numbers, named once:
 (`desktop` 1280×800, `mobile` 390×844, `deviceScaleFactor: 1`.) A story can opt out of
 this default with a tag: `visual-diff:skip` excludes it entirely (reported, not hidden),
 `visual-diff:fullpage` shoots the whole page instead of the `#storybook-root` capture
-target, `visual-diff:all-viewports` widens an atom/molecule to both viewports.
+target, `visual-diff:all-viewports` widens an atom/molecule to both viewports, and
+`visual-diff:mobile-only` narrows a story to the mobile viewport alone, for a component
+that only exists on a phone; a story carrying both is refused.
+
+The stories come from every Storybook build in `PATHS.storybookStatics`, each read from
+its own `index.json` and served on its own for its own stories, since Storybook refs never
+merge into a static index. Here it is `apps/storybook` alone. A child with a React Native
+package lists its native Storybook's build second, and `tierOf()` places a story under
+`packages/ui-native/src/<tier>/` as it places one under `packages/ui/src/<tier>/`. A story
+id two builds both list is refused, since one id names one baseline.
 
 `screens` is a whole page of the console, drawn by a story beside the route it stands
 for (`apps/visual-diff-ui/app/_screens/`). The tier's roots are `APP_ROOTS` in

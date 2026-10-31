@@ -67,7 +67,8 @@ A tile is the frame on a tier board that draws one story.
   resolves the same variables in the other mode.
 - **Mobile only where a mobile screenshot exists.** That covers organisms, templates and
   screens,
-  plus any story tagged `visual-diff:all-viewports` (`policy.mjs:34-39`, `:60`).
+  plus any story tagged `visual-diff:all-viewports` (`policy.mjs:34-39`, `:60`). A story
+  tagged `visual-diff:mobile-only` has a mobile tile and no desktop one.
 - **Which tiles are required** is the planned variants (`planCaptures`,
   `packages/visual-diff/src/storybook-index.mjs:162`). Stories tagged `visual-diff:skip`
   (`policy.mjs:51`) and MDX docs pages have no screenshot, so they have no tile.

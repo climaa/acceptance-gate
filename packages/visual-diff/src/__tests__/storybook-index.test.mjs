@@ -5,6 +5,7 @@ import {
   FULLPAGE_TAG,
   LOCALES,
   LOCALES_TAG,
+  MOBILE_ONLY_TAG,
   SKIP_TAG,
   THEMES,
   VIEWPORTS,
@@ -136,6 +137,48 @@ describe('readIndex', () => {
   });
 });
 
+describe('readIndex with a root', () => {
+  it('carries the build it was read from on every entry', () => {
+    const json = indexJson(storyEntry(), templateEntry());
+
+    const entries = readIndex(json, 'apps/storybook-native/storybook-static');
+
+    expect(entries.map((entry) => entry.root)).toEqual([
+      'apps/storybook-native/storybook-static',
+      'apps/storybook-native/storybook-static',
+    ]);
+  });
+
+  it('gives each planned variant its entry’s build', () => {
+    const entries = readIndex(indexJson(storyEntry()), 'apps/storybook/storybook-static');
+
+    const { variants } = planCaptures(entries);
+
+    expect(new Set(variants.map((variant) => variant.root))).toEqual(
+      new Set(['apps/storybook/storybook-static']),
+    );
+  });
+
+  it('refuses one story id listed by two builds', () => {
+    const entries = [
+      ...readIndex(indexJson(storyEntry()), 'apps/storybook/storybook-static'),
+      ...readIndex(indexJson(storyEntry()), 'apps/storybook-native/storybook-static'),
+    ];
+
+    const planning = () => planCaptures(entries);
+
+    expect(planning).toThrow(/more than one Storybook build lists atoms-button--primary/);
+  });
+
+  it('reads an entry without a root as it always has', () => {
+    const entries = readIndex(indexJson(storyEntry()));
+
+    const { variants } = planCaptures(entries);
+
+    expect(variants.every((variant) => !('root' in variant))).toBe(true);
+  });
+});
+
 describe('planCaptures', () => {
   it('expands an atom into one variant per theme at desktop only', () => {
     const entries = readIndex(indexJson(storyEntry()));
@@ -190,6 +233,37 @@ describe('planCaptures', () => {
     expect(new Set(variants.map((variant) => variant.viewport))).toEqual(
       new Set(Object.keys(VIEWPORTS)),
     );
+  });
+
+  it(`narrows a tagged ${MOBILE_ONLY_TAG} template to the mobile viewport, in every theme`, () => {
+    const entries = readIndex(indexJson(templateEntry({ tags: [MOBILE_ONLY_TAG] })));
+
+    const { variants } = planCaptures(entries);
+
+    expect(variants.map(({ viewport, theme }) => `${viewport} ${theme}`)).toEqual(
+      THEMES.map((theme) => `mobile ${theme}`),
+    );
+  });
+
+  it(`moves a tagged ${MOBILE_ONLY_TAG} atom off desktop and onto mobile`, () => {
+    const entries = readIndex(indexJson(storyEntry({ tags: [MOBILE_ONLY_TAG] })));
+
+    const { variants } = planCaptures(entries);
+
+    expect(new Set(variants.map((variant) => variant.viewport))).toEqual(
+      new Set(['mobile']),
+    );
+  });
+
+  it(`refuses a story tagged both ${MOBILE_ONLY_TAG} and ${ALL_VIEWPORTS_TAG}`, () => {
+    const entries = readIndex(
+      indexJson(storyEntry({ tags: [MOBILE_ONLY_TAG, ALL_VIEWPORTS_TAG] })),
+    );
+
+    const planning = () => planCaptures(entries);
+
+    expect(planning).toThrow(IndexError);
+    expect(planning).toThrow(/atoms-button--primary carries both/);
   });
 
   it(`captures a ${LOCALES_TAG} atom once per locale in every theme`, () => {

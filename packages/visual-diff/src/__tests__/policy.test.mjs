@@ -144,6 +144,24 @@ describe('tierOf', () => {
     expect(tier).toBeNull();
   });
 
+  it('derives the tier from a story path in each packages/ui-native tier folder', () => {
+    const paths = UI_TIERS.map(
+      (tier) => `../../packages/ui-native/src/${tier}/Widget/Widget.stories.tsx`,
+    );
+
+    const tiers = paths.map((path) => tierOf(path));
+
+    expect(tiers).toEqual(UI_TIERS);
+  });
+
+  it('returns null for a packages/ui-native file outside its tier folders', () => {
+    const path = 'packages/ui-native/src/theme/ThemeProvider.stories.tsx';
+
+    const tier = tierOf(path);
+
+    expect(tier).toBeNull();
+  });
+
   it('never reads a packages/ui folder named screens as a tier', () => {
     const path = 'packages/ui/src/screens/Widget/Widget.stories.tsx';
 
@@ -328,7 +346,7 @@ describe('EXIT', () => {
 
 describe('PATHS', () => {
   it('keeps every path repo-root-relative, so the CLI can be run from anywhere', () => {
-    const paths = Object.values(PATHS);
+    const paths = Object.values(PATHS).flat();
 
     expect(paths.every((entry) => !entry.startsWith('/') && !entry.startsWith('.'))).toBe(
       true,

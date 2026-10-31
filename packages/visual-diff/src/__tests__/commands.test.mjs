@@ -13,7 +13,7 @@ import {
 
 const ROOT = '/repo';
 const at = (relative) => path.join(ROOT, relative);
-const INDEX_PATH = at(`${PATHS.storybookStatic}/index.json`);
+const INDEX_PATH = at(`${PATHS.storybookStatics[0]}/index.json`);
 const baselineAt = (key) => path.join(at(PATHS.baselines), `${key}.png`);
 
 const CHROMIUM = '141.0.0.0';
@@ -205,7 +205,9 @@ describe('check', () => {
     const result = await check(gate, { rootDir: ROOT });
 
     expect(result.exitCode).toBe(EXIT.broken);
-    expect(result.message).toContain('@gate/storybook');
+    expect(result.message).toContain(
+      `no Storybook build at ${PATHS.storybookStatics[0]}`,
+    );
   });
 
   it('is broken when the build contains no story', async () => {
@@ -338,6 +340,81 @@ describe('check', () => {
 
     expect(result.exitCode).toBe(EXIT.broken);
     expect(gate.served[0].open).toBe(false);
+  });
+});
+
+describe('check over more than one Storybook build', () => {
+  const WEB = PATHS.storybookStatics[0];
+  const NATIVE = 'apps/storybook-native/storybook-static';
+  const NATIVE_STORY = {
+    id: 'native-atoms-button--primary',
+    title: 'Native/Atoms/Button',
+    type: 'story',
+    importPath: '../../packages/ui-native/src/atoms/Button/Button.stories.tsx',
+  };
+
+  /** The command layer over two builds: the web one and a native one beside it. */
+  const twoBuilds = (files = {}) => ({
+    ...deps({
+      fs: fakeFs({
+        [at(`${WEB}/index.json`)]: indexJson(),
+        [at(`${NATIVE}/index.json`)]: indexJson([NATIVE_STORY]),
+        ...files,
+      }),
+    }),
+    storybookStatics: [WEB, NATIVE],
+  });
+
+  it('shoots each build’s stories against that build alone, and closes both servers', async () => {
+    // Arrange
+    const gate = twoBuilds();
+
+    // Act
+    await check(gate, { rootDir: ROOT });
+
+    // Assert
+    expect(gate.served.map(({ rootDir }) => rootDir)).toEqual([at(WEB), at(NATIVE)]);
+    expect(
+      gate.captured.map(({ variants }) => [...new Set(variants.map(({ id }) => id))]),
+    ).toEqual([[STORY.id], [NATIVE_STORY.id]]);
+    expect(gate.served.every(({ open }) => !open)).toBe(true);
+  });
+
+  it('compares the captures of both builds in one run', async () => {
+    const gate = twoBuilds();
+
+    await check(gate, { rootDir: ROOT });
+
+    expect(gate.compared[0].captures.map(({ key }) => key)).toEqual([
+      ...KEYS,
+      'atoms__desktop__light__native-atoms-button--primary',
+      'atoms__desktop__dark__native-atoms-button--primary',
+    ]);
+  });
+
+  it('is broken when the second build is missing, rather than capturing the first alone', async () => {
+    // Arrange
+    const gate = {
+      ...deps({ fs: fakeFs({ [at(`${WEB}/index.json`)]: indexJson() }) }),
+      storybookStatics: [WEB, NATIVE],
+    };
+
+    // Act
+    const result = await check(gate, { rootDir: ROOT });
+
+    // Assert
+    expect(result.exitCode).toBe(EXIT.broken);
+    expect(result.message).toContain(`no Storybook build at ${NATIVE}`);
+    expect(gate.captured).toEqual([]);
+  });
+
+  it('is broken when two builds list one story id', async () => {
+    const gate = twoBuilds({ [at(`${NATIVE}/index.json`)]: indexJson([STORY]) });
+
+    const result = await check(gate, { rootDir: ROOT });
+
+    expect(result.exitCode).toBe(EXIT.broken);
+    expect(result.message).toContain(`more than one Storybook build lists ${STORY.id}`);
   });
 });
 

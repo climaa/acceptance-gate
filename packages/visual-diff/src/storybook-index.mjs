@@ -14,6 +14,7 @@ import {
   FULLPAGE_TAG,
   LOCALES,
   LOCALES_TAG,
+  MOBILE_ONLY_TAG,
   MODES,
   SKIP_TAG,
   TIERS,
@@ -27,15 +28,17 @@ import {
 /** @typedef {import('./policy.mjs').Theme} Theme */
 /** @typedef {import('./policy.mjs').Mode} Mode */
 
-/** An entry of `index.json`, narrowed to the fields the differ reads.
+/** An entry of `index.json`, narrowed to the fields the differ reads, and the
+ *  Storybook build it was read from when the caller named one.
  *  @typedef {{ id: string, title: string, type: string, importPath: string,
- *              tags: readonly string[] }} IndexEntry */
+ *              tags: readonly string[], root?: string }} IndexEntry */
 
 /** One cell of the capture matrix for one story: everything `capture.mjs` needs to
  *  take the shot and name the file it writes. `locale` only on a {@link LOCALES_TAG}
- *  story.
+ *  story; `root` is the build that serves it, when its entry named one.
  *  @typedef {{ id: string, tier: Tier, viewport: ViewportName, theme: Theme,
- *              locale?: string, fullPage: boolean, key: string }} PlannedVariant */
+ *              locale?: string, fullPage: boolean, key: string,
+ *              root?: string }} PlannedVariant */
 
 /** The gate is broken: the corpus could not be enumerated at all. Its own class because
  *  the CLI answers it differently from a diff — a diff means the UI changed and the
@@ -88,11 +91,13 @@ function readEntry(entry, key) {
 /** Parse and shape-validate the *text* of `storybook-static/index.json`.
  *
  *  Entries come back as written, docs included: which types are captured is policy the
- *  caller applies, not something the parser decides.
+ *  caller applies, not something the parser decides. `root`, when given, is the build
+ *  the text was read from, carried on every entry so its variants are shot against it.
  *  @param {unknown} json the file's contents
+ *  @param {string} [root]
  *  @returns {IndexEntry[]}
  *  @throws {IndexError} on anything that is not a populated Storybook index */
-export function readIndex(json) {
+export function readIndex(json, root) {
   if (typeof json !== 'string') {
     throw new IndexError('index.json was not read as text');
   }
@@ -116,20 +121,41 @@ export function readIndex(json) {
     throw new IndexError('index.json lists no entries — the Storybook build is empty');
   }
 
-  return keys.map((key) => readEntry(entries[key], key));
+  const read = keys.map((key) => readEntry(entries[key], key));
+  return root === undefined ? read : read.map((entry) => ({ ...entry, root }));
+}
+
+/** The viewports a story's tags put it at instead of its tier's, or null for the
+ *  tier's own. Both overrides at once contradict each other, and picking one would
+ *  drop a baseline a reader asked for.
+ *  @param {IndexEntry} entry @returns {readonly ViewportName[] | null} */
+function viewportOverride(entry) {
+  const all = entry.tags.includes(ALL_VIEWPORTS_TAG);
+  const mobileOnly = entry.tags.includes(MOBILE_ONLY_TAG);
+  if (all && mobileOnly) {
+    throw new IndexError(
+      `story ${entry.id} carries both ${ALL_VIEWPORTS_TAG} and ${MOBILE_ONLY_TAG}`,
+    );
+  }
+  if (all) return VIEWPORT_NAMES;
+
+  return mobileOnly ? ['mobile'] : null;
 }
 
 /** The matrix cells one story is captured in. `MODES` is the default — `TIER_VIEWPORTS`
- *  is already folded into it — and {@link ALL_VIEWPORTS_TAG} widens the viewport axis
- *  alone, so a molecule with a container query is captured at both widths without its
- *  whole tier being promoted and without gaining a theme it does not have.
- *  @param {Tier} tier @param {boolean} allViewports @returns {Mode[]} */
-function modesFor(tier, allViewports) {
+ *  is already folded into it — and a viewport override replaces the viewport axis
+ *  alone: {@link ALL_VIEWPORTS_TAG} widens it, so a molecule with a container query is
+ *  captured at both widths without its whole tier being promoted, and
+ *  {@link MOBILE_ONLY_TAG} narrows it to the phone, so a native component is never
+ *  shot at desktop. Neither gives a story a theme it does not have.
+ *  @param {Tier} tier @param {readonly ViewportName[] | null} viewports
+ *  @returns {Mode[]} */
+function modesFor(tier, viewports) {
   const tierModes = MODES.filter((mode) => mode.tier === tier);
-  if (!allViewports) return tierModes;
+  if (viewports === null) return tierModes;
 
   const themes = [...new Set(tierModes.map((mode) => mode.theme))];
-  return VIEWPORT_NAMES.flatMap((viewport) =>
+  return viewports.flatMap((viewport) =>
     themes.map((theme) => ({ tier, viewport, theme })),
   );
 }
@@ -152,18 +178,32 @@ function variantsOf(entry) {
     // tier anyway would give it a baseline filename that claims a layer it is not in,
     // and the first reader to trust that name is misled by it.
     throw new IndexError(
-      `story ${entry.id} sits outside packages/ui/src/{${TIERS.join(',')}}: ${entry.importPath}`,
+      `story ${entry.id} sits outside packages/{ui,ui-native}/src/{${TIERS.join(',')}}: ${entry.importPath}`,
     );
   }
 
   const fullPage = entry.tags.includes(FULLPAGE_TAG);
-  const modes = modesFor(tier, entry.tags.includes(ALL_VIEWPORTS_TAG));
+  const modes = modesFor(tier, viewportOverride(entry));
+  const root = entry.root === undefined ? {} : { root: entry.root };
   return localesFor(modes, entry.tags.includes(LOCALES_TAG)).map((mode) => ({
     ...mode,
     id: entry.id,
     fullPage,
     key: variantKey({ ...mode, id: entry.id }),
+    ...root,
   }));
+}
+
+/** Every story id that two builds both claim. Storybook keeps ids unique inside one
+ *  build, never across two, and two stories under one id would write one baseline.
+ *  @param {readonly IndexEntry[]} stories @returns {string[]} */
+function sharedIds(stories) {
+  const rootsById = new Map();
+  for (const { id, root } of stories) {
+    rootsById.set(id, new Set([...(rootsById.get(id) ?? []), root]));
+  }
+
+  return [...rootsById].filter(([, roots]) => roots.size > 1).map(([id]) => id);
 }
 
 /** The capture plan for a whole index: every variant to shoot, plus the stories held
@@ -172,11 +212,18 @@ function variantsOf(entry) {
  *  Wave 2 lint rule requires it.
  *  @param {readonly IndexEntry[]} entries
  *  @returns {{ variants: PlannedVariant[], skipped: string[] }}
- *  @throws {IndexError} if the build contains no stories, or one the matrix cannot place */
+ *  @throws {IndexError} if the build contains no stories, one the matrix cannot place,
+ *    or one id two builds both list */
 export function planCaptures(entries) {
   const stories = entries.filter((entry) => entry.type === 'story');
   if (stories.length === 0) {
     throw new IndexError('index.json lists no stories — only docs pages were built');
+  }
+  const shared = sharedIds(stories);
+  if (shared.length > 0) {
+    throw new IndexError(
+      `more than one Storybook build lists ${shared.join(', ')}; a story id names one story`,
+    );
   }
 
   return {
