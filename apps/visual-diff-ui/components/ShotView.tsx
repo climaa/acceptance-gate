@@ -322,6 +322,7 @@ export function ShotView({
                 zoom={paneZoom}
                 alignment={overlay.alignment}
                 onAlignment={overlay.onAlignment}
+                fit={heading.viewport === 'desktop'}
               />
             ) : null,
         }}
