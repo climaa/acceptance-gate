@@ -408,6 +408,34 @@ describe('check over more than one Storybook build', () => {
     expect(gate.captured).toEqual([]);
   });
 
+  it('captures the first build and warns when a later one lists no story yet', async () => {
+    // Arrange
+    const gate = twoBuilds({
+      [at(`${NATIVE}/index.json`)]: JSON.stringify({ v: 5, entries: {} }),
+    });
+
+    // Act
+    const result = await check(gate, { rootDir: ROOT });
+
+    // Assert
+    expect(result.exitCode).toBe(EXIT.ok);
+    expect(gate.served.map(({ rootDir }) => rootDir)).toEqual([at(WEB)]);
+    expect(result.summary.warnings).toContain(
+      `the Storybook build at ${NATIVE} lists no story yet`,
+    );
+  });
+
+  it('is broken when the first build lists no story, whatever a later one holds', async () => {
+    const gate = twoBuilds({
+      [at(`${WEB}/index.json`)]: JSON.stringify({ v: 5, entries: {} }),
+    });
+
+    const result = await check(gate, { rootDir: ROOT });
+
+    expect(result.exitCode).toBe(EXIT.broken);
+    expect(result.message).toContain('the Storybook build is empty');
+  });
+
   it('is broken when two builds list one story id', async () => {
     const gate = twoBuilds({ [at(`${NATIVE}/index.json`)]: indexJson([STORY]) });
 

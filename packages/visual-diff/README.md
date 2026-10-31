@@ -50,7 +50,9 @@ its own `index.json` and served on its own for its own stories, since Storybook 
 merge into a static index. Here it is `apps/storybook` alone. A child with a React Native
 package lists its native Storybook's build second, and `tierOf()` places a story under
 `packages/ui-native/src/<tier>/` as it places one under `packages/ui/src/<tier>/`. A story
-id two builds both list is refused, since one id names one baseline.
+id two builds both list is refused, since one id names one baseline. The first build must
+list stories; a later one that lists none yet (a package whose first story has not landed)
+is read as none, and the report warns about it.
 
 `screens` is a whole page of the console, drawn by a story beside the route it stands
 for (`apps/visual-diff-ui/app/_screens/`). The tier's roots are `APP_ROOTS` in

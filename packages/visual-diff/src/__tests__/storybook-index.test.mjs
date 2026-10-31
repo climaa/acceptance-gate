@@ -170,6 +170,22 @@ describe('readIndex with a root', () => {
     expect(planning).toThrow(/more than one Storybook build lists atoms-button--primary/);
   });
 
+  it('reads an empty build as no entries when asked to allow one', () => {
+    const json = JSON.stringify({ v: 5, entries: {} });
+
+    const entries = readIndex(json, 'apps/storybook-native/storybook-static', {
+      allowEmpty: true,
+    });
+
+    expect(entries).toEqual([]);
+  });
+
+  it('still refuses a build that is not an index when empty ones are allowed', () => {
+    const reading = () => readIndex(JSON.stringify({ v: 5 }), 'x', { allowEmpty: true });
+
+    expect(reading).toThrow(IndexError);
+  });
+
   it('reads an entry without a root as it always has', () => {
     const entries = readIndex(indexJson(storyEntry()));
 

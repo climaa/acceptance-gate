@@ -93,11 +93,15 @@ function readEntry(entry, key) {
  *  Entries come back as written, docs included: which types are captured is policy the
  *  caller applies, not something the parser decides. `root`, when given, is the build
  *  the text was read from, carried on every entry so its variants are shot against it.
+ *  `allowEmpty` reads a build with no entries as none rather than refusing it: for a
+ *  build after the first, whose package may have no story yet. The first build is
+ *  never read so, and the plan still refuses a run with no story at all.
  *  @param {unknown} json the file's contents
  *  @param {string} [root]
+ *  @param {{ allowEmpty?: boolean }} [options]
  *  @returns {IndexEntry[]}
- *  @throws {IndexError} on anything that is not a populated Storybook index */
-export function readIndex(json, root) {
+ *  @throws {IndexError} on anything that is not a Storybook index, or an empty one */
+export function readIndex(json, root, { allowEmpty = false } = {}) {
   if (typeof json !== 'string') {
     throw new IndexError('index.json was not read as text');
   }
@@ -117,6 +121,7 @@ export function readIndex(json, root) {
   }
 
   const keys = Object.keys(entries);
+  if (keys.length === 0 && allowEmpty) return [];
   if (keys.length === 0) {
     throw new IndexError('index.json lists no entries — the Storybook build is empty');
   }

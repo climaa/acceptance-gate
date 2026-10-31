@@ -156,9 +156,11 @@ const messageOf = (cause) => (cause instanceof Error ? cause.message : String(ca
 const broken = (message) => ({ exitCode: EXIT.broken, message });
 
 /** One Storybook build's entries, each carrying the build it came from. A build that
- *  is missing is a broken run, never a smaller one.
- *  @param {Deps} deps @param {(relative: string) => string} at @param {string} root */
-async function readRoot(deps, at, root) {
+ *  is missing is a broken run, never a smaller one. A build after the first may list
+ *  no entries yet — a package whose first story has not landed — and reads as none.
+ *  @param {Deps} deps @param {(relative: string) => string} at @param {string} root
+ *  @param {boolean} allowEmpty */
+async function readRoot(deps, at, root, allowEmpty) {
   let text;
   try {
     text = await deps.fs.readFile(at(`${root}/index.json`), 'utf8');
@@ -166,7 +168,7 @@ async function readRoot(deps, at, root) {
     throw new Error(`no Storybook build at ${root} — run \`pnpm turbo run build\` first`);
   }
 
-  return deps.readIndex(text, root);
+  return deps.readIndex(text, root, { allowEmpty });
 }
 
 /** The variants one run captures, from every build in `deps.storybookStatics`.
@@ -174,10 +176,14 @@ async function readRoot(deps, at, root) {
  *  captures fewer stories than the builds contain reports green over an unexamined UI.
  *  @param {Deps} deps @param {(relative: string) => string} at
  *  @param {string | readonly string[]} [filter]
- *  @returns {Promise<{ variants: PlannedVariant[], skipped: string[] }>} */
+ *  @returns {Promise<{ variants: PlannedVariant[], skipped: string[],
+ *                     emptyRoots: string[] }>} */
 async function readPlan(deps, at, filter) {
   const roots = deps.storybookStatics;
-  const read = await Promise.all(roots.map((root) => readRoot(deps, at, root)));
+  const read = await Promise.all(
+    roots.map((root, index) => readRoot(deps, at, root, index > 0)),
+  );
+  const emptyRoots = roots.filter((_, index) => read[index]?.length === 0);
   const entries = read.flat().filter((entry) => matchesFilter(filter, entry));
   if (entries.length === 0) {
     throw new Error(
@@ -192,7 +198,7 @@ async function readPlan(deps, at, filter) {
     );
   }
 
-  return { variants, skipped };
+  return { variants, skipped, emptyRoots };
 }
 
 /** Serve one build, capture its variants against it, and close the server however the
@@ -364,6 +370,10 @@ function coveredBaselines(baselines, covered) {
 /** A skipped story is reported, never hidden: `policy.SKIP_TAG` promises the report
  *  lists them, and a hole in the corpus that nothing mentions reads as coverage.
  *  @param {readonly string[]} skipped @returns {string[]} */
+/** @param {readonly string[]} emptyRoots */
+const emptyBuildWarnings = (emptyRoots) =>
+  emptyRoots.map((root) => `the Storybook build at ${root} lists no story yet`);
+
 const skipWarnings = (skipped) =>
   skipped.length === 0
     ? []
@@ -446,7 +456,7 @@ export async function check(deps = defaultDeps(), opts = {}) {
   const at = under(rootDir);
 
   try {
-    const { variants, skipped } = await readPlan(deps, at, filter);
+    const { variants, skipped, emptyRoots } = await readPlan(deps, at, filter);
     const committed = await readBaselines(deps.fs, at(PATHS.baselines));
     const baselines =
       filterNeedles(filter).length > 0
@@ -468,7 +478,11 @@ export async function check(deps = defaultDeps(), opts = {}) {
     const comparedAt = now();
 
     const summary = buildSummary(results, { ...(await deps.host()), chromium });
-    summary.warnings.push(...guard.warnings, ...skipWarnings(skipped));
+    summary.warnings.push(
+      ...guard.warnings,
+      ...skipWarnings(skipped),
+      ...emptyBuildWarnings(emptyRoots),
+    );
 
     await deps.writeArtifacts(deps.fs, {
       rootDir,
