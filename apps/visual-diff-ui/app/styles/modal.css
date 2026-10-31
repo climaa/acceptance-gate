@@ -403,6 +403,15 @@
   touch-action: auto;
 }
 
+/* A desktop shot is wide and short: the pane takes its height, so it is read
+   whole with no vertical scroll. Only a zoom wider than the pane scrolls, and
+   only sideways; a nudged crop past the bottom edge is clipped, not scrolled. */
+.vd-overlay__pane[data-fit] {
+  height: auto;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
 .vd-overlay__pane:active {
   cursor: auto;
 }

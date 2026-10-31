@@ -77,6 +77,10 @@ export interface OverlayStageProps {
   /** Blend, opacity, nudges and zoom, as the address carries them. */
   alignment: OverlayAlignment;
   onAlignment: (alignment: OverlayAlignment) => void;
+  /** Size the pane to the screenshot's height instead of the pane's fixed one.
+   *  A desktop shot is wide and short, so it is read whole, with no vertical
+   *  scroll; a mobile shot is tall and keeps the scrolling pane. */
+  fit?: boolean;
 }
 
 /** The overlay's own zoom: − the readout +, and the grid's step in words when
@@ -126,6 +130,7 @@ export function OverlayStage({
   zoom: from,
   alignment,
   onAlignment,
+  fit = false,
 }: OverlayStageProps) {
   const zoomAt = alignment.zoomAt ?? zoomIndexOf(from);
   // The screenshot's own size, read off it once it loads: a capture is one
@@ -182,6 +187,7 @@ export function OverlayStage({
         aria-label="the screenshot with the board crop over it"
         tabIndex={0}
         onKeyDown={onKeyDown}
+        data-fit={fit ? '' : undefined}
       >
         <div
           className="vd-overlay__layers"

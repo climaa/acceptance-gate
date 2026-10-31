@@ -40,13 +40,13 @@ const AT = `/set/${SET}/shot/${KEY}`;
 
 const replaceState = vi.fn<History['replaceState']>();
 
-function shotView() {
+function shotView(viewport = 'desktop') {
   return (
     <ShotView
       label={SET}
       story="Badge — Accent"
       storyId="atoms-badge--accent"
-      viewport="desktop"
+      viewport={viewport}
       theme="light"
       tier="atoms"
       homes={{}}
@@ -225,6 +225,26 @@ describe('the shot view’s crop', () => {
 });
 
 describe('the shot view’s overlay', () => {
+  // Regression, 31 Oct 2026: a 1248×524 desktop shot scrolled inside the
+  // overlay's fixed-height pane. A desktop shot fits the pane; a mobile one,
+  // tall by nature, keeps the scroll.
+  it.each([
+    ['desktop', true],
+    ['mobile', false],
+  ])('sizes the pane to a %s shot: %s', (viewport, fits) => {
+    // Arrange
+    setSearchParams('');
+    const { container } = render(shotView(viewport));
+
+    // Act
+    fireEvent.click(within(viewGroup()).getByRole('button', { name: 'overlay' }));
+
+    // Assert
+    expect(container.querySelector('.vd-overlay__pane')?.hasAttribute('data-fit')).toBe(
+      fits,
+    );
+  });
+
   it('asks for a crop rather than laying a whole board on a shot', () => {
     renderView();
 
