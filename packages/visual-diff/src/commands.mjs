@@ -367,13 +367,13 @@ function coveredBaselines(baselines, covered) {
   return new Map([...baselines].filter(([key]) => keys.has(key)));
 }
 
-/** A skipped story is reported, never hidden: `policy.SKIP_TAG` promises the report
- *  lists them, and a hole in the corpus that nothing mentions reads as coverage.
- *  @param {readonly string[]} skipped @returns {string[]} */
 /** @param {readonly string[]} emptyRoots */
 const emptyBuildWarnings = (emptyRoots) =>
   emptyRoots.map((root) => `the Storybook build at ${root} lists no story yet`);
 
+/** A skipped story is reported, never hidden: `policy.SKIP_TAG` promises the report
+ *  lists them, and a hole in the corpus that nothing mentions reads as coverage.
+ *  @param {readonly string[]} skipped @returns {string[]} */
 const skipWarnings = (skipped) =>
   skipped.length === 0
     ? []
