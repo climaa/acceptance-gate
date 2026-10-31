@@ -4712,7 +4712,7 @@
                   "reusable": true,
                   "clip": true,
                   "width": 1248,
-                  "height": 524,
+                  "height": 509,
                   "fill": "$bg",
                   "layout": "vertical",
                   "gap": 16,

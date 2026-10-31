@@ -27,7 +27,12 @@ export const Roles: Story = {
           <Text variant="label" as="p">
             {variant}
           </Text>
-          <Text variant={variant}>{SAMPLE}</Text>
+          {/* A block, as the tile's vertical frame draws it. Left inline, caption,
+              label and code sat in this div's body strut (24px) and each pair ran
+              6–7 rows taller than the tile's 36 (rows 370–519 of the roles shot). */}
+          <Text variant={variant} as="p">
+            {SAMPLE}
+          </Text>
         </div>
       ))}
     </Stack>
