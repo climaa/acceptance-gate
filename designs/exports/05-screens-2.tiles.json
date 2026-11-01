@@ -1,10 +1,10 @@
 {
   "board": "05-screens-2 — Screens",
-  "scale": 1.930709,
+  "scale": 1.922553,
   "tiles": {
-    "screens__desktop__dark__screens-visual-diff-ui-set--sample": [2688, 533, 2471, 4850],
-    "screens__desktop__light__screens-visual-diff-ui-set--sample": [124, 533, 2471, 4850],
-    "screens__mobile__dark__screens-visual-diff-ui-set--sample": [6097, 533, 753, 7536],
-    "screens__mobile__light__screens-visual-diff-ui-set--sample": [5252, 533, 753, 7536]
+    "screens__desktop__dark__screens-visual-diff-ui-set--sample": [2676, 531, 2461, 4829],
+    "screens__desktop__light__screens-visual-diff-ui-set--sample": [123, 531, 2461, 4829],
+    "screens__mobile__dark__screens-visual-diff-ui-set--sample": [6071, 531, 750, 7538],
+    "screens__mobile__light__screens-visual-diff-ui-set--sample": [5229, 531, 750, 7538]
   }
 }
