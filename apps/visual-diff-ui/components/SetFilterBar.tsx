@@ -4,8 +4,8 @@ import {
   THEME_CHOICES,
   THEME_SEGMENTS,
   type ShotSection,
-  type TierCounts,
-  tierAxes,
+  type SectionCounts,
+  sectionAxes,
   VIEWPORT_CHOICES,
   VIEWPORT_SEGMENTS,
 } from '@/lib/set-view';
@@ -107,9 +107,9 @@ function Strip({ axis, choices, checked }: StripProps) {
   );
 }
 
-/** The two attributes the nav's hide rules select on, from what the tier holds. */
+/** The two attributes the nav's hide rules select on, from what the section holds. */
 const axes = (section: ShotSection) => {
-  const { themes, viewports } = tierAxes(section);
+  const { themes, viewports } = sectionAxes(section);
 
   return {
     'data-shot-themes': themes.join(' '),
@@ -120,32 +120,62 @@ const axes = (section: ShotSection) => {
 export interface SetFilterBarProps {
   sections: readonly ShotSection[];
   counts: Record<FilterKey, FilterCount>;
-  /** Per tier, so a jump link says how much of ITS tier survives the filter. */
-  perTier: TierCounts;
+  /** Per section, so a jump link says how much of ITS section survives the filter. */
+  perSection: SectionCounts;
   /** What the link asked to see. */
   filter: SetFilter;
 }
 
-export function SetFilterBar({ sections, counts, perTier, filter }: SetFilterBarProps) {
+/**
+ * The "you jumped here" mark, one rule per section the set holds.
+ *
+ * CSS relates elements, it does not compute over them: no selector can say "the
+ * link whose href names the heading that is `:target`", so each pair is spelled
+ * out. Spelled out HERE, from the sections, rather than in set.css — written by
+ * hand there they were one list per tier that no app section was ever in. Still
+ * no JavaScript: the rules are rendered on the server with the page. The ids are
+ * the sections' own anchors, never anything a URL carries.
+ */
+export function jumpMarkCss(sections: readonly ShotSection[]): string {
+  if (sections.length === 0) return '';
+
+  const selectors = sections.map(
+    ({ section: { anchor } }) =>
+      `.vd-set-view:has(#${anchor}:target) .vd-set__jump[href='#${anchor}']`,
+  );
+
+  return `${selectors.join(',\n')} {
+  border-color: var(--color-accent);
+  background: var(--color-accent-subtle);
+}`;
+}
+
+export function SetFilterBar({
+  sections,
+  counts,
+  perSection,
+  filter,
+}: SetFilterBarProps) {
   return (
     <div className="vd-set__bar">
-      <nav aria-label="tiers" className="vd-set__nav">
-        {sections.map((section) => (
+      <style>{jumpMarkCss(sections)}</style>
+      <nav aria-label="sections" className="vd-set__nav">
+        {sections.map(({ section, ...entry }) => (
           <a
-            key={section.tier}
+            key={section.key}
             className="vd-set__jump vd-mono"
-            /* What the tier HOLDS, so set.css can drop the link when a filter
+            /* What the section HOLDS, so set.css can drop the link when a filter
                empties the section it points at. Per axis and plural, matching
-               the tier's own hide rules; a cell's singular `data-shot-theme`
+               the section's own hide rules; a cell's singular `data-shot-theme`
                says what one screenshot IS. */
-            {...axes(section)}
-            href={`#vd-tier-${section.tier}`}
+            {...axes({ section, ...entry })}
+            href={`#${section.anchor}`}
           >
-            {section.tier}{' '}
-            {/* A jump link says how much of ITS tier survives, not how much the
-                set holds — otherwise it offers a tier that is no longer there. */}
+            {section.label}{' '}
+            {/* A jump link says how much of ITS section survives, not how much
+                the set holds — otherwise it offers a section no longer there. */}
             <Filtered
-              counts={perTier[section.tier]}
+              counts={perSection[section.key]}
               render={(count) => `${count.stories} · ${count.shots}`}
             />
           </a>

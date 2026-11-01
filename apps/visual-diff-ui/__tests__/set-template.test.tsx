@@ -309,10 +309,10 @@ describe('SetFilterBar', () => {
     expect(document.querySelector('.vd-set__bar')).toBeTruthy();
   });
 
-  it('keeps the tier jump-nav, now inside the bar', () => {
+  it('keeps the section jump-nav, now inside the bar', () => {
     render4();
 
-    const nav = screen.getByRole('navigation', { name: 'tiers' });
+    const nav = screen.getByRole('navigation', { name: 'sections' });
     expect(nav.querySelectorAll('a')).toHaveLength(2);
   });
 });
@@ -411,5 +411,53 @@ describe('setFilterQuery', () => {
     const query = setFilterQuery({ theme: 'dark', viewport: 'mobile' });
 
     expect(query).toBe('theme=dark&viewport=mobile');
+  });
+});
+
+/**
+ * A capture set holding screens, one tab per app. The tab's fragment and the
+ * heading's id are written in two components, and the jump — and its mark — only
+ * work while they agree, so this renders the page rather than trusting
+ * lib/sections.ts to have been wired in both.
+ */
+describe('a set holding screens', () => {
+  const SCREENS = [
+    'screens__mobile__dark__screens-visual-diff-ui-dashboard--sample',
+    'screens__mobile__dark__screens-garden-reader-plantscreen--default',
+  ];
+
+  const renderScreens = () =>
+    render(
+      <SetTemplate
+        corpus={null}
+        set={null}
+        shots={shots([BADGE, ...SCREENS], {
+          label: 'main-2026-11-01',
+          isCanonical: false,
+        })}
+      />,
+    );
+
+  // One tab per app the policy names, then `other` for a screen it does not.
+  it('draws one tab per app, after the tiers', () => {
+    renderScreens();
+
+    const nav = screen.getByRole('navigation', { name: 'sections' });
+    const labels = [...nav.querySelectorAll('a')].map((link) =>
+      link.firstChild?.textContent?.trim(),
+    );
+
+    expect(labels).toEqual(['atoms', 'Screens / Visual-diff-ui', 'Screens / Other']);
+  });
+
+  it('points every tab at a heading that is on the page', () => {
+    renderScreens();
+
+    const nav = screen.getByRole('navigation', { name: 'sections' });
+    const targets = [...nav.querySelectorAll('a')].map((link) =>
+      document.getElementById(link.getAttribute('href')?.slice(1) ?? ''),
+    );
+
+    expect(targets.every((target) => target?.tagName === 'H2')).toBe(true);
   });
 });

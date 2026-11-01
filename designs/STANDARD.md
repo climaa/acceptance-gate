@@ -45,6 +45,14 @@ file and its exports are one name. The boards, in order:
   page number, so `ls designs` groups a product's boards the way `ls apps` does, and the
   files stay flat: every reader of `designs/` lists it one level deep and finds a board by
   its stem. A project with one app keeps `05-pages`.
+- **One app's screens.** The same rule holds for screens: a project whose `screens` tier
+  spans more than one app tiles each app's screens on `05-screens-<app>`, paged as
+  `05-screens-<app>-1`, …, and a project with one app keeps `05-screens`. The console
+  opens a screen on its own app's screens board, then on that app's pages board
+  (`05-pages-<app>`) when its screens are not tiled, then on `05-screens`. Its set
+  viewer and its report split the tier the same way, one section per app in the policy's
+  `APPS`, labelled as Storybook titles the app's screens (`Screens / Web`), then
+  `Screens / Other` for a screen whose app the policy does not name.
 - **Variables are copied, not shared.** A Pencil document holds its own variables and
   themes, so every board file carries the same set. `00-foundations.pen` is the source:
   change a variable there and copy it to every other board file. The `boards` check reads

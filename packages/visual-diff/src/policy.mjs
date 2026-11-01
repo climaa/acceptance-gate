@@ -25,6 +25,12 @@ export const TIERS = ['atoms', 'molecules', 'organisms', 'templates', 'screens']
  *  @type {readonly Tier[]} */
 export const UI_TIERS = TIERS.filter((tier) => tier !== 'screens');
 
+/** The tier every story under an {@link APP_ROOTS} tree is placed in. Named rather than
+ *  spelled twice: `tierOf` returning a string `TIERS` does not contain would file shots
+ *  under a layer `parseVariantKey` then reads back as an orphan.
+ *  @type {Tier} */
+export const APP_TIER = 'screens';
+
 /** Theme values. Selected via `data-theme` on <html> — never prefers-color-scheme.
  *  @type {readonly Theme[]} */
 export const THEMES = ['light', 'dark'];
@@ -125,6 +131,43 @@ const UI_SRCS = [
  *  @type {readonly (readonly string[])[]} */
 export const APP_ROOTS = [['apps', 'visual-diff-ui', 'app']];
 
+/** The name an {@link APP_ROOTS} entry gives its app: the directory under `apps/`,
+ *  which is also what a screen's Storybook title names (`Screens/<App>/…`) and what
+ *  its pages board is stemmed by (`05-screens-<app>`, designs/STANDARD.md).
+ *  @param {readonly string[]} root @returns {string} */
+const appNameOf = (root) => root[root.indexOf('apps') + 1] ?? root[0] ?? '';
+
+/** The apps whose stories are screens, in {@link APP_ROOTS}'s order — read off it,
+ *  never written a second time. `apps/visual-diff-ui` splits its `screens` tier by
+ *  these and opens each one's own screens board, so a second app is one line above.
+ *  @type {readonly string[]} */
+export const APPS = APP_ROOTS.map(appNameOf);
+
+/** The app a screen's story id names: `screens-<app>-…`, which Storybook slugs from
+ *  a `Screens/<App>/…` title. `null` for an id that is not a screen's, or that names
+ *  an app {@link APPS} does not have — the console shows that as `other` rather than
+ *  hiding it. The title is what carries the app, not the path, so
+ *  `apps/storybook`'s sidebar test holds the two to the same app.
+ *
+ *  `apps` is {@link APPS} everywhere but a test, which needs names no app has yet.
+ *  @param {string} storyId
+ *  @param {readonly string[]} [apps]
+ *  @returns {string | null} */
+export function appOf(storyId, apps = APPS) {
+  const prefix = `${APP_TIER}-`;
+  if (!storyId.startsWith(prefix)) return null;
+  const rest = storyId.slice(prefix.length);
+
+  // The longest that matches, so an app named with a hyphen is not read as the
+  // shorter app its first word spells — and a whole segment, so `webx` is never
+  // `web`. One pass and no copy: this runs once per story on every set page.
+  return apps.reduce(
+    (best, app) =>
+      rest.startsWith(`${app}-`) && app.length > (best?.length ?? 0) ? app : best,
+    /** @type {string | null} */ (null),
+  );
+}
+
 /** Where Storybook runs, and so what a `./` or `../` `importPath` is relative to:
  *  `../visual-diff-ui/app/…` is `apps/visual-diff-ui/app/…` read from here. */
 const STORYBOOK_DIR = ['apps', 'storybook'];
@@ -161,7 +204,7 @@ function segmentsOf(storyPath) {
  *  @returns {Tier | null} */
 export function tierOf(storyPath) {
   const segments = segmentsOf(storyPath);
-  if (APP_ROOTS.some((root) => indexOfRun(segments, root) !== -1)) return 'screens';
+  if (APP_ROOTS.some((root) => indexOfRun(segments, root) !== -1)) return APP_TIER;
 
   for (const src of UI_SRCS) {
     const start = indexOfRun(segments, src);

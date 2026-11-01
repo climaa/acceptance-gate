@@ -17,6 +17,17 @@ main {
   min-height: 60vh;
 }
 
+/* The console's gutter, said by the console itself, for the header row and for
+   `main`. Here `.ds-container` carries the same 24px, so this changes nothing;
+   it is for the project whose container is a measure and nothing else
+   (trucutru took the gutter out of it so each screen names its own), where the
+   console otherwise ran into the window's edge and, on a phone, had no air at
+   all. Every copy of the console sits 24px off the edge either way. */
+main,
+.ds-site-header__inner {
+  padding-inline: var(--space-6);
+}
+
 /* The header's brand line, which is also the console's heading — the board
    draws the wordmark and its tagline as one row, not as a title above the
    panels. */
