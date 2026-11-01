@@ -2,7 +2,7 @@ import NextLink from 'next/link';
 import { Badge, Stack, Text } from '@gate/ui';
 import type { CanonicalSet } from '@/lib/baselines';
 import { UNKNOWN, formatBytes, shortSha } from '@/lib/outcome';
-import { filterCounts, type SetShots, tierFilterCounts } from '@/lib/set-view';
+import { filterCounts, type SetShots, sectionFilterCounts } from '@/lib/set-view';
 import type { CaptureSet } from '@/lib/summary';
 import { Field } from './Field';
 import { DEFAULT_SEGMENT, type SetFilter } from '@/lib/set-filter';
@@ -100,7 +100,7 @@ export function SetTemplate({
 }: SetTemplateProps) {
   // Once, not per tier: the same nine numbers feed the bar's jump links and every
   // tier heading below.
-  const perTier = tierFilterCounts(shots.sections);
+  const perSection = sectionFilterCounts(shots.sections);
 
   return (
     // What every filter rule in set.css hangs off: the bar's radios are inside
@@ -142,31 +142,27 @@ export function SetTemplate({
           away goes with it. */}
       <SetFilterBar
         counts={filterCounts(shots.sections)}
-        perTier={perTier}
+        perSection={perSection}
         sections={shots.sections}
         filter={filter}
       />
 
-      {shots.sections.map((section) => (
-        <section
-          aria-labelledby={`vd-tier-${section.tier}`}
-          className="vd-tier"
-          key={section.tier}
-        >
+      {shots.sections.map(({ section, groups }) => (
+        <section aria-labelledby={section.anchor} className="vd-tier" key={section.key}>
           <Stack gap={3}>
             <Text
               variant="heading-3"
               as="h2"
               className="vd-tier__title"
-              id={`vd-tier-${section.tier}`}
+              id={section.anchor}
             >
-              {section.tier}{' '}
+              {section.label}{' '}
               <span className="vd-count vd-mono">
                 {/* Follows the filter for the reason the bar's count does: a
                     heading claiming 37 stories over three of them is the page
                     contradicting itself. */}
                 <Filtered
-                  counts={perTier[section.tier]}
+                  counts={perSection[section.key]}
                   render={(count) =>
                     `${count.stories} stories · ${count.shots} screenshots`
                   }
@@ -174,7 +170,7 @@ export function SetTemplate({
               </span>
             </Text>
 
-            {section.groups.map((group) => (
+            {groups.map((group) => (
               <StoryScreenshots group={group} key={group.key} label={shots.label} />
             ))}
           </Stack>

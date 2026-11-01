@@ -3,6 +3,8 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
   ALL_VIEWPORTS_TAG,
+  APP_TIER,
+  APPS,
   BASELINE_BUDGET_BYTES,
   BASELINE_PNG_BUDGET_BYTES,
   COLOR_SCHEME_GLOBAL,
@@ -21,6 +23,7 @@ import {
   TIERS,
   UI_TIERS,
   VIEWPORTS,
+  appOf,
   parseVariantKey,
   tierOf,
   variantKey,
@@ -406,4 +409,62 @@ describe('LEDGER.exempt', () => {
       );
     },
   );
+});
+
+describe('APPS', () => {
+  // The blog and the manual have route trees too, and are deliberately not
+  // screens here: only the console is photographed as a product.
+  it('names every app whose route tree places under the screens tier', () => {
+    const placed = ['visual-diff-ui', 'blog', 'manual'].filter(
+      (app) => tierOf(`apps/${app}/app/page.stories.tsx`) === APP_TIER,
+    );
+
+    expect(APPS).toEqual(placed);
+  });
+
+  it('names each app by its directory under apps/', () => {
+    expect(APPS).toEqual(['visual-diff-ui']);
+  });
+});
+
+describe('appOf', () => {
+  it('reads the app off a screen story id', () => {
+    const ids = [
+      'screens-visual-diff-ui-dashboard--sample',
+      'screens-visual-diff-ui-report--changed',
+    ];
+
+    const apps = ids.map((id) => appOf(id));
+
+    expect(apps).toEqual(['visual-diff-ui', 'visual-diff-ui']);
+  });
+
+  it('answers null for an app the policy does not have', () => {
+    const app = appOf('screens-garden-reader-plantscreen--default');
+
+    expect(app).toBeNull();
+  });
+
+  it('answers null when an app name is only the start of the segment', () => {
+    const app = appOf('screens-webx-reader-readingscreen--default', ['web']);
+
+    expect(app).toBeNull();
+  });
+
+  // Storybook slugs `Screens/My-App/…` to `screens-my-app-…`, so an app's name
+  // is not always the first word after the tier. No app is named so today, so
+  // the list is handed in: `my` must not win over `my-app`.
+  it('reads an app whose name has a hyphen as that app', () => {
+    const apps = ['my', 'my-app'];
+
+    const app = appOf('screens-my-app-reader-somescreen--default', apps);
+
+    expect(app).toBe('my-app');
+  });
+
+  it('answers null for a story outside the screens tier', () => {
+    const app = appOf('organisms-table--default');
+
+    expect(app).toBeNull();
+  });
 });

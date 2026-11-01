@@ -1,3 +1,4 @@
+import { APP_TIER, appOf, parseVariantKey } from '@gate/visual-diff/policy';
 import type { Variant } from './summary';
 import { storyTitle } from './title';
 
@@ -232,11 +233,37 @@ const TIER_STEMS: Readonly<Record<Variant['tier'], string>> = {
   screens: '05-screens',
 };
 
-/** A tier's board, or its pages in order when it is paged. */
-export const tierBoards = (tier: Variant['tier']): DesignBoard[] => {
-  const own = new RegExp(`^${TIER_STEMS[tier]}(-\\d+)?$`);
+/** A stem's board, or its pages in order when it is paged. */
+const boardsOf = (stem: string): DesignBoard[] => {
+  const own = new RegExp(`^${stem}(-\\d+)?$`);
 
   return DESIGN_BOARDS.filter((board) => own.test(board));
+};
+
+/** A tier's board, or its pages in order when it is paged. */
+export const tierBoards = (tier: Variant['tier']): DesignBoard[] =>
+  boardsOf(TIER_STEMS[tier]);
+
+/**
+ * The boards a variant belongs on (designs/STANDARD.md, "One app's screens"): a
+ * screen's own app's — `05-screens-<app>` where its screens are tiled, else
+ * `05-pages-<app>` where only its pages are drawn — and every other variant its
+ * tier's. A project with one app keeps `05-screens`, and a screen whose app the
+ * policy does not name, or whose app has no board of its own, falls back to it.
+ */
+export const variantBoards = (variant: {
+  tier: Variant['tier'];
+  key: string;
+}): DesignBoard[] => {
+  const id = variant.tier === APP_TIER ? parseVariantKey(variant.key)?.id : undefined;
+  const app = id === undefined ? null : appOf(id);
+  if (app === null) return tierBoards(variant.tier);
+
+  const own = [`05-screens-${app}`, `05-pages-${app}`]
+    .map(boardsOf)
+    .find((boards) => boards.length > 0);
+
+  return own ?? tierBoards(variant.tier);
 };
 
 /**
@@ -252,4 +279,4 @@ export type BoardHomes = Readonly<Partial<Record<string, DesignBoard>>>;
 export const defaultBoard = (
   variant: { tier: Variant['tier']; key: string },
   homes: BoardHomes,
-): DesignBoard => homes[variant.key] ?? tierBoards(variant.tier)[0] ?? DESIGN_BOARDS[0];
+): DesignBoard => homes[variant.key] ?? variantBoards(variant)[0] ?? DESIGN_BOARDS[0];

@@ -9,7 +9,7 @@ import {
   neighbourKeys,
   parseShotName,
   type SetShot,
-  tierAxes,
+  sectionAxes,
 } from '../lib/set-view';
 
 /**
@@ -205,7 +205,42 @@ describe('groupShots', () => {
 
     const sections = groupShots(shots);
 
-    expect(sections.map((section) => section.tier)).toEqual(['atoms', 'templates']);
+    expect(sections.map(({ section }) => section.key)).toEqual(['atoms', 'templates']);
+  });
+
+  /**
+   * A screen is filed under its app's section, after the design system's tiers
+   * and in the policy's order of apps — never under one `screens` heading that
+   * mixes products.
+   */
+  it("files screens shots under their app's section, after the tiers", () => {
+    const shots = [
+      shot('screens__mobile__dark__screens-visual-diff-ui-dashboard--sample'),
+      shot('atoms__desktop__light__atoms-badge--accent'),
+    ];
+
+    const sections = groupShots(shots);
+
+    expect(sections.map(({ section }) => section.label)).toEqual([
+      'atoms',
+      'Screens / Visual-diff-ui',
+    ]);
+  });
+
+  /** A shot that exists is a shot that is shown: a screen whose app the policy
+   *  does not name is filed under `other`, last, never dropped. */
+  it('files a screen of an app the policy does not name under other', () => {
+    const shots = [
+      shot('screens__mobile__dark__screens-reading--default'),
+      shot('screens__mobile__dark__screens-visual-diff-ui-dashboard--sample'),
+    ];
+
+    const sections = groupShots(shots);
+
+    expect(sections.map(({ section }) => section.label)).toEqual([
+      'Screens / Visual-diff-ui',
+      'Screens / Other',
+    ]);
   });
 
   it('counts stories and screenshots apart', () => {
@@ -442,7 +477,7 @@ describe('filterCounts', () => {
  * place you went. Unlike the filtering, this half IS markup, so it is asserted
  * here rather than left to a browser pass.
  */
-describe('tierAxes', () => {
+describe('sectionAxes', () => {
   const section = (keys: readonly string[]) => {
     const [only] = groupShots(keys.map((key) => shot(key)));
     if (!only) throw new Error('every fixture here names one tier');
@@ -455,7 +490,7 @@ describe('tierAxes', () => {
    *  opts three atoms past the desktop-only default — so this is asserted from
    *  literal names rather than from the real set, which cannot show it. */
   it('reports only the viewports a tier was really captured at', () => {
-    const axes = tierAxes(
+    const axes = sectionAxes(
       section([
         'atoms__desktop__light__atoms-badge--accent',
         'atoms__desktop__dark__atoms-badge--accent',
@@ -466,7 +501,7 @@ describe('tierAxes', () => {
   });
 
   it('reports both viewports for a tier that has them', () => {
-    const axes = tierAxes(
+    const axes = sectionAxes(
       section([
         'organisms__desktop__light__organisms-siteheader--default',
         'organisms__mobile__light__organisms-siteheader--default',
@@ -481,7 +516,7 @@ describe('tierAxes', () => {
    *  light before dark however `readdir` returned them, and the attribute a
    *  stylesheet matches on must not depend on that either. */
   it('answers in the capture order, never the order the files came back in', () => {
-    const axes = tierAxes(
+    const axes = sectionAxes(
       section([
         'templates__mobile__dark__templates-post--default',
         'templates__desktop__light__templates-post--default',

@@ -1,12 +1,12 @@
 import {
   THEMES,
-  TIERS,
   type Theme,
   type Tier,
   VIEWPORTS,
   type ViewportName,
   parseVariantKey,
 } from '@gate/visual-diff/policy';
+import { SECTIONS, sectionOf, type Section, type SectionKey } from './sections';
 import { DEFAULT_SEGMENT, type SetFilter } from './set-filter';
 import { storyTitle } from './title';
 
@@ -70,9 +70,9 @@ export interface ShotGroup {
   viewports: readonly ViewportName[];
 }
 
-/** One tier of the design system, as the page draws it. */
+/** One section of the page — a tier, or one app's screens (lib/sections.ts). */
 export interface ShotSection {
-  tier: Tier;
+  section: Section;
   groups: readonly ShotGroup[];
   stories: number;
   shots: number;
@@ -136,11 +136,11 @@ function groupOf(first: SetShot, shots: readonly SetShot[]): ShotGroup {
 }
 
 /**
- * Shots into tiers of stories.
+ * Shots into sections of stories.
  *
- * One flat map keyed `<tier>|<storyId>`, then a pass over `TIERS` — the shape
- * `lib/report-view.ts` groups cards with, and the reason a tier holding nothing
- * is absent rather than empty.
+ * One flat map keyed `<tier>|<storyId>`, then a pass over `SECTIONS` — the one
+ * `lib/report-view.ts` groups cards with, and the reason a section holding
+ * nothing is absent rather than empty.
  */
 export function groupShots(shots: readonly SetShot[]): ShotSection[] {
   const byStory = new Map<string, SetShot[]>();
@@ -157,13 +157,20 @@ export function groupShots(shots: readonly SetShot[]): ShotSection[] {
     return first ? [groupOf(first, bucket)] : [];
   });
 
-  return TIERS.map((tier) => {
-    const mine = groups
-      .filter((group) => group.tier === tier)
-      .sort((a, b) => (a.storyId < b.storyId ? -1 : a.storyId > b.storyId ? 1 : 0));
+  // Each story's section asked once, not once per section it is checked against.
+  const bySection = new Map<SectionKey, ShotGroup[]>();
+  for (const group of groups) {
+    const key = sectionOf(group.tier, group.storyId).key;
+    bySection.set(key, [...(bySection.get(key) ?? []), group]);
+  }
+
+  return SECTIONS.map((section) => {
+    const mine = (bySection.get(section.key) ?? []).sort((a, b) =>
+      a.storyId < b.storyId ? -1 : a.storyId > b.storyId ? 1 : 0,
+    );
 
     return {
-      tier,
+      section,
       groups: mine,
       stories: mine.length,
       shots: mine.reduce((total, group) => total + group.shots.length, 0),
@@ -255,19 +262,19 @@ export function filterCounts(
 }
 
 /**
- * The same nine answers, per tier.
+ * The same nine answers, per section.
  *
- * The bar's count describes the page; a tier's heading and its jump link describe
- * a tier, and a heading reading "37 stories" over three of them is the page
- * disagreeing with itself. Measured in the browser, which is the only place a
- * CSS filter can be seen at all.
+ * The bar's count describes the page; a section's heading and its jump link
+ * describe a section, and a heading reading "37 stories" over three of them is
+ * the page disagreeing with itself. Measured in the browser, which is the only
+ * place a CSS filter can be seen at all.
  */
-export type TierCounts = Record<Tier, Record<FilterKey, FilterCount>>;
+export type SectionCounts = Record<SectionKey, Record<FilterKey, FilterCount>>;
 
-export function tierFilterCounts(sections: readonly ShotSection[]): TierCounts {
+export function sectionFilterCounts(sections: readonly ShotSection[]): SectionCounts {
   return Object.fromEntries(
-    sections.map((section) => [section.tier, filterCounts([section])]),
-  ) as TierCounts;
+    sections.map((entry) => [entry.section.key, filterCounts([entry])]),
+  ) as SectionCounts;
 }
 
 /**
@@ -293,12 +300,12 @@ export function tierFilterCounts(sections: readonly ShotSection[]): TierCounts {
  * are per axis and independent — a link testing the nine combinations instead
  * would disagree with the section it points at about what an empty tier is.
  */
-export interface TierAxes {
+export interface SectionAxes {
   themes: readonly Theme[];
   viewports: readonly ViewportName[];
 }
 
-export function tierAxes(section: ShotSection): TierAxes {
+export function sectionAxes(section: ShotSection): SectionAxes {
   const shots = section.groups.flatMap((group) => group.shots);
 
   return {

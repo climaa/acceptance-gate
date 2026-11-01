@@ -42,6 +42,21 @@ declare module '@gate/visual-diff/policy' {
   export const TIERS: readonly Tier[];
   /** Every tier but `screens`: the ones that are folders of `packages/ui/src/`. */
   export const UI_TIERS: readonly Tier[];
+
+  /** The tier every app route tree's stories are placed in. */
+  export const APP_TIER: 'screens';
+
+  /** An app whose stories are screens — the name of its `apps/` directory. Kept
+   *  in step with the policy's `APPS` by `__tests__/sections.test.ts`. */
+  export type App = 'visual-diff-ui';
+
+  /** The apps, in `APP_ROOTS`'s order: what `lib/sections.ts` splits `screens`
+   *  by and `lib/comparison.ts` opens each one's screens board for. */
+  export const APPS: readonly App[];
+
+  /** The app a screen's story id names (`screens-<app>-…`), or null for an id
+   *  that is not a screen's or names an app `APPS` does not have. */
+  export function appOf(storyId: string): App | null;
   export const THEMES: readonly Theme[];
 
   /** Capture viewports, in CSS pixels at deviceScaleFactor 1. */

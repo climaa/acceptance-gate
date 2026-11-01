@@ -1,4 +1,5 @@
-import { TIER_VIEWPORTS, TIERS, VIEWPORTS } from '@gate/visual-diff/policy';
+import { TIER_VIEWPORTS, VIEWPORTS } from '@gate/visual-diff/policy';
+import { SECTIONS, sectionOf } from './sections';
 import type { Bucket, Variant } from './summary';
 import { storyTitle } from './title';
 
@@ -181,8 +182,9 @@ function section(
  * away with the rest of its tier.
  *
  * The rest follow the design system's own ladder — `TIERS`, innermost first —
- * so a reviewer walks the report the way the library is built. A tier with
- * nothing in it is absent rather than empty.
+ * so a reviewer walks the report the way the library is built, then each app's
+ * screens: `SECTIONS`, the one order the set page walks too (lib/sections.ts).
+ * A section with nothing in it is absent rather than empty.
  */
 export function buildSections(
   variants: readonly Variant[],
@@ -205,11 +207,11 @@ export function buildSections(
   // missing?" has to answer for the report, not for its own bucket.
   const shown = shownViewports(corpus);
 
-  const tiers = TIERS.map((tier) =>
+  const tiers = SECTIONS.map(({ key, label }) =>
     section(
-      tier,
-      tier,
-      pixels.filter((variant) => variant.tier === tier),
+      key,
+      label,
+      pixels.filter((variant) => sectionOf(variant.tier, variant.id).key === key),
       shown,
     ),
   );

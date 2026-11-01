@@ -69,24 +69,16 @@
   outline-offset: 2px;
 }
 
-/* The tier you jumped to, marked on its own badge.
-   `:target` lands on the HEADING — that is where the id is — so `:has()` reads
-   which one is targeted from the root and matches the badge by the href that
-   points at it. Five rules, one per tier, for the same reason the nine counts
-   are nine: CSS relates elements, it does not compute over them.
+/* The section you jumped to is marked on its own badge by rules rendered with
+   the page, one per section the set holds — `jumpMarkCss` in
+   components/SetFilterBar.tsx, which says why they are not written here.
+   `:target` lands on the HEADING, so `:has()` reads which one is targeted from
+   the root and matches the badge by the href that points at it.
 
    This is the zero-JavaScript half of "activate the one you are in": it answers
    a CLICK, which is what a jump-nav is for, and it survives a reload and a
    shared link. It does not follow free scrolling — no selector can observe
    that — so the mark means "the one you asked for", not "the one on screen". */
-.vd-set-view:has(#vd-tier-atoms:target) .vd-set__jump[href='#vd-tier-atoms'],
-.vd-set-view:has(#vd-tier-molecules:target) .vd-set__jump[href='#vd-tier-molecules'],
-.vd-set-view:has(#vd-tier-organisms:target) .vd-set__jump[href='#vd-tier-organisms'],
-.vd-set-view:has(#vd-tier-templates:target) .vd-set__jump[href='#vd-tier-templates'],
-.vd-set-view:has(#vd-tier-screens:target) .vd-set__jump[href='#vd-tier-screens'] {
-  border-color: var(--color-accent);
-  background: var(--color-accent-subtle);
-}
 
 .vd-set__open {
   color: var(--color-accent);

@@ -6,6 +6,7 @@ import {
   comparisonPath,
   defaultBoard,
   tierBoards,
+  variantBoards,
   isAgainst,
   isComparisonPath,
   isDesignBoard,
@@ -142,6 +143,21 @@ describe('defaultBoard', () => {
     expect(chosen).toBe(board);
   });
 
+  // One app's screens: a project with a single app keeps `05-screens`
+  // (designs/STANDARD.md), so the console's screens open on its first page. So
+  // does a screen whose app the policy does not name.
+  it.each([
+    ['screens-visual-diff-ui-dashboard--sample', '05-screens-1'],
+    ['screens-garden-reader-plantscreen--default', '05-screens-1'],
+  ] as const)('opens the screen %s on %s', (id, board) => {
+    const chosen = defaultBoard(
+      { tier: 'screens', key: `screens__mobile__dark__${id}` },
+      {},
+    );
+
+    expect(chosen).toBe(board);
+  });
+
   it('opens a variant on the board its tile map says draws it', () => {
     const key = 'templates__desktop__light__templates-home--default';
 
@@ -156,6 +172,32 @@ describe('tierBoards', () => {
     const boards = tierBoards('atoms');
 
     expect(boards).toEqual(['01-atoms']);
+  });
+});
+
+describe('variantBoards', () => {
+  // A project with one app keeps `05-screens` (designs/STANDARD.md): the
+  // console's screens have no board of their own app, so they open on every
+  // page of the screens board, in order.
+  it("is every page of the screens board for the console's screens", () => {
+    const key = 'screens__desktop__light__screens-visual-diff-ui-dashboard--sample';
+
+    const boards = variantBoards({ tier: 'screens', key });
+
+    expect(boards).toEqual([
+      '05-screens-1',
+      '05-screens-2',
+      '05-screens-3',
+      '05-screens-4',
+    ]);
+  });
+
+  it("falls back to the tier's pages for a screen whose app the policy does not name", () => {
+    const key = 'screens__desktop__light__screens-garden-reader-plantscreen--default';
+
+    const boards = variantBoards({ tier: 'screens', key });
+
+    expect(boards).toEqual(tierBoards('screens'));
   });
 });
 
