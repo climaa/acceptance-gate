@@ -6941,29 +6941,37 @@
                               "type": "frame",
                               "id": "BALaQ",
                               "name": "wordmark",
-                              "context": "project crumb: root package.json name",
-                              "gap": 8,
-                              "alignItems": "center",
+                              "context": "project crumb: wraps above the wordmark on a phone (shell.css .vd-brand__wordmark)",
+                              "layout": "vertical",
                               "children": [
                                 {
-                                  "type": "text",
-                                  "id": "U2oAxP",
-                                  "name": "project",
-                                  "fill": "$text-muted",
-                                  "content": "acceptance-gate",
-                                  "fontFamily": "$font-mono",
-                                  "fontSize": 12,
-                                  "fontWeight": "normal"
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "aScf5",
-                                  "name": "sep",
-                                  "fill": "$text-muted",
-                                  "content": "/",
-                                  "fontFamily": "$font-mono",
-                                  "fontSize": 12,
-                                  "fontWeight": "normal"
+                                  "type": "frame",
+                                  "id": "C6SQHw",
+                                  "name": "crumb",
+                                  "gap": 8,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "U2oAxP",
+                                      "name": "project",
+                                      "fill": "$text-muted",
+                                      "content": "acceptance-gate",
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "aScf5",
+                                      "name": "sep",
+                                      "fill": "$text-muted",
+                                      "content": "/",
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
                                 },
                                 {
                                   "type": "text",
@@ -7423,29 +7431,37 @@
                               "type": "frame",
                               "id": "Vefes",
                               "name": "wordmark",
-                              "context": "project crumb: root package.json name",
-                              "gap": 8,
-                              "alignItems": "center",
+                              "context": "project crumb: wraps above the wordmark on a phone (shell.css .vd-brand__wordmark)",
+                              "layout": "vertical",
                               "children": [
                                 {
-                                  "type": "text",
-                                  "id": "fxYiD",
-                                  "name": "project",
-                                  "fill": "$text-muted",
-                                  "content": "acceptance-gate",
-                                  "fontFamily": "$font-mono",
-                                  "fontSize": 12,
-                                  "fontWeight": "normal"
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "pB1le",
-                                  "name": "sep",
-                                  "fill": "$text-muted",
-                                  "content": "/",
-                                  "fontFamily": "$font-mono",
-                                  "fontSize": 12,
-                                  "fontWeight": "normal"
+                                  "type": "frame",
+                                  "id": "Bny6v",
+                                  "name": "crumb",
+                                  "gap": 8,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "fxYiD",
+                                      "name": "project",
+                                      "fill": "$text-muted",
+                                      "content": "acceptance-gate",
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "pB1le",
+                                      "name": "sep",
+                                      "fill": "$text-muted",
+                                      "content": "/",
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
                                 },
                                 {
                                   "type": "text",
