@@ -10,6 +10,7 @@ import {
 } from '../components/ShotView';
 import type { Readings } from '../lib/readings';
 import { backCalls, setSearchParams } from './stubs/next-navigation';
+import { SITE_TITLE } from '../lib/site';
 
 /**
  * The shot view: one screenshot of a set beside a design board, as a modal over
@@ -131,8 +132,8 @@ describe('the shot view, opened from its set', () => {
     unmount();
 
     expect({ open, closed: document.title }).toEqual({
-      open: `${TITLE} · visual-diff console`,
-      closed: `${SET} · visual-diff console`,
+      open: `${TITLE} · ${SITE_TITLE}`,
+      closed: `${SET} · ${SITE_TITLE}`,
     });
   });
 });

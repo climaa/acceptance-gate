@@ -1,5 +1,6 @@
 import * as path from 'node:path';
 import { baselinesStamp } from './scripts/baselines-stamp.mjs';
+import { projectName } from './scripts/project-name.mjs';
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -40,6 +41,9 @@ const nextConfig = {
   // clone answers `''` rather than its boundary commit.
   env: {
     NEXT_PUBLIC_BUGSINK_DSN: process.env.NEXT_PUBLIC_BUGSINK_DSN ?? '',
+    // The repository's name, for the header and the tab: see
+    // scripts/project-name.mjs for why it is inlined rather than imported.
+    VISUAL_DIFF_PROJECT: projectName(path.resolve(import.meta.dirname, '..', '..')),
     VISUAL_DIFF_BASELINES_ACCEPTED: baselinesStamp(
       path.resolve(import.meta.dirname, '..', '..'),
     ),

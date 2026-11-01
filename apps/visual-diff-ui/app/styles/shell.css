@@ -27,8 +27,32 @@ main {
   flex-wrap: wrap;
 }
 
+/* Each piece keeps its words together and the row wraps between pieces: on a
+   phone, beside the manual link and the toggle, there is no room for the whole
+   breadcrumb, and the project steps up a line above the wordmark instead of
+   every word breaking on its own. */
+.vd-brand__wordmark {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: var(--space-2);
+}
+
+.vd-brand__wordmark > * {
+  white-space: nowrap;
+}
+
+/* The project and its slash: muted, so the wordmark keeps the eye. A size
+   down on a phone, where the board draws them under a smaller wordmark. */
+.vd-brand__project,
 .vd-brand__tagline {
   color: var(--color-text-muted);
+}
+
+@media (max-width: 767.98px) {
+  .vd-brand__project {
+    font-size: var(--text-xs);
+  }
 }
 
 /* Sample data is a property of the whole screen, so the notice sits above

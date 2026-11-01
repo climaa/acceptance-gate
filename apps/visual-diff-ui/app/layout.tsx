@@ -4,8 +4,8 @@ import { ConsoleFrame, SampleBanner } from '@/components/ConsoleChrome';
 import { resolveDataDir } from '@/lib/data';
 import {
   APP_DESCRIPTION,
-  APP_NAME,
   SITE_OPEN_GRAPH,
+  SITE_TITLE,
   SITE_URL,
   TITLE_TEMPLATE,
 } from '@/lib/site';
@@ -26,7 +26,7 @@ import './globals.css';
  *  through `lib/share.ts`, which spreads the same `SITE_OPEN_GRAPH`. */
 export const metadata: Metadata = {
   title: {
-    default: APP_NAME,
+    default: SITE_TITLE,
     template: TITLE_TEMPLATE,
   },
   description: APP_DESCRIPTION,

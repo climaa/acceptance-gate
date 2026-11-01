@@ -10,6 +10,7 @@ import remarkGfm from 'remark-gfm';
 // FAQ, "extensionless imports in storybook/main.ts"); tsconfig.json allows it.
 import { analyticsHead } from './analytics-head.ts';
 import { linkPreviewHead } from './link-preview-head.ts';
+import { projectName } from '../../visual-diff-ui/scripts/project-name.mjs';
 
 /** The one app whose screens are storied: the console. Its `@/…` imports mean
  *  this directory, as `apps/visual-diff-ui/tsconfig.json`'s `paths` says. */
@@ -177,6 +178,14 @@ const config: StorybookConfig = {
 
     return {
       ...viteConfig,
+      // What the console's next.config.mjs inlines for its build, so a screen
+      // story's header names the project the way the deployed console does.
+      define: {
+        ...viteConfig.define,
+        'process.env.VISUAL_DIFF_PROJECT': JSON.stringify(
+          projectName(join(CONSOLE_DIR, '..', '..')),
+        ),
+      },
       resolve: {
         ...viteConfig.resolve,
         alias: [

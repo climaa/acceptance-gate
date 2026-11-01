@@ -9,7 +9,7 @@ import { repoRoot } from '@/lib/git';
 import { currentJob, readHistory } from '@/lib/jobs';
 import { isLocalHost } from '@/lib/local';
 import { pageMetadata } from '@/lib/share';
-import { APP_DESCRIPTION, APP_NAME } from '@/lib/site';
+import { APP_DESCRIPTION, SITE_TITLE } from '@/lib/site';
 
 /**
  * The console: what this instance has captured, compared and run.
@@ -26,7 +26,7 @@ import { APP_DESCRIPTION, APP_NAME } from '@/lib/site';
  *  console rather than as the bare host. */
 export const metadata: Metadata = pageMetadata({
   path: '/',
-  title: { absolute: APP_NAME },
+  title: { absolute: SITE_TITLE },
   description: APP_DESCRIPTION,
 });
 

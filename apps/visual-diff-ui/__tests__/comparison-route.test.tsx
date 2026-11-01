@@ -12,6 +12,7 @@ import {
   setPathname,
   setSearchParams,
 } from './stubs/next-navigation';
+import { SITE_TITLE } from '../lib/site';
 
 /**
  * The comparison's route: which variant and mode an address opens on, how the
@@ -144,7 +145,7 @@ describe('opening a comparison by its address', () => {
     setPathname(comparisonPath(REPORT, DARK.key));
     rerender(routeElement('report'));
 
-    expect(document.title).toBe('Prose — Default · desktop/dark · visual-diff console');
+    expect(document.title).toBe(`Prose — Default · desktop/dark · ${SITE_TITLE}`);
   });
 
   it("puts the report's title back on the way out", () => {
@@ -153,7 +154,7 @@ describe('opening a comparison by its address', () => {
     setPathname(reportPath(REPORT));
     rerender(routeElement('report'));
 
-    expect(document.title).toBe(`${REPORT} · visual-diff console`);
+    expect(document.title).toBe(`${REPORT} · ${SITE_TITLE}`);
   });
 
   it('draws nothing once the address is the report again', () => {

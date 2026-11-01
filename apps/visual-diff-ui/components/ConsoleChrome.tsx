@@ -1,7 +1,14 @@
 import type { ReactNode } from 'react';
 import NextLink from 'next/link';
 import { Badge, SiteHeader, Text } from '@gate/ui';
-import { APP_NAME, APP_TAGLINE, MANUAL_NAV, SAMPLE_LABEL, SAMPLE_NOTE } from '@/lib/site';
+import {
+  APP_NAME,
+  APP_TAGLINE,
+  MANUAL_NAV,
+  PROJECT_NAME,
+  SAMPLE_LABEL,
+  SAMPLE_NOTE,
+} from '@/lib/site';
 
 /**
  * What the root layout draws around every page, as presentational pieces.
@@ -13,18 +20,30 @@ import { APP_NAME, APP_TAGLINE, MANUAL_NAV, SAMPLE_LABEL, SAMPLE_NOTE } from '@/
  */
 
 /**
- * The brand line is the console's `h1`: the board draws the wordmark and its
- * tagline as the top row and gives the page no second title, so a heading below
- * it would be a title this design does not have. `/report/[id]` inherits it
+ * The brand line is the console's `h1`, after the name of the project it
+ * serves: the board draws the wordmark and its tagline as the top row and gives
+ * the page no second title, so a heading below it would be a title this design
+ * does not have. `/report/[id]` inherits it
  * until the issue that owns that page gives the report its own heading level.
  */
 export function Brand() {
   return (
     <span className="vd-brand">
-      {/* The display face's smallest heading role, at the page's one `h1`. */}
-      <Text variant="heading-3" as="h1">
-        {APP_NAME}
-      </Text>
+      {/* The project, then the console: a breadcrumb read left to right. The
+          project stays out of the `h1`, which names this page and not the
+          repository serving it, and the slash is drawn, not read. */}
+      <span className="vd-brand__wordmark">
+        <Text variant="code" as="span" className="vd-brand__project">
+          {PROJECT_NAME}
+        </Text>
+        <Text variant="code" as="span" className="vd-brand__project" aria-hidden="true">
+          /
+        </Text>
+        {/* The display face's smallest heading role, at the page's one `h1`. */}
+        <Text variant="heading-3" as="h1">
+          {APP_NAME}
+        </Text>
+      </span>
       {/* A caption, not the brand's display face it would otherwise inherit. */}
       <Text variant="caption" className="vd-brand__tagline">
         {APP_TAGLINE}

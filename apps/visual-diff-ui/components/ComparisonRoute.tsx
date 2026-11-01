@@ -20,7 +20,7 @@ import {
 } from '@/lib/comparison';
 import type { LedgerReport } from '@gate/visual-diff/ledger';
 import type { ReportSides } from '@/lib/report-view';
-import { APP_NAME } from '@/lib/site';
+import { SITE_TITLE } from '@/lib/site';
 import type { Variant } from '@/lib/summary';
 import { ComparisonModal } from './ComparisonModal';
 
@@ -100,13 +100,13 @@ export function ComparisonRoute({
   // to a route Next still holds, so it does not re-apply that route's
   // metadata — measured: without this, the tab named the last variant walked
   // to, over the report. The report's title is its id (app/report/[id]).
-  const title = variant ? `${comparisonTitle(variant)} · ${APP_NAME}` : null;
+  const title = variant ? `${comparisonTitle(variant)} · ${SITE_TITLE}` : null;
   useEffect(() => {
     if (title === null) return;
 
     document.title = title;
     return () => {
-      document.title = `${reportId} · ${APP_NAME}`;
+      document.title = `${reportId} · ${SITE_TITLE}`;
     };
   }, [title, reportId]);
 

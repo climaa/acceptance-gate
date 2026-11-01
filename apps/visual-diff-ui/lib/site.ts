@@ -9,6 +9,19 @@ import { tagOutbound } from '@gate/links';
 export const APP_NAME = 'visual-diff console';
 
 /**
+ * The repository this console belongs to, as its root `package.json` names it.
+ *
+ * Every child project ships this same console, so with two of them open the
+ * wordmark alone cannot say which is which. Inlined at build from the manifest
+ * (scripts/project-name.mjs), so a child's copy names the child without an
+ * edit. Empty only in a build that skipped the inlining, which the suite pins.
+ */
+export const PROJECT_NAME = process.env.VISUAL_DIFF_PROJECT ?? '';
+
+/** What the browser tab calls the console: what it is, then whose it is. */
+export const SITE_TITLE = `${APP_NAME} · ${PROJECT_NAME}`;
+
+/**
  * The deployed origin — `metadataBase`, so a comparison's `og:url` and card are
  * absolute. A link preview fetches both from wherever the link was pasted, so a
  * relative card is a card no unfurler can load.
@@ -31,7 +44,7 @@ export const APP_DESCRIPTION =
  * applies it by hand for the preview headline — one spelling, so a page's tab
  * and its link preview cannot drift apart.
  */
-export const TITLE_TEMPLATE = `%s · ${APP_NAME}`;
+export const TITLE_TEMPLATE = `%s · ${SITE_TITLE}`;
 
 /**
  * The Open Graph fields every page shares. Spread first by the layout and by

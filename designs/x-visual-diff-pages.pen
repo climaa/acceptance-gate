@@ -731,14 +731,44 @@
                               "alignItems": "center",
                               "children": [
                                 {
-                                  "type": "text",
-                                  "id": "vRjc0",
-                                  "name": "b",
-                                  "fill": "$text",
-                                  "content": "visual-diff console",
-                                  "fontFamily": "$font-display",
-                                  "fontSize": 18,
-                                  "fontWeight": "600"
+                                  "type": "frame",
+                                  "id": "qb1va",
+                                  "name": "wordmark",
+                                  "context": "project crumb: root package.json name",
+                                  "gap": 8,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "JYiVn",
+                                      "name": "project",
+                                      "fill": "$text-muted",
+                                      "content": "acceptance-gate",
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 14,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "H1C9Jo",
+                                      "name": "sep",
+                                      "fill": "$text-muted",
+                                      "content": "/",
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 14,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "vRjc0",
+                                      "name": "b",
+                                      "fill": "$text",
+                                      "content": "visual-diff console",
+                                      "fontFamily": "$font-display",
+                                      "fontSize": 18,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
                                 },
                                 {
                                   "type": "text",
@@ -3808,14 +3838,44 @@
                               "alignItems": "center",
                               "children": [
                                 {
-                                  "type": "text",
-                                  "id": "nJTvB",
-                                  "name": "b",
-                                  "fill": "$text",
-                                  "content": "visual-diff console",
-                                  "fontFamily": "$font-display",
-                                  "fontSize": 18,
-                                  "fontWeight": "600"
+                                  "type": "frame",
+                                  "id": "L10xT",
+                                  "name": "wordmark",
+                                  "context": "project crumb: root package.json name",
+                                  "gap": 8,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "kvSyg",
+                                      "name": "project",
+                                      "fill": "$text-muted",
+                                      "content": "acceptance-gate",
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 14,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "xGg3T",
+                                      "name": "sep",
+                                      "fill": "$text-muted",
+                                      "content": "/",
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 14,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "nJTvB",
+                                      "name": "b",
+                                      "fill": "$text",
+                                      "content": "visual-diff console",
+                                      "fontFamily": "$font-display",
+                                      "fontSize": 18,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
                                 },
                                 {
                                   "type": "text",
@@ -6878,14 +6938,52 @@
                           "alignItems": "center",
                           "children": [
                             {
-                              "type": "text",
-                              "id": "OO7Rr",
-                              "name": "b",
-                              "fill": "$text",
-                              "content": "visual-diff console",
-                              "fontFamily": "$font-display",
-                              "fontSize": 14,
-                              "fontWeight": "600"
+                              "type": "frame",
+                              "id": "BALaQ",
+                              "name": "wordmark",
+                              "context": "project crumb: wraps above the wordmark on a phone (shell.css .vd-brand__wordmark)",
+                              "layout": "vertical",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "C6SQHw",
+                                  "name": "crumb",
+                                  "gap": 8,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "U2oAxP",
+                                      "name": "project",
+                                      "fill": "$text-muted",
+                                      "content": "acceptance-gate",
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "aScf5",
+                                      "name": "sep",
+                                      "fill": "$text-muted",
+                                      "content": "/",
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "OO7Rr",
+                                  "name": "b",
+                                  "fill": "$text",
+                                  "content": "visual-diff console",
+                                  "fontFamily": "$font-display",
+                                  "fontSize": 14,
+                                  "fontWeight": "600"
+                                }
+                              ]
                             },
                             {
                               "type": "frame",
@@ -7330,14 +7428,52 @@
                           "alignItems": "center",
                           "children": [
                             {
-                              "type": "text",
-                              "id": "vSp0n",
-                              "name": "b",
-                              "fill": "$text",
-                              "content": "visual-diff console",
-                              "fontFamily": "$font-display",
-                              "fontSize": 14,
-                              "fontWeight": "600"
+                              "type": "frame",
+                              "id": "Vefes",
+                              "name": "wordmark",
+                              "context": "project crumb: wraps above the wordmark on a phone (shell.css .vd-brand__wordmark)",
+                              "layout": "vertical",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "Bny6v",
+                                  "name": "crumb",
+                                  "gap": 8,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "fxYiD",
+                                      "name": "project",
+                                      "fill": "$text-muted",
+                                      "content": "acceptance-gate",
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "pB1le",
+                                      "name": "sep",
+                                      "fill": "$text-muted",
+                                      "content": "/",
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "vSp0n",
+                                  "name": "b",
+                                  "fill": "$text",
+                                  "content": "visual-diff console",
+                                  "fontFamily": "$font-display",
+                                  "fontSize": 14,
+                                  "fontWeight": "600"
+                                }
+                              ]
                             },
                             {
                               "type": "frame",
