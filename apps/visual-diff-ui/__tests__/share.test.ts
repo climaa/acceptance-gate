@@ -6,7 +6,12 @@ import { metadata as consoleMetadata } from '../app/page';
 import { generateMetadata as reportMetadata } from '../app/report/[id]/page';
 import { generateMetadata as setMetadata } from '../app/set/[label]/page';
 import { pageMetadata, SITE_SHARE_IMAGE } from '../lib/share';
-import { APP_DESCRIPTION, APP_NAME, NOT_FOUND_TITLE, SITE_OPEN_GRAPH } from '../lib/site';
+import {
+  APP_DESCRIPTION,
+  NOT_FOUND_TITLE,
+  SITE_OPEN_GRAPH,
+  SITE_TITLE,
+} from '../lib/site';
 
 /**
  * What a pasted link to the console previews as: the tags a crawler reads off
@@ -54,7 +59,7 @@ describe('pageMetadata', () => {
   it('previews under the document title the layout template produces', () => {
     const metadata = pageMetadata(PAGE);
 
-    expect(metadata.openGraph?.title).toBe(`Somewhere · ${APP_NAME}`);
+    expect(metadata.openGraph?.title).toBe(`Somewhere · ${SITE_TITLE}`);
   });
 
   it('previews an absolute title as itself', () => {
@@ -91,7 +96,7 @@ describe('each page names its own preview', () => {
   it('previews the console under its own title and description', () => {
     expect(consoleMetadata.alternates?.canonical).toBe('/');
     expect(consoleMetadata.openGraph?.url).toBe('/');
-    expect(consoleMetadata.openGraph?.title).toBe(APP_NAME);
+    expect(consoleMetadata.openGraph?.title).toBe(SITE_TITLE);
     expect(consoleMetadata.description).toBe(APP_DESCRIPTION);
   });
 

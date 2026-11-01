@@ -7,7 +7,14 @@ import { renderToReadableStream } from 'react-dom/server';
 // `**/*.ts` include means tsc typechecks this file.
 import { afterEach, describe, expect, it } from 'vitest';
 import RootLayout from '../app/layout';
-import { APP_NAME, APP_TAGLINE, SAMPLE_LABEL } from '../lib/site';
+import rootManifest from '../../../package.json';
+import {
+  APP_NAME,
+  APP_TAGLINE,
+  PROJECT_NAME,
+  SAMPLE_LABEL,
+  SITE_TITLE,
+} from '../lib/site';
 import { THEME_SCRIPT } from '../lib/theme';
 
 /**
@@ -70,7 +77,27 @@ describe('the app shell', () => {
   it('links the brand home', async () => {
     const links = linksIn(await shell());
 
-    expect(links).toContainEqual({ href: '/', text: `${APP_NAME}${APP_TAGLINE}` });
+    expect(links).toContainEqual({
+      href: '/',
+      text: `${PROJECT_NAME}/${APP_NAME}${APP_TAGLINE}`,
+    });
+  });
+
+  // Every child project ships this console, so the header says whose it is.
+  // Read from the root manifest, so a child's copy names the child unedited.
+  it("names the repository's project before the wordmark", () => {
+    expect(PROJECT_NAME).toBe(rootManifest.name);
+  });
+
+  it('keeps the project out of the heading', async () => {
+    const html = await shell();
+
+    expect(html).toMatch(new RegExp(`>${PROJECT_NAME}</span>`));
+    expect(html).not.toMatch(new RegExp(`<h1[^>]*>[^<]*${PROJECT_NAME}`));
+  });
+
+  it('titles the tab with the console, then its project', () => {
+    expect(SITE_TITLE).toBe(`${APP_NAME} · ${PROJECT_NAME}`);
   });
 
   // The board draws the wordmark row as the console's title, so it is the

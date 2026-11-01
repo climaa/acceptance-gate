@@ -18,7 +18,7 @@ import {
   storybookLink,
 } from '@/lib/report-view';
 import { cellName, setHref, shotTitle } from '@/lib/shots';
-import { APP_NAME } from '@/lib/site';
+import { SITE_TITLE } from '@/lib/site';
 import { type DesignShot, DesignStage, type Split } from './DesignStage';
 import { OverlayStage } from './OverlayStage';
 import { ViewControls } from './ViewControls';
@@ -220,9 +220,9 @@ function useModalTitle(modal: boolean, title: string, label: string) {
   useEffect(() => {
     if (!modal) return;
 
-    document.title = `${title} · ${APP_NAME}`;
+    document.title = `${title} · ${SITE_TITLE}`;
     return () => {
-      document.title = `${label} · ${APP_NAME}`;
+      document.title = `${label} · ${SITE_TITLE}`;
     };
   }, [modal, title, label]);
 }

@@ -1,5 +1,6 @@
 import path from 'node:path';
 import { defineConfig } from 'vitest/config';
+import { projectName } from './scripts/project-name.mjs';
 
 // The data contracts for the console: the committed fixture parses against the
 // schemas, the data directory resolves the way sample mode depends on, and the
@@ -39,6 +40,10 @@ export default defineConfig({
     },
   },
   test: {
+    // What next.config.mjs inlines for the build: see scripts/project-name.mjs.
+    env: {
+      VISUAL_DIFF_PROJECT: projectName(path.resolve(import.meta.dirname, '..', '..')),
+    },
     // `.tsx` as well as `.ts`: the console's components render in jsdom, which
     // the one suite that needs it declares for itself with a
     // `@vitest-environment` docblock — every other suite here is real

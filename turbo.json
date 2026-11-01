@@ -55,7 +55,8 @@
         "$TURBO_DEFAULT$",
         ".env*",
         "$TURBO_ROOT$/packages/visual-diff/__baselines__/**",
-        "$TURBO_ROOT$/pnpm-workspace.yaml"
+        "$TURBO_ROOT$/pnpm-workspace.yaml",
+        "$TURBO_ROOT$/package.json"
       ],
       "outputs": [".next/**", "!.next/cache/**"]
     },
@@ -72,7 +73,9 @@
         "$TURBO_DEFAULT$",
         ".env*",
         "$TURBO_ROOT$/designs/exports/**",
-        "$TURBO_ROOT$/apps/visual-diff-ui/{app,components,lib,hooks,fixtures}/**"
+        "$TURBO_ROOT$/apps/visual-diff-ui/{app,components,lib,hooks,fixtures}/**",
+        "$TURBO_ROOT$/apps/visual-diff-ui/scripts/project-name.mjs",
+        "$TURBO_ROOT$/package.json"
       ],
       "outputs": ["storybook-static/**"]
     },
@@ -121,7 +124,8 @@
         "$TURBO_ROOT$/.github/workflows/pr.yml",
         "$TURBO_ROOT$/.github/workflows/changelog-check.yml",
         "$TURBO_ROOT$/packages/ui/src/atoms/IconButton/IconButton.stories.tsx",
-        "$TURBO_ROOT$/designs/exports/**"
+        "$TURBO_ROOT$/designs/exports/**",
+        "$TURBO_ROOT$/package.json"
       ]
     }
   }
