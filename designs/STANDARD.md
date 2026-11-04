@@ -60,6 +60,17 @@ file and its exports are one name. The boards, in order:
 - **Components a board instances live in that board's file.** A board that draws instances
   of reusable components (`05-pages`, `06-flows-decisions` and `x-visual-diff-pages` here)
   keeps its own `Components` frame beside the board. It is not exported.
+- **Boards that share components import them.** When several page boards instance the
+  same components, one copy lives in `designs/<name>.lib.pen` and each board imports it:
+  `imports: {comp: "./<name>.lib.pen"}`. A change to a component is then one edit, not one
+  per file. A library draws no board and has no export, and the `boards` check holds its
+  variables to `00-foundations.pen`'s like any board's. A board reaches into a library in
+  three forms, and a missing one fails silently rather than loudly: `ref` is
+  `comp:<id>`, each segment of a `descendants` key is prefixed (`comp:<id>/comp:<id>`),
+  and a themed frame names both axes, `theme: {mode: "dark", "comp:mode": "dark"}`.
+  Without the prefix a board drops every override; without the second axis a library's
+  text keeps its light colour on a dark frame. The library's `Components` frame sets no
+  theme of its own.
 
 ## Tiles
 

@@ -253,6 +253,18 @@ describe('variableProblems', () => {
 });
 
 describe('readBoard', () => {
+  it('asks no board of a component library, and still fingerprints its variables', () => {
+    // Arrange
+    const library = { children: [{ name: 'Components' }], variables: { bg: {} } };
+
+    // Act
+    const read = readBoard(library, 'pages.lib');
+
+    // Assert
+    expect(read.problems).toEqual([]);
+    expect(read.fingerprint).toEqual(expect.any(String));
+  });
+
   const VARIABLES = { bg: { type: 'color', value: '#fff' } };
   const document = (children: unknown[], variables: unknown = VARIABLES) => ({
     version: '1',
