@@ -254,7 +254,7 @@ export function readBoard(document, stem) {
   );
   const stems = frames.map((node) => BOARD_FRAME.exec(node.name)[1]);
   const problems =
-    stems.length === 1 && stems[0] === stem
+    isLibrary(stem) || (stems.length === 1 && stems[0] === stem)
       ? []
       : [
           `designs/${stem}.pen must hold one board, named "${stem} — <title>"; it holds ${
@@ -631,6 +631,10 @@ export function filesIn(root, dir) {
 const isPen = (name) => name.endsWith('.pen');
 const stemOf = (name) => name.slice(0, -'.pen'.length);
 
+/** A `<name>.lib.pen` is a component library the boards import: it draws no board and
+ *  has no export, but its variables are held to the source like any board's. */
+const isLibrary = (stem) => stem.endsWith('.lib');
+
 /**
  * Every tracked board file, parsed, by stem; one sentence for each tracked board
  * that is deleted or is not JSON, keyed by its file name.
@@ -658,7 +662,10 @@ function loadBoards(root) {
 
   return {
     stems: Object.keys(documents),
-    listed: pens.tracked.filter(isPen).map(stemOf),
+    listed: pens.tracked
+      .filter(isPen)
+      .map(stemOf)
+      .filter((stem) => !isLibrary(stem)),
     documents,
     unreadable,
     untracked: pens.untracked.filter(isPen),
