@@ -7,67 +7,70 @@ transcribed from the GitHub Releases that existed when this file was created (20
 
 ## Unreleased
 
-- The visual-diff console splits the `screens` tier by app, promoted from trucutru#806 so every project inherits it from here. The set page and the report group shots with one function, `lib/sections.ts`: the design system's tiers, then one section per app in the policy's new `APPS`, labelled as Storybook titles the app's screens (`Screens / Visual-diff-ui`), then `Screens / Other` for a screen whose app the policy does not name, which is shown, never dropped. `appOf(storyId)` reads a screen's app off its story id. A screen opens on `05-screens-<app>`, then `05-pages-<app>`, then `05-screens`, which a project with one app keeps (`designs/STANDARD.md`, "One app's screens"). The set page's jump mark is rendered from the sections it holds instead of five hand-written `:target` rules. The console sets its own 24px gutter (trucutru#807), which matches the container here and changes nothing. A new Storybook test holds each screen's title to the app whose directory holds it. No screenshot moves.
+## v1.8.0 — the console's own pages join the corpus, each one drawn on a board
 
-- The visual-diff console says which project it belongs to. The header reads `acceptance-gate / visual-diff console`, with the project muted and in mono, kept out of the `h1`; on a phone it wraps above the wordmark. Browser tabs read `<page> · visual-diff console · acceptance-gate`. The name is the root `package.json`'s, inlined at build as `VISUAL_DIFF_PROJECT` by `next.config.mjs`, Storybook and the Vitest config, so a child project's copy names the child without an edit. The board, the 18 console screen baselines and their twelve tiles on `05-screens-1`…`-4` are redrawn with it.
+_Released 2026-11-05._
 
-- The differ can capture a child's React Native stories (R24, R37). `tierOf()` places a story under `packages/ui-native/src/<tier>/` as it does one under `packages/ui/src/<tier>/`. `PATHS.storybookStatic` becomes `PATHS.storybookStatics`, a list of Storybook builds: Storybook refs never merge into a static index, so each build's `index.json` is read and each build is served on its own for its own stories. A build that is missing is a broken run, and a story id two builds both list is refused. The first build must still list stories; a later build that lists none yet, such as a native package before its first story, reads as none, and `check` warns about it in the report. Here the list is `apps/storybook` alone, so this repository's capture is unchanged. A new tag, `visual-diff:mobile-only`, captures a story at the mobile viewport alone, whatever its tier, for a component that only exists on a phone; together with `visual-diff:all-viewports` it is refused. `readIndex(json, root)` carries the build on each entry and planned variant, and the commands take the list as an injected dependency.
+Thirty-nine PRs since [v1.7.0](https://github.com/climaa/acceptance-gate/releases/tag/v1.7.0) (#604 → #663), telling one story: **the console's own pages join the corpus, each one drawn on a board.** v1.7.0 held every design-system story to its tile. This cycle does the same for whole pages, and tightens the gate that checks them.
 
-- Sessions get a UI/UX design reference: the third-party `ui-ux-pro-max` skill is vendored in `.claude/skills/` (styles, palettes, font pairings, UX and accessibility guidelines, stack notes, searched locally by a standard-library Python script). It is pinned to upstream `28b3b8d` (MIT), and `PROVENANCE.md` records the two changes made to it.
+### What earns the minor
 
-- When a Sandcastle iteration merges several PRs that each add a `CHANGELOG.md` line, the host-side PR queue no longer leaves every PR after the first for a human. It merges `main` into the DIRTY branch in a scratch worktree, keeps both entries (the branch's on top, as the newest), and pushes the merge from the host, so `pre-push` gates it. It never pushes where that hook would not run. It resolves only `CHANGELOG.md`, and only hunks where both sides added lines and neither edited one. A conflict in any other file, an edited line, or a merged lockfile that no longer installs frozen still goes to a human. The merger agent still never resolves a conflict.
+| Layer                                                                                                                                                                                                                              | PRs                          |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
+| A fifth capture tier, `screens`: the console's dashboard, report, comparison modal, set viewer and shot view are storied, baselined and drawn on `05-screens`, which pages by height, and the set and report split the tier by app | #626, #627, #628, #656       |
+| The differ serves the children: a locale axis for listed stories, stories from more than one Storybook build, `ui-native` tiers and a mobile-only tag                                                                              | #621, #654                   |
+| Boards hold more: raw colours, sizes once a project declares its scale, tiles drawn ahead of their stories, a rules-only run with no Storybook build, and page boards that share components through a `.lib.pen`                   | #607, #608, #638, #662       |
+| The gate refuses more: a Node off `.nvmrc`, a Vitest skip, todo or only in a unit test, and a Sandcastle run says whether `main` has a receipt                                                                                     | #636, #637, #639             |
+| Sandcastle's queue resolves a conflict that only adds `CHANGELOG.md` lines, the planner sees every open issue, and the empty-plan rescue publishes its branches                                                                    | #611, #619, #640             |
+| The pixel perfect session starts from the console's shot view, and reads a tile's seam and top edge correctly; the third-party `ui-ux-pro-max` design reference is vendored                                                        | #629, #630, #634, #644       |
+| The console: the overlay opens on the difference blend, ⌥ ← → walks the shot view, a desktop shot fits its pane, the header names its project, and a deployed console draws the canonical baselines card                           | #606, #613, #614, #652, #655 |
+| `packages/ui` lands on its tiles: a `Text` atom with typography roles, prose tables, cards, dialogs and post templates, and the four stories with no box are captured in an absence frame                                          | #623, #635, #641, #642, #653 |
+| The blog: `/about` points at the skills record on carloslima.dev                                                                                                                                                                   | #663                         |
+| Docs: page boards named for their app, torn joins the child projects, and the pen CLI's limits                                                                                                                                     | #604, #609, #622             |
+| Dependencies: three grouped bumps, Node's floor at 22.19 for undici 8, and Storybook 10.6.2 with dompurify 3.4.17, which close the open alerts                                                                                     | #605, #624, #625, #631, #633 |
 
-- `node scripts/board-scale-integrity.mjs --rules-only` applies the colour, size and variable rules to every board file with no Storybook build and no export checks, and prints one line per board with its counts, for example `ok   05-screens-3.pen   colour 0 · size 0 · exempt 10 · chrome 0 · variables 37`. A failure names the board to open, and a pass shows how many exemptions each board leans on. Both modes now read only the board files, PNGs and tile maps git tracks, so what is checked is what a clean checkout holds. The default mode refuses an untracked board or export that is not gitignored, because turbo's cache hashes it either way and would otherwise replay a pass after `git add`; a scratch board belongs in `.gitignore`. `--rules-only` lists any untracked board it skipped. A tracked board deleted without `git rm`, or one that is not JSON, gets its own line in both modes instead of vanishing or crashing.
+### Eleven manifests
 
-- `health:check` fails on a Vitest `describe`, `it`, `test`, `bench` or `suite` call with `.skip`, `.todo`, `.only`, `.skipIf` or `.runIf` (chained forms such as `it.only.each` included) at the start of a line in any unit test the gate runs, naming the file and line. A skipped test is counted and never run, and a `.only` narrows the run, while the suite stays green either way. A `// reason: <text>` comment on the same line or alone on the line above is the one escape: the call is still printed, but it no longer fails the check. A scanned directory with no test file fails it with exit 2, and so does a workspace with a Vitest config whose tests left the scanned directory, so the check cannot go blind.
+The same eleven as v1.7.0 move to 1.8.0 together. Every internal dependency is `workspace:*`, and `pnpm install --frozen-lockfile` resolves with `pnpm-lock.yaml` untouched.
 
-- A `pnpm sandcastle` run that moved `origin/main` now ends by saying whether `main`'s tree has a gate receipt. It prints `main verified <sha>`, or `main has no receipt <sha>` with the commands that give it one. Each PR is verified on its head, but the commit that lands on `main` has a tree of its own once two branches crossed, and nothing used to report that gap. The run fetches `main` and `refs/notes/*` first, and it only reports: it never runs the gate. When this host's receipts have diverged from origin's, or `--verify` broke, it says the answer is unknown rather than "no receipt", with the commands that join the receipts in the first case.
+### The corpus
 
-- The gate refuses to run on a Node whose major.minor differs from `.nvmrc`. It exits 2 before any check, naming both versions and `nvm use`/`fnm use`, so no receipt is written for a runtime the repository does not declare. `pnpm install` now also fails, instead of warning, when a dependency's `engines` excludes the running Node (`engineStrict: true` in `pnpm-workspace.yaml`); the root `engines` floor rises to 22.22.2, the lowest Node jsdom 30 accepts, so the two never disagree.
+34 baselines joined, 204 to 238. The corpus is 7,646,611 bytes against a budget raised from 5 to 8 MB, about 0.35 MB left.
 
-- build(deps): Storybook 10.5.7 → 10.6.2 and dompurify 3.4.16 → 3.4.17 (through mermaid), which close the open Dependabot alerts: 4 critical, 4 high, 1 low. The `@storybook/nextjs-vite` patch is carried forward to 10.6.2 unchanged, because 10.6.2 still does not set `parentRenderTree` on the router context.
+### The index, measured rather than adjusted
 
-- The pixel perfect session no longer misreads a tile drawn beside a seam on its board. The tile map rounds each frame to whole export pixels, so a dark tile's first column blended into the light half next to it and read as ink on every row. The crop is now sampled one export pixel inside each edge. 24 dark tiles that read as a solid block now match their light twins, and no light reading changed.
+`PROJECT_INDEX.md` was stamped 2026-10-21. Every count was measured again with the turbo cache forced off (0 of 8 test tasks cached):
 
-- A pixel perfect session starts from the console's shot view, which is its only input:
-  `/pixel-perfect-session <URL>` reads that screenshot against its tile by pixel rows. It
-  derives the story, its source, the Storybook addresses, the baseline and the board from the
-  URL, then fixes the component on-token and stops before accepting. It covers the four
-  `packages/ui` tiers and the console's `screens`. The skill lives in
-  `.claude/skills/pixel-perfect-session/`, and its page is `Docs/Skills/Pixel Perfect Session`.
+| Claim                                        | Corrected to                         |
+| -------------------------------------------- | ------------------------------------ |
+| Version 1.7.0                                | **1.8.0**                            |
+| Orchestrator suite 43 files / 706 tests      | **49 / 817**                         |
+| `packages/ui` 38 / 634                       | **39 / 649**                         |
+| `apps/blog` 28 / 576 (573 passed, 3 skipped) | 28 / **578** (575 passed, 3 skipped) |
+| `apps/storybook` 7 / 235                     | **8 / 264**                          |
+| `apps/visual-diff-ui` 76 / 1312              | **82 / 1399**                        |
+| `packages/visual-diff` 11 / 458              | 11 / **505**                         |
+| `apps/storybook` 30 stories                  | **35**                               |
 
-- Every console screen now has its tiles: the report, the comparison modal, the set viewer and
-  the shot view are drawn on `05-screens` from the hand-drawn pages on `x-visual-diff-pages`,
-  each at 1:1 with its baseline and its dark tile a theme of the light one. A report tile is 7841
-  px tall on mobile, so `05-screens` is the first board this repository pages:
-  `05-screens-1`–`05-screens-4`, each exported at 1× or better, and the console's board picker
-  lists the four pages. `designs/undrawn-stories.json` is empty again, and gone.
+Unchanged, and measured: `apps/manual` 10 / 118, `packages/logger` 3 / 32, `packages/links` 1 / 10, 87 acceptance scenarios (162 tests), 2 local scenarios.
 
-- Every console page drawn on `x-visual-diff-pages` now has a screen story: the report (one
-  story per bucket it holds, `?bucket=changed` and `?bucket=removed`), the comparison modal over
-  it, the set viewer and the shot view over it, all on the sample data and held to `fixtures/` by
-  a test. The modals are captured one window tall, as a visitor sees them. The screens are titled
-  `Screens/Visual-diff-ui/…`, after the app's directory as the children title theirs, so the
-  dashboard's four baselines are renamed with no pixel changed. The corpus is 230 baselines at
-  7.6 MB, and its budget rises from 5 to 8 MB. Their tiles follow in their own pull request:
-  `designs/undrawn-stories.json` lists a story written before it is drawn, the reverse of
-  `drawn-ahead-stories.json`, and only shrinks.
+### Known gaps
 
-- The visual-diff capture matrix has a fifth tier, `screens`: whole pages of the console,
-  storied under `apps/visual-diff-ui/app/_screens/` and baselined at both viewports in both
-  themes. The set viewer shows them behind a `screens` button after `templates`, and the
-  `05-screens` board draws their tiles. The first is the dashboard as a deployment serving the
-  sample data draws it, four baselines that keep the corpus at 3.5 MB, inside its 5 MB budget.
-  Storybook 10.5's Next.js framework mounts an App Router context that Next 16.4's
-  `useRouter()` cannot read, so `@storybook/nextjs-vite` carries a one-line `pnpm patch` until
-  upstream catches up.
+**Publishing does not refresh `/changelog` by itself.** `changelog-deploy.yml` is disabled with the rest, so each release session rebuilds the blog by hand or accepts a stale page, as `RELEASING.md` describes.
 
-- The visual-diff capture matrix has a locale axis for listed stories only. A story tagged
-  `visual-diff:locales` is captured once per entry in `LOCALES`, and its variant key becomes
-  `tier__viewport__theme__locale__id`; every other key keeps its four parts byte for byte, so no
-  baseline is renamed. A third sanity gate fails a run whose listed stories come back identical
-  across locales. This repository ships English only, so it lists no story: the axis is here for
-  the children that translate their UI.
+**The gate is still a hook, not a check.** A push with `--no-verify`, or from a fresh worktree before `pnpm install` has installed the hook, reaches `main` ungated.
+
+**The README still tells the Actions story.** Its badge, pipeline diagram and loop section describe `pr.yml`, as v1.7.0 recorded.
+
+**The corpus budget is tight again.** About 0.35 MB is left after this cycle's raise.
+
+**The `/about` board lags the page in two places.** It keeps "Blog" as the active nav item, and the page's Portfolio line says "two projects".
+
+**The ledger still reads spacing only.** Colour, type and radius are not measured.
+
+**Upstream and unchanged:** [#68](https://github.com/climaa/acceptance-gate/issues/68) ESLint 10 is unreachable, and [#47](https://github.com/climaa/acceptance-gate/issues/47) TypeScript 7 is blocked.
+
+**Full changelog:** https://github.com/climaa/acceptance-gate/compare/v1.7.0...v1.8.0
 
 ## v1.7.0 — every story has its tile on the board, and the gate holds them to each other
 
