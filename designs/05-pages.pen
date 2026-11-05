@@ -3645,6 +3645,1160 @@
         },
         {
           "type": "frame",
+          "id": "tVRuk",
+          "name": "Section About — /about",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 14,
+          "children": [
+            {
+              "type": "text",
+              "id": "gvflR",
+              "name": "st",
+              "fill": "$ink",
+              "content": "About — /about",
+              "fontFamily": "$font-display",
+              "fontSize": 24,
+              "fontWeight": "600"
+            },
+            {
+              "type": "frame",
+              "id": "tkrgP",
+              "name": "row",
+              "gap": 36,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "ywSdS",
+                  "name": "Variant desktop · light",
+                  "layout": "vertical",
+                  "gap": 8,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "V2iVX",
+                      "name": "vlabel",
+                      "fill": "$ink-muted",
+                      "content": "desktop · light",
+                      "fontFamily": "$font-mono",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "YPA51",
+                      "name": "AboutDesktopLight",
+                      "theme": {
+                        "mode": "light"
+                      },
+                      "clip": true,
+                      "width": 1280,
+                      "fill": "$bg",
+                      "cornerRadius": 4,
+                      "stroke": "$border-strong",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "id": "vz1zY",
+                          "type": "ref",
+                          "ref": "zlU7C",
+                          "name": "hdr"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "pPV7S",
+                          "name": "article",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 18,
+                          "padding": [
+                            56,
+                            280
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "dUt5F",
+                              "name": "h1",
+                              "fill": "$text",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "About",
+                              "lineHeight": 1.2,
+                              "fontFamily": "$font-display",
+                              "fontSize": 30,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "text",
+                              "id": "Bhv6r",
+                              "name": "lead",
+                              "fill": "$text-muted",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "If you got here from a CV or a job post, the 30-second version is at carloslima.dev. This page is the long one.",
+                              "lineHeight": 1.7,
+                              "fontFamily": "$font-body",
+                              "fontSize": 16,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "M6yZE",
+                              "name": "h2",
+                              "fill": "$text",
+                              "content": "Contact",
+                              "lineHeight": 1.25,
+                              "fontFamily": "$font-display",
+                              "fontSize": 24,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "ArVP3",
+                              "name": "social",
+                              "gap": 6,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "lRSxH",
+                                  "name": "github",
+                                  "fill": "$accent",
+                                  "content": "GitHub",
+                                  "lineHeight": 1.7,
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 16,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "NoQs9",
+                                  "name": "dot",
+                                  "fill": "$text",
+                                  "content": "·",
+                                  "lineHeight": 1.7,
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 16,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "S7lmTO",
+                                  "name": "linkedin",
+                                  "fill": "$accent",
+                                  "content": "LinkedIn",
+                                  "lineHeight": 1.7,
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 16,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "TJU92",
+                              "name": "Portfolio line",
+                              "width": "fill_container",
+                              "gap": 6,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "tS3aJ",
+                                  "name": "lead-in",
+                                  "gap": 6,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "L5qRs",
+                                      "name": "label",
+                                      "fill": "$text",
+                                      "content": "Portfolio →",
+                                      "lineHeight": 1.7,
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 16,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "B4uDj",
+                                      "name": "link",
+                                      "fill": "$accent",
+                                      "content": "carloslima.dev",
+                                      "lineHeight": 1.7,
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 16,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "h7f2S",
+                                  "name": "tail",
+                                  "fill": "$text",
+                                  "content": "— two projects, the proof for each, and the CV.",
+                                  "lineHeight": 1.7,
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 16,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "rEZ1i",
+                              "name": "Skills line",
+                              "width": "fill_container",
+                              "gap": 6,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "YdvX3",
+                                  "name": "lead-in",
+                                  "gap": 6,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "e4Hxh6",
+                                      "name": "label",
+                                      "fill": "$text",
+                                      "content": "Skills →",
+                                      "lineHeight": 1.7,
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 16,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "o0gHla",
+                                      "name": "link",
+                                      "fill": "$accent",
+                                      "content": "carloslima.dev/skills",
+                                      "lineHeight": 1.7,
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 16,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "NmvOL",
+                                  "name": "tail",
+                                  "fill": "$text",
+                                  "content": "— every skill, with the years I’ve used it.",
+                                  "lineHeight": 1.7,
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 16,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "id": "Y1mTeN",
+                          "type": "ref",
+                          "ref": "R9C0Ay",
+                          "name": "ftr"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "k5VUfq",
+                  "name": "Variant desktop · dark",
+                  "layout": "vertical",
+                  "gap": 8,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "QMKIE",
+                      "name": "vlabel",
+                      "fill": "$ink-muted",
+                      "content": "desktop · dark",
+                      "fontFamily": "$font-mono",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "U0aAGL",
+                      "name": "AboutDesktopDark",
+                      "theme": {
+                        "mode": "dark"
+                      },
+                      "clip": true,
+                      "width": 1280,
+                      "fill": "$bg",
+                      "cornerRadius": 4,
+                      "stroke": "$border-strong",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "id": "FcniY",
+                          "type": "ref",
+                          "ref": "zlU7C",
+                          "name": "hdr"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "efDnl",
+                          "name": "article",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 18,
+                          "padding": [
+                            56,
+                            280
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "msGu3",
+                              "name": "h1",
+                              "fill": "$text",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "About",
+                              "lineHeight": 1.2,
+                              "fontFamily": "$font-display",
+                              "fontSize": 30,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "text",
+                              "id": "MVnPq",
+                              "name": "lead",
+                              "fill": "$text-muted",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "If you got here from a CV or a job post, the 30-second version is at carloslima.dev. This page is the long one.",
+                              "lineHeight": 1.7,
+                              "fontFamily": "$font-body",
+                              "fontSize": 16,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "KbOQW",
+                              "name": "h2",
+                              "fill": "$text",
+                              "content": "Contact",
+                              "lineHeight": 1.25,
+                              "fontFamily": "$font-display",
+                              "fontSize": 24,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "hcCTk",
+                              "name": "social",
+                              "gap": 6,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "ESmVo",
+                                  "name": "github",
+                                  "fill": "$accent",
+                                  "content": "GitHub",
+                                  "lineHeight": 1.7,
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 16,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "ZajSA",
+                                  "name": "dot",
+                                  "fill": "$text",
+                                  "content": "·",
+                                  "lineHeight": 1.7,
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 16,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "zA5HW",
+                                  "name": "linkedin",
+                                  "fill": "$accent",
+                                  "content": "LinkedIn",
+                                  "lineHeight": 1.7,
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 16,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "X01Ju",
+                              "name": "Portfolio line",
+                              "width": "fill_container",
+                              "gap": 6,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "Mr943",
+                                  "name": "lead-in",
+                                  "gap": 6,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "KMfLy",
+                                      "name": "label",
+                                      "fill": "$text",
+                                      "content": "Portfolio →",
+                                      "lineHeight": 1.7,
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 16,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "yAh8X",
+                                      "name": "link",
+                                      "fill": "$accent",
+                                      "content": "carloslima.dev",
+                                      "lineHeight": 1.7,
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 16,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "t3upK",
+                                  "name": "tail",
+                                  "fill": "$text",
+                                  "content": "— two projects, the proof for each, and the CV.",
+                                  "lineHeight": 1.7,
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 16,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "NNCd0",
+                              "name": "Skills line",
+                              "width": "fill_container",
+                              "gap": 6,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "JC9gs",
+                                  "name": "lead-in",
+                                  "gap": 6,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "L2dszL",
+                                      "name": "label",
+                                      "fill": "$text",
+                                      "content": "Skills →",
+                                      "lineHeight": 1.7,
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 16,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "C0g8X",
+                                      "name": "link",
+                                      "fill": "$accent",
+                                      "content": "carloslima.dev/skills",
+                                      "lineHeight": 1.7,
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 16,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "hj3VU",
+                                  "name": "tail",
+                                  "fill": "$text",
+                                  "content": "— every skill, with the years I’ve used it.",
+                                  "lineHeight": 1.7,
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 16,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "id": "Nv7I3",
+                          "type": "ref",
+                          "ref": "R9C0Ay",
+                          "name": "ftr"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "g3pits",
+                  "name": "Variant mobile · light",
+                  "layout": "vertical",
+                  "gap": 8,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "tnHi7",
+                      "name": "vlabel",
+                      "fill": "$ink-muted",
+                      "content": "mobile · light",
+                      "fontFamily": "$font-mono",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "t5L97M",
+                      "name": "page",
+                      "theme": {
+                        "mode": "light"
+                      },
+                      "clip": true,
+                      "width": 390,
+                      "fill": "$bg",
+                      "cornerRadius": 4,
+                      "stroke": "$border-strong",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "kyaIZ",
+                          "name": "mheader",
+                          "width": "fill_container",
+                          "stroke": "$border",
+                          "strokeWidth": {
+                            "bottom": 1
+                          },
+                          "padding": [
+                            14,
+                            20
+                          ],
+                          "justifyContent": "space_between",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "fmQiM",
+                              "name": "brand",
+                              "fill": "$text",
+                              "content": "Carles Lima",
+                              "fontFamily": "$font-display",
+                              "fontSize": 16,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "JyWiZ",
+                              "name": "navgroup",
+                              "gap": 14,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "id": "M6nof",
+                                  "type": "ref",
+                                  "ref": "MrZbQ",
+                                  "name": "NavBlog",
+                                  "descendants": {
+                                    "LwKtr": {
+                                      "content": "Blog",
+                                      "fontSize": 13
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "t9qioq",
+                                  "type": "ref",
+                                  "ref": "MrZbQ",
+                                  "name": "NavAbout",
+                                  "descendants": {
+                                    "LwKtr": {
+                                      "content": "About",
+                                      "fill": "$text-muted",
+                                      "fontWeight": "normal",
+                                      "fontSize": 13
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "GLTyi",
+                                  "type": "ref",
+                                  "ref": "QywBG",
+                                  "name": "tg"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "O8XgU",
+                          "name": "article",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 12,
+                          "padding": 20,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "eY7uJ",
+                              "name": "h1",
+                              "fill": "$text",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "About",
+                              "lineHeight": 1.2,
+                              "fontFamily": "$font-display",
+                              "fontSize": 30,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "text",
+                              "id": "wgRJn",
+                              "name": "lead",
+                              "fill": "$text-muted",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "If you got here from a CV or a job post, the 30-second version is at carloslima.dev. This page is the long one.",
+                              "lineHeight": 1.65,
+                              "fontFamily": "$font-body",
+                              "fontSize": 15,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "gqrvM",
+                              "name": "h2",
+                              "fill": "$text",
+                              "content": "Contact",
+                              "lineHeight": 1.25,
+                              "fontFamily": "$font-display",
+                              "fontSize": 24,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "bJB0s",
+                              "name": "social",
+                              "gap": 6,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "eA3pB",
+                                  "name": "github",
+                                  "fill": "$accent",
+                                  "content": "GitHub",
+                                  "lineHeight": 1.65,
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 15,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "c6Wyji",
+                                  "name": "dot",
+                                  "fill": "$text",
+                                  "content": "·",
+                                  "lineHeight": 1.65,
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 15,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "zML3V",
+                                  "name": "linkedin",
+                                  "fill": "$accent",
+                                  "content": "LinkedIn",
+                                  "lineHeight": 1.65,
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 15,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "w3O5il",
+                              "name": "Portfolio line",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "ip2XZ",
+                                  "name": "lead-in",
+                                  "gap": 6,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "UBxDc",
+                                      "name": "label",
+                                      "fill": "$text",
+                                      "content": "Portfolio →",
+                                      "lineHeight": 1.65,
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 15,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "xagcu",
+                                      "name": "link",
+                                      "fill": "$accent",
+                                      "content": "carloslima.dev",
+                                      "lineHeight": 1.65,
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 15,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "MC5SS",
+                                  "name": "tail",
+                                  "fill": "$text",
+                                  "content": "— two projects, the proof for each, and the CV.",
+                                  "lineHeight": 1.65,
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 15,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "J8shz2",
+                              "name": "Skills line",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "f6KOe",
+                                  "name": "lead-in",
+                                  "gap": 6,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "ggA22",
+                                      "name": "label",
+                                      "fill": "$text",
+                                      "content": "Skills →",
+                                      "lineHeight": 1.65,
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 15,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "doBqQ",
+                                      "name": "link",
+                                      "fill": "$accent",
+                                      "content": "carloslima.dev/skills",
+                                      "lineHeight": 1.65,
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 15,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "Kcy1P",
+                                  "name": "tail",
+                                  "fill": "$text",
+                                  "content": "— every skill, with the years I’ve used it.",
+                                  "lineHeight": 1.65,
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 15,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "vYlnf",
+                          "name": "mfooter",
+                          "width": "fill_container",
+                          "fill": "$bg-subtle",
+                          "stroke": "$border",
+                          "strokeWidth": {
+                            "top": 1
+                          },
+                          "layout": "vertical",
+                          "gap": 4,
+                          "padding": [
+                            18,
+                            20
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "d8udEi",
+                              "name": "c",
+                              "fill": "$text-muted",
+                              "content": "© 2026 Carles Lima",
+                              "fontFamily": "$font-body",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "L7Fsm",
+                  "name": "Variant mobile · dark",
+                  "layout": "vertical",
+                  "gap": 8,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "b67r23",
+                      "name": "vlabel",
+                      "fill": "$ink-muted",
+                      "content": "mobile · dark",
+                      "fontFamily": "$font-mono",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Ajzqd",
+                      "name": "page",
+                      "theme": {
+                        "mode": "dark"
+                      },
+                      "clip": true,
+                      "width": 390,
+                      "fill": "$bg",
+                      "cornerRadius": 4,
+                      "stroke": "$border-strong",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "Rovyy",
+                          "name": "mheader",
+                          "width": "fill_container",
+                          "stroke": "$border",
+                          "strokeWidth": {
+                            "bottom": 1
+                          },
+                          "padding": [
+                            14,
+                            20
+                          ],
+                          "justifyContent": "space_between",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "eAI3Y",
+                              "name": "brand",
+                              "fill": "$text",
+                              "content": "Carles Lima",
+                              "fontFamily": "$font-display",
+                              "fontSize": 16,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "FD4tT",
+                              "name": "navgroup",
+                              "gap": 14,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "id": "DH2Vc",
+                                  "type": "ref",
+                                  "ref": "MrZbQ",
+                                  "name": "NavBlog",
+                                  "descendants": {
+                                    "LwKtr": {
+                                      "content": "Blog",
+                                      "fontSize": 13
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "b52EOq",
+                                  "type": "ref",
+                                  "ref": "MrZbQ",
+                                  "name": "NavAbout",
+                                  "descendants": {
+                                    "LwKtr": {
+                                      "content": "About",
+                                      "fill": "$text-muted",
+                                      "fontWeight": "normal",
+                                      "fontSize": 13
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "dIrA3",
+                                  "type": "ref",
+                                  "ref": "QywBG",
+                                  "name": "tg"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "GjnPo",
+                          "name": "article",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 12,
+                          "padding": 20,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "e8Noqv",
+                              "name": "h1",
+                              "fill": "$text",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "About",
+                              "lineHeight": 1.2,
+                              "fontFamily": "$font-display",
+                              "fontSize": 30,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "text",
+                              "id": "thdVL",
+                              "name": "lead",
+                              "fill": "$text-muted",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "If you got here from a CV or a job post, the 30-second version is at carloslima.dev. This page is the long one.",
+                              "lineHeight": 1.65,
+                              "fontFamily": "$font-body",
+                              "fontSize": 15,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "SdsWG",
+                              "name": "h2",
+                              "fill": "$text",
+                              "content": "Contact",
+                              "lineHeight": 1.25,
+                              "fontFamily": "$font-display",
+                              "fontSize": 24,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "v4WkUv",
+                              "name": "social",
+                              "gap": 6,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "HBrET",
+                                  "name": "github",
+                                  "fill": "$accent",
+                                  "content": "GitHub",
+                                  "lineHeight": 1.65,
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 15,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "t9rZe",
+                                  "name": "dot",
+                                  "fill": "$text",
+                                  "content": "·",
+                                  "lineHeight": 1.65,
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 15,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "jpbaJ",
+                                  "name": "linkedin",
+                                  "fill": "$accent",
+                                  "content": "LinkedIn",
+                                  "lineHeight": 1.65,
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 15,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "xCBmA",
+                              "name": "Portfolio line",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "jw2kX",
+                                  "name": "lead-in",
+                                  "gap": 6,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "pb1Ic",
+                                      "name": "label",
+                                      "fill": "$text",
+                                      "content": "Portfolio →",
+                                      "lineHeight": 1.65,
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 15,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "xV9gb",
+                                      "name": "link",
+                                      "fill": "$accent",
+                                      "content": "carloslima.dev",
+                                      "lineHeight": 1.65,
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 15,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "bkLdb",
+                                  "name": "tail",
+                                  "fill": "$text",
+                                  "content": "— two projects, the proof for each, and the CV.",
+                                  "lineHeight": 1.65,
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 15,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "d8agB9",
+                              "name": "Skills line",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "zWm6n",
+                                  "name": "lead-in",
+                                  "gap": 6,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "QiPLA",
+                                      "name": "label",
+                                      "fill": "$text",
+                                      "content": "Skills →",
+                                      "lineHeight": 1.65,
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 15,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "daBWM",
+                                      "name": "link",
+                                      "fill": "$accent",
+                                      "content": "carloslima.dev/skills",
+                                      "lineHeight": 1.65,
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 15,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "jDIkQ",
+                                  "name": "tail",
+                                  "fill": "$text",
+                                  "content": "— every skill, with the years I’ve used it.",
+                                  "lineHeight": 1.65,
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 15,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "PObeJ",
+                          "name": "mfooter",
+                          "width": "fill_container",
+                          "fill": "$bg-subtle",
+                          "stroke": "$border",
+                          "strokeWidth": {
+                            "top": 1
+                          },
+                          "layout": "vertical",
+                          "gap": 4,
+                          "padding": [
+                            18,
+                            20
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "vEsQY",
+                              "name": "c",
+                              "fill": "$text-muted",
+                              "content": "© 2026 Carles Lima",
+                              "fontFamily": "$font-body",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
           "id": "dX7Zl",
           "name": "Section Not found — 404",
           "width": "fill_container",

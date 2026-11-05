@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { Prose, Stack } from '@gate/ui';
 
 import { pageMetadata } from '@/lib/share';
-import { PORTFOLIO_LINK } from '@/lib/site';
+import { PORTFOLIO_LINK, SKILLS_LINK } from '@/lib/site';
 
 export const metadata: Metadata = pageMetadata({
   path: '/about',
@@ -56,6 +56,10 @@ export default function AboutPage() {
         <p>
           Portfolio → <a href={PORTFOLIO_LINK}>carloslima.dev</a> — two projects, the
           proof for each, and the CV.
+        </p>
+        <p>
+          Skills → <a href={SKILLS_LINK}>carloslima.dev/skills</a> — every skill, with the
+          years I&apos;ve used it.
         </p>
       </Prose>
     </Stack>

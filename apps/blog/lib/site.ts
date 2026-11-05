@@ -40,6 +40,12 @@ export const SITE_URL = new URL('https://blog.carloslima.dev');
  */
 export const PORTFOLIO_LINK = tagOutbound('https://carloslima.dev', 'blog');
 
+/**
+ * The portfolio's skills record. Its own `tagOutbound` call, because the tag is
+ * a query string: `PORTFOLIO_LINK + '/skills'` would land after it.
+ */
+export const SKILLS_LINK = tagOutbound('https://carloslima.dev/skills', 'blog');
+
 /** The visual-diff console, as a referral from here. */
 export const CONSOLE_LINK = tagOutbound('https://visual-diff-ui.carloslima.dev', 'blog');
 

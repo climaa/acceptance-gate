@@ -5,6 +5,7 @@ import { createElement, isValidElement, type ReactNode } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import type { BlogIndexTemplateProps, PostTemplateProps } from '@gate/ui';
+import AboutPage from '../app/about/page';
 import BlogIndexPage from '../app/blog/page';
 import PostPage from '../app/blog/[slug]/page';
 import HomePage, { metadata as homeMetadata } from '../app/page';
@@ -94,6 +95,34 @@ describe('content/posts', () => {
     expect(PUBLISHED.length).toBeGreaterThan(0);
     expect(PUBLISHED.flatMap((post) => post.tags)).toContain(MULTI_WORD_TAG);
     expect(TAGS_ON_HOME.length).toBeGreaterThan(0);
+  });
+});
+
+describe('the about page', () => {
+  /**
+   * Written literally, as app-shell.test.ts writes the portfolio's: a test that
+   * calls `tagOutbound` agrees with whatever it produces. The path comes before
+   * the query, which is what `PORTFOLIO_LINK + '/skills'` would get wrong.
+   */
+  const SKILLS_HREF = 'https://carloslima.dev/skills?utm_source=blog';
+
+  it("links the skills record, tagged like the site's other links", () => {
+    const hrefs = hrefsIn(renderPage(AboutPage));
+
+    expect(hrefs).toContain(SKILLS_HREF);
+  });
+
+  // The record lives on carloslima.dev; a second list here could disagree with
+  // it, so the page keeps one line and the anchor reads as the address it opens.
+  it('names the record in one line under Contact, after the portfolio', () => {
+    const html = renderPage(AboutPage);
+    const contact = html.slice(html.indexOf('<h2>Contact</h2>'));
+    const text = contact.replace(/<[^>]*>/g, '').replaceAll('&#x27;', "'");
+
+    expect(text).toContain(
+      "Skills → carloslima.dev/skills — every skill, with the years I've used it.",
+    );
+    expect(text.indexOf('Portfolio →')).toBeLessThan(text.indexOf('Skills →'));
   });
 });
 
