@@ -1,6 +1,6 @@
 # Project Index: acceptance-gate
 
-Version 1.7.0 · generated 2026-10-21 (regenerate with `/sc:index-repo` — a stale date here
+Version 1.8.0 · generated 2026-11-05 (regenerate with `/sc:index-repo` — a stale date here
 means the index needs a refresh)
 
 ## 📁 Project Structure
@@ -16,7 +16,7 @@ means the index needs a refresh)
                        plan-parse · pr-queue (+ gh) · sandbox hooks · turbo cache ·
                        variables · orchestrator
   agent-docs/          the four phase prompts + CODING_STANDARDS.md
-  __tests__/           43 hermetic vitest files (706 tests) guarding the contracts
+  __tests__/           49 hermetic vitest files (817 tests) guarding the contracts
 apps/
   blog/                Next.js 16 App Router + MDX (English) — index (paged four posts
                        at a time, each page at its own address), post, tag, about,
@@ -26,7 +26,7 @@ apps/
                        web analytics on the production deployment only; Bugsink error
                        reporting live in both realms on the production deployment,
                        inert anywhere the DSN is unset
-  storybook/           Storybook 10 + nextjs-vite — 30 stories, 19 docs pages
+  storybook/           Storybook 10 + nextjs-vite — 35 stories, 19 docs pages
   e2e/                 playwright-bdd — 87 acceptance scenarios across the blog and
                        two seeded visual-diff worlds (:3200/:3201), plus a two-scenario
                        local lane that runs against your own tree
@@ -132,8 +132,8 @@ scripts/               gate/ (the gate, run by `.husky/pre-push`) · complexity-
 
 ## 🧪 Tests
 
-- Orchestrator hermetic suite: 43 files / 706 tests (prompt contracts, merge flow, override grammar, worktree safety, provenance guard)
-- Workspace suites, all in the `test` gate job: `packages/ui` 38 files / 634 tests (70% coverage floor), `apps/blog` 28 / 576 (573 passed, 3 skipped — one per draft post), `packages/visual-diff` 11 / 458, `apps/storybook` 7 / 235, `apps/visual-diff-ui` 76 / 1312 (floors 93/87/92/94), `packages/logger` 3 / 32, `apps/manual` 10 / 118, `packages/links` 1 / 10
+- Orchestrator hermetic suite: 49 files / 817 tests (prompt contracts, merge flow, override grammar, worktree safety, provenance guard)
+- Workspace suites, all in the `test` gate job: `packages/ui` 39 files / 649 tests (70% coverage floor), `apps/blog` 28 / 578 (575 passed, 3 skipped — one per draft post), `packages/visual-diff` 11 / 505, `apps/storybook` 8 / 264, `apps/visual-diff-ui` 82 / 1399 (floors 93/87/92/94), `packages/logger` 3 / 32, `apps/manual` 10 / 118, `packages/links` 1 / 10
 - `apps/e2e`: 87 acceptance scenarios across smoke, blog, the changelog's release conversations, /about, axe a11y, the visual-diff console, sample mode, the report and its accessibility treatment — in `gate.needs`, blocking. `EXPECTED_SCENARIOS` in `apps/e2e/scripts/suite-integrity.mjs` is the count that must agree. A second lane, `features/local/`, is two scenarios that write to your own tree and clean up after themselves — one captures, compares, reviews and accepts against your `.visual-diff`, the other proves the dev server reflects `apps/blog/content/posts` as it is, which no built app can claim (`EXPECTED_LOCAL_SCENARIOS`). It refuses to run under `CI` and gates nothing
 - `packages/visual-diff`: 238 committed baselines; the capture/compare job runs on every PR but is deliberately never in `gate.needs` (see `packages/visual-diff/README.md#ci-status`)
 
