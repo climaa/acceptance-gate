@@ -160,7 +160,11 @@ function Shot({ kind, shots, variant, actual = false, marks = [] }: ShotProps) {
   if (kind !== 'candidate' || marks.length === 0 || !width || !height) return image;
 
   return (
-    <div className={`vd-compare__marked${actual ? ' vd-compare__marked--actual' : ''}`}>
+    <div
+      className={['vd-compare__marked', actual && 'vd-compare__marked--actual']
+        .filter(Boolean)
+        .join(' ')}
+    >
       {image}
       <Marks marks={marks} width={width} height={height} />
     </div>
