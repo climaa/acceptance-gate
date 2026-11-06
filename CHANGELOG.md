@@ -9,6 +9,8 @@ transcribed from the GitHub Releases that existed when this file was created (20
 
 - A story that draws nothing on purpose declares it with `visual-diff:absent`, and its capture records a token ledger with no elements instead of a `token ledger not recorded` warning. The four stories shot in an absence frame (SkipLink's `Default`, Pagination's `SinglePage`, StepList's and TagList's `Empty`) carry it; no screenshot changes. An untagged story whose walk finds nothing still warns, and a tagged one whose walk finds an element warns that the tag is stale.
 
+- The token ledger's trace is budgeted per element walked, so a screen's ledger is traced whole instead of stopping near its 74th element, and each ledger records how many elements the trace reached. Light and dark are no longer reported as differing when only the trace's reach did, and a drift line now names the field that differs — `16px light, 16px dark` becomes the tokens or classifications on each side.
+
 ## v1.8.0 — the console's own pages join the corpus, each one drawn on a board
 
 _Released 2026-11-05._
