@@ -363,6 +363,28 @@ describe('the ledgers a capture writes beside its shots', () => {
     ]);
   });
 
+  it('writes the empty ledger of a story that declares it draws nothing, and no warning', () => {
+    const empty = (theme: 'light' | 'dark') =>
+      shot(theme, {
+        ledger: {
+          ...ledger(`organisms__desktop__${theme}__organisms-dialog--open`),
+          elements: [],
+        },
+        ledgerWarning: null,
+      });
+    const captures = [empty('light'), empty('dark')];
+
+    const { files, warnings } = ledgerOutputs(captures);
+
+    expect({ files: files.map((file) => file.name), warnings }).toEqual({
+      files: [
+        'organisms__desktop__light__organisms-dialog--open.ledger.json',
+        'organisms__desktop__dark__organisms-dialog--open.ledger.json',
+      ],
+      warnings: [],
+    });
+  });
+
   it('passes on the warning a ledger that could not be recorded left behind', () => {
     const captures = [
       shot('light', { ledger: null, ledgerWarning: 'token ledger not recorded: x' }),

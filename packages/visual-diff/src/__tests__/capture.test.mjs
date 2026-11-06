@@ -4,8 +4,10 @@ import { describe, expect, it } from 'vitest';
 
 import { PINNED_NOW_ISO, PINNED_TIMEZONE } from '../determinism.mjs';
 import {
+  ABSENT_TAG,
   COLOR_SCHEME_GLOBAL,
   DETERMINISM,
+  LEDGER,
   LOCALE_GLOBAL,
   VIEWPORTS,
 } from '../policy.mjs';
@@ -16,6 +18,7 @@ import {
   afterShot,
   buildStoryUrl,
   captureAll,
+  collectLedger,
   drainQueue,
   ensureViewport,
   fontCheckSpec,
@@ -891,6 +894,78 @@ describe('afterShot', () => {
     const after = afterShot({}, VARIANT, { ledger: true }, axeThrows);
 
     await expect(after).rejects.toThrow('axe died');
+  });
+});
+
+describe(`the ledger of a story that declares ${ABSENT_TAG}`, () => {
+  const absent = (tagged) =>
+    Object.freeze({
+      key: 'molecules__desktop__light__molecules-taglist--empty',
+      tier: 'molecules',
+      viewport: 'desktop',
+      theme: 'light',
+      id: 'molecules-taglist--empty',
+      fullPage: false,
+      absent: tagged,
+    });
+  const SCALE = Object.freeze({ '--space-4': 16 });
+  const ELEMENT = Object.freeze({
+    path: 'ds-tag',
+    anchor: null,
+    rect: [0, 0, 40, 20],
+    px: LEDGER.properties.map(() => 0),
+    inline: LEDGER.properties.map(() => null),
+  });
+
+  /** A page whose walk measures what it is given, and whose CDP answers no node. */
+  const fakePage = (elements) => ({
+    evaluate: async () => ({ scale: SCALE, elements }),
+    context: () => ({
+      newCDPSession: async () => ({
+        send: async (method) => {
+          if (method === 'DOM.getDocument') return { root: { nodeId: 1 } };
+          if (method === 'DOM.querySelectorAll') return { nodeIds: [] };
+          return {};
+        },
+        detach: async () => undefined,
+      }),
+    }),
+  });
+  const steps = { runAxe: async () => [], collectLedger };
+
+  it('records an empty ledger and no warning when the walk finds nothing', async () => {
+    const after = await afterShot(fakePage([]), absent(true), { ledger: true }, steps);
+
+    expect({
+      elements: after.ledger?.elements,
+      warning: after.ledgerWarning,
+    }).toEqual({ elements: [], warning: null });
+  });
+
+  it('still warns on an empty walk when the story declares nothing', async () => {
+    const after = await afterShot(fakePage([]), absent(false), { ledger: true }, steps);
+
+    expect({ ledger: after.ledger, warning: after.ledgerWarning }).toEqual({
+      ledger: null,
+      warning: 'token ledger not recorded: the walk found no element to measure',
+    });
+  });
+
+  it('keeps the ledger but warns the tag is stale when the walk finds an element', async () => {
+    const after = await afterShot(
+      fakePage([ELEMENT]),
+      absent(true),
+      { ledger: true },
+      steps,
+    );
+
+    expect({
+      elements: after.ledger?.elements.length,
+      warning: after.ledgerWarning,
+    }).toEqual({
+      elements: 1,
+      warning: `${ABSENT_TAG} is stale: the walk measured 1 element(s) on a story that declares it draws nothing`,
+    });
   });
 });
 

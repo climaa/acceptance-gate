@@ -52,6 +52,7 @@ export const Scenario: Story = {
 // empty list. Shot inside the absence frame, so the baseline is an empty box —
 // an empty <ol> with its margins would change it.
 export const Empty: Story = {
+  tags: ['visual-diff:absent'],
   args: { steps: [] },
   decorators: [
     (Story) => (

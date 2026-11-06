@@ -33,6 +33,7 @@ export const OneTag: Story = {
 // not an empty <ul>. Shot inside the absence frame, so the baseline is an empty
 // box — an empty <ul> with its gap and margins would change it.
 export const Empty: Story = {
+  tags: ['visual-diff:absent'],
   args: {
     tags: [],
   },
