@@ -20,6 +20,9 @@ folded into `changed` or `unchanged` where accepting it would make the violation
 
 The token ledger is informational in the same way a design board is: it names
 spacing in design-token terms beside a comparison and never changes its bucket.
+Its CDP trace is budgeted per element walked (`LEDGER.trace`), so a screen of a few
+hundred elements is traced whole; each ledger records in `traced` how many elements the
+trace reached, and light and dark are compared only when both reached as far.
 
 ## How it works
 

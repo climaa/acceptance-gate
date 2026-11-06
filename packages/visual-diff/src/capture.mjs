@@ -599,14 +599,23 @@ async function runAxe(page) {
   }));
 }
 
+/** How long a trace of `nodes` stamped elements may run: each node's share, held
+ *  between the budget's floor and its ceiling.
+ *  @param {number} nodes @param {import('./policy.mjs').TraceBudget} budget
+ *  @returns {number} */
+export function traceBudgetMs(nodes, budget) {
+  return Math.min(budget.ceilingMs, Math.max(budget.floorMs, nodes * budget.perNodeMs));
+}
+
 /** Every node the walk stamped, traced through CDP: the cascade that set its spacing
- *  and its accessible name. Stops once `budgetMs` is spent — a capture that has gone
- *  wrong must not stall the run — and the nodes past that point are left to the page's
- *  own reading. DOM is enabled first: CSS refuses to start without it.
+ *  and its accessible name. Stops once the budget for that many nodes is spent — a
+ *  capture that has gone wrong must not stall the run — and the nodes past that point
+ *  are left to the page's own reading. DOM is enabled first: CSS refuses to start
+ *  without it.
  *  @param {Pick<import('playwright').CDPSession, 'send'>} cdp
- *  @param {number} budgetMs @param {() => number} [now]
+ *  @param {import('./policy.mjs').TraceBudget} budget @param {() => number} [now]
  *  @returns {Promise<import('./ledger.mjs').TracedNode[]>} */
-export async function traceNodes(cdp, budgetMs, now = () => performance.now()) {
+export async function traceNodes(cdp, budget, now = () => performance.now()) {
   await cdp.send('DOM.enable');
   await cdp.send('CSS.enable');
   await cdp.send('Accessibility.enable');
@@ -617,7 +626,7 @@ export async function traceNodes(cdp, budgetMs, now = () => performance.now()) {
     selector: '[data-vd-ledger]',
   });
 
-  const deadline = now() + budgetMs;
+  const deadline = now() + traceBudgetMs(nodeIds.length, budget);
   const traced = [];
   for (const nodeId of nodeIds) {
     if (now() > deadline) break;
@@ -659,7 +668,7 @@ export async function collectLedger(page, variant) {
 
   const cdp = await page.context().newCDPSession(page);
   try {
-    const traced = await traceNodes(cdp, LEDGER.cdpBudgetMs);
+    const traced = await traceNodes(cdp, LEDGER.trace);
     return buildLedger({ key: variant.key, fullPage, collected, traced });
   } finally {
     await cdp.detach().catch(() => undefined);
