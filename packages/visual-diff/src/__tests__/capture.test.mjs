@@ -4,8 +4,10 @@ import { describe, expect, it } from 'vitest';
 
 import { PINNED_NOW_ISO, PINNED_TIMEZONE } from '../determinism.mjs';
 import {
+  ABSENT_TAG,
   COLOR_SCHEME_GLOBAL,
   DETERMINISM,
+  LEDGER,
   LOCALE_GLOBAL,
   VIEWPORTS,
 } from '../policy.mjs';
@@ -16,6 +18,7 @@ import {
   afterShot,
   buildStoryUrl,
   captureAll,
+  collectLedger,
   drainQueue,
   ensureViewport,
   fontCheckSpec,
@@ -29,6 +32,7 @@ import {
   shotResult,
   stableWaitMs,
   themeSanity,
+  traceBudgetMs,
   traceNodes,
   viewportSanity,
 } from '../capture.mjs';
@@ -894,6 +898,78 @@ describe('afterShot', () => {
   });
 });
 
+describe(`the ledger of a story that declares ${ABSENT_TAG}`, () => {
+  const absent = (tagged) =>
+    Object.freeze({
+      key: 'molecules__desktop__light__molecules-taglist--empty',
+      tier: 'molecules',
+      viewport: 'desktop',
+      theme: 'light',
+      id: 'molecules-taglist--empty',
+      fullPage: false,
+      absent: tagged,
+    });
+  const SCALE = Object.freeze({ '--space-4': 16 });
+  const ELEMENT = Object.freeze({
+    path: 'ds-tag',
+    anchor: null,
+    rect: [0, 0, 40, 20],
+    px: LEDGER.properties.map(() => 0),
+    inline: LEDGER.properties.map(() => null),
+  });
+
+  /** A page whose walk measures what it is given, and whose CDP answers no node. */
+  const fakePage = (elements) => ({
+    evaluate: async () => ({ scale: SCALE, elements }),
+    context: () => ({
+      newCDPSession: async () => ({
+        send: async (method) => {
+          if (method === 'DOM.getDocument') return { root: { nodeId: 1 } };
+          if (method === 'DOM.querySelectorAll') return { nodeIds: [] };
+          return {};
+        },
+        detach: async () => undefined,
+      }),
+    }),
+  });
+  const steps = { runAxe: async () => [], collectLedger };
+
+  it('records an empty ledger and no warning when the walk finds nothing', async () => {
+    const after = await afterShot(fakePage([]), absent(true), { ledger: true }, steps);
+
+    expect({
+      elements: after.ledger?.elements,
+      warning: after.ledgerWarning,
+    }).toEqual({ elements: [], warning: null });
+  });
+
+  it('still warns on an empty walk when the story declares nothing', async () => {
+    const after = await afterShot(fakePage([]), absent(false), { ledger: true }, steps);
+
+    expect({ ledger: after.ledger, warning: after.ledgerWarning }).toEqual({
+      ledger: null,
+      warning: 'token ledger not recorded: the walk found no element to measure',
+    });
+  });
+
+  it('keeps the ledger but warns the tag is stale when the walk finds an element', async () => {
+    const after = await afterShot(
+      fakePage([ELEMENT]),
+      absent(true),
+      { ledger: true },
+      steps,
+    );
+
+    expect({
+      elements: after.ledger?.elements.length,
+      warning: after.ledgerWarning,
+    }).toEqual({
+      elements: 1,
+      warning: `${ABSENT_TAG} is stale: the walk measured 1 element(s) on a story that declares it draws nothing`,
+    });
+  });
+});
+
 describe('shotResult', () => {
   const VARIANT = Object.freeze({
     key: 'k',
@@ -938,10 +1014,19 @@ describe('traceNodes', () => {
     };
   };
 
+  /** A budget that never stops a two-node trace. */
+  const ROOMY = Object.freeze({ floorMs: 1000, perNodeMs: 50, ceilingMs: 20_000 });
+
+  /** A clock that advances `stepMs` each time it is read. */
+  const ticking = (stepMs) => {
+    let clock = 0;
+    return () => (clock += stepMs);
+  };
+
   it('traces every stamped node, in the order the page stamped them', async () => {
     const cdp = fakeCdp([11, 12]);
 
-    const traced = await traceNodes(cdp, 1000);
+    const traced = await traceNodes(cdp, ROOMY);
 
     expect(traced.map((node) => node.ax.name)).toEqual(['n11', 'n12']);
   });
@@ -949,22 +1034,48 @@ describe('traceNodes', () => {
   it('enables the DOM before CSS, which refuses to start without it', async () => {
     const cdp = fakeCdp([]);
 
-    await traceNodes(cdp, 1000);
+    await traceNodes(cdp, ROOMY);
 
     expect(cdp.sent.indexOf('DOM.enable')).toBeLessThan(cdp.sent.indexOf('CSS.enable'));
   });
 
   it('stops at the budget and leaves the rest untraced', async () => {
     const cdp = fakeCdp([11, 12, 13]);
-    let clock = 0;
-    const now = () => {
-      clock += 600;
-      return clock;
-    };
+    const budget = { floorMs: 1000, perNodeMs: 0, ceilingMs: 1000 };
 
-    const traced = await traceNodes(cdp, 1000, now);
+    const traced = await traceNodes(cdp, budget, ticking(600));
 
     expect(traced).toHaveLength(1);
+  });
+
+  // The 2026-10-30 set's report screen walked 223 elements, and a flat 1000 ms cut it
+  // at the 74th: about 13.5 ms a node. A screen must be traced whole.
+  it('traces the whole walk of a screen at the cost a screen measured', async () => {
+    const nodeIds = Array.from({ length: 250 }, (_, at) => at + 1);
+    const cdp = fakeCdp(nodeIds);
+
+    const traced = await traceNodes(cdp, LEDGER.trace, ticking(14));
+
+    expect(traced).toHaveLength(250);
+  });
+
+  it('still stops a runaway trace at the ceiling', async () => {
+    const nodeIds = Array.from({ length: 250 }, (_, at) => at + 1);
+    const cdp = fakeCdp(nodeIds);
+
+    const traced = await traceNodes(cdp, LEDGER.trace, ticking(5000));
+
+    expect(traced.length).toBeLessThan(250);
+  });
+});
+
+describe('traceBudgetMs', () => {
+  it('allows each node its share, never less than the floor nor more than the ceiling', () => {
+    const budget = { floorMs: 1000, perNodeMs: 50, ceilingMs: 20_000 };
+
+    const allowed = [1, 223, 10_000].map((nodes) => traceBudgetMs(nodes, budget));
+
+    expect(allowed).toEqual([1000, 11_150, 20_000]);
   });
 });
 

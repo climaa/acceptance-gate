@@ -70,6 +70,14 @@ export const SKIP_TAG = 'visual-diff:skip';
  *  template whose fixed header only exists relative to the viewport, say. */
 export const FULLPAGE_TAG = 'visual-diff:fullpage';
 
+/** Applied to a story that draws nothing on purpose — shot inside an absence frame,
+ *  whose empty baseline is the assertion that the state leaves no ink. It changes
+ *  nothing about the shot. It tells the token ledger that an empty walk is the story's
+ *  answer rather than a walk that looked in the wrong place, so the variant records a
+ *  ledger with no elements instead of a warning. A tagged story whose walk does find
+ *  an element has started drawing, and the tag has gone stale: that one warns. */
+export const ABSENT_TAG = 'visual-diff:absent';
+
 /** Per-story override of {@link TIER_VIEWPORTS}: capture at every viewport in
  *  {@link VIEWPORTS} whatever the tier says. For the component that does reflow with
  *  width — a molecule carrying a container query — without promoting its whole tier. */
@@ -442,6 +450,7 @@ export function assertWithinBudget(shots, retainedBytes) {
 }
 
 /** @typedef {{ anchor: string, properties: readonly string[], px: number, reason: string }} LedgerExemption */
+/** @typedef {{ floorMs: number, perNodeMs: number, ceilingMs: number }} TraceBudget */
 
 /** What a token ledger measures and how it names what it measured — the one home for
  *  the numbers `ledger.mjs` classifies with, so a reading can be argued about in one
@@ -463,12 +472,19 @@ export function assertWithinBudget(shots, retainedBytes) {
  *  - `exempt`: the only paddings in packages/ui that sit off the scale on purpose,
  *    each with the reason a reader is shown. A match needs the anchor, the property
  *    and the px; anything else off the scale is still reported.
- *  - `cdpBudgetMs`: per variant. Measured at 37–64 ms for 8–12 elements, so this
- *    only ever stops a capture that has gone wrong.
+ *  - `trace`: how long the CDP pass may run on one variant, sized to its walk:
+ *    `perNodeMs` for each stamped element, never less than `floorMs` nor more than
+ *    `ceilingMs`. Measured on the 2026-10-30 set, a screen costs about 13.5 ms a node
+ *    (the report screen walked 223 elements, and a flat 1000 ms reached the 74th); a
+ *    component story, 37–64 ms for 8–12. 50 ms is over three times the screen's
+ *    rate, so the largest storied page — 223 elements, 11.15 s — is traced whole,
+ *    and 20 s still stops a trace that has gone wrong. The floor keeps a small walk
+ *    from being cut by a cold first call. A walk cut short reads the rest from the
+ *    page alone, and its ledger says how far the trace reached.
  *  @type {Readonly<{ scalePrefix: string, properties: readonly string[],
  *    tolerancePx: number, decimals: number, nearestTie: 'lower' | 'upper',
  *    relativeUnits: readonly string[], exempt: readonly LedgerExemption[],
- *    cdpBudgetMs: number, fileSuffix: string, reportDir: string }>} */
+ *    trace: TraceBudget, fileSuffix: string, reportDir: string }>} */
 export const LEDGER = Object.freeze({
   scalePrefix: '--space-',
   properties: Object.freeze([
@@ -509,7 +525,7 @@ export const LEDGER = Object.freeze({
       reason: 'track inset',
     },
   ]),
-  cdpBudgetMs: 1000,
+  trace: Object.freeze({ floorMs: 1000, perNodeMs: 50, ceilingMs: 20_000 }),
   fileSuffix: '.ledger.json',
   reportDir: 'ledger',
 });

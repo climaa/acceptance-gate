@@ -47,6 +47,9 @@ import { LEDGER } from './policy.mjs';
  *  @property {1} schema
  *  @property {string} key
  *  @property {'target' | 'document'} origin What `rect` is measured from.
+ *  @property {number} [traced] How many of `elements`, from the first, the CDP trace
+ *    reached; the rest were read from the page alone. Equal to their count when the
+ *    ledger is complete. Absent from a sidecar written before it was recorded.
  *  @property {Scale} scale
  *  @property {readonly LedgerElement[]} elements */
 
@@ -354,6 +357,7 @@ export function serializeLedger(ledger, policy = LEDGER) {
     schema: ledger.schema,
     key: ledger.key,
     origin: ledger.origin,
+    traced: ledger.traced,
     scale: Object.fromEntries(
       stepsOf(ledger.scale).map(([name, value]) => [
         name,
@@ -564,6 +568,7 @@ export function buildLedger({ key, fullPage, collected, traced, policy = LEDGER 
     schema: 1,
     key,
     origin: fullPage ? 'document' : 'target',
+    traced: Math.min(traced.length, elements.length),
     scale: collected.scale,
     elements,
   };
@@ -792,30 +797,45 @@ export function serializeLedgerReport(report, policy = LEDGER) {
 /** @typedef {{ tier: string, viewport: string, theme: string, id: string,
  *    ledger?: Ledger | null }} LedgerShot */
 
+/** How far a ledger's trace reached; a ledger that does not say was traced whole.
+ *  @param {Ledger} ledger @returns {number} */
+const tracedOf = (ledger) => ledger.traced ?? ledger.elements.length;
+
+/** The fields two readings are compared on, in the order a difference is named. */
+const COMPARED = /** @type {const} */ (['px', 'token', 'classification']);
+
+/** The first compared field two readings disagree on, as both sides' values.
+ *  @param {Reading} light @param {Reading | undefined} dark @returns {string | null} */
+function fieldDifference(light, dark) {
+  const field = COMPARED.find((name) => dark?.[name] !== light[name]);
+  if (field === undefined) return null;
+  if (field === 'px') return `${light.px}px light, ${dark?.px}px dark`;
+
+  const valueOf = (/** @type {Reading | undefined} */ reading) =>
+    reading?.[field] ?? 'none';
+  return `${field} ${valueOf(light)} light, ${valueOf(dark)} dark`;
+}
+
 /** The first reading two ledgers disagree on, as words; null when they agree.
  *  Rects are not compared: a theme may move a box (the toggle's knob does) without
- *  changing any spacing.
+ *  changing any spacing. Nor are two ledgers whose traces stopped at different
+ *  elements: an element one side traced and the other did not reads differently for
+ *  the same CSS, so the difference would be the trace's, not the theme's.
  *  @param {Ledger} light @param {Ledger} dark @returns {string | null} */
 function firstDifference(light, dark) {
   if (light.elements.length !== dark.elements.length) {
     return `light measured ${light.elements.length} element(s), dark ${dark.elements.length}`;
   }
+  if (tracedOf(light) !== tracedOf(dark)) {
+    return `the trace reached ${tracedOf(light)} of ${light.elements.length} element(s) in light, ${tracedOf(dark)} in dark — a partial ledger is not compared`;
+  }
 
   for (const [at, element] of light.elements.entries()) {
     const other = dark.elements[at];
-    const differs = element.readings.find((reading, index) => {
-      const twin = other?.readings[index];
-      return (
-        twin?.px !== reading.px ||
-        twin.token !== reading.token ||
-        twin.classification !== reading.classification
-      );
-    });
-    if (differs) {
-      const twin = other?.readings.find(
-        (reading) => reading.property === differs.property,
-      );
-      return `light and dark spacing differ at ${element.label} ${differs.property} (${differs.px}px light, ${twin?.px}px dark)`;
+    for (const [index, reading] of element.readings.entries()) {
+      const difference = fieldDifference(reading, other?.readings[index]);
+      if (difference)
+        return `light and dark spacing differ at ${element.label} ${reading.property} (${difference})`;
     }
   }
 

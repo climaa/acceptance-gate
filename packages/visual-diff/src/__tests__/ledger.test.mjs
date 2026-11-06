@@ -999,6 +999,21 @@ describe('buildLedger', () => {
     expect(ledger.elements[0]?.label).toBe('ds-btn:2');
   });
 
+  it('records how many of its elements the trace reached', () => {
+    const ledger = ledgerOf({
+      elements: [walked(), walked({ path: 'ds-btn:3' })],
+      traced: [KEEP_IT_OPEN],
+    });
+
+    expect(ledger.traced).toBe(1);
+  });
+
+  it('writes how far the trace reached into the sidecar', () => {
+    const ledger = ledgerOf({ elements: [walked()], traced: [] });
+
+    expect(JSON.parse(serializeLedger(ledger)).traced).toBe(0);
+  });
+
   it('serializes to the same bytes whatever order the trace answered in', () => {
     const one = serializeLedger(ledgerOf());
     const two = serializeLedger(ledgerOf({ traced: [{ ...KEEP_IT_OPEN }] }));
@@ -1065,6 +1080,45 @@ describe('themeDrift', () => {
 
     expect(drift).toEqual([
       'organisms-dialog--open desktop: light measured 1 element(s), dark 2',
+    ]);
+  });
+
+  // The trace stops at a budget, and where it stops differs per theme. An element one
+  // side traced and the other did not reads `token` against `raw-on-scale` for the
+  // same CSS, which is the trace's reach, not the theme's spacing.
+  it('says a ledger is partial, never that spacing differs, when one side traced less', () => {
+    const elements = [walked(), walked({ path: 'ds-btn:3' })];
+    const light = ledgerOf({ elements, traced: [KEEP_IT_OPEN, KEEP_IT_OPEN] });
+    const dark = ledgerOf({ elements, traced: [KEEP_IT_OPEN] });
+
+    const drift = themeDrift([shot('light', light), shot('dark', dark)]);
+
+    expect(drift).toEqual([
+      'organisms-dialog--open desktop: the trace reached 2 of 2 element(s) in light, 1 in dark — a partial ledger is not compared',
+    ]);
+  });
+
+  it('names the tokens when light and dark read the same px under different ones', () => {
+    const light = ledgerOf();
+    const dark = structuredClone(ledgerOf());
+    dark.elements[0].readings[1].token = '--space-5';
+
+    const drift = themeDrift([shot('light', light), shot('dark', dark)]);
+
+    expect(drift).toEqual([
+      'organisms-dialog--open desktop: light and dark spacing differ at button "Keep it open" padding-right (token --space-4 light, --space-5 dark)',
+    ]);
+  });
+
+  it('names the classifications when only they differ', () => {
+    const light = ledgerOf();
+    const dark = structuredClone(ledgerOf());
+    dark.elements[0].readings[1].classification = 'raw-on-scale';
+
+    const drift = themeDrift([shot('light', light), shot('dark', dark)]);
+
+    expect(drift).toEqual([
+      'organisms-dialog--open desktop: light and dark spacing differ at button "Keep it open" padding-right (classification token light, raw-on-scale dark)',
     ]);
   });
 

@@ -39,6 +39,7 @@ export const Window: Story = {
 // empty <nav>. Shot inside the absence frame, so the baseline is an empty box —
 // an empty <nav> with padding, or any stray control, would change it.
 export const SinglePage: Story = {
+  tags: ['visual-diff:absent'],
   args: { page: 1, pageCount: 1 },
   decorators: [
     (Story) => (
