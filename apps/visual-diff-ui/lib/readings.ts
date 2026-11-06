@@ -8,7 +8,7 @@ import type {
 /**
  * What the spacing readings panel is handed, whichever way in it was reached.
  *
- * A report's design view reads a `LedgerReport`: what the spacing DID between two
+ * A comparison reads a `LedgerReport`: what the spacing DID between two
  * captures, paired by `packages/visual-diff`. A screenshot opened from a set has
  * no second capture to pair with, so it reads its own sidecar as it stands —
  * every reading, in the same row shape, under a third mode of its own. One shape
@@ -79,4 +79,65 @@ export function everyReading(ledger: Ledger): Readings {
   );
 
   return { key: ledger.key, mode: 'every', rows };
+}
+
+/**
+ * The readings for the variant on screen, and nothing for any other.
+ *
+ * Walking a report with ← → writes the address with `history.replaceState` and
+ * asks the server for nothing (ComparisonRoute explains why), so the readings a
+ * host holds go on being the ones the address was LOADED with. Their own `key`
+ * is what makes that visible: readings from another variant would be a panel
+ * describing one screenshot beside another, with its boxes drawn on the wrong
+ * image. The panel says it has no ledger instead, which is the truth about what
+ * it was handed.
+ */
+export const readingsFor = (readings: Readings | null, key: string) =>
+  readings?.key === key ? readings : null;
+
+/** One box to outline on the after screenshot, in that screenshot's own pixels:
+ *  the shape `PanZoom` takes its marks in. */
+export interface ReadingMark {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  emphasis: boolean;
+}
+
+/**
+ * The boxes the readings point at, one per distinct rect.
+ *
+ * Four paddings on one element are four rows and ONE outline: the boxes are
+ * drawn in order, so four identical ones would bury the emphasized one under
+ * three plain hairlines. A box is emphasized when the row a reader is pointing
+ * at is one of its own — which is how a press on any of that element's rows
+ * lights up the same box.
+ *
+ * Rects arrive in the after screenshot's own pixels, so they are handed over
+ * as measured.
+ */
+export function marksFor(
+  rows: readonly ReadingRow[],
+  shown: number | null,
+): ReadingMark[] {
+  // The rect itself is what tells two readings they are on one element, so its
+  // four numbers are the key the boxes are collected under.
+  const emphasis = shown === null ? null : (rows[shown]?.rect?.join() ?? null);
+  const outlined = new Map<string, ReadingMark>();
+
+  for (const { rect } of rows) {
+    if (rect === null) continue;
+
+    const [x, y, width, height] = rect;
+    if (x === undefined || y === undefined) continue;
+    if (width === undefined || height === undefined) continue;
+
+    const key = rect.join();
+    if (!outlined.has(key)) {
+      outlined.set(key, { x, y, width, height, emphasis: key === emphasis });
+    }
+  }
+
+  return [...outlined.values()];
 }

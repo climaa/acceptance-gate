@@ -5,9 +5,9 @@ import {
   comparisonHref,
   comparisonPath,
   defaultBoard,
+  designHref,
   tierBoards,
   variantBoards,
-  isAgainst,
   isComparisonPath,
   isDesignBoard,
   parseComparisonPath,
@@ -201,17 +201,11 @@ describe('variantBoards', () => {
   });
 });
 
-describe('isAgainst and isDesignBoard', () => {
-  it('accepts the two things a comparison can be read against', () => {
-    const accepted = ['before', 'design'].every(isAgainst);
+describe('isDesignBoard', () => {
+  it('accepts a board that is one of the exports', () => {
+    const accepted = isDesignBoard('05-pages');
 
     expect(accepted).toBe(true);
-  });
-
-  it('refuses anything else, including no value at all', () => {
-    const refused = ['after', '', null].some(isAgainst);
-
-    expect(refused).toBe(false);
   });
 
   it('refuses a board that is not one of the exports', () => {
@@ -221,31 +215,23 @@ describe('isAgainst and isDesignBoard', () => {
   });
 });
 
-describe('comparisonHref with a design view', () => {
-  it('carries against=design', () => {
-    const href = comparisonHref(REPORT, KEY, null, { against: 'design' });
+describe('designHref', () => {
+  const AFTER = 'main-2026-08-13';
 
-    expect(href).toBe(`${comparisonPath(REPORT, KEY)}?against=design`);
+  it('sends an added variant to its screenshot in the after set', () => {
+    const href = designHref({ key: KEY, bucket: 'added' }, AFTER);
+
+    // No board and no crop: the shot view opens on the story's tile.
+    expect(href).toBe(`/set/${AFTER}/shot/${KEY}`);
   });
 
-  it('carries a picked board alongside it, after the mode', () => {
-    const href = comparisonHref(REPORT, KEY, 'slider', {
-      against: 'design',
-      board: '05-pages',
-    });
+  // Every other bucket has a before, and a comparison is read against that.
+  it.each(['changed', 'unchanged', 'removed', 'errored'] as const)(
+    'gives a %s variant no design link',
+    (bucket) => {
+      const href = designHref({ key: KEY, bucket }, AFTER);
 
-    expect(href).toBe(
-      `${comparisonPath(REPORT, KEY)}?mode=slider&against=design&board=05-pages`,
-    );
-  });
-
-  // `before` is the default, and a board means nothing while reading against it.
-  it('leaves both out when the comparison is read against before', () => {
-    const href = comparisonHref(REPORT, KEY, null, {
-      against: 'before',
-      board: '05-pages',
-    });
-
-    expect(href).toBe(comparisonPath(REPORT, KEY));
-  });
+      expect(href).toBeNull();
+    },
+  );
 });

@@ -25,3 +25,13 @@ Feature: Reading one screenshot from a set beside its design
   Scenario: The shot view has no accessibility violations
     Given the "Badge — Accent" screenshot is open
     Then the page has no accessibility violations
+
+  Scenario: The board cannot be zoomed out past fitting the pane
+    Given the "Badge — Accent" screenshot is open
+    When I zoom the board in and back out
+    Then the board is at 100% and cannot be zoomed out further
+
+  Scenario: Another board can be picked
+    Given the "Badge — Accent" screenshot is open
+    When I pick the console board
+    Then the console board is shown

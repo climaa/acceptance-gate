@@ -17,7 +17,7 @@ What the fixture cannot honestly show, and what each file here adds:
 | `worktrees.json`    | the D2 hold on the oldest set, which the refused delete names                     |
 | `history.json`      | one run per outcome word: `succeeded`, `succeeded (diffs)`, `failed`, interrupted |
 | `shots.json`        | the variant keys each set's shot tree carries, and which of them drifted          |
-| `report-graft.json` | a `changed`, a `removed` and an `a11y` variant, plus two corpus warnings          |
+| `report-graft.json` | a `changed`, an `added`, a `removed` and an `a11y` variant, plus two warnings     |
 | `baseline-env.json` | the corpus stamp, in the mutating world only                                      |
 
 The PNGs are not committed. The script synthesises them: real 16×16 RGBA PNGs whose

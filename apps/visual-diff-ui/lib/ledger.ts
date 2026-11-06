@@ -5,7 +5,7 @@ import { ledgerReportPath, reportDirOf } from './paths';
 import { readSidecar } from './sidecar';
 
 /**
- * What the spacing did on one variant, read back for the design view's panel.
+ * What the spacing did on one variant, read back for a comparison's readings.
  *
  * SERVER-ONLY, and the one import rule that matters here: nothing carrying
  * `'use client'` may reach this module at runtime — it opens a file.

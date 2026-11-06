@@ -23,7 +23,7 @@ const overlapArea = (a: Rect, b: Rect): number =>
 
 // Reused steps and their homes — one definition per Gherkin line:
 //   "a shared comparison link is open"         → visual-diff-share.steps.ts
-//   "I compare it to the design"               → visual-diff-design.steps.ts
+//   "I unfold the spacing readings"            → visual-diff-shot.steps.ts
 //   "the page has no accessibility violations" → a11y.steps.ts (blog suite)
 
 /** The fixture report that reads #460 backwards: its after side is the Dialog
@@ -44,8 +44,9 @@ Given("the dialog's comparison is open", async ({ page, modal }) => {
   await expect(modal.root).toBeVisible();
 });
 
-Given("the dialog's design view is open", async ({ page, modal }) => {
-  await page.goto(`${DIALOG_URL}?against=design`);
+Given("the dialog's spacing readings are unfolded", async ({ page, modal }) => {
+  await page.goto(DIALOG_URL);
+  await modal.unfold.click();
   await expect(modal.readings).toBeVisible();
 });
 

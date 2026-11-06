@@ -5,16 +5,9 @@ import { useEffect } from 'react';
 import {
   type ComparisonMode,
   comparisonHref,
-  DEFAULT_MODE,
-  type BoardHomes,
-  type ComparisonView,
   comparisonTitle,
-  DEFAULT_AGAINST,
-  defaultBoard,
-  type DesignBoard,
-  isAgainst,
+  DEFAULT_MODE,
   isComparisonMode,
-  isDesignBoard,
   parseComparisonPath,
   reportPath,
 } from '@/lib/comparison';
@@ -47,8 +40,6 @@ export interface ComparisonRouteProps {
    *  comparison itself. Null for every comparison with no ledger report. */
   ledger: LedgerReport | null;
   entry: ComparisonEntry;
-  /** The board each variant's tile is drawn on (lib/board-homes.ts). */
-  homes: BoardHomes;
 }
 
 /**
@@ -66,6 +57,10 @@ export interface ComparisonRouteProps {
  * hidden, so a closed comparison comes back with whatever state it had: a
  * modal that remembered its own key would reopen on the variant the last walk
  * ended on, under an address naming another.
+ *
+ * Only `mode` is read. A link from when a comparison could be read against a
+ * design board still carries `against=design` and a `board`; both are left
+ * unread, so it opens the comparison against its before rather than failing.
  */
 export function ComparisonRoute({
   reportId,
@@ -73,20 +68,13 @@ export function ComparisonRoute({
   sides,
   ledger,
   entry,
-  homes,
 }: ComparisonRouteProps) {
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
   const asked = params.get('mode');
-  const askedAgainst = params.get('against');
-  const askedBoard = params.get('board');
 
   const mode: ComparisonMode = isComparisonMode(asked) ? asked : DEFAULT_MODE;
-  const view: ComparisonView = {
-    against: isAgainst(askedAgainst) ? askedAgainst : DEFAULT_AGAINST,
-    board: isDesignBoard(askedBoard) ? askedBoard : null,
-  };
 
   // Off a comparison's address — closing, mid-transition — there is no modal.
   const key = parseComparisonPath(pathname)?.key ?? null;
@@ -112,20 +100,8 @@ export function ComparisonRoute({
 
   if (key === null || !variant) return null;
 
-  const write = (nextKey: string, nextMode: ComparisonMode, nextView = view) =>
-    window.history.replaceState(
-      null,
-      '',
-      comparisonHref(reportId, nextKey, nextMode, nextView),
-    );
-  // A board equal to the one this variant opens on is not a choice worth
-  // recording: the link stays bare, and walks on to a variant of another tier
-  // open that tier's board.
-  const pickBoard = (next: DesignBoard) =>
-    write(key, mode, {
-      ...view,
-      board: next === defaultBoard(variant, homes) ? null : next,
-    });
+  const write = (nextKey: string, nextMode: ComparisonMode) =>
+    window.history.replaceState(null, '', comparisonHref(reportId, nextKey, nextMode));
 
   const close = () => {
     if (entry === 'report') return router.back();
@@ -140,11 +116,7 @@ export function ComparisonRoute({
       sides={sides}
       mode={mode}
       ledger={ledger}
-      against={view.against ?? DEFAULT_AGAINST}
-      board={view.board ?? defaultBoard(variant, homes)}
       onMode={(next) => write(key, next)}
-      onAgainst={(next) => write(key, mode, { ...view, against: next })}
-      onBoard={pickBoard}
       onVariant={(next) => write(next.key, mode)}
       onClose={close}
     />

@@ -8,8 +8,8 @@ import { SpacingReadings } from '../components/SpacingReadings';
 import { pairedReadings, type Readings } from '../lib/readings';
 
 /**
- * The list a designer reads beside the board: what the spacing did, in
- * design-token terms.
+ * The list a designer reads beneath a comparison or beside a board: what the
+ * spacing did, in design-token terms.
  *
  * Structural only, like every component suite here. Whether the warning tone
  * reads as a warning is the baselines' question; what is asserted here is the
@@ -17,8 +17,9 @@ import { pairedReadings, type Readings } from '../lib/readings';
  * is a sentence about the design system, and a panel that said "6px" instead
  * would be a pixel count the modal already has.
  *
- * The emphasis a pressed row drives on the after screenshot lives next door, in
- * comparison-modal.test.tsx: the marks belong to the pane, not to the table.
+ * The emphasis a pressed row drives on the screenshot lives next door, in
+ * comparison-modal.test.tsx and design-stage.test.tsx: the marks belong to
+ * whoever draws the screenshot, not to the table.
  */
 
 const KEY = 'organisms__desktop__light__organisms-dialog--open';
@@ -471,10 +472,54 @@ describe('the spacing readings of one screenshot', () => {
     expect(screen.getByText('No spacing measured in this screenshot.')).toBeTruthy();
   });
 
-  // A comparison's readings are what its design view is for: never folded away.
-  it('offers no fold on a comparison', () => {
+  it('offers no fold where its host does not ask for one', () => {
     renderPanel(report());
 
     expect(screen.queryByRole('button', { name: /^(show|hide)$/ })).toBeNull();
+  });
+});
+
+/* ---- Folded beneath a comparison --------------------------------------- */
+
+/** As the comparison hosts it: folded, and folded even with nothing to list. */
+function renderFolded(ledger: LedgerReport | null) {
+  render(
+    <SpacingReadings
+      ledger={ledger && pairedReadings(ledger)}
+      pressed={null}
+      onPress={vi.fn()}
+      onHover={vi.fn()}
+      folded
+      foldEmpty
+    />,
+  );
+}
+
+describe('the spacing readings folded beneath a comparison', () => {
+  const sentence = () => screen.getByText('No token ledger for this comparison.');
+
+  it('folds a comparison with no ledger too, behind the same press', () => {
+    renderFolded(null);
+    const shut = sentence().closest('[hidden]') !== null;
+
+    fireEvent.click(screen.getByRole('button', { name: 'show' }));
+
+    expect(shut).toBe(true);
+    expect(sentence().closest('[hidden]')).toBeNull();
+  });
+
+  // "0 readings" would count what was never there to count; the mode still
+  // says what was compared.
+  it('names the mode on the folded line of a report with nothing in it', () => {
+    renderFolded(report({ changes: [] }));
+
+    expect(screen.getByText('changed between before and after')).toBeTruthy();
+    expect(screen.queryByText(/^0 readings/)).toBeNull();
+  });
+
+  it('counts what it holds on the folded line, as a screenshot does', () => {
+    renderFolded(report());
+
+    expect(screen.getByText('1 reading · 1 off-scale')).toBeTruthy();
   });
 });

@@ -2,7 +2,6 @@ import { Stack } from '@gate/ui';
 import { ComparisonRoute, type ComparisonRouteProps } from '@/components/ComparisonRoute';
 import { ReportTemplate } from '@/components/ReportTemplate';
 import { reportSides } from '@/lib/report-view';
-import { SAMPLE_HOMES } from './board-sample';
 import { inConsole } from './console';
 import { SAMPLE_SETS } from './dashboard-sample';
 import {
@@ -32,7 +31,6 @@ export const Sample = {
     variants: SAMPLE_VARIANTS,
     sides: reportSides(SAMPLE_REPORT_ID),
     ledger: SAMPLE_LEDGER,
-    homes: SAMPLE_HOMES,
     entry: 'report',
   } satisfies ComparisonRouteProps,
   render: (args: ComparisonRouteProps) => (

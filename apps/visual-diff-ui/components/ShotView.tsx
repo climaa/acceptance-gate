@@ -27,8 +27,8 @@ import { ViewControls } from './ViewControls';
  * One screenshot of a set, beside a design board: the shot view.
  *
  * Not a comparison. There is no before side and no bucket, so none of the
- * comparison modal's six modes and no "compare to" — what is left is the modal's
- * design view, which is the whole of this one. A set is where a person reads a
+ * comparison modal's six modes. This is where a screenshot is read against its
+ * design, which a comparison never is. A set is where a person reads a
  * screenshot by eye, so the readings arrive folded to one line there; the pixels
  * are the point.
  *

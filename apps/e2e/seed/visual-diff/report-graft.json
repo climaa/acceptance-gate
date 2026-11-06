@@ -40,6 +40,23 @@
       "error": null
     },
     {
+      "key": "organisms__desktop__light__organisms-siteheader--default",
+      "id": "organisms-siteheader--default",
+      "tier": "organisms",
+      "viewport": "desktop",
+      "theme": "light",
+      "bucket": "added",
+      "overlapDiffPixels": 0,
+      "marginPixels": 0,
+      "diffPixels": 0,
+      "allowedDiffPixels": 0,
+      "width": 1248,
+      "height": 61,
+      "sizeDelta": null,
+      "violations": [],
+      "error": null
+    },
+    {
       "key": "atoms__desktop__light__atoms-badge--tones",
       "id": "atoms-badge--tones",
       "tier": "atoms",

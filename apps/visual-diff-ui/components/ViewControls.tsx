@@ -2,10 +2,9 @@ import { IconButton } from '@gate/ui';
 import type { Split } from './DesignStage';
 
 /**
- * How a design view is being looked at: side by side or stacked, and with a grid
- * or without. Shared by the comparison modal's design view and the shot view,
- * so the two read the same way and name their buttons the same — the names are
- * how the acceptance suite presses them.
+ * How the shot view is being looked at: side by side or stacked, and with a
+ * grid or without. Named here once — the names are how the acceptance suite
+ * presses them.
  *
  * Ways of looking, never things to point someone at: neither is in the URL, and
  * the host holds both.

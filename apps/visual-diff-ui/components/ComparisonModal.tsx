@@ -5,24 +5,23 @@
    already `immutable`. A viewer whose whole purpose is one-pixel differences
    cannot show a re-encoded copy of the evidence. */
 
+import NextLink from 'next/link';
 import { useEffect, useRef, useState } from 'react';
-import { Dialog, SegmentedControl, Stack, Text } from '@gate/ui';
+import { Dialog, Link, SegmentedControl, Stack, Text } from '@gate/ui';
 import type { LedgerReport } from '@gate/visual-diff/ledger';
 import { REDUCED_MOTION, useMediaQuery, WIDE_VIEWPORT } from '@/hooks/useMediaQuery';
 import {
-  AGAINST,
-  type Against,
   clampPosition,
   comparisonTitle,
   type ComparisonMode,
   DEFAULT_MODE,
-  type DesignBoard,
-  isAgainst,
+  designHref,
   isComparisonMode,
   MIDPOINT,
   modesFor,
   SCRUB_STEP,
 } from '@/lib/comparison';
+import { marksFor, pairedReadings, type ReadingMark, readingsFor } from '@/lib/readings';
 import { formatPixels, type ReportSides } from '@/lib/report-view';
 import {
   absentShotCopy,
@@ -33,9 +32,7 @@ import {
 } from '@/lib/shots';
 import type { Variant } from '@/lib/summary';
 import { CopyLink } from './CopyLink';
-import { pairedReadings } from '@/lib/readings';
-import { DesignStage, type Split } from './DesignStage';
-import { ViewControls } from './ViewControls';
+import { SpacingReadings } from './SpacingReadings';
 
 /**
  * Where a reviewer looks at the pixels: one variant, full-bleed, in whichever
@@ -71,15 +68,9 @@ const TOOLBAR_LABEL = 'comparison modes';
 const BLINK_MS = 400;
 
 const DESKTOP_HINT = 'esc close · ← → previous/next variant · drag the divider';
-const DESIGN_HINT =
-  'esc close · ← → previous/next variant · drag the board · + − zoom · 0 reset';
 
-/** The toggle's accessible name, pinned like the toolbar's. */
-const AGAINST_LABEL = 'compare to';
-
-/** What the design view says about itself where the before/after metric was. */
-const DESIGN_NOTE =
-  'design board — reference beside the after screenshot, never a verdict';
+/** The design link's name, pinned: the acceptance suite presses it by this. */
+const DESIGN_LINK = 'open it beside its design';
 
 const SHEET_HINT = 'swipe down to close · pinch to zoom';
 
@@ -102,23 +93,77 @@ interface ShotProps {
   kind: ShotKind;
   shots: ShotSources;
   variant: Variant;
-  className?: string;
+  /** 1:1 CSS pixels rather than the stage's width. */
+  actual?: boolean;
+  /** The boxes the spacing readings point at. Drawn on the candidate alone:
+   *  they were measured on the after capture, and on any other image they
+   *  would be outlining pixels they never measured. */
+  marks?: readonly ReadingMark[];
+}
+
+/** A share of the after screenshot's own pixels, as a percent of its box — so
+ *  a box lands on its element whether the shot is fitted or at 1:1. */
+const share = (px: number, of: number) => `${(px / of) * 100}%`;
+
+/** The boxes, over the image and scaled with it. Decoration only: the
+ *  readings table says in words what each one is. */
+function Marks({
+  marks,
+  width,
+  height,
+}: {
+  marks: readonly ReadingMark[];
+  width: number;
+  height: number;
+}) {
+  return (
+    <div className="vd-compare__marks" aria-hidden="true">
+      {marks.map((mark, index) => (
+        <div
+          // Marks carry no identity of their own, and the list is redrawn whole.
+          key={index}
+          className={['vd-compare__mark', mark.emphasis && 'vd-compare__mark--emphasis']
+            .filter(Boolean)
+            .join(' ')}
+          style={{
+            left: share(mark.x, width),
+            top: share(mark.y, height),
+            width: share(mark.width, width),
+            height: share(mark.height, height),
+          }}
+        />
+      ))}
+    </div>
+  );
 }
 
 /** One shot, or the sentence that says why there is none. */
-function Shot({ kind, shots, variant, className }: ShotProps) {
+function Shot({ kind, shots, variant, actual = false, marks = [] }: ShotProps) {
   const src = shots[kind];
 
   if (src === undefined) {
     return <p className="vd-compare__absent">{absentShotCopy(variant, kind)}</p>;
   }
 
-  return (
+  const image = (
     <img
-      className={['vd-compare__shot', className].filter(Boolean).join(' ')}
+      className={['vd-compare__shot', actual && 'vd-compare__shot--actual']
+        .filter(Boolean)
+        .join(' ')}
       src={src}
       alt={kind}
     />
+  );
+  // The variant's size IS the candidate's, which is the space the boxes were
+  // measured in. A variant that never had one records none.
+  const { width, height } = variant;
+  if (kind !== 'candidate' || marks.length === 0 || !width || !height) return image;
+
+  return (
+    <div className={`vd-compare__marked${actual ? ' vd-compare__marked--actual' : ''}`}>
+      {image}
+      <Marks marks={marks} width={width} height={height} />
+    </div>
   );
 }
 
@@ -299,9 +344,25 @@ interface StageProps extends SplitStageProps {
   /** Whether slider mode has two shots to split. One side missing is not a
    *  split with an empty half — it is a single shot. */
   split: boolean;
+  marks: readonly ReadingMark[];
+  /** Whether a reading is being pointed at while the mode shows no after
+   *  screenshot: the stage shows it for as long as that lasts. */
+  preview: boolean;
 }
 
-function Stage({ mode, split, shots, variant, position, onPosition }: StageProps) {
+function Stage({
+  mode,
+  split,
+  shots,
+  variant,
+  position,
+  onPosition,
+  marks,
+  preview,
+}: StageProps) {
+  if (preview)
+    return <Shot kind="candidate" shots={shots} variant={variant} marks={marks} />;
+
   if (split) {
     return (
       <SplitStage
@@ -320,7 +381,8 @@ function Stage({ mode, split, shots, variant, position, onPosition }: StageProps
       kind={shotFor(mode, shots)}
       shots={shots}
       variant={variant}
-      className={mode === 'actual size' ? 'vd-compare__shot--actual' : undefined}
+      actual={mode === 'actual size'}
+      marks={marks}
     />
   );
 }
@@ -335,8 +397,7 @@ function Stage({ mode, split, shots, variant, position, onPosition }: StageProps
  * `scrollable-region-focusable`. Unconditional, because whether a given
  * screenshot overflows is a runtime measurement this component cannot make. The
  * `Stage`'s own controls are pointer affordances on the image, not tab stops
- * that would carry the scroll. The design view's stage needs none: each of its
- * panes is focusable and moves its own image.
+ * that would carry the scroll.
  */
 function ModesStage(props: StageProps) {
   return (
@@ -348,79 +409,31 @@ function ModesStage(props: StageProps) {
 
 interface ComparisonHeadProps {
   title: string;
-  against: Against;
-  onAgainst: (against: Against) => void;
-  /** The design view's layout, or null where the split toggle is not offered:
-   *  reading against before, or below the breakpoint. */
-  layout: Split | null;
-  onLayout: (layout: Split) => void;
-  /** Whether the grid is on, or null where it is not offered: before. */
-  grid: boolean | null;
-  onGrid: (grid: boolean) => void;
-  /** The modes the toolbar offers, or null in the design view. */
-  modes: readonly ComparisonMode[] | null;
+  modes: readonly ComparisonMode[];
   mode: ComparisonMode;
   onMode: (mode: ComparisonMode) => void;
 }
 
-/** The modal's head: what is on screen, what it is read against, and how. */
-function ComparisonHead({
-  title,
-  against,
-  onAgainst,
-  layout,
-  onLayout,
-  grid,
-  onGrid,
-  modes,
-  mode,
-  onMode,
-}: ComparisonHeadProps) {
+/** The modal's head: what is on screen, and how it is being looked at. */
+function ComparisonHead({ title, modes, mode, onMode }: ComparisonHeadProps) {
   return (
     <Stack direction="row" gap={3} align="baseline" wrap className="vd-compare__head">
       <Text variant="code" as="h2" className="vd-compare__title" title={title}>
         {title}
       </Text>
 
-      {/* The toggle and the split button travel together: both say how the
-          after screenshot is being read, and the split only exists once the
-          toggle says design. */}
-      <Stack direction="row" gap={2} align="center">
-        {/* The group's name, shown as well as announced — x-visual-diff-pages draws it.
-            Hidden from the tree: the control already carries it as its name. */}
-        <span className="vd-compare__label vd-mono" aria-hidden="true">
-          {AGAINST_LABEL}
-        </span>
-        <SegmentedControl
-          label={AGAINST_LABEL}
-          className="vd-compare__against"
-          options={AGAINST.map((name) => ({ value: name, label: name }))}
-          value={against}
-          onChange={(picked) => {
-            if (isAgainst(picked)) onAgainst(picked);
-          }}
-        />
-
-        <ViewControls layout={layout} onLayout={onLayout} grid={grid} onGrid={onGrid} />
-      </Stack>
-
-      {/* Unmounted, not disabled, in the design view: every mode answers
-          how after moved from before, and none of them can be run against
-          a board that shares no pixel grid with a screenshot. */}
-      {modes && (
-        <SegmentedControl
-          role="toolbar"
-          label={TOOLBAR_LABEL}
-          className="vd-compare__modes"
-          options={modes.map((name) => ({ value: name, label: name }))}
-          value={mode}
-          // The control's API is a plain string — the guard is what narrows
-          // it back to a mode, rather than a cast that would assume it.
-          onChange={(picked) => {
-            if (isComparisonMode(picked)) onMode(picked);
-          }}
-        />
-      )}
+      <SegmentedControl
+        role="toolbar"
+        label={TOOLBAR_LABEL}
+        className="vd-compare__modes"
+        options={modes.map((name) => ({ value: name, label: name }))}
+        value={mode}
+        // The control's API is a plain string — the guard is what narrows it
+        // back to a mode, rather than a cast that would assume it.
+        onChange={(picked) => {
+          if (isComparisonMode(picked)) onMode(picked);
+        }}
+      />
     </Stack>
   );
 }
@@ -431,18 +444,31 @@ function ComparisonHead({
  * other. A variant with one side carries `compare.mjs`'s zeros, and `0 px
  * differ in the shared area` over a story with no baseline reports a clean
  * shared area that never existed. The stage below already says which side is
- * missing. The design view says what a board is instead.
+ * missing.
+ *
+ * An added variant has nothing to be read against here, so the line says where
+ * it can be read: beside its design, in the after set's shot view.
  */
 function Metric({
-  design,
   pair,
   variant,
+  after,
 }: {
-  design: boolean;
   pair: boolean;
   variant: Variant;
+  after: string;
 }) {
-  if (design) return <p className="vd-compare__metric">{DESIGN_NOTE}</p>;
+  const design = designHref(variant, after);
+  if (design !== null) {
+    return (
+      <p className="vd-compare__metric">
+        no before to compare against ·{' '}
+        <Link as={NextLink} href={design}>
+          {DESIGN_LINK}
+        </Link>
+      </p>
+    );
+  }
   if (!pair) return null;
 
   return (
@@ -455,9 +481,7 @@ function Metric({
 
 interface ViewInput {
   mode: ComparisonMode;
-  against: Against;
   wide: boolean;
-  layout: Split;
   bucket: Variant['bucket'];
 }
 
@@ -465,30 +489,48 @@ interface ViewInput {
  * What the modal shows, from what was asked and where it is shown — every
  * either-or the render would otherwise make inline.
  */
-function viewFor({ mode, against, wide, layout, bucket }: ViewInput) {
-  const design = against === 'design';
-  const offered = modesFor(wide);
+function viewFor({ mode, wide, bucket }: ViewInput) {
+  const modes = modesFor(wide);
   // A link written on a desktop opens on a phone, where `actual size` has no
   // control: the stage and the toolbar have to be showing the same mode.
-  const active = offered.includes(mode) ? mode : DEFAULT_MODE;
+  const active = modes.includes(mode) ? mode : DEFAULT_MODE;
   // One question, asked once: did the differ have two shots to work with. The
   // slider needs it to have a second layer to reveal, and the metric needs it
   // to have a shared area to have measured.
   const pair = compared(bucket);
 
-  return {
-    design,
-    active,
-    pair,
-    // No modes in the design view: none of them can be run against a board.
-    modes: design ? null : offered,
-    split: !design && active === 'slider' && pair,
-    // The split toggle is offered only where it changes something.
-    headLayout: design && wide ? layout : null,
-    // Below the breakpoint the sheet stacks the panes whatever was picked.
-    stageLayout: wide ? layout : ('rows' as Split),
-  };
+  return { modes, active, pair, split: active === 'slider' && pair };
 }
+
+/** The modes that show the after screenshot on its own, where its boxes can
+ *  be drawn without moving the stage. */
+const SHOWS_AFTER: readonly ComparisonMode[] = ['candidate', 'actual size'];
+
+interface Pointing {
+  marks: readonly ReadingMark[];
+  /** Whether a row is under the pointer or holds focus — a preview, as
+   *  opposed to a press. */
+  hovering: boolean;
+  mode: ComparisonMode;
+  shots: ShotSources;
+}
+
+/**
+ * Whether the stage steps aside for the after screenshot.
+ *
+ * The readings measure the after capture, so the box a reader points at only
+ * means something drawn on it — and the mode on show may be the diff. A row
+ * under the pointer or holding focus shows the after screenshot for as long as
+ * it does, then hands the stage back to the mode. A press does not: it is a
+ * choice that outlasts the pointer, and a stage that stayed on the after
+ * screenshot would be contradicting the toolbar. Its box is drawn wherever the
+ * after screenshot is on show.
+ */
+const previewFor = ({ marks, hovering, mode, shots }: Pointing) =>
+  hovering &&
+  marks.some((mark) => mark.emphasis) &&
+  shots.candidate !== undefined &&
+  !SHOWS_AFTER.includes(mode);
 
 export interface ComparisonModalProps {
   reportId: string;
@@ -500,26 +542,32 @@ export interface ComparisonModalProps {
   variants: readonly Variant[];
   sides: ReportSides;
   mode: ComparisonMode;
-  /** What the after screenshot is read against: its before, or a design board. */
-  against: Against;
-  /** The board the design view shows. Read only while `against` is design. */
-  board: DesignBoard;
-  /** What the spacing did on this variant, for the design view's readings
-   *  panel. Read on the server (lib/ledger.ts), never fetched from here. */
+  /** What the spacing did on the variant the address was loaded with, for the
+   *  readings beneath the shots. Read on the server (lib/ledger.ts), never
+   *  fetched from here. */
   ledger: LedgerReport | null;
   onMode: (mode: ComparisonMode) => void;
-  onAgainst: (against: Against) => void;
-  onBoard: (board: DesignBoard) => void;
   onVariant: (variant: Variant) => void;
   onClose: () => void;
 }
 
-/** The keys line under the stage: the design view's own, then each form factor's. */
-const hintFor = (design: boolean, wide: boolean) => {
-  if (design) return DESIGN_HINT;
+/**
+ * The spacing readings' state: which row is pressed, which is being pointed at,
+ * and the boxes that follow from both. Held here rather than in the panel,
+ * because the boxes are drawn on the stage.
+ */
+function useReadings(ledger: LedgerReport | null, key: string) {
+  const [pressed, setPressed] = useState<number | null>(null);
+  const [hovered, setHovered] = useState<number | null>(null);
 
-  return wide ? DESKTOP_HINT : SHEET_HINT;
-};
+  const readings = readingsFor(ledger && pairedReadings(ledger), key);
+  const shown = hovered ?? pressed;
+  // Only while a reading is pointed at: a box nobody asked about is a line
+  // across the very pixels the modes are for.
+  const marks = shown === null ? [] : marksFor(readings?.rows ?? [], shown);
+
+  return { readings, pressed, setPressed, hovering: hovered !== null, setHovered, marks };
+}
 
 export function ComparisonModal({
   reportId,
@@ -527,98 +575,68 @@ export function ComparisonModal({
   variants,
   sides,
   mode,
-  against,
-  board,
   ledger,
   onMode,
-  onAgainst,
-  onBoard,
   onVariant,
   onClose,
 }: ComparisonModalProps) {
   const wide = useMediaQuery(WIDE_VIEWPORT, true);
   const [position, setPosition] = useState(MIDPOINT);
-  // How the reader likes to look, not what they are looking at — so not in the
-  // URL, like the zoom. Only offered above the breakpoint: below it the sheet
-  // stacks the panes whatever this says.
-  const [layout, setLayout] = useState<Split>('columns');
-  // Off unless asked for, and not in the URL either: like the zoom it lays,
-  // it is a way of looking, not a thing to point someone at.
-  const [gridOn, setGridOn] = useState(false);
+  const { readings, pressed, setPressed, hovering, setHovered, marks } = useReadings(
+    ledger,
+    variant.key,
+  );
 
   useVariantKeys({ variants, current: variant, onVariant });
 
   const shots = shotSources(reportId, variant);
-  const { modes, active, pair, design, split, headLayout, stageLayout } = viewFor({
+  const { modes, active, pair, split } = viewFor({
     mode,
-    against,
     wide,
-    layout,
     bucket: variant.bucket,
   });
+  const preview = previewFor({ marks, hovering, mode: active, shots });
 
   const title = comparisonTitle(variant);
 
   return (
-    <Dialog
-      open
-      onClose={onClose}
-      label={DIALOG_LABEL}
-      className={`vd-compare${design ? ' vd-compare--design' : ''}`}
-    >
+    <Dialog open onClose={onClose} label={DIALOG_LABEL} className="vd-compare">
       <Stack gap={3}>
-        <ComparisonHead
-          title={title}
-          against={against}
-          onAgainst={onAgainst}
-          layout={headLayout}
-          onLayout={setLayout}
-          grid={design ? gridOn : null}
-          onGrid={setGridOn}
-          modes={modes}
+        <ComparisonHead title={title} modes={modes} mode={active} onMode={onMode} />
+
+        <Metric pair={pair} variant={variant} after={sides.b} />
+
+        <ModesStage
           mode={active}
-          onMode={onMode}
+          split={split}
+          shots={shots}
+          variant={variant}
+          position={position}
+          onPosition={setPosition}
+          marks={marks}
+          preview={preview}
         />
 
-        <Metric design={design} pair={pair} variant={variant} />
-
-        {design ? (
-          <DesignStage
-            split={stageLayout}
-            grid={gridOn}
-            board={board}
-            onBoard={onBoard}
-            shot={{
-              key: variant.key,
-              src: shots.candidate,
-              absent: absentShotCopy(variant, 'candidate'),
-              caption: `after · ${sides.b}`,
-              // Pinned: the acceptance suite finds the after pane by these.
-              alt: 'candidate',
-              label: 'after screenshot',
-            }}
-            ledger={ledger && pairedReadings(ledger)}
-          />
-        ) : (
-          <ModesStage
-            mode={active}
-            split={split}
-            shots={shots}
-            variant={variant}
-            position={position}
-            onPosition={setPosition}
-          />
-        )}
-
         {split && <Scrubber position={position} onPosition={setPosition} />}
+
+        {/* Beneath the shots, folded: the weight here is the pixels, and the
+            readings are reference beside them, never a verdict. */}
+        <SpacingReadings
+          ledger={readings}
+          pressed={pressed}
+          onPress={setPressed}
+          onHover={setHovered}
+          folded
+          foldEmpty
+        />
 
         <Stack direction="row" gap={3} align="center" wrap className="vd-compare__foot">
           <p className="vd-compare__sides vd-mono">
             A {sides.a} · B {sides.b}
           </p>
-          <CopyLink about={`${variant.key}|${active}|${against}|${board}`} />
+          <CopyLink about={`${variant.key}|${active}`} />
         </Stack>
-        <p className="vd-compare__hint vd-mono">{hintFor(design, wide)}</p>
+        <p className="vd-compare__hint vd-mono">{wide ? DESKTOP_HINT : SHEET_HINT}</p>
       </Stack>
     </Dialog>
   );

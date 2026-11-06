@@ -11,21 +11,20 @@ import {
 import type { DesignBoard } from '@/lib/comparison';
 import type { BoardCrop } from '@/hooks/useBoardCrop';
 import { BoardPane, useLocalImage } from './BoardPane';
-import type { ReadingRow, Readings } from '@/lib/readings';
+import { marksFor, type Readings, readingsFor } from '@/lib/readings';
 import { type ReadingsSubject, SpacingReadings } from './SpacingReadings';
 
 /**
  * A design board — or an image from the reader's own computer — in one pane, a
- * screenshot in the other: the comparison modal's design view, and the whole of
- * a set's shot view.
+ * screenshot in the other: the whole of a set's shot view.
  *
- * Its own module because it is its own view. Whoever hosts it decides whether it
- * is on show and how it is split; everything inside the two panes is here. The
- * screenshot arrives already described ({@link DesignShot}), so the stage never
- * has to know whether it is the after side of a comparison or one shot of a set.
+ * Its own module because it is its own view. Whoever hosts it decides how it is
+ * split; everything inside the two panes is here. The screenshot arrives already
+ * described ({@link DesignShot}), so the stage never has to know where it came
+ * from.
  */
 
-/** How the design view lays its two panes out: side by side, or the board
+/** How the stage lays its two panes out: side by side, or the board
  *  stacked over the screenshot. */
 export type Split = 'columns' | 'rows';
 
@@ -36,7 +35,7 @@ const SHOT_MAGNIFY = 8;
  * What both panes are handed so they move alike. The shot view reads pixels by
  * eye, so its panes magnify past a shot's own size (#547) — both by the same
  * factor, so a synced view stays pixel for pixel — and, synced, they hold one
- * view. The comparison modal passes no tools and keeps the natural cap.
+ * view. A host that passes no tools keeps the natural cap.
  */
 function followOf(
   tools: ShotTools | undefined,
@@ -49,10 +48,6 @@ function followOf(
 
 /** The box toggle's name, pinned the way the upload button's is. */
 const BOXES_LABEL = 'show spacing boxes';
-
-/** One box to outline, as `PanZoom` takes it — the type it already owns,
- *  reached through its props rather than re-declared here. */
-type Mark = NonNullable<PanZoomProps['marks']>[number];
 
 /** The screenshot pane's subject, as its host names it. */
 export interface DesignShot {
@@ -85,8 +80,7 @@ interface DesignStageProps {
   /** Passed through to the panel: whether it folds, and what it is beside. */
   readingsFolded?: boolean | null;
   subject?: ReadingsSubject;
-  /** The shot view's visual-comparison tools; the comparison modal passes none,
-   *  and its design view is exactly what it was. */
+  /** The shot view's visual-comparison tools. */
   tools?: ShotTools;
 }
 
@@ -114,68 +108,18 @@ export interface ShotTools {
 }
 
 /**
- * The readings for the variant on screen, and nothing for any other.
- *
- * Walking the report with ← → writes the address with `history.replaceState`
- * and asks the server for nothing (ComparisonRoute explains why), so the report
- * this component holds goes on being the one the address was LOADED with. Its
- * own `key` is what makes that visible: readings from another variant would be
- * a panel describing one screenshot beside another, with its boxes drawn on the
- * wrong image. The panel says it has no ledger instead, which is the truth about
- * what it was handed.
- */
-const readingsFor = (ledger: Readings | null, key: string) =>
-  ledger?.key === key ? ledger : null;
-
-/**
- * The boxes the readings point at, one per distinct rect.
- *
- * Four paddings on one element are four rows and ONE outline: `MarksOverlay`
- * draws them in order, so four identical boxes would bury the emphasized one
- * under three plain hairlines. A box is emphasized when the row a reader is
- * pointing at is one of its own — which is how a press on any of that element's
- * rows lights up the same box.
- *
- * Rects arrive in the after screenshot's own pixels, which is the space
- * `PanZoom` draws marks in, so they are handed over as measured.
- */
-function marksFor(changes: readonly ReadingRow[], shown: number | null): Mark[] {
-  // The rect itself is what tells two readings they are on one element, so its
-  // four numbers are the key the boxes are collected under.
-  const emphasis = shown === null ? null : (changes[shown]?.rect?.join() ?? null);
-  const outlined = new Map<string, Mark>();
-
-  for (const { rect } of changes) {
-    if (rect === null) continue;
-
-    const [x, y, width, height] = rect;
-    if (x === undefined || y === undefined) continue;
-    if (width === undefined || height === undefined) continue;
-
-    const key = rect.join();
-    if (!outlined.has(key)) {
-      outlined.set(key, { x, y, width, height, emphasis: key === emphasis });
-    }
-  }
-
-  return [...outlined.values()];
-}
-
-/**
- * A design board beside the after screenshot — reference, never a side.
+ * A design board beside a screenshot — reference, never a side.
  *
  * The board is a `PanZoom`, keyed by board so a new pick opens at 100% rather
- * than at the last board's zoom. The after side is the same `Shot` the modes
- * draw, so a removed variant says "not on this side" here exactly as it does
- * there. Nothing is compared: the reviewer pans to the tile and judges by eye.
+ * than at the last board's zoom. A screenshot that does not exist is the
+ * sentence its host wrote for it, never an empty frame. Nothing is compared:
+ * the reader pans to the tile and judges by eye.
  *
- * Under both panes, one more thing that is reference beside a comparison: the
- * spacing readings, and the boxes on the after screenshot they point at. The
- * two halves are HERE together because the panel's pressed row and the pane's
- * emphasized mark are one state in two places — a row is pointed at, and the
- * box it measures lights up. The panel is a full-width row of its own and never
- * part of the modal's head, which is what keeps the design view free of the
- * `role="toolbar"` an acceptance scenario asserts is absent.
+ * Under both panes, the spacing readings, and the boxes on the screenshot they
+ * point at. The two halves are HERE together because the panel's pressed row
+ * and the pane's emphasized mark are one state in two places — a row is pointed
+ * at, and the box it measures lights up. The panel is a full-width row of its
+ * own and never part of the head.
  */
 export function DesignStage({
   split,
@@ -280,8 +224,7 @@ export function DesignStage({
         )}
       </div>
 
-      {/* A full-width row below both panes, as x-visual-diff-pages draws it — never in the
-          modal's head, which is what keeps the design view free of a toolbar. */}
+      {/* A full-width row below both panes, as x-visual-diff-pages draws it. */}
       <SpacingReadings
         ledger={readings}
         pressed={pressed}

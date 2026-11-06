@@ -1,4 +1,5 @@
 import { APP_TIER, appOf, parseVariantKey } from '@gate/visual-diff/policy';
+import { shotViewHref } from './shots';
 import type { Variant } from './summary';
 import { storyTitle } from './title';
 
@@ -114,19 +115,11 @@ export function comparisonHref(
   reportId: string,
   key: string,
   mode: ComparisonMode | null = null,
-  view: ComparisonView = {},
 ): string {
-  const params = new URLSearchParams();
-  if (mode !== null && mode !== DEFAULT_MODE) params.set('mode', mode);
-  if (view.against === 'design') {
-    params.set('against', 'design');
-    if (view.board) params.set('board', view.board);
-  }
-
-  const query = params.toString();
   const at = comparisonPath(reportId, key);
+  if (mode === null || mode === DEFAULT_MODE) return at;
 
-  return query === '' ? at : `${at}?${query}`;
+  return `${at}?${new URLSearchParams({ mode })}`;
 }
 
 /** The report a comparison belongs to — where closing one lands. */
@@ -171,34 +164,20 @@ export const comparisonTitle = (variant: Pick<Variant, 'id' | 'viewport' | 'them
   `${storyTitle(variant.id)} · ${variant.viewport}/${variant.theme}`;
 
 /**
- * What a comparison is read against, beside its mode. `board` is the one the
- * reviewer picked, and null for "whichever this variant opens on" — so a link
- * carries a board only when someone chose one.
- */
-export interface ComparisonView {
-  against?: Against;
-  board?: DesignBoard | null;
-}
-
-/**
- * What the comparison is read against: its own _before_, or a design board.
+ * Where an `added` variant is read beside its design: its screenshot in the
+ * after set's shot view, where the board opens cropped to the story's tile.
  *
- * Kept apart from {@link COMPARISON_MODES} on purpose. Every mode answers "how
- * does after differ from before"; a design board answers a different question
- * — "is this what was drawn" — and has no shared pixel grid with a screenshot,
- * so no mode could be run against it honestly.
+ * Null for every other bucket. A comparison is read against its before and
+ * nothing else; a design board answers a different question — is this what was
+ * drawn — and a shot view answers it better than a board beside a comparison
+ * could. Only a variant with no before is left with nothing to be read against,
+ * so it is the one that points there.
  */
-export const AGAINST = ['before', 'design'] as const;
-
-export type Against = (typeof AGAINST)[number];
-
-export const DEFAULT_AGAINST: Against = 'before';
-
-export const isAgainst = (value: string | null): value is Against =>
-  AGAINST.some((against) => against === value);
+export const designHref = (variant: Pick<Variant, 'key' | 'bucket'>, after: string) =>
+  variant.bucket === 'added' ? shotViewHref(after, variant.key) : null;
 
 /**
- * The design boards a comparison can be read against: the PNGs exported from
+ * The design boards a set's shot view reads a screenshot beside: the PNGs exported from
  * each board's `designs/<stem>.pen` into `designs/exports/`, by file stem
  * (designs/STANDARD.md). The tier boards first, in tier order, then the
  * reference boards. The allowlist IS the route's confinement — a name not here

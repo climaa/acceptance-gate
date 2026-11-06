@@ -87,6 +87,38 @@
   image-rendering: pixelated;
 }
 
+/* The after screenshot with the boxes its readings point at. The boxes are
+   placed as shares of the shot's own pixels, so the frame they sit in has to
+   be exactly the image's box: the stage's width when fitted, the image's own
+   at 1:1. */
+.vd-compare__marked {
+  position: relative;
+}
+
+.vd-compare__marked--actual {
+  width: max-content;
+}
+
+/* A plain box is a hairline, the one a reader is pointing at a heavier line
+   over a wash of the same accent — PanZoom's marks, so a box reads the same in
+   a comparison and in a shot view. Nothing animates. */
+.vd-compare__marks {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.vd-compare__mark {
+  position: absolute;
+  box-sizing: border-box;
+  border: 1px solid var(--color-accent);
+}
+
+.vd-compare__mark--emphasis {
+  border-width: 2px;
+  background: var(--color-accent-subtle);
+}
+
 .vd-compare__absent {
   margin: 0;
   padding: var(--space-6);
@@ -260,11 +292,11 @@
   }
 }
 
-/* ---- The design view's spacing readings ---------------------------------- */
+/* ---- The spacing readings -------------------------------------------------- */
 
-/* A full-width row below both panes, as x-visual-diff-pages draws it: a panel in the same
-   ink as the console's, holding a heading, the mode it is reading in, and the
-   table. Never in the modal's head — the design view exposes no toolbar. */
+/* A full-width row below the shots, as x-visual-diff-pages draws it: a panel in
+   the same ink as the console's, holding a heading, the mode it is reading in,
+   and the table. Never in the head. */
 .vd-readings {
   display: flex;
   flex-direction: column;

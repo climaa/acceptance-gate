@@ -1,24 +1,20 @@
-Feature: Reading a comparison against a design board
+Feature: A comparison is read against its before, and only its before
 
-  The comparison modal can put a design board — an export of the design
-  file — beside the after screenshot, as reference. It is never compared.
+  A comparison answers what changed between two screenshots. A design board
+  answers a different question, whether a screenshot is what was drawn, and is
+  read in the set's shot view, where the board opens cropped to the story's
+  tile. The comparison links there instead of carrying a board itself.
 
-  Scenario: The design view puts a board beside the screenshot
+  Scenario: The comparison offers no design board
     Given a shared comparison link is open
-    When I compare it to the design
-    Then a design board is shown beside the after screenshot
-    And the comparison modes are gone
+    Then no design board is offered
+    And the comparison modes are shown
 
-  Scenario: The board cannot be zoomed out past fitting the pane
-    Given the design view is open
-    When I zoom the board in and back out
-    Then the board is at 100% and cannot be zoomed out further
+  Scenario: An added story links to its screenshot beside the design
+    Given a comparison of an added story is open
+    When I open it beside its design
+    Then its after screenshot is shown beside a design board
 
-  Scenario: Another board can be picked
-    Given the design view is open
-    When I pick the console board
-    Then the console board is shown
-
-  Scenario: A shared link opens on the board it names
+  Scenario: An old link to the design view opens the comparison
     When I open a comparison link naming the pages board
-    Then the pages board is shown
+    Then the comparison against its before is shown

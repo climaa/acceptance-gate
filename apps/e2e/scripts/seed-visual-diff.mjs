@@ -234,15 +234,21 @@ function graftReport(target, graft) {
   writeGraftedShots(join(target, 'reports', graft.report, 'shots'), graft.variants);
 }
 
-/** The three PNGs a reviewable variant is opened as. A `removed` variant has no
- *  candidate by definition — it is a baseline the run did not reproduce — so it
- *  gets neither a candidate nor a diff. */
+/** The PNGs each side of a grafted variant leaves behind. A `removed` variant
+ *  has no candidate by definition — it is a baseline the run did not reproduce —
+ *  and an `added` one no baseline, so neither gets a diff. */
+const GRAFTED_KINDS = {
+  removed: ['baseline'],
+  added: ['candidate'],
+};
+
+/** The three PNGs a reviewable variant is opened as, or the one a variant with
+ *  a single side has. */
 function writeGraftedShots(dir, variants) {
   mkdirSync(dir, { recursive: true });
 
   for (const variant of variants) {
-    const kinds =
-      variant.bucket === 'removed' ? ['baseline'] : ['baseline', 'candidate', 'diff'];
+    const kinds = GRAFTED_KINDS[variant.bucket] ?? ['baseline', 'candidate', 'diff'];
     for (const kind of kinds) {
       writeFileSync(
         join(dir, `${variant.key}.${kind}.png`),
@@ -378,6 +384,16 @@ function verifyReport(target, graft) {
   verifyCounts(graft.report, summary);
   check(summary.counts.a11y > 0, `${graft.report} carries no accessibility failure`);
   check(summary.counts.removed > 0, `${graft.report} carries no removed variant`);
+  // The added story the design scenario opens beside its design: its after set
+  // has to hold its screenshot, or the shot view it links to is a 404.
+  const added = summary.variants.filter((variant) => variant.bucket === 'added');
+  check(added.length > 0, `${graft.report} carries no added variant`);
+  for (const { key } of added) {
+    check(
+      existsAsFile(join(target, 'sets', graft.report.split('__')[1], `${key}.png`)),
+      `${graft.report}'s added ${key} is not in its after set`,
+    );
+  }
   check(
     summary.warnings.some((warning) => warning.includes('unstable')),
     `${graft.report} carries no warning about an unstable story`,
