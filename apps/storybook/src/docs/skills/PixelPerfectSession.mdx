@@ -96,7 +96,9 @@ It prints both images as runs of rows:
 
 It then pairs the ink runs and prints the screenshot's offset from the tile on each. An ink
 run also prints its column span, which is how a weight, a face or a tracking shows up: as a
-width. Here is the variant above:
+width. With `--save <dir>` it also writes the two images, for
+[Tile Diff](?path=/docs/docs-qa-tile-diff--docs): the session keeps that picture's mean
+difference, and a figure that rises after a fix stops it. Here is the variant above:
 
 ```text
 tile  designs/exports/01-atoms.png @1.318737 — 1248×25
