@@ -140,6 +140,7 @@ const preview: Preview = {
             [
               'Diff Policy',
               'Visual Diff Workflow',
+              'Tile Diff',
               'Acceptance Suite Locally',
               'The Deployed Console',
               'The Manual',
