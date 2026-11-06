@@ -7,7 +7,7 @@ transcribed from the GitHub Releases that existed when this file was created (20
 
 ## Unreleased
 
-- `scripts/pen/tile-diff.mjs` subtracts a screenshot from its tile, so where a tile parts from the page can be seen rather than guessed at beside it. It writes the difference as a PNG, black where the two agree, and prints its mean brightness, which compares two passes on one tile. It needs ffmpeg and ffprobe, and it gives no verdict: that stays with `tiles-from-dom.mjs --verify`.
+- `scripts/pen/tile-diff.mjs` subtracts a screenshot from its tile, so where a tile parts from the page can be seen rather than guessed at beside it. It writes the difference as a PNG, black where the two agree, and prints its mean brightness, which compares two passes on one tile. It needs ffmpeg and ffprobe, and it gives no verdict: that stays with `tiles-from-dom.mjs --verify`. Storybook documents it under Docs / QA / Tile Diff.
 
 - A story that draws nothing on purpose declares it with `visual-diff:absent`, and its capture records a token ledger with no elements instead of a `token ledger not recorded` warning. The four stories shot in an absence frame (SkipLink's `Default`, Pagination's `SinglePage`, StepList's and TagList's `Empty`) carry it; no screenshot changes. An untagged story whose walk finds nothing still warns, and a tagged one whose walk finds an element warns that the tag is stale.
 
