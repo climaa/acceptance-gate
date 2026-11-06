@@ -170,15 +170,18 @@ describe('Pagination', () => {
 });
 
 /**
- * Every export in a story module that opts out of capture, by name.
+ * Every export in a story module that carries `tag`, by name.
  *
  * `default` is included deliberately: Storybook merges a meta's tags into every
  * story it holds, so a skip written there would take the whole file out of the
  * gate while each named export still reported none of its own.
  */
-const skippingStories = (module: Record<string, { tags?: readonly string[] }>) =>
+const storiesTagged = (
+  module: Record<string, { tags?: readonly string[] }>,
+  tag: string,
+) =>
   Object.entries(module)
-    .filter(([, story]) => story?.tags?.includes(SKIP_TAG))
+    .filter(([, story]) => story?.tags?.includes(tag))
     .map(([name]) => name)
     .sort();
 
@@ -187,18 +190,12 @@ describe('the capture contract', () => {
     // Exact, over every export: the corpus-wide pin in src/__tests__ keys on the
     // file, so it cannot see a skip added here. `SinglePage` renders `null` and is
     // shot inside an absence frame instead of skipped.
-    expect(skippingStories(paginationStories)).toEqual([]);
+    expect(storiesTagged(paginationStories, SKIP_TAG)).toEqual([]);
   });
 
   it('declares the absence-framed story, and only it, as drawing nothing', () => {
     // The tag lets its empty token ledger stand as the answer instead of a warning;
     // on a story that draws, it would hide a walk that looked in the wrong place.
-    const absent = Object.entries(paginationStories)
-      .filter(([, story]) =>
-        (story as { tags?: readonly string[] })?.tags?.includes(ABSENT_TAG),
-      )
-      .map(([name]) => name);
-
-    expect(absent).toEqual(['SinglePage']);
+    expect(storiesTagged(paginationStories, ABSENT_TAG)).toEqual(['SinglePage']);
   });
 });
