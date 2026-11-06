@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  ABSENT_TAG,
   ALL_VIEWPORTS_TAG,
   FULLPAGE_TAG,
   LOCALES,
@@ -358,6 +359,22 @@ describe('planCaptures', () => {
     const { variants } = planCaptures(entries);
 
     expect(variants.every((variant) => variant.fullPage)).toBe(true);
+  });
+
+  it(`marks every variant of a ${ABSENT_TAG} story as drawing nothing`, () => {
+    const entries = readIndex(indexJson(storyEntry({ tags: [ABSENT_TAG] })));
+
+    const { variants } = planCaptures(entries);
+
+    expect(variants.every((variant) => variant.absent)).toBe(true);
+  });
+
+  it('expects an untagged story to draw something', () => {
+    const entries = readIndex(indexJson(storyEntry()));
+
+    const { variants } = planCaptures(entries);
+
+    expect(variants.every((variant) => variant.absent)).toBe(false);
   });
 
   it('shoots the capture target by default', () => {

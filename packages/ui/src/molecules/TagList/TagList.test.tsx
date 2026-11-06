@@ -1,4 +1,4 @@
-import { SKIP_TAG } from '@gate/visual-diff/policy';
+import { ABSENT_TAG, SKIP_TAG } from '@gate/visual-diff/policy';
 import { cleanup, render, screen } from '@testing-library/react';
 import type { AnchorHTMLAttributes } from 'react';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -98,5 +98,17 @@ describe('the capture contract', () => {
     // file, so it cannot see a skip added here. `Empty` renders `null` and is shot
     // inside an absence frame instead of skipped.
     expect(skippingStories(tagListStories)).toEqual([]);
+  });
+
+  it('declares the absence-framed story, and only it, as drawing nothing', () => {
+    // The tag lets its empty token ledger stand as the answer instead of a warning;
+    // on a story that draws, it would hide a walk that looked in the wrong place.
+    const absent = Object.entries(tagListStories)
+      .filter(([, story]) =>
+        (story as { tags?: readonly string[] })?.tags?.includes(ABSENT_TAG),
+      )
+      .map(([name]) => name);
+
+    expect(absent).toEqual(['Empty']);
   });
 });

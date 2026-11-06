@@ -21,6 +21,7 @@ type Story = StoryObj<typeof SkipLink>;
 // empty absence frame — and that emptiness is the assertion: a link that leaks out
 // of its clip lands ink in it. The revealed appearance is baselined by `Revealed`.
 export const Default: Story = {
+  tags: ['visual-diff:absent'],
   decorators: [
     (Story) => (
       <div style={ABSENCE_FRAME}>

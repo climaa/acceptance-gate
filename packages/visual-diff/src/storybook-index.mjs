@@ -10,6 +10,7 @@
 // no stories in it all throw instead of shrinking the plan.
 
 import {
+  ABSENT_TAG,
   ALL_VIEWPORTS_TAG,
   FULLPAGE_TAG,
   LOCALES,
@@ -35,9 +36,10 @@ import {
 
 /** One cell of the capture matrix for one story: everything `capture.mjs` needs to
  *  take the shot and name the file it writes. `locale` only on a {@link LOCALES_TAG}
- *  story; `root` is the build that serves it, when its entry named one.
+ *  story; `root` is the build that serves it, when its entry named one; `absent` is
+ *  {@link ABSENT_TAG}, read by the ledger and never by the shot.
  *  @typedef {{ id: string, tier: Tier, viewport: ViewportName, theme: Theme,
- *              locale?: string, fullPage: boolean, key: string,
+ *              locale?: string, fullPage: boolean, absent: boolean, key: string,
  *              root?: string }} PlannedVariant */
 
 /** The gate is broken: the corpus could not be enumerated at all. Its own class because
@@ -188,12 +190,14 @@ function variantsOf(entry) {
   }
 
   const fullPage = entry.tags.includes(FULLPAGE_TAG);
+  const absent = entry.tags.includes(ABSENT_TAG);
   const modes = modesFor(tier, viewportOverride(entry));
   const root = entry.root === undefined ? {} : { root: entry.root };
   return localesFor(modes, entry.tags.includes(LOCALES_TAG)).map((mode) => ({
     ...mode,
     id: entry.id,
     fullPage,
+    absent,
     key: variantKey({ ...mode, id: entry.id }),
     ...root,
   }));

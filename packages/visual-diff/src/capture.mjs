@@ -28,6 +28,7 @@ import {
 } from './determinism.mjs';
 import { axOf, buildLedger, ledgerExpression } from './ledger.mjs';
 import {
+  ABSENT_TAG,
   CAPTURE_TARGET,
   COLOR_SCHEME_GLOBAL,
   LOCALE_GLOBAL,
@@ -636,9 +637,11 @@ export async function traceNodes(cdp, budgetMs, now = () => performance.now()) {
  *  the pure core names every value. Throws when the walk found nothing — a story with
  *  visible content always has something to measure, so an empty walk is a walk that
  *  looked in the wrong place, and a ledger that silently says "no spacing" would pass.
+ *  The one exception is a story that declares {@link ABSENT_TAG}: drawing nothing is
+ *  its answer, so its empty walk is recorded as a ledger with no elements.
  *  @param {Page} page @param {PlannedVariant} variant
  *  @returns {Promise<import('./ledger.mjs').Ledger>} */
-async function collectLedger(page, variant) {
+export async function collectLedger(page, variant) {
   const fullPage = Boolean(variant.fullPage);
   const collected = await page.evaluate(
     ledgerExpression({
@@ -649,6 +652,8 @@ async function collectLedger(page, variant) {
     }),
   );
   if (collected.elements.length === 0) {
+    if (variant.absent)
+      return buildLedger({ key: variant.key, fullPage, collected, traced: [] });
     throw new Error('the walk found no element to measure');
   }
 
@@ -659,6 +664,17 @@ async function collectLedger(page, variant) {
   } finally {
     await cdp.detach().catch(() => undefined);
   }
+}
+
+/** The warning a {@link ABSENT_TAG} story earns once its walk finds something: the
+ *  story has started drawing, so the tag no longer says what it renders. The ledger is
+ *  still kept — it measured real elements — and the tag is the thing to fix.
+ *  @param {PlannedVariant} variant @param {import('./ledger.mjs').Ledger} ledger
+ *  @returns {string | null} */
+function staleAbsence(variant, ledger) {
+  const measured = ledger.elements.length;
+  if (!variant.absent || measured === 0) return null;
+  return `${ABSENT_TAG} is stale: the walk measured ${measured} element(s) on a story that declares it draws nothing`;
 }
 
 /** The two steps after the shot. A seam for the bulkhead's test, never for a caller. */
@@ -678,11 +694,8 @@ export async function afterShot(page, variant, options = {}, steps = AFTER_SHOT_
   if (!options.ledger) return { violations };
 
   try {
-    return {
-      violations,
-      ledger: await steps.collectLedger(page, variant),
-      ledgerWarning: null,
-    };
+    const ledger = await steps.collectLedger(page, variant);
+    return { violations, ledger, ledgerWarning: staleAbsence(variant, ledger) };
   } catch (cause) {
     return {
       violations,

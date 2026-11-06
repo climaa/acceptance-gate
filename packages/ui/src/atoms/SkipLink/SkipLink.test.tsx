@@ -1,4 +1,4 @@
-import { SKIP_TAG } from '@gate/visual-diff/policy';
+import { ABSENT_TAG, SKIP_TAG } from '@gate/visual-diff/policy';
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 
@@ -86,5 +86,17 @@ describe('the capture contract', () => {
     // nothing, and `Default` is shot inside an absence frame instead of skipped —
     // the empty frame is the baseline that says it stays clipped.
     expect(skippingStories(skipLinkStories)).toEqual([]);
+  });
+
+  it('declares the absence-framed story, and only it, as drawing nothing', () => {
+    // The tag lets its empty token ledger stand as the answer instead of a warning;
+    // on a story that draws, it would hide a walk that looked in the wrong place.
+    const absent = Object.entries(skipLinkStories)
+      .filter(([, story]) =>
+        (story as { tags?: readonly string[] })?.tags?.includes(ABSENT_TAG),
+      )
+      .map(([name]) => name);
+
+    expect(absent).toEqual(['Default']);
   });
 });

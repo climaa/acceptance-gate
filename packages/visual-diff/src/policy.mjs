@@ -70,6 +70,14 @@ export const SKIP_TAG = 'visual-diff:skip';
  *  template whose fixed header only exists relative to the viewport, say. */
 export const FULLPAGE_TAG = 'visual-diff:fullpage';
 
+/** Applied to a story that draws nothing on purpose — shot inside an absence frame,
+ *  whose empty baseline is the assertion that the state leaves no ink. It changes
+ *  nothing about the shot. It tells the token ledger that an empty walk is the story's
+ *  answer rather than a walk that looked in the wrong place, so the variant records a
+ *  ledger with no elements instead of a warning. A tagged story whose walk does find
+ *  an element has started drawing, and the tag has gone stale: that one warns. */
+export const ABSENT_TAG = 'visual-diff:absent';
+
 /** Per-story override of {@link TIER_VIEWPORTS}: capture at every viewport in
  *  {@link VIEWPORTS} whatever the tier says. For the component that does reflow with
  *  width — a molecule carrying a container query — without promoting its whole tier. */

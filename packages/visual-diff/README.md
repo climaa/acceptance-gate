@@ -43,7 +43,9 @@ this default with a tag: `visual-diff:skip` excludes it entirely (reported, not 
 `visual-diff:fullpage` shoots the whole page instead of the `#storybook-root` capture
 target, `visual-diff:all-viewports` widens an atom/molecule to both viewports, and
 `visual-diff:mobile-only` narrows a story to the mobile viewport alone, for a component
-that only exists on a phone; a story carrying both is refused.
+that only exists on a phone; a story carrying both is refused. `visual-diff:absent` changes
+nothing about the shot: it declares a story that draws nothing on purpose, so its token
+ledger is recorded empty rather than warned about.
 
 The stories come from every Storybook build in `PATHS.storybookStatics`, each read from
 its own `index.json` and served on its own for its own stories, since Storybook refs never
