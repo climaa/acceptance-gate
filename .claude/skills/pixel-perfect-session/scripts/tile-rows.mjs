@@ -6,7 +6,7 @@
 // its overflow (designs/STANDARD.md, "Geometry") misstates once the first card
 // drifts.
 //
-//   node .claude/skills/pixel-perfect-session/scripts/tile-rows.mjs <shot URL | variant key> [--png <file>] [--storybook <origin>]
+//   node .claude/skills/pixel-perfect-session/scripts/tile-rows.mjs <shot URL | variant key> [--png <file>] [--storybook <origin>] [--save <dir>]
 //
 // The one input a session needs is the console's shot view, the page the reader
 // was already looking at:
@@ -19,6 +19,9 @@
 // served the URL, which is how a set that is not `baselines` — a capture taken
 // to judge a change before accepting it — is read the same way. A bare variant
 // key reads the committed baseline off disk; `--png` reads any file instead.
+// `--save` writes the two images it read as `tile.png` and `shot.png`, for
+// scripts/pen/tile-diff.mjs: the tile's crop exists nowhere else, and a fetched
+// screenshot is not a file.
 //
 // The export's pixels are the board at its sidecar scale, so the tile's crop is
 // box-averaged back to 1:1 before it is classified. An export draws a frame's
@@ -29,7 +32,7 @@
 // purpose: this script lives with its skill, outside any workspace package, and
 // the differ's PNG reader is the one reader the corpus already trusts.
 import { createRequire } from 'node:module';
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -93,7 +96,7 @@ function parseKey(key) {
 }
 
 const USAGE =
-  'usage: tile-rows.mjs <shot URL | variant key> [--png <file>] [--storybook <origin>]';
+  'usage: tile-rows.mjs <shot URL | variant key> [--png <file>] [--storybook <origin>] [--save <dir>]';
 
 /** A failure the reader caused: printed as one line, with the usage, and no
  *  stack — a missing argument is not a bug in this script. @param {string} why */
@@ -104,14 +107,15 @@ function usageError(why) {
 
 /** @param {string} argv0 @param {string[]} rest */
 function parseArgs(argv0, rest) {
-  /** @type {{ png: string | undefined, storybook: string }} */
-  const flags = { png: undefined, storybook: STORYBOOK };
+  /** @type {{ png: string | undefined, storybook: string, save: string | undefined }} */
+  const flags = { png: undefined, storybook: STORYBOOK, save: undefined };
   for (let i = 0; i < rest.length; i += 2) {
     const [flag, value] = [rest[i], rest[i + 1]];
     if (value === undefined || value.startsWith('--'))
       usageError(`${flag} needs a value`);
     if (flag === '--png') flags.png = resolve(value);
     else if (flag === '--storybook') flags.storybook = value.replace(/\/$/, '');
+    else if (flag === '--save') flags.save = resolve(value);
     else usageError(`unknown flag ${flag}`);
   }
   return { target: parseTarget(argv0), ...flags };
@@ -398,6 +402,18 @@ function printInkPairs(tile, shot) {
   }
 }
 
+/** Writes both images as files and says how to subtract them.
+ *  @param {string} dir @param {Image} tile @param {Image} shot */
+function saveImages(dir, tile, shot) {
+  mkdirSync(dir, { recursive: true });
+  const [tilePng, shotPng] = [join(dir, 'tile.png'), join(dir, 'shot.png')];
+  writeFileSync(tilePng, PNG.sync.write(tile));
+  writeFileSync(shotPng, PNG.sync.write(shot));
+  process.stdout.write(
+    `\nsaved\n  node scripts/pen/tile-diff.mjs ${tilePng} ${shotPng}\n`,
+  );
+}
+
 async function main() {
   const [first, ...rest] = process.argv.slice(2);
   if (!first) usageError('no shot URL or variant key');
@@ -415,6 +431,7 @@ async function main() {
   printImage(`tile  designs/exports/${tile.stem}.png @${tile.scale}`, tileImage);
   printImage(`shot  ${shot.from.replace(`${REPO_ROOT}/`, '')}`, shot.image);
   printInkPairs(tileImage, shot.image);
+  if (args.save) saveImages(args.save, tileImage, shot.image);
 }
 
 await main();
