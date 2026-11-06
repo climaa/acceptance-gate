@@ -7,6 +7,8 @@ transcribed from the GitHub Releases that existed when this file was created (20
 
 ## Unreleased
 
+- A comparison is read against its before, and only its before (#612). The comparison modal loses its `compare to` switch and its design view. A board beside a comparison showed the whole board next to one screenshot, and the set's shot view already reads a screenshot beside its own tile. An `added` comparison has no before, so it links to its screenshot in the after set's shot view instead (`/set/<after>/shot/<key>`), where the board opens cropped to the story's tile. A link that still carries `against=design` and a `board` opens the comparison against its before. The spacing readings stay in the comparison, beneath the shots and folded until asked for, even when there is no ledger. A row under the pointer or holding focus shows the after screenshot with its box marked, then hands the stage back to the mode; a pressed row keeps its box wherever the after screenshot is on show. The board's zoom and picker scenarios move to the shot view's feature, and the seeded report gains an `added` story for the new one. The comparison screen's four baselines and its tiles on `05-screens` still show the old head; they need re-accepting in the pinned container and redrawing.
+
 ## v1.8.0 — the console's own pages join the corpus, each one drawn on a board
 
 _Released 2026-11-05._
