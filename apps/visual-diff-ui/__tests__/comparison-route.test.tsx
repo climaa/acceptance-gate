@@ -65,7 +65,6 @@ const routeElement = (entry: ComparisonEntry) => (
     sides={SIDES}
     ledger={null}
     entry={entry}
-    homes={{}}
   />
 );
 
@@ -124,7 +123,9 @@ describe('opening a comparison by its address', () => {
   it('opens on the variant the address names', () => {
     renderRoute('direct', '', DARK.key);
 
-    expect(within(modal()).getByRole('heading').textContent).toContain('dark');
+    expect(within(modal()).getByRole('heading', { level: 2 }).textContent).toContain(
+      'dark',
+    );
   });
 
   // Next keeps a route it has left mounted but hidden. Reopened, it must show
@@ -135,7 +136,9 @@ describe('opening a comparison by its address', () => {
     setPathname(comparisonPath(REPORT, DARK.key));
     rerender(routeElement('report'));
 
-    expect(within(modal()).getByRole('heading').textContent).toContain('dark');
+    expect(within(modal()).getByRole('heading', { level: 2 }).textContent).toContain(
+      'dark',
+    );
   });
 
   // A walk writes the address natively, which never re-runs `generateMetadata`.
@@ -203,77 +206,41 @@ describe('the address following the modal', () => {
   });
 });
 
-describe('reading against a design board', () => {
-  const modalGroup = (name: string) => within(modal()).getByRole('group', { name });
+/**
+ * A comparison could once be read against a design board, and its links carried
+ * `against=design` and a `board`. They are out in the world, so they still open
+ * a comparison: the one against its before, which is all a comparison is now.
+ */
+describe('an old link to the design view', () => {
+  const OLD = 'against=design&board=05-pages';
 
-  it('opens the design view an address asks for, on the variant default board', () => {
-    renderRoute('direct', 'against=design');
+  it('opens the comparison against its before, in the mode a bare link opens in', () => {
+    renderRoute('direct', OLD);
 
-    const pressed = within(modalGroup('board'))
-      .getAllByRole('button')
-      .filter((button) => button.getAttribute('aria-pressed') === 'true')
-      .map((button) => button.textContent);
-
-    expect(pressed).toEqual(['atoms']);
+    expect(pressed()).toEqual(['diff']);
+    expect(within(modal()).queryByRole('img', { name: /design board/ })).toBeNull();
   });
 
-  it('opens the board an address names', () => {
-    renderRoute('direct', 'against=design&board=x-visual-diff-pages');
+  it('keeps the mode it names alongside', () => {
+    renderRoute('direct', `mode=slider&${OLD}`);
 
-    expect(
-      within(modal()).getByRole('img', { name: 'the console design board' }),
-    ).toBeTruthy();
+    expect(pressed()).toEqual(['slider']);
   });
 
-  it('ignores a board that is not one of the exports', () => {
-    renderRoute('direct', 'against=design&board=../secrets');
+  it('writes neither back when the mode switches', () => {
+    renderRoute('direct', OLD);
 
-    expect(
-      within(modal()).getByRole('img', { name: 'the atoms design board' }),
-    ).toBeTruthy();
+    fireEvent.click(within(modal()).getByRole('button', { name: 'blink' }));
+
+    expect(lastWritten()).toBe(comparisonHref(REPORT, LIGHT.key, 'blink'));
   });
 
-  it('writes against=design when the toggle switches, keeping the mode', () => {
-    renderRoute('report', 'mode=slider');
-
-    fireEvent.click(
-      within(modalGroup('compare to')).getByRole('button', { name: 'design' }),
-    );
-
-    expect(lastWritten()).toBe(
-      comparisonHref(REPORT, LIGHT.key, 'slider', { against: 'design' }),
-    );
-  });
-
-  it('writes a picked board into the address', () => {
-    renderRoute('report', 'against=design');
-
-    fireEvent.click(within(modalGroup('board')).getByRole('button', { name: 'pages' }));
-
-    expect(lastWritten()).toBe(
-      comparisonHref(REPORT, LIGHT.key, null, { against: 'design', board: '05-pages' }),
-    );
-  });
-
-  // Picking the board the variant opens on anyway is not a choice to record.
-  it('drops the board from the address when the default one is picked again', () => {
-    renderRoute('report', 'against=design&board=05-pages');
-
-    fireEvent.click(within(modalGroup('board')).getByRole('button', { name: 'atoms' }));
-
-    expect(lastWritten()).toBe(
-      comparisonHref(REPORT, LIGHT.key, null, { against: 'design' }),
-    );
-  });
-
-  it('keeps the design view when the arrows walk to another variant', () => {
-    renderRoute('report', 'against=design&board=05-pages');
+  it('writes neither back when the arrows walk', () => {
+    renderRoute('direct', OLD);
 
     fireEvent.keyDown(document, { key: 'ArrowRight' });
 
-    expect(lastWritten()).toBe(
-      comparisonHref(REPORT, DARK.key, null, { against: 'design', board: '05-pages' }),
-    );
+    expect(lastWritten()).toBe(comparisonPath(REPORT, DARK.key));
   });
 });
 

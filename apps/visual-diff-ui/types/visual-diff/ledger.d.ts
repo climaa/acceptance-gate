@@ -3,7 +3,7 @@
  * source — see ./compare.d.ts for why every module beside it does the same, and
  * for the bargain that strikes.
  *
- * Narrowed to what the report writer calls and what the design view's readings
+ * Narrowed to what the report writer calls and what the comparison's readings
  * panel renders: a ledger as it reads one off a capture set, the pairing of two of
  * them, the bytes a report is written as, and the shapes that report holds. The
  * walk, the cascade and the classifier are the package's own business, exercised

@@ -7,15 +7,12 @@ import type { LedgerChange, LedgerReport } from '@gate/visual-diff/ledger';
 import { ComparisonModal } from '../components/ComparisonModal';
 import { ReportTemplate } from '../components/ReportTemplate';
 import {
-  type Against,
   COMPARISON_MODES,
   type ComparisonMode,
   comparisonHref,
   comparisonPath,
-  DESIGN_BOARDS,
-  type DesignBoard,
 } from '../lib/comparison';
-import { designBoardUrl } from '../lib/design-urls';
+import { shotUrl } from '../lib/shots';
 import type { CaptureSet, Summary, Variant } from '../lib/summary';
 import { storyTitle } from '../lib/title';
 import { pushCalls, setPathname, setSearchParams } from './stubs/next-navigation';
@@ -81,8 +78,6 @@ function setViewport(wide: boolean): void {
 function renderModal(
   mode: ComparisonMode = 'diff',
   subject: Variant = PROSE,
-  against: Against = 'before',
-  board: DesignBoard = '01-atoms',
   /** What the spacing did on this variant. Null is the common case and the
    *  default: a report written before the console measured anything, and every
    *  comparison in the committed fixtures. */
@@ -90,8 +85,6 @@ function renderModal(
 ) {
   const handlers = {
     onMode: vi.fn<(mode: ComparisonMode) => void>(),
-    onAgainst: vi.fn<(against: Against) => void>(),
-    onBoard: vi.fn<(board: DesignBoard) => void>(),
     onClose: vi.fn<() => void>(),
     onVariant: vi.fn<(variant: Variant) => void>(),
   };
@@ -103,8 +96,6 @@ function renderModal(
       variants={[PROSE, PROSE_DARK]}
       sides={SIDES}
       mode={mode}
-      against={against}
-      board={board}
       ledger={ledger}
       {...handlers}
     />,
@@ -366,23 +357,15 @@ describe('below the mobile breakpoint', () => {
 });
 
 describe('the copy-link status', () => {
-  const modalOn = (
-    subject: Variant,
-    mode: ComparisonMode,
-    against: Against = 'before',
-  ) => (
+  const modalOn = (subject: Variant, mode: ComparisonMode) => (
     <ComparisonModal
       reportId={REPORT}
       variant={subject}
       variants={[PROSE, PROSE_DARK]}
       sides={SIDES}
       mode={mode}
-      against={against}
-      board="01-atoms"
       ledger={null}
       onMode={() => {}}
-      onAgainst={() => {}}
-      onBoard={() => {}}
       onClose={() => {}}
       onVariant={() => {}}
     />
@@ -430,14 +413,6 @@ describe('the copy-link status', () => {
     expect(document.activeElement).toBe(button);
   });
 
-  it('clears once the comparison is read against a design board instead', async () => {
-    const { rerender } = await copied(PROSE, 'diff');
-
-    rerender(modalOn(PROSE, 'diff', 'design'));
-
-    expect(status()).toBe('');
-  });
-
   it('stays while the link it is about is still the one on screen', async () => {
     const { rerender } = await copied(PROSE, 'diff');
 
@@ -447,547 +422,301 @@ describe('the copy-link status', () => {
   });
 });
 
+describe('what a comparison is read against', () => {
+  // A design board answers whether a screenshot is what was drawn; that is the
+  // set's shot view's question, never a comparison's.
+  it('offers no design board and no way to ask for one', () => {
+    renderModal();
+
+    expect(within(modal()).queryByRole('group', { name: 'compare to' })).toBeNull();
+    expect(within(modal()).queryByRole('img', { name: /design board/ })).toBeNull();
+  });
+
+  it('keeps every mode, read against the before', () => {
+    renderModal();
+
+    expect(within(toolbar()).getAllByRole('button')).toHaveLength(
+      COMPARISON_MODES.length,
+    );
+  });
+
+  describe('an added variant', () => {
+    const ADDED = variant({
+      key: 'atoms__desktop__light__atoms-bucketchip--tones',
+      id: 'atoms-bucketchip--tones',
+      bucket: 'added',
+      overlapDiffPixels: 0,
+      diffPixels: 0,
+      allowedDiffPixels: 0,
+    });
+
+    // It has no before, so the one thing left to read it against is its design,
+    // in the after set — where the board opens on the story's tile.
+    it('links to its screenshot beside its design, in the after set', () => {
+      renderModal('candidate', ADDED);
+
+      const link = within(modal()).getByRole('link', {
+        name: 'open it beside its design',
+      });
+
+      expect(link.getAttribute('href')).toBe(`/set/${SIDES.b}/shot/${ADDED.key}`);
+    });
+
+    it('says why there is nothing to compare', () => {
+      renderModal('candidate', ADDED);
+
+      expect(within(modal()).getByText(/no before to compare against/)).toBeTruthy();
+    });
+  });
+
+  it('links a variant with a before to no design', () => {
+    renderModal();
+
+    expect(within(modal()).queryByRole('link', { name: /beside its design/ })).toBeNull();
+  });
+});
+
+/**
+ * The readings panel and the boxes it points at, as one surface: the table is
+ * SpacingReadings' own suite, and what is asserted here is where the panel
+ * sits and the wiring between a row and the after screenshot.
+ */
+describe('the spacing readings', () => {
+  /** The dialog's real regression, as x-visual-diff-pages draws it: the button's padding
+   *  falling off the scale to the browser's own 6px. */
+  const reading = (
+    property: string,
+    rect: readonly number[] | null,
+    label = 'button "Keep it open"',
+  ): LedgerChange => ({
+    label,
+    property,
+    change: 'changed',
+    before: {
+      px: 16,
+      token: '--space-4',
+      origin: 'regular',
+      classification: 'token',
+    },
+    after: {
+      px: 6,
+      token: '--space-1',
+      origin: 'user-agent',
+      classification: 'off-scale',
+    },
+    rect,
+  });
+
+  /** Two paddings on one element and one gap on another: three rows, two
+   *  boxes. */
+  const LEDGER: LedgerReport = {
+    key: PROSE.key,
+    mode: 'changed',
+    origin: 'target',
+    changes: [
+      reading('padding-right', [1042, 380, 84, 30]),
+      reading('padding-left', [1042, 380, 84, 30]),
+      reading('row-gap', [40, 120, 300, 24], 'dialog "Unsaved changes"'),
+    ],
+  };
+
+  const panel = () => modal().querySelector('.vd-readings') as HTMLElement;
+  const unfold = () =>
+    fireEvent.click(within(modal()).getByRole('button', { name: 'show' }));
+  const readings = () => within(modal()).getByRole('table', { name: 'Spacing readings' });
+  const rowFor = (property: string) =>
+    within(readings()).getByText(property).closest('tr') as HTMLElement;
+  const elementIn = (property: string) => within(rowFor(property)).getByRole('button');
+  const marks = () => modal().querySelectorAll<HTMLElement>('.vd-compare__mark');
+  const emphasized = () => modal().querySelectorAll('.vd-compare__mark--emphasis');
+  const shotsShown = () =>
+    within(modal())
+      .getAllByRole('img')
+      .map((shot) => shot.getAttribute('alt'));
+
+  it('sit beneath the shots, folded to one line', () => {
+    renderModal('diff', PROSE, LEDGER);
+
+    expect(modal().querySelector('.vd-compare__stage')?.contains(panel())).toBe(false);
+    expect(within(modal()).queryByRole('table', { name: 'Spacing readings' })).toBeNull();
+    expect(within(modal()).getByText(/^3 readings/)).toBeTruthy();
+  });
+
+  it('list what changed between before and after once unfolded', () => {
+    renderModal('diff', PROSE, LEDGER);
+
+    unfold();
+
+    expect(within(readings()).getAllByRole('row')).toHaveLength(4);
+    expect(within(modal()).getByText('changed between before and after')).toBeTruthy();
+  });
+
+  // Folded even with nothing behind it: most comparisons have no ledger, and a
+  // sentence saying so on every one would compete with the shots.
+  it('fold a comparison with no ledger too, and say so once unfolded', () => {
+    renderModal();
+    const sentence = () =>
+      within(modal()).getByText('No token ledger for this comparison.');
+    const shut = sentence().closest('[hidden]') !== null;
+
+    unfold();
+
+    expect(shut).toBe(true);
+    expect(sentence().closest('[hidden]')).toBeNull();
+  });
+
+  // A walk writes the address and asks the server for nothing, so the report
+  // on hand stays the one the address was loaded with. Readings from another
+  // variant would be a panel describing one screenshot beside another — and
+  // boxes drawn on the wrong image.
+  it('say nothing about a variant they were not read for', () => {
+    renderModal('diff', PROSE_DARK, LEDGER);
+
+    unfold();
+
+    expect(within(modal()).queryByRole('table', { name: 'Spacing readings' })).toBeNull();
+    expect(
+      within(modal()).getByText('No token ledger for this comparison.'),
+    ).toBeTruthy();
+  });
+
+  it('leave the modes toolbar where it was', () => {
+    renderModal('diff', PROSE, LEDGER);
+
+    unfold();
+
+    expect(pressedNames()).toEqual(['diff']);
+  });
+
+  describe('the boxes on the after screenshot', () => {
+    it('draws none until a reading is pointed at', () => {
+      renderModal('candidate', PROSE, LEDGER);
+
+      unfold();
+
+      expect(marks()).toHaveLength(0);
+    });
+
+    it('outlines one box per element, the pressed one emphasized', () => {
+      renderModal('candidate', PROSE, LEDGER);
+      unfold();
+
+      fireEvent.click(elementIn('padding-right'));
+
+      // Three rows, two elements: two paddings on one box are two readings
+      // and one outline.
+      expect(marks()).toHaveLength(2);
+      expect(emphasized()).toHaveLength(1);
+    });
+
+    // The boxes were measured in the after capture's own pixels, so each is
+    // placed as a share of them: it lands on its element at any width.
+    it('places a box as a share of the shot’s own pixels', () => {
+      renderModal('candidate', PROSE, LEDGER);
+      unfold();
+
+      fireEvent.click(elementIn('row-gap'));
+
+      const box = modal().querySelector<HTMLElement>('.vd-compare__mark--emphasis');
+      expect(box?.style.left).toBe(`${(40 / 1248) * 100}%`);
+      expect(box?.style.top).toBe(`${(120 / 469) * 100}%`);
+      expect(box?.style.width).toBe(`${(300 / 1248) * 100}%`);
+      expect(box?.style.height).toBe(`${(24 / 469) * 100}%`);
+    });
+
+    it('frames the shot at its own size in actual size', () => {
+      renderModal('actual size', PROSE, LEDGER);
+      unfold();
+
+      fireEvent.click(elementIn('row-gap'));
+
+      expect(modal().querySelector('.vd-compare__marked--actual')).not.toBeNull();
+    });
+
+    // The diff is not the after screenshot: a box drawn on it would be
+    // outlining pixels nobody measured. Focus is the keyboard's hover.
+    it('shows the after screenshot while a row has focus, then hands the stage back', () => {
+      renderModal('diff', PROSE, LEDGER);
+      unfold();
+
+      fireEvent.focus(elementIn('padding-right'));
+      const previewed = shotsShown();
+      const boxed = emphasized().length;
+      fireEvent.blur(elementIn('padding-right'));
+
+      expect(previewed).toEqual(['candidate']);
+      expect(boxed).toBe(1);
+      expect(shotsShown()).toEqual(['diff']);
+      expect(marks()).toHaveLength(0);
+    });
+
+    it('previews under the pointer too, and lets it go', () => {
+      renderModal('slider', PROSE, LEDGER);
+      unfold();
+
+      fireEvent.mouseEnter(elementIn('row-gap'));
+      const previewed = shotsShown();
+      fireEvent.mouseLeave(elementIn('row-gap'));
+
+      expect(previewed).toEqual(['candidate']);
+      expect(shotsShown()).toEqual(['baseline', 'candidate']);
+    });
+
+    // A press outlasts the pointer, and a stage held on the after screenshot
+    // would contradict the toolbar's pressed mode.
+    it('leaves the mode on show for a press, drawing its box where the after shot is', () => {
+      renderModal('diff', PROSE, LEDGER);
+      unfold();
+
+      fireEvent.click(elementIn('padding-right'));
+
+      expect(shotsShown()).toEqual(['diff']);
+      expect(marks()).toHaveLength(0);
+    });
+
+    // A reading on an element that is gone has no rect to point at.
+    it('previews nothing for a reading with no box', () => {
+      const gone: LedgerReport = {
+        ...LEDGER,
+        changes: [{ ...reading('padding-right', null), change: 'gone', after: null }],
+      };
+      renderModal('diff', PROSE, gone);
+      unfold();
+
+      fireEvent.focus(elementIn('padding-right'));
+
+      expect(shotsShown()).toEqual(['diff']);
+      expect(marks()).toHaveLength(0);
+    });
+
+    // A removed variant's after side is a sentence, not an image to draw on.
+    it('previews nothing on a variant with no after screenshot', () => {
+      const removed = variant({
+        key: PROSE.key,
+        id: PROSE.id,
+        bucket: 'removed',
+        width: null,
+        height: null,
+      });
+      renderModal('baseline', removed, LEDGER);
+      unfold();
+
+      fireEvent.focus(elementIn('row-gap'));
+
+      expect(shotsShown()).toEqual(['baseline']);
+      expect(within(modal()).getByRole('img').getAttribute('src')).toBe(
+        shotUrl(REPORT, PROSE.key, 'baseline'),
+      );
+    });
+  });
+});
+
 /**
  * The report's half of the seam: which variant the modal is on, and in which
  * mode, is in the URL — so a reviewer can send a colleague the exact thing they
  * are looking at. What has been reviewed stays in `localStorage`, where it
  * belongs to one person; the URL carries position and nothing else.
  */
-describe('the design view', () => {
-  const REMOVED = variant({
-    key: 'atoms__desktop__light__atoms-gone--default',
-    id: 'atoms-gone--default',
-    bucket: 'removed',
-  });
-
-  const against = () => within(modal()).getByRole('group', { name: 'compare to' });
-  const pressedIn = (group: HTMLElement) =>
-    within(group)
-      .getAllByRole('button')
-      .filter((button) => button.getAttribute('aria-pressed') === 'true')
-      .map((button) => button.textContent);
-
-  /**
-   * jsdom lays nothing out and loads no image, so a pane has no size and an
-   * image no natural size — and a `PanZoom` with no scale draws neither a grid
-   * nor a mark. Registered by the two blocks that need one: every pane measures
-   * 400×300 from the prototype (it measures itself once, on mount), and
-   * `loadBothPanes` is what gives each image its own pixels.
-   */
-  function measuredPanes() {
-    const sizes = ['clientWidth', 'clientHeight'] as const;
-    const saved = sizes.map((key) =>
-      Object.getOwnPropertyDescriptor(HTMLElement.prototype, key),
-    );
-
-    beforeEach(() => {
-      sizes.forEach((key, index) =>
-        Object.defineProperty(HTMLElement.prototype, key, {
-          configurable: true,
-          get(this: HTMLElement) {
-            return this.classList.contains('ds-panzoom__pane') ? [400, 300][index] : 0;
-          },
-        }),
-      );
-    });
-    afterEach(() => {
-      sizes.forEach((key, index) => {
-        const descriptor = saved[index];
-        if (descriptor) Object.defineProperty(HTMLElement.prototype, key, descriptor);
-      });
-    });
-  }
-
-  function loadBothPanes() {
-    for (const img of modal().querySelectorAll<HTMLImageElement>('.ds-panzoom__image')) {
-      Object.defineProperty(img, 'naturalWidth', { value: 1600 });
-      Object.defineProperty(img, 'naturalHeight', { value: 2400 });
-      fireEvent.load(img);
-    }
-  }
-
-  it('offers before and design, with before pressed by default', () => {
-    renderModal();
-
-    expect(pressedIn(against())).toEqual(['before']);
-  });
-
-  it('asks for the design view when design is pressed', () => {
-    const handlers = renderModal();
-
-    fireEvent.click(within(against()).getByRole('button', { name: 'design' }));
-
-    expect(handlers.onAgainst).toHaveBeenCalledWith('design');
-  });
-
-  // Every mode compares after with before; none can be run against a board.
-  it('unmounts the six modes, the metric and the scrubber', () => {
-    renderModal('slider', PROSE, 'design');
-
-    expect(within(modal()).queryByRole('toolbar')).toBeNull();
-    expect(within(modal()).queryByRole('slider')).toBeNull();
-    expect(within(modal()).queryByText(/px differ/)).toBeNull();
-  });
-
-  it('says the board is reference, never a verdict', () => {
-    renderModal('diff', PROSE, 'design');
-
-    expect(within(modal()).getByText(/never a verdict/)).toBeTruthy();
-  });
-
-  it('shows the picked board in a pane the reader can move around in', () => {
-    renderModal('diff', PROSE, 'design', 'x-visual-diff-pages');
-
-    const board = within(modal()).getByRole('img', { name: 'the console design board' });
-
-    expect(board.getAttribute('src')).toBe(designBoardUrl('x-visual-diff-pages'));
-    expect(within(modal()).getByRole('group', { name: 'design board' })).toBeTruthy();
-  });
-
-  it('presses the board on show, among every board', () => {
-    renderModal('diff', PROSE, 'design', '05-pages');
-
-    const picker = within(modal()).getByRole('group', { name: 'board' });
-
-    expect(within(picker).getAllByRole('button')).toHaveLength(DESIGN_BOARDS.length);
-    expect(pressedIn(picker)).toEqual(['pages']);
-  });
-
-  it('asks for another board when one is picked', () => {
-    const handlers = renderModal('diff', PROSE, 'design');
-
-    const picker = within(modal()).getByRole('group', { name: 'board' });
-    fireEvent.click(within(picker).getByRole('button', { name: 'flows' }));
-
-    expect(handlers.onBoard).toHaveBeenCalledWith('06-flows-decisions');
-  });
-
-  it('puts the after screenshot beside the board', () => {
-    renderModal('diff', PROSE, 'design');
-
-    expect(within(modal()).getByRole('img', { name: 'candidate' })).toBeTruthy();
-    expect(within(modal()).getByText(`after · ${SIDES.b}`)).toBeTruthy();
-  });
-
-  // Read the same way as the board: fitted at 100%, dragged and zoomed.
-  it('gives the after screenshot a pane of its own, with its own zoom', () => {
-    renderModal('diff', PROSE, 'design');
-
-    const pane = within(modal()).getByRole('group', { name: 'after screenshot' });
-
-    expect(within(pane).getByRole('img', { name: 'candidate' })).toBeTruthy();
-    expect(
-      within(modal()).getByRole('group', { name: 'after screenshot zoom' }),
-    ).toBeTruthy();
-  });
-
-  describe('the split toggle', () => {
-    const design = () => modal().querySelector('.vd-compare__design');
-    const stack = () =>
-      within(modal()).getByRole('button', {
-        name: 'stack the board over the screenshot',
-      });
-
-    it('opens side by side, offering to stack the panes', () => {
-      renderModal('diff', PROSE, 'design');
-
-      expect(design()?.getAttribute('data-split')).toBe('columns');
-      expect(stack()).toBeTruthy();
-    });
-
-    it('stacks the board over the screenshot when pressed, and offers the way back', () => {
-      renderModal('diff', PROSE, 'design');
-
-      fireEvent.click(stack());
-
-      expect(design()?.getAttribute('data-split')).toBe('rows');
-      expect(
-        within(modal()).getByRole('button', {
-          name: 'put the board beside the screenshot',
-        }),
-      ).toBeTruthy();
-    });
-
-    // Below the breakpoint the sheet stacks the panes anyway: a toggle there
-    // would be a control that changes nothing.
-    it('is not offered on a narrow screen, where the panes are always stacked', () => {
-      setViewport(false);
-      renderModal('diff', PROSE, 'design');
-
-      expect(
-        within(modal()).queryByRole('button', { name: /stack the board/ }),
-      ).toBeNull();
-      expect(design()?.getAttribute('data-split')).toBe('rows');
-    });
-
-    it('is not offered when reading against before', () => {
-      renderModal('diff', PROSE, 'before');
-
-      expect(
-        within(modal()).queryByRole('button', { name: /stack the board/ }),
-      ).toBeNull();
-    });
-  });
-
-  describe('the grid toggle', () => {
-    const gridButton = () => within(modal()).getByRole('button', { name: 'grid' });
-    const grids = () => modal().querySelectorAll('.ds-panzoom__grid');
-
-    it('is offered in the design view, off to begin with', () => {
-      renderModal('diff', PROSE, 'design');
-
-      expect(gridButton().getAttribute('aria-pressed')).toBe('false');
-    });
-
-    measuredPanes();
-
-    it('draws a grid over both panes when pressed, and none on a second press', () => {
-      renderModal('diff', PROSE, 'design');
-      loadBothPanes();
-
-      fireEvent.click(gridButton());
-      const drawn = grids().length;
-      fireEvent.click(gridButton());
-
-      expect(drawn).toBe(2);
-      expect(gridButton().getAttribute('aria-pressed')).toBe('false');
-      expect(grids()).toHaveLength(0);
-    });
-
-    it('is offered on a narrow screen too, where a grid is still a ruler', () => {
-      setViewport(false);
-      renderModal('diff', PROSE, 'design');
-
-      expect(gridButton()).toBeTruthy();
-    });
-
-    it('is not offered when reading against before', () => {
-      renderModal('diff', PROSE, 'before');
-
-      expect(within(modal()).queryByRole('button', { name: 'grid' })).toBeNull();
-    });
-  });
-
-  /**
-   * The readings panel and the boxes it points at, as one surface: the table is
-   * SpacingReadings' own suite, and what is asserted here is the wiring between
-   * a row and the after screenshot — which is why the panel lives beside both
-   * panes rather than inside either.
-   */
-  describe('the spacing readings', () => {
-    /** The dialog's real regression, as x-visual-diff-pages draws it: the button's padding
-     *  falling off the scale to the browser's own 6px. */
-    const reading = (
-      property: string,
-      rect: readonly number[] | null,
-      label = 'button "Keep it open"',
-    ): LedgerChange => ({
-      label,
-      property,
-      change: 'changed',
-      before: {
-        px: 16,
-        token: '--space-4',
-        origin: 'regular',
-        classification: 'token',
-      },
-      after: {
-        px: 6,
-        token: '--space-1',
-        origin: 'user-agent',
-        classification: 'off-scale',
-      },
-      rect,
-    });
-
-    /** Two paddings on one element and one gap on another: three rows, two
-     *  boxes. */
-    const LEDGER: LedgerReport = {
-      key: PROSE.key,
-      mode: 'changed',
-      origin: 'target',
-      changes: [
-        reading('padding-right', [1042, 380, 84, 30]),
-        reading('padding-left', [1042, 380, 84, 30]),
-        reading('row-gap', [40, 120, 300, 24], 'dialog "Unsaved changes"'),
-      ],
-    };
-
-    const panel = () => modal().querySelector('.vd-readings') as HTMLElement;
-    const readings = () =>
-      within(modal()).getByRole('table', { name: 'Spacing readings' });
-    const marks = () => modal().querySelectorAll('.ds-panzoom__mark');
-    const emphasized = () => modal().querySelectorAll('.ds-panzoom__mark--emphasis');
-    const boxToggle = () =>
-      within(modal()).getByRole('button', { name: 'show spacing boxes' });
-    const rowFor = (property: string) =>
-      within(readings()).getByText(property).closest('tr') as HTMLElement;
-    const elementIn = (property: string) => within(rowFor(property)).getByRole('button');
-
-    it('lists what moved, in a row of its own below both panes', () => {
-      renderModal('diff', PROSE, 'design', '01-atoms', LEDGER);
-
-      expect(within(readings()).getAllByRole('row')).toHaveLength(4);
-      // Below the panes, never inside one: the design view exposes no toolbar,
-      // and a panel in the stage would be a third thing competing for its height.
-      expect(modal().querySelector('.vd-compare__stage--design')?.contains(panel())).toBe(
-        false,
-      );
-    });
-
-    it('says so when the comparison has no ledger behind it', () => {
-      renderModal('diff', PROSE, 'design');
-
-      expect(
-        within(modal()).getByText('No token ledger for this comparison.'),
-      ).toBeTruthy();
-    });
-
-    it('is not offered when reading against before', () => {
-      renderModal('diff', PROSE, 'before', '01-atoms', LEDGER);
-
-      expect(
-        within(modal()).queryByRole('table', { name: 'Spacing readings' }),
-      ).toBeNull();
-    });
-
-    // A walk writes the address and asks the server for nothing, so the report
-    // on hand stays the one the address was loaded with. Readings from another
-    // variant would be a panel describing one screenshot beside another — and
-    // boxes drawn on the wrong image.
-    it('says nothing about a variant its readings were not read for', () => {
-      renderModal('diff', PROSE_DARK, 'design', '01-atoms', LEDGER);
-
-      expect(
-        within(modal()).queryByRole('table', { name: 'Spacing readings' }),
-      ).toBeNull();
-      expect(
-        within(modal()).getByText('No token ledger for this comparison.'),
-      ).toBeTruthy();
-    });
-
-    // The one role the design view must never expose: an acceptance scenario
-    // asserts the modes toolbar is absent here, and a panel of controls is
-    // exactly the kind of thing that would bring one back.
-    it('exposes no toolbar, readings and all', () => {
-      renderModal('diff', PROSE, 'design', '01-atoms', LEDGER);
-
-      expect(within(modal()).queryByRole('toolbar')).toBeNull();
-    });
-
-    describe('the boxes on the after screenshot', () => {
-      measuredPanes();
-
-      it('outlines one box per element the readings name', () => {
-        renderModal('diff', PROSE, 'design', '01-atoms', LEDGER);
-
-        loadBothPanes();
-
-        // Three rows, two elements: four paddings on one box are four readings
-        // and one outline.
-        expect(marks()).toHaveLength(2);
-        expect(emphasized()).toHaveLength(0);
-      });
-
-      it('emphasizes the box of the row a reader presses', () => {
-        renderModal('diff', PROSE, 'design', '01-atoms', LEDGER);
-        loadBothPanes();
-
-        fireEvent.click(elementIn('padding-right'));
-
-        expect(elementIn('padding-right').getAttribute('aria-pressed')).toBe('true');
-        expect(emphasized()).toHaveLength(1);
-      });
-
-      it('previews a box while the pointer is over its row, and lets it go', () => {
-        renderModal('diff', PROSE, 'design', '01-atoms', LEDGER);
-        loadBothPanes();
-
-        fireEvent.mouseEnter(elementIn('row-gap'));
-        const previewed = emphasized().length;
-        fireEvent.mouseLeave(elementIn('row-gap'));
-
-        expect(previewed).toBe(1);
-        expect(emphasized()).toHaveLength(0);
-      });
-
-      // The keyboard's hover: a reader tabbing down the rows sees each box light
-      // up without having to press it.
-      it('previews a box while its row has focus, and lets it go on blur', () => {
-        renderModal('diff', PROSE, 'design', '01-atoms', LEDGER);
-        loadBothPanes();
-
-        fireEvent.focus(elementIn('row-gap'));
-        const previewed = emphasized().length;
-        fireEvent.blur(elementIn('row-gap'));
-
-        expect(previewed).toBe(1);
-        expect(emphasized()).toHaveLength(0);
-      });
-
-      it('keeps the pressed box once focus leaves another row', () => {
-        renderModal('diff', PROSE, 'design', '01-atoms', LEDGER);
-        loadBothPanes();
-        fireEvent.click(elementIn('padding-right'));
-
-        fireEvent.focus(elementIn('row-gap'));
-        fireEvent.blur(elementIn('row-gap'));
-
-        expect(elementIn('padding-right').getAttribute('aria-pressed')).toBe('true');
-        expect(emphasized()).toHaveLength(1);
-      });
-
-      it('draws the boxes from the start, and puts its toggle on the after pane', () => {
-        renderModal('diff', PROSE, 'design', '01-atoms', LEDGER);
-        loadBothPanes();
-
-        const bar = within(modal()).getByRole('group', {
-          name: 'after screenshot zoom',
-        });
-        expect(within(bar).getByRole('button', { name: 'show spacing boxes' })).toBe(
-          boxToggle(),
-        );
-        expect(boxToggle().getAttribute('aria-pressed')).toBe('true');
-      });
-
-      it('takes the boxes off the screenshot when the toggle is released', () => {
-        renderModal('diff', PROSE, 'design', '01-atoms', LEDGER);
-        loadBothPanes();
-
-        fireEvent.click(boxToggle());
-        const hidden = marks().length;
-        fireEvent.click(boxToggle());
-
-        expect(hidden).toBe(0);
-        expect(marks()).toHaveLength(2);
-      });
-
-      // A reading on an element that is gone has no after rect to point at, so
-      // there is nothing for a toggle to show or hide.
-      it('offers no toggle where no reading has a box', () => {
-        const gone: LedgerReport = {
-          ...LEDGER,
-          changes: [{ ...reading('padding-right', null), change: 'gone', after: null }],
-        };
-        renderModal('diff', PROSE, 'design', '01-atoms', gone);
-
-        loadBothPanes();
-
-        expect(
-          within(modal()).queryByRole('button', { name: 'show spacing boxes' }),
-        ).toBeNull();
-        expect(marks()).toHaveLength(0);
-      });
-    });
-  });
-
-  describe('an image from your own computer', () => {
-    const created: string[] = [];
-    const revoked: string[] = [];
-
-    beforeEach(() => {
-      created.length = 0;
-      revoked.length = 0;
-      URL.createObjectURL = vi.fn(() => {
-        const url = `blob:local/${created.length + 1}`;
-        created.push(url);
-        return url;
-      });
-      URL.revokeObjectURL = vi.fn((url: string) => {
-        revoked.push(url);
-      });
-    });
-
-    const fileInput = () =>
-      modal().querySelector<HTMLInputElement>('input[type="file"]') as HTMLInputElement;
-    const pick = (file: File) =>
-      fireEvent.change(fileInput(), { target: { files: [file] } });
-    const png = (name = 'my-design.png') => new File(['x'], name, { type: 'image/png' });
-
-    it('offers a button for it on the board pane, named for what it does', () => {
-      renderModal('diff', PROSE, 'design');
-
-      const button = within(
-        within(modal()).getByRole('group', { name: 'design board zoom' }),
-      ).getByRole('button', { name: 'compare against an image from your computer' });
-
-      expect(button).toBeTruthy();
-    });
-
-    it('accepts images only', () => {
-      renderModal('diff', PROSE, 'design');
-
-      expect(fileInput().getAttribute('accept')).toBe('image/*');
-    });
-
-    // Never uploaded, never in the link: shown from an object URL in place.
-    it('shows the picked image in place of the board, by its name', () => {
-      renderModal('diff', PROSE, 'design');
-
-      pick(png());
-
-      const image = within(modal()).getByRole('img', {
-        name: 'your design, my-design.png',
-      });
-      expect(image.getAttribute('src')).toBe('blob:local/1');
-      // Shown, not only hovered: a keyboard or touch reader sees which file it is.
-      const named = within(modal()).getByText('my-design.png');
-      expect(named.closest('[title]')?.getAttribute('title')).toBe('my-design.png');
-    });
-
-    it('presses no board while your image is the one on show', () => {
-      renderModal('diff', PROSE, 'design');
-
-      pick(png());
-
-      const picker = within(modal()).getByRole('group', { name: 'board' });
-      expect(
-        within(picker)
-          .getAllByRole('button')
-          .filter((button) => button.getAttribute('aria-pressed') === 'true'),
-      ).toHaveLength(0);
-    });
-
-    it('goes back to the boards when one is picked, and lets the file go', () => {
-      renderModal('diff', PROSE, 'design');
-      pick(png());
-
-      const picker = within(modal()).getByRole('group', { name: 'board' });
-      fireEvent.click(within(picker).getByRole('button', { name: 'atoms' }));
-
-      expect(
-        within(modal()).getByRole('img', { name: 'the atoms design board' }),
-      ).toBeTruthy();
-      expect(revoked).toEqual(['blob:local/1']);
-    });
-
-    it('ignores a file that is not an image, rather than showing a broken one', () => {
-      renderModal('diff', PROSE, 'design');
-
-      pick(new File(['x'], 'notes.txt', { type: 'text/plain' }));
-
-      expect(created).toEqual([]);
-      expect(
-        within(modal()).getByRole('img', { name: 'the atoms design board' }),
-      ).toBeTruthy();
-    });
-  });
-
-  // The after side's absence reads the same here as in the modes.
-  it('says a removed variant has no after side, rather than framing nothing', () => {
-    renderModal('diff', REMOVED, 'design');
-
-    expect(within(modal()).queryByRole('img', { name: 'candidate' })).toBeNull();
-    expect(within(modal()).getByText('not on this side')).toBeTruthy();
-  });
-
-  it('names the design view keys in the hint line', () => {
-    renderModal('diff', PROSE, 'design');
-
-    expect(within(modal()).getByText(/drag the board/)).toBeTruthy();
-  });
-});
-
 describe('the report opening the modal', () => {
   const CARD_VARIANT = variant({
     key: 'templates__desktop__light__templates-posttemplate--long-prose',

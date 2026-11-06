@@ -206,7 +206,7 @@ echo '{"sets":[]}' > $D/sets.json
 
 ## Token ledgers
 
-Two reports carry token ledger reports under `ledger/`, so the design view has spacing
+Two reports carry token ledger reports under `ledger/`, so a comparison has spacing
 readings to show. Every other variant, and every other report, has none and shows the
 "no token ledger" state, which is the backward-compatible case.
 

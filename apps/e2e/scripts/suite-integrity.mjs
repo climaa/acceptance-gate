@@ -115,12 +115,17 @@ const LANES = ['acceptance', 'local'];
  * must answer 404 end to end, which under cacheComponents only proxy.ts can
  * make true and only HTTP can read back.
  *
+ * It was 87 until a comparison stopped offering a design board. The design
+ * feature lost its board's zoom and picker scenarios to the shot view, where a
+ * board is read now, and gained one for an added story, which has no before
+ * and so links to its design instead.
+ *
  * Exact equality, not a floor: a floor decays, and after ten more scenarios a
  * floor of 47 would permit deleting ten of them. Raising this alongside a new
  * scenario is a two-line diff; LOWERING it is a product decision and belongs in
  * its own hand-authored PR with the reason written down.
  */
-const EXPECTED_SCENARIOS = 87;
+const EXPECTED_SCENARIOS = 88;
 
 /** The two project selectors. Carrying both excludes a scenario from both. */
 const PROJECT_TAGS = ['@desktop', '@mobile'];

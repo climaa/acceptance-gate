@@ -9,6 +9,9 @@ const { Given, When, Then } = createBdd(test);
 
 // Reused steps and their homes — one definition per Gherkin line:
 //   "the page has no accessibility violations" → a11y.steps.ts (blog suite)
+//
+// "I unfold the spacing readings" is defined here and read by the comparison's
+// scenarios too (visual-diff-tokens.feature).
 
 /** The committed fixture set that carries a ledger beside its Badge — Accent
  *  shots, as a console capture writes one. See apps/visual-diff-ui/fixtures/
@@ -58,8 +61,24 @@ When(
   },
 );
 
-When('I unfold the spacing readings', async ({ shot }) => {
-  await shot.unfold.click();
+// Both surfaces fold their readings the same way, and only one is ever open.
+When('I unfold the spacing readings', async ({ shot, modal }) => {
+  await shot.unfold.or(modal.unfold).click();
+});
+
+// The board opens cropped to the story's tile, and a crop is read zoomed in:
+// the whole board is one press away, and it is the whole board that is zoomed
+// and swapped here.
+When('I zoom the board in and back out', async ({ shot }) => {
+  await shot.clearCrop.click();
+  await shot.zoom('zoom in').click();
+  await expect(shot.zoomReadout).toHaveText('150%');
+  await shot.zoom('zoom out').click();
+});
+
+When('I pick the console board', async ({ shot }) => {
+  await shot.clearCrop.click();
+  await shot.boardPicker.getByRole('button', { name: 'console', exact: true }).click();
 });
 
 Then('it is shown beside a design board', async ({ shot }) => {
@@ -110,4 +129,13 @@ Then('the readings say this screenshot has no token ledger', async ({ shot }) =>
       'No token ledger for this screenshot. Capture a set from the console to read its spacing.',
     ),
   ).toBeVisible();
+});
+
+Then('the board is at 100% and cannot be zoomed out further', async ({ shot }) => {
+  await expect(shot.zoomReadout).toHaveText('100%');
+  await expect(shot.zoom('zoom out')).toBeDisabled();
+});
+
+Then('the console board is shown', async ({ shot }) => {
+  await expect(shot.board('console')).toBeVisible();
 });

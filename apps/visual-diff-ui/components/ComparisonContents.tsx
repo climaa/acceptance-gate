@@ -1,5 +1,4 @@
 import { notFound } from 'next/navigation';
-import { readBoardHomes } from '@/lib/board-homes';
 import { readComparison } from '@/lib/comparison-meta';
 import { resolveDataDir } from '@/lib/data';
 import { readLedgerReport } from '@/lib/ledger';
@@ -17,7 +16,7 @@ import { type ComparisonEntry, ComparisonRoute } from './ComparisonRoute';
  *
  * The readings come down the same way, read HERE rather than fetched from the
  * panel: one read on the server serves both ways in — the intercepted modal and
- * the cold load — so the design view needs no API route of its own. A
+ * the cold load — so the readings need no API route of their own. A
  * comparison with no ledger report reads as null, which is a panel saying so
  * rather than a request that 404s.
  */
@@ -39,7 +38,6 @@ export async function ComparisonContents({
       variants={comparison.variants}
       sides={reportSides(id)}
       ledger={await readLedgerReport(id, key)}
-      homes={await readBoardHomes()}
       entry={entry}
     />
   );

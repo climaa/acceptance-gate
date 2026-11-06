@@ -16,12 +16,11 @@ export class ComparisonModal {
   readonly scrubber: Locator;
   readonly copyLink: Locator;
   readonly against: Locator;
-  readonly boardPicker: Locator;
   readonly boardPane: Locator;
-  readonly zoomReadout: Locator;
+  readonly designLink: Locator;
   readonly copyStatus: Locator;
   readonly readings: Locator;
-  readonly spacingBoxes: Locator;
+  readonly unfold: Locator;
   readonly emphasizedBox: Locator;
 
   constructor(page: Page) {
@@ -33,21 +32,25 @@ export class ComparisonModal {
     this.divider = this.root.getByTestId('slider-divider');
     this.scrubber = this.root.getByRole('slider', { name: 'slider position' });
     this.copyLink = this.root.getByRole('button', { name: 'copy link', exact: true });
+    // Both retired with the design view, and kept as the handles a scenario
+    // asserts are gone: a comparison is read against its before only.
     this.against = this.root.getByRole('group', { name: 'compare to' });
-    this.boardPicker = this.root.getByRole('group', { name: 'board', exact: true });
     this.boardPane = this.root.getByRole('group', { name: 'design board', exact: true });
-    this.zoomReadout = this.root
-      .getByRole('group', { name: 'design board zoom', exact: true })
-      .getByText(/^\d+%$/);
+    // Where an added story, which has no before, is read beside its design.
+    this.designLink = this.root.getByRole('link', {
+      name: 'open it beside its design',
+      exact: true,
+    });
     this.copyStatus = this.root.getByRole('status');
     // The spacing readings table, by the name `Table` gives it from the panel's
     // heading. Below 768px it reflows to cards and keeps its row and cell roles.
     this.readings = this.root.getByRole('table', { name: 'Spacing readings' });
+    // The readings arrive folded beneath the shots; this is the fold's press.
+    this.unfold = this.root.getByRole('button', { name: 'show', exact: true });
     // The boxes are decoration — an `aria-hidden` layer over the after
     // screenshot, whose meaning the readings table carries in words — so a
     // class is the only handle they offer.
-    this.spacingBoxes = this.root.locator('.ds-panzoom__mark');
-    this.emphasizedBox = this.root.locator('.ds-panzoom__mark--emphasis');
+    this.emphasizedBox = this.root.locator('.vd-compare__mark--emphasis');
   }
 
   /** Text the readings panel shows outside its table: the mode caption, or one
@@ -71,32 +74,6 @@ export class ComparisonModal {
   /** One of the three shots by its own name — `alt` is the shot's kind. */
   shotNamed(kind: 'baseline' | 'candidate' | 'diff'): Locator {
     return this.root.getByRole('img', { name: kind, exact: true });
-  }
-
-  /** A design board by its picker name, as the pane's image names it. */
-  board(
-    name:
-      | 'atoms'
-      | 'molecules'
-      | 'organisms'
-      | 'templates'
-      | 'screens 1'
-      | 'screens 2'
-      | 'screens 3'
-      | 'screens 4'
-      | 'pages'
-      | 'console'
-      | 'flows',
-  ): Locator {
-    return this.root.getByRole('img', { name: `the ${name} design board` });
-  }
-
-  /** The board's zoom controls — scoped, because the after screenshot has a
-   *  pane of its own with the same three buttons. */
-  zoom(name: 'zoom in' | 'zoom out' | 'reset'): Locator {
-    return this.root
-      .getByRole('group', { name: 'design board zoom', exact: true })
-      .getByRole('button', { name, exact: true });
   }
 
   mode(

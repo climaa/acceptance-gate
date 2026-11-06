@@ -13,10 +13,10 @@ import { designBoardUrl } from '@/lib/design-urls';
 import type { ShotTools } from './DesignStage';
 
 /**
- * The design view's board pane: a board, an image from the reader's own
- * computer, or — in the shot view — a crop of the board pinned at the
- * screenshot's scale. Its own module because the board's controls (the picker,
- * the upload, the crop) are this pane's alone.
+ * The shot view's board pane: a board, an image from the reader's own
+ * computer, or a crop of the board pinned at the screenshot's scale. Its own
+ * module because the board's controls (the picker, the upload, the crop) are
+ * this pane's alone.
  */
 
 /** How a reader names each board in the picker — what each board is for, in one

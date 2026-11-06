@@ -14,8 +14,8 @@ import type { Classification } from '@gate/visual-diff/ledger';
 import type { ReadingRow, ReadingSide, Readings, ReadingsMode } from '@/lib/readings';
 
 /**
- * What the spacing did, in design-token terms — the part of the design view a
- * designer reads rather than looks at.
+ * What the spacing did, in design-token terms — the part of a comparison or a
+ * shot view a designer reads rather than looks at.
  *
  * Reference beside a comparison, exactly as the board is: a reading names a
  * value, it never judges one. That is why no row carries `danger` or `success`,
@@ -24,8 +24,8 @@ import type { ReadingRow, ReadingSide, Readings, ReadingsMode } from '@/lib/read
  *
  * App-local, and a composition of `@gate/ui` parts with no control of its own:
  * the pressed row is a `Button`, and what that press MEANS — the box outlined
- * on the after screenshot — belongs to `DesignStage`, which owns both panes.
- * Which row is pressed therefore arrives as a prop.
+ * on the screenshot — belongs to whoever draws that screenshot. Which row is
+ * pressed therefore arrives as a prop.
  *
  * Nothing here reads a file. The report is read on the server
  * (lib/ledger.ts) and threaded down as a prop, so the panel works the same on
@@ -288,9 +288,13 @@ export interface SpacingReadingsProps {
   /** The same emphasis, for as long as a pointer or focus is on a row. */
   onHover: (index: number | null) => void;
   /** Whether the panel opens folded to one line, or null for a panel that does
-   *  not fold. A set's screenshot folds, because there the weight is the
-   *  pixels; a comparison's readings are what its design view is FOR. */
+   *  not fold. A set's screenshot and a comparison both fold, because there the
+   *  weight is the pixels. */
   folded?: boolean | null;
+  /** Whether a panel with nothing to list folds too. A comparison's does: most
+   *  comparisons have no ledger, and a sentence saying so on every one is still
+   *  a row competing with the shots for the dialog's height. */
+  foldEmpty?: boolean;
   subject?: ReadingsSubject;
 }
 
@@ -300,6 +304,7 @@ export function SpacingReadings({
   onPress,
   onHover,
   folded = null,
+  foldEmpty = false,
   subject = 'comparison',
 }: SpacingReadingsProps) {
   const mode = ledger?.mode ?? null;
@@ -311,9 +316,19 @@ export function SpacingReadings({
   // screenshot is another route instance, which starts folded.
   const [closed, setClosed] = useState(folded === true);
   // Only something to unfold: a missing ledger is one sentence, and an empty
-  // one is another, so neither is ever hidden behind a press.
-  const foldable = folded !== null && mode !== null && rows.length > 0;
+  // one is another, so neither is hidden behind a press unless the host asks.
+  const empty = mode === null || rows.length === 0;
+  const foldable = folded !== null && (foldEmpty || !empty);
   const shut = foldable && closed;
+  const body = (
+    <ReadingsBody
+      ledger={ledger}
+      subject={subject}
+      pressed={pressed}
+      onPress={onPress}
+      onHover={onHover}
+    />
+  );
 
   return (
     <div className="vd-readings">
@@ -330,7 +345,7 @@ export function SpacingReadings({
         </Text>
         {mode !== null && (
           <p className="vd-readings__caption vd-mono">
-            {shut ? foldSummary(rows) : CAPTIONS[mode]}
+            {shut && !empty ? foldSummary(rows) : CAPTIONS[mode]}
           </p>
         )}
         {foldable && (
@@ -347,20 +362,44 @@ export function SpacingReadings({
         )}
       </Stack>
 
-      {mode === null || rows.length === 0 ? (
-        <EmptyState message={mode === null ? NO_LEDGER[subject] : NOTHING_FOUND[mode]} />
-      ) : (
+      {foldable ? (
         <div id={tableId} hidden={shut}>
-          <Table
-            label={HEADING}
-            className="vd-readings__table"
-            columns={columnsFor(mode)}
-            rows={rows.map((change, index) =>
-              readingRow({ change, index, mode, pressed, onPress, onHover }),
-            )}
-          />
+          {body}
         </div>
+      ) : (
+        body
       )}
     </div>
+  );
+}
+
+/** What the panel lists: the table, or the sentence saying why there is none. */
+function ReadingsBody({
+  ledger,
+  subject,
+  pressed,
+  onPress,
+  onHover,
+}: Pick<SpacingReadingsProps, 'ledger' | 'pressed' | 'onPress' | 'onHover'> & {
+  subject: ReadingsSubject;
+}) {
+  const mode = ledger?.mode ?? null;
+  const rows = ledger?.rows ?? [];
+
+  if (mode === null || rows.length === 0) {
+    return (
+      <EmptyState message={mode === null ? NO_LEDGER[subject] : NOTHING_FOUND[mode]} />
+    );
+  }
+
+  return (
+    <Table
+      label={HEADING}
+      className="vd-readings__table"
+      columns={columnsFor(mode)}
+      rows={rows.map((change, index) =>
+        readingRow({ change, index, mode, pressed, onPress, onHover }),
+      )}
+    />
   );
 }
