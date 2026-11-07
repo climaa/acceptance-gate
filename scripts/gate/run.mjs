@@ -7,6 +7,11 @@
 //   pnpm gate --at <sha>          in a throwaway worktree at that commit
 //   pnpm gate --list              the manifest as JSON, for the CI matrix
 //   pnpm gate --verify [ref]      was this tree ever verified? (default HEAD)
+//   pnpm gate --no-wait           refuse at once if another gate holds the machine
+//
+// One gate runs per machine, across checkouts: the runner takes `lock.mjs`'s lock
+// before its first check, and a second gate waits for it, saying once whose turn
+// it is. `--no-wait` refuses instead of waiting, with the same sentence.
 //
 // `--at` is not a convenience. `git push origin <branch>` does not require that
 // branch to be checked out, and Sandcastle (`.sandcastle/main.mts`, the
@@ -20,13 +25,22 @@
 // decide, and a verification that is only correct while nobody uses the other
 // path is not one.
 import { spawnSync } from 'node:child_process';
+import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { withoutAmbientGit } from './git-env.mjs';
+import {
+  acquire,
+  formatDuration,
+  lockPath,
+  release,
+  releaseOnExit,
+  stopSignalExit,
+} from './lock.mjs';
 import { CHECKS, checksFor } from './manifest.mjs';
 import { compareNodeVersion, readNvmrc } from './node-version.mjs';
-import { findReceipt, NOTES_REF, noteFor, treeOf } from './receipt.mjs';
+import { findReceipt, NOTES_REF, noteFor, TIMINGS_ENV, treeOf } from './receipt.mjs';
 import { planFor } from './sandbox.mjs';
 import { worktreeAt } from './worktree.mjs';
 
@@ -46,6 +60,7 @@ function parse(argv) {
 
   return {
     list: argv.includes('--list'),
+    wait: !argv.includes('--no-wait'),
     verify:
       verify === -1
         ? undefined
@@ -60,13 +75,16 @@ function parse(argv) {
   };
 }
 
+/** A check's outcome; a number is the exit code of a step a stop signal ended. */
+/** @typedef {'passed' | 'failed' | number} Outcome */
+
 /**
  * One check, in `root`. Inherits stdio: the point of a local gate is that the
  * failure reads the same as it does when run by hand.
  *
  * @param {import('./manifest.mjs').Check} check
  * @param {string} root
- * @returns {boolean}
+ * @returns {Outcome}
  */
 function runCheck(check, root) {
   const cwd = check.cwd === undefined ? root : join(root, check.cwd);
@@ -86,14 +104,61 @@ function runCheck(check, root) {
       env: withoutAmbientGit(),
     });
 
+    // Ctrl-C reaches the step and this process alike, but the lock's signal
+    // listener cannot run while `spawnSync` blocks, so the runner stops here
+    // itself and exits as the signal would have made it.
+    const stopped = stopSignalExit(result);
+
+    if (stopped !== undefined) return stopped;
+
     if (result.status !== 0) {
       process.stdout.write(`\n✗ ${check.name} — ${check.why}\n`);
 
-      return false;
+      return 'failed';
     }
   }
 
-  return true;
+  return 'passed';
+}
+
+/**
+ * Every check runs even after one fails, mirroring the workflow's
+ * `fail-fast: false`: one push should report every problem it has, not the
+ * first one alphabetically. A stop signal ends the run at once.
+ *
+ * @param {readonly import('./manifest.mjs').Check[]} checks
+ * @param {string} root
+ * @returns {{ failed: import('./manifest.mjs').Check[], stopped?: number }}
+ */
+function runChecks(checks, root) {
+  /** @type {import('./manifest.mjs').Check[]} */
+  const failed = [];
+
+  for (const check of checks) {
+    const outcome = runCheck(check, root);
+
+    if (typeof outcome === 'number') return { failed, stopped: outcome };
+    if (outcome === 'failed') failed.push(check);
+  }
+
+  return { failed };
+}
+
+/**
+ * Say how long the gate waited and ran, and hand both to the hook that asked.
+ *
+ * @param {import('./receipt.mjs').Timings} timings
+ * @returns {void}
+ */
+function reportTimings(timings) {
+  process.stdout.write(
+    `  waited ${formatDuration(timings.waitedMs)} for the machine's gate lock, ` +
+      `ran ${formatDuration(timings.ranMs)}\n`,
+  );
+
+  const file = process.env[TIMINGS_ENV];
+
+  if (file !== undefined && file !== '') writeFileSync(file, JSON.stringify(timings));
 }
 
 /**
@@ -158,9 +223,10 @@ function reportReceipt(ref, wanted) {
  * the run and no note.
  *
  * @param {'fast' | 'full'} tier
+ * @param {import('./receipt.mjs').Timings} timings
  * @returns {void}
  */
-function recordReceipt(tier) {
+function recordReceipt(tier, timings) {
   const status = spawnSync('git', ['status', '--porcelain'], {
     cwd: REPO_ROOT,
     encoding: 'utf8',
@@ -187,7 +253,7 @@ function recordReceipt(tier) {
 
   spawnSync(
     'git',
-    ['notes', `--ref=${NOTES_REF}`, 'add', '-f', '-m', noteFor(sha, tier), sha],
+    ['notes', `--ref=${NOTES_REF}`, 'add', '-f', '-m', noteFor(sha, tier, timings), sha],
     { cwd: REPO_ROOT, encoding: 'utf8' },
   );
 
@@ -196,7 +262,7 @@ function recordReceipt(tier) {
 
 /** @param {readonly string[]} argv @returns {number} */
 export function run(argv) {
-  const { list, verify, at, tier } = parse(argv);
+  const { list, wait, verify, at, tier } = parse(argv);
 
   if (verify !== undefined) {
     // `--tier` alongside `--verify` names the tier required of the receipt.
@@ -229,21 +295,42 @@ export function run(argv) {
 
   if (plan.note !== undefined) process.stdout.write(`${plan.note}\n`);
 
+  const lock = lockPath(process.env);
+  const held = acquire({
+    path: lock,
+    checkout: REPO_ROOT.replace(/\/$/, ''),
+    tier,
+    wait,
+  });
+
+  if (!held.ok) {
+    process.stdout.write(`${held.sentence}; --no-wait, so this one stops.\n`);
+
+    return EXIT.broken;
+  }
+
+  releaseOnExit(lock);
+
+  const started = Date.now();
   const tree = at === undefined ? undefined : worktreeAt(at);
   const root = tree?.root ?? REPO_ROOT;
 
   try {
-    // Every check runs even after one fails, mirroring the workflow's
-    // `fail-fast: false`: one push should report every problem it has, not the
-    // first one alphabetically.
-    const failed = checks.filter((check) => !runCheck(check, root));
+    const { failed, stopped } = runChecks(checks, root);
+
+    // Stopped by a signal: exit as it would have, with the lock released.
+    if (stopped !== undefined) return stopped;
+
+    const timings = { waitedMs: held.waitedMs, ranMs: Date.now() - started };
+
+    reportTimings(timings);
 
     if (failed.length === 0) {
       process.stdout.write(`\n✓ gate (${tier}) — ${checks.length} check(s)\n`);
 
       // Only for a run of the working tree. `--at` checks a throwaway worktree at
       // another commit, and HEAD is not what was verified there.
-      if (at === undefined && plan.receipt) recordReceipt(tier);
+      if (at === undefined && plan.receipt) recordReceipt(tier, timings);
 
       return EXIT.ok;
     }
@@ -255,6 +342,7 @@ export function run(argv) {
     return EXIT.failed;
   } finally {
     tree?.dispose();
+    release(lock);
   }
 }
 

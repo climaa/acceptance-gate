@@ -49,7 +49,12 @@ describe('the gate inside the Sandcastle sandbox', () => {
 
   /** process.env without the sandbox mark or any git a hook may have exported. */
   const baseEnv = () => {
-    const env: NodeJS.ProcessEnv = { ...process.env, ...GIT_IDENTITY };
+    // Its own gate lock: this suite runs inside a gate that holds the real one.
+    const env: NodeJS.ProcessEnv = {
+      ...process.env,
+      ...GIT_IDENTITY,
+      GATE_LOCK: `${repo}.gate.lock`,
+    };
     for (const name of Object.keys(env)) {
       if (
         name === 'SANDCASTLE_SANDBOX' ||
@@ -89,6 +94,7 @@ describe('the gate inside the Sandcastle sandbox', () => {
 
   afterEach(() => {
     rmSync(repo, { recursive: true, force: true });
+    rmSync(`${repo}.gate.lock`, { force: true });
   });
 
   it('skips e2e and writes no receipt in the sandbox', () => {

@@ -7,6 +7,8 @@ transcribed from the GitHub Releases that existed when this file was created (20
 
 ## Unreleased
 
+- One gate runs per machine, across checkouts. `pnpm gate` takes a lock at `~/.cache/acceptance-gate/gate.lock` before its first check and releases it on every way out, Ctrl-C included; a second gate waits its turn and says once, in one sentence, which checkout holds it and for how long, and `pnpm gate --no-wait` refuses with that sentence instead. A lock whose pid is gone is taken over, with a line saying so. Two gates at once shared e2e ports and doubled the load under `test`, and host pushes in a child failed five times on timeouts in suites their branches never touched. The receipt records how long the gate waited apart from how long it ran.
+
 - A Sandcastle sandbox's two `~/.bashrc` hooks (`TURBO_CONCURRENCY` and `SANDCASTLE_SANDBOX`) no longer race. The SDK runs them concurrently and both rewrote the file through one `~/.bashrc.tmp`, so one `mv` failed with `cannot stat '/home/agent/.bashrc.tmp'` and took the planner or merger down with it, eight of ten iterations in the run after #682. Each rewrite now holds a `mkdir` lock and its own temp file, so neither fails and neither line is lost.
 
 - The Sandcastle merger posts its closing comment with `gh issue comment` before it closes the issue, and an issue already closed by the PR's `Closes #<ID>` no longer fails the close. It used to pass the comment to `gh issue close --comment`, which on an issue the merge had already closed skipped the comment with the close, so the list of criteria left for a human never reached the issue.
