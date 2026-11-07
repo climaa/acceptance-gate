@@ -10,19 +10,27 @@ working · **[manual](https://manual.carloslima.dev)** — the tool's
 requirements, rendered · **[changelog](https://blog.carloslima.dev/changelog)** —
 every release, and what it cost.
 
-**The pipeline is the product.** A public portfolio monorepo where every pull
-request — including the ones that build the repo itself — walks through the
-same gate:
+**Agents write the code now. This repo checks it, and I decide what it checks.**
+
+The agent writes. The gate checks. I decide what it checks.
+
+A public portfolio monorepo where every change — including the ones the repo's
+own agents write — passes the same gate before it reaches GitHub. Since
+19 Oct 2026 the gate is local: `.husky/pre-push` runs `pnpm gate`, nine checks
+read from one list, [`scripts/gate/manifest.mjs`](scripts/gate/manifest.mjs):
 
 ```text
-lint · typecheck · build · test · format · health · sandcastle · e2e  (parallel)  →  gate
+lint · typecheck · build · test · format · health · boards · sandcastle · e2e  →  push
 ```
 
-`visual-diff` runs alongside the jobs above but deliberately never joins
-`gate.needs`: it posts its report as a PR comment and fails its own job
-loudly on a real diff, but a human approves the baseline in the PR — the
-same as reviewing a code diff — rather than a numeric threshold silently
-blocking (or silently passing) a merge. See
+The gate is a hook, so a push with `--no-verify` skips it, and `main` requires
+no status check since the GitHub Actions minutes ran out. `visual-diff` is not
+in the list above: it needs Docker and several minutes, so it runs as
+`pnpm gate --tier full` before a change to `packages/ui` or the baselines
+merges, and it never accepts a baseline by itself — a person reads the changed
+screenshots and commits the new baselines, the same as reviewing a code diff,
+rather than a numeric threshold silently blocking (or silently passing) a
+change. See
 [`packages/visual-diff/README.md`](packages/visual-diff/README.md#ci-status)
 and the reasoning in
 [this post](apps/blog/content/posts/visual-regression-with-agents.mdx).
@@ -42,10 +50,13 @@ rather than noise.
 And the part that raises the bar: **this repo is built by its own published
 agent pipeline.** The autonomous multi-agent orchestrator in
 [`.sandcastle/`](.sandcastle/) — which I built and ran across previous
-production work — plans, implements, reviews and merges GitHub issues through
-the CI this repo builds for itself. The PR history is the evidence: pipeline
-merges carry their model co-author trailer in the squashed commit — see
-[#426](https://github.com/climaa/acceptance-gate/pull/426) for one, end to end.
+production work — plans, implements, reviews and merges GitHub issues. Each
+`sandcastle/issue-*` branch it pushes goes through the same pre-push gate, and
+its pull request can merge with no person in the loop. What stays human is the
+issue, its criteria, and what the gate checks. The PR history is the evidence:
+pipeline merges carry their model co-author trailer in the squashed commit —
+see [#426](https://github.com/climaa/acceptance-gate/pull/426) for one, end to
+end.
 
 > **Work in progress, in public — deliberately.** The
 > [project board](https://github.com/users/climaa/projects/1) is the live,
@@ -62,8 +73,8 @@ merges carry their model co-author trailer in the squashed commit — see
 | `packages/ui` — atomic design system, token-only styling                  | ✅ all 19 components of the normative inventory plus the 11 the console, the manual and the blog needed — 30 in four tiers, layering enforced by `eslint-plugin-boundaries`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | `packages/logger` — the shared logger, and the seam under it              | ✅ silent in production, and `error()` always forwards to a pluggable reporter — with the Bugsink adapter behind `@gate/logger/bugsink`, inert until a DSN exists. Call sites never learn which tracker is behind it                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | `apps/storybook` — the visual single source of truth                      | ✅ [published](https://storybook.carloslima.dev) — every component rendered in isolation, plus the docs pages that describe the system                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| `apps/e2e` — playwright-bdd acceptance suite                              | ✅ runs on every PR, blocks the merge — in `gate.needs`. Its second lane, `features/local/`, never runs in CI and writes to your own tree — see [the two `:local` scripts](#the-two-local-scripts-capture-promote-and-clean-up-after-themselves)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| `packages/visual-diff` — the self-built visual regression CLI             | ✅ reports on every PR, never auto-blocks — see [its README](packages/visual-diff/README.md#ci-status)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| `apps/e2e` — playwright-bdd acceptance suite                              | ✅ runs on every push, in the gate — a red scenario stops the push. Its second lane, `features/local/`, never runs in CI and writes to your own tree — see [the two `:local` scripts](#the-two-local-scripts-capture-promote-and-clean-up-after-themselves)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| `packages/visual-diff` — the self-built visual regression CLI             | ✅ runs in `pnpm gate --tier full`, never accepts a baseline by itself — see [its README](packages/visual-diff/README.md#ci-status)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | `apps/visual-diff-ui` — the console that reviews those runs               | ✅ [published](https://visual-diff-ui.carloslima.dev) — the visual-diff review console: sets, reports and history, the run panel with its live log and its two job modes, and the report's tier sections, review loop, accessibility treatment and the three-up viewer behind its comparison modal; the set viewer at `/set/[label]`, where every screenshot in a set is grouped by its story under its tier, drawn at its own ratio and never upscaled or cropped, behind a pinned theme/viewport filter bar that hydrates nothing; a report row carries its bucket chips and a set repeating an older sha is marked `same sha`; every browser request gives up after 30 s rather than hanging on a stalled link; sample mode browses the #242 regression report and ships a sample set to open; error boundaries report to Bugsink like the blog's |
 | `apps/manual` — the console's manual, generated from its acceptance suite | ✅ [published](https://manual.carloslima.dev) — three pages (console, report, sample) parsed from the same `.feature` files the acceptance suite runs, so a scenario added or removed changes the manual in the same commit; page views tracked on the same terms as the blog and the console                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 
@@ -89,9 +100,10 @@ pnpm format:check && pnpm health:check
 pnpm test:sandcastle  # the orchestrator's own hermetic suite
 ```
 
-Those last three lines are the first seven parallel gate jobs from the diagram
-above, in the same order. `e2e` is the eighth; it needs a Chromium download
-before its first local run — see [`apps/e2e/README.md`](apps/e2e/README.md).
+Those last three lines run seven of the nine checks above; `pnpm gate` runs
+all nine, `boards` and `e2e` included, and is what the pre-push hook runs.
+`e2e` needs a Chromium download before its first local run — see
+[`apps/e2e/README.md`](apps/e2e/README.md).
 
 ### The two `:local` scripts capture, promote, and clean up after themselves
 
@@ -140,8 +152,11 @@ Turborepo ^2.10.
 1. I decompose the roadmap into self-contained, story-pointed GitHub issues
    (dependency notes, verification commands, do-not-touch lists).
 2. `pnpm sandcastle` plans the open backlog, then per issue: implements in a
-   Docker sandbox → reviews with a second agent → opens a PR → squash
-   auto-merge once the `gate` check is green.
+   Docker sandbox → reviews with a second agent → pushes its
+   `sandcastle/issue-*` branch through the pre-push gate → opens a PR → squash
+   auto-merge. With no required check on `main`, a PR whose push passed the
+   gate lands at once; a push the gate refuses leaves the issue open, with a
+   comment and no PR.
 3. `sc:*` labels route model and reasoning effort per issue. Testing
    conventions are enforced in review: AAA shape, testing-pyramid placement,
    every bug fix lands with its regression test.
