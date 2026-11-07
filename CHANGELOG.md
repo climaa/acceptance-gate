@@ -7,6 +7,8 @@ transcribed from the GitHub Releases that existed when this file was created (20
 
 ## Unreleased
 
+- `pnpm gate` inside a Sandcastle sandbox runs every check but e2e, prints one line saying the host push runs it, and writes no receipt. The sandbox hooks export `SANDCASTLE_SANDBOX=1` at the top of the container's `~/.bashrc`, and the gate reads it (`scripts/gate/sandbox.mjs`). The image has no browser, so e2e failed there on every run and the implementer spent minutes confirming a red it could not fix. With no receipt, no later push reads "already verified" for a tree whose e2e never ran, and a push from the sandbox of a commit the host has not verified is refused rather than gated without e2e. The host gate is unchanged.
+
 - `scripts/pen/tile-diff.mjs` subtracts a screenshot from its tile, so where a tile parts from the page can be seen rather than guessed at beside it. It writes the difference as a PNG, black where the two agree, and prints its mean brightness, which compares two passes on one tile. It needs ffmpeg and ffprobe, and it gives no verdict: that stays with `tiles-from-dom.mjs --verify`. Storybook documents it under Docs / QA / Tile Diff.
 
 - A pixel perfect session subtracts too. `tile-rows.mjs --save <dir>` writes the tile's crop and the screenshot as files for `tile-diff.mjs`, and the skill keeps the mean difference across the session: rows say where a line sits, the picture shows a wrong fill or a missing band they cannot, and a figure that rises after a fix stops the session. Without ffmpeg it goes on with the rows alone.

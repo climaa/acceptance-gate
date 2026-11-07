@@ -105,6 +105,21 @@ export const TURBO_CONCURRENCY_HOOK: SandboxHook = {
   timeoutMs: 30_000,
 };
 
+// Tells `pnpm gate` it runs inside the sandbox (scripts/gate/sandbox.mjs). The
+// image has no browser, so e2e can never pass here: the gate skips it with one
+// line saying the host push runs it, and writes no receipt, so no later push
+// reads "already verified" for a tree whose e2e never ran. Written to the top
+// of ~/.bashrc for the same reason as TURBO_CONCURRENCY above. The host never
+// sets it, so the host gate is unchanged.
+export const SANDBOX_MARK_HOOK: SandboxHook = {
+  command: [
+    'touch "$HOME/.bashrc"',
+    '{ echo "export SANDCASTLE_SANDBOX=1"; grep -v "^export SANDCASTLE_SANDBOX=" "$HOME/.bashrc"; } > "$HOME/.bashrc.tmp"',
+    'mv "$HOME/.bashrc.tmp" "$HOME/.bashrc"',
+  ].join('; '),
+  timeoutMs: 30_000,
+};
+
 // CI=true: the sandbox exec has no TTY, so a node_modules state that pnpm
 // wants to purge-and-reinstall hits pnpm's interactive "confirm removal"
 // prompt and aborts with ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY. CI=true
@@ -129,7 +144,11 @@ export function hooksFor(mount: SandboxMount): SandboxHooks {
     case 'head':
       return {
         sandbox: {
-          onSandboxReady: [{ ...GH_AUTH_SETUP_HOOK }, { ...TURBO_CONCURRENCY_HOOK }],
+          onSandboxReady: [
+            { ...GH_AUTH_SETUP_HOOK },
+            { ...TURBO_CONCURRENCY_HOOK },
+            { ...SANDBOX_MARK_HOOK },
+          ],
         },
       };
     case 'worktree':
@@ -138,6 +157,7 @@ export function hooksFor(mount: SandboxMount): SandboxHooks {
           onSandboxReady: [
             { ...GH_AUTH_SETUP_HOOK },
             { ...TURBO_CONCURRENCY_HOOK },
+            { ...SANDBOX_MARK_HOOK },
             { ...PNPM_INSTALL_HOOK },
           ],
         },
