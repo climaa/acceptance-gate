@@ -7,6 +7,8 @@ transcribed from the GitHub Releases that existed when this file was created (20
 
 ## Unreleased
 
+- A Sandcastle sandbox with `GH_TOKEN` set rewrites `git@github.com:` remotes to HTTPS as well as wiring `gh`'s credential helper, so the implementer's push and the merger's `git fetch origin main` reach GitHub instead of failing over SSH with `No user exists for uid 501`.
+
 - `pnpm sandcastle` asks `docker info` before it touches a container or the image, and with the daemon stopped it refuses in one sentence and exits 1, instead of dying in `docker build` with a stack trace that blamed the image. A `docker` missing from PATH gets its own sentence.
 
 - A story that draws nothing on purpose declares it with `visual-diff:absent`, and its capture records a token ledger with no elements instead of a `token ledger not recorded` warning. The four stories shot in an absence frame (SkipLink's `Default`, Pagination's `SinglePage`, StepList's and TagList's `Empty`) carry it; no screenshot changes. An untagged story whose walk finds nothing still warns, and a tagged one whose walk finds an element warns that the tag is stale.
