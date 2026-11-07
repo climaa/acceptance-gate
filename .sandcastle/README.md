@@ -221,6 +221,15 @@ or opens anything, and takes the same comment-and-label exit; and the host-side
 PR-queue loop declines to update or arm a PR that changes no files, so it cannot
 finish the job for one that got opened anyway.
 
+## A refused host push
+
+The host pushes each finished branch before the merge, and the pre-push gate
+runs there. A branch it refuses **holds its issue**: kept from the merger (whose
+push would meet the same gate), skipped by every later plan in the run, and
+labelled `sandcastle:hold` with one comment naming the failed checks and the
+branch. The run's closing summary lists it under `push failed — held`, apart
+from no-ops. Fix the branch, push it from the host, then remove the label.
+
 ---
 
 ## Stranded branches

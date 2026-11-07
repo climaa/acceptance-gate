@@ -42,6 +42,11 @@ export const NOOP_LABEL = 'sandcastle:no-op';
  */
 export const HOLD_LABEL = 'sandcastle:hold';
 
+/** Colour/description used when the run creates the hold label on first use. */
+export const HOLD_LABEL_COLOR = 'fbca04';
+export const HOLD_LABEL_DESCRIPTION =
+  'Sandcastle skips this issue until a human removes the label';
+
 /** Whether an issue's labels carry the hold marker. */
 export function hasHoldLabel(labels: readonly string[]): boolean {
   return labels.includes(HOLD_LABEL);

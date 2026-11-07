@@ -1,8 +1,9 @@
 // git/gh CLI helpers — branch/worktree/issue lookups used by the
 // stranded-branch rescue path and the per-issue implement→review pipeline.
-// Read-only except for markIssueNoOp(), which comments and labels; the
-// decisions it acts on are pure and live in sandcastle-noop-issues.mts.
-import { execSync, type ExecSyncOptions } from 'node:child_process';
+// Read-only except for markIssueNoOp() and markIssueHeld(), which comment and
+// label, and pushBranch(); the decisions they act on are pure and live in
+// sandcastle-noop-issues.mts and sandcastle-push-hold.mts.
+import { execSync, spawn, type ExecSyncOptions } from 'node:child_process';
 import { BASE_BRANCH } from './sandcastle-config.mts';
 import { type Dirtiness, worktreeReapBlocker } from './sandcastle-worktree-safety.mts';
 import {
@@ -19,10 +20,14 @@ import {
   classifyRevListFailure,
 } from './sandcastle-git-probe.mts';
 import {
+  HOLD_LABEL,
+  HOLD_LABEL_COLOR,
+  HOLD_LABEL_DESCRIPTION,
   NOOP_LABEL,
   NOOP_LABEL_COLOR,
   NOOP_LABEL_DESCRIPTION,
 } from './sandcastle-noop-issues.mts';
+import type { PushResult } from './sandcastle-push-hold.mts';
 
 // Re-exported from its own type-only module so this module's five importers keep
 // `import { IssueRef } from './sandcastle-git.mts'` working unchanged.
@@ -227,6 +232,31 @@ export function markIssueNoOp(
   id: string,
   body: string,
 ): { commented: boolean; labeled: boolean } {
+  return commentAndLabel(id, body, {
+    name: NOOP_LABEL,
+    color: NOOP_LABEL_COLOR,
+    description: NOOP_LABEL_DESCRIPTION,
+  });
+}
+
+// The same two writes for an issue whose host push failed: one comment naming
+// the failed checks, and HOLD_LABEL (sandcastle-push-hold.mts).
+export function markIssueHeld(
+  id: string,
+  body: string,
+): { commented: boolean; labeled: boolean } {
+  return commentAndLabel(id, body, {
+    name: HOLD_LABEL,
+    color: HOLD_LABEL_COLOR,
+    description: HOLD_LABEL_DESCRIPTION,
+  });
+}
+
+function commentAndLabel(
+  id: string,
+  body: string,
+  label: { name: string; color: string; description: string },
+): { commented: boolean; labeled: boolean } {
   let commented = false;
   try {
     // Body on stdin: it is a multi-line template with backticks and quotes,
@@ -245,8 +275,8 @@ export function markIssueNoOp(
   // label already exists) — the add below is what actually reports success.
   try {
     execSync(
-      `gh label create "${NOOP_LABEL}" --color ${NOOP_LABEL_COLOR} ` +
-        `--description "${NOOP_LABEL_DESCRIPTION}"`,
+      `gh label create "${label.name}" --color ${label.color} ` +
+        `--description "${label.description}"`,
       { stdio: 'pipe' },
     );
   } catch {
@@ -255,15 +285,40 @@ export function markIssueNoOp(
 
   let labeled = false;
   try {
-    execSync(`gh issue edit ${id} --add-label "${NOOP_LABEL}"`, {
+    execSync(`gh issue edit ${id} --add-label "${label.name}"`, {
       stdio: 'pipe',
     });
     labeled = true;
   } catch (err) {
-    console.warn(`  ⚠ could not label #${id} ${NOOP_LABEL}: ${(err as Error).message}`);
+    console.warn(`  ⚠ could not label #${id} ${label.name}: ${(err as Error).message}`);
   }
 
   return { commented, labeled };
+}
+
+// Output kept from one push: enough for the gate's closing summary line, which
+// is printed last, without holding a whole turbo log in memory.
+const PUSH_OUTPUT_KEEP = 200_000;
+
+// Push `branch` to origin from the host. The pre-push gate runs here, so its
+// output is echoed live for the operator AND kept, because a failure is held
+// with a comment that names the checks the gate printed (sandcastle-push-hold.mts).
+// Never rejects: a push that cannot even start is a failed push.
+export function pushBranch(branch: string): Promise<PushResult> {
+  return new Promise((resolve) => {
+    let output = '';
+    const keep = (chunk: Buffer, sink: NodeJS.WriteStream) => {
+      sink.write(chunk);
+      output = (output + chunk.toString()).slice(-PUSH_OUTPUT_KEEP);
+    };
+    const child = spawn('git', ['push', 'origin', branch], {
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    child.stdout.on('data', (chunk: Buffer) => keep(chunk, process.stdout));
+    child.stderr.on('data', (chunk: Buffer) => keep(chunk, process.stderr));
+    child.on('error', (err) => resolve({ ok: false, output: `${output}${err.message}` }));
+    child.on('close', (code) => resolve({ ok: code === 0, output }));
+  });
 }
 
 export function branchHasOpenPr(branch: string): boolean {

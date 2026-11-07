@@ -57,14 +57,20 @@ describe('.sandcastle/README.md', () => {
     expect(content).toMatch(/not closed/i);
   });
 
+  it('documents the push-hold rule (label, and the summary heading)', () => {
+    expect(content).toMatch(/sandcastle:hold/);
+    expect(content).toMatch(/push failed — held/);
+  });
+
   // Ceiling raised from 200 when the no-op section landed, to 240 when that
   // section gained the empty-diff shape, and to 250 when the merge phase gained
-  // its own empty-diff exit. It is a guard against the file becoming a manual,
+  // its own empty-diff exit, and to 262 when a refused host push gained its hold
+  // rule. It is a guard against the file becoming a manual,
   // not a budget — each new paragraph has to earn its lines, and these document
   // a mechanism an operator has to interact with by hand (removing the label).
-  it('is within reasonable length (80–250 lines)', () => {
+  it('is within reasonable length (80–262 lines)', () => {
     const lines = content.split('\n').length;
     expect(lines).toBeGreaterThanOrEqual(80);
-    expect(lines).toBeLessThanOrEqual(250);
+    expect(lines).toBeLessThanOrEqual(262);
   });
 });
