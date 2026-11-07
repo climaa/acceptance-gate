@@ -366,6 +366,30 @@ const BASELINES = 'packages/visual-diff/__baselines__';
  *  what `check`'s host guard reads back. */
 export const BASELINE_ENV = 'BASELINE_ENV.json';
 
+/**
+ * Every Storybook the differ reads, and how the console links to its stories.
+ *
+ * `static` is the build, repo-root-relative. `devPort` is where its dev server
+ * listens: the console's dev link joins it to the page's own hostname, so a
+ * reviewer reaching the console from another device lands on the same machine.
+ * `published` is the deployed build's origin; a root without one gets no
+ * published link, since sending its stories to another Storybook's build opens a
+ * story that is not there. `globals` are appended after `colorScheme:` to every
+ * link into the root (a native Storybook's `viewport.value:mobile2`).
+ * `idPrefix` claims the story ids that start with it; the first root owns every
+ * id no other root claims, as a variant naming no build is the first build's.
+ * One here; a child with a native Storybook lists its build second.
+ * @type {readonly { static: string, devPort: number, published?: string,
+ *                   globals?: readonly string[], idPrefix?: string }[]}
+ */
+export const STORYBOOKS = [
+  {
+    static: 'apps/storybook/storybook-static',
+    devPort: 6006,
+    published: 'https://storybook.carloslima.dev',
+  },
+];
+
 /** Repo-root-relative, so a path means the same thing whichever workspace the CLI
  *  was invoked from. */
 export const PATHS = {
@@ -382,8 +406,8 @@ export const PATHS = {
   /** Every Storybook build the differ reads, each with its own `index.json` and
    *  served on its own for its own stories: Storybook refs never merge into a static
    *  index, so a composed Storybook's stories are read from the build that owns them.
-   *  One here; a child with a native Storybook lists its build second. */
-  storybookStatics: ['apps/storybook/storybook-static'],
+   *  Read off {@link STORYBOOKS}, in its order. */
+  storybookStatics: STORYBOOKS.map((storybook) => storybook.static),
 };
 
 /** Process exit codes. Three, and no more: a reader of a red CI job has to learn from

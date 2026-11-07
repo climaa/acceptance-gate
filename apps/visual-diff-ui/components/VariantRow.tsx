@@ -1,16 +1,15 @@
 import { Badge, type BadgeTone, Stack } from '@gate/ui';
 import type { ComparisonMode } from '@/lib/comparison';
 import {
-  DEV_STORYBOOK,
   formatPixels,
-  PUBLISHED_STORYBOOK,
+  publishedStorybookLink,
   type ReportSides,
   ruleDocsLink,
   showsDevStorybook,
-  storybookLink,
 } from '@/lib/report-view';
 import { compared } from '@/lib/shots';
 import type { Bucket, Variant } from '@/lib/summary';
+import { DevStorybookLink } from './DevStorybookLink';
 import { ThreeUp } from './ThreeUp';
 
 /**
@@ -99,6 +98,8 @@ export interface VariantRowProps {
 }
 
 export function VariantRow({ reportId, variant, sides, onCompare }: VariantRowProps) {
+  const published = publishedStorybookLink(variant.id, variant.theme);
+
   return (
     <div className="vd-variant">
       <Stack direction="row" gap={3} align="baseline" wrap>
@@ -120,25 +121,27 @@ export function VariantRow({ reportId, variant, sides, onCompare }: VariantRowPr
 
         {/* Both Storybooks: the one a developer has running beside the console,
             and the published build the baselines were taken from. The first is
-            offered only where it can answer — see `showsDevStorybook`. */}
+            offered only where it can answer — see `showsDevStorybook` — and the
+            second only for a root that publishes a build. */}
         {showsDevStorybook() && (
+          <DevStorybookLink
+            className="vd-variant__link"
+            storyId={variant.id}
+            theme={variant.theme}
+          >
+            dev Storybook
+          </DevStorybookLink>
+        )}
+        {published && (
           <a
             className="vd-variant__link"
-            href={storybookLink(DEV_STORYBOOK, variant.id, variant.theme)}
+            href={published}
             target="_blank"
             rel="noopener noreferrer"
           >
-            dev Storybook
+            baseline Storybook
           </a>
         )}
-        <a
-          className="vd-variant__link"
-          href={storybookLink(PUBLISHED_STORYBOOK, variant.id, variant.theme)}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          baseline Storybook
-        </a>
       </Stack>
 
       {variant.error && <p className="vd-variant__error">{variant.error}</p>}

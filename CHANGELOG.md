@@ -7,6 +7,8 @@ transcribed from the GitHub Releases that existed when this file was created (20
 
 ## Unreleased
 
+- The console's Storybook links follow the page's host and the story's Storybook root. The dev link takes the console page's own hostname (bracketed for IPv6), read on the client by one `DevStorybookLink`, so a reviewer on a tablet at the Mac's LAN address reaches the Mac's Storybook instead of the tablet's `localhost`. Each root in the differ's new `STORYBOOKS` policy declares its dev port, an optional published origin, optional extra globals and the story-id prefix it claims, and `PATHS.storybookStatics` is read off it; a root with no published build gets no published link in the report row, the set viewer or the shot view.
+
 - A Sandcastle sandbox's two `~/.bashrc` hooks (`TURBO_CONCURRENCY` and `SANDCASTLE_SANDBOX`) no longer race. The SDK runs them concurrently and both rewrote the file through one `~/.bashrc.tmp`, so one `mv` failed with `cannot stat '/home/agent/.bashrc.tmp'` and took the planner or merger down with it, eight of ten iterations in the run after #682. Each rewrite now holds a `mkdir` lock and its own temp file, so neither fails and neither line is lost.
 
 - The Sandcastle merger posts its closing comment with `gh issue comment` before it closes the issue, and an issue already closed by the PR's `Closes #<ID>` no longer fails the close. It used to pass the comment to `gh issue close --comment`, which on an issue the merge had already closed skipped the comment with the close, so the list of criteria left for a human never reached the issue.

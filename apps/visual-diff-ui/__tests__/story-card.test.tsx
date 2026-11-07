@@ -7,6 +7,24 @@ import { A11Y_VERDICT, StoryCard } from '../components/StoryCard';
 import { buildSections, type ReportCard } from '../lib/report-view';
 import type { Variant } from '../lib/summary';
 
+/** The policy's Storybook roots, as a list a test can extend: a child's second,
+ *  unpublished Storybook is declared there, and this repo declares none. */
+const roots = vi.hoisted(
+  () => [] as { static: string; devPort: number; [field: string]: unknown }[],
+);
+
+vi.mock('@gate/visual-diff/policy', async (original) => {
+  const policy = await original<typeof import('@gate/visual-diff/policy')>();
+  roots.push(...policy.STORYBOOKS);
+  return { ...policy, STORYBOOKS: roots };
+});
+
+/** Vitest's jsdom environment exposes its instance, which is the one way to
+ *  move the page to another host: `location` itself cannot be reassigned. */
+const page = (
+  globalThis as unknown as { jsdom: { reconfigure: (to: { url: string }) => void } }
+).jsdom;
+
 /**
  * One card, and the two failures a pixel tool cannot show.
  *
@@ -75,6 +93,8 @@ afterEach(() => {
   // `showsDevStorybook` reads the mode per call, so a stub left standing would
   // decide the next test's markup.
   vi.unstubAllEnvs();
+  roots.splice(1);
+  page.reconfigure({ url: 'http://localhost:3000/' });
 });
 
 describe('a pixel card', () => {
@@ -189,6 +209,55 @@ describe('a pixel card', () => {
 
     expect(within(card()).queryByRole('link', { name: 'dev Storybook' })).toBeNull();
     expect(within(card()).getByRole('link', { name: 'baseline Storybook' })).toBeTruthy();
+  });
+
+  // From a tablet the console is the Mac's LAN address, and `localhost` there
+  // is the tablet: the dev link follows the page's host.
+  it("opens the dev Storybook on the page's own host", () => {
+    vi.stubEnv('NODE_ENV', 'development');
+    page.reconfigure({ url: 'http://192.168.1.20:3000/' });
+
+    renderCard(
+      cardOf(
+        variant({
+          key: 'atoms__desktop__dark__atoms-badge--tones',
+          id: 'atoms-badge--tones',
+          theme: 'dark',
+        }),
+      ),
+    );
+
+    const dev = within(card()).getByRole('link', { name: 'dev Storybook' });
+    expect(dev.getAttribute('href')).toBe(
+      'http://192.168.1.20:6006/index.html?path=/story/atoms-badge--tones&globals=colorScheme:dark',
+    );
+  });
+
+  // A second Storybook with no published build: its stories open on its own
+  // port, and are never sent to the web build, which does not hold them.
+  it("links a story to its own root's port, with no published link where none is published", () => {
+    vi.stubEnv('NODE_ENV', 'development');
+    roots.push({
+      static: 'apps/storybook-native/storybook-static',
+      devPort: 6007,
+      globals: ['viewport.value:mobile2'],
+      idPrefix: 'native-',
+    });
+
+    renderCard(
+      cardOf(
+        variant({
+          key: 'atoms__desktop__light__native-button--primary',
+          id: 'native-button--primary',
+        }),
+      ),
+    );
+
+    const dev = within(card()).getByRole('link', { name: 'dev Storybook' });
+    expect(dev.getAttribute('href')).toBe(
+      'http://localhost:6007/index.html?path=/story/native-button--primary&globals=colorScheme:light;viewport.value:mobile2',
+    );
+    expect(within(card()).queryByRole('link', { name: 'baseline Storybook' })).toBeNull();
   });
 
   // The card explains only what varies per card: a viewport its tier *is* shot
