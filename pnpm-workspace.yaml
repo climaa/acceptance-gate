@@ -9,6 +9,12 @@ packages:
 # (22.22.2) is what jsdom 30 and its parsers ask for; below it this key would fail an
 # install the root claims to support.
 engineStrict: true
+# pnpm 11 already holds back a release younger than 1440 minutes (one day); three
+# days is the supply-chain margin asked for here, and scripts/release-age.mjs in
+# `health:check` refuses the key missing or below it. Every dependency bump must
+# name a version at least three days old: a Dependabot PR for yesterday's release
+# fails `pnpm install` until it ages, and lowering this is the wrong fix.
+minimumReleaseAge: 4320
 allowBuilds:
   esbuild: true
   sharp: true
