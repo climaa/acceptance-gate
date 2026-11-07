@@ -263,13 +263,16 @@ That is a backstop, not a reason to skip this step: only you close the issue.
 
 ## Step 5 — Close or comment based on PR state
 
-- **`MERGED`** → tick the issue's acceptance criteria from the PR, then close the issue:
+- **`MERGED`** → tick the issue's acceptance criteria from the PR, post the closing comment, then close the issue:
 
   ```bash
   CLOSE_COMMENT=$(node .sandcastle/sandcastle-tick-criteria.mts <ID> <PR_NUMBER>) \
     || CLOSE_COMMENT="Merged via PR <PR_URL>. Completed by Sandcastle. The acceptance criteria were not reconciled with the PR (the tick step failed), so the issue body is unchanged."
-  gh issue close <ID> --comment "$CLOSE_COMMENT"
+  gh issue comment <ID> --body "$CLOSE_COMMENT"
+  gh issue close <ID> || echo "Issue #<ID> already closed (the PR's Closes #<ID>); continuing."
   ```
+
+  The comment is posted on its own, before the close. The PR body's `Closes #<ID>` has usually closed the issue already, and `gh issue close --comment` on a closed issue skips the comment along with the close, which dropped the only list of the criteria left for a human. A close that fails because the issue is already closed is not an error.
 
   The script runs on plain `node` (type stripping, no `tsx`), because this sandbox's `node_modules` is the host's. It ticks an issue box only when the merged PR's body ticks the same criterion. A criterion the PR left `[ ]`, or carried with `(needs human verification)`, stays `[ ]` in the issue with ` (needs human verification — #<PR>)` appended once, and the closing comment it prints lists it. Never tick the issue's boxes any other way: a box the PR left open is the one signal Step 2a asks for, and ticking it records as verified what nobody verified.
 

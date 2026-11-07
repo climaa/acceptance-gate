@@ -102,6 +102,27 @@ describe('sandcastle PR-based merge flow', () => {
       expect(content).not.toMatch(/sed[^\n]*\[x\]/);
     });
 
+    it('posts the closing comment on its own, so an issue the PR already closed still gets it', () => {
+      // #683: `Closes #<ID>` closes the issue on merge, and `gh issue close
+      // --comment` on a closed issue skips the comment along with the close.
+      // Arrange
+      const closing = [...content.matchAll(/```bash\n([\s\S]*?)```/g)]
+        .map((m) => m[1]!)
+        .find((block) => block.includes('gh issue close'))!;
+
+      // Act
+      const commentAt = closing.search(/gh issue comment <ID> --body "\$CLOSE_COMMENT"/);
+      const closeLine = closing
+        .split('\n')
+        .find((line) => line.includes('gh issue close'))!;
+
+      // Assert
+      expect(commentAt).toBeGreaterThan(-1);
+      expect(commentAt).toBeLessThan(closing.indexOf('gh issue close'));
+      expect(closeLine).not.toMatch(/--comment/);
+      expect(closeLine).toMatch(/gh issue close <ID>\s*\|\|/);
+    });
+
     it('deletes the issue branch only on MERGED state', () => {
       expect(content).toMatch(/git push origin --delete/);
       const deleteBlock = content.match(
