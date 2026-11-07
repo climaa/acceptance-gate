@@ -7,6 +7,8 @@ transcribed from the GitHub Releases that existed when this file was created (20
 
 ## Unreleased
 
+- The acceptance step that checks the console's suggested set label reads today's date in UTC, as the console's `today()` writes it. It read the local date, so east of Greenwich it went red every night between local and UTC midnight: on 2026-11-08 at 00:25 CET the console offered `detached-2026-11-07` while the step expected `…-2026-11-08`, and that held three Sandcastle pushes in one run.
+
 - The visual-diff-ui git suites (`git.test.ts`, `capture-set.test.ts`) refresh the index with `git update-index -q --refresh` in a `beforeAll` before any git call bounded at 2 s. In the pre-push gate's fresh clone the first `git status --porcelain` refreshed the whole index, and under the gate's own test load that took longer than `lib/git.ts`'s 2 s timeout, so `describeCheckout` answered null and a correct tree was refused. The production timeout is unchanged.
 
 - `pnpm-workspace.yaml` writes `minimumReleaseAge: 4320`, so pnpm installs no release younger than three days, and `health:check` runs `scripts/release-age.mjs`, which fails when the key is missing, not a number, or below 4320. pnpm 11 applied a one-day floor by default and this repository wrote none, so a deleted or lowered key would have fallen back to it silently. The lockfile already passed the three-day policy and needed no re-resolution. From now on a dependency bump must name a version at least three days old: a Dependabot PR for yesterday's release fails `pnpm install` until it ages.
