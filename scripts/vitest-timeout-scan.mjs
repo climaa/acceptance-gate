@@ -118,12 +118,17 @@ function filesToScan() {
       ? process.argv.slice(2).map((file) => resolve(file))
       : vitestConfigs();
 
-  const missing = files.filter((file) => !existsSync(file));
-  if (files.length === 0 || missing.length > 0) {
+  if (files.length === 0) {
     console.error(
-      files.length === 0
-        ? 'vitest-timeout-scan: no vitest config found. A scan that reads nothing proves nothing'
-        : `vitest-timeout-scan: no such file ${missing.map((file) => relative(ROOT, file)).join(', ')}`,
+      'vitest-timeout-scan: no vitest config found. A scan that reads nothing proves nothing',
+    );
+    process.exit(2);
+  }
+
+  const missing = files.filter((file) => !existsSync(file));
+  if (missing.length > 0) {
+    console.error(
+      `vitest-timeout-scan: no such file ${missing.map((file) => relative(ROOT, file)).join(', ')}`,
     );
     process.exit(2);
   }

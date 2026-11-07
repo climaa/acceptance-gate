@@ -152,7 +152,7 @@ describe('vitestConfigs', () => {
     ]);
   });
 
-  it('finds all nine vitest configs in this repository', () => {
+  it('finds at least the nine vitest configs in this repository', () => {
     // Arrange
     const root = resolve(__dirname, '../..');
 
