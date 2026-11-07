@@ -6,6 +6,11 @@ tags: ['ci', 'automation', 'quality']
 draft: false
 ---
 
+> **Update, 7 Nov 2026.** Since 19 Oct 2026 `gate` is no longer a required check: the
+> GitHub Actions minutes ran out, the per-PR workflows are disabled, and the gate runs
+> locally, as a pre-push hook, before a push reaches GitHub. The post below describes the
+> required check as it worked in August, when every number in it was measured.
+
 At 02:20:00 UTC on a Thursday, a bot opened a pull request bumping five packages. At
 02:22:03 it was on `main`. Two minutes and three seconds, nobody awake, no review, five
 dependencies into the branch every deploy comes from.
