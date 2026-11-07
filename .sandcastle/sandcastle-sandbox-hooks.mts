@@ -75,6 +75,36 @@ export const GH_AUTH_SETUP_HOOK: SandboxHook = {
   timeoutMs: 60_000,
 };
 
+// turbo's default concurrency is 10, sized for a workstation. Inside the
+// container's memory a `pnpm gate` build at that width was OOM-killed (exit
+// 137), and the implementer spent its time diagnosing an "environmental
+// failure" the change had nothing to do with. This bounds turbo from the
+// container's own resources: one core left for the agent, and one task per
+// 2 GiB, the most a Next.js build here takes; never below 1. Memory is the
+// smaller of the cgroup limit (v2, then v1) and MemTotal.
+//
+// The export goes to the TOP of ~/.bashrc: an env var set inside a hook dies
+// with the hook's `docker exec`, while the agent's shell reads ~/.bashrc — and
+// Debian's stock copy returns early for a non-interactive shell, so a line
+// appended below that guard would never be read. The host is not touched: its
+// turbo keeps the default, and the host gate stays authoritative.
+export const TURBO_CONCURRENCY_HOOK: SandboxHook = {
+  command: [
+    'cpus=$(nproc)',
+    "kb=$(awk '/^MemTotal:/ {print $2}' /proc/meminfo)",
+    'lim=$(cat /sys/fs/cgroup/memory.max /sys/fs/cgroup/memory/memory.limit_in_bytes 2>/dev/null | head -n 1)',
+    'case "$lim" in ""|*[!0-9]*) ;; *) [ $((lim / 1024)) -lt "$kb" ] && kb=$((lim / 1024)) ;; esac',
+    'n=$((cpus - 1))',
+    'm=$((kb / 2097152))',
+    '[ "$m" -lt "$n" ] && n=$m',
+    '[ "$n" -ge 1 ] || n=1',
+    'touch "$HOME/.bashrc"',
+    '{ echo "export TURBO_CONCURRENCY=$n"; grep -v "^export TURBO_CONCURRENCY=" "$HOME/.bashrc"; } > "$HOME/.bashrc.tmp"',
+    'mv "$HOME/.bashrc.tmp" "$HOME/.bashrc"',
+  ].join('; '),
+  timeoutMs: 30_000,
+};
+
 // CI=true: the sandbox exec has no TTY, so a node_modules state that pnpm
 // wants to purge-and-reinstall hits pnpm's interactive "confirm removal"
 // prompt and aborts with ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY. CI=true
@@ -97,11 +127,19 @@ export const PNPM_INSTALL_HOOK: SandboxHook = {
 export function hooksFor(mount: SandboxMount): SandboxHooks {
   switch (mount) {
     case 'head':
-      return { sandbox: { onSandboxReady: [{ ...GH_AUTH_SETUP_HOOK }] } };
+      return {
+        sandbox: {
+          onSandboxReady: [{ ...GH_AUTH_SETUP_HOOK }, { ...TURBO_CONCURRENCY_HOOK }],
+        },
+      };
     case 'worktree':
       return {
         sandbox: {
-          onSandboxReady: [{ ...GH_AUTH_SETUP_HOOK }, { ...PNPM_INSTALL_HOOK }],
+          onSandboxReady: [
+            { ...GH_AUTH_SETUP_HOOK },
+            { ...TURBO_CONCURRENCY_HOOK },
+            { ...PNPM_INSTALL_HOOK },
+          ],
         },
       };
     default:
