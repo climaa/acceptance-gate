@@ -7,6 +7,8 @@ transcribed from the GitHub Releases that existed when this file was created (20
 
 ## Unreleased
 
+- A Sandcastle sandbox's two `~/.bashrc` hooks (`TURBO_CONCURRENCY` and `SANDCASTLE_SANDBOX`) no longer race. The SDK runs them concurrently and both rewrote the file through one `~/.bashrc.tmp`, so one `mv` failed with `cannot stat '/home/agent/.bashrc.tmp'` and took the planner or merger down with it, eight of ten iterations in the run after #682. Each rewrite now holds a `mkdir` lock and its own temp file, so neither fails and neither line is lost.
+
 - The Sandcastle merger posts its closing comment with `gh issue comment` before it closes the issue, and an issue already closed by the PR's `Closes #<ID>` no longer fails the close. It used to pass the comment to `gh issue close --comment`, which on an issue the merge had already closed skipped the comment with the close, so the list of criteria left for a human never reached the issue.
 
 - `pnpm gate` inside a Sandcastle sandbox runs every check but e2e, prints one line saying the host push runs it, and writes no receipt. The sandbox hooks export `SANDCASTLE_SANDBOX=1` at the top of the container's `~/.bashrc`, and the gate reads it (`scripts/gate/sandbox.mjs`). The image has no browser, so e2e failed there on every run and the implementer spent minutes confirming a red it could not fix. With no receipt, no later push reads "already verified" for a tree whose e2e never ran, and a push from the sandbox of a commit the host has not verified is refused rather than gated without e2e. The host gate is unchanged.

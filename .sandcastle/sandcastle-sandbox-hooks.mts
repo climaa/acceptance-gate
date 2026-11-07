@@ -88,6 +88,24 @@ export const GH_AUTH_SETUP_HOOK: SandboxHook = {
 // Debian's stock copy returns early for a non-interactive shell, so a line
 // appended below that guard would never be read. The host is not touched: its
 // turbo keeps the default, and the host gate stays authoritative.
+// Both hooks below rewrite ~/.bashrc, and the SDK runs a sandbox's
+// onSandboxReady hooks concurrently. With one shared `~/.bashrc.tmp` the
+// second `mv` found the file already moved (`mv: cannot stat
+// '/home/agent/.bashrc.tmp'`) and failed the sandbox; with separate temp files
+// the last `mv` would still drop the other hook's line. So each rewrite holds
+// a lock (`mkdir` is atomic and needs nothing outside POSIX sh) and uses its
+// own temp file.
+function prependExport(name: string, value: string): string[] {
+  const tmp = `"$HOME/.bashrc.${name}.tmp"`;
+  return [
+    'until mkdir "$HOME/.bashrc.lock" 2>/dev/null; do sleep 0.1; done',
+    'touch "$HOME/.bashrc"',
+    `{ echo "export ${name}=${value}"; grep -v "^export ${name}=" "$HOME/.bashrc"; } > ${tmp}`,
+    `mv ${tmp} "$HOME/.bashrc"`,
+    'rmdir "$HOME/.bashrc.lock"',
+  ];
+}
+
 export const TURBO_CONCURRENCY_HOOK: SandboxHook = {
   command: [
     'cpus=$(nproc)',
@@ -98,9 +116,7 @@ export const TURBO_CONCURRENCY_HOOK: SandboxHook = {
     'm=$((kb / 2097152))',
     '[ "$m" -lt "$n" ] && n=$m',
     '[ "$n" -ge 1 ] || n=1',
-    'touch "$HOME/.bashrc"',
-    '{ echo "export TURBO_CONCURRENCY=$n"; grep -v "^export TURBO_CONCURRENCY=" "$HOME/.bashrc"; } > "$HOME/.bashrc.tmp"',
-    'mv "$HOME/.bashrc.tmp" "$HOME/.bashrc"',
+    ...prependExport('TURBO_CONCURRENCY', '$n'),
   ].join('; '),
   timeoutMs: 30_000,
 };
@@ -112,11 +128,7 @@ export const TURBO_CONCURRENCY_HOOK: SandboxHook = {
 // of ~/.bashrc for the same reason as TURBO_CONCURRENCY above. The host never
 // sets it, so the host gate is unchanged.
 export const SANDBOX_MARK_HOOK: SandboxHook = {
-  command: [
-    'touch "$HOME/.bashrc"',
-    '{ echo "export SANDCASTLE_SANDBOX=1"; grep -v "^export SANDCASTLE_SANDBOX=" "$HOME/.bashrc"; } > "$HOME/.bashrc.tmp"',
-    'mv "$HOME/.bashrc.tmp" "$HOME/.bashrc"',
-  ].join('; '),
+  command: [...prependExport('SANDCASTLE_SANDBOX', '1')].join('; '),
   timeoutMs: 30_000,
 };
 
