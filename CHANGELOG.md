@@ -7,6 +7,8 @@ transcribed from the GitHub Releases that existed when this file was created (20
 
 ## Unreleased
 
+- The Sandcastle merger ticks an issue's acceptance criteria only where the merged PR ticked them. A criterion the PR left open, or marked `(needs human verification)`, stays open in the issue with `(needs human verification — #<PR>)` appended once, and the closing comment lists it. The merger used to run a `sed` over the issue body that ticked every box, so an issue could read as fully verified when one criterion had been left for a human and nobody had checked it.
+
 - The Sandcastle implementer no longer pushes its branch from the sandbox. The push ran the pre-push gate, whose e2e always fails there for want of a browser, so each run spent minutes diagnosing an environment red and left a "not pushed" blocker comment on the issue. The commits already live in the host's repository, and the host pushes the branch after the review, through the gate, as it already did.
 
 - A Sandcastle sandbox bounds turbo's concurrency from its own cores and memory (one core left for the agent, one task per 2 GiB, never below 1) through `TURBO_CONCURRENCY` at the top of the container's `~/.bashrc`, so `pnpm gate` inside it no longer has a build OOM-killed with exit 137 at turbo's default of 10. The host keeps turbo's default.
