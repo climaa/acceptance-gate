@@ -75,6 +75,23 @@ Read the rows with two corrections:
   card below drifts one card's worth more. Judge the **first** repeat of a pattern and compute
   the rest.
 
+Then take the whole picture, and keep its number. Add `--save <dir>` with a scratch directory,
+and run the line the script prints:
+
+```sh
+node .claude/skills/pixel-perfect-session/scripts/tile-rows.mjs '<shot view URL>' --save <dir>
+node scripts/pen/tile-diff.mjs <dir>/tile.png <dir>/shot.png
+```
+
+The rows say where a line sits. The difference shows what rows cannot: a wrong fill, a missing
+band, other words on the same rows. Black is agreement. Its `mean difference` is the session's
+starting figure, and it compares passes on this tile only: it is no verdict, and it means
+nothing beside another tile's.
+
+Both corrections above apply here too: a line along the top edge is the stroke, and one drifted
+card brightens everything below it. A board exported below 1× gives a softer crop, which still
+compares passes. `tile-diff` needs ffmpeg; without it, say so and go on with the rows alone.
+
 Look as well as measure. If the Claude in Chrome tools are available, open the overlay
 address and the `story` address, and zoom on the first repeat. Do this before the fix and
 again after it.
@@ -156,6 +173,11 @@ Read `packages/visual-diff/.visual-diff/summary.md`. The change must explain eve
 variant: the story itself, the organisms that compose it, the templates and screens that carry
 those. A variant the change does not explain is a finding, not noise.
 
+Take the figure again from a capture of the fix, by running step 1's two commands on its shot
+view. **If it rose, stop and read the picture before anything else:** the fix moved one line
+into place and broke something else. If no capture is at hand, the figure comes with the run
+after the accept below, and the same rule holds.
+
 **Stop here.** Show the ink rows before and after, plus the list of changed variants, and ask
 whether to accept. Only once the user says yes:
 
@@ -193,7 +215,8 @@ until the tile is fixed.
 The report has two tables:
 
 - **What moved.** The ink rows (tile, before, after) for the first repeat of each line, the
-  column widths where a weight or face changed, and the differ's counts.
+  column widths where a weight or face changed, the mean difference before and after, and the
+  differ's counts.
 - **For the owner.** What the tile draws against the foundation it contradicts. The pull
   request does not decide these.
 

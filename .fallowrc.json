@@ -31,6 +31,8 @@
   //   scripts/apply-ruleset.mjs     run by hand; see .github/rulesets/README.md
   //   scripts/pen/finish-export.mjs run by hand after a board export; see
   //                                 designs/STANDARD.md
+  //   scripts/pen/tile-diff.mjs     run by hand on a tile and its screenshot; see
+  //                                 designs/STANDARD.md
   //   .sandcastle/sandcastle-tick-criteria.mts
   //                                 run by the merger; see
   //                                 .sandcastle/agent-docs/merge-prompt.md Step 5
@@ -49,6 +51,7 @@
     "apps/e2e/scripts/seed-visual-diff.mjs",
     "scripts/apply-ruleset.mjs",
     "scripts/pen/finish-export.mjs",
+    "scripts/pen/tile-diff.mjs",
     ".sandcastle/sandcastle-tick-criteria.mts"
   ]
 }

@@ -199,6 +199,11 @@ the board files themselves, not an export's account of them. It fails when:
 What it cannot see is the drawing itself: whether a tile looks like its screenshot is
 judged by eye, beside the screenshot, in the console.
 
+To see where they part, export the tile at scale 1 and subtract its screenshot:
+`node scripts/pen/tile-diff.mjs <tile.png> <screenshot.png>` writes the difference as a
+PNG, black where they agree, and prints its mean brightness, which compares two passes on
+one tile. It needs ffmpeg and ffprobe.
+
 ## In a child project
 
 A project that copies this standard draws only its own product on its boards. A story it

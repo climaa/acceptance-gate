@@ -1,0 +1,81 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs/QA/Tile Diff" />
+
+# Tile diff
+
+`scripts/pen/tile-diff.mjs` subtracts a screenshot from its tile, pixel by pixel. It answers
+the question the eye answers badly: **where** does this tile part from the page? It runs by
+hand and no gate depends on it.
+
+<img
+  src="/designs/tile-diff-example.png"
+  alt="A difference image, almost entirely black. The section's text is a faint outline, and the words jobs, min and of 189 stand out in white because the drawing set them larger than the page does."
+  style={{ maxWidth: '100%', border: '1px solid var(--color-border)' }}
+/>
+
+Part of a home tile against its screenshot. Almost everything is black, so the layout holds.
+The white words are a real finding: the tile drew the unit at the size of its number.
+
+## Run it
+
+```sh
+node scripts/pen/tile-diff.mjs <tile.png> <screenshot.png> [out.png]
+```
+
+| Argument           | What it is                                                                              |
+| ------------------ | --------------------------------------------------------------------------------------- |
+| `<tile.png>`       | The tile, exported from its board at scale 1                                            |
+| `<screenshot.png>` | What it is read against, usually `packages/visual-diff/__baselines__/<variant key>.png` |
+| `[out.png]`        | Where the difference goes. Without it, `<tile>.diff.png` beside the tile                |
+
+It needs `ffmpeg` and `ffprobe` on the `PATH`, and it prints three lines:
+
+```text
+/tmp/tiles/home.diff.png
+tile 1280x4707, screenshot 1280x4709, compared 1280x4707
+mean difference 2.74427
+```
+
+### Export the tile first
+
+Open the board with `open -a Pen designs/<stem>.pen` and export the tile through the Pencil
+MCP at scale 1. A board's own export will not do, because it is scaled to fit.
+
+```js
+Export(['<tile node id>'], 'png', '/tmp/tiles', { scale: 1 });
+```
+
+Check the sizes the script prints. Pencil caps an export's long side at 8192 px, so a taller
+tile comes out shrunk, and the two images no longer line up. The script crops to the area
+they share and never resizes, because resizing would blur the drift it is there to show. For
+such a tile, trust neither the picture nor the number.
+
+## Read the picture
+
+| What you see                       | What it means                                                     |
+| ---------------------------------- | ----------------------------------------------------------------- |
+| Black                              | The two agree                                                     |
+| A thin outline around text         | Antialiasing. The two renderers disagree by a fraction of a pixel |
+| Text doubled over itself           | It moved, or it wraps at another word                             |
+| A solid block                      | A fill is wrong or missing, such as a gradient or a background    |
+| A whole section offset to one side | An alignment is wrong, and everything inside it follows           |
+
+## Read the number
+
+`mean difference` is the average brightness of the picture, from 0 for identical images to
+255 for opposite ones. Text antialiasing keeps even a good tile above 0, so there is no
+passing score, and the script exits 0 whatever it finds.
+
+The number compares **two passes on one tile**. Run it after each fix: if it falls, the fix
+helped. On the home tile above it rose from 3.06 to 3.69 when a change filled the wrong
+elements, which the picture alone had not made obvious, and fell to 2.97 once that was
+undone.
+
+Do not compare the number across tiles. A long page of text and a short one with a large
+picture settle at different values for equally good drawings.
+
+For a verdict against the baselines, use `tiles-from-dom.mjs --verify`, which reports a
+percentage for each tile. A [Pixel Perfect Session](?path=/docs/docs-skills-pixel-perfect-session--docs) runs this
+too. Its `tile-rows.mjs --save <dir>` writes the tile and the screenshot as files, with no
+Pencil export, and the session stops if the number rises after a fix.

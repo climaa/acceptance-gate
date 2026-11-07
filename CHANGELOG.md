@@ -7,6 +7,10 @@ transcribed from the GitHub Releases that existed when this file was created (20
 
 ## Unreleased
 
+- `scripts/pen/tile-diff.mjs` subtracts a screenshot from its tile, so where a tile parts from the page can be seen rather than guessed at beside it. It writes the difference as a PNG, black where the two agree, and prints its mean brightness, which compares two passes on one tile. It needs ffmpeg and ffprobe, and it gives no verdict: that stays with `tiles-from-dom.mjs --verify`. Storybook documents it under Docs / QA / Tile Diff.
+
+- A pixel perfect session subtracts too. `tile-rows.mjs --save <dir>` writes the tile's crop and the screenshot as files for `tile-diff.mjs`, and the skill keeps the mean difference across the session: rows say where a line sits, the picture shows a wrong fill or a missing band they cannot, and a figure that rises after a fix stops the session. Without ffmpeg it goes on with the rows alone.
+
 - The Sandcastle merger ticks an issue's acceptance criteria only where the merged PR ticked them. A criterion the PR left open, or marked `(needs human verification)`, stays open in the issue with `(needs human verification — #<PR>)` appended once, and the closing comment lists it. The merger used to run a `sed` over the issue body that ticked every box, so an issue could read as fully verified when one criterion had been left for a human and nobody had checked it.
 
 - The Sandcastle implementer no longer pushes its branch from the sandbox. The push ran the pre-push gate, whose e2e always fails there for want of a browser, so each run spent minutes diagnosing an environment red and left a "not pushed" blocker comment on the issue. The commits already live in the host's repository, and the host pushes the branch after the review, through the gate, as it already did.
