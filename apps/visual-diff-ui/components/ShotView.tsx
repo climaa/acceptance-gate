@@ -98,8 +98,8 @@ export const PUBLISHED_STORYBOOK_LABEL = 'open in the published Storybook';
  * and a dead link beside a live one is worse than none, so it is plain text
  * there. The dev link takes the page's own host and the port of the story's
  * root. The arrow-out square opens the published Storybook, and is left out for
- * a root that publishes no build. Both land on the story in the shot's theme, as the set viewer's two
- * links do.
+ * a root that publishes no build. Both land on the story in the shot's theme,
+ * as the set viewer's two links do.
  *
  * The dev link's name leads with its visible text, so a reader who says what
  * they see still hits it, and says where it goes after.

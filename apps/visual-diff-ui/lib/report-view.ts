@@ -401,7 +401,7 @@ export type StorybookRoot = (typeof STORYBOOKS)[number];
  * The root a story comes from: the one whose `idPrefix` claims its id, else the
  * first — the same default the differ gives a variant that names no build.
  */
-export function storybookOf(
+function storybookOf(
   storyId: string,
   roots: readonly StorybookRoot[] = STORYBOOKS,
 ): StorybookRoot | undefined {
