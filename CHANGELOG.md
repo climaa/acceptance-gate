@@ -7,6 +7,8 @@ transcribed from the GitHub Releases that existed when this file was created (20
 
 ## Unreleased
 
+- The stranded-branch rescue skips a branch whose open issue carries `sandcastle:hold`, logging `skipping stranded branch … : #n is on hold`, and leaves the branch in place unmarked. The planner already never dispatched a held issue; the rescue re-pushed it through its branch on every run until the branch was renamed out of `sandcastle/`.
+
 - A Sandcastle sandbox with `GH_TOKEN` set rewrites `git@github.com:` remotes to HTTPS as well as wiring `gh`'s credential helper, so the implementer's push and the merger's `git fetch origin main` reach GitHub instead of failing over SSH with `No user exists for uid 501`.
 
 - `pnpm sandcastle` asks `docker info` before it touches a container or the image, and with the daemon stopped it refuses in one sentence and exits 1, instead of dying in `docker build` with a stack trace that blamed the image. A `docker` missing from PATH gets its own sentence.

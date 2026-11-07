@@ -12,7 +12,9 @@ import { parseOverrideLabels } from './sandcastle-model-overrides.mts';
 import { isDocsOnlyDiff, runBuildVerify } from './sandcastle-build-verify.mts';
 import {
   type StrandedDisposition,
+  HOLD_LABEL,
   NOOP_LABEL,
+  hasHoldLabel,
   noOpIssueComment,
   strandedDisposition,
 } from './sandcastle-noop-issues.mts';
@@ -36,8 +38,9 @@ import {
 // already-implemented branches from each iteration's plan.
 //
 // We also skip branches whose issue is CLOSED (the work likely landed
-// via another path and the local branch is stale) or that already have
-// an open PR (the merger will pick it up on its own).
+// via another path and the local branch is stale), is on hold (a human
+// paused it), or that already have an open PR (the merger will pick it up
+// on its own).
 // Clean up a branch whose issue is CLOSED: delete the stale local branch, and
 // the worktree holding it first if one exists — because git refuses `branch -D`
 // on a checked-out branch. The worktree is removed ONLY when the reaper's safety
@@ -114,6 +117,22 @@ function retireEmptyDiffBranch(
   );
 }
 
+// Why an OPEN issue's branch is not the rescue's to touch, or null when it is.
+// A held issue is a human's pause: the planner never dispatches it, so the
+// rescue must not dispatch it through its branch either — and it writes nothing
+// on it, not even the no-op mark, and leaves the branch where it is. An open PR
+// means the merger already owns the branch. Extracted so collectStrandedIssues
+// stays under the cognitive-complexity ceiling.
+function openIssueSkipReason(
+  branch: string,
+  id: string,
+  labels: readonly string[],
+): string | null {
+  if (hasHoldLabel(labels)) return `#${id} is on hold (${HOLD_LABEL})`;
+  if (branchHasOpenPr(branch)) return 'already has an open PR';
+  return null;
+}
+
 export function collectStrandedIssues(
   alreadyQueued: Set<string>,
   iteration: number,
@@ -140,8 +159,9 @@ export function collectStrandedIssues(
       reapClosedIssueBranch(branch, id, issue.state);
       continue;
     }
-    if (branchHasOpenPr(branch)) {
-      console.warn(`  ⚠ skipping stranded branch ${branch}: already has an open PR`);
+    const skip = openIssueSkipReason(branch, id, issue.labels);
+    if (skip) {
+      console.warn(`  ⚠ skipping stranded branch ${branch}: ${skip}`);
       continue;
     }
     // Commits ahead is a count, not a diff — an add-then-revert branch passes
