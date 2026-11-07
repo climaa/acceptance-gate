@@ -33,7 +33,6 @@
 // Or add to package.json:
 //   "scripts": { "sandcastle": "npx tsx .sandcastle/main.mts" }
 
-import { execSync } from 'node:child_process';
 import {
   BASE_BRANCH,
   MAX_ITERATIONS,
@@ -51,20 +50,25 @@ import {
   installGracefulShutdown,
   reapExitedContainers,
 } from './sandcastle-lifecycle.mts';
+import { refuseWithoutDocker } from './sandcastle-docker-preflight.mts';
 import { ensureImageFreshness } from './sandcastle-image-freshness.mts';
 import {
+  markIssueHeld,
   markIssueNoOp,
   probeBranchCommitsAhead,
   probeBranchDiffEmpty,
   probeIssue,
+  pushBranch,
 } from './sandcastle-git.mts';
 import { parsePlanOutput, screenPlan } from './sandcastle-orchestrator.mts';
 import { guardPhase } from './sandcastle-guard-phase.mts';
 import {
+  HOLD_LABEL,
   NOOP_LABEL,
   noOpIssueComment,
   partitionOutcomes,
 } from './sandcastle-noop-issues.mts';
+import { type PushHold, formatRunSummary, pushOrHold } from './sandcastle-push-hold.mts';
 import { queuedBranchesFor } from './sandcastle-plan-eligibility.mts';
 import {
   collectStrandedIssues,
@@ -78,6 +82,7 @@ import {
   mainReceiptReport,
   startingMain,
 } from './sandcastle-main-receipt.mts';
+import type { IssueRef } from './sandcastle-issue-ref.mts';
 import * as sandcastle from '@ai-hero/sandcastle';
 
 // ---------------------------------------------------------------------------
@@ -105,6 +110,11 @@ const { signal: abortSignal } = installGracefulShutdown();
 // here rather than at first use, so an unusable value fails before any
 // container starts instead of midway through the batch.
 assertEnvOverridesValid();
+
+// Docker before anything that calls it. With the daemon stopped, the reap below
+// only warns and the image guard dies inside `docker build` with a stack trace
+// that blames the image; this refuses in one sentence and exits 1 instead.
+refuseWithoutDocker();
 
 // Reap `status=exited` sandbox containers stranded by a previously-killed run,
 // once at startup (mirrors the single-runner preflight). Scoped to this repo's image
@@ -150,21 +160,34 @@ const noOpIssueIds = new Set<string>();
 // next run tries again.
 const rescuedBranches = new Set<string>();
 
+// Issues held this run because their branch's host push failed, by id. Run-scoped
+// like the two sets above: the planner would otherwise dispatch the issue again
+// next iteration, from scratch, on top of a branch that already holds the work.
+// HOLD_LABEL on the issue is the durable half (sandcastle-push-hold.mts).
+const pushHolds = new Map<string, PushHold>();
+
 // The host push that publishes a branch: the pre-push gate runs here, where
 // Chromium and the gate's binaries exist, not in the merger's container. A
-// failure is non-fatal so one refused branch doesn't block the rest — the
-// merger still attempts its own push.
-function pushFromHost(refs: readonly { branch: string }[]): void {
-  for (const { branch } of refs) {
-    try {
-      console.log(`[ci-trigger] pushing ${branch} to origin from host`);
-      execSync(`git push origin ${branch}`, { stdio: 'inherit' });
-    } catch (err) {
-      console.warn(
-        `  ⚠ host push of ${branch} failed (merger will retry its own push): ${(err as Error).message}`,
-      );
-    }
-  }
+// failure is non-fatal so one refused branch doesn't block the rest, and it
+// holds the issue — comment, HOLD_LABEL, out of this run — instead of handing
+// the branch to a merger whose push would meet the same gate. Returns the refs
+// that reached origin.
+async function pushFromHost<T extends IssueRef>(refs: readonly T[], iteration: number) {
+  const published = await pushOrHold(
+    refs,
+    {
+      push: (branch) => {
+        console.log(`[ci-trigger] pushing ${branch} to origin from host`);
+        return pushBranch(branch);
+      },
+      hold: markIssueHeld,
+    },
+    { iteration, holds: pushHolds },
+  );
+  // A held branch is ahead of base with no PR — the rescue's shape. HOLD_LABEL
+  // keeps the rescue off it; this still does when the label add failed.
+  for (const hold of pushHolds.values()) rescuedBranches.add(hold.branch);
+  return published;
 }
 
 for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
@@ -248,14 +271,18 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
   const {
     eligible: issues,
     newlyNoOp,
+    held,
     overrideErrors,
-  } = screenPlan(labelledPlan, noOpIssueIds);
+  } = screenPlan(labelledPlan, noOpIssueIds, new Set(pushHolds.keys()));
   for (const id of newlyNoOp) {
     noOpIssueIds.add(id);
     console.log(
       `  ⏭ #${id} skipped: an earlier run produced no changes (${NOOP_LABEL}). ` +
         `Remove the label to queue it again.`,
     );
+  }
+  for (const id of held) {
+    console.log(`  ⏸ #${id} skipped: on hold (${HOLD_LABEL}).`);
   }
   if (overrideErrors.length > 0) {
     throw new Error(
@@ -265,15 +292,15 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
 
   if (issues.length === 0) {
     // Nothing eligible — either the planner found no unblocked work, or every
-    // issue it proposed is already marked no-op. Prior runs may still have left
-    // branches with commits ahead of main and no PR (e.g. previous reviewer
-    // crashed mid-pipeline). Rescue them directly into the merge phase before
+    // issue it proposed is already marked no-op or on hold. Prior runs may still
+    // have left branches with commits ahead of main and no PR (e.g. previous
+    // reviewer crashed mid-pipeline). Rescue them directly into the merge phase before
     // exiting, otherwise the orchestrator declares done with stranded work.
     const stranded = collectStrandedIssues(rescuedBranches, iteration);
     if (stranded.length === 0) {
       console.log(
         planned.length > 0
-          ? 'Every planned issue is already marked no-op. Exiting.'
+          ? 'Every planned issue is already marked no-op or on hold. Exiting.'
           : 'No unblocked issues to work on. Exiting.',
       );
       break;
@@ -306,10 +333,14 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
     }
     // A rescued branch gets the same host push the planned path makes before
     // its merge; without it, it reaches origin only through the merger's own
-    // push, which the container's gate refuses.
-    pushFromHost(verified);
+    // push, which the container's gate refuses. A refused one is held, not merged.
+    const published = await pushFromHost(verified, iteration);
+    if (published.length === 0) {
+      console.log('No rescued branch passed its host push. Nothing to merge.');
+      continue;
+    }
     const mergeResult = await guardPhase(
-      () => runMerger(verified, abortSignal),
+      () => runMerger(published, abortSignal),
       () => abortSignal.aborted,
     );
     if (!mergeResult.ok) {
@@ -565,16 +596,21 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
   // triggers Actions. Doing it here, before runMerger, means the PR is
   // opened on a branch whose required checks are already running, so auto-merge
   // lands it without any manual nudge. The commits are already on the host
-  // branch via syncOut, so this is a normal push — see pushFromHost.
+  // branch via syncOut, so this is a normal push — see pushFromHost. A branch
+  // the push refuses is held and kept from the merger.
   // -------------------------------------------------------------------------
-  pushFromHost(completedIssues);
+  const publishedIssues = await pushFromHost(completedIssues, iteration);
+  if (publishedIssues.length === 0) {
+    console.log('No branch passed its host push. Nothing to merge.');
+    continue;
+  }
 
   // -------------------------------------------------------------------------
   // Phase 3: Merge — see sandcastle-merge.mts. GitHub handles ordering via
   // PRs; no local merge into main.
   // -------------------------------------------------------------------------
   const mergeResult = await guardPhase(
-    () => runMerger(completedIssues, abortSignal),
+    () => runMerger(publishedIssues, abortSignal),
     () => abortSignal.aborted,
   );
   if (!mergeResult.ok) {
@@ -594,6 +630,11 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
 
   console.log('\nBranches merged.');
 }
+
+// What the run set aside, each under its reason, so neither kind is read as
+// the other: a no-op is waiting on a decision, a held push on a fix.
+const runSummary = formatRunSummary({ noOpIds: noOpIssueIds, holds: pushHolds.values() });
+if (runSummary !== null) console.log(runSummary);
 
 console.log('\nAll done.');
 

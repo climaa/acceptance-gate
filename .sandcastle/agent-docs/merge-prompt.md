@@ -263,32 +263,20 @@ That is a backstop, not a reason to skip this step: only you close the issue.
 
 ## Step 5 — Close or comment based on PR state
 
-- **`MERGED`** → close the issue:
+- **`MERGED`** → tick the issue's acceptance criteria from the PR, then close the issue:
 
   ```bash
-  gh issue close <ID> --comment "Merged via PR <PR_URL>. Completed by Sandcastle."
+  CLOSE_COMMENT=$(node .sandcastle/sandcastle-tick-criteria.mts <ID> <PR_NUMBER>) \
+    || CLOSE_COMMENT="Merged via PR <PR_URL>. Completed by Sandcastle. The acceptance criteria were not reconciled with the PR (the tick step failed), so the issue body is unchanged."
+  gh issue close <ID> --comment "$CLOSE_COMMENT"
   ```
+
+  The script runs on plain `node` (type stripping, no `tsx`), because this sandbox's `node_modules` is the host's. It ticks an issue box only when the merged PR's body ticks the same criterion. A criterion the PR left `[ ]`, or carried with `(needs human verification)`, stays `[ ]` in the issue with ` (needs human verification — #<PR>)` appended once, and the closing comment it prints lists it. Never tick the issue's boxes any other way: a box the PR left open is the one signal Step 2a asks for, and ticking it records as verified what nobody verified.
 
 - **`CLOSED`** (without merge) or **`OPEN`** (timeout reached) → leave a comment and do **not** close:
   ```bash
   gh issue comment <ID> --body "PR <PR_URL> was not merged (state: $PR_STATE). Requires manual review."
   ```
-
----
-
-## Step 5b — Tick acceptance-criteria checkboxes (MERGED only)
-
-```bash
-if [ "$PR_STATE" = "MERGED" ]; then
-  TMP_BODY=$(mktemp)
-  gh issue view <ID> --json body --jq .body \
-    | sed 's/- \[ \]/- [x]/g' > "$TMP_BODY"
-  gh issue edit <ID> --body-file "$TMP_BODY"
-  rm -f "$TMP_BODY"
-fi
-```
-
-Use `--body-file` so newlines and shell metacharacters in the issue body are not a hazard.
 
 ---
 

@@ -34,6 +34,24 @@
  */
 export const NOOP_LABEL = 'sandcastle:no-op';
 
+/**
+ * The pause label a human sets on an issue that is not ready to be worked. The
+ * planner excludes it (agent-docs/plan-prompt.md, HELD ISSUES); the
+ * stranded-branch rescue must too, or it dispatches the issue through its
+ * branch. Named here, beside NOOP_LABEL, so the rescue has one literal to read.
+ */
+export const HOLD_LABEL = 'sandcastle:hold';
+
+/** Colour/description used when the run creates the hold label on first use. */
+export const HOLD_LABEL_COLOR = 'fbca04';
+export const HOLD_LABEL_DESCRIPTION =
+  'Sandcastle skips this issue until a human removes the label';
+
+/** Whether an issue's labels carry the hold marker. */
+export function hasHoldLabel(labels: readonly string[]): boolean {
+  return labels.includes(HOLD_LABEL);
+}
+
 /** Colour/description used when the label is created on first use. */
 export const NOOP_LABEL_COLOR = 'ededed';
 export const NOOP_LABEL_DESCRIPTION =

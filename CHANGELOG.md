@@ -11,6 +11,20 @@ transcribed from the GitHub Releases that existed when this file was created (20
 
 - A pixel perfect session subtracts too. `tile-rows.mjs --save <dir>` writes the tile's crop and the screenshot as files for `tile-diff.mjs`, and the skill keeps the mean difference across the session: rows say where a line sits, the picture shows a wrong fill or a missing band they cannot, and a figure that rises after a fix stops the session. Without ffmpeg it goes on with the rows alone.
 
+- The Sandcastle merger ticks an issue's acceptance criteria only where the merged PR ticked them. A criterion the PR left open, or marked `(needs human verification)`, stays open in the issue with `(needs human verification — #<PR>)` appended once, and the closing comment lists it. The merger used to run a `sed` over the issue body that ticked every box, so an issue could read as fully verified when one criterion had been left for a human and nobody had checked it.
+
+- The Sandcastle implementer no longer pushes its branch from the sandbox. The push ran the pre-push gate, whose e2e always fails there for want of a browser, so each run spent minutes diagnosing an environment red and left a "not pushed" blocker comment on the issue. The commits already live in the host's repository, and the host pushes the branch after the review, through the gate, as it already did.
+
+- A Sandcastle sandbox bounds turbo's concurrency from its own cores and memory (one core left for the agent, one task per 2 GiB, never below 1) through `TURBO_CONCURRENCY` at the top of the container's `~/.bashrc`, so `pnpm gate` inside it no longer has a build OOM-killed with exit 137 at turbo's default of 10. The host keeps turbo's default.
+
+- A Sandcastle branch whose host push the pre-push gate refuses holds its issue: it is kept from the merger, skipped by every later plan in the run, and given `sandcastle:hold` with one comment naming the failed gate checks and the branch. The run ends with a summary listing such issues under `push failed — held`, apart from no-ops. A refused push used to go on to the merger, which failed it again, and the next iteration dispatched the same issue from scratch on top of a branch that already held the work.
+
+- The stranded-branch rescue skips a branch whose open issue carries `sandcastle:hold`, logging `skipping stranded branch … : #n is on hold`, and leaves the branch in place unmarked. The planner already never dispatched a held issue; the rescue re-pushed it through its branch on every run until the branch was renamed out of `sandcastle/`.
+
+- A Sandcastle sandbox with `GH_TOKEN` set rewrites `git@github.com:` remotes to HTTPS as well as wiring `gh`'s credential helper, so the implementer's push and the merger's `git fetch origin main` reach GitHub instead of failing over SSH with `No user exists for uid 501`.
+
+- `pnpm sandcastle` asks `docker info` before it touches a container or the image, and with the daemon stopped it refuses in one sentence and exits 1, instead of dying in `docker build` with a stack trace that blamed the image. A `docker` missing from PATH gets its own sentence.
+
 - A story that draws nothing on purpose declares it with `visual-diff:absent`, and its capture records a token ledger with no elements instead of a `token ledger not recorded` warning. The four stories shot in an absence frame (SkipLink's `Default`, Pagination's `SinglePage`, StepList's and TagList's `Empty`) carry it; no screenshot changes. An untagged story whose walk finds nothing still warns, and a tagged one whose walk finds an element warns that the tag is stale.
 
 - The token ledger's trace is budgeted per element walked, so a screen's ledger is traced whole instead of stopping near its 74th element, and each ledger records how many elements the trace reached. Light and dark are no longer reported as differing when only the trace's reach did, and a drift line now names the field that differs — `16px light, 16px dark` becomes the tokens or classifications on each side.

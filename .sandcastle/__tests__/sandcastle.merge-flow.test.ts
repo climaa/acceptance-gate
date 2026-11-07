@@ -91,12 +91,15 @@ describe('sandcastle PR-based merge flow', () => {
       expect(closing[0]).toMatch(/Merged via PR/);
     });
 
-    it('ticks issue checkboxes only on MERGED state', () => {
-      const tickBlock = content.match(
-        /if \[ "\$PR_STATE" = "MERGED" \][\s\S]*?gh issue edit.*--body-file[\s\S]*?fi/,
+    it('ticks issue checkboxes through the host script, in the closing block', () => {
+      // #672: a sed over the issue body ticked a box the PR left for a human.
+      const closing = [...content.matchAll(/```bash\n([\s\S]*?)```/g)]
+        .map((m) => m[1]!)
+        .find((block) => block.includes('gh issue close'));
+      expect(closing).toMatch(
+        /node \.sandcastle\/sandcastle-tick-criteria\.mts <ID> <PR_NUMBER>/,
       );
-      expect(tickBlock).not.toBeNull();
-      expect(content).toMatch(/sed.*'s\/- \\\[ \\\]\/- \[x\]\/g'/);
+      expect(content).not.toMatch(/sed[^\n]*\[x\]/);
     });
 
     it('deletes the issue branch only on MERGED state', () => {

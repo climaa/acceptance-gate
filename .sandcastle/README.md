@@ -29,7 +29,7 @@ Each iteration executes in order:
 | ----------- | ----------------- | -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1 Plan      | Opus 5.5 · medium | `agent-docs/plan-prompt.md`      | Reads open issues, builds a dependency graph, outputs a `<plan>` JSON of unblocked issues                                                                                                                                                                              |
 | 2 Implement | Opus 5.5 · medium | `agent-docs/implement-prompt.md` | Writes code, tests, and commits on the issue branch                                                                                                                                                                                                                    |
-| 3 Review    | Opus 5.5 · medium | `agent-docs/review-prompt.md`    | Checks the branch for correctness/style; may push fixup commits                                                                                                                                                                                                        |
+| 3 Review    | Opus 5.5 · medium | `agent-docs/review-prompt.md`    | Checks the branch for correctness/style; may commit fixups                                                                                                                                                                                                             |
 | 4 Merge     | Sonnet 5.5 · low  | `agent-docs/merge-prompt.md`     | Opens a PR per branch, enables squash auto-merge, waits for CI, closes the issue. Never resolves a conflict: the host queue (`sandcastle-pr-queue.mts`) resolves only a CHANGELOG.md conflict where both sides added lines, and leaves every other conflict to a human |
 
 Model and effort per role are pinned in `sandcastle-agent-profiles.mts` — that
@@ -220,6 +220,15 @@ it. So `agent-docs/merge-prompt.md` Step 1b checks the net diff before it pushes
 or opens anything, and takes the same comment-and-label exit; and the host-side
 PR-queue loop declines to update or arm a PR that changes no files, so it cannot
 finish the job for one that got opened anyway.
+
+## A refused host push
+
+The host pushes each finished branch before the merge, and the pre-push gate
+runs there. A branch it refuses **holds its issue**: kept from the merger (whose
+push would meet the same gate), skipped by every later plan in the run, and
+labelled `sandcastle:hold` with one comment naming the failed checks and the
+branch. The run's closing summary lists it under `push failed — held`, apart
+from no-ops. Fix the branch, push it from the host, then remove the label.
 
 ---
 
