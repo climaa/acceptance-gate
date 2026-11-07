@@ -55,11 +55,23 @@ export type SandboxMount = 'head' | 'worktree';
 // GH_TOKEN in the sandbox env is enough for `gh` CLI commands, but plain
 // `git push` won't authenticate from it without a credential helper wired up.
 // This bites the merger phase, whose fallback push runs `git push` directly.
+//
+// The helper alone is not enough, which is why there are two lines.
+// `gh auth setup-git` only answers for HTTPS remotes, and every checkout's
+// origin is `git@github.com:<owner>/<repo>.git`, so git still went over SSH —
+// where the container has no user (`No user exists for uid 501`) and no key.
+// That failed the implementer's push on every run, and the merger's opening
+// `git fetch origin main` with it. The global `insteadOf` rewrite sends every
+// git@github.com: URL, push and fetch alike, over HTTPS to the token the
+// helper just wired.
+//
 // It must run here at runtime rather than as a Dockerfile RUN — GH_TOKEN isn't
 // available at docker build time. Gated on GH_TOKEN so it's a no-op (not an
 // error) in environments where the token isn't set.
 export const GH_AUTH_SETUP_HOOK: SandboxHook = {
-  command: 'if [ -n "$GH_TOKEN" ]; then gh auth setup-git; fi',
+  command:
+    'if [ -n "$GH_TOKEN" ]; then gh auth setup-git && ' +
+    'git config --global url."https://github.com/".insteadOf "git@github.com:"; fi',
   timeoutMs: 60_000,
 };
 
