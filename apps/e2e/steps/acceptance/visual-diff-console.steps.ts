@@ -212,11 +212,14 @@ Then(
 Then(
   'the label field holds a set label no screenshot set already uses',
   async ({ console: consolePage }) => {
-    const today = new Date();
+    // UTC, as the console's `today()` (lib/job-contract.ts) dates a label. A local
+    // date here went red every night east of Greenwich, between local midnight and
+    // UTC midnight, when the two calendars disagree.
+    const now = new Date();
     const day = [
-      today.getFullYear(),
-      String(today.getMonth() + 1).padStart(2, '0'),
-      String(today.getDate()).padStart(2, '0'),
+      now.getUTCFullYear(),
+      String(now.getUTCMonth() + 1).padStart(2, '0'),
+      String(now.getUTCDate()).padStart(2, '0'),
     ].join('-');
 
     // `SET_LABEL`'s shape, restated rather than imported: this suite drives the
