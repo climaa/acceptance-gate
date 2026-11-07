@@ -1,5 +1,5 @@
 {
-  "version": "2.21",
+  "version": "2.22",
   "children": [
     {
       "type": "frame",
@@ -709,103 +709,148 @@
                         },
                         {
                           "type": "frame",
-                          "id": "yzmdm",
-                          "name": "hero",
+                          "id": "XojuE",
+                          "name": "main",
                           "width": "fill_container",
                           "layout": "vertical",
-                          "gap": 14,
+                          "gap": 48,
                           "padding": [
-                            56,
                             48,
-                            40,
-                            48
+                            88
                           ],
                           "children": [
                             {
-                              "id": "rB05T",
-                              "type": "ref",
-                              "ref": "XVO0t",
-                              "name": "badge",
-                              "descendants": {
-                                "dXS0A": {
-                                  "content": "BLOG"
-                                }
-                              }
-                            },
-                            {
-                              "type": "text",
-                              "id": "sEB7S",
-                              "name": "h1",
-                              "fill": "$text",
-                              "content": "Notes from the gate",
-                              "fontFamily": "$font-display",
-                              "fontSize": 46,
-                              "fontWeight": "600"
-                            },
-                            {
-                              "type": "text",
-                              "id": "iIi7N",
-                              "name": "sub",
-                              "fill": "$text-muted",
-                              "textGrowth": "fixed-width",
-                              "width": 640,
-                              "content": "Design systems, autonomous pipelines, and the CI that keeps both honest.",
-                              "lineHeight": 1.6,
-                              "fontFamily": "$font-body",
-                              "fontSize": 16,
-                              "fontWeight": "normal"
-                            }
-                          ]
-                        },
-                        {
-                          "type": "frame",
-                          "id": "o7q2T",
-                          "name": "cards",
-                          "width": "fill_container",
-                          "gap": 24,
-                          "padding": [
-                            0,
-                            48,
-                            56,
-                            48
-                          ],
-                          "children": [
-                            {
-                              "id": "K22LWI",
-                              "type": "ref",
-                              "ref": "yPgOS",
-                              "name": "c1",
-                              "width": "fill_container"
-                            },
-                            {
-                              "id": "SK4qA",
-                              "type": "ref",
-                              "ref": "yPgOS",
-                              "name": "c2",
+                              "type": "frame",
+                              "id": "v0nH9",
+                              "name": "hero",
                               "width": "fill_container",
-                              "descendants": {
-                                "Pv3yj": {
-                                  "content": "Gherkin specs that survive"
+                              "layout": "vertical",
+                              "gap": 16,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "IEG7j",
+                                  "name": "h1",
+                                  "fill": "$text",
+                                  "textGrowth": "fixed-width",
+                                  "width": 440,
+                                  "content": "I build frontends you can verify.",
+                                  "lineHeight": 1.25,
+                                  "fontFamily": "$font-display",
+                                  "fontSize": 36,
+                                  "fontWeight": "600",
+                                  "letterSpacing": -0.72
                                 },
-                                "I7QEl5": {
-                                  "content": "Feature files are requirements, not test fixtures. The rule that keeps them honest when agents write the code."
+                                {
+                                  "type": "text",
+                                  "id": "oBxzj",
+                                  "name": "lead",
+                                  "fill": "$text-muted",
+                                  "textGrowth": "fixed-width",
+                                  "width": 560,
+                                  "content": "Senior frontend engineer in Barcelona. Next.js, TypeScript and one specific obsession: that quality is a property of the pipeline, not a phase at the end. I write about Cypress with Gherkin, visual regression, and what changes when agents write part of the code.",
+                                  "lineHeight": 1.5,
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 18,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "j6PRcj",
+                                  "name": "thesis",
+                                  "fill": "$text",
+                                  "textGrowth": "fixed-width",
+                                  "width": 560,
+                                  "content": "The agent writes. The gate checks. I decide what it checks.",
+                                  "lineHeight": 1.25,
+                                  "fontFamily": "$font-display",
+                                  "fontSize": 20,
+                                  "fontWeight": "600"
                                 }
-                              }
+                              ]
                             },
                             {
-                              "id": "aggGJ",
-                              "type": "ref",
-                              "ref": "yPgOS",
-                              "name": "c3",
+                              "type": "frame",
+                              "id": "gKyOE",
+                              "name": "latest",
                               "width": "fill_container",
-                              "descendants": {
-                                "Pv3yj": {
-                                  "content": "One literal, nine consumers"
+                              "layout": "vertical",
+                              "gap": 20,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "W1GK4",
+                                  "name": "section-title",
+                                  "fill": "$text-muted",
+                                  "content": "LATEST POSTS",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 14,
+                                  "fontWeight": "700",
+                                  "letterSpacing": 0.84
                                 },
-                                "I7QEl5": {
-                                  "content": "How a single zero-dependency policy module keeps Storybook, the differ and the linter on the same numbers."
+                                {
+                                  "type": "frame",
+                                  "id": "BTw97",
+                                  "name": "cards",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 12,
+                                  "children": [
+                                    {
+                                      "id": "WbLg4",
+                                      "type": "ref",
+                                      "ref": "yPgOS",
+                                      "name": "c1",
+                                      "width": "fill_container"
+                                    },
+                                    {
+                                      "id": "IaSVU",
+                                      "type": "ref",
+                                      "ref": "yPgOS",
+                                      "name": "c2",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "Pv3yj": {
+                                          "content": "Gherkin specs that survive"
+                                        },
+                                        "I7QEl5": {
+                                          "content": "Feature files are requirements, not test fixtures. The rule that keeps them honest when agents write the code."
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "di8FV",
+                                      "type": "ref",
+                                      "ref": "yPgOS",
+                                      "name": "c3",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "Pv3yj": {
+                                          "content": "One literal, nine consumers"
+                                        },
+                                        "I7QEl5": {
+                                          "content": "How a single zero-dependency policy module keeps Storybook, the differ and the linter on the same numbers."
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "a9dWT",
+                                      "type": "ref",
+                                      "ref": "yPgOS",
+                                      "name": "c4",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "Pv3yj": {
+                                          "content": "Gherkin specs that survive"
+                                        },
+                                        "I7QEl5": {
+                                          "content": "Feature files are requirements, not test fixtures. The rule that keeps them honest when agents write the code."
+                                        }
+                                      }
+                                    }
+                                  ]
                                 }
-                              }
+                              ]
                             }
                           ]
                         },
@@ -859,103 +904,148 @@
                         },
                         {
                           "type": "frame",
-                          "id": "MJB8U",
-                          "name": "hero",
+                          "id": "qrbku",
+                          "name": "main",
                           "width": "fill_container",
                           "layout": "vertical",
-                          "gap": 14,
+                          "gap": 48,
                           "padding": [
-                            56,
                             48,
-                            40,
-                            48
+                            88
                           ],
                           "children": [
                             {
-                              "id": "iZzpJ",
-                              "type": "ref",
-                              "ref": "XVO0t",
-                              "name": "badge",
-                              "descendants": {
-                                "dXS0A": {
-                                  "content": "BLOG"
-                                }
-                              }
-                            },
-                            {
-                              "type": "text",
-                              "id": "sdFZo",
-                              "name": "h1",
-                              "fill": "$text",
-                              "content": "Notes from the gate",
-                              "fontFamily": "$font-display",
-                              "fontSize": 46,
-                              "fontWeight": "600"
-                            },
-                            {
-                              "type": "text",
-                              "id": "p9M1V",
-                              "name": "sub",
-                              "fill": "$text-muted",
-                              "textGrowth": "fixed-width",
-                              "width": 640,
-                              "content": "Design systems, autonomous pipelines, and the CI that keeps both honest.",
-                              "lineHeight": 1.6,
-                              "fontFamily": "$font-body",
-                              "fontSize": 16,
-                              "fontWeight": "normal"
-                            }
-                          ]
-                        },
-                        {
-                          "type": "frame",
-                          "id": "C6ALhi",
-                          "name": "cards",
-                          "width": "fill_container",
-                          "gap": 24,
-                          "padding": [
-                            0,
-                            48,
-                            56,
-                            48
-                          ],
-                          "children": [
-                            {
-                              "id": "q2SvYs",
-                              "type": "ref",
-                              "ref": "yPgOS",
-                              "name": "c1",
-                              "width": "fill_container"
-                            },
-                            {
-                              "id": "MJS1B",
-                              "type": "ref",
-                              "ref": "yPgOS",
-                              "name": "c2",
+                              "type": "frame",
+                              "id": "AWMrV",
+                              "name": "hero",
                               "width": "fill_container",
-                              "descendants": {
-                                "Pv3yj": {
-                                  "content": "Gherkin specs that survive"
+                              "layout": "vertical",
+                              "gap": 16,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "itCpy",
+                                  "name": "h1",
+                                  "fill": "$text",
+                                  "textGrowth": "fixed-width",
+                                  "width": 440,
+                                  "content": "I build frontends you can verify.",
+                                  "lineHeight": 1.25,
+                                  "fontFamily": "$font-display",
+                                  "fontSize": 36,
+                                  "fontWeight": "600",
+                                  "letterSpacing": -0.72
                                 },
-                                "I7QEl5": {
-                                  "content": "Feature files are requirements, not test fixtures. The rule that keeps them honest when agents write the code."
+                                {
+                                  "type": "text",
+                                  "id": "aJrpC",
+                                  "name": "lead",
+                                  "fill": "$text-muted",
+                                  "textGrowth": "fixed-width",
+                                  "width": 560,
+                                  "content": "Senior frontend engineer in Barcelona. Next.js, TypeScript and one specific obsession: that quality is a property of the pipeline, not a phase at the end. I write about Cypress with Gherkin, visual regression, and what changes when agents write part of the code.",
+                                  "lineHeight": 1.5,
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 18,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "q8JQ3F",
+                                  "name": "thesis",
+                                  "fill": "$text",
+                                  "textGrowth": "fixed-width",
+                                  "width": 560,
+                                  "content": "The agent writes. The gate checks. I decide what it checks.",
+                                  "lineHeight": 1.25,
+                                  "fontFamily": "$font-display",
+                                  "fontSize": 20,
+                                  "fontWeight": "600"
                                 }
-                              }
+                              ]
                             },
                             {
-                              "id": "ocWnC",
-                              "type": "ref",
-                              "ref": "yPgOS",
-                              "name": "c3",
+                              "type": "frame",
+                              "id": "oR4nS",
+                              "name": "latest",
                               "width": "fill_container",
-                              "descendants": {
-                                "Pv3yj": {
-                                  "content": "One literal, nine consumers"
+                              "layout": "vertical",
+                              "gap": 20,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "t3Lop3",
+                                  "name": "section-title",
+                                  "fill": "$text-muted",
+                                  "content": "LATEST POSTS",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 14,
+                                  "fontWeight": "700",
+                                  "letterSpacing": 0.84
                                 },
-                                "I7QEl5": {
-                                  "content": "How a single zero-dependency policy module keeps Storybook, the differ and the linter on the same numbers."
+                                {
+                                  "type": "frame",
+                                  "id": "gPgGV",
+                                  "name": "cards",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 12,
+                                  "children": [
+                                    {
+                                      "id": "j7Ur8I",
+                                      "type": "ref",
+                                      "ref": "yPgOS",
+                                      "name": "c1",
+                                      "width": "fill_container"
+                                    },
+                                    {
+                                      "id": "y4fLU2",
+                                      "type": "ref",
+                                      "ref": "yPgOS",
+                                      "name": "c2",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "Pv3yj": {
+                                          "content": "Gherkin specs that survive"
+                                        },
+                                        "I7QEl5": {
+                                          "content": "Feature files are requirements, not test fixtures. The rule that keeps them honest when agents write the code."
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "yQ1VE",
+                                      "type": "ref",
+                                      "ref": "yPgOS",
+                                      "name": "c3",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "Pv3yj": {
+                                          "content": "One literal, nine consumers"
+                                        },
+                                        "I7QEl5": {
+                                          "content": "How a single zero-dependency policy module keeps Storybook, the differ and the linter on the same numbers."
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "JHDLb",
+                                      "type": "ref",
+                                      "ref": "yPgOS",
+                                      "name": "c4",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "Pv3yj": {
+                                          "content": "Gherkin specs that survive"
+                                        },
+                                        "I7QEl5": {
+                                          "content": "Feature files are requirements, not test fixtures. The rule that keeps them honest when agents write the code."
+                                        }
+                                      }
+                                    }
+                                  ]
                                 }
-                              }
+                              ]
                             }
                           ]
                         },
@@ -1072,74 +1162,140 @@
                         },
                         {
                           "type": "frame",
-                          "id": "ZMrEB",
-                          "name": "hero",
+                          "id": "DfPN1",
+                          "name": "main",
                           "width": "fill_container",
                           "layout": "vertical",
-                          "gap": 10,
-                          "padding": 20,
-                          "children": [
-                            {
-                              "id": "FWpim",
-                              "type": "ref",
-                              "ref": "XVO0t",
-                              "name": "badge",
-                              "descendants": {
-                                "dXS0A": {
-                                  "content": "BLOG"
-                                }
-                              }
-                            },
-                            {
-                              "type": "text",
-                              "id": "KlUhS",
-                              "name": "h1",
-                              "fill": "$text",
-                              "textGrowth": "fixed-width",
-                              "width": "fill_container",
-                              "content": "Notes from the gate",
-                              "lineHeight": 1.15,
-                              "fontFamily": "$font-display",
-                              "fontSize": 30,
-                              "fontWeight": "600"
-                            }
-                          ]
-                        },
-                        {
-                          "type": "frame",
-                          "id": "AVo08",
-                          "name": "cards",
-                          "width": "fill_container",
-                          "layout": "vertical",
-                          "gap": 14,
+                          "gap": 48,
                           "padding": [
-                            0,
-                            20,
-                            24,
-                            20
+                            48,
+                            24
                           ],
                           "children": [
                             {
-                              "id": "rfLqh",
-                              "type": "ref",
-                              "ref": "yPgOS",
-                              "name": "c1",
-                              "width": "fill_container"
+                              "type": "frame",
+                              "id": "UKyFJ",
+                              "name": "hero",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 16,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "a9HNkx",
+                                  "name": "h1",
+                                  "fill": "$text",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "I build frontends you can verify.",
+                                  "lineHeight": 1.25,
+                                  "fontFamily": "$font-display",
+                                  "fontSize": 36,
+                                  "fontWeight": "600",
+                                  "letterSpacing": -0.72
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "HlR8T",
+                                  "name": "lead",
+                                  "fill": "$text-muted",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Senior frontend engineer in Barcelona. Next.js, TypeScript and one specific obsession: that quality is a property of the pipeline, not a phase at the end. I write about Cypress with Gherkin, visual regression, and what changes when agents write part of the code.",
+                                  "lineHeight": 1.5,
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 18,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "rA4UW",
+                                  "name": "thesis",
+                                  "fill": "$text",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "The agent writes. The gate checks. I decide what it checks.",
+                                  "lineHeight": 1.25,
+                                  "fontFamily": "$font-display",
+                                  "fontSize": 20,
+                                  "fontWeight": "600"
+                                }
+                              ]
                             },
                             {
-                              "id": "JNsre",
-                              "type": "ref",
-                              "ref": "yPgOS",
-                              "name": "c2",
+                              "type": "frame",
+                              "id": "Q0BP9N",
+                              "name": "latest",
                               "width": "fill_container",
-                              "descendants": {
-                                "Pv3yj": {
-                                  "content": "Gherkin specs that survive"
+                              "layout": "vertical",
+                              "gap": 20,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "JNNOh",
+                                  "name": "section-title",
+                                  "fill": "$text-muted",
+                                  "content": "LATEST POSTS",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 14,
+                                  "fontWeight": "700",
+                                  "letterSpacing": 0.84
                                 },
-                                "I7QEl5": {
-                                  "content": "Feature files are requirements, not test fixtures."
+                                {
+                                  "type": "frame",
+                                  "id": "bCUVs",
+                                  "name": "cards",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 12,
+                                  "children": [
+                                    {
+                                      "id": "KNbH5",
+                                      "type": "ref",
+                                      "ref": "yPgOS",
+                                      "name": "c1",
+                                      "width": "fill_container"
+                                    },
+                                    {
+                                      "id": "dUNHu",
+                                      "type": "ref",
+                                      "ref": "yPgOS",
+                                      "name": "c2",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "Pv3yj": {
+                                          "content": "Gherkin specs that survive"
+                                        },
+                                        "I7QEl5": {
+                                          "content": "Feature files are requirements, not test fixtures."
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "QMAz5",
+                                      "type": "ref",
+                                      "ref": "yPgOS",
+                                      "name": "c3",
+                                      "width": "fill_container"
+                                    },
+                                    {
+                                      "id": "BF2J6",
+                                      "type": "ref",
+                                      "ref": "yPgOS",
+                                      "name": "c4",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "Pv3yj": {
+                                          "content": "Gherkin specs that survive"
+                                        },
+                                        "I7QEl5": {
+                                          "content": "Feature files are requirements, not test fixtures."
+                                        }
+                                      }
+                                    }
+                                  ]
                                 }
-                              }
+                              ]
                             }
                           ]
                         },
@@ -1289,74 +1445,140 @@
                         },
                         {
                           "type": "frame",
-                          "id": "Om4JJ",
-                          "name": "hero",
+                          "id": "MsleP",
+                          "name": "main",
                           "width": "fill_container",
                           "layout": "vertical",
-                          "gap": 10,
-                          "padding": 20,
-                          "children": [
-                            {
-                              "id": "m3ZIrf",
-                              "type": "ref",
-                              "ref": "XVO0t",
-                              "name": "badge",
-                              "descendants": {
-                                "dXS0A": {
-                                  "content": "BLOG"
-                                }
-                              }
-                            },
-                            {
-                              "type": "text",
-                              "id": "C6vE4",
-                              "name": "h1",
-                              "fill": "$text",
-                              "textGrowth": "fixed-width",
-                              "width": "fill_container",
-                              "content": "Notes from the gate",
-                              "lineHeight": 1.15,
-                              "fontFamily": "$font-display",
-                              "fontSize": 30,
-                              "fontWeight": "600"
-                            }
-                          ]
-                        },
-                        {
-                          "type": "frame",
-                          "id": "D3Bc59",
-                          "name": "cards",
-                          "width": "fill_container",
-                          "layout": "vertical",
-                          "gap": 14,
+                          "gap": 48,
                           "padding": [
-                            0,
-                            20,
-                            24,
-                            20
+                            48,
+                            24
                           ],
                           "children": [
                             {
-                              "id": "WH67u",
-                              "type": "ref",
-                              "ref": "yPgOS",
-                              "name": "c1",
-                              "width": "fill_container"
+                              "type": "frame",
+                              "id": "HeGmv",
+                              "name": "hero",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 16,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "I06Wx1",
+                                  "name": "h1",
+                                  "fill": "$text",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "I build frontends you can verify.",
+                                  "lineHeight": 1.25,
+                                  "fontFamily": "$font-display",
+                                  "fontSize": 36,
+                                  "fontWeight": "600",
+                                  "letterSpacing": -0.72
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "p9sOf6",
+                                  "name": "lead",
+                                  "fill": "$text-muted",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Senior frontend engineer in Barcelona. Next.js, TypeScript and one specific obsession: that quality is a property of the pipeline, not a phase at the end. I write about Cypress with Gherkin, visual regression, and what changes when agents write part of the code.",
+                                  "lineHeight": 1.5,
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 18,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "bsBWx",
+                                  "name": "thesis",
+                                  "fill": "$text",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "The agent writes. The gate checks. I decide what it checks.",
+                                  "lineHeight": 1.25,
+                                  "fontFamily": "$font-display",
+                                  "fontSize": 20,
+                                  "fontWeight": "600"
+                                }
+                              ]
                             },
                             {
-                              "id": "cO1OY",
-                              "type": "ref",
-                              "ref": "yPgOS",
-                              "name": "c2",
+                              "type": "frame",
+                              "id": "f4mKa",
+                              "name": "latest",
                               "width": "fill_container",
-                              "descendants": {
-                                "Pv3yj": {
-                                  "content": "Gherkin specs that survive"
+                              "layout": "vertical",
+                              "gap": 20,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "SBYdy",
+                                  "name": "section-title",
+                                  "fill": "$text-muted",
+                                  "content": "LATEST POSTS",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 14,
+                                  "fontWeight": "700",
+                                  "letterSpacing": 0.84
                                 },
-                                "I7QEl5": {
-                                  "content": "Feature files are requirements, not test fixtures."
+                                {
+                                  "type": "frame",
+                                  "id": "K2FKF",
+                                  "name": "cards",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 12,
+                                  "children": [
+                                    {
+                                      "id": "WvhU6",
+                                      "type": "ref",
+                                      "ref": "yPgOS",
+                                      "name": "c1",
+                                      "width": "fill_container"
+                                    },
+                                    {
+                                      "id": "CtKRf",
+                                      "type": "ref",
+                                      "ref": "yPgOS",
+                                      "name": "c2",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "Pv3yj": {
+                                          "content": "Gherkin specs that survive"
+                                        },
+                                        "I7QEl5": {
+                                          "content": "Feature files are requirements, not test fixtures."
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "FYoTn",
+                                      "type": "ref",
+                                      "ref": "yPgOS",
+                                      "name": "c3",
+                                      "width": "fill_container"
+                                    },
+                                    {
+                                      "id": "rayVh",
+                                      "type": "ref",
+                                      "ref": "yPgOS",
+                                      "name": "c4",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "Pv3yj": {
+                                          "content": "Gherkin specs that survive"
+                                        },
+                                        "I7QEl5": {
+                                          "content": "Feature files are requirements, not test fixtures."
+                                        }
+                                      }
+                                    }
+                                  ]
                                 }
-                              }
+                              ]
                             }
                           ]
                         },
