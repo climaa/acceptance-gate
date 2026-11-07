@@ -91,6 +91,12 @@ A tile is the frame on a tier board that draws one story.
 - **Which tiles are required** is the planned variants (`planCaptures`,
   `packages/visual-diff/src/storybook-index.mjs:162`). Stories tagged `visual-diff:skip`
   (`policy.mjs:51`) and MDX docs pages have no screenshot, so they have no tile.
+- **A redraw is carried up the tiers.** Templates draw organisms and organisms draw
+  molecules, each by a hand copy of the lower tile's frames, not a ref to it, so Pencil
+  carries no change over. A change to a tile's drawing is made, in the same PR, to every
+  tile on a higher tier board that draws the same component. Before redrawing, list them:
+  `node scripts/pen/where-drawn.mjs "<frame name>"…` prints each tile holding a frame of
+  that name, by board, variant key and the frame's path inside the tile.
 
 ### Geometry
 
