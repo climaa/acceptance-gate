@@ -1,4 +1,4 @@
-import { TIER_VIEWPORTS, VIEWPORTS } from '@gate/visual-diff/policy';
+import { STORYBOOKS, TIER_VIEWPORTS, VIEWPORTS } from '@gate/visual-diff/policy';
 import { SECTIONS, sectionOf } from './sections';
 import type { Bucket, Variant } from './summary';
 import { storyTitle } from './title';
@@ -352,17 +352,10 @@ export const cardElementId = (cardKey: string) =>
  *  the same determinism rule the differ's own ordering follows. */
 export const formatPixels = (pixels: number) => pixels.toLocaleString('en-US');
 
-/** The published Storybook — the one a reviewer can open from a phone, and the
- *  one the baselines were built from. */
-export const PUBLISHED_STORYBOOK = 'https://storybook.carloslima.dev';
-
-/** The Storybook a developer has running beside the console. */
-export const DEV_STORYBOOK = 'http://localhost:6006';
-
 /**
- * Whether to offer the link to {@link DEV_STORYBOOK}.
+ * Whether to offer the dev Storybook link.
  *
- * It names `localhost:6006`, which exists only while someone is running the
+ * It names a dev server, which exists only while someone is running the
  * design system beside this console — on the deployed report it is a link to
  * nothing, and a dead link beside a live one is worse than no link. The mode is
  * an argument rather than a read at module scope so both answers are reachable
@@ -391,8 +384,76 @@ export const showsDevStorybook = (mode = process.env.NODE_ENV) => mode === 'deve
  * the exact failure mode `COLOR_SCHEME_GLOBAL` exists to prevent one layer down.
  * The id is encoded; the globals expression is not.
  */
-export function storybookLink(base: string, storyId: string, theme: string): string {
-  return `${base}/index.html?path=/story/${encodeURIComponent(storyId)}&globals=colorScheme:${theme}`;
+export function storybookLink(
+  base: string,
+  storyId: string,
+  theme: string,
+  globals: readonly string[] = [],
+): string {
+  const extra = globals.map((global) => `;${global}`).join('');
+  return `${base}/index.html?path=/story/${encodeURIComponent(storyId)}&globals=colorScheme:${theme}${extra}`;
+}
+
+/** One Storybook root as the differ's policy declares it. */
+export type StorybookRoot = (typeof STORYBOOKS)[number];
+
+/**
+ * The root a story comes from: the one whose `idPrefix` claims its id, else the
+ * first — the same default the differ gives a variant that names no build.
+ */
+function storybookOf(
+  storyId: string,
+  roots: readonly StorybookRoot[] = STORYBOOKS,
+): StorybookRoot | undefined {
+  return (
+    roots.find(
+      (root) => root.idPrefix !== undefined && storyId.startsWith(root.idPrefix),
+    ) ?? roots[0]
+  );
+}
+
+/** A hostname as a URL authority writes it: an IPv6 address in brackets. A
+ *  browser's `location.hostname` already brackets one; a bare one is wrapped. */
+const urlHost = (host: string) =>
+  host.includes(':') && !host.startsWith('[') ? `[${host}]` : host;
+
+/**
+ * The story in its root's dev server, on `host` — the console page's own
+ * hostname, so a reviewer on a tablet reaching the console at the Mac's LAN
+ * address lands on the Mac's Storybook, never on the tablet's `localhost`.
+ * The port is the root's: a second Storybook listens on its own.
+ */
+export function devStorybookLink(
+  storyId: string,
+  theme: string,
+  host = 'localhost',
+  roots: readonly StorybookRoot[] = STORYBOOKS,
+): string | undefined {
+  const root = storybookOf(storyId, roots);
+  if (!root) return undefined;
+
+  return storybookLink(
+    `http://${urlHost(host)}:${root.devPort}`,
+    storyId,
+    theme,
+    root.globals,
+  );
+}
+
+/**
+ * The story in its root's published build — the one a reviewer can open from a
+ * phone, and the one the baselines were built from. Nothing for a root that
+ * publishes no build: another root's build does not hold the story.
+ */
+export function publishedStorybookLink(
+  storyId: string,
+  theme: string,
+  roots: readonly StorybookRoot[] = STORYBOOKS,
+): string | undefined {
+  const root = storybookOf(storyId, roots);
+  if (root?.published === undefined) return undefined;
+
+  return storybookLink(root.published, storyId, theme, root.globals);
 }
 
 /** axe's own rule documentation, keyed by rule id. The version is the one
