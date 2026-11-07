@@ -6,6 +6,7 @@ import {
   mkdtempSync,
   readdirSync,
   readFileSync,
+  realpathSync,
   rmSync,
   unlinkSync,
   writeFileSync,
@@ -116,7 +117,9 @@ describe('the machine-wide gate lock', () => {
   const deadPid = () => spawnSync('node', ['-e', '0']).pid;
 
   beforeEach(() => {
-    repo = mkdtempSync(join(tmpdir(), 'gate-lock-'));
+    // Real path: macOS's tmpdir is /var/…, a symlink to /private/var/…, and the gate
+    // records the checkout as git resolves it.
+    repo = realpathSync(mkdtempSync(join(tmpdir(), 'gate-lock-')));
     lock = `${repo}.gate.lock`;
     const gateDir = join(repo, 'scripts/gate');
     mkdirSync(gateDir, { recursive: true });
