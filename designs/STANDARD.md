@@ -242,6 +242,14 @@ pull request.
   the command line, and writes it only on `save()`, so neither trap above applies. An
   untouched open and `save()` writes the file back byte for byte. Its text layout is not
   Pencil's, though, and not stable between calls: export from Pencil, never from the CLI.
+- When the Pencil MCP cannot reach the app — a transport error naming
+  `visual_studio_code`, or "A file needs to be open in the editor" with a file open — its
+  entry points at an editor extension, which can rewrite it. The fix is in the agent's own
+  MCP configuration, outside this repository: Pen.app's
+  `Contents/Resources/app.asar.unpacked/out/mcp-server-darwin-arm64` with `--app desktop`,
+  then a reconnect. Until then, `pen interactive --app desktop --in <path>` drives the
+  running Pen.app with the same `execute` calls: it exports from Pencil's own renderer, and
+  `save()` writes the file, so no Cmd+S is owed.
 - A story and its tile ship in the same pull request.
 
 ## Drawing page tiles from the stories
