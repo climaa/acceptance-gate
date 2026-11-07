@@ -39,7 +39,7 @@ const GATE_FAILED = [
 function stubs(results: Record<string, PushResult>) {
   return {
     push: vi.fn(async (branch: string) => results[branch]!),
-    hold: vi.fn(() => ({ commented: true, labeled: true })),
+    hold: vi.fn((_id: string, _body: string) => ({ commented: true, labeled: true })),
   };
 }
 
@@ -66,7 +66,7 @@ describe('a failed host push holds its issue', () => {
     expect(next.eligible).toEqual([]);
     expect(next.held).toEqual(['7']);
     expect(io.hold).toHaveBeenCalledTimes(1);
-    const [id, body] = io.hold.mock.calls[0]! as unknown as [string, string];
+    const [id, body] = io.hold.mock.calls[0]!;
     expect(id).toBe('7');
     expect(body).toContain('`lint`, `test`');
     expect(body).toContain('sandcastle/issue-7-x');
