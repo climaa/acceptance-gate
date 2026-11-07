@@ -7,6 +7,8 @@ transcribed from the GitHub Releases that existed when this file was created (20
 
 ## Unreleased
 
+- The visual-diff-ui git suites (`git.test.ts`, `capture-set.test.ts`) refresh the index with `git update-index -q --refresh` in a `beforeAll` before any git call bounded at 2 s. In the pre-push gate's fresh clone the first `git status --porcelain` refreshed the whole index, and under the gate's own test load that took longer than `lib/git.ts`'s 2 s timeout, so `describeCheckout` answered null and a correct tree was refused. The production timeout is unchanged.
+
 - A Sandcastle sandbox's two `~/.bashrc` hooks (`TURBO_CONCURRENCY` and `SANDCASTLE_SANDBOX`) no longer race. The SDK runs them concurrently and both rewrote the file through one `~/.bashrc.tmp`, so one `mv` failed with `cannot stat '/home/agent/.bashrc.tmp'` and took the planner or merger down with it, eight of ten iterations in the run after #682. Each rewrite now holds a `mkdir` lock and its own temp file, so neither fails and neither line is lost.
 
 - The Sandcastle merger posts its closing comment with `gh issue comment` before it closes the issue, and an issue already closed by the PR's `Closes #<ID>` no longer fails the close. It used to pass the comment to `gh issue close --comment`, which on an issue the merge had already closed skipped the comment with the close, so the list of criteria left for a human never reached the issue.
