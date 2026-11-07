@@ -1,9 +1,10 @@
+import { spawnSync } from 'node:child_process';
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
 // Imported explicitly rather than relying on `globals: true` — tsconfig's
 // `**/*.ts` include means tsc typechecks this file.
-import { afterAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { describeCheckout, repoRoot } from '../lib/git';
 
 /**
@@ -16,6 +17,24 @@ import { describeCheckout, repoRoot } from '../lib/git';
  */
 
 const REPO_ROOT = path.resolve(process.cwd(), '..', '..');
+
+/**
+ * Refresh the index before any 2 s-bounded call, outside that bound.
+ *
+ * The pre-push gate runs this suite in a fresh clone, where the first
+ * `git status --porcelain` stats every tracked file to refresh the index. Under
+ * the gate's own `test` load that has taken longer than `lib/git.ts`'s 2 s
+ * timeout, so the call was killed, `describeCheckout` answered null, and a
+ * correct tree failed the push. The production bound stays right for a request
+ * path; the cold index is this suite's to warm. Exit status is ignored: `-q`
+ * only quiets what a dirty tree reports, and dirty is a valid answer here.
+ */
+beforeAll(() => {
+  spawnSync('git', ['update-index', '-q', '--refresh'], {
+    cwd: REPO_ROOT,
+    stdio: 'ignore',
+  });
+}, 120_000);
 
 const temporaryDirs: string[] = [];
 

@@ -84,6 +84,17 @@ declare module '@gate/visual-diff/policy' {
     broken: number;
   };
 
+  /** Every Storybook the differ reads, and how the console links to its
+   *  stories: the dev server's port, the published origin when there is one,
+   *  globals beyond `colorScheme`, and the id prefix a non-first root claims. */
+  export const STORYBOOKS: readonly {
+    static: string;
+    devPort: number;
+    published?: string;
+    globals?: readonly string[];
+    idPrefix?: string;
+  }[];
+
   /** Applied to a story that cannot be captured deterministically. */
   export const SKIP_TAG: string;
 
