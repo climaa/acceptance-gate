@@ -64,21 +64,24 @@ describe('sandcastle git credential helper', () => {
       rmSync(home, { recursive: true, force: true });
     });
 
+    // Built from scratch rather than spread from process.env, so an outer
+    // GIT_CONFIG_GLOBAL can't point the hook and the read at different files.
+    const isolatedEnv = () => ({
+      PATH: `${home}:${process.env.PATH ?? ''}`,
+      HOME: home,
+      XDG_CONFIG_HOME: join(home, '.config'),
+      GIT_CONFIG_NOSYSTEM: '1',
+    });
+
     const runHook = (token: string) =>
       execFileSync('sh', ['-c', GH_AUTH_SETUP_HOOK.command], {
-        env: {
-          PATH: `${home}:${process.env.PATH ?? ''}`,
-          HOME: home,
-          XDG_CONFIG_HOME: join(home, '.config'),
-          GIT_CONFIG_NOSYSTEM: '1',
-          GH_TOKEN: token,
-        },
+        env: { ...isolatedEnv(), GH_TOKEN: token },
       });
 
     const globalConfig = (key: string) => {
       try {
         return execFileSync('git', ['config', '--global', '--get-all', key], {
-          env: { ...process.env, HOME: home, XDG_CONFIG_HOME: join(home, '.config') },
+          env: isolatedEnv(),
         })
           .toString()
           .trim();
