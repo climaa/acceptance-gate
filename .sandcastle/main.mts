@@ -51,6 +51,7 @@ import {
   installGracefulShutdown,
   reapExitedContainers,
 } from './sandcastle-lifecycle.mts';
+import { refuseWithoutDocker } from './sandcastle-docker-preflight.mts';
 import { ensureImageFreshness } from './sandcastle-image-freshness.mts';
 import {
   markIssueNoOp,
@@ -105,6 +106,11 @@ const { signal: abortSignal } = installGracefulShutdown();
 // here rather than at first use, so an unusable value fails before any
 // container starts instead of midway through the batch.
 assertEnvOverridesValid();
+
+// Docker before anything that calls it. With the daemon stopped, the reap below
+// only warns and the image guard dies inside `docker build` with a stack trace
+// that blames the image; this refuses in one sentence and exits 1 instead.
+refuseWithoutDocker();
 
 // Reap `status=exited` sandbox containers stranded by a previously-killed run,
 // once at startup (mirrors the single-runner preflight). Scoped to this repo's image
