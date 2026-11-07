@@ -1,13 +1,9 @@
 import { Text } from '@gate/ui';
 import NextLink from 'next/link';
-import {
-  DEV_STORYBOOK,
-  PUBLISHED_STORYBOOK,
-  showsDevStorybook,
-  storybookLink,
-} from '@/lib/report-view';
+import { publishedStorybookLink, showsDevStorybook } from '@/lib/report-view';
 import type { SetShot, ShotGroup } from '@/lib/set-view';
 import { cellName, setShotUrl, shotViewHref } from '@/lib/shots';
+import { DevStorybookLink } from './DevStorybookLink';
 
 /**
  * One story's screenshots in one set.
@@ -45,6 +41,7 @@ function VariantCell({
 }) {
   const src = setShotUrl(label, shot.file);
   const dimensions = shot.width !== null && shot.height !== null;
+  const published = publishedStorybookLink(shot.storyId, shot.theme);
 
   return (
     <figure
@@ -90,28 +87,28 @@ function VariantCell({
       </figcaption>
 
       {/* Both Storybooks, as the report offers them: the one a developer has
-          running beside the console, and the published build. The first only
-          where it can answer — a dead link beside a live one is worse than no
-          link. */}
+          running beside the console, and the published build. Each only where
+          it can answer — a dead link beside a live one is worse than no link. */}
       <span className="vd-cell__links">
         {showsDevStorybook() && (
+          <DevStorybookLink
+            className="vd-cell__link"
+            storyId={shot.storyId}
+            theme={shot.theme}
+          >
+            dev Storybook
+          </DevStorybookLink>
+        )}
+        {published && (
           <a
             className="vd-cell__link"
-            href={storybookLink(DEV_STORYBOOK, shot.storyId, shot.theme)}
+            href={published}
             target="_blank"
             rel="noopener noreferrer"
           >
-            dev Storybook
+            baseline Storybook
           </a>
         )}
-        <a
-          className="vd-cell__link"
-          href={storybookLink(PUBLISHED_STORYBOOK, shot.storyId, shot.theme)}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          baseline Storybook
-        </a>
       </span>
     </figure>
   );
