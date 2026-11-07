@@ -1,26 +1,6 @@
 import { read } from './helpers';
 
 describe('sandcastle completion hardening ', () => {
-  describe('implement-prompt.md — branch push before completion signal', () => {
-    const content = read('agent-docs/implement-prompt.md');
-
-    it('includes git push -u origin HEAD', () => {
-      expect(content).toMatch(/git push -u origin HEAD/);
-    });
-
-    it('push instruction appears before the final completion-token line', () => {
-      const pushIdx = content.lastIndexOf('git push -u origin HEAD');
-      const theIssueIdx = content.indexOf('## THE ISSUE');
-      const completeInIssueIdx = content.indexOf(
-        '<promise>COMPLETE</promise>',
-        theIssueIdx,
-      );
-      expect(pushIdx).toBeGreaterThan(-1);
-      expect(completeInIssueIdx).toBeGreaterThan(-1);
-      expect(pushIdx).toBeLessThan(completeInIssueIdx);
-    });
-  });
-
   describe('all three prompt files — very-last-output requirement', () => {
     const FILES = [
       'agent-docs/implement-prompt.md',

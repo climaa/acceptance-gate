@@ -7,6 +7,8 @@ transcribed from the GitHub Releases that existed when this file was created (20
 
 ## Unreleased
 
+- The Sandcastle implementer no longer pushes its branch from the sandbox. The push ran the pre-push gate, whose e2e always fails there for want of a browser, so each run spent minutes diagnosing an environment red and left a "not pushed" blocker comment on the issue. The commits already live in the host's repository, and the host pushes the branch after the review, through the gate, as it already did.
+
 - A Sandcastle sandbox bounds turbo's concurrency from its own cores and memory (one core left for the agent, one task per 2 GiB, never below 1) through `TURBO_CONCURRENCY` at the top of the container's `~/.bashrc`, so `pnpm gate` inside it no longer has a build OOM-killed with exit 137 at turbo's default of 10. The host keeps turbo's default.
 
 - A Sandcastle branch whose host push the pre-push gate refuses holds its issue: it is kept from the merger, skipped by every later plan in the run, and given `sandcastle:hold` with one comment naming the failed gate checks and the branch. The run ends with a summary listing such issues under `push failed — held`, apart from no-ops. A refused push used to go on to the merger, which failed it again, and the next iteration dispatched the same issue from scratch on top of a branch that already held the work.
