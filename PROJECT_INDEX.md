@@ -109,11 +109,12 @@ scripts/               gate/ (the gate, run by `.husky/pre-push`) · complexity-
 - **`apps/blog/lib/posts.ts`** — MDX read, Zod-validated frontmatter, reading time
 - **`scripts/complexity-gate.mjs`** — cognitive-complexity ceiling of 20 per function; workspace mode for turbo, `--scope` mode for `.sandcastle/`
 - `scripts/vitest-control-scan.mjs` — `health:check` step: no `.skip`/`.todo`/`.only`/`.skipIf`/`.runIf` Vitest call in a unit test without a same-line `// reason:`
+- `scripts/release-age.mjs` — `health:check` step: `pnpm-workspace.yaml` writes `minimumReleaseAge` at 4320 or more (three days; pnpm 11's default is 1440)
 
 ## 🔧 Configuration
 
 - `turbo.json` — `build`/`lint`/`typecheck`/`test` (+`dependsOn: ["^build"]`), `e2e` (dependsOn `@gate/blog#build` and `@gate/visual-diff-ui#build`, uncached), `health` (whose `inputs` include `$TURBO_ROOT$/scripts/complexity-gate.mjs`, so editing the gate script busts every cached result), `dev`, `clean`. `build.env` is `VERCEL_ENV`, `NEXT_PUBLIC_BUGSINK_DSN`, `BLOG_RELEASES_FIXTURE` and `GITHUB_TOKEN` — the values a build reads, so a fixture build and a real one never share a cache entry. `BUGSINK_DSN` is deliberately absent: the server reads it per request, so changing it must not invalidate a build
-- `pnpm-workspace.yaml` — apps/* + packages/*; `allowBuilds` for sharp, unrs-resolver
+- `pnpm-workspace.yaml` — apps/* + packages/*; `allowBuilds` for sharp, unrs-resolver; `minimumReleaseAge: 4320`, so a dependency bump must name a version at least three days old
 - `package.json` — pnpm 11.20.0 pinned (sha512), Node `>=22.22.2 <23`, turbo ^2.11.7. `@types/node` is deliberately held on the `^22` line: it describes the runtime `engines` pins and `.sandcastle/Dockerfile` (`node:22-bookworm`) runs, so a newer major would type built-ins that do not exist here. It moves when the runtime moves, not when `ncu` says so
 - `.github/rulesets/main.json` — the branch ruleset as committed JSON: PR required, squash-only, `gate` the sole required status check, no bypass actors. Since #580 the applied ruleset requires no status check, so this file no longer matches what `main` enforces
 - `.gitattributes` — `designs/*.pen` binary

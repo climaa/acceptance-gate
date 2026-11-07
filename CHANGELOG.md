@@ -7,6 +7,8 @@ transcribed from the GitHub Releases that existed when this file was created (20
 
 ## Unreleased
 
+- `pnpm-workspace.yaml` writes `minimumReleaseAge: 4320`, so pnpm installs no release younger than three days, and `health:check` runs `scripts/release-age.mjs`, which fails when the key is missing, not a number, or below 4320. pnpm 11 applied a one-day floor by default and this repository wrote none, so a deleted or lowered key would have fallen back to it silently. The lockfile already passed the three-day policy and needed no re-resolution. From now on a dependency bump must name a version at least three days old: a Dependabot PR for yesterday's release fails `pnpm install` until it ages.
+
 - A Sandcastle sandbox's two `~/.bashrc` hooks (`TURBO_CONCURRENCY` and `SANDCASTLE_SANDBOX`) no longer race. The SDK runs them concurrently and both rewrote the file through one `~/.bashrc.tmp`, so one `mv` failed with `cannot stat '/home/agent/.bashrc.tmp'` and took the planner or merger down with it, eight of ten iterations in the run after #682. Each rewrite now holds a `mkdir` lock and its own temp file, so neither fails and neither line is lost.
 
 - The Sandcastle merger posts its closing comment with `gh issue comment` before it closes the issue, and an issue already closed by the PR's `Closes #<ID>` no longer fails the close. It used to pass the comment to `gh issue close --comment`, which on an issue the merge had already closed skipped the comment with the close, so the list of criteria left for a human never reached the issue.
