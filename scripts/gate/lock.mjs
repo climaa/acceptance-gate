@@ -240,6 +240,9 @@ export function acquire({
 /** The signals a person or a supervisor stops a gate with. */
 export const STOP_SIGNALS = /** @type {const} */ (['SIGINT', 'SIGTERM', 'SIGHUP']);
 
+/** @param {typeof STOP_SIGNALS[number]} signal @returns {number} */
+const exitCodeFor = (signal) => 128 + constants.signals[signal];
+
 /**
  * The exit code of a step a stop signal ended, as the signal would have made
  * it (`128 + n`), or `undefined`. Either the step died of the signal, or a shell
@@ -250,7 +253,7 @@ export const STOP_SIGNALS = /** @type {const} */ (['SIGINT', 'SIGTERM', 'SIGHUP'
  */
 export function stopSignalExit(result) {
   for (const signal of STOP_SIGNALS) {
-    const code = 128 + constants.signals[signal];
+    const code = exitCodeFor(signal);
 
     if (result.signal === signal || result.status === code) return code;
   }
@@ -275,7 +278,7 @@ export function releaseOnExit(path) {
   for (const signal of STOP_SIGNALS) {
     process.once(signal, () => {
       release(path);
-      process.exit(128 + /** @type {number} */ (constants.signals[signal]));
+      process.exit(exitCodeFor(signal));
     });
   }
 }

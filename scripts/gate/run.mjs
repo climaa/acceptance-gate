@@ -75,8 +75,11 @@ function parse(argv) {
   };
 }
 
-/** A check's outcome; a number is the exit code of a step a stop signal ended. */
-/** @typedef {'passed' | 'failed' | number} Outcome */
+/**
+ * A check's outcome; a number is the exit code of a step a stop signal ended.
+ *
+ * @typedef {'passed' | 'failed' | number} Outcome
+ */
 
 /**
  * One check, in `root`. Inherits stdio: the point of a local gate is that the
