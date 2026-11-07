@@ -24,8 +24,8 @@ describe('sandcastle stranded rescue — publishes once, rescues once per run', 
 
   it('pushes rescued branches from the host before their merge', () => {
     // Arrange
-    const pushIdx = emptyPath.indexOf('pushFromHost(verified)');
-    const mergeIdx = emptyPath.indexOf('runMerger(verified');
+    const pushIdx = emptyPath.indexOf('pushFromHost(verified');
+    const mergeIdx = emptyPath.indexOf('runMerger(published');
 
     // Assert
     expect(pushIdx).toBeGreaterThan(-1);

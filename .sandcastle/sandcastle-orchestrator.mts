@@ -28,33 +28,47 @@ export type ScreenedPlan = {
   eligible: IssueRef[];
   /** Ids classified no-op this pass — the caller records them and logs. */
   newlyNoOp: string[];
+  /** Ids skipped as on hold — the caller logs them. */
+  held: string[];
   /** Per-issue model-override label errors — the caller throws if non-empty. */
   overrideErrors: string[];
 };
 
 /**
  * Decide, from each planned issue's already-fetched labels, which issues are
- * eligible to run — dropping ones already marked no-op and collecting any
+ * eligible to run — dropping ones already marked no-op or on hold, collecting any
  * invalid sc:* override labels — BEFORE any sandbox is created. The label fetch
  * (IO) stays in the caller; this is the pure classification over the result, so
  * a run cannot burn a sandbox on an ineligible issue and a typo'd control label
  * is caught for free.
  *
  * `seenNoOpIds` is the run-scoped set of ids already found to do nothing; it is
- * read, never mutated (the caller adds `newlyNoOp` to it).
+ * read, never mutated (the caller adds `newlyNoOp` to it). `seenHeldIds` is the
+ * run-scoped set of issues whose host push failed, read the same way.
  */
 export function screenPlan(
   entries: { issue: IssueRef; labels: string[] }[],
   seenNoOpIds: ReadonlySet<string>,
+  seenHeldIds: ReadonlySet<string> = new Set(),
 ): ScreenedPlan {
   const eligible: IssueRef[] = [];
   const newlyNoOp: string[] = [];
+  const held: string[] = [];
   const overrideErrors: string[] = [];
 
   for (const { issue, labels } of entries) {
-    const verdict = classifyPlannedIssue({ id: issue.id, labels, seenNoOpIds });
+    const verdict = classifyPlannedIssue({
+      id: issue.id,
+      labels,
+      seenNoOpIds,
+      seenHeldIds,
+    });
     if (verdict.kind === 'skip-noop') {
       newlyNoOp.push(issue.id);
+      continue;
+    }
+    if (verdict.kind === 'skip-held') {
+      held.push(issue.id);
       continue;
     }
     if (verdict.kind === 'reject') {
@@ -67,5 +81,5 @@ export function screenPlan(
     eligible.push(issue);
   }
 
-  return { eligible, newlyNoOp, overrideErrors };
+  return { eligible, newlyNoOp, held, overrideErrors };
 }

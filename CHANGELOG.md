@@ -7,6 +7,8 @@ transcribed from the GitHub Releases that existed when this file was created (20
 
 ## Unreleased
 
+- A Sandcastle branch whose host push the pre-push gate refuses holds its issue: it is kept from the merger, skipped by every later plan in the run, and given `sandcastle:hold` with one comment naming the failed gate checks and the branch. The run ends with a summary listing such issues under `push failed — held`, apart from no-ops. A refused push used to go on to the merger, which failed it again, and the next iteration dispatched the same issue from scratch on top of a branch that already held the work.
+
 - The stranded-branch rescue skips a branch whose open issue carries `sandcastle:hold`, logging `skipping stranded branch … : #n is on hold`, and leaves the branch in place unmarked. The planner already never dispatched a held issue; the rescue re-pushed it through its branch on every run until the branch was renamed out of `sandcastle/`.
 
 - A Sandcastle sandbox with `GH_TOKEN` set rewrites `git@github.com:` remotes to HTTPS as well as wiring `gh`'s credential helper, so the implementer's push and the merger's `git fetch origin main` reach GitHub instead of failing over SSH with `No user exists for uid 501`.
