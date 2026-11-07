@@ -131,17 +131,11 @@ Keep it concise.
 
 ## PUSH
 
-After all commits, push the branch immediately so work is preserved if this session is interrupted before the completion token is emitted:
-
-```bash
-git push -u origin HEAD
-```
-
-If the push fails, log the error and continue — the merge phase will retry.
+Do not push. The host pushes the branch after the review, through the pre-push gate: this sandbox cannot run that gate's e2e (its image has no browser), and your commits already live in the host's repository, so they survive this session ending without a push.
 
 ## THE ISSUE
 
-If the task is not complete, leave a comment on the issue with what was done.
+If the task is not complete, leave a comment on the issue with what was done. Say nothing about pushing unless the work is unfinished: the branch not being pushed from here is expected, never a blocker.
 
 Do not close the issue - this will be done later.
 
@@ -157,8 +151,7 @@ If a scenario seems wrong, say so in the issue/PR and stop; the diff must not to
 files under `designs/`, which only the Pencil app edits; `designs/exports/` is written by
 the export, never by hand. If `pnpm turbo run boards:check` fails because a story you
 added or renamed has no tile, do not touch `designs/`: comment on the issue that the
-story needs its tiles drawn (name the variant keys the check printed) and stop without
-pushing.
+story needs its tiles drawn (name the variant keys the check printed) and stop.
 
 ONLY WORK ON A SINGLE TASK.
 
