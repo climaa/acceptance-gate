@@ -27,6 +27,7 @@ import { withoutAmbientGit } from './git-env.mjs';
 import { CHECKS, checksFor } from './manifest.mjs';
 import { compareNodeVersion, readNvmrc } from './node-version.mjs';
 import { findReceipt, NOTES_REF, noteFor, treeOf } from './receipt.mjs';
+import { planFor } from './sandbox.mjs';
 import { worktreeAt } from './worktree.mjs';
 
 /** Repo root: this file is two levels down. Resolved from the module URL rather
@@ -221,7 +222,13 @@ export function run(argv) {
     return EXIT.broken;
   }
 
-  const checks = checksFor(tier);
+  // Inside the Sandcastle sandbox: every check but e2e, and no receipt — see
+  // `sandbox.mjs`. On the host this is the tier's checks, and a receipt.
+  const plan = planFor(checksFor(tier), process.env);
+  const { checks } = plan;
+
+  if (plan.note !== undefined) process.stdout.write(`${plan.note}\n`);
+
   const tree = at === undefined ? undefined : worktreeAt(at);
   const root = tree?.root ?? REPO_ROOT;
 
@@ -236,7 +243,7 @@ export function run(argv) {
 
       // Only for a run of the working tree. `--at` checks a throwaway worktree at
       // another commit, and HEAD is not what was verified there.
-      if (at === undefined) recordReceipt(tier);
+      if (at === undefined && plan.receipt) recordReceipt(tier);
 
       return EXIT.ok;
     }

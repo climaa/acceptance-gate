@@ -19,6 +19,7 @@ import { fileURLToPath } from 'node:url';
 
 import { withoutAmbientGit } from './git-env.mjs';
 import { NOTES_REF, noteFor, publish, readReceipt, treeOf } from './receipt.mjs';
+import { inSandbox } from './sandbox.mjs';
 
 const RUNNER = fileURLToPath(new URL('./run.mjs', import.meta.url));
 
@@ -66,6 +67,19 @@ function verify(sha, remote) {
     process.stdout.write(`gate: ${sha.slice(0, 7)} already verified\n`);
 
     return true;
+  }
+
+  // In the Sandcastle sandbox the runner skips e2e (`sandbox.mjs`), so its green
+  // is not the gate's, and a receipt written from it would vouch for an e2e that
+  // never ran. A commit the host has not verified is refused here, as the e2e
+  // the sandbox cannot run would have refused it. The host never takes this path.
+  if (inSandbox(process.env)) {
+    process.stdout.write(
+      `gate: ${sha.slice(0, 7)} has no receipt, and this Sandcastle sandbox ` +
+        `cannot run e2e — the host push verifies it\n`,
+    );
+
+    return false;
   }
 
   const head = git('rev-parse', ['HEAD']);

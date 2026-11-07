@@ -115,6 +115,8 @@ pnpm run test
 
 Root scripts traverse the full monorepo and take minutes. Avoid them when a filter would do.
 
+When an issue asks for `pnpm gate`: in this sandbox it runs every check but e2e (the image has no browser; the host push runs e2e) and writes no receipt. A red there is the change's, never the environment's.
+
 ## COMMIT
 
 Never pass `--no-verify` to `git commit` or `git push`. If a hook fails, fix it or stop — do not bypass.
