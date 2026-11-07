@@ -76,5 +76,6 @@ Do not compare the number across tiles. A long page of text and a short one with
 picture settle at different values for equally good drawings.
 
 For a verdict against the baselines, use `tiles-from-dom.mjs --verify`, which reports a
-percentage for each tile. For measuring one component by pixel rows and turning the gap into a CSS change, use
-[Pixel Perfect Session](?path=/docs/docs-skills-pixel-perfect-session--docs) instead.
+percentage for each tile. A [Pixel Perfect Session](?path=/docs/docs-skills-pixel-perfect-session--docs) runs this
+too. Its `tile-rows.mjs --save <dir>` writes the tile and the screenshot as files, with no
+Pencil export, and the session stops if the number rises after a fix.
