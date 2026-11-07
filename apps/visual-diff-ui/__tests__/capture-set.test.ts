@@ -6,7 +6,7 @@ import * as path from 'node:path';
 import { Readable } from 'node:stream';
 // Imported explicitly rather than relying on `globals: true` — tsconfig's
 // `**/*.ts` include means tsc typechecks this file.
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import {
   buildSet,
   filtersOf,
@@ -38,6 +38,24 @@ import { SetsFileSchema } from '../lib/summary';
 
 const REPO_ROOT = path.resolve(process.cwd(), '..', '..');
 const SCRIPT = path.join(process.cwd(), 'scripts', 'capture-set.mjs');
+
+/**
+ * Refresh the index before any 2 s-bounded call, outside that bound.
+ *
+ * The runner reads provenance through `describeCheckout`, whose `git` calls are
+ * killed after 2 s. In the pre-push gate's fresh clone the first
+ * `git status --porcelain` refreshes the whole index, and under the gate's own
+ * `test` load that has taken longer — null provenance, `--dirty` missing from
+ * the argv, a correct tree refused. The production bound stays right for a
+ * request path; the cold index is this suite's to warm. Exit status is ignored:
+ * a dirty tree is a valid answer here.
+ */
+beforeAll(() => {
+  spawnSync('git', ['update-index', '-q', '--refresh'], {
+    cwd: REPO_ROOT,
+    stdio: 'ignore',
+  });
+}, 120_000);
 
 const temporaryDirs: string[] = [];
 
