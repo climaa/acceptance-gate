@@ -83,7 +83,12 @@ A tile is the frame on a tier board that draws one story.
 - **Dark is a theme, not a drawing.** The light tile is a reusable frame; the dark tile is
   a `ref` of it with `theme: {mode: "dark"}` and the `dark` key. Only the `--color-*`
   roles change under `[data-theme='dark']` (`packages/ui/src/tokens.css:238`), and a ref
-  resolves the same variables in the other mode.
+  resolves the same variables in the other mode. Make the dark ref with `Copy` of the
+  light tile (`Copy(lightTileId, parent, {name, theme: {mode: "dark"}})`; copying a
+  reusable makes a connected ref), never `Insert` of a `ref`. An inserted ref can draw in
+  place while Pencil reports it as clipped, with bounds that put it elsewhere (50 px low
+  in a horizontal `Themes` frame), and the export refuses a tile Pencil reports as
+  clipped rather than record a rectangle that disagrees with the drawing.
 - **Mobile only where a mobile screenshot exists.** That covers organisms, templates and
   screens,
   plus any story tagged `visual-diff:all-viewports` (`policy.mjs:34-39`, `:60`). A story
@@ -174,7 +179,9 @@ To export, for each board file that changed:
 1. Make it the active document (`open -a Pen designs/<stem>.pen`) and run
    [`scripts/pen/export-boards.js`](../scripts/pen/export-boards.js) through the Pencil
    MCP. It writes the board's PNG (named by node id, the only name `Export` can give it)
-   and prints one line starting `MANIFEST`. Save that line to a file.
+   and prints one line starting `MANIFEST`. Save that line to a file. When Pencil reports
+   a problem on a tile, it writes nothing and prints `REFUSED <variant key>: <problem>`
+   instead: remake that tile (§ Tiles) and run it again.
 2. Run `node scripts/pen/finish-export.mjs <file>…` with every manifest saved. It names
    the PNGs by stem, writes the sidecars, and deletes the exports of any board whose
    `.pen` no longer exists.

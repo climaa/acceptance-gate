@@ -16,6 +16,13 @@
 // A tile is any frame or ref whose name is a variant key; its rectangle is
 // recorded in that PNG's pixels, at that scale. A node's bounds are relative to
 // its parent, so a tile's place on the board is the sum up the chain.
+//
+// A tile Pencil reports a problem on (`partially clipped`, `fully clipped`) stops
+// the export: it prints `REFUSED <variant key>: <problem>` and writes no PNG and no
+// MANIFEST line. Such a tile's bounds can disagree with where it is drawn (a dark
+// ref made by `Insert` of a `ref` read 50 px low while drawn in place), and a
+// rectangle that disagrees with the drawing is the false claim the tile map exists
+// to prevent. designs/STANDARD.md § Tiles says how to make the ref instead.
 const STEM = /^(\d\d-[a-z0-9-]+|x-[a-z0-9-]+) — /;
 const VARIANT_KEY =
   /^(atoms|molecules|organisms|templates|screens)__(desktop|mobile)__(light|dark)__[a-z0-9-]+--[a-z0-9-]+$/;
@@ -29,6 +36,7 @@ const boards = Get((n, c) => {
 });
 
 const manifest = [];
+const refused = [];
 for (const { id, board, stem } of boards) {
   const at = Get(id, (n, c) => (n.id === id ? c.bounds : undefined))[0];
   const fit = Math.floor((LONG_SIDE / Math.max(at.width, at.height)) * 1e6) / 1e6;
@@ -38,6 +46,7 @@ for (const { id, board, stem } of boards) {
   Get(id, (n, c) => {
     if (!VARIANT_KEY.test(n.name || '')) return undefined;
     c.skipChildren();
+    if (c.problems) refused.push(`REFUSED ${n.name}: ${c.problems}`);
     let { x, y } = c.bounds;
     for (let p = c.parentCtx; p && p.node.id !== id; p = p.parentCtx) {
       x += p.bounds.x;
@@ -46,7 +55,6 @@ for (const { id, board, stem } of boards) {
     tiles[n.name] = [px(x), px(y), px(c.bounds.width), px(c.bounds.height)];
     return undefined;
   });
-  Export([id], 'png', './exports', { scale });
   manifest.push({
     id,
     stem,
@@ -57,4 +65,9 @@ for (const { id, board, stem } of boards) {
     tiles,
   });
 }
-Print('MANIFEST ' + JSON.stringify(manifest));
+if (refused.length > 0) {
+  for (const line of refused) Print(line);
+} else {
+  for (const { id, scale } of manifest) Export([id], 'png', './exports', { scale });
+  Print('MANIFEST ' + JSON.stringify(manifest));
+}

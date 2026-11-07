@@ -7,6 +7,8 @@ transcribed from the GitHub Releases that existed when this file was created (20
 
 ## Unreleased
 
+- `scripts/pen/export-boards.js` refuses a tile Pencil reports a problem on (`partially clipped`, `fully clipped`): it prints `REFUSED <variant key>: <problem>` and writes no PNG and no `MANIFEST` line. A dark tile made by `Insert` of a `ref` could draw in place while its bounds put it 50 px low, and the tile map would have recorded that wrong rectangle with `boards:check` still green. `designs/STANDARD.md` § Tiles now makes the dark ref with `Copy` of the light tile, and `scripts/__tests__/export-boards.test.ts` runs the snippet in a VM against a fake document.
+
 - The visual-diff-ui git suites (`git.test.ts`, `capture-set.test.ts`) refresh the index with `git update-index -q --refresh` in a `beforeAll` before any git call bounded at 2 s. In the pre-push gate's fresh clone the first `git status --porcelain` refreshed the whole index, and under the gate's own test load that took longer than `lib/git.ts`'s 2 s timeout, so `describeCheckout` answered null and a correct tree was refused. The production timeout is unchanged.
 
 - `pnpm-workspace.yaml` writes `minimumReleaseAge: 4320`, so pnpm installs no release younger than three days, and `health:check` runs `scripts/release-age.mjs`, which fails when the key is missing, not a number, or below 4320. pnpm 11 applied a one-day floor by default and this repository wrote none, so a deleted or lowered key would have fallen back to it silently. The lockfile already passed the three-day policy and needed no re-resolution. From now on a dependency bump must name a version at least three days old: a Dependabot PR for yesterday's release fails `pnpm install` until it ages.
