@@ -8,7 +8,7 @@
 //
 // Reads both bodies with `gh`, writes the issue body back only when
 // tickIssueCriteria() changed it, and prints the closing comment on stdout for
-// the merger's `gh issue close --comment`. It never closes the issue itself:
+// the merger's `gh issue comment`. It never closes the issue itself:
 // merge-prompt.md keeps that one command, so a failure here still closes it.
 
 import { execFileSync } from 'node:child_process';
