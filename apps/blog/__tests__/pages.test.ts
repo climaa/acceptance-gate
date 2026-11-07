@@ -10,7 +10,7 @@ import BlogIndexPage from '../app/blog/page';
 import PostPage from '../app/blog/[slug]/page';
 import HomePage, { metadata as homeMetadata } from '../app/page';
 import { getAllPosts, tagPath } from '../lib/posts';
-import { SITE_ALTERNATES, SITE_OPEN_GRAPH } from '../lib/site';
+import { HOME_THESIS, SITE_ALTERNATES, SITE_OPEN_GRAPH } from '../lib/site';
 
 /**
  * What the three post-bearing routes render now that the design system draws
@@ -141,6 +141,19 @@ describe('the home page', () => {
     expect(hrefsIn(html)).toEqual(
       expect.arrayContaining(ON_HOME.map((post) => `/blog/${post.slug}`)),
     );
+  });
+
+  // The repository's thesis, in the words the portfolio's project page and the
+  // README use (W27). It is a sentence, not a heading: the heading order above
+  // holds with it in place.
+  it('says the thesis in the hero, after the lead and before the posts', () => {
+    const html = renderPage(HomePage);
+    const thesis = 'The agent writes. The gate checks. I decide what it checks.';
+
+    expect(HOME_THESIS).toBe(thesis);
+    expect(html).toContain(`<p class="hero__thesis">${thesis}</p>`);
+    expect(html.indexOf('class="hero__lead"')).toBeLessThan(html.indexOf(thesis));
+    expect(html.indexOf(thesis)).toBeLessThan(html.indexOf('Latest posts'));
   });
 
   // The bug PostCard exists to remove: wrapping the card body in one <a> puts

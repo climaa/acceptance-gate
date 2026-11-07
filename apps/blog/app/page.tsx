@@ -3,7 +3,7 @@ import NextLink from 'next/link';
 import { EmptyState, PostCard, Stack } from '@gate/ui';
 import { getAllPosts, tagPath } from '@/lib/posts';
 import { pageMetadata } from '@/lib/share';
-import { SITE_DEFAULT_TITLE, SITE_DESCRIPTION } from '@/lib/site';
+import { HOME_THESIS, SITE_DEFAULT_TITLE, SITE_DESCRIPTION } from '@/lib/site';
 
 /**
  * The home page says where it lives. Without these it inherited the layout's
@@ -31,6 +31,7 @@ export default function HomePage() {
           write about Cypress with Gherkin, visual regression, and what changes when
           agents write part of the code.
         </p>
+        <p className="hero__thesis">{HOME_THESIS}</p>
       </Stack>
 
       <Stack gap={5} as="section">

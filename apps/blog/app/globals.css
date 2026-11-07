@@ -26,6 +26,18 @@ main {
   max-width: 55ch;
 }
 
+/* The thesis under the lead, as `05-pages` draws it: the title's face and
+   weight at --text-xl, in the full text colour so it reads above the muted lead,
+   on the lead's measure. */
+.hero__thesis {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
+  max-width: 55ch;
+}
+
 .section-title {
   font-size: var(--text-sm);
   font-weight: var(--weight-bold);

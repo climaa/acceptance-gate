@@ -82,6 +82,13 @@ export const TITLE_TEMPLATE = `%s · ${SITE_TITLE}`;
 /** The half of the home page's `<title>` that is not the name, reused by the site OG card. */
 export const SITE_TAGLINE = 'Frontend engineering and quality';
 
+/**
+ * The repository's thesis, under the home page's lead. The same words as the
+ * README's opening and the portfolio's acceptance-gate page, so a reader who
+ * arrives at any of the three meets one sentence, not three versions of it.
+ */
+export const HOME_THESIS = 'The agent writes. The gate checks. I decide what it checks.';
+
 /** The home page's `<title>`, and the title of every page that names none. */
 export const SITE_DEFAULT_TITLE = `${SITE_TITLE} — ${SITE_TAGLINE}`;
 
