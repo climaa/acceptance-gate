@@ -1,5 +1,7 @@
 import path from 'node:path';
-import { defineConfig } from 'vitest/config';
+import { defineConfig, mergeConfig } from 'vitest/config';
+
+import { preset } from '../../vitest.shared.mjs';
 
 // Content contracts for the blog: every post in content/posts compiles as MDX,
 // drafts included. `next build` cannot cover drafts — see __tests__/content.test.ts.
@@ -14,7 +16,7 @@ import { defineConfig } from 'vitest/config';
 // change, not two. tsconfig's `include` gained `**/*.mts` in the same commit:
 // `**/*.ts` does not match `.mts`, and without it tsc stops checking this file
 // while still reporting five successful tasks.
-export default defineConfig({
+const config = defineConfig({
   // tsconfig says `jsx: preserve` because Next owns the JSX transform; oxc
   // reads that as "classic", and lib/og.tsx then throws `React is not defined`
   // the moment a test renders a card. Name the runtime Next actually uses.
@@ -44,3 +46,5 @@ export default defineConfig({
     // tsconfig's `**/*.ts` include means tsc typechecks it.
   },
 });
+
+export default mergeConfig(preset, config);

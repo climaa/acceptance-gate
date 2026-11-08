@@ -1,5 +1,7 @@
 import path from 'node:path';
-import { defineConfig } from 'vitest/config';
+import { defineConfig, mergeConfig } from 'vitest/config';
+
+import { preset } from '../../vitest.shared.mjs';
 
 // The manual's three contracts: the Gherkin parser behaves against a fixture,
 // the published pages still match the live `.feature` sources, and the page-view
@@ -14,7 +16,7 @@ import { defineConfig } from 'vitest/config';
 // global does not exist in a module. tsconfig's `include` carries `**/*.mts`
 // for the same reason: `**/*.ts` does not match `.mts`, and without it tsc stops
 // checking this file while still reporting a successful task.
-export default defineConfig({
+const config = defineConfig({
   // tsconfig says `jsx: preserve` because Next owns the JSX transform; oxc reads
   // that as "classic", and any `.tsx` a test imports then throws `React is not
   // defined` the moment it renders. Name the runtime Next actually uses.
@@ -44,3 +46,5 @@ export default defineConfig({
     // tsconfig's `**/*.ts` include means tsc typechecks it.
   },
 });
+
+export default mergeConfig(preset, config);
