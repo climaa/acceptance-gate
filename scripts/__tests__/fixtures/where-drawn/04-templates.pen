@@ -1,0 +1,71 @@
+{
+  "version": "2.6",
+  "children": [
+    {
+      "type": "frame",
+      "id": "board",
+      "name": "04-templates — Templates",
+      "children": [
+        {
+          "type": "frame",
+          "id": "story-a",
+          "name": "templates-tabscreen--default",
+          "children": [
+            {
+              "type": "frame",
+              "id": "tiles-a",
+              "name": "Tiles",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "tile-a",
+                  "name": "templates__mobile__light__templates-tabscreen--default",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "screen-a",
+                      "name": "TabScreen",
+                      "children": [
+                        { "type": "frame", "id": "body-a", "name": "Body" },
+                        { "type": "frame", "id": "bar-a", "name": "Tab bar" }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "ref",
+                  "id": "tile-a-dark",
+                  "ref": "tile-a",
+                  "name": "templates__mobile__dark__templates-tabscreen--default"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "story-b",
+          "name": "templates-plainscreen--default",
+          "children": [
+            {
+              "type": "frame",
+              "id": "tiles-b",
+              "name": "Tiles",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "tile-b",
+                  "name": "templates__mobile__light__templates-plainscreen--default",
+                  "children": [
+                    { "type": "text", "id": "label-b", "name": "Tab bar", "content": "Tab bar" },
+                    { "type": "frame", "id": "body-b", "name": "Body" }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

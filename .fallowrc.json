@@ -33,6 +33,8 @@
   //                                 designs/STANDARD.md
   //   scripts/pen/tile-diff.mjs     run by hand on a tile and its screenshot; see
   //                                 designs/STANDARD.md
+  //   scripts/pen/where-drawn.mjs   run by hand before a tile is redrawn; see
+  //                                 designs/STANDARD.md § Tiles
   //   .sandcastle/sandcastle-tick-criteria.mts
   //                                 run by the merger; see
   //                                 .sandcastle/agent-docs/merge-prompt.md Step 5
@@ -52,6 +54,7 @@
     "scripts/apply-ruleset.mjs",
     "scripts/pen/finish-export.mjs",
     "scripts/pen/tile-diff.mjs",
+    "scripts/pen/where-drawn.mjs",
     ".sandcastle/sandcastle-tick-criteria.mts"
   ]
 }
