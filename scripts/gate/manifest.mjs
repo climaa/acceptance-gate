@@ -13,6 +13,16 @@
 // workflows are switched back on: one list, so a hook and a workflow cannot
 // become two grammars that drift. A slow check added here is paid on every push
 // by every person and by every Sandcastle branch.
+//
+// ONE GATE PER MACHINE, across checkouts. `run.mjs` takes a lock outside every
+// checkout (`~/.cache/acceptance-gate/gate.lock`, one name for this repository
+// and every child seeded from it) before its first check, and releases it on
+// every way out. A second gate waits its turn and says once, in one sentence,
+// whose turn it is and for how long it has run; `--no-wait` refuses at once with
+// that sentence instead. Two gates at once bind the same e2e ports and double
+// the load under `test`, whose suites then time out on code nobody touched. A
+// lock whose pid is gone is taken over, and the receipt keeps the wait apart
+// from the run. The lock covers gates only, never a suite run by hand.
 
 /**
  * @typedef {object} Check
@@ -65,9 +75,16 @@ export const CHECKS = [
     why: 'A build failure is the one thing no other check catches.',
   },
   {
+    // Half the logical processors rather than turbo's flat 10. Each workspace's
+    // vitest spreads its own workers over every core, so eight suites at once
+    // oversubscribe the machine and a cold-starting test outlasts its timeout
+    // (vitest.shared.mjs). Measured on 12 cores, 8 GiB: 52 s at 10, 51 s at
+    // 50%; visual-diff-ui is the critical path either way. A TURBO_CONCURRENCY
+    // already set (the Sandcastle sandbox's own bound) wins, because the flag
+    // would otherwise override it.
     name: 'test',
     job: 'checks',
-    command: 'pnpm turbo run test',
+    command: 'pnpm turbo run test --concurrency=${TURBO_CONCURRENCY:-50%}',
     tier: 'fast',
     why: 'Unit and component suites, per workspace.',
   },

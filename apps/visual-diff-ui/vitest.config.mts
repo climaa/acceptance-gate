@@ -1,5 +1,7 @@
 import path from 'node:path';
-import { defineConfig } from 'vitest/config';
+import { defineConfig, mergeConfig } from 'vitest/config';
+
+import { preset } from '../../vitest.shared.mjs';
 import { projectName } from './scripts/project-name.mjs';
 
 // The data contracts for the console: the committed fixture parses against the
@@ -9,7 +11,7 @@ import { projectName } from './scripts/project-name.mjs';
 //
 // `.mts`, not `.ts` — see apps/blog/vitest.config.mts for why the extension
 // and `import.meta.dirname` are one change rather than two.
-export default defineConfig({
+const config = defineConfig({
   // tsconfig says `jsx: preserve` because Next owns the JSX transform; oxc
   // reads that as "classic" and every rendered element then throws
   // `React is not defined`. Name the runtime Next actually uses.
@@ -111,3 +113,5 @@ export default defineConfig({
     },
   },
 });
+
+export default mergeConfig(preset, config);

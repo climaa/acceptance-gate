@@ -23,6 +23,7 @@
 // repository: 27 of 30 commits on `main` had a tree some receipt vouched for,
 // while exactly 1 had a note of its own.
 import { execFileSync, spawnSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
 
 /** Where the receipt is kept. */
 export const NOTES_REF = 'gate';
@@ -55,17 +56,47 @@ export const treeOf = (ref) => git('rev-parse', [`${ref}^{tree}`]);
  * tier those runs actually used, so the old notes keep meaning exactly what they
  * always meant rather than being promoted by silence.
  *
+ * IT RECORDS HOW LONG THE GATE WAITED, apart from how long it ran. A gate waits
+ * for another checkout's gate to finish (`lock.mjs`), and a run time that folded
+ * the wait in would no longer compare with one that did not.
+ *
  * @param {string} sha
  * @param {'fast' | 'full'} tier
+ * @param {Timings} [timings]
  * @returns {string}
  */
-export const noteFor = (sha, tier) =>
+export const noteFor = (sha, tier, timings) =>
   JSON.stringify({
     tree: treeOf(sha),
     at: new Date().toISOString(),
     node: process.version,
     tier,
+    ...timings,
   });
+
+/**
+ * @typedef {object} Timings
+ * @property {number} waitedMs  Spent waiting for the machine's gate lock.
+ * @property {number} ranMs     Spent running the checks, once the lock was held.
+ */
+
+/**
+ * The file the runner writes its timings to when the hook asks, by naming it in
+ * this variable: the hook writes the receipt for the pushed commit, and only the
+ * runner it spawned knows how long it waited.
+ */
+export const TIMINGS_ENV = 'GATE_TIMINGS_FILE';
+
+/** @param {string} path @returns {Timings | undefined} */
+export function readTimings(path) {
+  try {
+    const { waitedMs, ranMs } = JSON.parse(readFileSync(path, 'utf8'));
+
+    return { waitedMs, ranMs };
+  } catch {
+    return undefined;
+  }
+}
 
 /** What a receipt with no `tier` field meant when it was written. */
 export const DEFAULT_TIER = 'fast';
