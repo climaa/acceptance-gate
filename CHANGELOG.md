@@ -7,6 +7,8 @@ transcribed from the GitHub Releases that existed when this file was created (20
 
 ## Unreleased
 
+- The visual-diff-ui `api.test.ts` suite warms the index before `GET /api/label` names the checkout, as `git.test.ts` and `capture-set.test.ts` already do (#688). It was the third suite to call the 2 s-bounded `describeCheckout`, and in a child repository's pre-push gate it answered null on a correct tree and held two Sandcastle pushes.
+
 - A redrawn tile is carried, in the same PR, into every tile on a higher tier board that draws the same component (`designs/STANDARD.md` § Tiles): a template tile copies an organism's frames by hand, so Pencil carries no redraw over, and a template shot then drifts from its tile and reads as a code bug. `node scripts/pen/where-drawn.mjs "<frame name>"…` lists those tiles by board, variant key and the frame's path, read straight off `designs/*.pen`.
 
 - One gate runs per machine, across checkouts. `pnpm gate` takes a lock at `~/.cache/acceptance-gate/gate.lock` before its first check and releases it on every way out, Ctrl-C included; a second gate waits its turn and says once, in one sentence, which checkout holds it and for how long, and `pnpm gate --no-wait` refuses with that sentence instead. A lock whose pid is gone is taken over, with a line saying so. Two gates at once shared e2e ports and doubled the load under `test`, and host pushes in a child failed five times on timeouts in suites their branches never touched. The receipt records how long the gate waited apart from how long it ran.
