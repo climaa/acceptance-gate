@@ -74,6 +74,16 @@
   margin-block-end: 0;
 }
 
+/* A dialog's title is the h2 its caller passes, and it inherited body's
+   --leading-normal: a 36px line box round 24px of ink, so the title sat 3 rows
+   above the paragraphs it heads, measured against its tile
+   (organisms__mobile__dark__organisms-dialog--long-content, ink 284–301 against
+   268–285). The tile draws 1.15, which is off the scale; --leading-tight is the
+   step whose ink lands within a row of it. `:where()` keeps it at 0,1,0. */
+.ds-dialog__content > :where(h2) {
+  line-height: var(--leading-tight);
+}
+
 /* Full-bleed row so the whole top of the sheet answers the drag, not just the
    36x4 bar the reader aims at. */
 .ds-dialog__grabber {
