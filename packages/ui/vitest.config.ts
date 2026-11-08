@@ -1,4 +1,6 @@
-import { defineConfig } from 'vitest/config';
+import { defineConfig, mergeConfig } from 'vitest/config';
+
+import { preset } from '../../vitest.shared.mjs';
 
 // Component contracts for the design system: every component in src/ asserts its
 // own rendered output next to its source (src/atoms/Button/Button.test.tsx).
@@ -8,7 +10,7 @@ import { defineConfig } from 'vitest/config';
 // imports, so without it the denominator is "components that already have a
 // test" and one shipped with no test at all is invisible rather than zero.
 // Run: pnpm --filter @gate/ui test  (or `turbo run test` from the root)
-export default defineConfig({
+const config = defineConfig({
   test: {
     include: ['src/**/*.test.{ts,tsx}'],
     // React components need a DOM; the blog's suite is node-only.
@@ -31,3 +33,5 @@ export default defineConfig({
     },
   },
 });
+
+export default mergeConfig(preset, config);

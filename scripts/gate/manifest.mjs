@@ -75,9 +75,16 @@ export const CHECKS = [
     why: 'A build failure is the one thing no other check catches.',
   },
   {
+    // Half the logical processors rather than turbo's flat 10. Each workspace's
+    // vitest spreads its own workers over every core, so eight suites at once
+    // oversubscribe the machine and a cold-starting test outlasts its timeout
+    // (vitest.shared.mjs). Measured on 12 cores, 8 GiB: 52 s at 10, 51 s at
+    // 50%; visual-diff-ui is the critical path either way. A TURBO_CONCURRENCY
+    // already set (the Sandcastle sandbox's own bound) wins, because the flag
+    // would otherwise override it.
     name: 'test',
     job: 'checks',
-    command: 'pnpm turbo run test',
+    command: 'pnpm turbo run test --concurrency=${TURBO_CONCURRENCY:-50%}',
     tier: 'fast',
     why: 'Unit and component suites, per workspace.',
   },

@@ -5,7 +5,9 @@ import * as path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   buildSections,
+  devStorybookLink,
   filterByBucket,
+  publishedStorybookLink,
   sectionViewportNote,
   showsDevStorybook,
   storybookLink,
@@ -325,5 +327,75 @@ describe('a Storybook deep link', () => {
     const { pathname } = new URL(storybookLink(BASE, 'atoms-prose--default', 'dark'));
 
     expect(sources).not.toContain(pathname);
+  });
+});
+
+describe('the Storybook a story links to', () => {
+  // Two roots as a child declares them: the web build, published, and a native
+  // build on its own port with no published origin and a viewport of its own.
+  const ROOTS = [
+    {
+      static: 'apps/storybook/storybook-static',
+      devPort: 6006,
+      published: 'https://storybook.example.dev',
+    },
+    {
+      static: 'apps/storybook-native/storybook-static',
+      devPort: 6007,
+      globals: ['viewport.value:mobile2'],
+      idPrefix: 'native-',
+    },
+  ];
+
+  it("opens the dev link on the page's host, at the port of the story's root", () => {
+    const web = devStorybookLink('atoms-badge--tones', 'dark', '192.168.1.20', ROOTS);
+    const native = devStorybookLink(
+      'native-button--primary',
+      'light',
+      '192.168.1.20',
+      ROOTS,
+    );
+
+    expect(web).toBe(
+      'http://192.168.1.20:6006/index.html?path=/story/atoms-badge--tones&globals=colorScheme:dark',
+    );
+    expect(native).toBe(
+      'http://192.168.1.20:6007/index.html?path=/story/native-button--primary&globals=colorScheme:light;viewport.value:mobile2',
+    );
+  });
+
+  it('brackets an IPv6 host, and leaves one already bracketed as it is', () => {
+    const bare = devStorybookLink('atoms-badge--tones', 'dark', 'fe80::1', ROOTS);
+    const bracketed = devStorybookLink('atoms-badge--tones', 'dark', '[::1]', ROOTS);
+
+    expect(bare).toMatch(/^http:\/\/\[fe80::1\]:6006\/index\.html/);
+    expect(bracketed).toMatch(/^http:\/\/\[::1\]:6006\/index\.html/);
+  });
+
+  it('builds the published link from the root that holds the story', () => {
+    const href = publishedStorybookLink('atoms-badge--tones', 'dark', ROOTS);
+
+    expect(href).toBe(
+      'https://storybook.example.dev/index.html?path=/story/atoms-badge--tones&globals=colorScheme:dark',
+    );
+  });
+
+  // Sending a native story to the web build opens a story that is not there.
+  it('gives no published link for a root that publishes no build', () => {
+    const href = publishedStorybookLink('native-button--primary', 'light', ROOTS);
+
+    expect(href).toBeUndefined();
+  });
+
+  it("reads this repo's own root by default, on localhost", () => {
+    const dev = devStorybookLink('atoms-badge--tones', 'dark');
+    const published = publishedStorybookLink('atoms-badge--tones', 'dark');
+
+    expect(dev).toBe(
+      'http://localhost:6006/index.html?path=/story/atoms-badge--tones&globals=colorScheme:dark',
+    );
+    expect(published).toBe(
+      'https://storybook.carloslima.dev/index.html?path=/story/atoms-badge--tones&globals=colorScheme:dark',
+    );
   });
 });

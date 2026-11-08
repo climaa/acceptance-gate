@@ -11,15 +11,11 @@ import { useShotWalk } from '@/hooks/useShotWalk';
 import { SHOT_LAYOUTS, type ShotLayout } from '@/hooks/useShotTools';
 import type { BoardHomes } from '@/lib/comparison';
 import type { Readings } from '@/lib/readings';
-import {
-  DEV_STORYBOOK,
-  PUBLISHED_STORYBOOK,
-  showsDevStorybook,
-  storybookLink,
-} from '@/lib/report-view';
+import { publishedStorybookLink, showsDevStorybook } from '@/lib/report-view';
 import { cellName, setHref, shotTitle } from '@/lib/shots';
 import { SITE_TITLE } from '@/lib/site';
 import { type DesignShot, DesignStage, type Split } from './DesignStage';
+import { DevStorybookLink } from './DevStorybookLink';
 import { OverlayStage } from './OverlayStage';
 import { ViewControls } from './ViewControls';
 
@@ -98,11 +94,12 @@ export const PUBLISHED_STORYBOOK_LABEL = 'open in the published Storybook';
  * The title, as the way out to the story itself (x-visual-diff-pages).
  *
  * `viewport/theme · set` opens the dev Storybook, and is a link only while the
- * console runs in development — `localhost:6006` answers nothing anywhere else,
+ * console runs in development — the dev server answers nothing anywhere else,
  * and a dead link beside a live one is worse than none, so it is plain text
- * there. The arrow-out square opens the published Storybook, which always
- * answers. Both land on the story in the shot's theme, as the set viewer's two
- * links do.
+ * there. The dev link takes the page's own host and the port of the story's
+ * root. The arrow-out square opens the published Storybook, and is left out for
+ * a root that publishes no build. Both land on the story in the shot's theme,
+ * as the set viewer's two links do.
  *
  * The dev link's name leads with its visible text, so a reader who says what
  * they see still hits it, and says where it goes after.
@@ -110,37 +107,39 @@ export const PUBLISHED_STORYBOOK_LABEL = 'open in the published Storybook';
 function ShotTitle({ heading }: { heading: ShotHeading }) {
   const { story, storyId, theme } = heading;
   const { title, place } = headingText(heading);
+  const published = publishedStorybookLink(storyId, theme);
 
   return (
     <span className="vd-shot__title">
       <Text variant="code" as="h2" className="vd-compare__title" title={title}>
         {story} ·{' '}
         {showsDevStorybook() ? (
-          <a
+          <DevStorybookLink
             className="vd-shot__storybook"
-            href={storybookLink(DEV_STORYBOOK, storyId, theme)}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label={`${place} — dev Storybook`}
+            storyId={storyId}
+            theme={theme}
+            ariaLabel={`${place} — dev Storybook`}
           >
             {place}
-          </a>
+          </DevStorybookLink>
         ) : (
           place
         )}
       </Text>
-      <a
-        className="vd-shot__published"
-        href={storybookLink(PUBLISHED_STORYBOOK, storyId, theme)}
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label={PUBLISHED_STORYBOOK_LABEL}
-        title={PUBLISHED_STORYBOOK_LABEL}
-      >
-        <span aria-hidden="true">
-          <OutGlyph />
-        </span>
-      </a>
+      {published && (
+        <a
+          className="vd-shot__published"
+          href={published}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={PUBLISHED_STORYBOOK_LABEL}
+          title={PUBLISHED_STORYBOOK_LABEL}
+        >
+          <span aria-hidden="true">
+            <OutGlyph />
+          </span>
+        </a>
+      )}
     </span>
   );
 }
