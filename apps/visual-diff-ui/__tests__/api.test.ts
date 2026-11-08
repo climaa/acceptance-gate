@@ -1,9 +1,10 @@
 // Imported explicitly rather than relying on `globals: true` — tsconfig's
 // `**/*.ts` include means tsc typechecks this file.
+import { spawnSync } from 'node:child_process';
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { GET as getCurrentJob } from '../app/api/jobs/current/route';
 import { GET as getEnv } from '../app/api/env/route';
 import { GET as getLabel } from '../app/api/label/route';
@@ -19,6 +20,23 @@ import {
   RunnerEnvSchema,
   StoriesResponseSchema,
 } from '../lib/api-contract';
+
+/**
+ * Refresh the index before any 2 s-bounded call, outside that bound.
+ *
+ * `GET /api/label` names the checkout through `describeCheckout`, whose `git`
+ * calls are killed after 2 s. In the pre-push gate's fresh clone the first
+ * `git status --porcelain` refreshes the whole index, and under the gate's own
+ * `test` load that has taken longer: the label answered null and the suite
+ * failed on a correct tree. The same warm-up as `git.test.ts` and
+ * `capture-set.test.ts`; exit status is ignored, a dirty tree is a valid answer.
+ */
+beforeAll(() => {
+  spawnSync('git', ['update-index', '-q', '--refresh'], {
+    cwd: path.resolve(process.cwd(), '..', '..'),
+    stdio: 'ignore',
+  });
+}, 120_000);
 
 /**
  * The read-only JSON and image surface. Every handler resolves the data
