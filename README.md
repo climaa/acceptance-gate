@@ -23,7 +23,10 @@ read from one list, [`scripts/gate/manifest.mjs`](scripts/gate/manifest.mjs):
 lint · typecheck · build · test · format · health · boards · sandcastle · e2e  →  push
 ```
 
-The gate is a hook, so a push with `--no-verify` skips it, and `main` requires
+One gate runs per machine, across checkouts: a second `pnpm gate`, in this
+checkout or another, waits for the first and says once whose turn it is
+(`pnpm gate --no-wait` refuses instead), because two at once share e2e ports
+and time out each other's suites. The gate is a hook, so a push with `--no-verify` skips it, and `main` requires
 no status check since the GitHub Actions minutes ran out. `visual-diff` is not
 in the list above: it needs Docker and several minutes, so it runs as
 `pnpm gate --tier full` before a change to `packages/ui` or the baselines

@@ -14,11 +14,21 @@
 // `main` and wave the branch through — green for code it never opened. Each sha
 // is therefore checked where it actually lives, via `run.mjs --at`.
 import { execFileSync, spawnSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { withoutAmbientGit } from './git-env.mjs';
-import { NOTES_REF, noteFor, publish, readReceipt, treeOf } from './receipt.mjs';
+import {
+  NOTES_REF,
+  noteFor,
+  publish,
+  readReceipt,
+  readTimings,
+  TIMINGS_ENV,
+  treeOf,
+} from './receipt.mjs';
 import { inSandbox } from './sandbox.mjs';
 
 const RUNNER = fileURLToPath(new URL('./run.mjs', import.meta.url));
@@ -90,10 +100,16 @@ function verify(sha, remote) {
   // The runner must not inherit this hook's GIT_DIR: everything it starts
   // would then run git against the repository being pushed, whatever directory
   // it was pointed at (#163).
+  // The runner writes how long it waited for the machine's gate lock and how
+  // long it ran here, so the receipt below can keep the two apart.
+  const timingsFile = join(tmpdir(), `gate-timings-${process.pid}-${sha}.json`);
   const result = spawnSync('node', [RUNNER, ...at], {
     stdio: 'inherit',
-    env: withoutAmbientGit(),
+    env: { ...withoutAmbientGit(), [TIMINGS_ENV]: timingsFile },
   });
+  const timings = readTimings(timingsFile);
+
+  rmSync(timingsFile, { force: true });
 
   if (result.status !== 0) return false;
 
@@ -105,7 +121,7 @@ function verify(sha, remote) {
     '-m',
     // The hook runs the fast tier, and the receipt now says so rather than
     // leaving `--verify` to imply more than was checked.
-    noteFor(sha, 'fast'),
+    noteFor(sha, 'fast', timings),
     sha,
   ]);
   // And to the remote, so the receipt is readable by someone other than the
