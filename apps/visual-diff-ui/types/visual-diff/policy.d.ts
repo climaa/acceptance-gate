@@ -48,7 +48,7 @@ declare module '@gate/visual-diff/policy' {
 
   /** An app whose stories are screens — the name of its `apps/` directory. Kept
    *  in step with the policy's `APPS` by `__tests__/sections.test.ts`. */
-  export type App = 'visual-diff-ui';
+  export type App = 'visual-diff-ui' | 'blog' | 'manual';
 
   /** The apps, in `APP_ROOTS`'s order: what `lib/sections.ts` splits `screens`
    *  by and `lib/comparison.ts` opens each one's screens board for. */

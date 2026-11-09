@@ -1,11 +1,10 @@
 import type { Metadata } from 'next';
 import { cacheLife } from 'next/cache';
-import NextLink from 'next/link';
 import { notFound } from 'next/navigation';
 import { MDXRemote } from 'next-mdx-remote/rsc';
-import { PostTemplate } from '@gate/ui';
+import { PostScreen } from '@/components/PostScreen';
 import { mdxComponents, mdxRemoteOptions } from '@/lib/mdx';
-import { getAllPosts, getPostBySlug, tagPath } from '@/lib/posts';
+import { getAllPosts, getPostBySlug } from '@/lib/posts';
 import { pageMetadata, postShareImage } from '@/lib/share';
 
 export function generateStaticParams() {
@@ -60,15 +59,8 @@ export default async function PostPage({ params }: PageProps<'/blog/[slug]'>) {
     // The body is rendered here and handed over as children: MDXRemote and the
     // rehype pipeline are the app's, which is what keeps the template renderable
     // outside Next.
-    <PostTemplate
-      title={post.title}
-      date={post.date}
-      readingMinutes={post.readingMinutes}
-      tags={post.tags}
-      tagHref={tagPath}
-      as={NextLink}
-    >
+    <PostScreen post={post}>
       <PostBody source={post.content} />
-    </PostTemplate>
+    </PostScreen>
   );
 }

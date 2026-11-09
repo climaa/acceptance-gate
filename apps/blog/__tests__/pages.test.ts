@@ -9,6 +9,7 @@ import AboutPage from '../app/about/page';
 import BlogIndexPage from '../app/blog/page';
 import PostPage from '../app/blog/[slug]/page';
 import HomePage, { metadata as homeMetadata } from '../app/page';
+import { drawn } from './drawn';
 import { getAllPosts, tagPath } from '../lib/posts';
 import { HOME_THESIS, SITE_ALTERNATES, SITE_OPEN_GRAPH } from '../lib/site';
 
@@ -79,14 +80,14 @@ const renderPage = (Page: () => ReactNode) => renderToStaticMarkup(createElement
  * route built to prerender.
  */
 const postPage = async (slug: string): Promise<PostTemplateProps> =>
-  (
+  drawn(
     await PostPage({
       params: Promise.resolve({ slug }),
       searchParams: Promise.resolve({}),
-    })
-  ).props;
+    }),
+  );
 
-const blogIndex = (): BlogIndexTemplateProps => BlogIndexPage().props;
+const blogIndex = (): BlogIndexTemplateProps => drawn(BlogIndexPage());
 
 describe('content/posts', () => {
   // A suite whose fixtures no longer exist would pass while protecting nothing —

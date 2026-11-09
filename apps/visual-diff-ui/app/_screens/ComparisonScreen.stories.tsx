@@ -21,6 +21,7 @@ import {
 const meta = {
   title: 'Screens/Visual-diff-ui/Comparison',
   component: ComparisonRoute,
+  parameters: { screen: { routes: ['/report/[id]/compare/[key]'] } },
 };
 
 export default meta;

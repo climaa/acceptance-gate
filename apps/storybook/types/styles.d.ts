@@ -15,3 +15,13 @@ declare module '*.css?raw' {
   const content: string;
   export default content;
 }
+
+/**
+ * The manual's screens read the published `.feature` files as text, as the
+ * manual's own build does with `readFileSync`; in a browser, Vite's `?raw` suffix
+ * is how a file becomes a string (`.storybook/manual-sources.ts`).
+ */
+declare module '*.feature?raw' {
+  const content: string;
+  export default content;
+}

@@ -19,6 +19,7 @@ import { SAMPLE_REPORTS, SAMPLE_SETS, SAMPLE_SIZES } from './dashboard-sample';
 const meta = {
   title: 'Screens/Visual-diff-ui/Dashboard',
   component: DashboardTemplate,
+  parameters: { screen: { routes: ['/'] } },
 };
 
 export default meta;

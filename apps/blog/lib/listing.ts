@@ -1,6 +1,7 @@
 import NextLink from 'next/link';
 import type { BlogIndexTemplateProps } from '@gate/ui';
-import { tagPath, type PostSummary } from './posts';
+import { tagPath } from './post-paths';
+import type { PostSummary } from './posts';
 
 type ListedPost = BlogIndexTemplateProps['posts'][number];
 

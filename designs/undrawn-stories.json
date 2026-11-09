@@ -1,0 +1,16 @@
+{
+  "stories": [
+    "screens-blog-about--default",
+    "screens-blog-changelog--releases",
+    "screens-blog-home--latest",
+    "screens-blog-index--first-page",
+    "screens-blog-index--later-page",
+    "screens-blog-notfound--default",
+    "screens-blog-post--article",
+    "screens-blog-tag--tagged",
+    "screens-manual-index--default",
+    "screens-manual-page--console",
+    "screens-manual-start--default",
+    "screens-visual-diff-ui-shot--expanded"
+  ]
+}
