@@ -20,6 +20,14 @@ export interface TableColumn {
    * declare one share whatever is left, which is the behaviour text columns want.
    */
   width?: string;
+  /**
+   * Keep `header` as the column's accessible name but draw nothing: for a column
+   * whose cells carry their own meaning, such as a row's delete button. An empty
+   * `header` instead leaves the columnheader nameless, which a screen reader
+   * announces as a blank column and axe reports (`empty-table-header`). The mobile
+   * card layout prints no label for it either.
+   */
+  hideHeader?: boolean;
 }
 
 /** The object form of a cell. Any cell may use it; a truncating column's should. */
@@ -119,7 +127,11 @@ export function Table({ label, columns, rows, className }: TableProps) {
               scope="col"
               className={`${cellClass(column)} ds-table__cell--header`}
             >
-              {column.header}
+              {column.hideHeader ? (
+                <span className="ds-visually-hidden">{column.header}</span>
+              ) : (
+                column.header
+              )}
             </th>
           ))}
         </tr>
@@ -136,7 +148,7 @@ export function Table({ label, columns, rows, className }: TableProps) {
                   key={index}
                   role="cell"
                   className={cellClass(column)}
-                  data-label={column?.header}
+                  data-label={column?.hideHeader ? undefined : column?.header}
                   title={titled ? cell.title : undefined}
                 >
                   {titled ? cell.content : cell}

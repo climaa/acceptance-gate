@@ -314,6 +314,33 @@ describe('Table', () => {
     });
   });
 
+  describe('a hidden header', () => {
+    const columns = [{ header: 'Story' }, { header: 'actions', hideHeader: true }];
+    const rows = [{ key: 'a', cells: ['atoms-button--primary', 'delete'] }];
+
+    it('names its column for assistive tech', () => {
+      renderTable({ columns, rows });
+
+      expect(screen.getByRole('columnheader', { name: 'actions' })).toBeTruthy();
+    });
+
+    it('draws its name only inside the visually hidden span', () => {
+      renderTable({ columns, rows });
+
+      const header = screen.getByRole('columnheader', { name: 'actions' });
+
+      expect(header.querySelector('.ds-visually-hidden')?.textContent).toBe('actions');
+    });
+
+    it('gives its cells no mobile label', () => {
+      renderTable({ columns, rows });
+
+      const cell = screen.getByRole('cell', { name: 'delete' });
+
+      expect(cell.hasAttribute('data-label')).toBe(false);
+    });
+  });
+
   // color-contrast is off: it measures rendered pixels, and jsdom paints none, so
   // the rule reports every node as "incomplete" rather than passing or failing.
   // Contrast is asserted for real against the palette in src/__tests__/tokens.test.ts.

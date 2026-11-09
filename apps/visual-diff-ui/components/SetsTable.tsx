@@ -34,7 +34,7 @@ const SET_COLUMNS: readonly TableColumn[] = [
   // The delete button's own width, not a share of the table: `table-layout: fixed`
   // allots every undeclared column an equal slice, and at this panel's width that
   // slice is narrower than the button standing in it.
-  { header: '', width: '6rem' },
+  { header: 'actions', hideHeader: true, width: '6rem' },
 ];
 
 /**

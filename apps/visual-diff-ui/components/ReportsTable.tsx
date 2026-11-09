@@ -39,7 +39,7 @@ const REPORT_COLUMNS: readonly TableColumn[] = [
   { header: 'buckets' },
   // Sized to the button it holds; see SetsTable for why a share of the table is
   // not enough.
-  { header: '', width: '6rem' },
+  { header: 'actions', hideHeader: true, width: '6rem' },
 ];
 
 function reportRow(
