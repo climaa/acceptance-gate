@@ -24,11 +24,11 @@ import { StoryScreenshots } from './StoryScreenshots';
  * sample console renders exactly what a local one does.
  */
 
-/** A labelled `<section>`, so a `region`, for the reasons
- *  components/ReportTemplate.tsx sets out at length: not `banner`, which would be
- *  a second top-level banner beside the shell's `SiteHeader`, and not
- *  `<header role="region">`, a role axe's `aria-allowed-role` refuses on that
- *  element. */
+/** A `<div role="region">`, for the reasons components/ReportTemplate.tsx sets out
+ *  at length: not `banner`, which would be a second top-level banner beside the
+ *  shell's `SiteHeader`; not `<header role="region">`, a role axe's
+ *  `aria-allowed-role` refuses on that element; and not a `<section>`, which the
+ *  report's page object reads as a result section. */
 const HEADER_LABEL = 'set';
 
 /** The corpus's provenance: the commit that accepted it, and the host that drew
@@ -107,7 +107,7 @@ export function SetTemplate({
     // What every filter rule in set.css hangs off: the bar's radios are inside
     // this subtree, so `:has()` can read a checked one from here.
     <Stack className="vd-set-view" gap={5}>
-      <section aria-label={HEADER_LABEL} className="vd-set__header">
+      <div role="region" aria-label={HEADER_LABEL} className="vd-set__header">
         <Stack gap={3}>
           <Stack direction="row" gap={3} align="center" wrap>
             <NextLink className="vd-set__back vd-mono" href="/">
@@ -136,7 +136,7 @@ export function SetTemplate({
             </Note>
           )}
         </Stack>
-      </section>
+      </div>
 
       {/* A SIBLING of the header, not a child of it: `position: sticky` is
           clipped by its own parent's box, so a bar inside a header that scrolls

@@ -227,9 +227,14 @@
 
 /* No `gap`: the segments share their edges, which is what makes this read as one
    control rather than three buttons. The legend carries its own spacing. */
+/* Wraps rather than scrolling the page: a `fieldset` is `min-width: min-content`
+   by default, so at 320px the strip held its one-line width and the set page
+   scrolled sideways (WCAG 1.4.10, Reflow). From 390px up it still fits on one line. */
 .vd-strip {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
+  min-width: 0;
   margin: 0;
   padding: 0;
   border: 0;

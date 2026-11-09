@@ -37,11 +37,12 @@ import { ReportResults } from './ReportResults';
  * `banner "report"` becomes `region "report"`, and everything that scoped to it
  * scopes to it unchanged.
  *
- * A labelled `<section>`, not `<header role="region">`. The role on a `<header>`
- * is one axe's `aria-allowed-role` refuses — best-practice again, so this app's
- * own scenarios pass either way, but a child whose story tests run every axe rule
- * failed on it. A `<section>` with a name is a `region` by its own semantics, so
- * the landmark and every query scoped to it are unchanged.
+ * A `<div role="region">`, not `<header role="region">`. The role on a
+ * `<header>` is one axe's `aria-allowed-role` refuses — best-practice again, so
+ * this app's own scenarios pass either way, but a child whose story tests run
+ * every axe rule failed on it. Not a `<section>` either, though a named one is a
+ * region by its own semantics: the report page object reads the result sections
+ * as region-and-section, and the header must stay out of that list.
  */
 const HEADER_LABEL = 'report';
 
@@ -149,7 +150,7 @@ export function ReportTemplate({
 
   return (
     <Stack gap={6}>
-      <section aria-label={HEADER_LABEL} className="vd-report__header">
+      <div role="region" aria-label={HEADER_LABEL} className="vd-report__header">
         <Stack gap={3}>
           <Stack direction="row" gap={3} align="baseline" wrap>
             <NextLink className="vd-report__back" href="/">
@@ -210,7 +211,7 @@ export function ReportTemplate({
             <RunInfo report={report} />
           </details>
         </Stack>
-      </section>
+      </div>
 
       <ReportResults reportId={id} report={report} sides={sides} />
     </Stack>
