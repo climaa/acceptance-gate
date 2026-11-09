@@ -43,7 +43,7 @@ const HISTORY_COLUMNS: readonly TableColumn[] = [
   { header: 'took', numeric: true },
   // Sized to the control it holds; see SetsTable for why a share of the table is
   // not enough.
-  { header: '', width: '6rem' },
+  { header: 'actions', hideHeader: true, width: '6rem' },
 ];
 
 function historyRow(

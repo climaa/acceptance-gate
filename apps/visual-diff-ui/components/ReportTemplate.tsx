@@ -36,6 +36,12 @@ import { ReportResults } from './ReportResults';
  * A labelled `region` is still a landmark, so the query only changes noun:
  * `banner "report"` becomes `region "report"`, and everything that scoped to it
  * scopes to it unchanged.
+ *
+ * A labelled `<section>`, not `<header role="region">`. The role on a `<header>`
+ * is one axe's `aria-allowed-role` refuses — best-practice again, so this app's
+ * own scenarios pass either way, but a child whose story tests run every axe rule
+ * failed on it. A `<section>` with a name is a `region` by its own semantics, so
+ * the landmark and every query scoped to it are unchanged.
  */
 const HEADER_LABEL = 'report';
 
@@ -143,7 +149,7 @@ export function ReportTemplate({
 
   return (
     <Stack gap={6}>
-      <header role="region" aria-label={HEADER_LABEL} className="vd-report__header">
+      <section aria-label={HEADER_LABEL} className="vd-report__header">
         <Stack gap={3}>
           <Stack direction="row" gap={3} align="baseline" wrap>
             <NextLink className="vd-report__back" href="/">
@@ -204,7 +210,7 @@ export function ReportTemplate({
             <RunInfo report={report} />
           </details>
         </Stack>
-      </header>
+      </section>
 
       <ReportResults reportId={id} report={report} sides={sides} />
     </Stack>
