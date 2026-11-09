@@ -1,22 +1,16 @@
 import type { Metadata } from 'next';
-import NextLink from 'next/link';
 import { preload } from 'react-dom';
-import { SiteFooter, SiteHeader } from '@gate/ui';
+import { BlogFrame } from '@/components/BlogFrame';
 import {
-  FOOTER_LINKS,
   SITE_ALTERNATES,
-  SITE_COPYRIGHT,
-  SITE_COPYRIGHT_YEAR,
   SITE_DEFAULT_TITLE,
   SITE_DESCRIPTION,
   SITE_OPEN_GRAPH,
-  SITE_TITLE,
   SITE_URL,
   TITLE_TEMPLATE,
 } from '@/lib/site';
 import { SITE_SHARE_IMAGE, shareImages } from '@/lib/share';
 import { THEME_SCRIPT } from '@/lib/theme';
-import { SITE_VERSION } from '@/lib/version';
 // Imported for the URL, not the bytes: the bundler emits the same hashed asset
 // the design system's `@font-face` already points at, so the preload and the
 // stylesheet ask for one file rather than two.
@@ -46,12 +40,6 @@ const FONT_PRELOAD = {
   type: 'font/woff2',
   crossOrigin: 'anonymous',
 } as const;
-
-const NAV = [
-  { label: 'Blog', href: '/blog' },
-  { label: 'Changelog', href: '/changelog' },
-  { label: 'About', href: '/about' },
-];
 
 export const metadata: Metadata = {
   metadataBase: SITE_URL,
@@ -84,28 +72,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
       </head>
       <body>
-        {/* `as={NextLink}` once, forwarded to the brand and to every nav item:
-            the design system depends on no framework, so this is where the app
-            names its router link. */}
-        <SiteHeader brand={SITE_TITLE} nav={NAV} as={NextLink} />
-
-        {/* The id is SkipLink's default target, and the landmark the header's
-            first tab stop jumps to. */}
-        <main id="main" className="ds-container">
-          {children}
-        </main>
-
-        {/* The organism is the row, not the bar: it caps nothing, so the
-            container that lines its content up with the header's is the app's
-            to supply. */}
-        <SiteFooter
-          className="ds-container"
-          copyright={SITE_COPYRIGHT}
-          year={SITE_COPYRIGHT_YEAR}
-          version={SITE_VERSION}
-          versionHref="/changelog"
-          links={FOOTER_LINKS}
-        />
+        <BlogFrame>{children}</BlogFrame>
 
         {/* Production deployments only. The package's own detection keys off
             NODE_ENV, which reads "production" on every preview build too — so

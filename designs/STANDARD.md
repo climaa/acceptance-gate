@@ -53,6 +53,32 @@ file and its exports are one name. The boards, in order:
   viewer and its report split the tier the same way, one section per app in the policy's
   `APPS`, labelled as Storybook titles the app's screens (`Screens / Web`), then
   `Screens / Other` for a screen whose app the policy does not name.
+- **Every route is a screen.** The rules a project's `screens` tier keeps:
+  1. _One section per web app._ Every app under `apps/` that serves web routes is in the
+     policy's `APP_ROOTS`, so the set viewer and the report give it a `Screens / <App>`
+     section. Here that is the console, the blog and the manual.
+  2. _A page drawn as a template still gets a screen._ The template is the layout; the
+     screen is the whole route mounted in its app's frame (header, landmark, footer), with
+     the page's own data. The blog's index keeps its `BlogIndexTemplate` story and gains
+     `Screens/Blog/Index`.
+  3. _Every route is claimed._ Each screen story's meta declares the routes it draws,
+     spelled as the directories under `app/` spell them:
+     `parameters: { screen: { routes: ['/blog', '/blog/page/[n]'] } }`. A slot or a
+     route group is not part of the route, and an intercepting route is the route it
+     intercepts. `apps/storybook/__tests__/screen-routes.test.ts` fails on a page no
+     story claims and on a claim no page answers. A screen with no route of its own, such
+     as the not-found page, declares `routes: []`.
+  4. _Screens are baselined._ A screen is never `visual-diff:review-only` in the project
+     that ships it, and its corpus budget grows to hold them.
+  5. _A page reads no file in its screen._ The route loads its data; a screen component
+     under `components/` draws it from props, so a story renders it in a browser. A
+     module that has to read a file anyway is swapped for a story-side one in
+     `apps/storybook/.storybook/main.ts` (the manual's `@/lib/sources`).
+  6. _A child does not repeat the parent._ A child drops one of the parent's stories only
+     when its render is pixel-identical to the parent's; under its own design tokens it
+     is a variant and stays. A child captures its own console as `Screens / Visual-diff-ui`
+     review-only: there the console is the tool, not the product, so it is seen in the
+     set and kept out of the budget.
 - **Variables are copied, not shared.** A Pencil document holds its own variables and
   themes, so every board file carries the same set. `00-foundations.pen` is the source:
   change a variable there and copy it to every other board file. The `boards` check reads

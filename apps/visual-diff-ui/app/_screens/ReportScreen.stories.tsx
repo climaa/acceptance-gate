@@ -16,6 +16,7 @@ import { SAMPLE_REPORT, SAMPLE_REPORT_ID, SAMPLE_REPORT_PATH } from './report-sa
 const meta = {
   title: 'Screens/Visual-diff-ui/Report',
   component: ReportTemplate,
+  parameters: { screen: { routes: ['/report/[id]'] } },
 };
 
 export default meta;

@@ -12,6 +12,7 @@ import { SAMPLE_SET_LABEL, SAMPLE_SET_PATH, SAMPLE_SET_SHOTS } from './set-sampl
 const meta = {
   title: 'Screens/Visual-diff-ui/Set',
   component: SetTemplate,
+  parameters: { screen: { routes: ['/set/[label]'] } },
 };
 
 export default meta;

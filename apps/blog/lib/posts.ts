@@ -2,6 +2,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import matter from 'gray-matter';
 import { z } from 'zod';
+import { tagSlug } from './post-paths';
+
+export { formatDate, tagPath, tagSlug } from './post-paths';
 
 const POSTS_DIR = path.join(process.cwd(), 'content', 'posts');
 
@@ -113,24 +116,6 @@ export interface TagSummary {
   label: string;
 }
 
-/**
- * The URL form of a tag. Frontmatter carries display text — `visual regression`,
- * `CI` — and the route carries this; matching goes through it on both sides, so
- * `/tags/CI` and `/tags/ci` are one page rather than two.
- */
-export function tagSlug(tag: string): string {
-  return tag.trim().toLowerCase().replace(/\s+/g, '-');
-}
-
-/**
- * Where a tag chip points, given either its slug or the display text a post's
- * frontmatter writes. One page per slug, so this is the only href shape that
- * reaches a prerendered route.
- */
-export function tagPath(tag: string): string {
-  return `/tags/${tagSlug(tag)}`;
-}
-
 /** Every tag a published post carries, deduplicated by slug. */
 export function getAllTags(): TagSummary[] {
   const tags = new Map<string, TagSummary>();
@@ -157,13 +142,4 @@ export function getPostsByTag(tag: string): PostSummary[] {
 export function getTagLabel(tag: string): string | null {
   const slug = tagSlug(tag);
   return getAllTags().find((candidate) => candidate.slug === slug)?.label ?? null;
-}
-
-export function formatDate(iso: string, locale = 'en-US'): string {
-  return new Date(`${iso}T00:00:00Z`).toLocaleDateString(locale, {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-    timeZone: 'UTC',
-  });
 }

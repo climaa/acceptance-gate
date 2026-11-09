@@ -7,6 +7,7 @@ import type { BlogIndexTemplateProps } from '@gate/ui';
 import { describe, expect, it } from 'vitest';
 import TagPage, { generateMetadata, generateStaticParams } from '../app/tags/[tag]/page';
 import { getAllTags, getPostsByTag, getTagLabel, tagSlug } from '../lib/posts';
+import { drawn } from './drawn';
 
 /**
  * Which tag pages exist, and which posts each one lists.
@@ -75,7 +76,7 @@ const propsFor = (tag: string) => ({
  * intro and the post list under the names the template gives them.
  */
 const renderTagPage = async (tag: string): Promise<BlogIndexTemplateProps> =>
-  (await TagPage(propsFor(tag))).props;
+  drawn(await TagPage(propsFor(tag)));
 
 describe('content/posts', () => {
   // A suite whose fixtures no longer exist would pass while protecting nothing —

@@ -49,7 +49,11 @@ describe('SECTIONS', () => {
  * tsc fails this object if the union gains or loses a name, and the assertion
  * fails if the policy does.
  */
-const DECLARED_APPS: Record<App, true> = { 'visual-diff-ui': true };
+const DECLARED_APPS: Record<App, true> = {
+  'visual-diff-ui': true,
+  blog: true,
+  manual: true,
+};
 
 describe('the declared App type', () => {
   it('names exactly the apps the policy has', () => {

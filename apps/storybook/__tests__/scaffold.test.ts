@@ -2,7 +2,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 // Imported explicitly rather than relying on `globals: true` — the same reason the
 // blog's suites give: tsconfig includes this file, so tsc typechecks it.
-import { tierOf } from '@gate/visual-diff/policy';
+import { APP_ROOTS, tierOf } from '@gate/visual-diff/policy';
 import { describe, expect, it } from 'vitest';
 import config from '../.storybook/main';
 
@@ -72,8 +72,8 @@ describe('story globs', () => {
  */
 describe('the corpus boundary', () => {
   const CORPUS = path.join(REPO_ROOT, 'packages', 'ui', 'src');
-  // The console's pages, the one app root policy's `APP_ROOTS` names.
-  const SCREENS = path.join(REPO_ROOT, 'apps', 'visual-diff-ui', 'app');
+  // Every app route tree the policy's `APP_ROOTS` names.
+  const SCREENS = APP_ROOTS.map((root) => path.join(REPO_ROOT, ...root));
   const storyModuleGlobs = storyGlobs.filter((glob) => glob.endsWith('.stories.tsx'));
 
   // Without this, every `it.each` below passes on an empty list the day the
@@ -87,7 +87,8 @@ describe('the corpus boundary', () => {
     (glob) => {
       const root = globRoot(glob);
 
-      const placed = root.startsWith(CORPUS) || root.startsWith(SCREENS);
+      const placed =
+        root.startsWith(CORPUS) || SCREENS.some((screens) => root.startsWith(screens));
 
       expect(placed).toBe(true);
     },
@@ -102,7 +103,8 @@ describe('the corpus boundary', () => {
       'screens',
     );
     expect(tierOf('apps/storybook/src/RunPanel.stories.tsx')).toBeNull();
-    expect(tierOf('../blog/app/Page.stories.tsx')).toBeNull();
+    expect(tierOf('../blog/app/_screens/Home.stories.tsx')).toBe('screens');
+    expect(tierOf('../e2e/features/Page.stories.tsx')).toBeNull();
   });
 
   // Exact equality, not a `toContain`: the point is that nothing but docs comes

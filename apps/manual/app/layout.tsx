@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
-import NextLink from 'next/link';
 import { preload } from 'react-dom';
-import { SiteFooter, SiteHeader } from '@gate/ui';
+import { ManualFrame } from '@/components/ManualFrame';
 // Imported for the URL, not the bytes: the bundler emits the same hashed asset
 // the design system's `@font-face` already points at, so the preload and the
 // stylesheet ask for one file rather than two.
@@ -9,19 +8,14 @@ import bodyFace from '@gate/ui/fonts/atkinson-hyperlegible-latin-400-normal.woff
 import bodyBoldFace from '@gate/ui/fonts/atkinson-hyperlegible-latin-700-normal.woff2';
 import displayFace from '@gate/ui/fonts/fraunces-latin-600-normal.woff2';
 import {
-  FOOTER_LINKS,
-  SITE_COPYRIGHT,
-  SITE_COPYRIGHT_YEAR,
   SITE_DEFAULT_TITLE,
   SITE_DESCRIPTION,
   SITE_OPEN_GRAPH,
-  SITE_TITLE,
   SITE_URL,
   TITLE_TEMPLATE,
 } from '@/lib/site';
 import { SITE_SHARE_IMAGES } from '@/lib/share';
 import { THEME_SCRIPT } from '@/lib/theme';
-import { SITE_VERSION } from '@/lib/version';
 import { SiteAnalytics } from './site-analytics';
 import './globals.css';
 
@@ -81,29 +75,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
       </head>
       <body>
-        {/* No `nav`: three pages are listed as cards on the index, which is the
-            whole navigation this manual has. A header nav would be a second copy
-            of it to keep in step. `as={NextLink}` once, forwarded to the brand —
-            the design system depends on no framework, so this is where the app
-            names its router link. */}
-        <SiteHeader brand={SITE_TITLE} as={NextLink} />
-
-        {/* The id is SkipLink's default target, and the landmark the header's
-            first tab stop jumps to. */}
-        <main id="main" className="ds-container">
-          {children}
-        </main>
-
-        {/* The organism is the row, not the bar: it caps nothing, so the
-            container that lines its content up with the header's is the app's
-            to supply. */}
-        <SiteFooter
-          className="ds-container"
-          copyright={SITE_COPYRIGHT}
-          year={SITE_COPYRIGHT_YEAR}
-          version={SITE_VERSION}
-          links={FOOTER_LINKS}
-        />
+        <ManualFrame>{children}</ManualFrame>
 
         {/* Production deployments only. The package's own detection keys off
             NODE_ENV, which reads "production" on every preview build too — so
