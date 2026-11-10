@@ -4,7 +4,7 @@ import {
   type GuardedContext,
   guardAnalytics,
   isAnalyticsBeacon,
-} from './analytics-guard';
+} from '../support/analytics-guard';
 
 type Listener = (request: { url(): string }) => void;
 

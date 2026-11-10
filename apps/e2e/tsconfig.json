@@ -4,7 +4,7 @@
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "noEmit": true
   },
-  "include": ["*.ts", "pages", "steps", "support"],
+  "include": ["*.ts", "pages", "steps", "support", "__tests__"],
   "exclude": [
     "node_modules",
     ".features-gen",
