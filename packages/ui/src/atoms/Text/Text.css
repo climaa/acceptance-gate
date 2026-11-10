@@ -63,6 +63,16 @@
   line-height: var(--leading-normal);
 }
 
+/* A caption that has to be read first: a card's title, a button's word, at the
+   same step and leading as caption. Atkinson's bold is its other face, so this
+   is a pairing tokens.css backs, not a synthesized weight. */
+.ds-text--caption-strong {
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-normal);
+}
+
 /* The engineering register at its smallest: field labels, panel titles, the
    column a value is read against. No case transform here — a label is often a
    CLI flag or a key, and uppercasing `--filter` changes what it says. */

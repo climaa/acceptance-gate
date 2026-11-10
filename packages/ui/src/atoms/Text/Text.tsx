@@ -14,6 +14,7 @@ export const TEXT_VARIANTS = [
   'body',
   'body-sm',
   'caption',
+  'caption-strong',
   'label',
   'code',
 ] as const;
@@ -33,6 +34,7 @@ const DEFAULT_ELEMENT: Record<TextVariant, ElementType> = {
   body: 'p',
   'body-sm': 'p',
   caption: 'span',
+  'caption-strong': 'span',
   label: 'span',
   code: 'code',
 };
