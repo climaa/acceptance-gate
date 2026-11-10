@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
   type GuardedContext,
@@ -69,7 +69,11 @@ describe('isAnalyticsBeacon', () => {
 });
 
 describe('guardAnalytics', () => {
-  it('aborts the beacon and routes nothing else', async () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('routes the beacon, and only the beacon, to an abort', async () => {
     // Arrange
     const { context, installed } = fakeContext();
 
@@ -91,7 +95,7 @@ describe('guardAnalytics', () => {
     const window = {
       localStorage: { setItem: (k: string, v: string) => store.set(k, v) },
     };
-    Object.assign(globalThis, { window });
+    vi.stubGlobal('window', window);
 
     // Act
     await guardAnalytics(context);
@@ -99,7 +103,6 @@ describe('guardAnalytics', () => {
 
     // Assert
     expect(store.get('va-disable')).toBe('1');
-    Reflect.deleteProperty(globalThis, 'window');
   });
 
   it('reports a beacon request that completed instead of being aborted', async () => {

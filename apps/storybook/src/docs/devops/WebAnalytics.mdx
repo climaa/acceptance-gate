@@ -179,6 +179,11 @@ production gate stays in the layout. In Storybook it is inlined via `.toString()
 against the address it was opened at, before the manager's router can drop the parameter
 from the URL the first page view reports.
 
+Automated browsers are kept out the same way, without a link. The acceptance suite can be
+aimed at a deployment with `E2E_BASE_URL`, so an automatic fixture in `apps/e2e` aborts the
+beacon's requests, stores the flag before any page script runs, and fails a scenario if a
+beacon request gets through anyway — see `apps/e2e/support/analytics-guard.ts`.
+
 ## Why `turbo.json` names the variables
 
 `build` declares `env: ["VERCEL_ENV"]`. Turborepo's builtin passthrough already forwards

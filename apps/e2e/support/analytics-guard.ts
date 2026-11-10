@@ -21,6 +21,13 @@ import { OPT_OUT_KEY } from '@gate/logger/analytics';
  *
  * And a tripwire behind both: a beacon request that completes — answered rather
  * than aborted — is reported, so the run fails instead of counting quietly.
+ *
+ * Out of reach: `page.request` / `request` calls (an APIRequestContext) bypass
+ * `context.route`. They fetch without running a page's scripts, so they never
+ * load the beacon — `about.ts` and `link-preview.ts` rely on exactly that.
+ *
+ * The two beacon paths below are copied from `@vercel/analytics`; when it is
+ * bumped, re-check them beside `apps/storybook/.storybook/analytics-head.ts`.
  */
 
 /** The package's fallback path, used when no client config is injected. */
