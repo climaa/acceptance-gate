@@ -1,4 +1,4 @@
-import type { Response } from '@playwright/test';
+import { expect, type Response } from '@playwright/test';
 import { test as base } from 'playwright-bdd';
 
 import { AboutPage } from '../../pages/about';
@@ -12,6 +12,7 @@ import { LinkPreviews, type Preview } from '../../pages/link-preview';
 import { PostPage } from '../../pages/post';
 import { ReportPage } from '../../pages/report';
 import { ShotView } from '../../pages/shot-view';
+import { guardAnalytics } from '../../support/analytics-guard';
 
 /** What one scenario's steps hand each other — e.g. the title read off the index
  *  before the click that navigates away from it. A plain object, not a return
@@ -58,6 +59,7 @@ export const test = base.extend<{
   modal: ComparisonModal;
   shot: ShotView;
   scenarioState: ScenarioState;
+  analyticsGuard: void;
 }>({
   about: async ({ page }, use) => {
     await use(new AboutPage(page));
@@ -95,4 +97,16 @@ export const test = base.extend<{
   scenarioState: async ({}, use) => {
     await use({});
   },
+  /** Automatic, so no scenario can forget it: every context the suite opens has
+   *  the analytics beacon aborted and the owner's opt-out stored, and a beacon
+   *  request that got through anyway fails the scenario — see
+   *  `support/analytics-guard.ts` for why `E2E_BASE_URL` makes this necessary. */
+  analyticsGuard: [
+    async ({ context }, use) => {
+      const leaked = await guardAnalytics(context);
+      await use();
+      expect(leaked(), 'a Vercel Web Analytics beacon left the browser').toEqual([]);
+    },
+    { auto: true },
+  ],
 });

@@ -16,7 +16,8 @@
  * Modelled on @vercel/analytics 2.0.1 `dist/index.mjs` — `initQueue`,
  * `loadProps`, `getScriptSrc` and `makeAbsolute` — because that is the contract
  * the `script.js` this loads expects to be called under. When that package is
- * bumped in the other three apps, diff those four functions against this file.
+ * bumped in the other three apps, diff those four functions against this file,
+ * and re-check the beacon paths `apps/e2e/support/analytics-guard.ts` aborts.
  */
 
 import { optOutBeforeSend } from '@gate/logger/analytics';
