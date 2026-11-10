@@ -14,16 +14,19 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "health": "node ../../scripts/complexity-gate.mjs",
-    "clean": "rm -rf .features-gen .features-gen-local playwright-report playwright-report-local test-results test-results-local .turbo node_modules"
+    "clean": "rm -rf .features-gen .features-gen-local playwright-report playwright-report-local test-results test-results-local .turbo node_modules",
+    "test": "vitest run"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.12.1",
+    "@gate/logger": "workspace:*",
     "@gate/tsconfig": "workspace:*",
     "@gate/visual-diff": "workspace:*",
     "@playwright/test": "1.62.1",
     "@typescript-eslint/parser": "^8.72.0",
     "eslint": "^9.39.5",
     "playwright-bdd": "^9.2.1",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^5.0.5"
   }
 }

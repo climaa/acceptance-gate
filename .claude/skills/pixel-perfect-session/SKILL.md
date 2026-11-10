@@ -94,7 +94,8 @@ compares passes. `tile-diff` needs ffmpeg; without it, say so and go on with the
 
 Look as well as measure. If the Claude in Chrome tools are available, open the overlay
 address and the `story` address, and zoom on the first repeat. Do this before the fix and
-again after it.
+again after it. When either address is on `carloslima.dev`, append `va-disable=1` to it as
+text first (AGENTS.md says why), so the look never counts as a page view.
 
 Next, read what the tile says it is made of. A `.pen` is plain JSON, so read it, but never
 edit it by hand:

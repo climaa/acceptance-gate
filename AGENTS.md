@@ -32,6 +32,12 @@ CSS shimmer and Spinner's CSS ring are the two sanctioned exceptions — each
 stands in for an answer that has not arrived rather than making an entrance,
 and each rests on the frame a frozen capture photographs).
 
+Any URL an agent or a manual check opens on `carloslima.dev` or a subdomain
+carries `va-disable=1`, appended as text (`?` or `&`, never through
+`URLSearchParams`, which re-encodes Storybook's `globals=colorScheme:dark`), so
+the visit never counts in Vercel Web Analytics. Links that ship to readers —
+README, posts, docs pages, the console's own links — never carry it.
+
 ## Labels that route you
 
 `sc:{implementer,reviewer}:{opus-5-5,opus-5,sonnet-5-5,sonnet-5}` and
