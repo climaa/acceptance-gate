@@ -1,5 +1,5 @@
 {
-  "version": "2.21",
+  "version": "2.22",
   "children": [
     {
       "type": "frame",
@@ -4712,7 +4712,7 @@
                   "reusable": true,
                   "clip": true,
                   "width": 1248,
-                  "height": 509,
+                  "height": 561,
                   "fill": "$bg",
                   "layout": "vertical",
                   "gap": 16,
@@ -4924,6 +4924,36 @@
                           "fontFamily": "$font-body",
                           "fontSize": 12,
                           "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "pwaAc",
+                      "name": "caption-strong",
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "cPRql",
+                          "name": "role",
+                          "fill": "$text",
+                          "content": "caption-strong",
+                          "lineHeight": 1.5,
+                          "fontFamily": "$font-mono",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "urFKN",
+                          "name": "sample",
+                          "fill": "$text",
+                          "content": "The gate blocks what the eye would miss.",
+                          "lineHeight": 1.5,
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "700"
                         }
                       ]
                     },

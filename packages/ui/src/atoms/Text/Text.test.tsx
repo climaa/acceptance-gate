@@ -25,6 +25,7 @@ describe('Text', () => {
     ['body', 'P'],
     ['body-sm', 'P'],
     ['caption', 'SPAN'],
+    ['caption-strong', 'SPAN'],
     ['label', 'SPAN'],
     ['code', 'CODE'],
   ];
