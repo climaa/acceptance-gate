@@ -3,6 +3,8 @@ import * as path from 'node:path';
 import { ROOT, SANDCASTLE, read } from './helpers';
 import {
   readPinnedPnpmVersion,
+  readMaxAgeDays,
+  parseClaudeVersion,
   ensureImageFreshness,
 } from '../sandcastle-image-freshness.mts';
 
@@ -39,6 +41,12 @@ describe('sandcastle image-freshness guard', () => {
       packageJsonPath: path.join(ROOT, 'package.json'),
       dockerfilePath: path.join(SANDCASTLE, 'Dockerfile'),
       imageName: 'sandcastle:test',
+      // A fresh image with a working CLI, so these cases isolate the pnpm check.
+      probeClaude: () => '2.1.280',
+      probeCreated: () => new Date('2026-11-10T00:00:00Z'),
+      now: new Date('2026-11-11T00:00:00Z'),
+      maxAgeDays: 14,
+      logger: { log: () => {}, warn: () => {} },
     };
 
     it("does NOT rebuild when the image's pnpm already matches the pin", () => {
@@ -96,6 +104,187 @@ describe('sandcastle image-freshness guard', () => {
     });
   });
 
+  // On 2026-10-14 the API began refusing the image's Claude Code CLI 2.1.233
+  // ("version 2.1.280 or newer is required"): the CLI is installed unpinned and
+  // was never checked, so a matching pnpm let a months-old image through and
+  // every planner iteration failed with a 400 before any work.
+  describe('ensureImageFreshness — the Claude Code CLI and the image age', () => {
+    const base = {
+      packageJsonPath: path.join(ROOT, 'package.json'),
+      dockerfilePath: path.join(SANDCASTLE, 'Dockerfile'),
+      imageName: 'sandcastle:test',
+      now: new Date('2026-11-11T00:00:00Z'),
+      maxAgeDays: 14,
+    };
+    const pinned = () => readPinnedPnpmVersion(base.packageJsonPath);
+
+    function recorder() {
+      const lines: string[] = [];
+      const rebuilds: { noCache: boolean }[] = [];
+      return {
+        lines,
+        rebuilds,
+        logger: { log: (l: string) => lines.push(l), warn: (l: string) => lines.push(l) },
+        rebuild: (_image: string, _dockerfile: string, opts: { noCache: boolean }) => {
+          rebuilds.push(opts);
+        },
+      };
+    }
+
+    it('a fresh image with a matching pnpm does not rebuild and logs the CLI version', () => {
+      // Arrange
+      const rec = recorder();
+
+      // Act
+      ensureImageFreshness({
+        ...base,
+        probe: pinned,
+        probeClaude: () => '2.1.280',
+        probeCreated: () => new Date('2026-11-01T00:00:00Z'),
+        rebuild: rec.rebuild,
+        logger: rec.logger,
+      });
+
+      // Assert
+      expect(rec.rebuilds).toEqual([]);
+      expect(rec.lines.join('\n')).toMatch(/Claude Code 2\.1\.280/);
+    });
+
+    it('an image older than the limit is rebuilt with no cache', () => {
+      // Arrange
+      const rec = recorder();
+      let created = new Date('2026-10-01T00:00:00Z');
+
+      // Act
+      ensureImageFreshness({
+        ...base,
+        probe: pinned,
+        probeClaude: () => '2.1.300',
+        probeCreated: () => created,
+        rebuild: (image, dockerfile, opts) => {
+          rec.rebuild(image, dockerfile, opts);
+          created = base.now;
+        },
+        logger: rec.logger,
+      });
+
+      // Assert
+      expect(rec.rebuilds).toEqual([{ noCache: true }]);
+      expect(rec.lines.join('\n')).toMatch(/41 days old/);
+      expect(rec.lines.join('\n')).toMatch(/Claude Code 2\.1\.300/);
+    });
+
+    it('an image within the limit is not rebuilt for its age', () => {
+      // Arrange
+      const rec = recorder();
+
+      // Act
+      ensureImageFreshness({
+        ...base,
+        maxAgeDays: 30,
+        probe: pinned,
+        probeClaude: () => '2.1.280',
+        probeCreated: () => new Date('2026-10-14T00:00:00Z'),
+        rebuild: rec.rebuild,
+        logger: rec.logger,
+      });
+
+      // Assert
+      expect(rec.rebuilds).toEqual([]);
+    });
+
+    it('a CLI probe that fails is rebuilt with no cache', () => {
+      // Arrange
+      const rec = recorder();
+      let claude: string | null = null;
+
+      // Act
+      ensureImageFreshness({
+        ...base,
+        probe: pinned,
+        probeClaude: () => claude,
+        probeCreated: () => new Date('2026-11-10T00:00:00Z'),
+        rebuild: (image, dockerfile, opts) => {
+          rec.rebuild(image, dockerfile, opts);
+          claude = '2.1.300';
+        },
+        logger: rec.logger,
+      });
+
+      // Assert
+      expect(rec.rebuilds).toEqual([{ noCache: true }]);
+      expect(rec.lines.join('\n')).toMatch(/Claude Code 2\.1\.300/);
+    });
+
+    it('a CLI probe that fails again after the rebuild throws', () => {
+      // Arrange
+      const rec = recorder();
+
+      // Act
+      const start = () =>
+        ensureImageFreshness({
+          ...base,
+          probe: pinned,
+          probeClaude: () => null,
+          probeCreated: () => new Date('2026-11-10T00:00:00Z'),
+          rebuild: rec.rebuild,
+          logger: rec.logger,
+        });
+
+      // Assert
+      expect(start).toThrow(/claude/i);
+      expect(rec.rebuilds).toEqual([{ noCache: true }]);
+    });
+
+    it('a pnpm drift alone rebuilds with the cache, as before', () => {
+      // Arrange
+      const rec = recorder();
+      let pnpm = '11.15.1';
+
+      // Act
+      ensureImageFreshness({
+        ...base,
+        probe: () => pnpm,
+        probeClaude: () => '2.1.280',
+        probeCreated: () => new Date('2026-11-10T00:00:00Z'),
+        rebuild: (image, dockerfile, opts) => {
+          rec.rebuild(image, dockerfile, opts);
+          pnpm = pinned();
+        },
+        logger: rec.logger,
+      });
+
+      // Assert
+      expect(rec.rebuilds).toEqual([{ noCache: false }]);
+    });
+  });
+
+  describe('parseClaudeVersion — the CLI prints more than its version', () => {
+    it('takes X.Y.Z out of `claude --version`', () => {
+      expect(parseClaudeVersion('2.1.233 (Claude Code)\n')).toBe('2.1.233');
+    });
+
+    it('answers null for output that carries no version', () => {
+      expect(parseClaudeVersion('command not found')).toBeNull();
+    });
+  });
+
+  describe('readMaxAgeDays — SANDCASTLE_IMAGE_MAX_AGE_DAYS', () => {
+    it('defaults to 14 days', () => {
+      expect(readMaxAgeDays({})).toBe(14);
+    });
+
+    it('reads a positive number of days', () => {
+      expect(readMaxAgeDays({ SANDCASTLE_IMAGE_MAX_AGE_DAYS: '3' })).toBe(3);
+    });
+
+    it('throws on a value that is not a positive number', () => {
+      expect(() =>
+        readMaxAgeDays({ SANDCASTLE_IMAGE_MAX_AGE_DAYS: 'two weeks' }),
+      ).toThrow(/SANDCASTLE_IMAGE_MAX_AGE_DAYS/);
+    });
+  });
+
   describe('wiring — the guard runs at startup before any agent', () => {
     const main = read('main.mts');
 
@@ -124,6 +313,10 @@ describe('sandcastle image-freshness guard', () => {
       expect(mod).toMatch(/["']build["'][\s\S]*?["']-["']/);
       // And must NOT pass "." as the build context (the stall trap).
       expect(mod).not.toMatch(/["']build["'][\s\S]*?["']\.["']\s*\]/);
+    });
+
+    it('can pass --no-cache, so a cached install.sh layer does not reinstall the old CLI', () => {
+      expect(mod).toMatch(/['"]--no-cache['"]/);
     });
   });
 });
