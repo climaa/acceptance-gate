@@ -116,10 +116,7 @@ function imageCreated(imageName: string): Date | null {
     const out = execFileSync(
       'docker',
       ['image', 'inspect', '-f', '{{.Created}}', imageName],
-      {
-        encoding: 'utf8',
-        stdio: ['ignore', 'pipe', 'pipe'],
-      },
+      { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] },
     );
     const created = new Date(out.trim());
     return Number.isNaN(created.getTime()) ? null : created;
@@ -128,7 +125,7 @@ function imageCreated(imageName: string): Date | null {
   }
 }
 
-export const DEFAULT_IMAGE_MAX_AGE_DAYS = 14;
+const DEFAULT_IMAGE_MAX_AGE_DAYS = 14;
 
 /**
  * The image age limit from `SANDCASTLE_IMAGE_MAX_AGE_DAYS`, default 14. Throws
@@ -150,6 +147,10 @@ export function readMaxAgeDays(
 }
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+
+export interface RebuildOptions {
+  noCache: boolean;
+}
 
 /**
  * Rebuild the sandbox image from `.sandcastle/Dockerfile`.
@@ -175,10 +176,6 @@ function rebuildImage(
     input: dockerfile,
     stdio: ['pipe', 'inherit', 'inherit'],
   });
-}
-
-export interface RebuildOptions {
-  noCache: boolean;
 }
 
 export interface EnsureImageFreshnessOptions {
