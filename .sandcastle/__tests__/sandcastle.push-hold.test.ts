@@ -7,6 +7,7 @@ import {
   formatRunSummary,
   pushHoldComment,
   pushOrHold,
+  verifiedPush,
 } from '../sandcastle-push-hold.mts';
 import type { IssueRef } from '../sandcastle-issue-ref.mts';
 
@@ -122,6 +123,123 @@ describe('a failed host push holds its issue', () => {
     // Assert
     expect(next.eligible).toEqual([]);
     expect(next.held).toEqual(['9']);
+  });
+});
+
+/**
+ * `git push` exiting 0 is not proof the branch landed: twice (#647, #685) a
+ * branch passed its host gate and origin never held its tip, so the merger
+ * found no remote branch or merged a stale one. A push now counts only when
+ * origin's tip is the local tip; otherwise it is pushed once more, then held.
+ */
+describe('a host push is published only when origin holds the local tip', () => {
+  const LOCAL = 'a'.repeat(40);
+  const STALE = 'b'.repeat(40);
+
+  function verifyStubs(remoteTips: (string | null)[]) {
+    const tips = [...remoteTips];
+    return {
+      push: vi.fn(async (_branch: string): Promise<PushResult> => ({
+        ok: true,
+        output: '',
+      })),
+      localTip: vi.fn((_branch: string) => LOCAL),
+      remoteTip: vi.fn((_branch: string) => tips.shift() ?? null),
+      hold: vi.fn((_id: string, _body: string) => ({ commented: true, labeled: true })),
+    };
+  }
+
+  function pushThrough(io: ReturnType<typeof verifyStubs>) {
+    return { push: (branch: string) => verifiedPush(branch, io), hold: io.hold };
+  }
+
+  beforeEach(() => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+  });
+
+  it('publishes on the first push when the remote tip matches', async () => {
+    // Arrange
+    const io = verifyStubs([LOCAL]);
+    const holds = new Map<string, PushHold>();
+
+    // Act
+    const pushed = await pushOrHold([ref('10')], pushThrough(io), {
+      iteration: 1,
+      holds,
+    });
+
+    // Assert
+    expect(pushed).toEqual([ref('10')]);
+    expect(io.push).toHaveBeenCalledTimes(1);
+    expect(io.hold).not.toHaveBeenCalled();
+  });
+
+  it('publishes after exactly one retry when the tip is missing, then matches', async () => {
+    // Arrange
+    const io = verifyStubs([null, LOCAL]);
+    const holds = new Map<string, PushHold>();
+
+    // Act
+    const pushed = await pushOrHold([ref('11')], pushThrough(io), {
+      iteration: 1,
+      holds,
+    });
+
+    // Assert
+    expect(pushed).toEqual([ref('11')]);
+    expect(io.push).toHaveBeenCalledTimes(2);
+    expect(holds.size).toBe(0);
+    expect(io.hold).not.toHaveBeenCalled();
+  });
+
+  it('holds the issue, naming both shas, when the tip never matches', async () => {
+    // Arrange
+    const io = verifyStubs([STALE, STALE]);
+    const holds = new Map<string, PushHold>();
+
+    // Act
+    const pushed = await pushOrHold([ref('12')], pushThrough(io), {
+      iteration: 1,
+      holds,
+    });
+
+    // Assert
+    expect(pushed).toEqual([]);
+    expect(io.push).toHaveBeenCalledTimes(2);
+    expect([...holds.keys()]).toEqual(['12']);
+    expect(io.hold).toHaveBeenCalledTimes(1);
+    const [, body] = io.hold.mock.calls[0]!;
+    expect(body).toContain(
+      `push exited 0 but origin/sandcastle/issue-12-x is ${STALE}, expected ${LOCAL}`,
+    );
+  });
+
+  it('says missing when origin has no such branch after the retry', async () => {
+    // Arrange
+    const io = verifyStubs([null, null]);
+
+    // Act
+    const result = await verifiedPush('sandcastle/issue-13-x', io);
+
+    // Assert
+    expect(result.ok).toBe(false);
+    expect(result.output).toContain(
+      `push exited 0 but origin/sandcastle/issue-13-x is missing, expected ${LOCAL}`,
+    );
+  });
+
+  it('does not read the remote when the push itself failed', async () => {
+    // Arrange
+    const io = verifyStubs([]);
+    io.push.mockResolvedValueOnce({ ok: false, output: GATE_FAILED });
+
+    // Act
+    const result = await verifiedPush('sandcastle/issue-14-x', io);
+
+    // Assert
+    expect(result).toEqual({ ok: false, output: GATE_FAILED });
+    expect(io.push).toHaveBeenCalledTimes(1);
+    expect(io.remoteTip).not.toHaveBeenCalled();
   });
 });
 

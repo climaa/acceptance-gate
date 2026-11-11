@@ -53,12 +53,14 @@ import {
 import { refuseWithoutDocker } from './sandcastle-docker-preflight.mts';
 import { ensureImageFreshness } from './sandcastle-image-freshness.mts';
 import {
+  localBranchTip,
   markIssueHeld,
   markIssueNoOp,
   probeBranchCommitsAhead,
   probeBranchDiffEmpty,
   probeIssue,
   pushBranch,
+  remoteBranchTip,
 } from './sandcastle-git.mts';
 import { parsePlanOutput, screenPlan } from './sandcastle-orchestrator.mts';
 import { guardPhase } from './sandcastle-guard-phase.mts';
@@ -68,7 +70,12 @@ import {
   noOpIssueComment,
   partitionOutcomes,
 } from './sandcastle-noop-issues.mts';
-import { type PushHold, formatRunSummary, pushOrHold } from './sandcastle-push-hold.mts';
+import {
+  type PushHold,
+  formatRunSummary,
+  pushOrHold,
+  verifiedPush,
+} from './sandcastle-push-hold.mts';
 import { queuedBranchesFor } from './sandcastle-plan-eligibility.mts';
 import {
   collectStrandedIssues,
@@ -170,7 +177,8 @@ const pushHolds = new Map<string, PushHold>();
 // Chromium and the gate's binaries exist, not in the merger's container. A
 // failure is non-fatal so one refused branch doesn't block the rest, and it
 // holds the issue — comment, HOLD_LABEL, out of this run — instead of handing
-// the branch to a merger whose push would meet the same gate. Returns the refs
+// the branch to a merger whose push would meet the same gate. A push counts
+// only when origin then holds the local tip (verifiedPush). Returns the refs
 // that reached origin.
 async function pushFromHost<T extends IssueRef>(refs: readonly T[], iteration: number) {
   const published = await pushOrHold(
@@ -178,7 +186,11 @@ async function pushFromHost<T extends IssueRef>(refs: readonly T[], iteration: n
     {
       push: (branch) => {
         console.log(`[ci-trigger] pushing ${branch} to origin from host`);
-        return pushBranch(branch);
+        return verifiedPush(branch, {
+          push: pushBranch,
+          localTip: localBranchTip,
+          remoteTip: remoteBranchTip,
+        });
       },
       hold: markIssueHeld,
     },

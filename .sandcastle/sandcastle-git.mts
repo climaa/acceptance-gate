@@ -10,6 +10,7 @@ import {
   parseBranchList,
   parseDirtiness,
   parseIssueJson,
+  parseLsRemoteTip,
   parsePositiveCount,
   parsePrimaryWorktree,
   parseWorktreeForBranch,
@@ -319,6 +320,19 @@ export function pushBranch(branch: string): Promise<PushResult> {
     child.on('error', (err) => resolve({ ok: false, output: `${output}${err.message}` }));
     child.on('close', (code) => resolve({ ok: code === 0, output }));
   });
+}
+
+// The sha `branch` points at locally, or null when it cannot be read.
+export function localBranchTip(branch: string): string | null {
+  const out = execOrNull(`git rev-parse --verify --quiet refs/heads/${branch}`);
+  return out === null ? null : out.trim() || null;
+}
+
+// The sha origin's `branch` points at, or null when origin has no such branch
+// or could not be reached — read live, never from the local remote-tracking ref.
+export function remoteBranchTip(branch: string): string | null {
+  const out = execOrNull(`git ls-remote --heads origin ${branch}`);
+  return out === null ? null : parseLsRemoteTip(out, branch);
 }
 
 export function branchHasOpenPr(branch: string): boolean {

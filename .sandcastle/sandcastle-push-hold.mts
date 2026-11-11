@@ -53,6 +53,47 @@ function outputTail(output: string): string {
   return lines.slice(-TAIL_LINES).join('\n').replaceAll('```', "'''");
 }
 
+/** What verifiedPush reads and does: the push, and the two tips it compares. */
+export type PushVerifyIo = {
+  push: (branch: string) => Promise<PushResult>;
+  localTip: (branch: string) => string | null;
+  remoteTip: (branch: string) => string | null;
+};
+
+// Why origin does not hold the local tip, or null when it does.
+function tipMismatch(branch: string, io: PushVerifyIo): string | null {
+  const expected = io.localTip(branch);
+  const found = io.remoteTip(branch);
+  if (expected !== null && found === expected) return null;
+  return (
+    `push exited 0 but origin/${branch} is ${found ?? 'missing'}, ` +
+    `expected ${expected ?? 'an unreadable local tip'}`
+  );
+}
+
+/**
+ * Push `branch` and count it published only when origin's tip is the local tip.
+ * `git push` exiting 0 is not proof: twice (#647, #685) a branch passed its host
+ * gate and origin never held it, or held an older commit, and the merger found
+ * no remote branch or merged a stale one. A mismatch is pushed once more — the
+ * gate receipt makes the second gate cheap — and a second mismatch is a failed
+ * push, held exactly as a refused one is.
+ */
+export async function verifiedPush(
+  branch: string,
+  io: PushVerifyIo,
+): Promise<PushResult> {
+  const first = await io.push(branch);
+  if (!first.ok) return first;
+  const mismatch = tipMismatch(branch, io);
+  if (mismatch === null) return first;
+  console.warn(`  ↻ ${mismatch} — pushing once more.`);
+  const second = await io.push(branch);
+  if (!second.ok) return second;
+  const still = tipMismatch(branch, io);
+  return still === null ? second : { ok: false, output: `${second.output}\n${still}\n` };
+}
+
 /**
  * The one comment a held issue gets. It answers what failed, on which branch,
  * why the run stopped working it, and how to put it back in the queue.

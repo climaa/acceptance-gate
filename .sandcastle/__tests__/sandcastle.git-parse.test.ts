@@ -3,6 +3,7 @@ import {
   parseDirtiness,
   parseIssueIdFromBranch,
   parseIssueJson,
+  parseLsRemoteTip,
   parsePositiveCount,
   parsePrimaryWorktree,
   parseWorktreeForBranch,
@@ -324,5 +325,25 @@ describe('parseDirtiness', () => {
     // Arrange & Act & Assert — "unreadable" means the command failed, which
     // only the IO wrapper's catch can observe.
     expect(parseDirtiness('anything')).not.toBe('unreadable');
+  });
+});
+
+describe('parseLsRemoteTip', () => {
+  const SHA = 'c'.repeat(40);
+
+  it('reads the sha of the exact branch', () => {
+    // Arrange
+    const stdout = `${'d'.repeat(40)}\trefs/heads/x/sandcastle/issue-1\n${SHA}\trefs/heads/sandcastle/issue-1\n`;
+
+    // Act
+    const tip = parseLsRemoteTip(stdout, 'sandcastle/issue-1');
+
+    // Assert
+    expect(tip).toBe(SHA);
+  });
+
+  it('is null when origin has no such branch', () => {
+    // Arrange / Act / Assert
+    expect(parseLsRemoteTip('', 'sandcastle/issue-1')).toBeNull();
   });
 });
