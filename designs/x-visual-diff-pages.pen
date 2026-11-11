@@ -1,5 +1,5 @@
 {
-  "version": "2.21",
+  "version": "2.22",
   "children": [
     {
       "type": "frame",
@@ -33811,7 +33811,7 @@
                       "fill": "$ink-muted",
                       "textGrowth": "fixed-width",
                       "width": 1280,
-                      "content": "desktop · light — overlay: the board crop laid over the screenshot at 50%, nudged with the arrow keys until it sits on the badge · one pane, one zoom · the place where a 1px drift shows · a decision of its own (D7): here, and only here, the board is laid on the screenshot",
+                      "content": "desktop · light — overlay: the board crop laid over the screenshot at 50%, nudged with the arrow keys until it sits on the badge · one pane, one zoom · the place where a 1px drift shows · a decision of its own (D7): here, and only here, the board is laid on the screenshot · folded, the readings carry their warning badges, 2 off-scale and 1 raw on the scale, and the caption keeps only the count",
                       "fontFamily": "$font-body",
                       "fontSize": 12,
                       "fontWeight": "normal"
@@ -35223,11 +35223,39 @@
                                       "fontWeight": "700"
                                     },
                                     {
+                                      "id": "PFdkr",
+                                      "type": "ref",
+                                      "ref": "XVO0t",
+                                      "name": "badge 2 off-scale",
+                                      "fill": "$warning-surface",
+                                      "descendants": {
+                                        "dXS0A": {
+                                          "fill": "$warning-fg",
+                                          "content": "2 off-scale",
+                                          "fontSize": 10
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "S8sRpA",
+                                      "type": "ref",
+                                      "ref": "XVO0t",
+                                      "name": "badge 1 raw on the scale",
+                                      "fill": "$warning-surface",
+                                      "descendants": {
+                                        "dXS0A": {
+                                          "fill": "$warning-fg",
+                                          "content": "1 raw on the scale",
+                                          "fontSize": 10
+                                        }
+                                      }
+                                    },
+                                    {
                                       "type": "text",
                                       "id": "B7587",
                                       "name": "caption",
                                       "fill": "$text-muted",
-                                      "content": "6 readings · all on the scale or exempt · show",
+                                      "content": "6 readings · show",
                                       "fontFamily": "$font-mono",
                                       "fontSize": 10,
                                       "fontWeight": "normal"
