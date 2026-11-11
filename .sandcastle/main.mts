@@ -53,12 +53,12 @@ import {
 import { refuseWithoutDocker } from './sandcastle-docker-preflight.mts';
 import { ensureImageFreshness } from './sandcastle-image-freshness.mts';
 import {
+  localBranchTip,
   markIssueHeld,
   markIssueNoOp,
   probeBranchCommitsAhead,
   probeBranchDiffEmpty,
   probeIssue,
-  localBranchTip,
   pushBranch,
   remoteBranchTip,
 } from './sandcastle-git.mts';
