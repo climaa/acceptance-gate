@@ -276,6 +276,12 @@ That is a backstop, not a reason to skip this step: only you close the issue.
 
   The script runs on plain `node` (type stripping, no `tsx`), because this sandbox's `node_modules` is the host's. It ticks an issue box only when the merged PR's body ticks the same criterion. A criterion the PR left `[ ]`, or carried with `(needs human verification)`, stays `[ ]` in the issue with ` (needs human verification — #<PR>)` appended once, and the closing comment it prints lists it. Never tick the issue's boxes any other way: a box the PR left open is the one signal Step 2a asks for, and ticking it records as verified what nobody verified.
 
+- **`OPEN` with merge state `DIRTY`** (you broke out of the poll on a conflict) → leave a comment and do **not** close. It is not a final verdict: after you exit, the host queue may still resolve the conflict if it is CHANGELOG-only, and it comments on this issue when it does.
+
+  ```bash
+  gh issue comment <ID> --body "PR <PR_URL> was not merged (state: OPEN, merge state DIRTY — a conflict with main). The host queue resolves a conflict where both sides only added CHANGELOG.md lines, and will comment here if it does; any other conflict needs a human."
+  ```
+
 - **`CLOSED`** (without merge) or **`OPEN`** (timeout reached) → leave a comment and do **not** close:
   ```bash
   gh issue comment <ID> --body "PR <PR_URL> was not merged (state: $PR_STATE). Requires manual review."

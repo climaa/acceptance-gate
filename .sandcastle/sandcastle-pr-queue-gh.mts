@@ -5,12 +5,13 @@
 // Every call here is scoped to the head branches THIS run owns: a PR opened by
 // a human, on a branch no issue in this batch produced, is never read and never
 // written to.
-import { execSync } from 'node:child_process';
+import { execFileSync, execSync } from 'node:child_process';
 import { hostMergeIO, resolveDirtyBranch } from './sandcastle-additive-merge.mts';
 import { BASE_BRANCH } from './sandcastle-config.mts';
 import {
   type QueueGateway,
   type QueueOutcome,
+  parseClosingIssuesJson,
   parsePrQueueJson,
   reconcilePrQueue,
   summarizeQueueOutcome,
@@ -57,6 +58,18 @@ function ghWrite(command: string): boolean {
   }
 }
 
+/** A comment body goes in as an argument, never through a shell. */
+function ghComment(issue: number, body: string): boolean {
+  try {
+    execFileSync('gh', ['issue', 'comment', String(issue), '--body', body], {
+      stdio: 'pipe',
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export function ghQueueGateway(
   branches: string[],
   abortSignal: AbortSignal,
@@ -92,6 +105,12 @@ export function ghQueueGateway(
       const outcome = resolveDirtyBranch(branch, root, hostMergeIO(root));
       return outcome.ok ? { ok: true } : outcome;
     },
+    // Read only for a PR this run owns: resolveConflict is offered nothing else.
+    closingIssues: (pr) => {
+      const out = ghRead(`gh pr view ${pr} --json closingIssuesReferences`);
+      return out === null ? null : parseClosingIssuesJson(out);
+    },
+    commentOnIssue: ghComment,
     waitBeforeNextPass: () => sleep(QUEUE_PASS_INTERVAL_MS, abortSignal),
     log: (line) => console.log(line),
   };

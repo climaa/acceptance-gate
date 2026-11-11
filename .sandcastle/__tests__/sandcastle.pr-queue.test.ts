@@ -6,6 +6,7 @@ import {
   type QueuedPr,
   decideActions,
   isWriteAction,
+  parseClosingIssuesJson,
   parsePrQueueJson,
   planPass,
   reconcilePrQueue,
@@ -298,12 +299,37 @@ describe('parsePrQueueJson', () => {
   });
 });
 
+describe('parseClosingIssuesJson', () => {
+  it('reads the issue numbers a PR closes', () => {
+    // Arrange
+    const out = JSON.stringify({
+      closingIssuesReferences: [{ number: 704, url: 'x' }, { number: 705 }],
+    });
+
+    // Act / Assert
+    expect(parseClosingIssuesJson(out)).toEqual([704, 705]);
+  });
+
+  it('reads a PR that closes nothing as an empty list', () => {
+    expect(parseClosingIssuesJson('{"closingIssuesReferences":[]}')).toEqual([]);
+  });
+
+  it.each(['', 'not json', '{}', '{"closingIssuesReferences":[{"url":"x"}]}'])(
+    'reads %j as unknown rather than as no issues',
+    (out) => {
+      expect(parseClosingIssuesJson(out)).toBeNull();
+    },
+  );
+});
+
 type Recorded = {
   updated: number[];
   armed: number[];
   resolved: number[];
   waits: number[];
   logs: string[];
+  /** Every issue comment posted, in order. */
+  comments: { issue: number; body: string }[];
 };
 
 /** By default the resolver refuses, as it does for any conflict outside
@@ -313,6 +339,7 @@ function fakeGateway(
   recorded: Recorded,
   updateSucceeds = true,
   resolves: boolean | 'retry' = false,
+  closing: Record<number, number[] | null> = {},
 ): QueueGateway {
   let pass = 0;
   return {
@@ -332,6 +359,12 @@ function fakeGateway(
         ? { ok: true }
         : { ok: false, reason: 'conflict in src/a.ts, which the queue never resolves' };
     },
+    closingIssues: (prNumber) =>
+      prNumber in closing ? (closing[prNumber] as number[] | null) : [],
+    commentOnIssue: (issue, body) => {
+      recorded.comments.push({ issue, body });
+      return true;
+    },
     waitBeforeNextPass: (n) => {
       recorded.waits.push(n);
       return Promise.resolve();
@@ -341,7 +374,7 @@ function fakeGateway(
 }
 
 function recorder(): Recorded {
-  return { updated: [], armed: [], resolved: [], waits: [], logs: [] };
+  return { updated: [], armed: [], resolved: [], waits: [], logs: [], comments: [] };
 }
 
 describe('reconcilePrQueue', () => {
@@ -447,6 +480,74 @@ describe('reconcilePrQueue', () => {
     expect(outcome.resolved).toEqual([8]);
     expect(outcome.conflicted).toEqual([]);
     expect(outcome.stillOpen).toEqual([]);
+  });
+
+  it('comments once on each issue a resolved PR closes', async () => {
+    // Arrange — the merger already said "requires manual review" on both.
+    const recorded = recorder();
+    const gateway = fakeGateway(
+      [
+        [pr({ number: 8, mergeStateStatus: 'DIRTY' })],
+        [pr({ number: 8, state: 'MERGED' })],
+      ],
+      recorded,
+      true,
+      true,
+      { 8: [704, 705] },
+    );
+
+    // Act
+    await reconcilePrQueue(gateway);
+
+    // Assert
+    expect(recorded.comments.map((c) => c.issue)).toEqual([704, 705]);
+    for (const { body } of recorded.comments) {
+      expect(body).toMatch(/#8/);
+      expect(body).toMatch(/CHANGELOG/);
+      expect(body).toMatch(/both sides/i);
+      expect(body).toMatch(/no longer applies/i);
+    }
+  });
+
+  it('posts no comment on a conflict the queue did not resolve', async () => {
+    // Arrange
+    const recorded = recorder();
+    const gateway = fakeGateway(
+      [[pr({ number: 6, mergeStateStatus: 'DIRTY' })]],
+      recorded,
+      true,
+      false,
+      { 6: [700] },
+    );
+
+    // Act
+    await reconcilePrQueue(gateway, 3);
+
+    // Assert
+    expect(recorded.comments).toEqual([]);
+  });
+
+  it('warns and posts nothing when the closing references cannot be read', async () => {
+    // Arrange
+    const recorded = recorder();
+    const gateway = fakeGateway(
+      [
+        [pr({ number: 8, mergeStateStatus: 'DIRTY' })],
+        [pr({ number: 8, state: 'MERGED' })],
+      ],
+      recorded,
+      true,
+      true,
+      { 8: null },
+    );
+
+    // Act
+    const outcome = await reconcilePrQueue(gateway);
+
+    // Assert
+    expect(recorded.comments).toEqual([]);
+    expect(outcome.resolved).toEqual([8]);
+    expect(recorded.logs.join('\n')).toMatch(/⚠ #8.*closing/i);
   });
 
   it('offers a refused PR to the resolver once, then leaves it to a human', async () => {
@@ -660,6 +761,10 @@ describe('sandcastle-pr-queue-gh.mts — the gh wiring', () => {
     expect(source).toMatch(/autoMergeRequest/);
   });
 
+  it('reads a resolved PR’s closing issues from closingIssuesReferences', () => {
+    expect(source).toMatch(/gh pr view \$\{[^}]+\} --json closingIssuesReferences/);
+  });
+
   it('asks gh for the changed-file count the empty-PR guard reads', () => {
     // Without the field in the --json list the guard would see `null` on every
     // PR and the loop would decline every write.
@@ -724,6 +829,19 @@ describe('merge-prompt.md — the merger unsticks its own PRs while it waits', (
     expect(content.slice(dirtyIdx, dirtyIdx + 600)).toMatch(
       /do not.*(resolve|rebase|merge)|needs? (a )?human|manual/i,
     );
+  });
+
+  it('does not call a DIRTY PR a final "requires manual review"', () => {
+    const step5 = content.slice(
+      content.indexOf('## Step 5'),
+      content.indexOf('## Step 6'),
+    );
+    const dirty = step5
+      .split('\n')
+      .filter((line) => /gh issue comment/.test(line) && /DIRTY/.test(line));
+    expect(dirty).toHaveLength(1);
+    expect(dirty[0]).not.toMatch(/requires manual review/i);
+    expect(dirty[0]).toMatch(/host queue[\s\S]*CHANGELOG[\s\S]*will comment/i);
   });
 
   it('keeps the poll loop bounded', () => {
