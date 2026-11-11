@@ -267,11 +267,13 @@ const NOTABLE: readonly (readonly [Classification, string])[] = [
 
 /** The badges a folded panel's header carries. Counted, never judged — each is
  *  drawn in the tone its rows already are. */
-function foldBadges(rows: readonly ReadingRow[]): string[] {
-  return NOTABLE.map(([classification, what]) => {
+function foldBadges(
+  rows: readonly ReadingRow[],
+): { classification: Classification; text: string }[] {
+  return NOTABLE.flatMap(([classification, what]) => {
     const n = rows.filter((row) => row.after?.classification === classification).length;
-    return n > 0 ? `${n} ${what}` : null;
-  }).filter((badge): badge is string => badge !== null);
+    return n > 0 ? [{ classification, text: `${n} ${what}` }] : [];
+  });
 }
 
 /** The caption beside those badges: only the count, since a badge already says
@@ -323,7 +325,8 @@ export function SpacingReadings({
   const empty = mode === null || rows.length === 0;
   const foldable = folded !== null && (foldEmpty || !empty);
   const shut = foldable && closed;
-  const badges = shut && !empty ? foldBadges(rows) : [];
+  const counted = shut && !empty;
+  const badges = counted ? foldBadges(rows) : [];
   const body = (
     <ReadingsBody
       ledger={ledger}
@@ -347,14 +350,14 @@ export function SpacingReadings({
           )}
           {HEADING}
         </Text>
-        {badges.map((badge) => (
-          <Badge key={badge} tone="warning">
-            {badge}
+        {badges.map(({ classification, text }) => (
+          <Badge key={classification} tone={TONES[classification]}>
+            {text}
           </Badge>
         ))}
         {mode !== null && (
           <p className="vd-readings__caption vd-mono">
-            {shut && !empty ? foldCaption(rows, badges.length > 0) : CAPTIONS[mode]}
+            {counted ? foldCaption(rows, badges.length > 0) : CAPTIONS[mode]}
           </p>
         )}
         {foldable && (
