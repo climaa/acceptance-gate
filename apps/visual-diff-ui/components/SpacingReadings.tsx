@@ -258,24 +258,29 @@ function readingRow({
   };
 }
 
-/** The one line a folded panel reads: how many readings there are, and whether
- *  any of them is worth unfolding for. Counted, never judged — "off-scale" and
- *  "raw on the scale" are what the badges say, in the badges' own words. */
-function foldSummary(rows: readonly ReadingRow[]): string {
-  const count = (classification: Classification) =>
-    rows.filter((row) => row.after?.classification === classification).length;
-  const notable = [
-    [count('off-scale'), 'off-scale'],
-    [count('raw-on-scale'), 'raw on the scale'],
-  ]
-    .filter(([n]) => Number(n) > 0)
-    .map(([n, what]) => `${n} ${what}`);
-  const noun = rows.length === 1 ? 'reading' : 'readings';
+/** What a folded panel is worth unfolding for, in the rows' own words and in
+ *  this order: one count per classification that holds a reading. */
+const NOTABLE: readonly (readonly [Classification, string])[] = [
+  ['off-scale', 'off-scale'],
+  ['raw-on-scale', 'raw on the scale'],
+];
 
-  return [
-    `${rows.length} ${noun}`,
-    notable.length === 0 ? 'all on the scale or exempt' : notable.join(' · '),
-  ].join(' · ');
+/** The badges a folded panel's header carries. Counted, never judged — each is
+ *  drawn in the tone its rows already are. */
+function foldBadges(
+  rows: readonly ReadingRow[],
+): { classification: Classification; text: string }[] {
+  return NOTABLE.flatMap(([classification, what]) => {
+    const n = rows.filter((row) => row.after?.classification === classification).length;
+    return n > 0 ? [{ classification, text: `${n} ${what}` }] : [];
+  });
+}
+
+/** The caption beside those badges: only the count, since a badge already says
+ *  what is notable — or, with no badge, that nothing is. */
+function foldCaption(rows: readonly ReadingRow[], badged: boolean): string {
+  const count = `${rows.length} ${rows.length === 1 ? 'reading' : 'readings'}`;
+  return badged ? count : `${count} · all on the scale or exempt`;
 }
 
 export interface SpacingReadingsProps {
@@ -320,6 +325,8 @@ export function SpacingReadings({
   const empty = mode === null || rows.length === 0;
   const foldable = folded !== null && (foldEmpty || !empty);
   const shut = foldable && closed;
+  const counted = shut && !empty;
+  const badges = counted ? foldBadges(rows) : [];
   const body = (
     <ReadingsBody
       ledger={ledger}
@@ -343,9 +350,14 @@ export function SpacingReadings({
           )}
           {HEADING}
         </Text>
+        {badges.map(({ classification, text }) => (
+          <Badge key={classification} tone={TONES[classification]}>
+            {text}
+          </Badge>
+        ))}
         {mode !== null && (
           <p className="vd-readings__caption vd-mono">
-            {shut && !empty ? foldSummary(rows) : CAPTIONS[mode]}
+            {counted ? foldCaption(rows, badges.length > 0) : CAPTIONS[mode]}
           </p>
         )}
         {foldable && (
