@@ -382,6 +382,24 @@ const badge: Readings = {
   ],
 };
 
+/** A reading only the after side has, off the scale unless told otherwise. */
+const present = (after: Partial<ChangeSide> = {}): LedgerChange =>
+  change({ change: 'present', before: null, after: side(after) });
+
+/** The panel's header row: the title, any badges, the caption, the fold. */
+const header = () => document.querySelector('.vd-readings')?.firstElementChild ?? null;
+
+/** The badges the header carries — never the rows' own, folded away beneath. */
+const headerBadges = () =>
+  Array.from(header()?.querySelectorAll('.ds-badge') ?? []).map((el) => ({
+    text: el.textContent,
+    tone: Array.from(el.classList)
+      .find((name) => name.startsWith('ds-badge--'))
+      ?.slice('ds-badge--'.length),
+  }));
+
+const caption = () => header()?.querySelector('.vd-readings__caption')?.textContent;
+
 function renderShot(ledger: Readings | null, folded: boolean | null = null) {
   render(
     <SpacingReadings
@@ -432,13 +450,68 @@ describe('the spacing readings of one screenshot', () => {
     }).toEqual({ line: true, table: null, expanded: 'false' });
   });
 
-  it('counts what a folded line is worth unfolding for', () => {
+  it('badges what a folded line is worth unfolding for, and captions the count', () => {
+    renderShot({ ...badge, rows: [...badge.rows, present()] }, true);
+
+    expect({ badges: headerBadges(), caption: caption() }).toEqual({
+      badges: [{ text: '1 off-scale', tone: 'warning' }],
+      caption: '3 readings',
+    });
+  });
+
+  it('badges off-scale before raw on the scale, each in the warning tone', () => {
     renderShot(
-      { ...badge, rows: [...badge.rows, change({ change: 'present', before: null })] },
+      {
+        ...badge,
+        rows: [
+          ...badge.rows,
+          present({ classification: 'raw-on-scale', token: null, px: 8 }),
+          present(),
+          present(),
+        ],
+      },
       true,
     );
 
-    expect(screen.getByText('3 readings · 1 off-scale')).toBeTruthy();
+    expect({ badges: headerBadges(), caption: caption() }).toEqual({
+      badges: [
+        { text: '2 off-scale', tone: 'warning' },
+        { text: '1 raw on the scale', tone: 'warning' },
+      ],
+      caption: '5 readings',
+    });
+  });
+
+  it('badges raw on the scale alone where nothing is off it', () => {
+    renderShot(
+      {
+        ...badge,
+        rows: [...badge.rows, present({ classification: 'raw-on-scale', token: null })],
+      },
+      true,
+    );
+
+    expect(headerBadges()).toEqual([{ text: '1 raw on the scale', tone: 'warning' }]);
+  });
+
+  it('badges nothing on a folded line with nothing to unfold for', () => {
+    renderShot(badge, true);
+
+    expect({ badges: headerBadges(), caption: caption() }).toEqual({
+      badges: [],
+      caption: '2 readings · all on the scale or exempt',
+    });
+  });
+
+  it('badges nothing once unfolded, and says what it is reading', () => {
+    renderShot({ ...badge, rows: [...badge.rows, present()] }, true);
+
+    fireEvent.click(screen.getByRole('button', { name: 'show' }));
+
+    expect({ badges: headerBadges(), caption: caption() }).toEqual({
+      badges: [],
+      caption: 'every reading in this screenshot',
+    });
   });
 
   it('unfolds to the table when asked', () => {
@@ -520,6 +593,9 @@ describe('the spacing readings folded beneath a comparison', () => {
   it('counts what it holds on the folded line, as a screenshot does', () => {
     renderFolded(report());
 
-    expect(screen.getByText('1 reading · 1 off-scale')).toBeTruthy();
+    expect({ badges: headerBadges(), caption: caption() }).toEqual({
+      badges: [{ text: '1 off-scale', tone: 'warning' }],
+      caption: '1 reading',
+    });
   });
 });
