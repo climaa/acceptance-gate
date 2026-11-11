@@ -249,6 +249,25 @@ export function parsePrQueueJson(stdout: string): QueuedPr[] {
   });
 }
 
+/**
+ * `gh pr view <pr> --json closingIssuesReferences` → the issue numbers.
+ *
+ * `null` for anything malformed, never `[]`: "this PR closes nothing" and "gh
+ * did not say" are different answers, and only the first is safe to act on.
+ */
+export function parseClosingIssuesJson(stdout: string): number[] | null {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(stdout.trim());
+  } catch {
+    return null;
+  }
+  const refs = (parsed as { closingIssuesReferences?: unknown })?.closingIssuesReferences;
+  if (!Array.isArray(refs)) return null;
+  const numbers = refs.map((ref: { number?: unknown }) => ref?.number);
+  return numbers.every((n): n is number => typeof n === 'number') ? numbers : null;
+}
+
 /** Everything the reconciler needs from the outside world. */
 export type QueueGateway = {
   /** Open+recently-settled PRs whose head branch this run owns. */
@@ -262,6 +281,11 @@ export type QueueGateway = {
   resolveConflict: (
     action: QueueAction,
   ) => { ok: true } | { ok: false; reason: string; retry?: boolean };
+  /** The issues a PR closes (`closingIssuesReferences`), or `null` when gh
+   *  could not say. */
+  closingIssues: (pr: number) => number[] | null;
+  /** `gh issue comment` — true when it succeeded. */
+  commentOnIssue: (issue: number, body: string) => boolean;
   /** Let CI move before looking again. `pass` is the pass just finished. */
   waitBeforeNextPass: (pass: number) => Promise<void>;
   log: (line: string) => void;
@@ -324,6 +348,40 @@ type Tally = {
   retried: Set<number>;
 };
 
+/**
+ * The comment a resolved PR leaves on each issue it closes. The merger met the
+ * same conflict first and left a not-merged comment, so this one says plainly
+ * that it no longer stands.
+ */
+export function resolvedConflictComment(pr: number): string {
+  return (
+    `The host queue resolved PR #${pr}'s conflict with main: both sides only added ` +
+    `lines to CHANGELOG.md, so it merged main in, kept both sides, and pushed ` +
+    `through the gate. The earlier "requires manual review" no longer applies.`
+  );
+}
+
+/**
+ * Tell the issues a resolved PR closes that its conflict is gone. Unreadable
+ * closing references post nothing: a guessed issue number would comment on the
+ * wrong thread.
+ */
+function announceResolution(gateway: QueueGateway, { pr, branch }: QueueAction): void {
+  const issues = gateway.closingIssues(pr);
+  if (issues === null) {
+    gateway.log(
+      `  ⚠ #${pr} (${branch}) closing issues unreadable — no resolution comment posted`,
+    );
+    return;
+  }
+  const body = resolvedConflictComment(pr);
+  for (const issue of issues) {
+    if (!gateway.commentOnIssue(issue, body)) {
+      gateway.log(`  ⚠ #${pr} (${branch}) could not comment on issue #${issue}`);
+    }
+  }
+}
+
 /** Hand a DIRTY PR to the resolver. True when it is now a human's. */
 function resolveConflict(
   gateway: QueueGateway,
@@ -337,6 +395,7 @@ function resolveConflict(
     gateway.log(
       `  ↻ #${pr} (${branch}) resolved: base merged in, both sides kept, pushed`,
     );
+    announceResolution(gateway, action);
     return false;
   }
   if (result.retry === true && !tally.retried.has(pr)) {
