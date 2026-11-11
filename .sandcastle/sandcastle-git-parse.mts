@@ -139,3 +139,16 @@ export function parseWorktreeForBranch(stdout: string, branch: string): string |
 export function parseDirtiness(stdout: string): WorktreeDirtiness {
   return stdout.trim().length > 0 ? 'dirty' : 'clean';
 }
+
+/**
+ * `git ls-remote --heads origin <branch>`: the sha of exactly
+ * `refs/heads/<branch>`, or null when origin has no such branch. ls-remote
+ * matches the pattern against the ref's tail, so `x/<branch>` can also answer.
+ */
+export function parseLsRemoteTip(stdout: string, branch: string): string | null {
+  for (const line of stdout.split('\n')) {
+    const [sha, ref] = line.trim().split(/\s+/);
+    if (ref === `refs/heads/${branch}` && sha) return sha;
+  }
+  return null;
+}
