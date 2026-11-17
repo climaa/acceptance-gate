@@ -23,8 +23,16 @@ allowBuilds:
 # which carries GHSA advisories fixed in 4.7.10, so no in-range refresh reaches the
 # patch. It only runs inside ESLint. Remove this entry once eslint-plugin-boundaries
 # ships with handlebars >=4.7.10.
+# glob <=14.0.1 carries GHSA-3g3m-2fjr-6pw4 and minimatch <11.0.1 GHSA-g3hv-75wg-m249.
+# Two parents hold the old majors: @joshwooding/vite-plugin-react-docgen-typescript 0.7.x
+# (Storybook react-vite's docgen, held at ^0.7.0) asks for glob ^13, and
+# @typescript-eslint/typescript-estree 8.72.x for minimatch ^10. Remove each entry once
+# its parent resolves to a release on the patched major (typescript-estree 8.73 already
+# asks for minimatch ^11; it is younger than minimumReleaseAge today).
 overrides:
   handlebars: 4.7.10
+  '@joshwooding/vite-plugin-react-docgen-typescript>glob': ^14.0.5
+  '@typescript-eslint/typescript-estree>minimatch': ^11.0.8
 # Next 16.4's useRouter() reads parentRenderTree off the router context Storybook
 # mounts, and @storybook/nextjs-vite 10.5–10.6 does not set it, so every screen story
 # (apps/visual-diff-ui/app/_screens) failed to render. Remove this entry once a

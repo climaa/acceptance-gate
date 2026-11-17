@@ -7,6 +7,8 @@ transcribed from the GitHub Releases that existed when this file was created (20
 
 ## Unreleased
 
+- Dependabot alerts #19–#21 closed. Next moves to 16.4.6 (GHSA-mfr8-8qww-v76h: a `'use cache'` function reached through `unstable_cache()` could hand one root param's cached data to another on a cold start). glob 13 and minimatch 10 (GHSA-3g3m-2fjr-6pw4, GHSA-g3hv-75wg-m249) leave the tree: Sentry moves to 11.12, whose bundler plugins already ask for glob 14, and two scoped overrides lift the parents that still pin the old majors — Storybook's docgen plugin (glob) and typescript-estree 8.72 (minimatch) — each with its exit condition beside it in `pnpm-workspace.yaml`.
+
 ## v1.9.0 — every route is a screen, and the gate stops refusing a correct tree
 
 _Released 2026-11-17._
