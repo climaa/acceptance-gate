@@ -72,6 +72,8 @@ Unchanged, and measured: `apps/manual` 10 / 118, `packages/logger` 3 / 32, `pack
 
 **The ledger still reads spacing only.** Colour, type and radius are not measured.
 
+**Three moderate Dependabot alerts are open.** `next` (fixed in 16.4.5, reported the day of this release, younger than the three-day hold #689 put on installs) and `minimatch` and `glob` (fixed in 11.0.1 and 14.0.2, open since 2026-11-05). They wait for the next dependency bump.
+
 **Upstream and unchanged:** [#68](https://github.com/climaa/acceptance-gate/issues/68) ESLint 10 is unreachable, and [#47](https://github.com/climaa/acceptance-gate/issues/47) TypeScript 7 is blocked.
 
 **Full changelog:** https://github.com/climaa/acceptance-gate/compare/v1.8.0...v1.9.0
