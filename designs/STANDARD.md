@@ -76,9 +76,13 @@ file and its exports are one name. The boards, in order:
      `apps/storybook/.storybook/main.ts` (the manual's `@/lib/sources`).
   6. _A child does not repeat the parent._ A child drops one of the parent's stories only
      when its render is pixel-identical to the parent's; under its own design tokens it
-     is a variant and stays. A child captures its own console as `Screens / Visual-diff-ui`
-     review-only: there the console is the tool, not the product, so it is seen in the
-     set and kept out of the budget.
+     is a variant and stays.
+  7. _A child carries no console screens._ The console's code is maintained here, and a
+     child that copies `apps/visual-diff-ui` copies a tool, not its product. So the child
+     writes no story for the console's pages and holds no `Screens / Visual-diff-ui`
+     screenshot: its policy's `APP_ROOTS` leaves the console out, and its
+     `screen-routes` test claims no console route. Its set viewer and its report show
+     only the child's own product.
 - **Variables are copied, not shared.** A Pencil document holds its own variables and
   themes, so every board file carries the same set. `00-foundations.pen` is the source:
   change a variable there and copy it to every other board file. The `boards` check reads
