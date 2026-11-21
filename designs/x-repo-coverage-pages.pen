@@ -1973,7 +1973,7 @@
                                           "clip": true,
                                           "width": 509,
                                           "height": 10,
-                                          "fill": "$bg-muted",
+                                          "fill": "$chart-tint",
                                           "cornerRadius": 9999,
                                           "children": [
                                             {
@@ -2110,7 +2110,7 @@
                                           "clip": true,
                                           "width": 509,
                                           "height": 10,
-                                          "fill": "$bg-muted",
+                                          "fill": "$chart-2-tint",
                                           "cornerRadius": 9999,
                                           "children": [
                                             {
@@ -2247,7 +2247,7 @@
                                           "clip": true,
                                           "width": 509,
                                           "height": 10,
-                                          "fill": "$bg-muted",
+                                          "fill": "$chart-3-tint",
                                           "cornerRadius": 9999,
                                           "children": [
                                             {
@@ -14099,7 +14099,7 @@
                                           "clip": true,
                                           "width": 509,
                                           "height": 10,
-                                          "fill": "$bg-muted",
+                                          "fill": "$chart-tint",
                                           "cornerRadius": 9999,
                                           "children": [
                                             {
@@ -14236,7 +14236,7 @@
                                           "clip": true,
                                           "width": 509,
                                           "height": 10,
-                                          "fill": "$bg-muted",
+                                          "fill": "$chart-2-tint",
                                           "cornerRadius": 9999,
                                           "children": [
                                             {
@@ -14373,7 +14373,7 @@
                                           "clip": true,
                                           "width": 509,
                                           "height": 10,
-                                          "fill": "$bg-muted",
+                                          "fill": "$chart-3-tint",
                                           "cornerRadius": 9999,
                                           "children": [
                                             {
@@ -26225,7 +26225,7 @@
                                           "clip": true,
                                           "width": 509,
                                           "height": 10,
-                                          "fill": "$bg-muted",
+                                          "fill": "$chart-tint",
                                           "cornerRadius": 9999,
                                           "children": [
                                             {
@@ -26363,7 +26363,7 @@
                                           "clip": true,
                                           "width": 509,
                                           "height": 10,
-                                          "fill": "$bg-muted",
+                                          "fill": "$chart-2-tint",
                                           "cornerRadius": 9999,
                                           "children": [
                                             {
@@ -26501,7 +26501,7 @@
                                           "clip": true,
                                           "width": 509,
                                           "height": 10,
-                                          "fill": "$bg-muted",
+                                          "fill": "$chart-3-tint",
                                           "cornerRadius": 9999,
                                           "children": [
                                             {
@@ -37084,7 +37084,7 @@
                                           "clip": true,
                                           "width": 509,
                                           "height": 10,
-                                          "fill": "$bg-muted",
+                                          "fill": "$chart-tint",
                                           "cornerRadius": 9999,
                                           "children": [
                                             {
@@ -37222,7 +37222,7 @@
                                           "clip": true,
                                           "width": 509,
                                           "height": 10,
-                                          "fill": "$bg-muted",
+                                          "fill": "$chart-2-tint",
                                           "cornerRadius": 9999,
                                           "children": [
                                             {
@@ -37360,7 +37360,7 @@
                                           "clip": true,
                                           "width": 509,
                                           "height": 10,
-                                          "fill": "$bg-muted",
+                                          "fill": "$chart-3-tint",
                                           "cornerRadius": 9999,
                                           "children": [
                                             {
@@ -47970,7 +47970,7 @@
                                           "clip": true,
                                           "width": 509,
                                           "height": 10,
-                                          "fill": "$bg-muted",
+                                          "fill": "$chart-tint",
                                           "cornerRadius": 9999,
                                           "children": [
                                             {
@@ -48107,7 +48107,7 @@
                                           "clip": true,
                                           "width": 509,
                                           "height": 10,
-                                          "fill": "$bg-muted",
+                                          "fill": "$chart-2-tint",
                                           "cornerRadius": 9999,
                                           "children": [
                                             {
@@ -48244,7 +48244,7 @@
                                           "clip": true,
                                           "width": 509,
                                           "height": 10,
-                                          "fill": "$bg-muted",
+                                          "fill": "$chart-3-tint",
                                           "cornerRadius": 9999,
                                           "children": [
                                             {
@@ -60123,7 +60123,7 @@
                                           "clip": true,
                                           "width": 509,
                                           "height": 10,
-                                          "fill": "$bg-muted",
+                                          "fill": "$chart-tint",
                                           "cornerRadius": 9999,
                                           "children": [
                                             {
@@ -60260,7 +60260,7 @@
                                           "clip": true,
                                           "width": 509,
                                           "height": 10,
-                                          "fill": "$bg-muted",
+                                          "fill": "$chart-2-tint",
                                           "cornerRadius": 9999,
                                           "children": [
                                             {
@@ -60397,7 +60397,7 @@
                                           "clip": true,
                                           "width": 509,
                                           "height": 10,
-                                          "fill": "$bg-muted",
+                                          "fill": "$chart-3-tint",
                                           "cornerRadius": 9999,
                                           "children": [
                                             {
@@ -71157,7 +71157,7 @@
                                       "clip": true,
                                       "width": 318,
                                       "height": 10,
-                                      "fill": "$bg-muted",
+                                      "fill": "$chart-tint",
                                       "cornerRadius": 9999,
                                       "children": [
                                         {
@@ -71301,7 +71301,7 @@
                                       "clip": true,
                                       "width": 318,
                                       "height": 10,
-                                      "fill": "$bg-muted",
+                                      "fill": "$chart-2-tint",
                                       "cornerRadius": 9999,
                                       "children": [
                                         {
@@ -71445,7 +71445,7 @@
                                       "clip": true,
                                       "width": 318,
                                       "height": 10,
-                                      "fill": "$bg-muted",
+                                      "fill": "$chart-3-tint",
                                       "cornerRadius": 9999,
                                       "children": [
                                         {
@@ -81608,7 +81608,7 @@
                                       "clip": true,
                                       "width": 318,
                                       "height": 10,
-                                      "fill": "$bg-muted",
+                                      "fill": "$chart-tint",
                                       "cornerRadius": 9999,
                                       "children": [
                                         {
@@ -81752,7 +81752,7 @@
                                       "clip": true,
                                       "width": 318,
                                       "height": 10,
-                                      "fill": "$bg-muted",
+                                      "fill": "$chart-2-tint",
                                       "cornerRadius": 9999,
                                       "children": [
                                         {
@@ -81896,7 +81896,7 @@
                                       "clip": true,
                                       "width": 318,
                                       "height": 10,
-                                      "fill": "$bg-muted",
+                                      "fill": "$chart-3-tint",
                                       "cornerRadius": 9999,
                                       "children": [
                                         {
@@ -92059,7 +92059,7 @@
                                       "clip": true,
                                       "width": 318,
                                       "height": 10,
-                                      "fill": "$bg-muted",
+                                      "fill": "$chart-tint",
                                       "cornerRadius": 9999,
                                       "children": [
                                         {
@@ -92204,7 +92204,7 @@
                                       "clip": true,
                                       "width": 318,
                                       "height": 10,
-                                      "fill": "$bg-muted",
+                                      "fill": "$chart-2-tint",
                                       "cornerRadius": 9999,
                                       "children": [
                                         {
@@ -92349,7 +92349,7 @@
                                       "clip": true,
                                       "width": 318,
                                       "height": 10,
-                                      "fill": "$bg-muted",
+                                      "fill": "$chart-3-tint",
                                       "cornerRadius": 9999,
                                       "children": [
                                         {
@@ -101422,7 +101422,7 @@
                                       "clip": true,
                                       "width": 318,
                                       "height": 10,
-                                      "fill": "$bg-muted",
+                                      "fill": "$chart-tint",
                                       "cornerRadius": 9999,
                                       "children": [
                                         {
@@ -101567,7 +101567,7 @@
                                       "clip": true,
                                       "width": 318,
                                       "height": 10,
-                                      "fill": "$bg-muted",
+                                      "fill": "$chart-2-tint",
                                       "cornerRadius": 9999,
                                       "children": [
                                         {
@@ -101712,7 +101712,7 @@
                                       "clip": true,
                                       "width": 318,
                                       "height": 10,
-                                      "fill": "$bg-muted",
+                                      "fill": "$chart-3-tint",
                                       "cornerRadius": 9999,
                                       "children": [
                                         {
@@ -110812,7 +110812,7 @@
                                       "clip": true,
                                       "width": 318,
                                       "height": 10,
-                                      "fill": "$bg-muted",
+                                      "fill": "$chart-tint",
                                       "cornerRadius": 9999,
                                       "children": [
                                         {
@@ -110956,7 +110956,7 @@
                                       "clip": true,
                                       "width": 318,
                                       "height": 10,
-                                      "fill": "$bg-muted",
+                                      "fill": "$chart-2-tint",
                                       "cornerRadius": 9999,
                                       "children": [
                                         {
@@ -111100,7 +111100,7 @@
                                       "clip": true,
                                       "width": 318,
                                       "height": 10,
-                                      "fill": "$bg-muted",
+                                      "fill": "$chart-3-tint",
                                       "cornerRadius": 9999,
                                       "children": [
                                         {
@@ -121290,7 +121290,7 @@
                                       "clip": true,
                                       "width": 318,
                                       "height": 10,
-                                      "fill": "$bg-muted",
+                                      "fill": "$chart-tint",
                                       "cornerRadius": 9999,
                                       "children": [
                                         {
@@ -121434,7 +121434,7 @@
                                       "clip": true,
                                       "width": 318,
                                       "height": 10,
-                                      "fill": "$bg-muted",
+                                      "fill": "$chart-2-tint",
                                       "cornerRadius": 9999,
                                       "children": [
                                         {
@@ -121578,7 +121578,7 @@
                                       "clip": true,
                                       "width": 318,
                                       "height": 10,
-                                      "fill": "$bg-muted",
+                                      "fill": "$chart-3-tint",
                                       "cornerRadius": 9999,
                                       "children": [
                                         {
@@ -132671,7 +132671,7 @@
                                           "clip": true,
                                           "width": "fill_container",
                                           "height": 8,
-                                          "fill": "$bg-muted",
+                                          "fill": "$chart-tint",
                                           "cornerRadius": 9999,
                                           "children": [
                                             {
@@ -132778,7 +132778,7 @@
                                           "clip": true,
                                           "width": "fill_container",
                                           "height": 8,
-                                          "fill": "$bg-muted",
+                                          "fill": "$chart-2-tint",
                                           "cornerRadius": 9999,
                                           "children": [
                                             {
@@ -141041,7 +141041,7 @@
                                           "clip": true,
                                           "width": "fill_container",
                                           "height": 8,
-                                          "fill": "$bg-muted",
+                                          "fill": "$chart-tint",
                                           "cornerRadius": 9999,
                                           "children": [
                                             {
@@ -141148,7 +141148,7 @@
                                           "clip": true,
                                           "width": "fill_container",
                                           "height": 8,
-                                          "fill": "$bg-muted",
+                                          "fill": "$chart-2-tint",
                                           "cornerRadius": 9999,
                                           "children": [
                                             {
@@ -148245,7 +148245,7 @@
                                       "clip": true,
                                       "width": 141,
                                       "height": 8,
-                                      "fill": "$bg-muted",
+                                      "fill": "$chart-tint",
                                       "cornerRadius": 9999,
                                       "children": [
                                         {
@@ -148352,7 +148352,7 @@
                                       "clip": true,
                                       "width": 141,
                                       "height": 8,
-                                      "fill": "$bg-muted",
+                                      "fill": "$chart-2-tint",
                                       "cornerRadius": 9999,
                                       "children": [
                                         {
@@ -154748,7 +154748,7 @@
                                       "clip": true,
                                       "width": 141,
                                       "height": 8,
-                                      "fill": "$bg-muted",
+                                      "fill": "$chart-tint",
                                       "cornerRadius": 9999,
                                       "children": [
                                         {
@@ -154855,7 +154855,7 @@
                                       "clip": true,
                                       "width": 141,
                                       "height": 8,
-                                      "fill": "$bg-muted",
+                                      "fill": "$chart-2-tint",
                                       "cornerRadius": 9999,
                                       "children": [
                                         {
@@ -162663,7 +162663,7 @@
                                           "clip": true,
                                           "width": "fill_container",
                                           "height": 8,
-                                          "fill": "$bg-muted",
+                                          "fill": "$chart-3-tint",
                                           "cornerRadius": 9999,
                                           "children": [
                                             {
@@ -167333,7 +167333,7 @@
                                           "clip": true,
                                           "width": "fill_container",
                                           "height": 8,
-                                          "fill": "$bg-muted",
+                                          "fill": "$chart-3-tint",
                                           "cornerRadius": 9999,
                                           "children": [
                                             {
@@ -170821,7 +170821,7 @@
                                       "clip": true,
                                       "width": 141,
                                       "height": 8,
-                                      "fill": "$bg-muted",
+                                      "fill": "$chart-3-tint",
                                       "cornerRadius": 9999,
                                       "children": [
                                         {
@@ -174293,7 +174293,7 @@
                                       "clip": true,
                                       "width": 141,
                                       "height": 8,
-                                      "fill": "$bg-muted",
+                                      "fill": "$chart-3-tint",
                                       "cornerRadius": 9999,
                                       "children": [
                                         {
@@ -179913,13 +179913,13 @@
       "type": "color",
       "value": [
         {
-          "value": "#1F5FA8",
+          "value": "#2563EB",
           "theme": {
             "mode": "light"
           }
         },
         {
-          "value": "#4A90DC",
+          "value": "#4A8CEB",
           "theme": {
             "mode": "dark"
           }
@@ -179964,13 +179964,13 @@
       "type": "color",
       "value": [
         {
-          "value": "#0F8060",
+          "value": "#0E8A57",
           "theme": {
             "mode": "light"
           }
         },
         {
-          "value": "#36A880",
+          "value": "#33A576",
           "theme": {
             "mode": "dark"
           }
@@ -179981,13 +179981,64 @@
       "type": "color",
       "value": [
         {
-          "value": "#A0560A",
+          "value": "#B45F06",
           "theme": {
             "mode": "light"
           }
         },
         {
           "value": "#C4842C",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "chart-tint": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#BAC1CE",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#283D55",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "chart-2-tint": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#B5C9AE",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#224434",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "chart-3-tint": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#D9C09C",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#4A3B20",
           "theme": {
             "mode": "dark"
           }
