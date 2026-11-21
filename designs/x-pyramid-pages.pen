@@ -798,7 +798,7 @@
                                                   "x": 0,
                                                   "y": 0,
                                                   "name": "Measured acceptance",
-                                                  "geometry": "M136.2 61.1l107.6 0 19.9 34.9-147.4 0z",
+                                                  "geometry": "M143.6 48l92.8 0 27.3 48-147.4 0z",
                                                   "viewBox": [
                                                     0,
                                                     0,
@@ -832,7 +832,7 @@
                                                   "x": 0,
                                                   "y": 102,
                                                   "name": "Measured component",
-                                                  "geometry": "M100.7 21.5l178.6 0 42.6 74.5-263.8 0z",
+                                                  "geometry": "M99.7 23l180.6 0 41.6 73-263.8 0z",
                                                   "viewBox": [
                                                     0,
                                                     0,
@@ -866,7 +866,7 @@
                                                   "x": 0,
                                                   "y": 204,
                                                   "name": "Measured unit",
-                                                  "geometry": "M6.1 85.3l367.8 0 6.1 10.7-380 0z",
+                                                  "geometry": "M9.8 78.7l360.4 0 9.8 17.3-380 0z",
                                                   "viewBox": [
                                                     0,
                                                     0,
@@ -6086,7 +6086,7 @@
                                                   "x": 0,
                                                   "y": 0,
                                                   "name": "Measured acceptance",
-                                                  "geometry": "M171 0l19 0 0 96-73.7 0z",
+                                                  "geometry": "M143.6 48l92.8 0 27.3 48-147.4 0z",
                                                   "viewBox": [
                                                     0,
                                                     0,
@@ -6120,7 +6120,7 @@
                                                   "x": 0,
                                                   "y": 102,
                                                   "name": "Measured component",
-                                                  "geometry": "M112.9 0l144.4 0 0 96-199.2 0z",
+                                                  "geometry": "M99.7 23l180.6 0 41.6 73-263.8 0z",
                                                   "viewBox": [
                                                     0,
                                                     0,
@@ -6154,7 +6154,7 @@
                                                   "x": 0,
                                                   "y": 204,
                                                   "name": "Measured unit",
-                                                  "geometry": "M54.7 0l14.4 0 0 96-69.1 0z",
+                                                  "geometry": "M9.8 78.7l360.4 0 9.8 17.3-380 0z",
                                                   "viewBox": [
                                                     0,
                                                     0,
@@ -11376,7 +11376,7 @@
                                                   "y": 0,
                                                   "name": "Measured acceptance",
                                                   "opacity": 0.3,
-                                                  "geometry": "M171 0l19 0 0 96-73.7 0z",
+                                                  "geometry": "M143.6 48l92.8 0 27.3 48-147.4 0z",
                                                   "viewBox": [
                                                     0,
                                                     0,
@@ -11412,7 +11412,7 @@
                                                   "y": 102,
                                                   "name": "Measured component",
                                                   "opacity": 0.3,
-                                                  "geometry": "M112.9 0l144.4 0 0 96-199.2 0z",
+                                                  "geometry": "M99.7 23l180.6 0 41.6 73-263.8 0z",
                                                   "viewBox": [
                                                     0,
                                                     0,
@@ -11446,7 +11446,7 @@
                                                   "x": 0,
                                                   "y": 204,
                                                   "name": "Measured unit",
-                                                  "geometry": "M54.7 0l14.4 0 0 96-69.1 0z",
+                                                  "geometry": "M9.8 78.7l360.4 0 9.8 17.3-380 0z",
                                                   "viewBox": [
                                                     0,
                                                     0,
@@ -15423,7 +15423,7 @@
                                                   "y": 0,
                                                   "name": "Measured acceptance",
                                                   "opacity": 0.3,
-                                                  "geometry": "M171 0l19 0 0 96-73.7 0z",
+                                                  "geometry": "M143.6 48l92.8 0 27.3 48-147.4 0z",
                                                   "viewBox": [
                                                     0,
                                                     0,
@@ -15459,7 +15459,7 @@
                                                   "y": 102,
                                                   "name": "Measured component",
                                                   "opacity": 0.3,
-                                                  "geometry": "M112.9 0l144.4 0 0 96-199.2 0z",
+                                                  "geometry": "M99.7 23l180.6 0 41.6 73-263.8 0z",
                                                   "viewBox": [
                                                     0,
                                                     0,
@@ -15493,7 +15493,7 @@
                                                   "x": 0,
                                                   "y": 204,
                                                   "name": "Measured unit",
-                                                  "geometry": "M54.7 0l14.4 0 0 96-69.1 0z",
+                                                  "geometry": "M9.8 78.7l360.4 0 9.8 17.3-380 0z",
                                                   "viewBox": [
                                                     0,
                                                     0,
@@ -19495,7 +19495,7 @@
                                                   "x": 0,
                                                   "y": 0,
                                                   "name": "Measured acceptance",
-                                                  "geometry": "M171 0l19 0 0 96-73.7 0z",
+                                                  "geometry": "M143.6 48l92.8 0 27.3 48-147.4 0z",
                                                   "viewBox": [
                                                     0,
                                                     0,
@@ -19529,7 +19529,7 @@
                                                   "x": 0,
                                                   "y": 102,
                                                   "name": "Measured component",
-                                                  "geometry": "M112.9 0l144.4 0 0 96-199.2 0z",
+                                                  "geometry": "M99.7 23l180.6 0 41.6 73-263.8 0z",
                                                   "viewBox": [
                                                     0,
                                                     0,
@@ -19563,7 +19563,7 @@
                                                   "x": 0,
                                                   "y": 204,
                                                   "name": "Measured unit",
-                                                  "geometry": "M54.7 0l14.4 0 0 96-69.1 0z",
+                                                  "geometry": "M9.8 78.7l360.4 0 9.8 17.3-380 0z",
                                                   "viewBox": [
                                                     0,
                                                     0,
@@ -24810,7 +24810,7 @@
                                                   "x": 0,
                                                   "y": 0,
                                                   "name": "Measured acceptance",
-                                                  "geometry": "M171 0l19 0 0 96-73.7 0z",
+                                                  "geometry": "M143.6 48l92.8 0 27.3 48-147.4 0z",
                                                   "viewBox": [
                                                     0,
                                                     0,
@@ -24844,7 +24844,7 @@
                                                   "x": 0,
                                                   "y": 102,
                                                   "name": "Measured component",
-                                                  "geometry": "M112.9 0l144.4 0 0 96-199.2 0z",
+                                                  "geometry": "M99.7 23l180.6 0 41.6 73-263.8 0z",
                                                   "viewBox": [
                                                     0,
                                                     0,
@@ -24878,7 +24878,7 @@
                                                   "x": 0,
                                                   "y": 204,
                                                   "name": "Measured unit",
-                                                  "geometry": "M54.7 0l14.4 0 0 96-69.1 0z",
+                                                  "geometry": "M9.8 78.7l360.4 0 9.8 17.3-380 0z",
                                                   "viewBox": [
                                                     0,
                                                     0,
@@ -30095,7 +30095,7 @@
                                                   "x": 0,
                                                   "y": 0,
                                                   "name": "Measured acceptance",
-                                                  "geometry": "M146.7 0l16.3 0 0 76-62.8 0z",
+                                                  "geometry": "M123.5 38l79 0 23.3 38-125.6 0z",
                                                   "viewBox": [
                                                     0,
                                                     0,
@@ -30129,7 +30129,7 @@
                                                   "x": 0,
                                                   "y": 82,
                                                   "name": "Measured component",
-                                                  "geometry": "M96.6 0l124 0 0 76-170.5 0z",
+                                                  "geometry": "M85.4 18.2l155.2 0 35.3 57.8-225.8 0z",
                                                   "viewBox": [
                                                     0,
                                                     0,
@@ -30163,7 +30163,7 @@
                                                   "x": 0,
                                                   "y": 164,
                                                   "name": "Measured unit",
-                                                  "geometry": "M46.5 0l12.8 0 0 76-59.3 0z",
+                                                  "geometry": "M8.4 62.3l309.2 0 8.4 13.7-326 0z",
                                                   "viewBox": [
                                                     0,
                                                     0,
@@ -35091,7 +35091,7 @@
                                                   "x": 0,
                                                   "y": 0,
                                                   "name": "Measured acceptance",
-                                                  "geometry": "M146.7 0l16.3 0 0 76-62.8 0z",
+                                                  "geometry": "M123.5 38l79 0 23.3 38-125.6 0z",
                                                   "viewBox": [
                                                     0,
                                                     0,
@@ -35125,7 +35125,7 @@
                                                   "x": 0,
                                                   "y": 82,
                                                   "name": "Measured component",
-                                                  "geometry": "M96.6 0l124 0 0 76-170.5 0z",
+                                                  "geometry": "M85.4 18.2l155.2 0 35.3 57.8-225.8 0z",
                                                   "viewBox": [
                                                     0,
                                                     0,
@@ -35159,7 +35159,7 @@
                                                   "x": 0,
                                                   "y": 164,
                                                   "name": "Measured unit",
-                                                  "geometry": "M46.5 0l12.8 0 0 76-59.3 0z",
+                                                  "geometry": "M8.4 62.3l309.2 0 8.4 13.7-326 0z",
                                                   "viewBox": [
                                                     0,
                                                     0,
@@ -40089,7 +40089,7 @@
                                                   "y": 0,
                                                   "name": "Measured acceptance",
                                                   "opacity": 0.3,
-                                                  "geometry": "M146.7 0l16.3 0 0 76-62.8 0z",
+                                                  "geometry": "M123.5 38l79 0 23.3 38-125.6 0z",
                                                   "viewBox": [
                                                     0,
                                                     0,
@@ -40125,7 +40125,7 @@
                                                   "y": 82,
                                                   "name": "Measured component",
                                                   "opacity": 0.3,
-                                                  "geometry": "M96.6 0l124 0 0 76-170.5 0z",
+                                                  "geometry": "M85.4 18.2l155.2 0 35.3 57.8-225.8 0z",
                                                   "viewBox": [
                                                     0,
                                                     0,
@@ -40159,7 +40159,7 @@
                                                   "x": 0,
                                                   "y": 164,
                                                   "name": "Measured unit",
-                                                  "geometry": "M46.5 0l12.8 0 0 76-59.3 0z",
+                                                  "geometry": "M8.4 62.3l309.2 0 8.4 13.7-326 0z",
                                                   "viewBox": [
                                                     0,
                                                     0,
@@ -44026,7 +44026,7 @@
                                                   "y": 0,
                                                   "name": "Measured acceptance",
                                                   "opacity": 0.3,
-                                                  "geometry": "M146.7 0l16.3 0 0 76-62.8 0z",
+                                                  "geometry": "M123.5 38l79 0 23.3 38-125.6 0z",
                                                   "viewBox": [
                                                     0,
                                                     0,
@@ -44062,7 +44062,7 @@
                                                   "y": 82,
                                                   "name": "Measured component",
                                                   "opacity": 0.3,
-                                                  "geometry": "M96.6 0l124 0 0 76-170.5 0z",
+                                                  "geometry": "M85.4 18.2l155.2 0 35.3 57.8-225.8 0z",
                                                   "viewBox": [
                                                     0,
                                                     0,
@@ -44096,7 +44096,7 @@
                                                   "x": 0,
                                                   "y": 164,
                                                   "name": "Measured unit",
-                                                  "geometry": "M46.5 0l12.8 0 0 76-59.3 0z",
+                                                  "geometry": "M8.4 62.3l309.2 0 8.4 13.7-326 0z",
                                                   "viewBox": [
                                                     0,
                                                     0,
@@ -47988,7 +47988,7 @@
                                                   "x": 0,
                                                   "y": 0,
                                                   "name": "Measured acceptance",
-                                                  "geometry": "M146.7 0l16.3 0 0 76-62.8 0z",
+                                                  "geometry": "M123.5 38l79 0 23.3 38-125.6 0z",
                                                   "viewBox": [
                                                     0,
                                                     0,
@@ -48022,7 +48022,7 @@
                                                   "x": 0,
                                                   "y": 82,
                                                   "name": "Measured component",
-                                                  "geometry": "M96.6 0l124 0 0 76-170.5 0z",
+                                                  "geometry": "M85.4 18.2l155.2 0 35.3 57.8-225.8 0z",
                                                   "viewBox": [
                                                     0,
                                                     0,
@@ -48056,7 +48056,7 @@
                                                   "x": 0,
                                                   "y": 164,
                                                   "name": "Measured unit",
-                                                  "geometry": "M46.5 0l12.8 0 0 76-59.3 0z",
+                                                  "geometry": "M8.4 62.3l309.2 0 8.4 13.7-326 0z",
                                                   "viewBox": [
                                                     0,
                                                     0,
@@ -53011,7 +53011,7 @@
                                                   "x": 0,
                                                   "y": 0,
                                                   "name": "Measured acceptance",
-                                                  "geometry": "M146.7 0l16.3 0 0 76-62.8 0z",
+                                                  "geometry": "M123.5 38l79 0 23.3 38-125.6 0z",
                                                   "viewBox": [
                                                     0,
                                                     0,
@@ -53045,7 +53045,7 @@
                                                   "x": 0,
                                                   "y": 82,
                                                   "name": "Measured component",
-                                                  "geometry": "M96.6 0l124 0 0 76-170.5 0z",
+                                                  "geometry": "M85.4 18.2l155.2 0 35.3 57.8-225.8 0z",
                                                   "viewBox": [
                                                     0,
                                                     0,
@@ -53079,7 +53079,7 @@
                                                   "x": 0,
                                                   "y": 164,
                                                   "name": "Measured unit",
-                                                  "geometry": "M46.5 0l12.8 0 0 76-59.3 0z",
+                                                  "geometry": "M8.4 62.3l309.2 0 8.4 13.7-326 0z",
                                                   "viewBox": [
                                                     0,
                                                     0,
@@ -95228,7 +95228,7 @@
                               "x": 0,
                               "y": 0,
                               "name": "Measured acceptance",
-                              "geometry": "M171 0l19 0 0 96-73.7 0z",
+                              "geometry": "M143.6 48l92.8 0 27.3 48-147.4 0z",
                               "viewBox": [
                                 0,
                                 0,
@@ -95262,7 +95262,7 @@
                               "x": 0,
                               "y": 102,
                               "name": "Measured component",
-                              "geometry": "M112.9 0l144.4 0 0 96-199.2 0z",
+                              "geometry": "M99.7 23l180.6 0 41.6 73-263.8 0z",
                               "viewBox": [
                                 0,
                                 0,
@@ -95296,7 +95296,7 @@
                               "x": 0,
                               "y": 204,
                               "name": "Measured unit",
-                              "geometry": "M54.7 0l14.4 0 0 96-69.1 0z",
+                              "geometry": "M9.8 78.7l360.4 0 9.8 17.3-380 0z",
                               "viewBox": [
                                 0,
                                 0,
@@ -95373,7 +95373,7 @@
                               "x": 0,
                               "y": 0,
                               "name": "Measured acceptance",
-                              "geometry": "M171 0l19 0 0 96-73.7 0z",
+                              "geometry": "M143.6 48l92.8 0 27.3 48-147.4 0z",
                               "viewBox": [
                                 0,
                                 0,
@@ -95407,7 +95407,7 @@
                               "x": 0,
                               "y": 102,
                               "name": "Measured component",
-                              "geometry": "M112.9 0l144.4 0 0 96-199.2 0z",
+                              "geometry": "M99.7 23l180.6 0 41.6 73-263.8 0z",
                               "viewBox": [
                                 0,
                                 0,
@@ -95441,7 +95441,7 @@
                               "x": 0,
                               "y": 204,
                               "name": "Measured unit",
-                              "geometry": "M54.7 0l14.4 0 0 96-69.1 0z",
+                              "geometry": "M9.8 78.7l360.4 0 9.8 17.3-380 0z",
                               "viewBox": [
                                 0,
                                 0,
