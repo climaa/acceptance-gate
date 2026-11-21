@@ -1,14 +1,14 @@
 {
   "board": "05-screens-repo-coverage-3 — Screens",
-  "scale": 1.252599,
+  "scale": 1.22488,
   "tiles": {
-    "screens__desktop__dark__screens-repo-coverage-home--empty": [1744, 7055, 1603, 1002],
-    "screens__desktop__dark__screens-repo-coverage-home--stale": [1744, 346, 1603, 4506],
-    "screens__desktop__light__screens-repo-coverage-home--empty": [80, 7055, 1603, 1002],
-    "screens__desktop__light__screens-repo-coverage-home--stale": [80, 346, 1603, 4506],
-    "screens__mobile__dark__screens-repo-coverage-home--empty": [3956, 7055, 489, 1057],
-    "screens__mobile__dark__screens-repo-coverage-home--stale": [3956, 346, 489, 6610],
-    "screens__mobile__light__screens-repo-coverage-home--empty": [3407, 7055, 489, 1057],
-    "screens__mobile__light__screens-repo-coverage-home--stale": [3407, 346, 489, 6610]
+    "screens__desktop__dark__screens-repo-coverage-home--empty": [1705, 7080, 1568, 980],
+    "screens__desktop__dark__screens-repo-coverage-home--stale": [1705, 338, 1568, 4588],
+    "screens__desktop__light__screens-repo-coverage-home--empty": [78, 7080, 1568, 980],
+    "screens__desktop__light__screens-repo-coverage-home--stale": [78, 338, 1568, 4588],
+    "screens__mobile__dark__screens-repo-coverage-home--empty": [3868, 7080, 478, 1034],
+    "screens__mobile__dark__screens-repo-coverage-home--stale": [3868, 338, 478, 6645],
+    "screens__mobile__light__screens-repo-coverage-home--empty": [3332, 7080, 478, 1034],
+    "screens__mobile__light__screens-repo-coverage-home--stale": [3332, 338, 478, 6645]
   }
 }

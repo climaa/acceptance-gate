@@ -1,14 +1,14 @@
 {
   "board": "05-screens-repo-coverage-4 — Screens",
-  "scale": 1.351369,
+  "scale": 1.28805,
   "tiles": {
-    "screens__desktop__dark__screens-repo-coverage-workspace--sample": [1881, 373, 1730, 3432],
-    "screens__desktop__dark__screens-repo-coverage-workspace--unmeasured": [1881, 5082, 1730, 2431],
-    "screens__desktop__light__screens-repo-coverage-workspace--sample": [86, 373, 1730, 3432],
-    "screens__desktop__light__screens-repo-coverage-workspace--unmeasured": [86, 5082, 1730, 2431],
-    "screens__mobile__dark__screens-repo-coverage-workspace--sample": [4268, 373, 527, 4603],
-    "screens__mobile__dark__screens-repo-coverage-workspace--unmeasured": [4268, 5082, 527, 3023],
-    "screens__mobile__light__screens-repo-coverage-workspace--sample": [3676, 373, 527, 4603],
-    "screens__mobile__light__screens-repo-coverage-workspace--unmeasured": [3676, 5082, 527, 3023]
+    "screens__desktop__dark__screens-repo-coverage-workspace--sample": [1793, 356, 1649, 3655],
+    "screens__desktop__dark__screens-repo-coverage-workspace--unmeasured": [1793, 5228, 1649, 2317],
+    "screens__desktop__light__screens-repo-coverage-workspace--sample": [82, 356, 1649, 3655],
+    "screens__desktop__light__screens-repo-coverage-workspace--unmeasured": [82, 5228, 1649, 2317],
+    "screens__mobile__dark__screens-repo-coverage-workspace--sample": [4068, 356, 502, 4771],
+    "screens__mobile__dark__screens-repo-coverage-workspace--unmeasured": [4068, 5228, 502, 2881],
+    "screens__mobile__light__screens-repo-coverage-workspace--sample": [3503, 356, 502, 4771],
+    "screens__mobile__light__screens-repo-coverage-workspace--unmeasured": [3503, 5228, 502, 2881]
   }
 }

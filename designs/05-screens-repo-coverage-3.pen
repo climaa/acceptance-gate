@@ -93,7 +93,7 @@
                   "reusable": true,
                   "clip": true,
                   "width": 1280,
-                  "height": 3597,
+                  "height": 3746,
                   "fill": "$bg",
                   "layout": "none",
                   "children": [
@@ -4283,7 +4283,7 @@
                                 },
                                 {
                                   "type": "frame",
-                                  "id": "qJKx2",
+                                  "id": "M81XCx",
                                   "name": "Card coverage",
                                   "width": "fill_container",
                                   "fill": "$bg-subtle",
@@ -4296,7 +4296,7 @@
                                   "children": [
                                     {
                                       "type": "frame",
-                                      "id": "SFNV1",
+                                      "id": "RKjJ2",
                                       "name": "card heading",
                                       "width": "fill_container",
                                       "layout": "vertical",
@@ -4304,8 +4304,7 @@
                                       "children": [
                                         {
                                           "type": "text",
-                                          "id": "I9Ah7q",
-                                          "name": "label",
+                                          "id": "IVmUc",
                                           "fill": "$text-muted",
                                           "content": "CODE COVERAGE BY WORKSPACE",
                                           "lineHeight": 1.25,
@@ -4316,12 +4315,11 @@
                                         },
                                         {
                                           "type": "text",
-                                          "id": "otUrh",
-                                          "name": "sub",
+                                          "id": "F9lLp",
                                           "fill": "$text-muted",
                                           "textGrowth": "fixed-width",
                                           "width": "fill_container",
-                                          "content": "Lines covered, where a workspace measures them.",
+                                          "content": "One block per workspace, as wide as its lines, coloured by its coverage against its floor.",
                                           "lineHeight": 1.5,
                                           "fontFamily": "$font-body",
                                           "fontSize": 14,
@@ -4331,23 +4329,133 @@
                                     },
                                     {
                                       "type": "frame",
-                                      "id": "euft9",
-                                      "name": "CoverageBars",
-                                      "width": "fill_container",
-                                      "gap": 32,
+                                      "id": "ciKit",
+                                      "name": "legend",
+                                      "gap": 12,
+                                      "alignItems": "center",
                                       "children": [
                                         {
                                           "type": "frame",
-                                          "id": "rhZrD",
-                                          "name": "category packages",
-                                          "width": "fill_container",
-                                          "layout": "vertical",
-                                          "gap": 10,
+                                          "id": "b0Q042",
+                                          "name": "chip at or over the floor",
+                                          "fill": "$success-surface",
+                                          "cornerRadius": 9999,
+                                          "padding": [
+                                            2,
+                                            8
+                                          ],
+                                          "alignItems": "center",
                                           "children": [
                                             {
                                               "type": "text",
-                                              "id": "uRwf9",
-                                              "name": "category",
+                                              "id": "FevRl",
+                                              "fill": "$success-fg",
+                                              "content": "at or over the floor",
+                                              "lineHeight": 1.25,
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 12,
+                                              "fontWeight": "700"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "wfrix",
+                                          "name": "chip under the floor",
+                                          "fill": "$warning-surface",
+                                          "cornerRadius": 9999,
+                                          "padding": [
+                                            2,
+                                            8
+                                          ],
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "P84Gx",
+                                              "fill": "$warning-fg",
+                                              "content": "under the floor",
+                                              "lineHeight": 1.25,
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 12,
+                                              "fontWeight": "700"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "RsDga",
+                                          "name": "chip unmeasured",
+                                          "fill": "$danger-surface",
+                                          "cornerRadius": 9999,
+                                          "padding": [
+                                            2,
+                                            8
+                                          ],
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "D72dwu",
+                                              "fill": "$danger-fg",
+                                              "content": "unmeasured",
+                                              "lineHeight": 1.25,
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 12,
+                                              "fontWeight": "700"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "yD1aB",
+                                          "name": "chip n/a",
+                                          "cornerRadius": 9999,
+                                          "stroke": "$border-strong",
+                                          "strokeWidth": 1,
+                                          "strokeDash": [
+                                            4,
+                                            4
+                                          ],
+                                          "padding": [
+                                            2,
+                                            8
+                                          ],
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "X1VOw",
+                                              "fill": "$text-muted",
+                                              "content": "n/a",
+                                              "lineHeight": 1.25,
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 12,
+                                              "fontWeight": "700"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "hSSUz",
+                                      "name": "CoverageMap workspaces",
+                                      "width": 967,
+                                      "layout": "vertical",
+                                      "gap": 16,
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "rcTfz",
+                                          "name": "group packages",
+                                          "width": "fill_container",
+                                          "layout": "vertical",
+                                          "gap": 8,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "YjV82",
                                               "fill": "$text",
                                               "content": "packages",
                                               "lineHeight": 1.25,
@@ -4357,352 +4465,201 @@
                                             },
                                             {
                                               "type": "frame",
-                                              "id": "Y8K05L",
-                                              "name": "workspace @gate/ui",
-                                              "width": "fill_container",
-                                              "gap": 12,
-                                              "padding": [
-                                                2,
-                                                0
-                                              ],
-                                              "alignItems": "center",
+                                              "id": "CmQAu",
+                                              "name": "rows",
+                                              "layout": "vertical",
+                                              "gap": 4,
                                               "children": [
                                                 {
                                                   "type": "frame",
-                                                  "id": "Kuw7d",
-                                                  "name": "name",
-                                                  "width": 145,
-                                                  "children": [
-                                                    {
-                                                      "type": "text",
-                                                      "id": "jr2Pq",
-                                                      "name": "Link",
-                                                      "fill": "$accent",
-                                                      "content": "@gate/ui",
-                                                      "lineHeight": 1.5,
-                                                      "fontFamily": "$font-mono",
-                                                      "fontSize": 12,
-                                                      "fontWeight": "normal"
-                                                    }
-                                                  ]
-                                                },
-                                                {
-                                                  "type": "frame",
-                                                  "id": "q1WR6f",
-                                                  "name": "Meter",
-                                                  "clip": true,
-                                                  "width": 48,
-                                                  "height": 8,
-                                                  "fill": "$bg-muted",
-                                                  "cornerRadius": 9999,
+                                                  "id": "zAEvq",
+                                                  "name": "row",
+                                                  "gap": 4,
                                                   "children": [
                                                     {
                                                       "type": "frame",
-                                                      "id": "hTWa2",
-                                                      "name": "Meter fill",
-                                                      "width": 47,
-                                                      "height": 8,
-                                                      "fill": "$chart",
-                                                      "cornerRadius": 9999
+                                                      "id": "eFEGw",
+                                                      "name": "workspace @gate/ui",
+                                                      "clip": true,
+                                                      "width": 402,
+                                                      "height": 56,
+                                                      "fill": "$success-surface",
+                                                      "cornerRadius": 4,
+                                                      "layout": "vertical",
+                                                      "gap": 2,
+                                                      "padding": 8,
+                                                      "justifyContent": "center",
+                                                      "children": [
+                                                        {
+                                                          "type": "text",
+                                                          "id": "SPyw4",
+                                                          "fill": "$success-fg",
+                                                          "content": "@gate/ui",
+                                                          "lineHeight": 1.25,
+                                                          "fontFamily": "$font-mono",
+                                                          "fontSize": 12,
+                                                          "fontWeight": "normal"
+                                                        },
+                                                        {
+                                                          "type": "text",
+                                                          "id": "L1c55",
+                                                          "fill": "$success-fg",
+                                                          "content": "98.9% · 3.4k lines · floor 70",
+                                                          "lineHeight": 1.25,
+                                                          "fontFamily": "$font-mono",
+                                                          "fontSize": 12,
+                                                          "fontWeight": "700"
+                                                        }
+                                                      ]
                                                     },
                                                     {
-                                                      "type": "rectangle",
-                                                      "id": "wzLmT",
-                                                      "layoutPosition": "absolute",
-                                                      "x": 33,
-                                                      "y": 0,
-                                                      "name": "floor",
-                                                      "fill": "$text",
-                                                      "width": 2,
-                                                      "height": 8
-                                                    }
-                                                  ]
-                                                },
-                                                {
-                                                  "type": "frame",
-                                                  "id": "z53Vl",
-                                                  "name": "value",
-                                                  "width": 84,
-                                                  "justifyContent": "end",
-                                                  "children": [
+                                                      "type": "frame",
+                                                      "id": "O8bLk",
+                                                      "name": "workspace @gate/visual-diff",
+                                                      "clip": true,
+                                                      "width": 165,
+                                                      "height": 56,
+                                                      "fill": "$danger-surface",
+                                                      "cornerRadius": 4,
+                                                      "layout": "vertical",
+                                                      "gap": 2,
+                                                      "padding": 8,
+                                                      "justifyContent": "center",
+                                                      "children": [
+                                                        {
+                                                          "type": "text",
+                                                          "id": "Notpr",
+                                                          "fill": "$danger-fg",
+                                                          "content": "@gate/visual-diff",
+                                                          "lineHeight": 1.25,
+                                                          "fontFamily": "$font-mono",
+                                                          "fontSize": 12,
+                                                          "fontWeight": "normal"
+                                                        },
+                                                        {
+                                                          "type": "text",
+                                                          "id": "i5794v",
+                                                          "fill": "$danger-fg",
+                                                          "content": "unmeasured · 4.2k lines",
+                                                          "lineHeight": 1.25,
+                                                          "fontFamily": "$font-mono",
+                                                          "fontSize": 12,
+                                                          "fontWeight": "700"
+                                                        }
+                                                      ]
+                                                    },
                                                     {
-                                                      "type": "text",
-                                                      "id": "EiArv",
-                                                      "name": "coverage",
-                                                      "fill": "$text",
-                                                      "content": "98.9%",
-                                                      "lineHeight": 1.25,
-                                                      "fontFamily": "$font-mono",
-                                                      "fontSize": 12,
-                                                      "fontWeight": "700"
-                                                    }
-                                                  ]
-                                                }
-                                              ]
-                                            },
-                                            {
-                                              "type": "frame",
-                                              "id": "k6uNr",
-                                              "name": "workspace @gate/links",
-                                              "width": "fill_container",
-                                              "gap": 12,
-                                              "padding": [
-                                                2,
-                                                0
-                                              ],
-                                              "alignItems": "center",
-                                              "children": [
-                                                {
-                                                  "type": "frame",
-                                                  "id": "y7r2Q",
-                                                  "name": "name",
-                                                  "width": 145,
-                                                  "children": [
+                                                      "type": "frame",
+                                                      "id": "R77Zx",
+                                                      "name": "workspace @gate/logger",
+                                                      "clip": true,
+                                                      "width": 128,
+                                                      "height": 56,
+                                                      "fill": "$danger-surface",
+                                                      "cornerRadius": 4,
+                                                      "layout": "vertical",
+                                                      "gap": 2,
+                                                      "padding": 8,
+                                                      "justifyContent": "center",
+                                                      "children": [
+                                                        {
+                                                          "type": "text",
+                                                          "id": "EUrTm",
+                                                          "fill": "$danger-fg",
+                                                          "content": "@gate/logger",
+                                                          "lineHeight": 1.25,
+                                                          "fontFamily": "$font-mono",
+                                                          "fontSize": 12,
+                                                          "fontWeight": "normal"
+                                                        },
+                                                        {
+                                                          "type": "text",
+                                                          "id": "M2xFQO",
+                                                          "fill": "$danger-fg",
+                                                          "content": "unmeasured",
+                                                          "lineHeight": 1.25,
+                                                          "fontFamily": "$font-mono",
+                                                          "fontSize": 12,
+                                                          "fontWeight": "700"
+                                                        }
+                                                      ]
+                                                    },
                                                     {
-                                                      "type": "text",
-                                                      "id": "C1WIG",
-                                                      "name": "Link",
-                                                      "fill": "$accent",
-                                                      "content": "@gate/links",
-                                                      "lineHeight": 1.5,
-                                                      "fontFamily": "$font-mono",
-                                                      "fontSize": 12,
-                                                      "fontWeight": "normal"
-                                                    }
-                                                  ]
-                                                },
-                                                {
-                                                  "type": "frame",
-                                                  "id": "tsAdo",
-                                                  "name": "Meter unmeasured",
-                                                  "width": 48,
-                                                  "height": 8,
-                                                  "cornerRadius": 9999,
-                                                  "stroke": "$border-strong",
-                                                  "strokeWidth": 1,
-                                                  "strokeDash": [
-                                                    3,
-                                                    3
-                                                  ]
-                                                },
-                                                {
-                                                  "type": "frame",
-                                                  "id": "y81m12",
-                                                  "name": "value",
-                                                  "width": 84,
-                                                  "justifyContent": "end",
-                                                  "children": [
+                                                      "type": "frame",
+                                                      "id": "KiSJv",
+                                                      "name": "workspace @gate/links",
+                                                      "clip": true,
+                                                      "width": 128,
+                                                      "height": 56,
+                                                      "fill": "$danger-surface",
+                                                      "cornerRadius": 4,
+                                                      "layout": "vertical",
+                                                      "gap": 2,
+                                                      "padding": 8,
+                                                      "justifyContent": "center",
+                                                      "children": [
+                                                        {
+                                                          "type": "text",
+                                                          "id": "gO4A4",
+                                                          "fill": "$danger-fg",
+                                                          "content": "@gate/links",
+                                                          "lineHeight": 1.25,
+                                                          "fontFamily": "$font-mono",
+                                                          "fontSize": 12,
+                                                          "fontWeight": "normal"
+                                                        },
+                                                        {
+                                                          "type": "text",
+                                                          "id": "o8p25c",
+                                                          "fill": "$danger-fg",
+                                                          "content": "unmeasured",
+                                                          "lineHeight": 1.25,
+                                                          "fontFamily": "$font-mono",
+                                                          "fontSize": 12,
+                                                          "fontWeight": "700"
+                                                        }
+                                                      ]
+                                                    },
                                                     {
-                                                      "type": "text",
-                                                      "id": "W43w7",
-                                                      "name": "coverage",
-                                                      "fill": "$danger-text",
-                                                      "content": "unmeasured",
-                                                      "lineHeight": 1.25,
-                                                      "fontFamily": "$font-mono",
-                                                      "fontSize": 12,
-                                                      "fontWeight": "700"
-                                                    }
-                                                  ]
-                                                }
-                                              ]
-                                            },
-                                            {
-                                              "type": "frame",
-                                              "id": "dlX3y",
-                                              "name": "workspace @gate/logger",
-                                              "width": "fill_container",
-                                              "gap": 12,
-                                              "padding": [
-                                                2,
-                                                0
-                                              ],
-                                              "alignItems": "center",
-                                              "children": [
-                                                {
-                                                  "type": "frame",
-                                                  "id": "N1aGO",
-                                                  "name": "name",
-                                                  "width": 145,
-                                                  "children": [
-                                                    {
-                                                      "type": "text",
-                                                      "id": "xDsPe",
-                                                      "name": "Link",
-                                                      "fill": "$accent",
-                                                      "content": "@gate/logger",
-                                                      "lineHeight": 1.5,
-                                                      "fontFamily": "$font-mono",
-                                                      "fontSize": 12,
-                                                      "fontWeight": "normal"
-                                                    }
-                                                  ]
-                                                },
-                                                {
-                                                  "type": "frame",
-                                                  "id": "Akt7D",
-                                                  "name": "Meter unmeasured",
-                                                  "width": 48,
-                                                  "height": 8,
-                                                  "cornerRadius": 9999,
-                                                  "stroke": "$border-strong",
-                                                  "strokeWidth": 1,
-                                                  "strokeDash": [
-                                                    3,
-                                                    3
-                                                  ]
-                                                },
-                                                {
-                                                  "type": "frame",
-                                                  "id": "iIZA7",
-                                                  "name": "value",
-                                                  "width": 84,
-                                                  "justifyContent": "end",
-                                                  "children": [
-                                                    {
-                                                      "type": "text",
-                                                      "id": "YwQI5",
-                                                      "name": "coverage",
-                                                      "fill": "$danger-text",
-                                                      "content": "unmeasured",
-                                                      "lineHeight": 1.25,
-                                                      "fontFamily": "$font-mono",
-                                                      "fontSize": 12,
-                                                      "fontWeight": "700"
-                                                    }
-                                                  ]
-                                                }
-                                              ]
-                                            },
-                                            {
-                                              "type": "frame",
-                                              "id": "Lx2By",
-                                              "name": "workspace @gate/visual-diff",
-                                              "width": "fill_container",
-                                              "gap": 12,
-                                              "padding": [
-                                                2,
-                                                0
-                                              ],
-                                              "alignItems": "center",
-                                              "children": [
-                                                {
-                                                  "type": "frame",
-                                                  "id": "iZc9n",
-                                                  "name": "name",
-                                                  "width": 145,
-                                                  "children": [
-                                                    {
-                                                      "type": "text",
-                                                      "id": "a4t8T",
-                                                      "name": "Link",
-                                                      "fill": "$accent",
-                                                      "content": "@gate/visual-diff",
-                                                      "lineHeight": 1.5,
-                                                      "fontFamily": "$font-mono",
-                                                      "fontSize": 12,
-                                                      "fontWeight": "normal"
-                                                    }
-                                                  ]
-                                                },
-                                                {
-                                                  "type": "frame",
-                                                  "id": "J3Ppc",
-                                                  "name": "Meter unmeasured",
-                                                  "width": 48,
-                                                  "height": 8,
-                                                  "cornerRadius": 9999,
-                                                  "stroke": "$border-strong",
-                                                  "strokeWidth": 1,
-                                                  "strokeDash": [
-                                                    3,
-                                                    3
-                                                  ]
-                                                },
-                                                {
-                                                  "type": "frame",
-                                                  "id": "g7FlL",
-                                                  "name": "value",
-                                                  "width": 84,
-                                                  "justifyContent": "end",
-                                                  "children": [
-                                                    {
-                                                      "type": "text",
-                                                      "id": "BQgll",
-                                                      "name": "coverage",
-                                                      "fill": "$danger-text",
-                                                      "content": "unmeasured",
-                                                      "lineHeight": 1.25,
-                                                      "fontFamily": "$font-mono",
-                                                      "fontSize": 12,
-                                                      "fontWeight": "700"
-                                                    }
-                                                  ]
-                                                }
-                                              ]
-                                            },
-                                            {
-                                              "type": "frame",
-                                              "id": "RAhDH",
-                                              "name": "workspace @gate/tsconfig",
-                                              "width": "fill_container",
-                                              "gap": 12,
-                                              "padding": [
-                                                2,
-                                                0
-                                              ],
-                                              "alignItems": "center",
-                                              "children": [
-                                                {
-                                                  "type": "frame",
-                                                  "id": "q6ys2M",
-                                                  "name": "name",
-                                                  "width": 145,
-                                                  "children": [
-                                                    {
-                                                      "type": "text",
-                                                      "id": "inyud",
-                                                      "name": "Link",
-                                                      "fill": "$accent",
-                                                      "content": "@gate/tsconfig",
-                                                      "lineHeight": 1.5,
-                                                      "fontFamily": "$font-mono",
-                                                      "fontSize": 12,
-                                                      "fontWeight": "normal"
-                                                    }
-                                                  ]
-                                                },
-                                                {
-                                                  "type": "frame",
-                                                  "id": "GHz7B",
-                                                  "name": "Meter unmeasured",
-                                                  "width": 48,
-                                                  "height": 8,
-                                                  "cornerRadius": 9999,
-                                                  "stroke": "$border-strong",
-                                                  "strokeWidth": 1,
-                                                  "strokeDash": [
-                                                    3,
-                                                    3
-                                                  ]
-                                                },
-                                                {
-                                                  "type": "frame",
-                                                  "id": "R2CJh",
-                                                  "name": "value",
-                                                  "width": 84,
-                                                  "justifyContent": "end",
-                                                  "children": [
-                                                    {
-                                                      "type": "text",
-                                                      "id": "G3fRc",
-                                                      "name": "coverage",
-                                                      "fill": "$text-muted",
-                                                      "content": "n/a",
-                                                      "lineHeight": 1.25,
-                                                      "fontFamily": "$font-mono",
-                                                      "fontSize": 12,
-                                                      "fontWeight": "700"
+                                                      "type": "frame",
+                                                      "id": "yI21a",
+                                                      "name": "workspace @gate/tsconfig",
+                                                      "clip": true,
+                                                      "width": 128,
+                                                      "height": 56,
+                                                      "cornerRadius": 4,
+                                                      "stroke": "$border-strong",
+                                                      "strokeWidth": 1,
+                                                      "strokeDash": [
+                                                        4,
+                                                        4
+                                                      ],
+                                                      "layout": "vertical",
+                                                      "gap": 2,
+                                                      "padding": 8,
+                                                      "justifyContent": "center",
+                                                      "children": [
+                                                        {
+                                                          "type": "text",
+                                                          "id": "eh88i",
+                                                          "fill": "$text-muted",
+                                                          "content": "@gate/tsconfig",
+                                                          "lineHeight": 1.25,
+                                                          "fontFamily": "$font-mono",
+                                                          "fontSize": 12,
+                                                          "fontWeight": "normal"
+                                                        },
+                                                        {
+                                                          "type": "text",
+                                                          "id": "Yxjbw",
+                                                          "fill": "$text-muted",
+                                                          "content": "n/a",
+                                                          "lineHeight": 1.25,
+                                                          "fontFamily": "$font-mono",
+                                                          "fontSize": 12,
+                                                          "fontWeight": "700"
+                                                        }
+                                                      ]
                                                     }
                                                   ]
                                                 }
@@ -4712,16 +4669,15 @@
                                         },
                                         {
                                           "type": "frame",
-                                          "id": "ORGWj",
-                                          "name": "category apps",
+                                          "id": "MirQl",
+                                          "name": "group apps",
                                           "width": "fill_container",
                                           "layout": "vertical",
-                                          "gap": 10,
+                                          "gap": 8,
                                           "children": [
                                             {
                                               "type": "text",
-                                              "id": "a8pVjy",
-                                              "name": "category",
+                                              "id": "E0KVu",
                                               "fill": "$text",
                                               "content": "apps",
                                               "lineHeight": 1.25,
@@ -4731,352 +4687,196 @@
                                             },
                                             {
                                               "type": "frame",
-                                              "id": "mgayW",
-                                              "name": "workspace @gate/visual-diff-ui",
-                                              "width": "fill_container",
-                                              "gap": 12,
-                                              "padding": [
-                                                2,
-                                                0
-                                              ],
-                                              "alignItems": "center",
+                                              "id": "QxFkG",
+                                              "name": "rows",
+                                              "layout": "vertical",
+                                              "gap": 4,
                                               "children": [
                                                 {
                                                   "type": "frame",
-                                                  "id": "Wb5zE",
-                                                  "name": "name",
-                                                  "width": 145,
-                                                  "children": [
-                                                    {
-                                                      "type": "text",
-                                                      "id": "XtFp6",
-                                                      "name": "Link",
-                                                      "fill": "$accent",
-                                                      "content": "@gate/visual-diff-ui",
-                                                      "lineHeight": 1.5,
-                                                      "fontFamily": "$font-mono",
-                                                      "fontSize": 12,
-                                                      "fontWeight": "normal"
-                                                    }
-                                                  ]
-                                                },
-                                                {
-                                                  "type": "frame",
-                                                  "id": "FX9xh",
-                                                  "name": "Meter",
-                                                  "clip": true,
-                                                  "width": 48,
-                                                  "height": 8,
-                                                  "fill": "$bg-muted",
-                                                  "cornerRadius": 9999,
+                                                  "id": "aD4Qy",
+                                                  "name": "row",
+                                                  "gap": 4,
                                                   "children": [
                                                     {
                                                       "type": "frame",
-                                                      "id": "aL7eK",
-                                                      "name": "Meter fill",
-                                                      "width": 46,
-                                                      "height": 8,
-                                                      "fill": "$chart",
-                                                      "cornerRadius": 9999
+                                                      "id": "tT70N",
+                                                      "name": "workspace @gate/visual-diff-ui",
+                                                      "clip": true,
+                                                      "width": 378,
+                                                      "height": 56,
+                                                      "fill": "$success-surface",
+                                                      "cornerRadius": 4,
+                                                      "layout": "vertical",
+                                                      "gap": 2,
+                                                      "padding": 8,
+                                                      "justifyContent": "center",
+                                                      "children": [
+                                                        {
+                                                          "type": "text",
+                                                          "id": "MRyX7",
+                                                          "fill": "$success-fg",
+                                                          "content": "@gate/visual-diff-ui",
+                                                          "lineHeight": 1.25,
+                                                          "fontFamily": "$font-mono",
+                                                          "fontSize": 12,
+                                                          "fontWeight": "normal"
+                                                        },
+                                                        {
+                                                          "type": "text",
+                                                          "id": "CvU29",
+                                                          "fill": "$success-fg",
+                                                          "content": "95.2% · 19.2k lines · floor 94",
+                                                          "lineHeight": 1.25,
+                                                          "fontFamily": "$font-mono",
+                                                          "fontSize": 12,
+                                                          "fontWeight": "700"
+                                                        }
+                                                      ]
                                                     },
                                                     {
-                                                      "type": "rectangle",
-                                                      "id": "Ok8he",
-                                                      "layoutPosition": "absolute",
-                                                      "x": 44,
-                                                      "y": 0,
-                                                      "name": "floor",
-                                                      "fill": "$text",
-                                                      "width": 2,
-                                                      "height": 8
-                                                    }
-                                                  ]
-                                                },
-                                                {
-                                                  "type": "frame",
-                                                  "id": "Q4EMQl",
-                                                  "name": "value",
-                                                  "width": 84,
-                                                  "justifyContent": "end",
-                                                  "children": [
+                                                      "type": "frame",
+                                                      "id": "eRQ4F",
+                                                      "name": "workspace @gate/blog",
+                                                      "clip": true,
+                                                      "width": 189,
+                                                      "height": 56,
+                                                      "fill": "$danger-surface",
+                                                      "cornerRadius": 4,
+                                                      "layout": "vertical",
+                                                      "gap": 2,
+                                                      "padding": 8,
+                                                      "justifyContent": "center",
+                                                      "children": [
+                                                        {
+                                                          "type": "text",
+                                                          "id": "CoKIF",
+                                                          "fill": "$danger-fg",
+                                                          "content": "@gate/blog",
+                                                          "lineHeight": 1.25,
+                                                          "fontFamily": "$font-mono",
+                                                          "fontSize": 12,
+                                                          "fontWeight": "normal"
+                                                        },
+                                                        {
+                                                          "type": "text",
+                                                          "id": "noTHu",
+                                                          "fill": "$danger-fg",
+                                                          "content": "unmeasured",
+                                                          "lineHeight": 1.25,
+                                                          "fontFamily": "$font-mono",
+                                                          "fontSize": 12,
+                                                          "fontWeight": "700"
+                                                        }
+                                                      ]
+                                                    },
                                                     {
-                                                      "type": "text",
-                                                      "id": "p1I8Hr",
-                                                      "name": "coverage",
-                                                      "fill": "$text",
-                                                      "content": "95.2%",
-                                                      "lineHeight": 1.25,
-                                                      "fontFamily": "$font-mono",
-                                                      "fontSize": 12,
-                                                      "fontWeight": "700"
-                                                    }
-                                                  ]
-                                                }
-                                              ]
-                                            },
-                                            {
-                                              "type": "frame",
-                                              "id": "V5qBg",
-                                              "name": "workspace @gate/blog",
-                                              "width": "fill_container",
-                                              "gap": 12,
-                                              "padding": [
-                                                2,
-                                                0
-                                              ],
-                                              "alignItems": "center",
-                                              "children": [
-                                                {
-                                                  "type": "frame",
-                                                  "id": "YXZJm",
-                                                  "name": "name",
-                                                  "width": 145,
-                                                  "children": [
+                                                      "type": "frame",
+                                                      "id": "JLaex",
+                                                      "name": "workspace @gate/manual",
+                                                      "clip": true,
+                                                      "width": 128,
+                                                      "height": 56,
+                                                      "fill": "$danger-surface",
+                                                      "cornerRadius": 4,
+                                                      "layout": "vertical",
+                                                      "gap": 2,
+                                                      "padding": 8,
+                                                      "justifyContent": "center",
+                                                      "children": [
+                                                        {
+                                                          "type": "text",
+                                                          "id": "ShiUQ",
+                                                          "fill": "$danger-fg",
+                                                          "content": "@gate/manual",
+                                                          "lineHeight": 1.25,
+                                                          "fontFamily": "$font-mono",
+                                                          "fontSize": 12,
+                                                          "fontWeight": "normal"
+                                                        },
+                                                        {
+                                                          "type": "text",
+                                                          "id": "Z9uswN",
+                                                          "fill": "$danger-fg",
+                                                          "content": "unmeasured",
+                                                          "lineHeight": 1.25,
+                                                          "fontFamily": "$font-mono",
+                                                          "fontSize": 12,
+                                                          "fontWeight": "700"
+                                                        }
+                                                      ]
+                                                    },
                                                     {
-                                                      "type": "text",
-                                                      "id": "ASo0w",
-                                                      "name": "Link",
-                                                      "fill": "$accent",
-                                                      "content": "@gate/blog",
-                                                      "lineHeight": 1.5,
-                                                      "fontFamily": "$font-mono",
-                                                      "fontSize": 12,
-                                                      "fontWeight": "normal"
-                                                    }
-                                                  ]
-                                                },
-                                                {
-                                                  "type": "frame",
-                                                  "id": "WSNPZ",
-                                                  "name": "Meter unmeasured",
-                                                  "width": 48,
-                                                  "height": 8,
-                                                  "cornerRadius": 9999,
-                                                  "stroke": "$border-strong",
-                                                  "strokeWidth": 1,
-                                                  "strokeDash": [
-                                                    3,
-                                                    3
-                                                  ]
-                                                },
-                                                {
-                                                  "type": "frame",
-                                                  "id": "EtshK",
-                                                  "name": "value",
-                                                  "width": 84,
-                                                  "justifyContent": "end",
-                                                  "children": [
+                                                      "type": "frame",
+                                                      "id": "PCUwI",
+                                                      "name": "workspace @gate/e2e",
+                                                      "clip": true,
+                                                      "width": 128,
+                                                      "height": 56,
+                                                      "fill": "$danger-surface",
+                                                      "cornerRadius": 4,
+                                                      "layout": "vertical",
+                                                      "gap": 2,
+                                                      "padding": 8,
+                                                      "justifyContent": "center",
+                                                      "children": [
+                                                        {
+                                                          "type": "text",
+                                                          "id": "IoX7K",
+                                                          "fill": "$danger-fg",
+                                                          "content": "@gate/e2e",
+                                                          "lineHeight": 1.25,
+                                                          "fontFamily": "$font-mono",
+                                                          "fontSize": 12,
+                                                          "fontWeight": "normal"
+                                                        },
+                                                        {
+                                                          "type": "text",
+                                                          "id": "jFBxP",
+                                                          "fill": "$danger-fg",
+                                                          "content": "unmeasured",
+                                                          "lineHeight": 1.25,
+                                                          "fontFamily": "$font-mono",
+                                                          "fontSize": 12,
+                                                          "fontWeight": "700"
+                                                        }
+                                                      ]
+                                                    },
                                                     {
-                                                      "type": "text",
-                                                      "id": "vqgNT",
-                                                      "name": "coverage",
-                                                      "fill": "$danger-text",
-                                                      "content": "unmeasured",
-                                                      "lineHeight": 1.25,
-                                                      "fontFamily": "$font-mono",
-                                                      "fontSize": 12,
-                                                      "fontWeight": "700"
-                                                    }
-                                                  ]
-                                                }
-                                              ]
-                                            },
-                                            {
-                                              "type": "frame",
-                                              "id": "CkSga",
-                                              "name": "workspace @gate/e2e",
-                                              "width": "fill_container",
-                                              "gap": 12,
-                                              "padding": [
-                                                2,
-                                                0
-                                              ],
-                                              "alignItems": "center",
-                                              "children": [
-                                                {
-                                                  "type": "frame",
-                                                  "id": "JUBvO",
-                                                  "name": "name",
-                                                  "width": 145,
-                                                  "children": [
-                                                    {
-                                                      "type": "text",
-                                                      "id": "F1wGD",
-                                                      "name": "Link",
-                                                      "fill": "$accent",
-                                                      "content": "@gate/e2e",
-                                                      "lineHeight": 1.5,
-                                                      "fontFamily": "$font-mono",
-                                                      "fontSize": 12,
-                                                      "fontWeight": "normal"
-                                                    }
-                                                  ]
-                                                },
-                                                {
-                                                  "type": "frame",
-                                                  "id": "mdw77",
-                                                  "name": "Meter unmeasured",
-                                                  "width": 48,
-                                                  "height": 8,
-                                                  "cornerRadius": 9999,
-                                                  "stroke": "$border-strong",
-                                                  "strokeWidth": 1,
-                                                  "strokeDash": [
-                                                    3,
-                                                    3
-                                                  ]
-                                                },
-                                                {
-                                                  "type": "frame",
-                                                  "id": "o6EsQ",
-                                                  "name": "value",
-                                                  "width": 84,
-                                                  "justifyContent": "end",
-                                                  "children": [
-                                                    {
-                                                      "type": "text",
-                                                      "id": "PTnxQ",
-                                                      "name": "coverage",
-                                                      "fill": "$danger-text",
-                                                      "content": "unmeasured",
-                                                      "lineHeight": 1.25,
-                                                      "fontFamily": "$font-mono",
-                                                      "fontSize": 12,
-                                                      "fontWeight": "700"
-                                                    }
-                                                  ]
-                                                }
-                                              ]
-                                            },
-                                            {
-                                              "type": "frame",
-                                              "id": "z4UKk",
-                                              "name": "workspace @gate/manual",
-                                              "width": "fill_container",
-                                              "gap": 12,
-                                              "padding": [
-                                                2,
-                                                0
-                                              ],
-                                              "alignItems": "center",
-                                              "children": [
-                                                {
-                                                  "type": "frame",
-                                                  "id": "byHUL",
-                                                  "name": "name",
-                                                  "width": 145,
-                                                  "children": [
-                                                    {
-                                                      "type": "text",
-                                                      "id": "hnui6",
-                                                      "name": "Link",
-                                                      "fill": "$accent",
-                                                      "content": "@gate/manual",
-                                                      "lineHeight": 1.5,
-                                                      "fontFamily": "$font-mono",
-                                                      "fontSize": 12,
-                                                      "fontWeight": "normal"
-                                                    }
-                                                  ]
-                                                },
-                                                {
-                                                  "type": "frame",
-                                                  "id": "jqZ7u",
-                                                  "name": "Meter unmeasured",
-                                                  "width": 48,
-                                                  "height": 8,
-                                                  "cornerRadius": 9999,
-                                                  "stroke": "$border-strong",
-                                                  "strokeWidth": 1,
-                                                  "strokeDash": [
-                                                    3,
-                                                    3
-                                                  ]
-                                                },
-                                                {
-                                                  "type": "frame",
-                                                  "id": "toXJJ",
-                                                  "name": "value",
-                                                  "width": 84,
-                                                  "justifyContent": "end",
-                                                  "children": [
-                                                    {
-                                                      "type": "text",
-                                                      "id": "CZlbo",
-                                                      "name": "coverage",
-                                                      "fill": "$danger-text",
-                                                      "content": "unmeasured",
-                                                      "lineHeight": 1.25,
-                                                      "fontFamily": "$font-mono",
-                                                      "fontSize": 12,
-                                                      "fontWeight": "700"
-                                                    }
-                                                  ]
-                                                }
-                                              ]
-                                            },
-                                            {
-                                              "type": "frame",
-                                              "id": "m3gKWQ",
-                                              "name": "workspace @gate/storybook",
-                                              "width": "fill_container",
-                                              "gap": 12,
-                                              "padding": [
-                                                2,
-                                                0
-                                              ],
-                                              "alignItems": "center",
-                                              "children": [
-                                                {
-                                                  "type": "frame",
-                                                  "id": "p2ROH",
-                                                  "name": "name",
-                                                  "width": 145,
-                                                  "children": [
-                                                    {
-                                                      "type": "text",
-                                                      "id": "RFsRf",
-                                                      "name": "Link",
-                                                      "fill": "$accent",
-                                                      "content": "@gate/storybook",
-                                                      "lineHeight": 1.5,
-                                                      "fontFamily": "$font-mono",
-                                                      "fontSize": 12,
-                                                      "fontWeight": "normal"
-                                                    }
-                                                  ]
-                                                },
-                                                {
-                                                  "type": "frame",
-                                                  "id": "epTN3",
-                                                  "name": "Meter unmeasured",
-                                                  "width": 48,
-                                                  "height": 8,
-                                                  "cornerRadius": 9999,
-                                                  "stroke": "$border-strong",
-                                                  "strokeWidth": 1,
-                                                  "strokeDash": [
-                                                    3,
-                                                    3
-                                                  ]
-                                                },
-                                                {
-                                                  "type": "frame",
-                                                  "id": "Vp9WN",
-                                                  "name": "value",
-                                                  "width": 84,
-                                                  "justifyContent": "end",
-                                                  "children": [
-                                                    {
-                                                      "type": "text",
-                                                      "id": "epy2N",
-                                                      "name": "coverage",
-                                                      "fill": "$danger-text",
-                                                      "content": "unmeasured",
-                                                      "lineHeight": 1.25,
-                                                      "fontFamily": "$font-mono",
-                                                      "fontSize": 12,
-                                                      "fontWeight": "700"
+                                                      "type": "frame",
+                                                      "id": "hmfwo",
+                                                      "name": "workspace @gate/storybook",
+                                                      "clip": true,
+                                                      "width": 128,
+                                                      "height": 56,
+                                                      "fill": "$danger-surface",
+                                                      "cornerRadius": 4,
+                                                      "layout": "vertical",
+                                                      "gap": 2,
+                                                      "padding": 8,
+                                                      "justifyContent": "center",
+                                                      "children": [
+                                                        {
+                                                          "type": "text",
+                                                          "id": "q4AMlU",
+                                                          "fill": "$danger-fg",
+                                                          "content": "@gate/storybook",
+                                                          "lineHeight": 1.25,
+                                                          "fontFamily": "$font-mono",
+                                                          "fontSize": 12,
+                                                          "fontWeight": "normal"
+                                                        },
+                                                        {
+                                                          "type": "text",
+                                                          "id": "aGqf9",
+                                                          "fill": "$danger-fg",
+                                                          "content": "unmeasured",
+                                                          "lineHeight": 1.25,
+                                                          "fontFamily": "$font-mono",
+                                                          "fontSize": 12,
+                                                          "fontWeight": "700"
+                                                        }
+                                                      ]
                                                     }
                                                   ]
                                                 }
@@ -5086,16 +4886,15 @@
                                         },
                                         {
                                           "type": "frame",
-                                          "id": "deDBD",
-                                          "name": "category scripts",
+                                          "id": "GD5N7",
+                                          "name": "group scripts",
                                           "width": "fill_container",
                                           "layout": "vertical",
-                                          "gap": 10,
+                                          "gap": 8,
                                           "children": [
                                             {
                                               "type": "text",
-                                              "id": "TRu9f",
-                                              "name": "category",
+                                              "id": "ZZTKn",
                                               "fill": "$text",
                                               "content": "scripts",
                                               "lineHeight": 1.25,
@@ -5105,133 +4904,88 @@
                                             },
                                             {
                                               "type": "frame",
-                                              "id": "n96GA",
-                                              "name": "workspace scripts/",
-                                              "width": "fill_container",
-                                              "gap": 12,
-                                              "padding": [
-                                                2,
-                                                0
-                                              ],
-                                              "alignItems": "center",
+                                              "id": "iJJ7j",
+                                              "name": "rows",
+                                              "layout": "vertical",
+                                              "gap": 4,
                                               "children": [
                                                 {
                                                   "type": "frame",
-                                                  "id": "bHXiI",
-                                                  "name": "name",
-                                                  "width": 145,
+                                                  "id": "svnYE",
+                                                  "name": "row",
+                                                  "gap": 4,
                                                   "children": [
                                                     {
-                                                      "type": "text",
-                                                      "id": "Xi79Y",
-                                                      "name": "Link",
-                                                      "fill": "$accent",
-                                                      "content": "scripts/",
-                                                      "lineHeight": 1.5,
-                                                      "fontFamily": "$font-mono",
-                                                      "fontSize": 12,
-                                                      "fontWeight": "normal"
-                                                    }
-                                                  ]
-                                                },
-                                                {
-                                                  "type": "frame",
-                                                  "id": "rJWwu",
-                                                  "name": "Meter unmeasured",
-                                                  "width": 48,
-                                                  "height": 8,
-                                                  "cornerRadius": 9999,
-                                                  "stroke": "$border-strong",
-                                                  "strokeWidth": 1,
-                                                  "strokeDash": [
-                                                    3,
-                                                    3
-                                                  ]
-                                                },
-                                                {
-                                                  "type": "frame",
-                                                  "id": "ZRl9C",
-                                                  "name": "value",
-                                                  "width": 84,
-                                                  "justifyContent": "end",
-                                                  "children": [
+                                                      "type": "frame",
+                                                      "id": "QlBL5",
+                                                      "name": "workspace .sandcastle/",
+                                                      "clip": true,
+                                                      "width": 518,
+                                                      "height": 56,
+                                                      "fill": "$danger-surface",
+                                                      "cornerRadius": 4,
+                                                      "layout": "vertical",
+                                                      "gap": 2,
+                                                      "padding": 8,
+                                                      "justifyContent": "center",
+                                                      "children": [
+                                                        {
+                                                          "type": "text",
+                                                          "id": "i5T7q",
+                                                          "fill": "$danger-fg",
+                                                          "content": ".sandcastle/",
+                                                          "lineHeight": 1.25,
+                                                          "fontFamily": "$font-mono",
+                                                          "fontSize": 12,
+                                                          "fontWeight": "normal"
+                                                        },
+                                                        {
+                                                          "type": "text",
+                                                          "id": "JGfmS",
+                                                          "fill": "$danger-fg",
+                                                          "content": "unmeasured · 5.6k lines",
+                                                          "lineHeight": 1.25,
+                                                          "fontFamily": "$font-mono",
+                                                          "fontSize": 12,
+                                                          "fontWeight": "700"
+                                                        }
+                                                      ]
+                                                    },
                                                     {
-                                                      "type": "text",
-                                                      "id": "xjxgz",
-                                                      "name": "coverage",
-                                                      "fill": "$danger-text",
-                                                      "content": "unmeasured",
-                                                      "lineHeight": 1.25,
-                                                      "fontFamily": "$font-mono",
-                                                      "fontSize": 12,
-                                                      "fontWeight": "700"
-                                                    }
-                                                  ]
-                                                }
-                                              ]
-                                            },
-                                            {
-                                              "type": "frame",
-                                              "id": "RsiPz",
-                                              "name": "workspace .sandcastle/",
-                                              "width": "fill_container",
-                                              "gap": 12,
-                                              "padding": [
-                                                2,
-                                                0
-                                              ],
-                                              "alignItems": "center",
-                                              "children": [
-                                                {
-                                                  "type": "frame",
-                                                  "id": "hdR8H",
-                                                  "name": "name",
-                                                  "width": 145,
-                                                  "children": [
-                                                    {
-                                                      "type": "text",
-                                                      "id": "kd6k3",
-                                                      "name": "Link",
-                                                      "fill": "$accent",
-                                                      "content": ".sandcastle/",
-                                                      "lineHeight": 1.5,
-                                                      "fontFamily": "$font-mono",
-                                                      "fontSize": 12,
-                                                      "fontWeight": "normal"
-                                                    }
-                                                  ]
-                                                },
-                                                {
-                                                  "type": "frame",
-                                                  "id": "RBzGO",
-                                                  "name": "Meter unmeasured",
-                                                  "width": 48,
-                                                  "height": 8,
-                                                  "cornerRadius": 9999,
-                                                  "stroke": "$border-strong",
-                                                  "strokeWidth": 1,
-                                                  "strokeDash": [
-                                                    3,
-                                                    3
-                                                  ]
-                                                },
-                                                {
-                                                  "type": "frame",
-                                                  "id": "xneye",
-                                                  "name": "value",
-                                                  "width": 84,
-                                                  "justifyContent": "end",
-                                                  "children": [
-                                                    {
-                                                      "type": "text",
-                                                      "id": "FWUlL",
-                                                      "name": "coverage",
-                                                      "fill": "$danger-text",
-                                                      "content": "unmeasured",
-                                                      "lineHeight": 1.25,
-                                                      "fontFamily": "$font-mono",
-                                                      "fontSize": 12,
-                                                      "fontWeight": "700"
+                                                      "type": "frame",
+                                                      "id": "qLwWx",
+                                                      "name": "workspace scripts/",
+                                                      "clip": true,
+                                                      "width": 445,
+                                                      "height": 56,
+                                                      "fill": "$danger-surface",
+                                                      "cornerRadius": 4,
+                                                      "layout": "vertical",
+                                                      "gap": 2,
+                                                      "padding": 8,
+                                                      "justifyContent": "center",
+                                                      "children": [
+                                                        {
+                                                          "type": "text",
+                                                          "id": "Krg2C",
+                                                          "fill": "$danger-fg",
+                                                          "content": "scripts/",
+                                                          "lineHeight": 1.25,
+                                                          "fontFamily": "$font-mono",
+                                                          "fontSize": 12,
+                                                          "fontWeight": "normal"
+                                                        },
+                                                        {
+                                                          "type": "text",
+                                                          "id": "kjvye",
+                                                          "fill": "$danger-fg",
+                                                          "content": "unmeasured · 4.8k lines",
+                                                          "lineHeight": 1.25,
+                                                          "fontFamily": "$font-mono",
+                                                          "fontSize": 12,
+                                                          "fontWeight": "700"
+                                                        }
+                                                      ]
                                                     }
                                                   ]
                                                 }
@@ -7504,7 +7258,7 @@
                   ]
                 },
                 {
-                  "id": "ZcxJ2",
+                  "id": "YRd67",
                   "type": "ref",
                   "ref": "gq6XC",
                   "name": "screens__desktop__dark__screens-repo-coverage-home--stale",
@@ -7522,7 +7276,7 @@
                   "reusable": true,
                   "clip": true,
                   "width": 390,
-                  "height": 5277,
+                  "height": 5425,
                   "fill": "$bg",
                   "layout": "none",
                   "children": [
@@ -10461,20 +10215,20 @@
                             },
                             {
                               "type": "frame",
-                              "id": "pDzIh",
+                              "id": "QtyN0",
                               "name": "Card coverage",
-                              "width": 358,
+                              "width": "fill_container",
                               "fill": "$bg-subtle",
                               "cornerRadius": 16,
                               "stroke": "$border",
                               "strokeWidth": 1,
                               "layout": "vertical",
-                              "gap": 16,
-                              "padding": 16,
+                              "gap": 20,
+                              "padding": 20,
                               "children": [
                                 {
                                   "type": "frame",
-                                  "id": "gIT53",
+                                  "id": "FG7SK",
                                   "name": "card heading",
                                   "width": "fill_container",
                                   "layout": "vertical",
@@ -10482,8 +10236,7 @@
                                   "children": [
                                     {
                                       "type": "text",
-                                      "id": "uxBDS",
-                                      "name": "label",
+                                      "id": "wsMZQ",
                                       "fill": "$text-muted",
                                       "content": "CODE COVERAGE BY WORKSPACE",
                                       "lineHeight": 1.25,
@@ -10494,12 +10247,11 @@
                                     },
                                     {
                                       "type": "text",
-                                      "id": "al0OM",
-                                      "name": "sub",
+                                      "id": "xc1h1",
                                       "fill": "$text-muted",
                                       "textGrowth": "fixed-width",
                                       "width": "fill_container",
-                                      "content": "Lines covered, where a workspace measures them.",
+                                      "content": "One block per workspace, as wide as its lines, coloured by its coverage against its floor.",
                                       "lineHeight": 1.5,
                                       "fontFamily": "$font-body",
                                       "fontSize": 14,
@@ -10509,24 +10261,133 @@
                                 },
                                 {
                                   "type": "frame",
-                                  "id": "X6Bn9",
-                                  "name": "CoverageBars",
-                                  "width": "fill_container",
-                                  "layout": "vertical",
-                                  "gap": 20,
+                                  "id": "LkL6G",
+                                  "name": "legend",
+                                  "gap": 12,
+                                  "alignItems": "center",
                                   "children": [
                                     {
                                       "type": "frame",
-                                      "id": "aML9k",
-                                      "name": "category packages",
-                                      "width": 326,
-                                      "layout": "vertical",
-                                      "gap": 10,
+                                      "id": "P7sBcT",
+                                      "name": "chip ≥ floor",
+                                      "fill": "$success-surface",
+                                      "cornerRadius": 9999,
+                                      "padding": [
+                                        2,
+                                        8
+                                      ],
+                                      "alignItems": "center",
                                       "children": [
                                         {
                                           "type": "text",
-                                          "id": "h8XKP2",
-                                          "name": "category",
+                                          "id": "r72oL",
+                                          "fill": "$success-fg",
+                                          "content": "≥ floor",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "700"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "K5UWpj",
+                                      "name": "chip < floor",
+                                      "fill": "$warning-surface",
+                                      "cornerRadius": 9999,
+                                      "padding": [
+                                        2,
+                                        8
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "GeNqy",
+                                          "fill": "$warning-fg",
+                                          "content": "< floor",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "700"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "htqPo",
+                                      "name": "chip unmeasured",
+                                      "fill": "$danger-surface",
+                                      "cornerRadius": 9999,
+                                      "padding": [
+                                        2,
+                                        8
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "Xg36w",
+                                          "fill": "$danger-fg",
+                                          "content": "unmeasured",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "700"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "tJ50A",
+                                      "name": "chip n/a",
+                                      "cornerRadius": 9999,
+                                      "stroke": "$border-strong",
+                                      "strokeWidth": 1,
+                                      "strokeDash": [
+                                        4,
+                                        4
+                                      ],
+                                      "padding": [
+                                        2,
+                                        8
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "Gm8fS",
+                                          "fill": "$text-muted",
+                                          "content": "n/a",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "700"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "gnddJ",
+                                  "name": "CoverageMap workspaces",
+                                  "width": 318,
+                                  "layout": "vertical",
+                                  "gap": 16,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "CVtGR",
+                                      "name": "group packages",
+                                      "width": "fill_container",
+                                      "layout": "vertical",
+                                      "gap": 8,
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "I7Acb",
                                           "fill": "$text",
                                           "content": "packages",
                                           "lineHeight": 1.25,
@@ -10536,352 +10397,225 @@
                                         },
                                         {
                                           "type": "frame",
-                                          "id": "F0SJJ",
-                                          "name": "workspace @gate/ui",
-                                          "width": "fill_container",
-                                          "gap": 12,
-                                          "padding": [
-                                            8,
-                                            0
-                                          ],
-                                          "alignItems": "center",
+                                          "id": "DZYLv",
+                                          "name": "rows",
+                                          "layout": "vertical",
+                                          "gap": 4,
                                           "children": [
                                             {
                                               "type": "frame",
-                                              "id": "dQrHk",
-                                              "name": "name",
-                                              "width": 148,
-                                              "children": [
-                                                {
-                                                  "type": "text",
-                                                  "id": "h7t9q",
-                                                  "name": "Link",
-                                                  "fill": "$accent",
-                                                  "content": "@gate/ui",
-                                                  "lineHeight": 1.5,
-                                                  "fontFamily": "$font-mono",
-                                                  "fontSize": 12,
-                                                  "fontWeight": "normal"
-                                                }
-                                              ]
-                                            },
-                                            {
-                                              "type": "frame",
-                                              "id": "H4aSL",
-                                              "name": "Meter",
-                                              "clip": true,
-                                              "width": 70,
-                                              "height": 8,
-                                              "fill": "$bg-muted",
-                                              "cornerRadius": 9999,
+                                              "id": "COZOm",
+                                              "name": "row",
+                                              "gap": 4,
                                               "children": [
                                                 {
                                                   "type": "frame",
-                                                  "id": "mv7DR",
-                                                  "name": "Meter fill",
-                                                  "width": 69,
-                                                  "height": 8,
-                                                  "fill": "$chart",
-                                                  "cornerRadius": 9999
+                                                  "id": "R3P5q",
+                                                  "name": "workspace @gate/ui",
+                                                  "clip": true,
+                                                  "width": 318,
+                                                  "height": 56,
+                                                  "fill": "$success-surface",
+                                                  "cornerRadius": 4,
+                                                  "layout": "vertical",
+                                                  "gap": 2,
+                                                  "padding": 8,
+                                                  "justifyContent": "center",
+                                                  "children": [
+                                                    {
+                                                      "type": "text",
+                                                      "id": "D76OK",
+                                                      "fill": "$success-fg",
+                                                      "content": "@gate/ui",
+                                                      "lineHeight": 1.25,
+                                                      "fontFamily": "$font-mono",
+                                                      "fontSize": 12,
+                                                      "fontWeight": "normal"
+                                                    },
+                                                    {
+                                                      "type": "text",
+                                                      "id": "KLmUG",
+                                                      "fill": "$success-fg",
+                                                      "content": "98.9% · 3.4k lines · floor 70",
+                                                      "lineHeight": 1.25,
+                                                      "fontFamily": "$font-mono",
+                                                      "fontSize": 12,
+                                                      "fontWeight": "700"
+                                                    }
+                                                  ]
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "xaBNc",
+                                              "name": "row",
+                                              "gap": 4,
+                                              "children": [
+                                                {
+                                                  "type": "frame",
+                                                  "id": "XDkTA",
+                                                  "name": "workspace @gate/visual-diff",
+                                                  "clip": true,
+                                                  "width": 318,
+                                                  "height": 56,
+                                                  "fill": "$danger-surface",
+                                                  "cornerRadius": 4,
+                                                  "layout": "vertical",
+                                                  "gap": 2,
+                                                  "padding": 8,
+                                                  "justifyContent": "center",
+                                                  "children": [
+                                                    {
+                                                      "type": "text",
+                                                      "id": "fLzyA",
+                                                      "fill": "$danger-fg",
+                                                      "content": "@gate/visual-diff",
+                                                      "lineHeight": 1.25,
+                                                      "fontFamily": "$font-mono",
+                                                      "fontSize": 12,
+                                                      "fontWeight": "normal"
+                                                    },
+                                                    {
+                                                      "type": "text",
+                                                      "id": "CyFxg",
+                                                      "fill": "$danger-fg",
+                                                      "content": "unmeasured · 4.2k lines",
+                                                      "lineHeight": 1.25,
+                                                      "fontFamily": "$font-mono",
+                                                      "fontSize": 12,
+                                                      "fontWeight": "700"
+                                                    }
+                                                  ]
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "Jt5sY",
+                                              "name": "row",
+                                              "gap": 4,
+                                              "children": [
+                                                {
+                                                  "type": "frame",
+                                                  "id": "FM767",
+                                                  "name": "workspace @gate/logger",
+                                                  "clip": true,
+                                                  "width": 128,
+                                                  "height": 56,
+                                                  "fill": "$danger-surface",
+                                                  "cornerRadius": 4,
+                                                  "layout": "vertical",
+                                                  "gap": 2,
+                                                  "padding": 8,
+                                                  "justifyContent": "center",
+                                                  "children": [
+                                                    {
+                                                      "type": "text",
+                                                      "id": "ZAIYp",
+                                                      "fill": "$danger-fg",
+                                                      "content": "@gate/logger",
+                                                      "lineHeight": 1.25,
+                                                      "fontFamily": "$font-mono",
+                                                      "fontSize": 12,
+                                                      "fontWeight": "normal"
+                                                    },
+                                                    {
+                                                      "type": "text",
+                                                      "id": "IGpGx",
+                                                      "fill": "$danger-fg",
+                                                      "content": "unmeasured",
+                                                      "lineHeight": 1.25,
+                                                      "fontFamily": "$font-mono",
+                                                      "fontSize": 12,
+                                                      "fontWeight": "700"
+                                                    }
+                                                  ]
                                                 },
                                                 {
-                                                  "type": "rectangle",
-                                                  "id": "USaEs",
-                                                  "layoutPosition": "absolute",
-                                                  "x": 48,
-                                                  "y": 0,
-                                                  "name": "floor",
-                                                  "fill": "$text",
-                                                  "width": 2,
-                                                  "height": 8
+                                                  "type": "frame",
+                                                  "id": "P1Sqhe",
+                                                  "name": "workspace @gate/links",
+                                                  "clip": true,
+                                                  "width": 128,
+                                                  "height": 56,
+                                                  "fill": "$danger-surface",
+                                                  "cornerRadius": 4,
+                                                  "layout": "vertical",
+                                                  "gap": 2,
+                                                  "padding": 8,
+                                                  "justifyContent": "center",
+                                                  "children": [
+                                                    {
+                                                      "type": "text",
+                                                      "id": "HlUQS",
+                                                      "fill": "$danger-fg",
+                                                      "content": "@gate/links",
+                                                      "lineHeight": 1.25,
+                                                      "fontFamily": "$font-mono",
+                                                      "fontSize": 12,
+                                                      "fontWeight": "normal"
+                                                    },
+                                                    {
+                                                      "type": "text",
+                                                      "id": "K39ZH",
+                                                      "fill": "$danger-fg",
+                                                      "content": "unmeasured",
+                                                      "lineHeight": 1.25,
+                                                      "fontFamily": "$font-mono",
+                                                      "fontSize": 12,
+                                                      "fontWeight": "700"
+                                                    }
+                                                  ]
                                                 }
                                               ]
                                             },
                                             {
                                               "type": "frame",
-                                              "id": "vdMX5",
-                                              "name": "value",
-                                              "width": 84,
-                                              "justifyContent": "end",
+                                              "id": "I3uuO",
+                                              "name": "row",
+                                              "gap": 4,
                                               "children": [
                                                 {
-                                                  "type": "text",
-                                                  "id": "HRbl0",
-                                                  "name": "coverage",
-                                                  "fill": "$text",
-                                                  "content": "98.9%",
-                                                  "lineHeight": 1.25,
-                                                  "fontFamily": "$font-mono",
-                                                  "fontSize": 12,
-                                                  "fontWeight": "700"
-                                                }
-                                              ]
-                                            }
-                                          ]
-                                        },
-                                        {
-                                          "type": "frame",
-                                          "id": "dU6VG",
-                                          "name": "workspace @gate/links",
-                                          "width": "fill_container",
-                                          "gap": 12,
-                                          "padding": [
-                                            8,
-                                            0
-                                          ],
-                                          "alignItems": "center",
-                                          "children": [
-                                            {
-                                              "type": "frame",
-                                              "id": "mAwlK",
-                                              "name": "name",
-                                              "width": 148,
-                                              "children": [
-                                                {
-                                                  "type": "text",
-                                                  "id": "eOfNg",
-                                                  "name": "Link",
-                                                  "fill": "$accent",
-                                                  "content": "@gate/links",
-                                                  "lineHeight": 1.5,
-                                                  "fontFamily": "$font-mono",
-                                                  "fontSize": 12,
-                                                  "fontWeight": "normal"
-                                                }
-                                              ]
-                                            },
-                                            {
-                                              "type": "frame",
-                                              "id": "fHtpS",
-                                              "name": "Meter unmeasured",
-                                              "width": 70,
-                                              "height": 8,
-                                              "cornerRadius": 9999,
-                                              "stroke": "$border-strong",
-                                              "strokeWidth": 1,
-                                              "strokeDash": [
-                                                3,
-                                                3
-                                              ]
-                                            },
-                                            {
-                                              "type": "frame",
-                                              "id": "j5qMW",
-                                              "name": "value",
-                                              "width": 84,
-                                              "justifyContent": "end",
-                                              "children": [
-                                                {
-                                                  "type": "text",
-                                                  "id": "sKzzF",
-                                                  "name": "coverage",
-                                                  "fill": "$danger-text",
-                                                  "content": "unmeasured",
-                                                  "lineHeight": 1.25,
-                                                  "fontFamily": "$font-mono",
-                                                  "fontSize": 12,
-                                                  "fontWeight": "700"
-                                                }
-                                              ]
-                                            }
-                                          ]
-                                        },
-                                        {
-                                          "type": "frame",
-                                          "id": "LqPjD",
-                                          "name": "workspace @gate/logger",
-                                          "width": "fill_container",
-                                          "gap": 12,
-                                          "padding": [
-                                            8,
-                                            0
-                                          ],
-                                          "alignItems": "center",
-                                          "children": [
-                                            {
-                                              "type": "frame",
-                                              "id": "SaVrq",
-                                              "name": "name",
-                                              "width": 148,
-                                              "children": [
-                                                {
-                                                  "type": "text",
-                                                  "id": "I3moi",
-                                                  "name": "Link",
-                                                  "fill": "$accent",
-                                                  "content": "@gate/logger",
-                                                  "lineHeight": 1.5,
-                                                  "fontFamily": "$font-mono",
-                                                  "fontSize": 12,
-                                                  "fontWeight": "normal"
-                                                }
-                                              ]
-                                            },
-                                            {
-                                              "type": "frame",
-                                              "id": "Xv4bd",
-                                              "name": "Meter unmeasured",
-                                              "width": 70,
-                                              "height": 8,
-                                              "cornerRadius": 9999,
-                                              "stroke": "$border-strong",
-                                              "strokeWidth": 1,
-                                              "strokeDash": [
-                                                3,
-                                                3
-                                              ]
-                                            },
-                                            {
-                                              "type": "frame",
-                                              "id": "ddGB4",
-                                              "name": "value",
-                                              "width": 84,
-                                              "justifyContent": "end",
-                                              "children": [
-                                                {
-                                                  "type": "text",
-                                                  "id": "PKuTP",
-                                                  "name": "coverage",
-                                                  "fill": "$danger-text",
-                                                  "content": "unmeasured",
-                                                  "lineHeight": 1.25,
-                                                  "fontFamily": "$font-mono",
-                                                  "fontSize": 12,
-                                                  "fontWeight": "700"
-                                                }
-                                              ]
-                                            }
-                                          ]
-                                        },
-                                        {
-                                          "type": "frame",
-                                          "id": "bSroA",
-                                          "name": "workspace @gate/visual-diff",
-                                          "width": "fill_container",
-                                          "gap": 12,
-                                          "padding": [
-                                            8,
-                                            0
-                                          ],
-                                          "alignItems": "center",
-                                          "children": [
-                                            {
-                                              "type": "frame",
-                                              "id": "KvWNe",
-                                              "name": "name",
-                                              "width": 148,
-                                              "children": [
-                                                {
-                                                  "type": "text",
-                                                  "id": "vRgfW",
-                                                  "name": "Link",
-                                                  "fill": "$accent",
-                                                  "content": "@gate/visual-diff",
-                                                  "lineHeight": 1.5,
-                                                  "fontFamily": "$font-mono",
-                                                  "fontSize": 12,
-                                                  "fontWeight": "normal"
-                                                }
-                                              ]
-                                            },
-                                            {
-                                              "type": "frame",
-                                              "id": "qKS4g",
-                                              "name": "Meter unmeasured",
-                                              "width": 70,
-                                              "height": 8,
-                                              "cornerRadius": 9999,
-                                              "stroke": "$border-strong",
-                                              "strokeWidth": 1,
-                                              "strokeDash": [
-                                                3,
-                                                3
-                                              ]
-                                            },
-                                            {
-                                              "type": "frame",
-                                              "id": "o1iQDl",
-                                              "name": "value",
-                                              "width": 84,
-                                              "justifyContent": "end",
-                                              "children": [
-                                                {
-                                                  "type": "text",
-                                                  "id": "MDEw4",
-                                                  "name": "coverage",
-                                                  "fill": "$danger-text",
-                                                  "content": "unmeasured",
-                                                  "lineHeight": 1.25,
-                                                  "fontFamily": "$font-mono",
-                                                  "fontSize": 12,
-                                                  "fontWeight": "700"
-                                                }
-                                              ]
-                                            }
-                                          ]
-                                        },
-                                        {
-                                          "type": "frame",
-                                          "id": "O2YuW",
-                                          "name": "workspace @gate/tsconfig",
-                                          "width": "fill_container",
-                                          "gap": 12,
-                                          "padding": [
-                                            8,
-                                            0
-                                          ],
-                                          "alignItems": "center",
-                                          "children": [
-                                            {
-                                              "type": "frame",
-                                              "id": "dHjL9",
-                                              "name": "name",
-                                              "width": 148,
-                                              "children": [
-                                                {
-                                                  "type": "text",
-                                                  "id": "yWslP",
-                                                  "name": "Link",
-                                                  "fill": "$accent",
-                                                  "content": "@gate/tsconfig",
-                                                  "lineHeight": 1.5,
-                                                  "fontFamily": "$font-mono",
-                                                  "fontSize": 12,
-                                                  "fontWeight": "normal"
-                                                }
-                                              ]
-                                            },
-                                            {
-                                              "type": "frame",
-                                              "id": "qfKaa",
-                                              "name": "Meter unmeasured",
-                                              "width": 70,
-                                              "height": 8,
-                                              "cornerRadius": 9999,
-                                              "stroke": "$border-strong",
-                                              "strokeWidth": 1,
-                                              "strokeDash": [
-                                                3,
-                                                3
-                                              ]
-                                            },
-                                            {
-                                              "type": "frame",
-                                              "id": "y3GrGj",
-                                              "name": "value",
-                                              "width": 84,
-                                              "justifyContent": "end",
-                                              "children": [
-                                                {
-                                                  "type": "text",
-                                                  "id": "atACY",
-                                                  "name": "coverage",
-                                                  "fill": "$text-muted",
-                                                  "content": "n/a",
-                                                  "lineHeight": 1.25,
-                                                  "fontFamily": "$font-mono",
-                                                  "fontSize": 12,
-                                                  "fontWeight": "700"
+                                                  "type": "frame",
+                                                  "id": "m1xQw",
+                                                  "name": "workspace @gate/tsconfig",
+                                                  "clip": true,
+                                                  "width": 128,
+                                                  "height": 56,
+                                                  "cornerRadius": 4,
+                                                  "stroke": "$border-strong",
+                                                  "strokeWidth": 1,
+                                                  "strokeDash": [
+                                                    4,
+                                                    4
+                                                  ],
+                                                  "layout": "vertical",
+                                                  "gap": 2,
+                                                  "padding": 8,
+                                                  "justifyContent": "center",
+                                                  "children": [
+                                                    {
+                                                      "type": "text",
+                                                      "id": "pX69O",
+                                                      "fill": "$text-muted",
+                                                      "content": "@gate/tsconfig",
+                                                      "lineHeight": 1.25,
+                                                      "fontFamily": "$font-mono",
+                                                      "fontSize": 12,
+                                                      "fontWeight": "normal"
+                                                    },
+                                                    {
+                                                      "type": "text",
+                                                      "id": "BHTpK",
+                                                      "fill": "$text-muted",
+                                                      "content": "n/a",
+                                                      "lineHeight": 1.25,
+                                                      "fontFamily": "$font-mono",
+                                                      "fontSize": 12,
+                                                      "fontWeight": "700"
+                                                    }
+                                                  ]
                                                 }
                                               ]
                                             }
@@ -10891,16 +10625,15 @@
                                     },
                                     {
                                       "type": "frame",
-                                      "id": "BngSQ",
-                                      "name": "category apps",
-                                      "width": 326,
+                                      "id": "cXCOj",
+                                      "name": "group apps",
+                                      "width": "fill_container",
                                       "layout": "vertical",
-                                      "gap": 10,
+                                      "gap": 8,
                                       "children": [
                                         {
                                           "type": "text",
-                                          "id": "WFmqk",
-                                          "name": "category",
+                                          "id": "YGd1M",
                                           "fill": "$text",
                                           "content": "apps",
                                           "lineHeight": 1.25,
@@ -10910,352 +10643,220 @@
                                         },
                                         {
                                           "type": "frame",
-                                          "id": "oCNTN",
-                                          "name": "workspace @gate/visual-diff-ui",
-                                          "width": "fill_container",
-                                          "gap": 12,
-                                          "padding": [
-                                            8,
-                                            0
-                                          ],
-                                          "alignItems": "center",
+                                          "id": "w2gkQN",
+                                          "name": "rows",
+                                          "layout": "vertical",
+                                          "gap": 4,
                                           "children": [
                                             {
                                               "type": "frame",
-                                              "id": "ovBwl",
-                                              "name": "name",
-                                              "width": 148,
-                                              "children": [
-                                                {
-                                                  "type": "text",
-                                                  "id": "pHqR4",
-                                                  "name": "Link",
-                                                  "fill": "$accent",
-                                                  "content": "@gate/visual-diff-ui",
-                                                  "lineHeight": 1.5,
-                                                  "fontFamily": "$font-mono",
-                                                  "fontSize": 12,
-                                                  "fontWeight": "normal"
-                                                }
-                                              ]
-                                            },
-                                            {
-                                              "type": "frame",
-                                              "id": "GN0jD",
-                                              "name": "Meter",
-                                              "clip": true,
-                                              "width": 70,
-                                              "height": 8,
-                                              "fill": "$bg-muted",
-                                              "cornerRadius": 9999,
+                                              "id": "j1pGq",
+                                              "name": "row",
+                                              "gap": 4,
                                               "children": [
                                                 {
                                                   "type": "frame",
-                                                  "id": "LZP65",
-                                                  "name": "Meter fill",
-                                                  "width": 67,
-                                                  "height": 8,
-                                                  "fill": "$chart",
-                                                  "cornerRadius": 9999
+                                                  "id": "wQSKL",
+                                                  "name": "workspace @gate/visual-diff-ui",
+                                                  "clip": true,
+                                                  "width": 318,
+                                                  "height": 56,
+                                                  "fill": "$success-surface",
+                                                  "cornerRadius": 4,
+                                                  "layout": "vertical",
+                                                  "gap": 2,
+                                                  "padding": 8,
+                                                  "justifyContent": "center",
+                                                  "children": [
+                                                    {
+                                                      "type": "text",
+                                                      "id": "WMQsr",
+                                                      "fill": "$success-fg",
+                                                      "content": "@gate/visual-diff-ui",
+                                                      "lineHeight": 1.25,
+                                                      "fontFamily": "$font-mono",
+                                                      "fontSize": 12,
+                                                      "fontWeight": "normal"
+                                                    },
+                                                    {
+                                                      "type": "text",
+                                                      "id": "hLwPj",
+                                                      "fill": "$success-fg",
+                                                      "content": "95.2% · 19.2k lines · floor 94",
+                                                      "lineHeight": 1.25,
+                                                      "fontFamily": "$font-mono",
+                                                      "fontSize": 12,
+                                                      "fontWeight": "700"
+                                                    }
+                                                  ]
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "KCHs2",
+                                              "name": "row",
+                                              "gap": 4,
+                                              "children": [
+                                                {
+                                                  "type": "frame",
+                                                  "id": "gJrMn",
+                                                  "name": "workspace @gate/blog",
+                                                  "clip": true,
+                                                  "width": 188,
+                                                  "height": 56,
+                                                  "fill": "$danger-surface",
+                                                  "cornerRadius": 4,
+                                                  "layout": "vertical",
+                                                  "gap": 2,
+                                                  "padding": 8,
+                                                  "justifyContent": "center",
+                                                  "children": [
+                                                    {
+                                                      "type": "text",
+                                                      "id": "s3TCc",
+                                                      "fill": "$danger-fg",
+                                                      "content": "@gate/blog",
+                                                      "lineHeight": 1.25,
+                                                      "fontFamily": "$font-mono",
+                                                      "fontSize": 12,
+                                                      "fontWeight": "normal"
+                                                    },
+                                                    {
+                                                      "type": "text",
+                                                      "id": "qr7mF",
+                                                      "fill": "$danger-fg",
+                                                      "content": "unmeasured",
+                                                      "lineHeight": 1.25,
+                                                      "fontFamily": "$font-mono",
+                                                      "fontSize": 12,
+                                                      "fontWeight": "700"
+                                                    }
+                                                  ]
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "nFOPq",
+                                              "name": "row",
+                                              "gap": 4,
+                                              "children": [
+                                                {
+                                                  "type": "frame",
+                                                  "id": "obsTe",
+                                                  "name": "workspace @gate/manual",
+                                                  "clip": true,
+                                                  "width": 128,
+                                                  "height": 56,
+                                                  "fill": "$danger-surface",
+                                                  "cornerRadius": 4,
+                                                  "layout": "vertical",
+                                                  "gap": 2,
+                                                  "padding": 8,
+                                                  "justifyContent": "center",
+                                                  "children": [
+                                                    {
+                                                      "type": "text",
+                                                      "id": "VW8pN",
+                                                      "fill": "$danger-fg",
+                                                      "content": "@gate/manual",
+                                                      "lineHeight": 1.25,
+                                                      "fontFamily": "$font-mono",
+                                                      "fontSize": 12,
+                                                      "fontWeight": "normal"
+                                                    },
+                                                    {
+                                                      "type": "text",
+                                                      "id": "sIt0i",
+                                                      "fill": "$danger-fg",
+                                                      "content": "unmeasured",
+                                                      "lineHeight": 1.25,
+                                                      "fontFamily": "$font-mono",
+                                                      "fontSize": 12,
+                                                      "fontWeight": "700"
+                                                    }
+                                                  ]
                                                 },
                                                 {
-                                                  "type": "rectangle",
-                                                  "id": "bWTpD",
-                                                  "layoutPosition": "absolute",
-                                                  "x": 65,
-                                                  "y": 0,
-                                                  "name": "floor",
-                                                  "fill": "$text",
-                                                  "width": 2,
-                                                  "height": 8
+                                                  "type": "frame",
+                                                  "id": "qWFFu",
+                                                  "name": "workspace @gate/e2e",
+                                                  "clip": true,
+                                                  "width": 128,
+                                                  "height": 56,
+                                                  "fill": "$danger-surface",
+                                                  "cornerRadius": 4,
+                                                  "layout": "vertical",
+                                                  "gap": 2,
+                                                  "padding": 8,
+                                                  "justifyContent": "center",
+                                                  "children": [
+                                                    {
+                                                      "type": "text",
+                                                      "id": "E9LsbA",
+                                                      "fill": "$danger-fg",
+                                                      "content": "@gate/e2e",
+                                                      "lineHeight": 1.25,
+                                                      "fontFamily": "$font-mono",
+                                                      "fontSize": 12,
+                                                      "fontWeight": "normal"
+                                                    },
+                                                    {
+                                                      "type": "text",
+                                                      "id": "eSR10",
+                                                      "fill": "$danger-fg",
+                                                      "content": "unmeasured",
+                                                      "lineHeight": 1.25,
+                                                      "fontFamily": "$font-mono",
+                                                      "fontSize": 12,
+                                                      "fontWeight": "700"
+                                                    }
+                                                  ]
                                                 }
                                               ]
                                             },
                                             {
                                               "type": "frame",
-                                              "id": "ztUE1",
-                                              "name": "value",
-                                              "width": 84,
-                                              "justifyContent": "end",
+                                              "id": "NqN0X",
+                                              "name": "row",
+                                              "gap": 4,
                                               "children": [
                                                 {
-                                                  "type": "text",
-                                                  "id": "AxJj1",
-                                                  "name": "coverage",
-                                                  "fill": "$text",
-                                                  "content": "95.2%",
-                                                  "lineHeight": 1.25,
-                                                  "fontFamily": "$font-mono",
-                                                  "fontSize": 12,
-                                                  "fontWeight": "700"
-                                                }
-                                              ]
-                                            }
-                                          ]
-                                        },
-                                        {
-                                          "type": "frame",
-                                          "id": "kz0lP",
-                                          "name": "workspace @gate/blog",
-                                          "width": "fill_container",
-                                          "gap": 12,
-                                          "padding": [
-                                            8,
-                                            0
-                                          ],
-                                          "alignItems": "center",
-                                          "children": [
-                                            {
-                                              "type": "frame",
-                                              "id": "EO0Hv",
-                                              "name": "name",
-                                              "width": 148,
-                                              "children": [
-                                                {
-                                                  "type": "text",
-                                                  "id": "MFShP",
-                                                  "name": "Link",
-                                                  "fill": "$accent",
-                                                  "content": "@gate/blog",
-                                                  "lineHeight": 1.5,
-                                                  "fontFamily": "$font-mono",
-                                                  "fontSize": 12,
-                                                  "fontWeight": "normal"
-                                                }
-                                              ]
-                                            },
-                                            {
-                                              "type": "frame",
-                                              "id": "L2cjTJ",
-                                              "name": "Meter unmeasured",
-                                              "width": 70,
-                                              "height": 8,
-                                              "cornerRadius": 9999,
-                                              "stroke": "$border-strong",
-                                              "strokeWidth": 1,
-                                              "strokeDash": [
-                                                3,
-                                                3
-                                              ]
-                                            },
-                                            {
-                                              "type": "frame",
-                                              "id": "t25u22",
-                                              "name": "value",
-                                              "width": 84,
-                                              "justifyContent": "end",
-                                              "children": [
-                                                {
-                                                  "type": "text",
-                                                  "id": "GEvtG",
-                                                  "name": "coverage",
-                                                  "fill": "$danger-text",
-                                                  "content": "unmeasured",
-                                                  "lineHeight": 1.25,
-                                                  "fontFamily": "$font-mono",
-                                                  "fontSize": 12,
-                                                  "fontWeight": "700"
-                                                }
-                                              ]
-                                            }
-                                          ]
-                                        },
-                                        {
-                                          "type": "frame",
-                                          "id": "wsF3R",
-                                          "name": "workspace @gate/e2e",
-                                          "width": "fill_container",
-                                          "gap": 12,
-                                          "padding": [
-                                            8,
-                                            0
-                                          ],
-                                          "alignItems": "center",
-                                          "children": [
-                                            {
-                                              "type": "frame",
-                                              "id": "INI0t",
-                                              "name": "name",
-                                              "width": 148,
-                                              "children": [
-                                                {
-                                                  "type": "text",
-                                                  "id": "rPCjd",
-                                                  "name": "Link",
-                                                  "fill": "$accent",
-                                                  "content": "@gate/e2e",
-                                                  "lineHeight": 1.5,
-                                                  "fontFamily": "$font-mono",
-                                                  "fontSize": 12,
-                                                  "fontWeight": "normal"
-                                                }
-                                              ]
-                                            },
-                                            {
-                                              "type": "frame",
-                                              "id": "Tex6n",
-                                              "name": "Meter unmeasured",
-                                              "width": 70,
-                                              "height": 8,
-                                              "cornerRadius": 9999,
-                                              "stroke": "$border-strong",
-                                              "strokeWidth": 1,
-                                              "strokeDash": [
-                                                3,
-                                                3
-                                              ]
-                                            },
-                                            {
-                                              "type": "frame",
-                                              "id": "h8CdMx",
-                                              "name": "value",
-                                              "width": 84,
-                                              "justifyContent": "end",
-                                              "children": [
-                                                {
-                                                  "type": "text",
-                                                  "id": "V75FdC",
-                                                  "name": "coverage",
-                                                  "fill": "$danger-text",
-                                                  "content": "unmeasured",
-                                                  "lineHeight": 1.25,
-                                                  "fontFamily": "$font-mono",
-                                                  "fontSize": 12,
-                                                  "fontWeight": "700"
-                                                }
-                                              ]
-                                            }
-                                          ]
-                                        },
-                                        {
-                                          "type": "frame",
-                                          "id": "uQHfz",
-                                          "name": "workspace @gate/manual",
-                                          "width": "fill_container",
-                                          "gap": 12,
-                                          "padding": [
-                                            8,
-                                            0
-                                          ],
-                                          "alignItems": "center",
-                                          "children": [
-                                            {
-                                              "type": "frame",
-                                              "id": "yp5lt",
-                                              "name": "name",
-                                              "width": 148,
-                                              "children": [
-                                                {
-                                                  "type": "text",
-                                                  "id": "MGKZx",
-                                                  "name": "Link",
-                                                  "fill": "$accent",
-                                                  "content": "@gate/manual",
-                                                  "lineHeight": 1.5,
-                                                  "fontFamily": "$font-mono",
-                                                  "fontSize": 12,
-                                                  "fontWeight": "normal"
-                                                }
-                                              ]
-                                            },
-                                            {
-                                              "type": "frame",
-                                              "id": "LQc8C",
-                                              "name": "Meter unmeasured",
-                                              "width": 70,
-                                              "height": 8,
-                                              "cornerRadius": 9999,
-                                              "stroke": "$border-strong",
-                                              "strokeWidth": 1,
-                                              "strokeDash": [
-                                                3,
-                                                3
-                                              ]
-                                            },
-                                            {
-                                              "type": "frame",
-                                              "id": "UXHjT",
-                                              "name": "value",
-                                              "width": 84,
-                                              "justifyContent": "end",
-                                              "children": [
-                                                {
-                                                  "type": "text",
-                                                  "id": "lwqZ8",
-                                                  "name": "coverage",
-                                                  "fill": "$danger-text",
-                                                  "content": "unmeasured",
-                                                  "lineHeight": 1.25,
-                                                  "fontFamily": "$font-mono",
-                                                  "fontSize": 12,
-                                                  "fontWeight": "700"
-                                                }
-                                              ]
-                                            }
-                                          ]
-                                        },
-                                        {
-                                          "type": "frame",
-                                          "id": "Zmvdj",
-                                          "name": "workspace @gate/storybook",
-                                          "width": "fill_container",
-                                          "gap": 12,
-                                          "padding": [
-                                            8,
-                                            0
-                                          ],
-                                          "alignItems": "center",
-                                          "children": [
-                                            {
-                                              "type": "frame",
-                                              "id": "IYMG8",
-                                              "name": "name",
-                                              "width": 148,
-                                              "children": [
-                                                {
-                                                  "type": "text",
-                                                  "id": "RwRk3",
-                                                  "name": "Link",
-                                                  "fill": "$accent",
-                                                  "content": "@gate/storybook",
-                                                  "lineHeight": 1.5,
-                                                  "fontFamily": "$font-mono",
-                                                  "fontSize": 12,
-                                                  "fontWeight": "normal"
-                                                }
-                                              ]
-                                            },
-                                            {
-                                              "type": "frame",
-                                              "id": "sNYGh",
-                                              "name": "Meter unmeasured",
-                                              "width": 70,
-                                              "height": 8,
-                                              "cornerRadius": 9999,
-                                              "stroke": "$border-strong",
-                                              "strokeWidth": 1,
-                                              "strokeDash": [
-                                                3,
-                                                3
-                                              ]
-                                            },
-                                            {
-                                              "type": "frame",
-                                              "id": "DhIla",
-                                              "name": "value",
-                                              "width": 84,
-                                              "justifyContent": "end",
-                                              "children": [
-                                                {
-                                                  "type": "text",
-                                                  "id": "x1tIn",
-                                                  "name": "coverage",
-                                                  "fill": "$danger-text",
-                                                  "content": "unmeasured",
-                                                  "lineHeight": 1.25,
-                                                  "fontFamily": "$font-mono",
-                                                  "fontSize": 12,
-                                                  "fontWeight": "700"
+                                                  "type": "frame",
+                                                  "id": "ijauZ",
+                                                  "name": "workspace @gate/storybook",
+                                                  "clip": true,
+                                                  "width": 128,
+                                                  "height": 56,
+                                                  "fill": "$danger-surface",
+                                                  "cornerRadius": 4,
+                                                  "layout": "vertical",
+                                                  "gap": 2,
+                                                  "padding": 8,
+                                                  "justifyContent": "center",
+                                                  "children": [
+                                                    {
+                                                      "type": "text",
+                                                      "id": "e6XAQ",
+                                                      "fill": "$danger-fg",
+                                                      "content": "@gate/storybook",
+                                                      "lineHeight": 1.25,
+                                                      "fontFamily": "$font-mono",
+                                                      "fontSize": 12,
+                                                      "fontWeight": "normal"
+                                                    },
+                                                    {
+                                                      "type": "text",
+                                                      "id": "QJ5iJ",
+                                                      "fill": "$danger-fg",
+                                                      "content": "unmeasured",
+                                                      "lineHeight": 1.25,
+                                                      "fontFamily": "$font-mono",
+                                                      "fontSize": 12,
+                                                      "fontWeight": "700"
+                                                    }
+                                                  ]
                                                 }
                                               ]
                                             }
@@ -11265,16 +10866,15 @@
                                     },
                                     {
                                       "type": "frame",
-                                      "id": "l9ZRz4",
-                                      "name": "category scripts",
-                                      "width": 326,
+                                      "id": "BeKTT",
+                                      "name": "group scripts",
+                                      "width": "fill_container",
                                       "layout": "vertical",
-                                      "gap": 10,
+                                      "gap": 8,
                                       "children": [
                                         {
                                           "type": "text",
-                                          "id": "TdBNO",
-                                          "name": "category",
+                                          "id": "tCcLz",
                                           "fill": "$text",
                                           "content": "scripts",
                                           "lineHeight": 1.25,
@@ -11284,133 +10884,96 @@
                                         },
                                         {
                                           "type": "frame",
-                                          "id": "GAIgM",
-                                          "name": "workspace scripts/",
-                                          "width": "fill_container",
-                                          "gap": 12,
-                                          "padding": [
-                                            8,
-                                            0
-                                          ],
-                                          "alignItems": "center",
+                                          "id": "faMVM",
+                                          "name": "rows",
+                                          "layout": "vertical",
+                                          "gap": 4,
                                           "children": [
                                             {
                                               "type": "frame",
-                                              "id": "zs0AU",
-                                              "name": "name",
-                                              "width": 148,
+                                              "id": "B8SuQ",
+                                              "name": "row",
+                                              "gap": 4,
                                               "children": [
                                                 {
-                                                  "type": "text",
-                                                  "id": "ILAlD",
-                                                  "name": "Link",
-                                                  "fill": "$accent",
-                                                  "content": "scripts/",
-                                                  "lineHeight": 1.5,
-                                                  "fontFamily": "$font-mono",
-                                                  "fontSize": 12,
-                                                  "fontWeight": "normal"
+                                                  "type": "frame",
+                                                  "id": "SFIZt",
+                                                  "name": "workspace .sandcastle/",
+                                                  "clip": true,
+                                                  "width": 318,
+                                                  "height": 56,
+                                                  "fill": "$danger-surface",
+                                                  "cornerRadius": 4,
+                                                  "layout": "vertical",
+                                                  "gap": 2,
+                                                  "padding": 8,
+                                                  "justifyContent": "center",
+                                                  "children": [
+                                                    {
+                                                      "type": "text",
+                                                      "id": "O2X0S",
+                                                      "fill": "$danger-fg",
+                                                      "content": ".sandcastle/",
+                                                      "lineHeight": 1.25,
+                                                      "fontFamily": "$font-mono",
+                                                      "fontSize": 12,
+                                                      "fontWeight": "normal"
+                                                    },
+                                                    {
+                                                      "type": "text",
+                                                      "id": "MZ35y",
+                                                      "fill": "$danger-fg",
+                                                      "content": "unmeasured · 5.6k lines",
+                                                      "lineHeight": 1.25,
+                                                      "fontFamily": "$font-mono",
+                                                      "fontSize": 12,
+                                                      "fontWeight": "700"
+                                                    }
+                                                  ]
                                                 }
                                               ]
                                             },
                                             {
                                               "type": "frame",
-                                              "id": "rfhsP",
-                                              "name": "Meter unmeasured",
-                                              "width": 70,
-                                              "height": 8,
-                                              "cornerRadius": 9999,
-                                              "stroke": "$border-strong",
-                                              "strokeWidth": 1,
-                                              "strokeDash": [
-                                                3,
-                                                3
-                                              ]
-                                            },
-                                            {
-                                              "type": "frame",
-                                              "id": "Yrp5Q",
-                                              "name": "value",
-                                              "width": 84,
-                                              "justifyContent": "end",
+                                              "id": "dgXVs",
+                                              "name": "row",
+                                              "gap": 4,
                                               "children": [
                                                 {
-                                                  "type": "text",
-                                                  "id": "xQkB3",
-                                                  "name": "coverage",
-                                                  "fill": "$danger-text",
-                                                  "content": "unmeasured",
-                                                  "lineHeight": 1.25,
-                                                  "fontFamily": "$font-mono",
-                                                  "fontSize": 12,
-                                                  "fontWeight": "700"
-                                                }
-                                              ]
-                                            }
-                                          ]
-                                        },
-                                        {
-                                          "type": "frame",
-                                          "id": "NZEWP",
-                                          "name": "workspace .sandcastle/",
-                                          "width": "fill_container",
-                                          "gap": 12,
-                                          "padding": [
-                                            8,
-                                            0
-                                          ],
-                                          "alignItems": "center",
-                                          "children": [
-                                            {
-                                              "type": "frame",
-                                              "id": "dgWBT",
-                                              "name": "name",
-                                              "width": 148,
-                                              "children": [
-                                                {
-                                                  "type": "text",
-                                                  "id": "ibSny",
-                                                  "name": "Link",
-                                                  "fill": "$accent",
-                                                  "content": ".sandcastle/",
-                                                  "lineHeight": 1.5,
-                                                  "fontFamily": "$font-mono",
-                                                  "fontSize": 12,
-                                                  "fontWeight": "normal"
-                                                }
-                                              ]
-                                            },
-                                            {
-                                              "type": "frame",
-                                              "id": "M5jCF",
-                                              "name": "Meter unmeasured",
-                                              "width": 70,
-                                              "height": 8,
-                                              "cornerRadius": 9999,
-                                              "stroke": "$border-strong",
-                                              "strokeWidth": 1,
-                                              "strokeDash": [
-                                                3,
-                                                3
-                                              ]
-                                            },
-                                            {
-                                              "type": "frame",
-                                              "id": "XX4X5",
-                                              "name": "value",
-                                              "width": 84,
-                                              "justifyContent": "end",
-                                              "children": [
-                                                {
-                                                  "type": "text",
-                                                  "id": "Z7GgO",
-                                                  "name": "coverage",
-                                                  "fill": "$danger-text",
-                                                  "content": "unmeasured",
-                                                  "lineHeight": 1.25,
-                                                  "fontFamily": "$font-mono",
-                                                  "fontSize": 12,
-                                                  "fontWeight": "700"
+                                                  "type": "frame",
+                                                  "id": "e8IQOn",
+                                                  "name": "workspace scripts/",
+                                                  "clip": true,
+                                                  "width": 318,
+                                                  "height": 56,
+                                                  "fill": "$danger-surface",
+                                                  "cornerRadius": 4,
+                                                  "layout": "vertical",
+                                                  "gap": 2,
+                                                  "padding": 8,
+                                                  "justifyContent": "center",
+                                                  "children": [
+                                                    {
+                                                      "type": "text",
+                                                      "id": "w0Gjf8",
+                                                      "fill": "$danger-fg",
+                                                      "content": "scripts/",
+                                                      "lineHeight": 1.25,
+                                                      "fontFamily": "$font-mono",
+                                                      "fontSize": 12,
+                                                      "fontWeight": "normal"
+                                                    },
+                                                    {
+                                                      "type": "text",
+                                                      "id": "I5MXic",
+                                                      "fill": "$danger-fg",
+                                                      "content": "unmeasured · 4.8k lines",
+                                                      "lineHeight": 1.25,
+                                                      "fontFamily": "$font-mono",
+                                                      "fontSize": 12,
+                                                      "fontWeight": "700"
+                                                    }
+                                                  ]
                                                 }
                                               ]
                                             }
@@ -13382,7 +12945,7 @@
                   ]
                 },
                 {
-                  "id": "u5r60t",
+                  "id": "WQijI",
                   "type": "ref",
                   "ref": "O8W6s",
                   "name": "screens__mobile__dark__screens-repo-coverage-home--stale",
@@ -14214,7 +13777,7 @@
                   ]
                 },
                 {
-                  "id": "jRmcy",
+                  "id": "hXntv",
                   "type": "ref",
                   "ref": "zPbxP",
                   "name": "screens__desktop__dark__screens-repo-coverage-home--empty",
@@ -14556,7 +14119,7 @@
                   ]
                 },
                 {
-                  "id": "DWnud",
+                  "id": "J7LSTh",
                   "type": "ref",
                   "ref": "C3zK0",
                   "name": "screens__mobile__dark__screens-repo-coverage-home--empty",
