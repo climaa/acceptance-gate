@@ -13147,6 +13147,40 @@
           }
         }
       ]
+    },
+    "chart-2": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#2C7A6C",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#6CC4B2",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "chart-3": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#9A5B00",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#E3B25E",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
     }
   },
   "fileToken": "fb0fcfd1-2de1-4a44-bdb0-30fb8790cb3c"
