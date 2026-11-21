@@ -50,6 +50,7 @@
   // spawned. A new spawned script should have to say so here.
   "entry": [
     "apps/visual-diff-ui/scripts/capture-set.mjs",
+    "apps/census/scripts/measure.mjs",
     "apps/e2e/scripts/seed-visual-diff.mjs",
     "scripts/apply-ruleset.mjs",
     "scripts/pen/finish-export.mjs",
