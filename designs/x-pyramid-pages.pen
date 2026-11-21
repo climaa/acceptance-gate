@@ -104467,6 +104467,7 @@
                       },
                       "clip": true,
                       "width": 1280,
+                      "height": 800,
                       "fill": "$bg",
                       "children": [
                         {
@@ -105266,6 +105267,7 @@
                       },
                       "clip": true,
                       "width": 1280,
+                      "height": 800,
                       "fill": "$bg",
                       "children": [
                         {
@@ -106065,6 +106067,7 @@
                       },
                       "clip": true,
                       "width": 390,
+                      "height": 844,
                       "fill": "$bg",
                       "layout": "vertical",
                       "children": [
@@ -106402,6 +106405,7 @@
                       },
                       "clip": true,
                       "width": 390,
+                      "height": 844,
                       "fill": "$bg",
                       "layout": "vertical",
                       "children": [

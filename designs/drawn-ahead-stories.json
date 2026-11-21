@@ -17,6 +17,10 @@
     "molecules-stattile--gaps",
     "molecules-stattile--unmeasured",
     "molecules-stattile--not-applicable",
-    "molecules-volumebars--default"
+    "molecules-volumebars--default",
+    "organisms-sidebar--expanded",
+    "organisms-sidebar--collapsed",
+    "organisms-topbar--default",
+    "organisms-searchpalette--results"
   ]
 }

@@ -1,14 +1,14 @@
 {
   "board": "05-screens-pyramid-3 — Screens",
-  "scale": 1.516194,
+  "scale": 1.415097,
   "tiles": {
-    "screens__desktop__dark__screens-pyramid-home--empty": [2111, 7401, 1941, 694],
-    "screens__desktop__dark__screens-pyramid-home--stale": [2111, 418, 1941, 4447],
-    "screens__desktop__light__screens-pyramid-home--empty": [97, 7401, 1941, 694],
-    "screens__desktop__light__screens-pyramid-home--stale": [97, 418, 1941, 4447],
-    "screens__mobile__dark__screens-pyramid-home--empty": [4788, 7401, 591, 626],
-    "screens__mobile__dark__screens-pyramid-home--stale": [4788, 418, 591, 6862],
-    "screens__mobile__light__screens-pyramid-home--empty": [4124, 7401, 591, 626],
-    "screens__mobile__light__screens-pyramid-home--stale": [4124, 418, 591, 6862]
+    "screens__desktop__dark__screens-pyramid-home--empty": [1970, 6907, 1811, 1132],
+    "screens__desktop__dark__screens-pyramid-home--stale": [1970, 391, 1811, 4150],
+    "screens__desktop__light__screens-pyramid-home--empty": [91, 6907, 1811, 1132],
+    "screens__desktop__light__screens-pyramid-home--stale": [91, 391, 1811, 4150],
+    "screens__mobile__dark__screens-pyramid-home--empty": [4469, 6907, 552, 1194],
+    "screens__mobile__dark__screens-pyramid-home--stale": [4469, 391, 552, 6405],
+    "screens__mobile__light__screens-pyramid-home--empty": [3849, 6907, 552, 1194],
+    "screens__mobile__light__screens-pyramid-home--stale": [3849, 391, 552, 6405]
   }
 }

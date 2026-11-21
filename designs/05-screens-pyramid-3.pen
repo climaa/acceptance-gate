@@ -11633,7 +11633,7 @@
                   "reusable": true,
                   "clip": true,
                   "width": 1280,
-                  "height": 458,
+                  "height": 800,
                   "fill": "$bg",
                   "layout": "none",
                   "children": [
@@ -11645,6 +11645,7 @@
                       "name": "pyramid-home · empty",
                       "clip": true,
                       "width": 1280,
+                      "height": 800,
                       "fill": "$bg",
                       "children": [
                         {
@@ -12418,7 +12419,7 @@
                   ]
                 },
                 {
-                  "id": "E5zF3",
+                  "id": "yH11U",
                   "type": "ref",
                   "ref": "zPbxP",
                   "name": "screens__desktop__dark__screens-pyramid-home--empty",
@@ -12436,7 +12437,7 @@
                   "reusable": true,
                   "clip": true,
                   "width": 390,
-                  "height": 413,
+                  "height": 844,
                   "fill": "$bg",
                   "layout": "none",
                   "children": [
@@ -12448,6 +12449,7 @@
                       "name": "pyramid-home · empty",
                       "clip": true,
                       "width": 390,
+                      "height": 844,
                       "fill": "$bg",
                       "layout": "vertical",
                       "children": [
@@ -12759,7 +12761,7 @@
                   ]
                 },
                 {
-                  "id": "s0xwxa",
+                  "id": "mMGPI",
                   "type": "ref",
                   "ref": "C3zK0",
                   "name": "screens__mobile__dark__screens-pyramid-home--empty",
