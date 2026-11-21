@@ -1,0 +1,14 @@
+{
+  "board": "05-screens-census-4 — Screens",
+  "scale": 0.999511,
+  "tiles": {
+    "screens__desktop__dark__screens-census-workspace--sample": [1391, 276, 1279, 2947],
+    "screens__desktop__dark__screens-census-workspace--unmeasured": [1391, 5511, 1279, 2049],
+    "screens__desktop__light__screens-census-workspace--sample": [64, 276, 1279, 2947],
+    "screens__desktop__light__screens-census-workspace--unmeasured": [64, 5511, 1279, 2049],
+    "screens__mobile__dark__screens-census-workspace--sample": [3156, 276, 390, 5156],
+    "screens__mobile__dark__screens-census-workspace--unmeasured": [3156, 5511, 390, 2617],
+    "screens__mobile__light__screens-census-workspace--sample": [2719, 276, 390, 5156],
+    "screens__mobile__light__screens-census-workspace--unmeasured": [2719, 5511, 390, 2617]
+  }
+}

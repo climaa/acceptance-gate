@@ -6,7 +6,7 @@
       "id": "gpAN6",
       "x": 0,
       "y": 0,
-      "name": "05-screens-repo-coverage-4 — Screens",
+      "name": "05-screens-census-4 — Screens",
       "theme": {
         "mode": "light"
       },
@@ -29,7 +29,7 @@
               "id": "Z4ELZw",
               "name": "Stem",
               "fill": "$ink-muted",
-              "content": "05-screens-repo-coverage-4",
+              "content": "05-screens-census-4",
               "fontFamily": "$font-mono",
               "fontSize": 16,
               "fontWeight": "normal"
@@ -51,7 +51,7 @@
               "fill": "$ink-muted",
               "textGrowth": "fixed-width",
               "width": "fill_container",
-              "content": "One tile per screen story — apps/repo-coverage's pages, drawn before the app exists — desktop and mobile.",
+              "content": "One tile per screen story — apps/census's pages, drawn before the app exists — desktop and mobile.",
               "lineHeight": 1.4,
               "fontFamily": "$font-body",
               "fontSize": 20,
@@ -62,7 +62,7 @@
         {
           "type": "frame",
           "id": "VtP2J",
-          "name": "screens-repo-coverage-workspace--sample",
+          "name": "screens-census-workspace--sample",
           "layout": "vertical",
           "gap": 12,
           "children": [
@@ -71,7 +71,7 @@
               "id": "ZI7Ye",
               "name": "Caption",
               "fill": "$ink-muted",
-              "content": "screens-repo-coverage-workspace--sample",
+              "content": "screens-census-workspace--sample",
               "lineHeight": 1.2,
               "fontFamily": "$font-mono",
               "fontSize": 16,
@@ -86,7 +86,7 @@
                 {
                   "type": "frame",
                   "id": "Z1Bb90",
-                  "name": "screens__desktop__light__screens-repo-coverage-workspace--sample",
+                  "name": "screens__desktop__light__screens-census-workspace--sample",
                   "theme": {
                     "mode": "light"
                   },
@@ -167,7 +167,7 @@
                                       "id": "x2CzL",
                                       "name": "app",
                                       "fill": "$text",
-                                      "content": "repo-coverage",
+                                      "content": "census",
                                       "lineHeight": 1.25,
                                       "fontFamily": "$font-display",
                                       "fontSize": 18,
@@ -1246,7 +1246,7 @@
                                           "id": "Yxv9w",
                                           "name": "Link",
                                           "fill": "$accent",
-                                          "content": "repo-coverage",
+                                          "content": "census",
                                           "lineHeight": 1.5,
                                           "fontFamily": "$font-mono",
                                           "fontSize": 14,
@@ -8452,7 +8452,7 @@
                   "id": "h9EmW",
                   "type": "ref",
                   "ref": "Z1Bb90",
-                  "name": "screens__desktop__dark__screens-repo-coverage-workspace--sample",
+                  "name": "screens__desktop__dark__screens-census-workspace--sample",
                   "theme": {
                     "mode": "dark"
                   }
@@ -8460,7 +8460,7 @@
                 {
                   "type": "frame",
                   "id": "xndlv",
-                  "name": "screens__mobile__light__screens-repo-coverage-workspace--sample",
+                  "name": "screens__mobile__light__screens-census-workspace--sample",
                   "theme": {
                     "mode": "light"
                   },
@@ -8540,7 +8540,7 @@
                                       "id": "tYK1P",
                                       "name": "Link",
                                       "fill": "$accent",
-                                      "content": "repo-coverage",
+                                      "content": "census",
                                       "lineHeight": 1.5,
                                       "fontFamily": "$font-mono",
                                       "fontSize": 14,
@@ -14959,7 +14959,7 @@
                   "id": "TSDm8",
                   "type": "ref",
                   "ref": "xndlv",
-                  "name": "screens__mobile__dark__screens-repo-coverage-workspace--sample",
+                  "name": "screens__mobile__dark__screens-census-workspace--sample",
                   "theme": {
                     "mode": "dark"
                   }
@@ -14971,7 +14971,7 @@
         {
           "type": "frame",
           "id": "x1COfz",
-          "name": "screens-repo-coverage-workspace--unmeasured",
+          "name": "screens-census-workspace--unmeasured",
           "layout": "vertical",
           "gap": 12,
           "children": [
@@ -14980,7 +14980,7 @@
               "id": "j5Wpu",
               "name": "Caption",
               "fill": "$ink-muted",
-              "content": "screens-repo-coverage-workspace--unmeasured",
+              "content": "screens-census-workspace--unmeasured",
               "lineHeight": 1.2,
               "fontFamily": "$font-mono",
               "fontSize": 16,
@@ -14995,7 +14995,7 @@
                 {
                   "type": "frame",
                   "id": "NrCwq",
-                  "name": "screens__desktop__light__screens-repo-coverage-workspace--unmeasured",
+                  "name": "screens__desktop__light__screens-census-workspace--unmeasured",
                   "theme": {
                     "mode": "light"
                   },
@@ -15076,7 +15076,7 @@
                                       "id": "nPLqu",
                                       "name": "app",
                                       "fill": "$text",
-                                      "content": "repo-coverage",
+                                      "content": "census",
                                       "lineHeight": 1.25,
                                       "fontFamily": "$font-display",
                                       "fontSize": 18,
@@ -16155,7 +16155,7 @@
                                           "id": "Q3sxq",
                                           "name": "Link",
                                           "fill": "$accent",
-                                          "content": "repo-coverage",
+                                          "content": "census",
                                           "lineHeight": 1.5,
                                           "fontFamily": "$font-mono",
                                           "fontSize": 14,
@@ -19661,7 +19661,7 @@
                   "id": "CdHoI",
                   "type": "ref",
                   "ref": "NrCwq",
-                  "name": "screens__desktop__dark__screens-repo-coverage-workspace--unmeasured",
+                  "name": "screens__desktop__dark__screens-census-workspace--unmeasured",
                   "theme": {
                     "mode": "dark"
                   }
@@ -19669,7 +19669,7 @@
                 {
                   "type": "frame",
                   "id": "Y89Qnk",
-                  "name": "screens__mobile__light__screens-repo-coverage-workspace--unmeasured",
+                  "name": "screens__mobile__light__screens-census-workspace--unmeasured",
                   "theme": {
                     "mode": "light"
                   },
@@ -19749,7 +19749,7 @@
                                       "id": "KQJVj",
                                       "name": "Link",
                                       "fill": "$accent",
-                                      "content": "repo-coverage",
+                                      "content": "census",
                                       "lineHeight": 1.5,
                                       "fontFamily": "$font-mono",
                                       "fontSize": 14,
@@ -23137,7 +23137,7 @@
                   "id": "ElYKL",
                   "type": "ref",
                   "ref": "Y89Qnk",
-                  "name": "screens__mobile__dark__screens-repo-coverage-workspace--unmeasured",
+                  "name": "screens__mobile__dark__screens-census-workspace--unmeasured",
                   "theme": {
                     "mode": "dark"
                   }
