@@ -3450,7 +3450,7 @@
                               "innerRadius": 0.7,
                               "startAngle": 90,
                               "sweepAngle": -140.8695652173913,
-                              "fill": "$chart-strong",
+                              "fill": "$chart",
                               "width": 132,
                               "height": 132
                             },
@@ -3463,7 +3463,7 @@
                               "innerRadius": 0.7,
                               "startAngle": -50.86956521739131,
                               "sweepAngle": -187.82608695652175,
-                              "fill": "$chart",
+                              "fill": "$chart-2",
                               "width": 132,
                               "height": 132
                             },
@@ -3476,7 +3476,7 @@
                               "innerRadius": 0.7,
                               "startAngle": -238.69565217391306,
                               "sweepAngle": -31.304347826086957,
-                              "fill": "$chart-soft",
+                              "fill": "$chart-3",
                               "width": 132,
                               "height": 132
                             },
@@ -3541,7 +3541,7 @@
                                   "name": "swatch",
                                   "width": 10,
                                   "height": 10,
-                                  "fill": "$chart-strong",
+                                  "fill": "$chart",
                                   "cornerRadius": 2
                                 },
                                 {
@@ -3590,7 +3590,7 @@
                                   "name": "swatch",
                                   "width": 10,
                                   "height": 10,
-                                  "fill": "$chart",
+                                  "fill": "$chart-2",
                                   "cornerRadius": 2
                                 },
                                 {
@@ -3639,7 +3639,7 @@
                                   "name": "swatch",
                                   "width": 10,
                                   "height": 10,
-                                  "fill": "$chart-soft",
+                                  "fill": "$chart-3",
                                   "cornerRadius": 2
                                 },
                                 {
@@ -3819,7 +3819,7 @@
                                   "name": "swatch",
                                   "width": 10,
                                   "height": 10,
-                                  "fill": "$chart-strong",
+                                  "fill": "$chart",
                                   "cornerRadius": 2
                                 },
                                 {
@@ -3868,7 +3868,7 @@
                                   "name": "swatch",
                                   "width": 10,
                                   "height": 10,
-                                  "fill": "$chart",
+                                  "fill": "$chart-2",
                                   "cornerRadius": 2
                                 },
                                 {
@@ -3917,7 +3917,7 @@
                                   "name": "swatch",
                                   "width": 10,
                                   "height": 10,
-                                  "fill": "$chart-soft",
+                                  "fill": "$chart-3",
                                   "cornerRadius": 2
                                 },
                                 {
@@ -5638,7 +5638,7 @@
                             380,
                             96
                           ],
-                          "fill": "$chart",
+                          "fill": "$chart-3",
                           "width": 380,
                           "height": 96
                         },
@@ -5672,7 +5672,7 @@
                             380,
                             96
                           ],
-                          "fill": "$chart",
+                          "fill": "$chart-2",
                           "width": 380,
                           "height": 96
                         },
@@ -5805,7 +5805,7 @@
                             380,
                             96
                           ],
-                          "fill": "$chart",
+                          "fill": "$chart-3",
                           "width": 380,
                           "height": 96
                         },
@@ -5841,7 +5841,7 @@
                             380,
                             96
                           ],
-                          "fill": "$chart",
+                          "fill": "$chart-2",
                           "width": 380,
                           "height": 96
                         },
@@ -5888,6 +5888,345 @@
                   "type": "ref",
                   "ref": "U8IBI",
                   "name": "molecules__desktop__dark__molecules-pyramidfigure--filtered",
+                  "theme": {
+                    "mode": "dark"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "XrHb0",
+          "name": "molecules-sparkstat--default",
+          "layout": "vertical",
+          "gap": 12,
+          "children": [
+            {
+              "type": "text",
+              "id": "rIShB",
+              "fill": "$ink-muted",
+              "content": "molecules-sparkstat--default",
+              "lineHeight": 1.2,
+              "fontFamily": "$font-mono",
+              "fontSize": 16,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "SH9lg",
+              "name": "Tiles",
+              "gap": 48,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "LVIIy",
+                  "name": "molecules__desktop__light__molecules-sparkstat--default",
+                  "theme": {
+                    "mode": "light"
+                  },
+                  "reusable": true,
+                  "clip": true,
+                  "width": 1248,
+                  "height": 173,
+                  "fill": "$bg",
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "ZLX3X",
+                      "name": "panel crap",
+                      "width": 230,
+                      "fill": "$bg",
+                      "cornerRadius": 12,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "gap": 8,
+                      "padding": 16,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "eB6mo",
+                          "fill": "$text-muted",
+                          "content": "CRAP ≥ 30",
+                          "lineHeight": 1.25,
+                          "fontFamily": "$font-mono",
+                          "fontSize": 12,
+                          "fontWeight": "700",
+                          "letterSpacing": 1
+                        },
+                        {
+                          "type": "frame",
+                          "id": "VUS3U",
+                          "name": "value row",
+                          "width": "fill_container",
+                          "gap": 8,
+                          "alignItems": "end",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "zuZO3",
+                              "fill": "$text",
+                              "content": "7",
+                              "lineHeight": 1.1,
+                              "fontFamily": "$font-display",
+                              "fontSize": 28,
+                              "fontWeight": "600"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "qP7N3",
+                          "name": "delta",
+                          "gap": 6,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "IHCy7",
+                              "name": "Badge delta",
+                              "fill": "$success-surface",
+                              "cornerRadius": 9999,
+                              "padding": [
+                                2,
+                                8
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "D4p2p",
+                                  "fill": "$success-fg",
+                                  "content": "−3",
+                                  "lineHeight": 1.25,
+                                  "fontFamily": "$font-mono",
+                                  "fontSize": 12,
+                                  "fontWeight": "700"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "Mny73",
+                              "fill": "$text-muted",
+                              "content": "in 30 days",
+                              "lineHeight": 1.5,
+                              "fontFamily": "$font-mono",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Y1Aurl",
+                          "name": "Sparkline",
+                          "width": 198,
+                          "height": 52,
+                          "layout": "none",
+                          "children": [
+                            {
+                              "type": "path",
+                              "id": "ezkVh",
+                              "layoutPosition": "absolute",
+                              "x": 0,
+                              "y": 4,
+                              "name": "line",
+                              "geometry": "M0 4.4l16.5 0 16.5 4.4 16.5 0 16.5 4.4 16.5 0 16.5 4.4 16.5 0 16.5 4.4 16.5 4.4 16.5 4.4 16.5 0 16.5 4.4",
+                              "viewBox": [
+                                0,
+                                0,
+                                198,
+                                44
+                              ],
+                              "width": 198,
+                              "height": 44,
+                              "stroke": "$text",
+                              "strokeWidth": 2
+                            },
+                            {
+                              "type": "ellipse",
+                              "id": "N8Hst",
+                              "layoutPosition": "absolute",
+                              "x": 194,
+                              "y": 35.2,
+                              "name": "last",
+                              "fill": "$text",
+                              "width": 8,
+                              "height": 8
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "H3ka0",
+                  "type": "ref",
+                  "ref": "LVIIy",
+                  "name": "molecules__desktop__dark__molecules-sparkstat--default",
+                  "theme": {
+                    "mode": "dark"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "IF8MG",
+          "name": "molecules-stattile--delta",
+          "layout": "vertical",
+          "gap": 12,
+          "children": [
+            {
+              "type": "text",
+              "id": "ngb8q",
+              "fill": "$ink-muted",
+              "content": "molecules-stattile--delta",
+              "lineHeight": 1.2,
+              "fontFamily": "$font-mono",
+              "fontSize": 16,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "un9FB",
+              "name": "Tiles",
+              "gap": 48,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "I8w66",
+                  "name": "molecules__desktop__light__molecules-stattile--delta",
+                  "theme": {
+                    "mode": "light"
+                  },
+                  "reusable": true,
+                  "clip": true,
+                  "width": 1248,
+                  "height": 157,
+                  "fill": "$bg",
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "XnUqe",
+                      "name": "StatTile unit",
+                      "width": 270,
+                      "fill": "$bg-subtle",
+                      "cornerRadius": 16,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "gap": 8,
+                      "padding": 20,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "PonFl",
+                          "name": "top",
+                          "width": "fill_container",
+                          "justifyContent": "space_between",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "ZtrHh",
+                              "name": "label",
+                              "fill": "$text-muted",
+                              "content": "UNIT",
+                              "lineHeight": 1.25,
+                              "fontFamily": "$font-mono",
+                              "fontSize": 12,
+                              "fontWeight": "700",
+                              "letterSpacing": 1
+                            },
+                            {
+                              "type": "frame",
+                              "id": "E5khE",
+                              "name": "Badge delta",
+                              "fill": "$success-surface",
+                              "cornerRadius": 9999,
+                              "padding": [
+                                2,
+                                8
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "ZExZR",
+                                  "fill": "$success-fg",
+                                  "content": "+1 · 30 d",
+                                  "lineHeight": 1.25,
+                                  "fontFamily": "$font-mono",
+                                  "fontSize": 12,
+                                  "fontWeight": "700"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "DbYgc",
+                          "name": "value",
+                          "fill": "$text",
+                          "content": "2 / 11",
+                          "lineHeight": 1.25,
+                          "fontFamily": "$font-display",
+                          "fontSize": 36,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "rKoBa",
+                          "name": "sub",
+                          "fill": "$text-muted",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "workspaces measure coverage",
+                          "lineHeight": 1.5,
+                          "fontFamily": "$font-body",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "EeIMn",
+                          "name": "Meter",
+                          "clip": true,
+                          "width": 230,
+                          "height": 8,
+                          "fill": "$bg-muted",
+                          "cornerRadius": 9999,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "Qz7fK",
+                              "name": "Meter fill",
+                              "width": 42,
+                              "height": 8,
+                              "fill": "$chart",
+                              "cornerRadius": 9999
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "qkvRV",
+                  "type": "ref",
+                  "ref": "I8w66",
+                  "name": "molecules__desktop__dark__molecules-stattile--delta",
                   "theme": {
                     "mode": "dark"
                   }
@@ -7022,6 +7361,660 @@
         },
         {
           "type": "frame",
+          "id": "t7yFAd",
+          "name": "molecules-trendchart--default",
+          "layout": "vertical",
+          "gap": 12,
+          "children": [
+            {
+              "type": "text",
+              "id": "f1unp",
+              "fill": "$ink-muted",
+              "content": "molecules-trendchart--default",
+              "lineHeight": 1.2,
+              "fontFamily": "$font-mono",
+              "fontSize": 16,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "OFr2N",
+              "name": "Tiles",
+              "gap": 48,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "w9wWz",
+                  "name": "molecules__desktop__light__molecules-trendchart--default",
+                  "theme": {
+                    "mode": "light"
+                  },
+                  "reusable": true,
+                  "clip": true,
+                  "width": 1248,
+                  "height": 389,
+                  "fill": "$bg",
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "xiRCN",
+                      "name": "Card trend",
+                      "width": "fill_container",
+                      "fill": "$bg-subtle",
+                      "cornerRadius": 16,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "gap": 20,
+                      "padding": 24,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "KtRfh",
+                          "name": "head",
+                          "width": "fill_container",
+                          "gap": 24,
+                          "justifyContent": "space_between",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "D7imx",
+                              "name": "card heading",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "bfejO",
+                                  "fill": "$text-muted",
+                                  "content": "TEST PYRAMID OVER TIME",
+                                  "lineHeight": 1.25,
+                                  "fontFamily": "$font-mono",
+                                  "fontSize": 12,
+                                  "fontWeight": "700",
+                                  "letterSpacing": 1
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "O1n6D",
+                                  "fill": "$text-muted",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Share measured per layer, one point per measurement.",
+                                  "lineHeight": 1.5,
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 14,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "ShAhD",
+                              "name": "SegmentedControl range",
+                              "fill": "$bg-subtle",
+                              "cornerRadius": 8,
+                              "stroke": "$border",
+                              "strokeWidth": 1,
+                              "gap": 2,
+                              "padding": 2,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "NX7VQ",
+                                  "name": "option",
+                                  "cornerRadius": 4,
+                                  "padding": [
+                                    6,
+                                    12
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "uLXvS",
+                                      "fill": "$text-muted",
+                                      "content": "30D",
+                                      "lineHeight": 1.25,
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "J3FC0p",
+                                  "name": "option",
+                                  "fill": "$bg",
+                                  "cornerRadius": 4,
+                                  "stroke": "$border-strong",
+                                  "strokeWidth": 1,
+                                  "padding": [
+                                    6,
+                                    12
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "ONQy5",
+                                      "fill": "$text",
+                                      "content": "90D",
+                                      "lineHeight": 1.25,
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 12,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "UMLBO",
+                                  "name": "option",
+                                  "cornerRadius": 4,
+                                  "padding": [
+                                    6,
+                                    12
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "EfzCo",
+                                      "fill": "$text-muted",
+                                      "content": "All",
+                                      "lineHeight": 1.25,
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Wpoyv",
+                          "name": "legend",
+                          "width": "fill_container",
+                          "gap": 24,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "gNFNq",
+                              "name": "legend Acceptance",
+                              "gap": 8,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "rectangle",
+                                  "cornerRadius": 2,
+                                  "id": "QsMaj",
+                                  "name": "swatch",
+                                  "fill": "$chart-3",
+                                  "width": 14,
+                                  "height": 3
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "czXtH",
+                                  "fill": "$text",
+                                  "content": "Acceptance",
+                                  "lineHeight": 1.5,
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 14,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "B3uWe",
+                                  "fill": "$text",
+                                  "content": "50%",
+                                  "lineHeight": 1.5,
+                                  "fontFamily": "$font-mono",
+                                  "fontSize": 12,
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "ZX5JJ",
+                                  "name": "Badge delta",
+                                  "fill": "$success-surface",
+                                  "cornerRadius": 9999,
+                                  "padding": [
+                                    2,
+                                    8
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "G3yqR",
+                                      "fill": "$success-fg",
+                                      "content": "+25 pts",
+                                      "lineHeight": 1.25,
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "l7Py6O",
+                              "name": "legend Component",
+                              "gap": 8,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "rectangle",
+                                  "cornerRadius": 2,
+                                  "id": "de0Yz",
+                                  "name": "swatch",
+                                  "fill": "$chart-2",
+                                  "width": 14,
+                                  "height": 3
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "f5P3ZB",
+                                  "fill": "$text",
+                                  "content": "Component",
+                                  "lineHeight": 1.5,
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 14,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "xMCO5",
+                                  "fill": "$text",
+                                  "content": "76%",
+                                  "lineHeight": 1.5,
+                                  "fontFamily": "$font-mono",
+                                  "fontSize": 12,
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "IJcke",
+                                  "name": "Badge delta",
+                                  "fill": "$success-surface",
+                                  "cornerRadius": 9999,
+                                  "padding": [
+                                    2,
+                                    8
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "No7eK",
+                                      "fill": "$success-fg",
+                                      "content": "+7 pts",
+                                      "lineHeight": 1.25,
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "mjZpr",
+                              "name": "legend Unit",
+                              "gap": 8,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "rectangle",
+                                  "cornerRadius": 2,
+                                  "id": "S77BP",
+                                  "name": "swatch",
+                                  "fill": "$chart",
+                                  "width": 14,
+                                  "height": 3
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "d9VALB",
+                                  "fill": "$text",
+                                  "content": "Unit",
+                                  "lineHeight": 1.5,
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 14,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "eQ1bk",
+                                  "fill": "$text",
+                                  "content": "18%",
+                                  "lineHeight": 1.5,
+                                  "fontFamily": "$font-mono",
+                                  "fontSize": 12,
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "y2aiGY",
+                                  "name": "Badge delta",
+                                  "fill": "$success-surface",
+                                  "cornerRadius": 9999,
+                                  "padding": [
+                                    2,
+                                    8
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "Hb987",
+                                      "fill": "$success-fg",
+                                      "content": "+9 pts",
+                                      "lineHeight": 1.25,
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "SZK3a",
+                          "name": "TrendChart plot",
+                          "width": 1200,
+                          "height": 240,
+                          "layout": "none",
+                          "children": [
+                            {
+                              "type": "rectangle",
+                              "id": "n5fIac",
+                              "layoutPosition": "absolute",
+                              "x": 40,
+                              "y": 212,
+                              "name": "grid 0",
+                              "fill": "$border",
+                              "width": 1152,
+                              "height": 1
+                            },
+                            {
+                              "type": "text",
+                              "id": "wyf7j",
+                              "layoutPosition": "absolute",
+                              "x": 0,
+                              "y": 206,
+                              "name": "y 0",
+                              "fill": "$text-muted",
+                              "content": "0%",
+                              "lineHeight": 1,
+                              "fontFamily": "$font-mono",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "rectangle",
+                              "id": "hMQPf",
+                              "layoutPosition": "absolute",
+                              "x": 40,
+                              "y": 161,
+                              "name": "grid 25",
+                              "fill": "$border",
+                              "width": 1152,
+                              "height": 1
+                            },
+                            {
+                              "type": "text",
+                              "id": "cfLls",
+                              "layoutPosition": "absolute",
+                              "x": 0,
+                              "y": 155,
+                              "name": "y 25",
+                              "fill": "$text-muted",
+                              "content": "25%",
+                              "lineHeight": 1,
+                              "fontFamily": "$font-mono",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "rectangle",
+                              "id": "Qt6Cv",
+                              "layoutPosition": "absolute",
+                              "x": 40,
+                              "y": 110,
+                              "name": "grid 50",
+                              "fill": "$border",
+                              "width": 1152,
+                              "height": 1
+                            },
+                            {
+                              "type": "text",
+                              "id": "BAJmm",
+                              "layoutPosition": "absolute",
+                              "x": 0,
+                              "y": 104,
+                              "name": "y 50",
+                              "fill": "$text-muted",
+                              "content": "50%",
+                              "lineHeight": 1,
+                              "fontFamily": "$font-mono",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "rectangle",
+                              "id": "eEg2b",
+                              "layoutPosition": "absolute",
+                              "x": 40,
+                              "y": 59,
+                              "name": "grid 75",
+                              "fill": "$border",
+                              "width": 1152,
+                              "height": 1
+                            },
+                            {
+                              "type": "text",
+                              "id": "VDDig",
+                              "layoutPosition": "absolute",
+                              "x": 0,
+                              "y": 53,
+                              "name": "y 75",
+                              "fill": "$text-muted",
+                              "content": "75%",
+                              "lineHeight": 1,
+                              "fontFamily": "$font-mono",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "rectangle",
+                              "id": "unMnW",
+                              "layoutPosition": "absolute",
+                              "x": 40,
+                              "y": 8,
+                              "name": "grid 100",
+                              "fill": "$border",
+                              "width": 1152,
+                              "height": 1
+                            },
+                            {
+                              "type": "text",
+                              "id": "oFfIr",
+                              "layoutPosition": "absolute",
+                              "x": 0,
+                              "y": 2,
+                              "name": "y 100",
+                              "fill": "$text-muted",
+                              "content": "100%",
+                              "lineHeight": 1,
+                              "fontFamily": "$font-mono",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "t0SSGH",
+                              "layoutPosition": "absolute",
+                              "x": 126,
+                              "y": 224,
+                              "name": "x Sep",
+                              "fill": "$text-muted",
+                              "content": "Sep",
+                              "lineHeight": 1,
+                              "fontFamily": "$font-mono",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "Vd50K",
+                              "layoutPosition": "absolute",
+                              "x": 510,
+                              "y": 224,
+                              "name": "x Oct",
+                              "fill": "$text-muted",
+                              "content": "Oct",
+                              "lineHeight": 1,
+                              "fontFamily": "$font-mono",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "Olk5l",
+                              "layoutPosition": "absolute",
+                              "x": 894,
+                              "y": 224,
+                              "name": "x Nov",
+                              "fill": "$text-muted",
+                              "content": "Nov",
+                              "lineHeight": 1,
+                              "fontFamily": "$font-mono",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "path",
+                              "id": "jHlAd",
+                              "layoutPosition": "absolute",
+                              "x": 40,
+                              "y": 8,
+                              "name": "line unit",
+                              "geometry": "M0 204l96 0 96 0 96 0 96-18.4 96 0 96 0 96 0 96 0 96 0 96-18.3 96 0 96 0",
+                              "viewBox": [
+                                0,
+                                0,
+                                1152,
+                                204
+                              ],
+                              "width": 1152,
+                              "height": 204,
+                              "stroke": "$chart",
+                              "strokeWidth": 2
+                            },
+                            {
+                              "type": "ellipse",
+                              "id": "j2Hagu",
+                              "layoutPosition": "absolute",
+                              "x": 1188,
+                              "y": 171.28,
+                              "name": "last",
+                              "fill": "$chart",
+                              "width": 8,
+                              "height": 8
+                            },
+                            {
+                              "type": "path",
+                              "id": "N0G20d",
+                              "layoutPosition": "absolute",
+                              "x": 40,
+                              "y": 8,
+                              "name": "line component",
+                              "geometry": "M0 91.8l96-4.1 96-4.1 96-4 96-4.1 96-4.1 96-4.1 96 0 96-4.1 96-4 96-4.1 96 0 96-6.1",
+                              "viewBox": [
+                                0,
+                                0,
+                                1152,
+                                204
+                              ],
+                              "width": 1152,
+                              "height": 204,
+                              "stroke": "$chart-2",
+                              "strokeWidth": 2
+                            },
+                            {
+                              "type": "ellipse",
+                              "id": "fOKih",
+                              "layoutPosition": "absolute",
+                              "x": 1188,
+                              "y": 52.96000000000001,
+                              "name": "last",
+                              "fill": "$chart-2",
+                              "width": 8,
+                              "height": 8
+                            },
+                            {
+                              "type": "path",
+                              "id": "ZKUoa",
+                              "layoutPosition": "absolute",
+                              "x": 40,
+                              "y": 8,
+                              "name": "line acceptance",
+                              "geometry": "M0 204l96 0 96-51 96 0 96 0 96 0 96 0 96 0 96 0 96 0 96-51 96 0 96 0",
+                              "viewBox": [
+                                0,
+                                0,
+                                1152,
+                                204
+                              ],
+                              "width": 1152,
+                              "height": 204,
+                              "stroke": "$chart-3",
+                              "strokeWidth": 2
+                            },
+                            {
+                              "type": "ellipse",
+                              "id": "LLMsx",
+                              "layoutPosition": "absolute",
+                              "x": 1188,
+                              "y": 106,
+                              "name": "last",
+                              "fill": "$chart-3",
+                              "width": 8,
+                              "height": 8
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "vDn8R",
+                  "type": "ref",
+                  "ref": "w9wWz",
+                  "name": "molecules__desktop__dark__molecules-trendchart--default",
+                  "theme": {
+                    "mode": "dark"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
           "id": "i9mwj",
           "name": "molecules-volumebars--default",
           "layout": "vertical",
@@ -7119,7 +8112,7 @@
                                   "name": "Bar",
                                   "width": 96,
                                   "height": 12,
-                                  "fill": "$chart",
+                                  "fill": "$chart-3",
                                   "cornerRadius": 4
                                 }
                               ]
@@ -7170,7 +8163,7 @@
                                   "name": "Bar",
                                   "width": 312,
                                   "height": 12,
-                                  "fill": "$chart",
+                                  "fill": "$chart-2",
                                   "cornerRadius": 4
                                 }
                               ]
