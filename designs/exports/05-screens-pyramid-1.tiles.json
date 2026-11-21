@@ -1,10 +1,10 @@
 {
   "board": "05-screens-pyramid-1 — Screens",
-  "scale": 1.710944,
+  "scale": 1.419511,
   "tiles": {
-    "screens__desktop__dark__screens-pyramid-home--sample": [2382, 472, 2190, 4921],
-    "screens__desktop__light__screens-pyramid-home--sample": [110, 472, 2190, 4921],
-    "screens__mobile__dark__screens-pyramid-home--sample": [5403, 472, 667, 7610],
-    "screens__mobile__light__screens-pyramid-home--sample": [4654, 472, 667, 7610]
+    "screens__desktop__dark__screens-pyramid-home--sample": [1976, 392, 1817, 5107],
+    "screens__desktop__light__screens-pyramid-home--sample": [91, 392, 1817, 5107],
+    "screens__mobile__dark__screens-pyramid-home--sample": [4483, 392, 554, 7709],
+    "screens__mobile__light__screens-pyramid-home--sample": [3861, 392, 554, 7709]
   }
 }

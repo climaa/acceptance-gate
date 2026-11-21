@@ -93,7 +93,7 @@
                   "reusable": true,
                   "clip": true,
                   "width": 1280,
-                  "height": 2876,
+                  "height": 3598,
                   "fill": "$bg",
                   "layout": "none",
                   "children": [
@@ -1872,6 +1872,30 @@
                                               "fontSize": 12,
                                               "fontWeight": "700",
                                               "letterSpacing": 1
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "R72xD",
+                                              "name": "Badge delta",
+                                              "fill": "$success-surface",
+                                              "cornerRadius": 9999,
+                                              "padding": [
+                                                2,
+                                                8
+                                              ],
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "text",
+                                                  "id": "hDHLS",
+                                                  "fill": "$success-fg",
+                                                  "content": "−6 · 30 d",
+                                                  "lineHeight": 1.25,
+                                                  "fontFamily": "$font-mono",
+                                                  "fontSize": 12,
+                                                  "fontWeight": "700"
+                                                }
+                                              ]
                                             }
                                           ]
                                         },
@@ -1933,6 +1957,30 @@
                                               "fontSize": 12,
                                               "fontWeight": "700",
                                               "letterSpacing": 1
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "Arcd1",
+                                              "name": "Badge delta",
+                                              "fill": "$success-surface",
+                                              "cornerRadius": 9999,
+                                              "padding": [
+                                                2,
+                                                8
+                                              ],
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "text",
+                                                  "id": "fyqHg",
+                                                  "fill": "$success-fg",
+                                                  "content": "+1 · 30 d",
+                                                  "lineHeight": 1.25,
+                                                  "fontFamily": "$font-mono",
+                                                  "fontSize": 12,
+                                                  "fontWeight": "700"
+                                                }
+                                              ]
                                             }
                                           ]
                                         },
@@ -2015,6 +2063,30 @@
                                               "fontSize": 12,
                                               "fontWeight": "700",
                                               "letterSpacing": 1
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "uLGrW",
+                                              "name": "Badge delta",
+                                              "fill": "$success-surface",
+                                              "cornerRadius": 9999,
+                                              "padding": [
+                                                2,
+                                                8
+                                              ],
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "text",
+                                                  "id": "EGHGJ",
+                                                  "fill": "$success-fg",
+                                                  "content": "+4 · 30 d",
+                                                  "lineHeight": 1.25,
+                                                  "fontFamily": "$font-mono",
+                                                  "fontSize": 12,
+                                                  "fontWeight": "700"
+                                                }
+                                              ]
                                             }
                                           ]
                                         },
@@ -2058,7 +2130,7 @@
                                               "name": "Meter fill",
                                               "width": 148,
                                               "height": 8,
-                                              "fill": "$chart",
+                                              "fill": "$chart-2",
                                               "cornerRadius": 9999
                                             }
                                           ]
@@ -2097,6 +2169,30 @@
                                               "fontSize": 12,
                                               "fontWeight": "700",
                                               "letterSpacing": 1
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "UmArg",
+                                              "name": "Badge delta",
+                                              "fill": "$success-surface",
+                                              "cornerRadius": 9999,
+                                              "padding": [
+                                                2,
+                                                8
+                                              ],
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "text",
+                                                  "id": "C4oAu",
+                                                  "fill": "$success-fg",
+                                                  "content": "+1 · 30 d",
+                                                  "lineHeight": 1.25,
+                                                  "fontFamily": "$font-mono",
+                                                  "fontSize": 12,
+                                                  "fontWeight": "700"
+                                                }
+                                              ]
                                             }
                                           ]
                                         },
@@ -2140,7 +2236,7 @@
                                               "name": "Meter fill",
                                               "width": 98,
                                               "height": 8,
-                                              "fill": "$chart",
+                                              "fill": "$chart-3",
                                               "cornerRadius": 9999
                                             }
                                           ]
@@ -2259,7 +2355,7 @@
                                                         380,
                                                         96
                                                       ],
-                                                      "fill": "$chart",
+                                                      "fill": "$chart-3",
                                                       "width": 380,
                                                       "height": 96
                                                     },
@@ -2293,7 +2389,7 @@
                                                         380,
                                                         96
                                                       ],
-                                                      "fill": "$chart",
+                                                      "fill": "$chart-2",
                                                       "width": 380,
                                                       "height": 96
                                                     },
@@ -2869,7 +2965,7 @@
                                                       "innerRadius": 0.7,
                                                       "startAngle": 90,
                                                       "sweepAngle": -140.8695652173913,
-                                                      "fill": "$chart-strong",
+                                                      "fill": "$chart",
                                                       "width": 132,
                                                       "height": 132
                                                     },
@@ -2882,7 +2978,7 @@
                                                       "innerRadius": 0.7,
                                                       "startAngle": -50.86956521739131,
                                                       "sweepAngle": -187.82608695652175,
-                                                      "fill": "$chart",
+                                                      "fill": "$chart-2",
                                                       "width": 132,
                                                       "height": 132
                                                     },
@@ -2895,7 +2991,7 @@
                                                       "innerRadius": 0.7,
                                                       "startAngle": -238.69565217391306,
                                                       "sweepAngle": -31.304347826086957,
-                                                      "fill": "$chart-soft",
+                                                      "fill": "$chart-3",
                                                       "width": 132,
                                                       "height": 132
                                                     },
@@ -2960,7 +3056,7 @@
                                                           "name": "swatch",
                                                           "width": 10,
                                                           "height": 10,
-                                                          "fill": "$chart-strong",
+                                                          "fill": "$chart",
                                                           "cornerRadius": 2
                                                         },
                                                         {
@@ -3009,7 +3105,7 @@
                                                           "name": "swatch",
                                                           "width": 10,
                                                           "height": 10,
-                                                          "fill": "$chart",
+                                                          "fill": "$chart-2",
                                                           "cornerRadius": 2
                                                         },
                                                         {
@@ -3058,7 +3154,7 @@
                                                           "name": "swatch",
                                                           "width": 10,
                                                           "height": 10,
-                                                          "fill": "$chart-soft",
+                                                          "fill": "$chart-3",
                                                           "cornerRadius": 2
                                                         },
                                                         {
@@ -3201,7 +3297,7 @@
                                                       "name": "Bar",
                                                       "width": 96,
                                                       "height": 12,
-                                                      "fill": "$chart",
+                                                      "fill": "$chart-3",
                                                       "cornerRadius": 4
                                                     }
                                                   ]
@@ -3252,7 +3348,7 @@
                                                       "name": "Bar",
                                                       "width": 312,
                                                       "height": 12,
-                                                      "fill": "$chart",
+                                                      "fill": "$chart-2",
                                                       "cornerRadius": 4
                                                     }
                                                   ]
@@ -3311,6 +3407,1191 @@
                                               ]
                                             }
                                           ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "XIac0",
+                                  "name": "Card code health",
+                                  "width": "fill_container",
+                                  "fill": "$bg-subtle",
+                                  "cornerRadius": 16,
+                                  "stroke": "$border",
+                                  "strokeWidth": 1,
+                                  "layout": "vertical",
+                                  "gap": 20,
+                                  "padding": 24,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "g4Hag",
+                                      "name": "card heading",
+                                      "width": "fill_container",
+                                      "layout": "vertical",
+                                      "gap": 4,
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "WI2XB",
+                                          "fill": "$text-muted",
+                                          "content": "CODE HEALTH",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "700",
+                                          "letterSpacing": 1
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "Ym7H4",
+                                          "fill": "$text-muted",
+                                          "textGrowth": "fixed-width",
+                                          "width": "fill_container",
+                                          "content": "fallow, per measurement: score, CRAP ≥ 30, functions over the complexity ceiling and duplicated lines.",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-body",
+                                          "fontSize": 14,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "r4K0L",
+                                      "name": "panels",
+                                      "width": "fill_container",
+                                      "gap": 16,
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "ntE6T",
+                                          "name": "panel score",
+                                          "width": 229,
+                                          "fill": "$bg",
+                                          "cornerRadius": 12,
+                                          "stroke": "$border",
+                                          "strokeWidth": 1,
+                                          "layout": "vertical",
+                                          "gap": 8,
+                                          "padding": 16,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "lVJZM",
+                                              "fill": "$text-muted",
+                                              "content": "SCORE",
+                                              "lineHeight": 1.25,
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 12,
+                                              "fontWeight": "700",
+                                              "letterSpacing": 1
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "LyIHZ",
+                                              "name": "value row",
+                                              "width": "fill_container",
+                                              "gap": 8,
+                                              "alignItems": "end",
+                                              "children": [
+                                                {
+                                                  "type": "text",
+                                                  "id": "vn4CH",
+                                                  "fill": "$text",
+                                                  "content": "84.7",
+                                                  "lineHeight": 1.1,
+                                                  "fontFamily": "$font-display",
+                                                  "fontSize": 28,
+                                                  "fontWeight": "600"
+                                                },
+                                                {
+                                                  "type": "text",
+                                                  "id": "lndBz",
+                                                  "fill": "$text",
+                                                  "content": "B",
+                                                  "lineHeight": 1.5,
+                                                  "fontFamily": "$font-mono",
+                                                  "fontSize": 12,
+                                                  "fontWeight": "normal"
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "vx3bM",
+                                              "name": "delta",
+                                              "gap": 6,
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "frame",
+                                                  "id": "ao9k8",
+                                                  "name": "Badge delta",
+                                                  "fill": "$success-surface",
+                                                  "cornerRadius": 9999,
+                                                  "padding": [
+                                                    2,
+                                                    8
+                                                  ],
+                                                  "alignItems": "center",
+                                                  "children": [
+                                                    {
+                                                      "type": "text",
+                                                      "id": "dfThx",
+                                                      "fill": "$success-fg",
+                                                      "content": "+2.1",
+                                                      "lineHeight": 1.25,
+                                                      "fontFamily": "$font-mono",
+                                                      "fontSize": 12,
+                                                      "fontWeight": "700"
+                                                    }
+                                                  ]
+                                                },
+                                                {
+                                                  "type": "text",
+                                                  "id": "iiraw",
+                                                  "fill": "$text-muted",
+                                                  "content": "in 30 days",
+                                                  "lineHeight": 1.5,
+                                                  "fontFamily": "$font-mono",
+                                                  "fontSize": 12,
+                                                  "fontWeight": "normal"
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "wZt18",
+                                              "name": "Sparkline",
+                                              "width": 197,
+                                              "height": 52,
+                                              "layout": "none",
+                                              "children": [
+                                                {
+                                                  "type": "path",
+                                                  "id": "mncox",
+                                                  "layoutPosition": "absolute",
+                                                  "x": 0,
+                                                  "y": 4,
+                                                  "name": "line",
+                                                  "geometry": "M0 32.5l16.4-1.7 16.4-2.8 16.5-1.6 16.4-2.2 16.4-1.7 16.4-2.1 16.4-1.7 16.4 0 16.5-2.7 16.4-3.9 16.4-2.2 16.4-2.8",
+                                                  "viewBox": [
+                                                    0,
+                                                    0,
+                                                    197,
+                                                    44
+                                                  ],
+                                                  "width": 197,
+                                                  "height": 44,
+                                                  "stroke": "$text",
+                                                  "strokeWidth": 2
+                                                },
+                                                {
+                                                  "type": "ellipse",
+                                                  "id": "wU0hZ",
+                                                  "layoutPosition": "absolute",
+                                                  "x": 193,
+                                                  "y": 7.149999999999984,
+                                                  "name": "last",
+                                                  "fill": "$text",
+                                                  "width": 8,
+                                                  "height": 8
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "i79ggo",
+                                          "name": "panel crap",
+                                          "width": 229,
+                                          "fill": "$bg",
+                                          "cornerRadius": 12,
+                                          "stroke": "$border",
+                                          "strokeWidth": 1,
+                                          "layout": "vertical",
+                                          "gap": 8,
+                                          "padding": 16,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "LQ6xT",
+                                              "fill": "$text-muted",
+                                              "content": "CRAP ≥ 30",
+                                              "lineHeight": 1.25,
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 12,
+                                              "fontWeight": "700",
+                                              "letterSpacing": 1
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "UsfGb",
+                                              "name": "value row",
+                                              "width": "fill_container",
+                                              "gap": 8,
+                                              "alignItems": "end",
+                                              "children": [
+                                                {
+                                                  "type": "text",
+                                                  "id": "Y0p3K8",
+                                                  "fill": "$text",
+                                                  "content": "7",
+                                                  "lineHeight": 1.1,
+                                                  "fontFamily": "$font-display",
+                                                  "fontSize": 28,
+                                                  "fontWeight": "600"
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "uaW7F",
+                                              "name": "delta",
+                                              "gap": 6,
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "frame",
+                                                  "id": "YsErw",
+                                                  "name": "Badge delta",
+                                                  "fill": "$success-surface",
+                                                  "cornerRadius": 9999,
+                                                  "padding": [
+                                                    2,
+                                                    8
+                                                  ],
+                                                  "alignItems": "center",
+                                                  "children": [
+                                                    {
+                                                      "type": "text",
+                                                      "id": "wGYNc",
+                                                      "fill": "$success-fg",
+                                                      "content": "−3",
+                                                      "lineHeight": 1.25,
+                                                      "fontFamily": "$font-mono",
+                                                      "fontSize": 12,
+                                                      "fontWeight": "700"
+                                                    }
+                                                  ]
+                                                },
+                                                {
+                                                  "type": "text",
+                                                  "id": "bgIvd",
+                                                  "fill": "$text-muted",
+                                                  "content": "in 30 days",
+                                                  "lineHeight": 1.5,
+                                                  "fontFamily": "$font-mono",
+                                                  "fontSize": 12,
+                                                  "fontWeight": "normal"
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "L4cZsZ",
+                                              "name": "Sparkline",
+                                              "width": 197,
+                                              "height": 52,
+                                              "layout": "none",
+                                              "children": [
+                                                {
+                                                  "type": "path",
+                                                  "id": "OcHi7",
+                                                  "layoutPosition": "absolute",
+                                                  "x": 0,
+                                                  "y": 4,
+                                                  "name": "line",
+                                                  "geometry": "M0 4.4l16.4 0 16.4 4.4 16.5 0 16.4 4.4 16.4 0 16.4 4.4 16.4 0 16.4 4.4 16.5 4.4 16.4 4.4 16.4 0 16.4 4.4",
+                                                  "viewBox": [
+                                                    0,
+                                                    0,
+                                                    197,
+                                                    44
+                                                  ],
+                                                  "width": 197,
+                                                  "height": 44,
+                                                  "stroke": "$text",
+                                                  "strokeWidth": 2
+                                                },
+                                                {
+                                                  "type": "ellipse",
+                                                  "id": "E4PdNg",
+                                                  "layoutPosition": "absolute",
+                                                  "x": 193,
+                                                  "y": 35.2,
+                                                  "name": "last",
+                                                  "fill": "$text",
+                                                  "width": 8,
+                                                  "height": 8
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "NAWe3",
+                                          "name": "panel over",
+                                          "width": 229,
+                                          "fill": "$bg",
+                                          "cornerRadius": 12,
+                                          "stroke": "$border",
+                                          "strokeWidth": 1,
+                                          "layout": "vertical",
+                                          "gap": 8,
+                                          "padding": 16,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "vsm29",
+                                              "fill": "$text-muted",
+                                              "content": "OVER CEILING",
+                                              "lineHeight": 1.25,
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 12,
+                                              "fontWeight": "700",
+                                              "letterSpacing": 1
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "xzVQ9",
+                                              "name": "value row",
+                                              "width": "fill_container",
+                                              "gap": 8,
+                                              "alignItems": "end",
+                                              "children": [
+                                                {
+                                                  "type": "text",
+                                                  "id": "zS7F4",
+                                                  "fill": "$text",
+                                                  "content": "3",
+                                                  "lineHeight": 1.1,
+                                                  "fontFamily": "$font-display",
+                                                  "fontSize": 28,
+                                                  "fontWeight": "600"
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "PE7Ki",
+                                              "name": "delta",
+                                              "gap": 6,
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "frame",
+                                                  "id": "ujYje",
+                                                  "name": "Badge delta",
+                                                  "fill": "$success-surface",
+                                                  "cornerRadius": 9999,
+                                                  "padding": [
+                                                    2,
+                                                    8
+                                                  ],
+                                                  "alignItems": "center",
+                                                  "children": [
+                                                    {
+                                                      "type": "text",
+                                                      "id": "wgg3T",
+                                                      "fill": "$success-fg",
+                                                      "content": "−1",
+                                                      "lineHeight": 1.25,
+                                                      "fontFamily": "$font-mono",
+                                                      "fontSize": 12,
+                                                      "fontWeight": "700"
+                                                    }
+                                                  ]
+                                                },
+                                                {
+                                                  "type": "text",
+                                                  "id": "paaU6",
+                                                  "fill": "$text-muted",
+                                                  "content": "in 30 days",
+                                                  "lineHeight": 1.5,
+                                                  "fontFamily": "$font-mono",
+                                                  "fontSize": 12,
+                                                  "fontWeight": "normal"
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "N9wSm",
+                                              "name": "Sparkline",
+                                              "width": 197,
+                                              "height": 52,
+                                              "layout": "none",
+                                              "children": [
+                                                {
+                                                  "type": "path",
+                                                  "id": "k51d3D",
+                                                  "layoutPosition": "absolute",
+                                                  "x": 0,
+                                                  "y": 4,
+                                                  "name": "line",
+                                                  "geometry": "M0 8.8l16.4 0 16.4 0 16.5 8.8 16.4 0 16.4 0 16.4 8.8 16.4 0 16.4 0 16.5 0 16.4 8.8 16.4 0 16.4 0",
+                                                  "viewBox": [
+                                                    0,
+                                                    0,
+                                                    197,
+                                                    44
+                                                  ],
+                                                  "width": 197,
+                                                  "height": 44,
+                                                  "stroke": "$text",
+                                                  "strokeWidth": 2
+                                                },
+                                                {
+                                                  "type": "ellipse",
+                                                  "id": "YimSQ",
+                                                  "layoutPosition": "absolute",
+                                                  "x": 193,
+                                                  "y": 35.2,
+                                                  "name": "last",
+                                                  "fill": "$text",
+                                                  "width": 8,
+                                                  "height": 8
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "s37qNR",
+                                          "name": "panel dup",
+                                          "width": 229,
+                                          "fill": "$bg",
+                                          "cornerRadius": 12,
+                                          "stroke": "$border",
+                                          "strokeWidth": 1,
+                                          "layout": "vertical",
+                                          "gap": 8,
+                                          "padding": 16,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "EU3Pe",
+                                              "fill": "$text-muted",
+                                              "content": "DUPLICATION",
+                                              "lineHeight": 1.25,
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 12,
+                                              "fontWeight": "700",
+                                              "letterSpacing": 1
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "YnpjF",
+                                              "name": "value row",
+                                              "width": "fill_container",
+                                              "gap": 8,
+                                              "alignItems": "end",
+                                              "children": [
+                                                {
+                                                  "type": "text",
+                                                  "id": "KzPhZ",
+                                                  "fill": "$text",
+                                                  "content": "1.6%",
+                                                  "lineHeight": 1.1,
+                                                  "fontFamily": "$font-display",
+                                                  "fontSize": 28,
+                                                  "fontWeight": "600"
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "TdlZe",
+                                              "name": "delta",
+                                              "gap": 6,
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "frame",
+                                                  "id": "RY4de",
+                                                  "name": "Badge delta",
+                                                  "fill": "$success-surface",
+                                                  "cornerRadius": 9999,
+                                                  "padding": [
+                                                    2,
+                                                    8
+                                                  ],
+                                                  "alignItems": "center",
+                                                  "children": [
+                                                    {
+                                                      "type": "text",
+                                                      "id": "Hnevk",
+                                                      "fill": "$success-fg",
+                                                      "content": "−0.4 pts",
+                                                      "lineHeight": 1.25,
+                                                      "fontFamily": "$font-mono",
+                                                      "fontSize": 12,
+                                                      "fontWeight": "700"
+                                                    }
+                                                  ]
+                                                },
+                                                {
+                                                  "type": "text",
+                                                  "id": "N9K58F",
+                                                  "fill": "$text-muted",
+                                                  "content": "in 30 days",
+                                                  "lineHeight": 1.5,
+                                                  "fontFamily": "$font-mono",
+                                                  "fontSize": 12,
+                                                  "fontWeight": "normal"
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "S0f527",
+                                              "name": "Sparkline",
+                                              "width": 197,
+                                              "height": 52,
+                                              "layout": "none",
+                                              "children": [
+                                                {
+                                                  "type": "path",
+                                                  "id": "aJVRb",
+                                                  "layoutPosition": "absolute",
+                                                  "x": 0,
+                                                  "y": 4,
+                                                  "name": "line",
+                                                  "geometry": "M0 7.3l16.4 0 16.4 3.7 16.5 3.7 16.4 0 16.4 3.6 16.4 3.7 16.4 0 16.4 0 16.5 3.7 16.4 3.6 16.4 3.7 16.4 3.7",
+                                                  "viewBox": [
+                                                    0,
+                                                    0,
+                                                    197,
+                                                    44
+                                                  ],
+                                                  "width": 197,
+                                                  "height": 44,
+                                                  "stroke": "$text",
+                                                  "strokeWidth": 2
+                                                },
+                                                {
+                                                  "type": "ellipse",
+                                                  "id": "uHBXp",
+                                                  "layoutPosition": "absolute",
+                                                  "x": 193,
+                                                  "y": 36.66666666666666,
+                                                  "name": "last",
+                                                  "fill": "$text",
+                                                  "width": 8,
+                                                  "height": 8
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "rz6Xa",
+                                  "name": "Card trend",
+                                  "width": "fill_container",
+                                  "fill": "$bg-subtle",
+                                  "cornerRadius": 16,
+                                  "stroke": "$border",
+                                  "strokeWidth": 1,
+                                  "layout": "vertical",
+                                  "gap": 20,
+                                  "padding": 24,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "iUi79",
+                                      "name": "head",
+                                      "width": "fill_container",
+                                      "gap": 24,
+                                      "justifyContent": "space_between",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "Dkpdu",
+                                          "name": "card heading",
+                                          "width": "fill_container",
+                                          "layout": "vertical",
+                                          "gap": 4,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "fNBBO",
+                                              "fill": "$text-muted",
+                                              "content": "TEST PYRAMID OVER TIME",
+                                              "lineHeight": 1.25,
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 12,
+                                              "fontWeight": "700",
+                                              "letterSpacing": 1
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "n7ibO",
+                                              "fill": "$text-muted",
+                                              "textGrowth": "fixed-width",
+                                              "width": "fill_container",
+                                              "content": "Share measured per layer, one point per measurement.",
+                                              "lineHeight": 1.5,
+                                              "fontFamily": "$font-body",
+                                              "fontSize": 14,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "l5snL",
+                                          "name": "SegmentedControl range",
+                                          "fill": "$bg-subtle",
+                                          "cornerRadius": 8,
+                                          "stroke": "$border",
+                                          "strokeWidth": 1,
+                                          "gap": 2,
+                                          "padding": 2,
+                                          "children": [
+                                            {
+                                              "type": "frame",
+                                              "id": "r961o",
+                                              "name": "option",
+                                              "cornerRadius": 4,
+                                              "padding": [
+                                                6,
+                                                12
+                                              ],
+                                              "children": [
+                                                {
+                                                  "type": "text",
+                                                  "id": "zAXwO",
+                                                  "fill": "$text-muted",
+                                                  "content": "30D",
+                                                  "lineHeight": 1.25,
+                                                  "fontFamily": "$font-body",
+                                                  "fontSize": 12,
+                                                  "fontWeight": "normal"
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "cyIQh",
+                                              "name": "option",
+                                              "fill": "$bg",
+                                              "cornerRadius": 4,
+                                              "stroke": "$border-strong",
+                                              "strokeWidth": 1,
+                                              "padding": [
+                                                6,
+                                                12
+                                              ],
+                                              "children": [
+                                                {
+                                                  "type": "text",
+                                                  "id": "J4OxZ",
+                                                  "fill": "$text",
+                                                  "content": "90D",
+                                                  "lineHeight": 1.25,
+                                                  "fontFamily": "$font-body",
+                                                  "fontSize": 12,
+                                                  "fontWeight": "700"
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "zVOB5",
+                                              "name": "option",
+                                              "cornerRadius": 4,
+                                              "padding": [
+                                                6,
+                                                12
+                                              ],
+                                              "children": [
+                                                {
+                                                  "type": "text",
+                                                  "id": "mOfdV",
+                                                  "fill": "$text-muted",
+                                                  "content": "All",
+                                                  "lineHeight": 1.25,
+                                                  "fontFamily": "$font-body",
+                                                  "fontSize": 12,
+                                                  "fontWeight": "normal"
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "BFAIQ",
+                                      "name": "legend",
+                                      "width": "fill_container",
+                                      "gap": 24,
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "zGA2k",
+                                          "name": "legend Acceptance",
+                                          "gap": 8,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "rectangle",
+                                              "cornerRadius": 2,
+                                              "id": "RUmhd",
+                                              "name": "swatch",
+                                              "fill": "$chart-3",
+                                              "width": 14,
+                                              "height": 3
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "KFWbq",
+                                              "fill": "$text",
+                                              "content": "Acceptance",
+                                              "lineHeight": 1.5,
+                                              "fontFamily": "$font-body",
+                                              "fontSize": 14,
+                                              "fontWeight": "normal"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "cZ8Sn",
+                                              "fill": "$text",
+                                              "content": "50%",
+                                              "lineHeight": 1.5,
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 12,
+                                              "fontWeight": "600"
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "o97fb",
+                                              "name": "Badge delta",
+                                              "fill": "$success-surface",
+                                              "cornerRadius": 9999,
+                                              "padding": [
+                                                2,
+                                                8
+                                              ],
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "text",
+                                                  "id": "BveXb",
+                                                  "fill": "$success-fg",
+                                                  "content": "+25 pts",
+                                                  "lineHeight": 1.25,
+                                                  "fontFamily": "$font-mono",
+                                                  "fontSize": 12,
+                                                  "fontWeight": "700"
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "AOkG4",
+                                          "name": "legend Component",
+                                          "gap": 8,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "rectangle",
+                                              "cornerRadius": 2,
+                                              "id": "WfwL5",
+                                              "name": "swatch",
+                                              "fill": "$chart-2",
+                                              "width": 14,
+                                              "height": 3
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "II9jJ",
+                                              "fill": "$text",
+                                              "content": "Component",
+                                              "lineHeight": 1.5,
+                                              "fontFamily": "$font-body",
+                                              "fontSize": 14,
+                                              "fontWeight": "normal"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "aeswI",
+                                              "fill": "$text",
+                                              "content": "76%",
+                                              "lineHeight": 1.5,
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 12,
+                                              "fontWeight": "600"
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "JuYNf",
+                                              "name": "Badge delta",
+                                              "fill": "$success-surface",
+                                              "cornerRadius": 9999,
+                                              "padding": [
+                                                2,
+                                                8
+                                              ],
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "text",
+                                                  "id": "P4YYRj",
+                                                  "fill": "$success-fg",
+                                                  "content": "+7 pts",
+                                                  "lineHeight": 1.25,
+                                                  "fontFamily": "$font-mono",
+                                                  "fontSize": 12,
+                                                  "fontWeight": "700"
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "U2Flt",
+                                          "name": "legend Unit",
+                                          "gap": 8,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "rectangle",
+                                              "cornerRadius": 2,
+                                              "id": "p42zm",
+                                              "name": "swatch",
+                                              "fill": "$chart",
+                                              "width": 14,
+                                              "height": 3
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "slec8",
+                                              "fill": "$text",
+                                              "content": "Unit",
+                                              "lineHeight": 1.5,
+                                              "fontFamily": "$font-body",
+                                              "fontSize": 14,
+                                              "fontWeight": "normal"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "XCrbL",
+                                              "fill": "$text",
+                                              "content": "18%",
+                                              "lineHeight": 1.5,
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 12,
+                                              "fontWeight": "600"
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "Z1Cm1",
+                                              "name": "Badge delta",
+                                              "fill": "$success-surface",
+                                              "cornerRadius": 9999,
+                                              "padding": [
+                                                2,
+                                                8
+                                              ],
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "text",
+                                                  "id": "fjVwn",
+                                                  "fill": "$success-fg",
+                                                  "content": "+9 pts",
+                                                  "lineHeight": 1.25,
+                                                  "fontFamily": "$font-mono",
+                                                  "fontSize": 12,
+                                                  "fontWeight": "700"
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "AOHoM",
+                                      "name": "TrendChart plot",
+                                      "width": 967,
+                                      "height": 240,
+                                      "layout": "none",
+                                      "children": [
+                                        {
+                                          "type": "rectangle",
+                                          "id": "uN9Lx",
+                                          "layoutPosition": "absolute",
+                                          "x": 40,
+                                          "y": 212,
+                                          "name": "grid 0",
+                                          "fill": "$border",
+                                          "width": 919,
+                                          "height": 1
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "s1xpo",
+                                          "layoutPosition": "absolute",
+                                          "x": 0,
+                                          "y": 206,
+                                          "name": "y 0",
+                                          "fill": "$text-muted",
+                                          "content": "0%",
+                                          "lineHeight": 1,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "rectangle",
+                                          "id": "pTk5A",
+                                          "layoutPosition": "absolute",
+                                          "x": 40,
+                                          "y": 161,
+                                          "name": "grid 25",
+                                          "fill": "$border",
+                                          "width": 919,
+                                          "height": 1
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "RW4IO",
+                                          "layoutPosition": "absolute",
+                                          "x": 0,
+                                          "y": 155,
+                                          "name": "y 25",
+                                          "fill": "$text-muted",
+                                          "content": "25%",
+                                          "lineHeight": 1,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "rectangle",
+                                          "id": "BBe6r",
+                                          "layoutPosition": "absolute",
+                                          "x": 40,
+                                          "y": 110,
+                                          "name": "grid 50",
+                                          "fill": "$border",
+                                          "width": 919,
+                                          "height": 1
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "cYBO9",
+                                          "layoutPosition": "absolute",
+                                          "x": 0,
+                                          "y": 104,
+                                          "name": "y 50",
+                                          "fill": "$text-muted",
+                                          "content": "50%",
+                                          "lineHeight": 1,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "rectangle",
+                                          "id": "jN0Xh",
+                                          "layoutPosition": "absolute",
+                                          "x": 40,
+                                          "y": 59,
+                                          "name": "grid 75",
+                                          "fill": "$border",
+                                          "width": 919,
+                                          "height": 1
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "aDMkV",
+                                          "layoutPosition": "absolute",
+                                          "x": 0,
+                                          "y": 53,
+                                          "name": "y 75",
+                                          "fill": "$text-muted",
+                                          "content": "75%",
+                                          "lineHeight": 1,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "rectangle",
+                                          "id": "j6TnDN",
+                                          "layoutPosition": "absolute",
+                                          "x": 40,
+                                          "y": 8,
+                                          "name": "grid 100",
+                                          "fill": "$border",
+                                          "width": 919,
+                                          "height": 1
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "z115TZ",
+                                          "layoutPosition": "absolute",
+                                          "x": 0,
+                                          "y": 2,
+                                          "name": "y 100",
+                                          "fill": "$text-muted",
+                                          "content": "100%",
+                                          "lineHeight": 1,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "iEwG8",
+                                          "layoutPosition": "absolute",
+                                          "x": 107,
+                                          "y": 224,
+                                          "name": "x Sep",
+                                          "fill": "$text-muted",
+                                          "content": "Sep",
+                                          "lineHeight": 1,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "a8coH",
+                                          "layoutPosition": "absolute",
+                                          "x": 413,
+                                          "y": 224,
+                                          "name": "x Oct",
+                                          "fill": "$text-muted",
+                                          "content": "Oct",
+                                          "lineHeight": 1,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "psXO5",
+                                          "layoutPosition": "absolute",
+                                          "x": 719,
+                                          "y": 224,
+                                          "name": "x Nov",
+                                          "fill": "$text-muted",
+                                          "content": "Nov",
+                                          "lineHeight": 1,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "path",
+                                          "id": "p2h04",
+                                          "layoutPosition": "absolute",
+                                          "x": 40,
+                                          "y": 8,
+                                          "name": "line unit",
+                                          "geometry": "M0 204l76.6 0 76.6 0 76.6 0 76.5-18.4 76.6 0 76.6 0 76.6 0 76.6 0 76.6 0 76.5-18.3 76.6 0 76.6 0",
+                                          "viewBox": [
+                                            0,
+                                            0,
+                                            919,
+                                            204
+                                          ],
+                                          "width": 919,
+                                          "height": 204,
+                                          "stroke": "$chart",
+                                          "strokeWidth": 2
+                                        },
+                                        {
+                                          "type": "ellipse",
+                                          "id": "PBvl4",
+                                          "layoutPosition": "absolute",
+                                          "x": 955,
+                                          "y": 171.28,
+                                          "name": "last",
+                                          "fill": "$chart",
+                                          "width": 8,
+                                          "height": 8
+                                        },
+                                        {
+                                          "type": "path",
+                                          "id": "w2LHnW",
+                                          "layoutPosition": "absolute",
+                                          "x": 40,
+                                          "y": 8,
+                                          "name": "line component",
+                                          "geometry": "M0 91.8l76.6-4.1 76.6-4.1 76.6-4 76.5-4.1 76.6-4.1 76.6-4.1 76.6 0 76.6-4.1 76.6-4 76.5-4.1 76.6 0 76.6-6.1",
+                                          "viewBox": [
+                                            0,
+                                            0,
+                                            919,
+                                            204
+                                          ],
+                                          "width": 919,
+                                          "height": 204,
+                                          "stroke": "$chart-2",
+                                          "strokeWidth": 2
+                                        },
+                                        {
+                                          "type": "ellipse",
+                                          "id": "eDe0p",
+                                          "layoutPosition": "absolute",
+                                          "x": 955,
+                                          "y": 52.96000000000001,
+                                          "name": "last",
+                                          "fill": "$chart-2",
+                                          "width": 8,
+                                          "height": 8
+                                        },
+                                        {
+                                          "type": "path",
+                                          "id": "d8hCVq",
+                                          "layoutPosition": "absolute",
+                                          "x": 40,
+                                          "y": 8,
+                                          "name": "line acceptance",
+                                          "geometry": "M0 204l76.6 0 76.6-51 76.6 0 76.5 0 76.6 0 76.6 0 76.6 0 76.6 0 76.6 0 76.5-51 76.6 0 76.6 0",
+                                          "viewBox": [
+                                            0,
+                                            0,
+                                            919,
+                                            204
+                                          ],
+                                          "width": 919,
+                                          "height": 204,
+                                          "stroke": "$chart-3",
+                                          "strokeWidth": 2
+                                        },
+                                        {
+                                          "type": "ellipse",
+                                          "id": "YoRS8",
+                                          "layoutPosition": "absolute",
+                                          "x": 955,
+                                          "y": 106,
+                                          "name": "last",
+                                          "fill": "$chart-3",
+                                          "width": 8,
+                                          "height": 8
                                         }
                                       ]
                                     }
@@ -6517,7 +7798,7 @@
                   ]
                 },
                 {
-                  "id": "MUU4f",
+                  "id": "C1VFE9",
                   "type": "ref",
                   "ref": "eHGpK",
                   "name": "screens__desktop__dark__screens-pyramid-home--sample",
@@ -6535,7 +7816,7 @@
                   "reusable": true,
                   "clip": true,
                   "width": 390,
-                  "height": 4448,
+                  "height": 5431,
                   "fill": "$bg",
                   "layout": "none",
                   "children": [
@@ -7170,6 +8451,30 @@
                                           "fontSize": 12,
                                           "fontWeight": "700",
                                           "letterSpacing": 1
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "TdQXb",
+                                          "name": "Badge delta",
+                                          "fill": "$success-surface",
+                                          "cornerRadius": 9999,
+                                          "padding": [
+                                            2,
+                                            8
+                                          ],
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "N9e3S",
+                                              "fill": "$success-fg",
+                                              "content": "−6",
+                                              "lineHeight": 1.25,
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 12,
+                                              "fontWeight": "700"
+                                            }
+                                          ]
                                         }
                                       ]
                                     },
@@ -7231,6 +8536,30 @@
                                           "fontSize": 12,
                                           "fontWeight": "700",
                                           "letterSpacing": 1
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "uIhDK",
+                                          "name": "Badge delta",
+                                          "fill": "$success-surface",
+                                          "cornerRadius": 9999,
+                                          "padding": [
+                                            2,
+                                            8
+                                          ],
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "rfHF5",
+                                              "fill": "$success-fg",
+                                              "content": "+1",
+                                              "lineHeight": 1.25,
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 12,
+                                              "fontWeight": "700"
+                                            }
+                                          ]
                                         }
                                       ]
                                     },
@@ -7322,6 +8651,30 @@
                                           "fontSize": 12,
                                           "fontWeight": "700",
                                           "letterSpacing": 1
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "Mxq9z",
+                                          "name": "Badge delta",
+                                          "fill": "$success-surface",
+                                          "cornerRadius": 9999,
+                                          "padding": [
+                                            2,
+                                            8
+                                          ],
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "CGKjT",
+                                              "fill": "$success-fg",
+                                              "content": "+4",
+                                              "lineHeight": 1.25,
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 12,
+                                              "fontWeight": "700"
+                                            }
+                                          ]
                                         }
                                       ]
                                     },
@@ -7365,7 +8718,7 @@
                                           "name": "Meter fill",
                                           "width": 106,
                                           "height": 8,
-                                          "fill": "$chart",
+                                          "fill": "$chart-2",
                                           "cornerRadius": 9999
                                         }
                                       ]
@@ -7404,6 +8757,30 @@
                                           "fontSize": 12,
                                           "fontWeight": "700",
                                           "letterSpacing": 1
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "J5b56",
+                                          "name": "Badge delta",
+                                          "fill": "$success-surface",
+                                          "cornerRadius": 9999,
+                                          "padding": [
+                                            2,
+                                            8
+                                          ],
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "b1lhi",
+                                              "fill": "$success-fg",
+                                              "content": "+1",
+                                              "lineHeight": 1.25,
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 12,
+                                              "fontWeight": "700"
+                                            }
+                                          ]
                                         }
                                       ]
                                     },
@@ -7447,7 +8824,7 @@
                                           "name": "Meter fill",
                                           "width": 71,
                                           "height": 8,
-                                          "fill": "$chart",
+                                          "fill": "$chart-3",
                                           "cornerRadius": 9999
                                         }
                                       ]
@@ -7566,7 +8943,7 @@
                                                     326,
                                                     76
                                                   ],
-                                                  "fill": "$chart",
+                                                  "fill": "$chart-3",
                                                   "width": 326,
                                                   "height": 76
                                                 },
@@ -7600,7 +8977,7 @@
                                                     326,
                                                     76
                                                   ],
-                                                  "fill": "$chart",
+                                                  "fill": "$chart-2",
                                                   "width": 326,
                                                   "height": 76
                                                 },
@@ -8185,7 +9562,7 @@
                                                   "innerRadius": 0.7,
                                                   "startAngle": 90,
                                                   "sweepAngle": -140.8695652173913,
-                                                  "fill": "$chart-strong",
+                                                  "fill": "$chart",
                                                   "width": 132,
                                                   "height": 132
                                                 },
@@ -8198,7 +9575,7 @@
                                                   "innerRadius": 0.7,
                                                   "startAngle": -50.86956521739131,
                                                   "sweepAngle": -187.82608695652175,
-                                                  "fill": "$chart",
+                                                  "fill": "$chart-2",
                                                   "width": 132,
                                                   "height": 132
                                                 },
@@ -8211,7 +9588,7 @@
                                                   "innerRadius": 0.7,
                                                   "startAngle": -238.69565217391306,
                                                   "sweepAngle": -31.304347826086957,
-                                                  "fill": "$chart-soft",
+                                                  "fill": "$chart-3",
                                                   "width": 132,
                                                   "height": 132
                                                 },
@@ -8276,7 +9653,7 @@
                                                       "name": "swatch",
                                                       "width": 10,
                                                       "height": 10,
-                                                      "fill": "$chart-strong",
+                                                      "fill": "$chart",
                                                       "cornerRadius": 2
                                                     },
                                                     {
@@ -8325,7 +9702,7 @@
                                                       "name": "swatch",
                                                       "width": 10,
                                                       "height": 10,
-                                                      "fill": "$chart",
+                                                      "fill": "$chart-2",
                                                       "cornerRadius": 2
                                                     },
                                                     {
@@ -8374,7 +9751,7 @@
                                                       "name": "swatch",
                                                       "width": 10,
                                                       "height": 10,
-                                                      "fill": "$chart-soft",
+                                                      "fill": "$chart-3",
                                                       "cornerRadius": 2
                                                     },
                                                     {
@@ -8517,7 +9894,7 @@
                                                   "name": "Bar",
                                                   "width": 100,
                                                   "height": 12,
-                                                  "fill": "$chart",
+                                                  "fill": "$chart-3",
                                                   "cornerRadius": 4
                                                 }
                                               ]
@@ -8568,7 +9945,7 @@
                                                   "name": "Bar",
                                                   "width": 326,
                                                   "height": 12,
-                                                  "fill": "$chart",
+                                                  "fill": "$chart-2",
                                                   "cornerRadius": 4
                                                 }
                                               ]
@@ -8627,6 +10004,1121 @@
                                           ]
                                         }
                                       ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "W0Ocn5",
+                              "name": "Card code health",
+                              "width": "fill_container",
+                              "fill": "$bg-subtle",
+                              "cornerRadius": 16,
+                              "stroke": "$border",
+                              "strokeWidth": 1,
+                              "layout": "vertical",
+                              "gap": 20,
+                              "padding": 20,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "nSWOK",
+                                  "name": "card heading",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 4,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "U6iR8U",
+                                      "fill": "$text-muted",
+                                      "content": "CODE HEALTH",
+                                      "lineHeight": 1.25,
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "700",
+                                      "letterSpacing": 1
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "OB76m",
+                                      "fill": "$text-muted",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "fallow, per measurement: score, CRAP ≥ 30, functions over the complexity ceiling and duplicated lines.",
+                                      "lineHeight": 1.5,
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 14,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "PRLUk",
+                                  "name": "panels",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 12,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "JKRs0",
+                                      "name": "r1",
+                                      "width": "fill_container",
+                                      "gap": 12,
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "AAsbf",
+                                          "name": "panel score",
+                                          "width": 153,
+                                          "fill": "$bg",
+                                          "cornerRadius": 12,
+                                          "stroke": "$border",
+                                          "strokeWidth": 1,
+                                          "layout": "vertical",
+                                          "gap": 8,
+                                          "padding": 16,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "U97PlF",
+                                              "fill": "$text-muted",
+                                              "content": "SCORE",
+                                              "lineHeight": 1.25,
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 12,
+                                              "fontWeight": "700",
+                                              "letterSpacing": 1
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "qJXy1",
+                                              "name": "value row",
+                                              "width": "fill_container",
+                                              "gap": 8,
+                                              "alignItems": "end",
+                                              "children": [
+                                                {
+                                                  "type": "text",
+                                                  "id": "F8grRg",
+                                                  "fill": "$text",
+                                                  "content": "84.7",
+                                                  "lineHeight": 1.1,
+                                                  "fontFamily": "$font-display",
+                                                  "fontSize": 28,
+                                                  "fontWeight": "600"
+                                                },
+                                                {
+                                                  "type": "text",
+                                                  "id": "KyxpJ",
+                                                  "fill": "$text",
+                                                  "content": "B",
+                                                  "lineHeight": 1.5,
+                                                  "fontFamily": "$font-mono",
+                                                  "fontSize": 12,
+                                                  "fontWeight": "normal"
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "obCai",
+                                              "name": "delta",
+                                              "gap": 6,
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "frame",
+                                                  "id": "L6rCrf",
+                                                  "name": "Badge delta",
+                                                  "fill": "$success-surface",
+                                                  "cornerRadius": 9999,
+                                                  "padding": [
+                                                    2,
+                                                    8
+                                                  ],
+                                                  "alignItems": "center",
+                                                  "children": [
+                                                    {
+                                                      "type": "text",
+                                                      "id": "BVL8T",
+                                                      "fill": "$success-fg",
+                                                      "content": "+2.1 · 30 d",
+                                                      "lineHeight": 1.25,
+                                                      "fontFamily": "$font-mono",
+                                                      "fontSize": 12,
+                                                      "fontWeight": "700"
+                                                    }
+                                                  ]
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "gfxry",
+                                              "name": "Sparkline",
+                                              "width": 121,
+                                              "height": 52,
+                                              "layout": "none",
+                                              "children": [
+                                                {
+                                                  "type": "path",
+                                                  "id": "MF5P7",
+                                                  "layoutPosition": "absolute",
+                                                  "x": 0,
+                                                  "y": 4,
+                                                  "name": "line",
+                                                  "geometry": "M0 32.5l10.1-1.7 10.1-2.8 10.1-1.6 10-2.2 10.1-1.7 10.1-2.1 10.1-1.7 10.1 0 10.1-2.7 10-3.9 10.1-2.2 10.1-2.8",
+                                                  "viewBox": [
+                                                    0,
+                                                    0,
+                                                    121,
+                                                    44
+                                                  ],
+                                                  "width": 121,
+                                                  "height": 44,
+                                                  "stroke": "$text",
+                                                  "strokeWidth": 2
+                                                },
+                                                {
+                                                  "type": "ellipse",
+                                                  "id": "wEb7v",
+                                                  "layoutPosition": "absolute",
+                                                  "x": 117,
+                                                  "y": 7.149999999999984,
+                                                  "name": "last",
+                                                  "fill": "$text",
+                                                  "width": 8,
+                                                  "height": 8
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "OrgQd",
+                                          "name": "panel crap",
+                                          "width": 153,
+                                          "fill": "$bg",
+                                          "cornerRadius": 12,
+                                          "stroke": "$border",
+                                          "strokeWidth": 1,
+                                          "layout": "vertical",
+                                          "gap": 8,
+                                          "padding": 16,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "tuJ9L",
+                                              "fill": "$text-muted",
+                                              "content": "CRAP ≥ 30",
+                                              "lineHeight": 1.25,
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 12,
+                                              "fontWeight": "700",
+                                              "letterSpacing": 1
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "vM9GC",
+                                              "name": "value row",
+                                              "width": "fill_container",
+                                              "gap": 8,
+                                              "alignItems": "end",
+                                              "children": [
+                                                {
+                                                  "type": "text",
+                                                  "id": "zc9hY",
+                                                  "fill": "$text",
+                                                  "content": "7",
+                                                  "lineHeight": 1.1,
+                                                  "fontFamily": "$font-display",
+                                                  "fontSize": 28,
+                                                  "fontWeight": "600"
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "yPjkM",
+                                              "name": "delta",
+                                              "gap": 6,
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "frame",
+                                                  "id": "mwNtB",
+                                                  "name": "Badge delta",
+                                                  "fill": "$success-surface",
+                                                  "cornerRadius": 9999,
+                                                  "padding": [
+                                                    2,
+                                                    8
+                                                  ],
+                                                  "alignItems": "center",
+                                                  "children": [
+                                                    {
+                                                      "type": "text",
+                                                      "id": "pLp9q",
+                                                      "fill": "$success-fg",
+                                                      "content": "−3 · 30 d",
+                                                      "lineHeight": 1.25,
+                                                      "fontFamily": "$font-mono",
+                                                      "fontSize": 12,
+                                                      "fontWeight": "700"
+                                                    }
+                                                  ]
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "ZmiUI",
+                                              "name": "Sparkline",
+                                              "width": 121,
+                                              "height": 52,
+                                              "layout": "none",
+                                              "children": [
+                                                {
+                                                  "type": "path",
+                                                  "id": "O0G2K",
+                                                  "layoutPosition": "absolute",
+                                                  "x": 0,
+                                                  "y": 4,
+                                                  "name": "line",
+                                                  "geometry": "M0 4.4l10.1 0 10.1 4.4 10.1 0 10 4.4 10.1 0 10.1 4.4 10.1 0 10.1 4.4 10.1 4.4 10 4.4 10.1 0 10.1 4.4",
+                                                  "viewBox": [
+                                                    0,
+                                                    0,
+                                                    121,
+                                                    44
+                                                  ],
+                                                  "width": 121,
+                                                  "height": 44,
+                                                  "stroke": "$text",
+                                                  "strokeWidth": 2
+                                                },
+                                                {
+                                                  "type": "ellipse",
+                                                  "id": "c8jbt",
+                                                  "layoutPosition": "absolute",
+                                                  "x": 117,
+                                                  "y": 35.2,
+                                                  "name": "last",
+                                                  "fill": "$text",
+                                                  "width": 8,
+                                                  "height": 8
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "oXAOH",
+                                      "name": "r2",
+                                      "width": "fill_container",
+                                      "gap": 12,
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "tSJ1F",
+                                          "name": "panel over",
+                                          "width": 153,
+                                          "fill": "$bg",
+                                          "cornerRadius": 12,
+                                          "stroke": "$border",
+                                          "strokeWidth": 1,
+                                          "layout": "vertical",
+                                          "gap": 8,
+                                          "padding": 16,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "BgJdw",
+                                              "fill": "$text-muted",
+                                              "content": "OVER CEILING",
+                                              "lineHeight": 1.25,
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 12,
+                                              "fontWeight": "700",
+                                              "letterSpacing": 1
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "CHtel",
+                                              "name": "value row",
+                                              "width": "fill_container",
+                                              "gap": 8,
+                                              "alignItems": "end",
+                                              "children": [
+                                                {
+                                                  "type": "text",
+                                                  "id": "f7gmdv",
+                                                  "fill": "$text",
+                                                  "content": "3",
+                                                  "lineHeight": 1.1,
+                                                  "fontFamily": "$font-display",
+                                                  "fontSize": 28,
+                                                  "fontWeight": "600"
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "Kw98f",
+                                              "name": "delta",
+                                              "gap": 6,
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "frame",
+                                                  "id": "c8k7fh",
+                                                  "name": "Badge delta",
+                                                  "fill": "$success-surface",
+                                                  "cornerRadius": 9999,
+                                                  "padding": [
+                                                    2,
+                                                    8
+                                                  ],
+                                                  "alignItems": "center",
+                                                  "children": [
+                                                    {
+                                                      "type": "text",
+                                                      "id": "cZdht",
+                                                      "fill": "$success-fg",
+                                                      "content": "−1 · 30 d",
+                                                      "lineHeight": 1.25,
+                                                      "fontFamily": "$font-mono",
+                                                      "fontSize": 12,
+                                                      "fontWeight": "700"
+                                                    }
+                                                  ]
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "RH2yB",
+                                              "name": "Sparkline",
+                                              "width": 121,
+                                              "height": 52,
+                                              "layout": "none",
+                                              "children": [
+                                                {
+                                                  "type": "path",
+                                                  "id": "Is7CX",
+                                                  "layoutPosition": "absolute",
+                                                  "x": 0,
+                                                  "y": 4,
+                                                  "name": "line",
+                                                  "geometry": "M0 8.8l10.1 0 10.1 0 10.1 8.8 10 0 10.1 0 10.1 8.8 10.1 0 10.1 0 10.1 0 10 8.8 10.1 0 10.1 0",
+                                                  "viewBox": [
+                                                    0,
+                                                    0,
+                                                    121,
+                                                    44
+                                                  ],
+                                                  "width": 121,
+                                                  "height": 44,
+                                                  "stroke": "$text",
+                                                  "strokeWidth": 2
+                                                },
+                                                {
+                                                  "type": "ellipse",
+                                                  "id": "M5O9j",
+                                                  "layoutPosition": "absolute",
+                                                  "x": 117,
+                                                  "y": 35.2,
+                                                  "name": "last",
+                                                  "fill": "$text",
+                                                  "width": 8,
+                                                  "height": 8
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "yQuZw",
+                                          "name": "panel dup",
+                                          "width": 153,
+                                          "fill": "$bg",
+                                          "cornerRadius": 12,
+                                          "stroke": "$border",
+                                          "strokeWidth": 1,
+                                          "layout": "vertical",
+                                          "gap": 8,
+                                          "padding": 16,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "km9b9",
+                                              "fill": "$text-muted",
+                                              "content": "DUPLICATION",
+                                              "lineHeight": 1.25,
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 12,
+                                              "fontWeight": "700",
+                                              "letterSpacing": 1
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "EE31A",
+                                              "name": "value row",
+                                              "width": "fill_container",
+                                              "gap": 8,
+                                              "alignItems": "end",
+                                              "children": [
+                                                {
+                                                  "type": "text",
+                                                  "id": "Y6ZZDA",
+                                                  "fill": "$text",
+                                                  "content": "1.6%",
+                                                  "lineHeight": 1.1,
+                                                  "fontFamily": "$font-display",
+                                                  "fontSize": 28,
+                                                  "fontWeight": "600"
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "Q2dxI",
+                                              "name": "delta",
+                                              "gap": 6,
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "frame",
+                                                  "id": "Zeezt",
+                                                  "name": "Badge delta",
+                                                  "fill": "$success-surface",
+                                                  "cornerRadius": 9999,
+                                                  "padding": [
+                                                    2,
+                                                    8
+                                                  ],
+                                                  "alignItems": "center",
+                                                  "children": [
+                                                    {
+                                                      "type": "text",
+                                                      "id": "vgvbb",
+                                                      "fill": "$success-fg",
+                                                      "content": "−0.4 pts · 30 d",
+                                                      "lineHeight": 1.25,
+                                                      "fontFamily": "$font-mono",
+                                                      "fontSize": 12,
+                                                      "fontWeight": "700"
+                                                    }
+                                                  ]
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "G4wts",
+                                              "name": "Sparkline",
+                                              "width": 121,
+                                              "height": 52,
+                                              "layout": "none",
+                                              "children": [
+                                                {
+                                                  "type": "path",
+                                                  "id": "V0amcr",
+                                                  "layoutPosition": "absolute",
+                                                  "x": 0,
+                                                  "y": 4,
+                                                  "name": "line",
+                                                  "geometry": "M0 7.3l10.1 0 10.1 3.7 10.1 3.7 10 0 10.1 3.6 10.1 3.7 10.1 0 10.1 0 10.1 3.7 10 3.6 10.1 3.7 10.1 3.7",
+                                                  "viewBox": [
+                                                    0,
+                                                    0,
+                                                    121,
+                                                    44
+                                                  ],
+                                                  "width": 121,
+                                                  "height": 44,
+                                                  "stroke": "$text",
+                                                  "strokeWidth": 2
+                                                },
+                                                {
+                                                  "type": "ellipse",
+                                                  "id": "RV2XC",
+                                                  "layoutPosition": "absolute",
+                                                  "x": 117,
+                                                  "y": 36.66666666666666,
+                                                  "name": "last",
+                                                  "fill": "$text",
+                                                  "width": 8,
+                                                  "height": 8
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "nKXcZ",
+                              "name": "Card trend",
+                              "width": "fill_container",
+                              "fill": "$bg-subtle",
+                              "cornerRadius": 16,
+                              "stroke": "$border",
+                              "strokeWidth": 1,
+                              "layout": "vertical",
+                              "gap": 20,
+                              "padding": 20,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "G38JV",
+                                  "name": "head",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 12,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "kmPUz",
+                                      "name": "card heading",
+                                      "width": "fill_container",
+                                      "layout": "vertical",
+                                      "gap": 4,
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "Vv0zk",
+                                          "fill": "$text-muted",
+                                          "content": "TEST PYRAMID OVER TIME",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "700",
+                                          "letterSpacing": 1
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "RZTBx",
+                                          "fill": "$text-muted",
+                                          "textGrowth": "fixed-width",
+                                          "width": "fill_container",
+                                          "content": "Share measured per layer, one point per measurement.",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-body",
+                                          "fontSize": 14,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "gBdrR",
+                                      "name": "SegmentedControl range",
+                                      "fill": "$bg-subtle",
+                                      "cornerRadius": 8,
+                                      "stroke": "$border",
+                                      "strokeWidth": 1,
+                                      "gap": 2,
+                                      "padding": 2,
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "d4FEul",
+                                          "name": "option",
+                                          "cornerRadius": 4,
+                                          "padding": [
+                                            6,
+                                            12
+                                          ],
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "WASU6",
+                                              "fill": "$text-muted",
+                                              "content": "30D",
+                                              "lineHeight": 1.25,
+                                              "fontFamily": "$font-body",
+                                              "fontSize": 12,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "a4XrVT",
+                                          "name": "option",
+                                          "fill": "$bg",
+                                          "cornerRadius": 4,
+                                          "stroke": "$border-strong",
+                                          "strokeWidth": 1,
+                                          "padding": [
+                                            6,
+                                            12
+                                          ],
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "suuNt",
+                                              "fill": "$text",
+                                              "content": "90D",
+                                              "lineHeight": 1.25,
+                                              "fontFamily": "$font-body",
+                                              "fontSize": 12,
+                                              "fontWeight": "700"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "PhvYC",
+                                          "name": "option",
+                                          "cornerRadius": 4,
+                                          "padding": [
+                                            6,
+                                            12
+                                          ],
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "vk6iH",
+                                              "fill": "$text-muted",
+                                              "content": "All",
+                                              "lineHeight": 1.25,
+                                              "fontFamily": "$font-body",
+                                              "fontSize": 12,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "Zu9IE",
+                                  "name": "legend",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 8,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "OG37J",
+                                      "name": "legend Acceptance",
+                                      "gap": 8,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "rectangle",
+                                          "cornerRadius": 2,
+                                          "id": "Dd9Xc",
+                                          "name": "swatch",
+                                          "fill": "$chart-3",
+                                          "width": 14,
+                                          "height": 3
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "Ydffo",
+                                          "fill": "$text",
+                                          "content": "Acceptance",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-body",
+                                          "fontSize": 14,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "FNNg3",
+                                          "fill": "$text",
+                                          "content": "50%",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "600"
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "PbP1v",
+                                          "name": "Badge delta",
+                                          "fill": "$success-surface",
+                                          "cornerRadius": 9999,
+                                          "padding": [
+                                            2,
+                                            8
+                                          ],
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "V7G7Ub",
+                                              "fill": "$success-fg",
+                                              "content": "+25 pts",
+                                              "lineHeight": 1.25,
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 12,
+                                              "fontWeight": "700"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "IkTwu",
+                                      "name": "legend Component",
+                                      "gap": 8,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "rectangle",
+                                          "cornerRadius": 2,
+                                          "id": "K49Ra5",
+                                          "name": "swatch",
+                                          "fill": "$chart-2",
+                                          "width": 14,
+                                          "height": 3
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "fKMFW",
+                                          "fill": "$text",
+                                          "content": "Component",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-body",
+                                          "fontSize": 14,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "pavvg",
+                                          "fill": "$text",
+                                          "content": "76%",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "600"
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "l4bOez",
+                                          "name": "Badge delta",
+                                          "fill": "$success-surface",
+                                          "cornerRadius": 9999,
+                                          "padding": [
+                                            2,
+                                            8
+                                          ],
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "h99AZ",
+                                              "fill": "$success-fg",
+                                              "content": "+7 pts",
+                                              "lineHeight": 1.25,
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 12,
+                                              "fontWeight": "700"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "E2Exb",
+                                      "name": "legend Unit",
+                                      "gap": 8,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "rectangle",
+                                          "cornerRadius": 2,
+                                          "id": "LhAgk",
+                                          "name": "swatch",
+                                          "fill": "$chart",
+                                          "width": 14,
+                                          "height": 3
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "bJgbD",
+                                          "fill": "$text",
+                                          "content": "Unit",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-body",
+                                          "fontSize": 14,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "xiH5p",
+                                          "fill": "$text",
+                                          "content": "18%",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "600"
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "AcASi",
+                                          "name": "Badge delta",
+                                          "fill": "$success-surface",
+                                          "cornerRadius": 9999,
+                                          "padding": [
+                                            2,
+                                            8
+                                          ],
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "f4TdM",
+                                              "fill": "$success-fg",
+                                              "content": "+9 pts",
+                                              "lineHeight": 1.25,
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 12,
+                                              "fontWeight": "700"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "sDFmh",
+                                  "name": "TrendChart plot",
+                                  "width": 318,
+                                  "height": 180,
+                                  "layout": "none",
+                                  "children": [
+                                    {
+                                      "type": "rectangle",
+                                      "id": "vSS7x",
+                                      "layoutPosition": "absolute",
+                                      "x": 40,
+                                      "y": 152,
+                                      "name": "grid 0",
+                                      "fill": "$border",
+                                      "width": 270,
+                                      "height": 1
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "Q2OpS",
+                                      "layoutPosition": "absolute",
+                                      "x": 0,
+                                      "y": 146,
+                                      "name": "y 0",
+                                      "fill": "$text-muted",
+                                      "content": "0%",
+                                      "lineHeight": 1,
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "rectangle",
+                                      "id": "A0j8zm",
+                                      "layoutPosition": "absolute",
+                                      "x": 40,
+                                      "y": 80,
+                                      "name": "grid 50",
+                                      "fill": "$border",
+                                      "width": 270,
+                                      "height": 1
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "wyuA2",
+                                      "layoutPosition": "absolute",
+                                      "x": 0,
+                                      "y": 74,
+                                      "name": "y 50",
+                                      "fill": "$text-muted",
+                                      "content": "50%",
+                                      "lineHeight": 1,
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "rectangle",
+                                      "id": "YTy1M",
+                                      "layoutPosition": "absolute",
+                                      "x": 40,
+                                      "y": 8,
+                                      "name": "grid 100",
+                                      "fill": "$border",
+                                      "width": 270,
+                                      "height": 1
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "j1BA7",
+                                      "layoutPosition": "absolute",
+                                      "x": 0,
+                                      "y": 2,
+                                      "name": "y 100",
+                                      "fill": "$text-muted",
+                                      "content": "100%",
+                                      "lineHeight": 1,
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "fmjom",
+                                      "layoutPosition": "absolute",
+                                      "x": 53,
+                                      "y": 164,
+                                      "name": "x Sep",
+                                      "fill": "$text-muted",
+                                      "content": "Sep",
+                                      "lineHeight": 1,
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "nC5Kw",
+                                      "layoutPosition": "absolute",
+                                      "x": 143,
+                                      "y": 164,
+                                      "name": "x Oct",
+                                      "fill": "$text-muted",
+                                      "content": "Oct",
+                                      "lineHeight": 1,
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "G8ei2",
+                                      "layoutPosition": "absolute",
+                                      "x": 233,
+                                      "y": 164,
+                                      "name": "x Nov",
+                                      "fill": "$text-muted",
+                                      "content": "Nov",
+                                      "lineHeight": 1,
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "path",
+                                      "id": "K1rjk",
+                                      "layoutPosition": "absolute",
+                                      "x": 40,
+                                      "y": 8,
+                                      "name": "line unit",
+                                      "geometry": "M0 144l22.5 0 22.5 0 22.5 0 22.5-13 22.5 0 22.5 0 22.5 0 22.5 0 22.5 0 22.5-12.9 22.5 0 22.5 0",
+                                      "viewBox": [
+                                        0,
+                                        0,
+                                        270,
+                                        144
+                                      ],
+                                      "width": 270,
+                                      "height": 144,
+                                      "stroke": "$chart",
+                                      "strokeWidth": 2
+                                    },
+                                    {
+                                      "type": "ellipse",
+                                      "id": "JxWvI",
+                                      "layoutPosition": "absolute",
+                                      "x": 306,
+                                      "y": 122.08,
+                                      "name": "last",
+                                      "fill": "$chart",
+                                      "width": 8,
+                                      "height": 8
+                                    },
+                                    {
+                                      "type": "path",
+                                      "id": "apRkv",
+                                      "layoutPosition": "absolute",
+                                      "x": 40,
+                                      "y": 8,
+                                      "name": "line component",
+                                      "geometry": "M0 64.8l22.5-2.9 22.5-2.9 22.5-2.8 22.5-2.9 22.5-2.9 22.5-2.9 22.5 0 22.5-2.9 22.5-2.8 22.5-2.9 22.5 0 22.5-4.3",
+                                      "viewBox": [
+                                        0,
+                                        0,
+                                        270,
+                                        144
+                                      ],
+                                      "width": 270,
+                                      "height": 144,
+                                      "stroke": "$chart-2",
+                                      "strokeWidth": 2
+                                    },
+                                    {
+                                      "type": "ellipse",
+                                      "id": "J7dSJ",
+                                      "layoutPosition": "absolute",
+                                      "x": 306,
+                                      "y": 38.56,
+                                      "name": "last",
+                                      "fill": "$chart-2",
+                                      "width": 8,
+                                      "height": 8
+                                    },
+                                    {
+                                      "type": "path",
+                                      "id": "tudhm",
+                                      "layoutPosition": "absolute",
+                                      "x": 40,
+                                      "y": 8,
+                                      "name": "line acceptance",
+                                      "geometry": "M0 144l22.5 0 22.5-36 22.5 0 22.5 0 22.5 0 22.5 0 22.5 0 22.5 0 22.5 0 22.5-36 22.5 0 22.5 0",
+                                      "viewBox": [
+                                        0,
+                                        0,
+                                        270,
+                                        144
+                                      ],
+                                      "width": 270,
+                                      "height": 144,
+                                      "stroke": "$chart-3",
+                                      "strokeWidth": 2
+                                    },
+                                    {
+                                      "type": "ellipse",
+                                      "id": "QrmR4",
+                                      "layoutPosition": "absolute",
+                                      "x": 306,
+                                      "y": 76,
+                                      "name": "last",
+                                      "fill": "$chart-3",
+                                      "width": 8,
+                                      "height": 8
                                     }
                                   ]
                                 }
@@ -11533,7 +14025,7 @@
                   ]
                 },
                 {
-                  "id": "jRjtj",
+                  "id": "d930u",
                   "type": "ref",
                   "ref": "gnYbQ",
                   "name": "screens__mobile__dark__screens-pyramid-home--sample",

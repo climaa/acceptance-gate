@@ -1851,7 +1851,7 @@
                                               "name": "Meter fill",
                                               "width": "fill_container",
                                               "height": 8,
-                                              "fill": "$chart",
+                                              "fill": "$chart-2",
                                               "cornerRadius": 9999
                                             }
                                           ]
@@ -7966,7 +7966,7 @@
                                           "name": "Meter fill",
                                           "width": 141,
                                           "height": 8,
-                                          "fill": "$chart",
+                                          "fill": "$chart-2",
                                           "cornerRadius": 9999
                                         }
                                       ]
@@ -14673,7 +14673,7 @@
                                               "name": "Meter fill",
                                               "width": "fill_container",
                                               "height": 8,
-                                              "fill": "$chart",
+                                              "fill": "$chart-3",
                                               "cornerRadius": 9999
                                             }
                                           ]
@@ -17795,7 +17795,7 @@
                                           "name": "Meter fill",
                                           "width": 141,
                                           "height": 8,
-                                          "fill": "$chart",
+                                          "fill": "$chart-3",
                                           "cornerRadius": 9999
                                         }
                                       ]
