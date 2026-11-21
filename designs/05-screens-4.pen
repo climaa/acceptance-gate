@@ -11385,13 +11385,13 @@
       "type": "color",
       "value": [
         {
-          "value": "#2F5F8A",
+          "value": "#1F5FA8",
           "theme": {
             "mode": "light"
           }
         },
         {
-          "value": "#7FB0E0",
+          "value": "#4A90DC",
           "theme": {
             "mode": "dark"
           }
@@ -11436,13 +11436,13 @@
       "type": "color",
       "value": [
         {
-          "value": "#2C7A6C",
+          "value": "#0F8060",
           "theme": {
             "mode": "light"
           }
         },
         {
-          "value": "#6CC4B2",
+          "value": "#36A880",
           "theme": {
             "mode": "dark"
           }
@@ -11453,13 +11453,13 @@
       "type": "color",
       "value": [
         {
-          "value": "#9A5B00",
+          "value": "#A0560A",
           "theme": {
             "mode": "light"
           }
         },
         {
-          "value": "#E3B25E",
+          "value": "#C4842C",
           "theme": {
             "mode": "dark"
           }

@@ -1120,8 +1120,19 @@
                                       "name": "Meter fill",
                                       "width": 89,
                                       "height": 8,
-                                      "fill": "$success-fg",
+                                      "fill": "$chart",
                                       "cornerRadius": 9999
+                                    },
+                                    {
+                                      "type": "rectangle",
+                                      "id": "zbDhR",
+                                      "layoutPosition": "absolute",
+                                      "x": 62,
+                                      "y": 0,
+                                      "name": "floor",
+                                      "fill": "$text",
+                                      "width": 2,
+                                      "height": 8
                                     }
                                   ]
                                 },
@@ -1136,7 +1147,7 @@
                                       "type": "text",
                                       "id": "NBiQQ",
                                       "name": "coverage",
-                                      "fill": "$success-text",
+                                      "fill": "$text",
                                       "content": "98.9%",
                                       "lineHeight": 1.25,
                                       "fontFamily": "$font-mono",
@@ -1483,8 +1494,19 @@
                                       "name": "Meter fill",
                                       "width": 86,
                                       "height": 8,
-                                      "fill": "$success-fg",
+                                      "fill": "$chart",
                                       "cornerRadius": 9999
+                                    },
+                                    {
+                                      "type": "rectangle",
+                                      "id": "sSHPZ",
+                                      "layoutPosition": "absolute",
+                                      "x": 84,
+                                      "y": 0,
+                                      "name": "floor",
+                                      "fill": "$text",
+                                      "width": 2,
+                                      "height": 8
                                     }
                                   ]
                                 },
@@ -1499,7 +1521,7 @@
                                       "type": "text",
                                       "id": "d2N59C",
                                       "name": "coverage",
-                                      "fill": "$success-text",
+                                      "fill": "$text",
                                       "content": "95.2%",
                                       "lineHeight": 1.25,
                                       "fontFamily": "$font-mono",
@@ -7849,7 +7871,7 @@
                         },
                         {
                           "type": "frame",
-                          "id": "SZK3a",
+                          "id": "Ex4L8",
                           "name": "TrendChart plot",
                           "width": 1200,
                           "height": 240,
@@ -7857,18 +7879,18 @@
                           "children": [
                             {
                               "type": "rectangle",
-                              "id": "n5fIac",
+                              "id": "qROAz",
                               "layoutPosition": "absolute",
                               "x": 40,
                               "y": 212,
                               "name": "grid 0",
                               "fill": "$border",
-                              "width": 1152,
+                              "width": 1048,
                               "height": 1
                             },
                             {
                               "type": "text",
-                              "id": "wyf7j",
+                              "id": "z7x6P",
                               "layoutPosition": "absolute",
                               "x": 0,
                               "y": 206,
@@ -7882,18 +7904,18 @@
                             },
                             {
                               "type": "rectangle",
-                              "id": "hMQPf",
+                              "id": "U97mN",
                               "layoutPosition": "absolute",
                               "x": 40,
                               "y": 161,
                               "name": "grid 25",
                               "fill": "$border",
-                              "width": 1152,
+                              "width": 1048,
                               "height": 1
                             },
                             {
                               "type": "text",
-                              "id": "cfLls",
+                              "id": "SjHkH",
                               "layoutPosition": "absolute",
                               "x": 0,
                               "y": 155,
@@ -7907,18 +7929,18 @@
                             },
                             {
                               "type": "rectangle",
-                              "id": "Qt6Cv",
+                              "id": "pI0PP",
                               "layoutPosition": "absolute",
                               "x": 40,
                               "y": 110,
                               "name": "grid 50",
                               "fill": "$border",
-                              "width": 1152,
+                              "width": 1048,
                               "height": 1
                             },
                             {
                               "type": "text",
-                              "id": "BAJmm",
+                              "id": "ReIkm",
                               "layoutPosition": "absolute",
                               "x": 0,
                               "y": 104,
@@ -7932,18 +7954,18 @@
                             },
                             {
                               "type": "rectangle",
-                              "id": "eEg2b",
+                              "id": "YmjTk",
                               "layoutPosition": "absolute",
                               "x": 40,
                               "y": 59,
                               "name": "grid 75",
                               "fill": "$border",
-                              "width": 1152,
+                              "width": 1048,
                               "height": 1
                             },
                             {
                               "type": "text",
-                              "id": "VDDig",
+                              "id": "B7GEqy",
                               "layoutPosition": "absolute",
                               "x": 0,
                               "y": 53,
@@ -7957,18 +7979,18 @@
                             },
                             {
                               "type": "rectangle",
-                              "id": "unMnW",
+                              "id": "VrOBR",
                               "layoutPosition": "absolute",
                               "x": 40,
                               "y": 8,
                               "name": "grid 100",
                               "fill": "$border",
-                              "width": 1152,
+                              "width": 1048,
                               "height": 1
                             },
                             {
                               "type": "text",
-                              "id": "oFfIr",
+                              "id": "dThid",
                               "layoutPosition": "absolute",
                               "x": 0,
                               "y": 2,
@@ -7982,13 +8004,13 @@
                             },
                             {
                               "type": "text",
-                              "id": "t0SSGH",
+                              "id": "qp8LF",
                               "layoutPosition": "absolute",
-                              "x": 126,
+                              "x": 117,
                               "y": 224,
-                              "name": "x Sep",
+                              "name": "x Sep 2026",
                               "fill": "$text-muted",
-                              "content": "Sep",
+                              "content": "Sep 2026",
                               "lineHeight": 1,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
@@ -7996,9 +8018,9 @@
                             },
                             {
                               "type": "text",
-                              "id": "Vd50K",
+                              "id": "zw69R",
                               "layoutPosition": "absolute",
-                              "x": 510,
+                              "x": 467,
                               "y": 224,
                               "name": "x Oct",
                               "fill": "$text-muted",
@@ -8010,9 +8032,9 @@
                             },
                             {
                               "type": "text",
-                              "id": "Olk5l",
+                              "id": "RrM2w",
                               "layoutPosition": "absolute",
-                              "x": 894,
+                              "x": 816,
                               "y": 224,
                               "name": "x Nov",
                               "fill": "$text-muted",
@@ -8024,28 +8046,28 @@
                             },
                             {
                               "type": "path",
-                              "id": "jHlAd",
+                              "id": "S0B2u",
                               "layoutPosition": "absolute",
                               "x": 40,
                               "y": 8,
                               "name": "line unit",
-                              "geometry": "M0 204l96 0 96 0 96 0 96-18.4 96 0 96 0 96 0 96 0 96 0 96-18.3 96 0 96 0",
+                              "geometry": "M0 204l87.3 0 87.4 0 87.3 0 87.3-18.4 87.4 0 87.3 0 87.3 0 87.4 0 87.3 0 87.3-18.3 87.4 0 87.3 0",
                               "viewBox": [
                                 0,
                                 0,
-                                1152,
+                                1048,
                                 204
                               ],
-                              "width": 1152,
+                              "width": 1048,
                               "height": 204,
                               "stroke": "$chart",
                               "strokeWidth": 2
                             },
                             {
                               "type": "ellipse",
-                              "id": "j2Hagu",
+                              "id": "yfo1D",
                               "layoutPosition": "absolute",
-                              "x": 1188,
+                              "x": 1084,
                               "y": 171.28,
                               "name": "last",
                               "fill": "$chart",
@@ -8053,29 +8075,43 @@
                               "height": 8
                             },
                             {
+                              "type": "text",
+                              "id": "PZC1d",
+                              "layoutPosition": "absolute",
+                              "x": 1100,
+                              "y": 169,
+                              "name": "label unit",
+                              "fill": "$text",
+                              "content": "Unit 18%",
+                              "lineHeight": 1,
+                              "fontFamily": "$font-mono",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            },
+                            {
                               "type": "path",
-                              "id": "N0G20d",
+                              "id": "PmdFT",
                               "layoutPosition": "absolute",
                               "x": 40,
                               "y": 8,
                               "name": "line component",
-                              "geometry": "M0 91.8l96-4.1 96-4.1 96-4 96-4.1 96-4.1 96-4.1 96 0 96-4.1 96-4 96-4.1 96 0 96-6.1",
+                              "geometry": "M0 91.8l87.3-4.1 87.4-4.1 87.3-4 87.3-4.1 87.4-4.1 87.3-4.1 87.3 0 87.4-4.1 87.3-4 87.3-4.1 87.4 0 87.3-6.1",
                               "viewBox": [
                                 0,
                                 0,
-                                1152,
+                                1048,
                                 204
                               ],
-                              "width": 1152,
+                              "width": 1048,
                               "height": 204,
                               "stroke": "$chart-2",
                               "strokeWidth": 2
                             },
                             {
                               "type": "ellipse",
-                              "id": "fOKih",
+                              "id": "PTKsS",
                               "layoutPosition": "absolute",
-                              "x": 1188,
+                              "x": 1084,
                               "y": 52.96000000000001,
                               "name": "last",
                               "fill": "$chart-2",
@@ -8083,34 +8119,62 @@
                               "height": 8
                             },
                             {
+                              "type": "text",
+                              "id": "RFsDL",
+                              "layoutPosition": "absolute",
+                              "x": 1100,
+                              "y": 51,
+                              "name": "label component",
+                              "fill": "$text",
+                              "content": "Component 76%",
+                              "lineHeight": 1,
+                              "fontFamily": "$font-mono",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            },
+                            {
                               "type": "path",
-                              "id": "ZKUoa",
+                              "id": "serEe",
                               "layoutPosition": "absolute",
                               "x": 40,
                               "y": 8,
                               "name": "line acceptance",
-                              "geometry": "M0 204l96 0 96-51 96 0 96 0 96 0 96 0 96 0 96 0 96 0 96-51 96 0 96 0",
+                              "geometry": "M0 204l87.3 0 87.4-51 87.3 0 87.3 0 87.4 0 87.3 0 87.3 0 87.4 0 87.3 0 87.3-51 87.4 0 87.3 0",
                               "viewBox": [
                                 0,
                                 0,
-                                1152,
+                                1048,
                                 204
                               ],
-                              "width": 1152,
+                              "width": 1048,
                               "height": 204,
                               "stroke": "$chart-3",
                               "strokeWidth": 2
                             },
                             {
                               "type": "ellipse",
-                              "id": "LLMsx",
+                              "id": "O7Lgs",
                               "layoutPosition": "absolute",
-                              "x": 1188,
+                              "x": 1084,
                               "y": 106,
                               "name": "last",
                               "fill": "$chart-3",
                               "width": 8,
                               "height": 8
+                            },
+                            {
+                              "type": "text",
+                              "id": "r59Fa",
+                              "layoutPosition": "absolute",
+                              "x": 1100,
+                              "y": 104,
+                              "name": "label acceptance",
+                              "fill": "$text",
+                              "content": "Acceptance 50%",
+                              "lineHeight": 1,
+                              "fontFamily": "$font-mono",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
                             }
                           ]
                         }
@@ -8895,13 +8959,13 @@
       "type": "color",
       "value": [
         {
-          "value": "#2F5F8A",
+          "value": "#1F5FA8",
           "theme": {
             "mode": "light"
           }
         },
         {
-          "value": "#7FB0E0",
+          "value": "#4A90DC",
           "theme": {
             "mode": "dark"
           }
@@ -8946,13 +9010,13 @@
       "type": "color",
       "value": [
         {
-          "value": "#2C7A6C",
+          "value": "#0F8060",
           "theme": {
             "mode": "light"
           }
         },
         {
-          "value": "#6CC4B2",
+          "value": "#36A880",
           "theme": {
             "mode": "dark"
           }
@@ -8963,13 +9027,13 @@
       "type": "color",
       "value": [
         {
-          "value": "#9A5B00",
+          "value": "#A0560A",
           "theme": {
             "mode": "light"
           }
         },
         {
-          "value": "#E3B25E",
+          "value": "#C4842C",
           "theme": {
             "mode": "dark"
           }

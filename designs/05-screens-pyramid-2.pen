@@ -2507,7 +2507,7 @@
                                                       "name": "Meter fill",
                                                       "width": 345,
                                                       "height": 8,
-                                                      "fill": "$chart",
+                                                      "fill": "$text-muted",
                                                       "cornerRadius": 9999
                                                     }
                                                   ]
@@ -4396,7 +4396,7 @@
                                     },
                                     {
                                       "type": "frame",
-                                      "id": "nSH1t",
+                                      "id": "f7Ikm",
                                       "name": "TrendChart plot",
                                       "width": 967,
                                       "height": 240,
@@ -4404,18 +4404,18 @@
                                       "children": [
                                         {
                                           "type": "rectangle",
-                                          "id": "XYyCi",
+                                          "id": "lsog6",
                                           "layoutPosition": "absolute",
                                           "x": 40,
                                           "y": 212,
                                           "name": "grid 0",
                                           "fill": "$border",
-                                          "width": 919,
+                                          "width": 815,
                                           "height": 1
                                         },
                                         {
                                           "type": "text",
-                                          "id": "shOvx",
+                                          "id": "nrROc",
                                           "layoutPosition": "absolute",
                                           "x": 0,
                                           "y": 206,
@@ -4429,18 +4429,18 @@
                                         },
                                         {
                                           "type": "rectangle",
-                                          "id": "whwOa",
+                                          "id": "fcl13",
                                           "layoutPosition": "absolute",
                                           "x": 40,
                                           "y": 161,
                                           "name": "grid 25",
                                           "fill": "$border",
-                                          "width": 919,
+                                          "width": 815,
                                           "height": 1
                                         },
                                         {
                                           "type": "text",
-                                          "id": "tBNwp",
+                                          "id": "x4JnWO",
                                           "layoutPosition": "absolute",
                                           "x": 0,
                                           "y": 155,
@@ -4454,18 +4454,18 @@
                                         },
                                         {
                                           "type": "rectangle",
-                                          "id": "Jh3T4",
+                                          "id": "FPxNW",
                                           "layoutPosition": "absolute",
                                           "x": 40,
                                           "y": 110,
                                           "name": "grid 50",
                                           "fill": "$border",
-                                          "width": 919,
+                                          "width": 815,
                                           "height": 1
                                         },
                                         {
                                           "type": "text",
-                                          "id": "wPqUr",
+                                          "id": "sSOtV",
                                           "layoutPosition": "absolute",
                                           "x": 0,
                                           "y": 104,
@@ -4479,18 +4479,18 @@
                                         },
                                         {
                                           "type": "rectangle",
-                                          "id": "aBCil",
+                                          "id": "q4ciI3",
                                           "layoutPosition": "absolute",
                                           "x": 40,
                                           "y": 59,
                                           "name": "grid 75",
                                           "fill": "$border",
-                                          "width": 919,
+                                          "width": 815,
                                           "height": 1
                                         },
                                         {
                                           "type": "text",
-                                          "id": "V4gygS",
+                                          "id": "wADPZ",
                                           "layoutPosition": "absolute",
                                           "x": 0,
                                           "y": 53,
@@ -4504,18 +4504,18 @@
                                         },
                                         {
                                           "type": "rectangle",
-                                          "id": "UdOub",
+                                          "id": "FG1al",
                                           "layoutPosition": "absolute",
                                           "x": 40,
                                           "y": 8,
                                           "name": "grid 100",
                                           "fill": "$border",
-                                          "width": 919,
+                                          "width": 815,
                                           "height": 1
                                         },
                                         {
                                           "type": "text",
-                                          "id": "wtfUt",
+                                          "id": "TWfBV",
                                           "layoutPosition": "absolute",
                                           "x": 0,
                                           "y": 2,
@@ -4529,13 +4529,13 @@
                                         },
                                         {
                                           "type": "text",
-                                          "id": "lBxSn",
+                                          "id": "I5081",
                                           "layoutPosition": "absolute",
-                                          "x": 107,
+                                          "x": 98,
                                           "y": 224,
-                                          "name": "x Sep",
+                                          "name": "x Sep 2026",
                                           "fill": "$text-muted",
-                                          "content": "Sep",
+                                          "content": "Sep 2026",
                                           "lineHeight": 1,
                                           "fontFamily": "$font-mono",
                                           "fontSize": 12,
@@ -4543,9 +4543,9 @@
                                         },
                                         {
                                           "type": "text",
-                                          "id": "H7EozO",
+                                          "id": "xjzWG",
                                           "layoutPosition": "absolute",
-                                          "x": 413,
+                                          "x": 370,
                                           "y": 224,
                                           "name": "x Oct",
                                           "fill": "$text-muted",
@@ -4557,9 +4557,9 @@
                                         },
                                         {
                                           "type": "text",
-                                          "id": "sNxEa",
+                                          "id": "tm8MH",
                                           "layoutPosition": "absolute",
-                                          "x": 719,
+                                          "x": 641,
                                           "y": 224,
                                           "name": "x Nov",
                                           "fill": "$text-muted",
@@ -4571,28 +4571,28 @@
                                         },
                                         {
                                           "type": "path",
-                                          "id": "jjCtn",
+                                          "id": "CvTAi",
                                           "layoutPosition": "absolute",
                                           "x": 40,
                                           "y": 8,
                                           "name": "line unit",
-                                          "geometry": "M0 204l76.6 0 76.6 0 76.6 0 76.5-18.4 76.6 0 76.6 0 76.6 0 76.6 0 76.6 0 76.5-18.3 76.6 0 76.6 0",
+                                          "geometry": "M0 204l67.9 0 67.9 0 68 0 67.9-18.4 67.9 0 67.9 0 67.9 0 67.9 0 68 0 67.9-18.3 67.9 0 67.9 0",
                                           "viewBox": [
                                             0,
                                             0,
-                                            919,
+                                            815,
                                             204
                                           ],
-                                          "width": 919,
+                                          "width": 815,
                                           "height": 204,
                                           "stroke": "$chart",
                                           "strokeWidth": 2
                                         },
                                         {
                                           "type": "ellipse",
-                                          "id": "tTjUB",
+                                          "id": "mVWjl",
                                           "layoutPosition": "absolute",
-                                          "x": 955,
+                                          "x": 851,
                                           "y": 171.28,
                                           "name": "last",
                                           "fill": "$chart",
@@ -4600,30 +4600,44 @@
                                           "height": 8
                                         },
                                         {
+                                          "type": "text",
+                                          "id": "CTASo",
+                                          "layoutPosition": "absolute",
+                                          "x": 867,
+                                          "y": 169,
+                                          "name": "label unit",
+                                          "fill": "$text",
+                                          "content": "Unit 18%",
+                                          "lineHeight": 1,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
                                           "type": "path",
-                                          "id": "h17LJZ",
+                                          "id": "l6HJkS",
                                           "layoutPosition": "absolute",
                                           "x": 40,
                                           "y": 8,
                                           "name": "line component",
                                           "opacity": 0.3,
-                                          "geometry": "M0 91.8l76.6-4.1 76.6-4.1 76.6-4 76.5-4.1 76.6-4.1 76.6-4.1 76.6 0 76.6-4.1 76.6-4 76.5-4.1 76.6 0 76.6-6.1",
+                                          "geometry": "M0 91.8l67.9-4.1 67.9-4.1 68-4 67.9-4.1 67.9-4.1 67.9-4.1 67.9 0 67.9-4.1 68-4 67.9-4.1 67.9 0 67.9-6.1",
                                           "viewBox": [
                                             0,
                                             0,
-                                            919,
+                                            815,
                                             204
                                           ],
-                                          "width": 919,
+                                          "width": 815,
                                           "height": 204,
                                           "stroke": "$chart-2",
                                           "strokeWidth": 2
                                         },
                                         {
                                           "type": "ellipse",
-                                          "id": "GruqU",
+                                          "id": "KpDyP",
                                           "layoutPosition": "absolute",
-                                          "x": 955,
+                                          "x": 851,
                                           "y": 52.96000000000001,
                                           "name": "last",
                                           "opacity": 0.3,
@@ -4632,36 +4646,66 @@
                                           "height": 8
                                         },
                                         {
+                                          "type": "text",
+                                          "id": "Ft9oP",
+                                          "layoutPosition": "absolute",
+                                          "x": 867,
+                                          "y": 51,
+                                          "name": "label component",
+                                          "opacity": 0.3,
+                                          "fill": "$text",
+                                          "content": "Component 76%",
+                                          "lineHeight": 1,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
                                           "type": "path",
-                                          "id": "LoWHr",
+                                          "id": "HJo1b",
                                           "layoutPosition": "absolute",
                                           "x": 40,
                                           "y": 8,
                                           "name": "line acceptance",
                                           "opacity": 0.3,
-                                          "geometry": "M0 204l76.6 0 76.6-51 76.6 0 76.5 0 76.6 0 76.6 0 76.6 0 76.6 0 76.6 0 76.5-51 76.6 0 76.6 0",
+                                          "geometry": "M0 204l67.9 0 67.9-51 68 0 67.9 0 67.9 0 67.9 0 67.9 0 67.9 0 68 0 67.9-51 67.9 0 67.9 0",
                                           "viewBox": [
                                             0,
                                             0,
-                                            919,
+                                            815,
                                             204
                                           ],
-                                          "width": 919,
+                                          "width": 815,
                                           "height": 204,
                                           "stroke": "$chart-3",
                                           "strokeWidth": 2
                                         },
                                         {
                                           "type": "ellipse",
-                                          "id": "hghny",
+                                          "id": "Be9eK",
                                           "layoutPosition": "absolute",
-                                          "x": 955,
+                                          "x": 851,
                                           "y": 106,
                                           "name": "last",
                                           "opacity": 0.3,
                                           "fill": "$chart-3",
                                           "width": 8,
                                           "height": 8
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "l2D30",
+                                          "layoutPosition": "absolute",
+                                          "x": 867,
+                                          "y": 104,
+                                          "name": "label acceptance",
+                                          "opacity": 0.3,
+                                          "fill": "$text",
+                                          "content": "Acceptance 50%",
+                                          "lineHeight": 1,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
                                         }
                                       ]
                                     }
@@ -4788,8 +4832,19 @@
                                                       "name": "Meter fill",
                                                       "width": 47,
                                                       "height": 8,
-                                                      "fill": "$success-fg",
+                                                      "fill": "$chart",
                                                       "cornerRadius": 9999
+                                                    },
+                                                    {
+                                                      "type": "rectangle",
+                                                      "id": "Xq8oN",
+                                                      "layoutPosition": "absolute",
+                                                      "x": 33,
+                                                      "y": 0,
+                                                      "name": "floor",
+                                                      "fill": "$text",
+                                                      "width": 2,
+                                                      "height": 8
                                                     }
                                                   ]
                                                 },
@@ -4804,7 +4859,7 @@
                                                       "type": "text",
                                                       "id": "h2Hts8",
                                                       "name": "coverage",
-                                                      "fill": "$success-text",
+                                                      "fill": "$text",
                                                       "content": "98.9%",
                                                       "lineHeight": 1.25,
                                                       "fontFamily": "$font-mono",
@@ -5151,8 +5206,19 @@
                                                       "name": "Meter fill",
                                                       "width": 46,
                                                       "height": 8,
-                                                      "fill": "$success-fg",
+                                                      "fill": "$chart",
                                                       "cornerRadius": 9999
+                                                    },
+                                                    {
+                                                      "type": "rectangle",
+                                                      "id": "Q3AC3",
+                                                      "layoutPosition": "absolute",
+                                                      "x": 44,
+                                                      "y": 0,
+                                                      "name": "floor",
+                                                      "fill": "$text",
+                                                      "width": 2,
+                                                      "height": 8
                                                     }
                                                   ]
                                                 },
@@ -5167,7 +5233,7 @@
                                                       "type": "text",
                                                       "id": "Arc2O",
                                                       "name": "coverage",
-                                                      "fill": "$success-text",
+                                                      "fill": "$text",
                                                       "content": "95.2%",
                                                       "lineHeight": 1.25,
                                                       "fontFamily": "$font-mono",
@@ -7876,7 +7942,7 @@
                                                   "name": "Meter fill",
                                                   "width": 296,
                                                   "height": 8,
-                                                  "fill": "$chart",
+                                                  "fill": "$text-muted",
                                                   "cornerRadius": 9999
                                                 }
                                               ]
@@ -9754,7 +9820,7 @@
                                 },
                                 {
                                   "type": "frame",
-                                  "id": "Fgqd9",
+                                  "id": "iXtty",
                                   "name": "TrendChart plot",
                                   "width": 318,
                                   "height": 180,
@@ -9762,7 +9828,7 @@
                                   "children": [
                                     {
                                       "type": "rectangle",
-                                      "id": "UGAQB",
+                                      "id": "UJBvg",
                                       "layoutPosition": "absolute",
                                       "x": 40,
                                       "y": 152,
@@ -9773,7 +9839,7 @@
                                     },
                                     {
                                       "type": "text",
-                                      "id": "gCtBd",
+                                      "id": "B9kAGk",
                                       "layoutPosition": "absolute",
                                       "x": 0,
                                       "y": 146,
@@ -9787,7 +9853,7 @@
                                     },
                                     {
                                       "type": "rectangle",
-                                      "id": "YxFPr",
+                                      "id": "lUtfE",
                                       "layoutPosition": "absolute",
                                       "x": 40,
                                       "y": 80,
@@ -9798,7 +9864,7 @@
                                     },
                                     {
                                       "type": "text",
-                                      "id": "fuy5e",
+                                      "id": "c1ZIx1",
                                       "layoutPosition": "absolute",
                                       "x": 0,
                                       "y": 74,
@@ -9812,7 +9878,7 @@
                                     },
                                     {
                                       "type": "rectangle",
-                                      "id": "TjY4I",
+                                      "id": "G7flB",
                                       "layoutPosition": "absolute",
                                       "x": 40,
                                       "y": 8,
@@ -9823,7 +9889,7 @@
                                     },
                                     {
                                       "type": "text",
-                                      "id": "bHLn5",
+                                      "id": "cwwbj",
                                       "layoutPosition": "absolute",
                                       "x": 0,
                                       "y": 2,
@@ -9837,7 +9903,7 @@
                                     },
                                     {
                                       "type": "text",
-                                      "id": "F8jRz3",
+                                      "id": "PrxLn",
                                       "layoutPosition": "absolute",
                                       "x": 53,
                                       "y": 164,
@@ -9851,7 +9917,7 @@
                                     },
                                     {
                                       "type": "text",
-                                      "id": "w8Eufe",
+                                      "id": "wZFox",
                                       "layoutPosition": "absolute",
                                       "x": 143,
                                       "y": 164,
@@ -9865,7 +9931,7 @@
                                     },
                                     {
                                       "type": "text",
-                                      "id": "m7nPG",
+                                      "id": "PzMbR",
                                       "layoutPosition": "absolute",
                                       "x": 233,
                                       "y": 164,
@@ -9879,7 +9945,7 @@
                                     },
                                     {
                                       "type": "path",
-                                      "id": "tosYK",
+                                      "id": "Eu6Yf",
                                       "layoutPosition": "absolute",
                                       "x": 40,
                                       "y": 8,
@@ -9898,7 +9964,7 @@
                                     },
                                     {
                                       "type": "ellipse",
-                                      "id": "xgdl9",
+                                      "id": "pVJeR",
                                       "layoutPosition": "absolute",
                                       "x": 306,
                                       "y": 122.08,
@@ -9909,7 +9975,7 @@
                                     },
                                     {
                                       "type": "path",
-                                      "id": "F0BOy",
+                                      "id": "CrOkC",
                                       "layoutPosition": "absolute",
                                       "x": 40,
                                       "y": 8,
@@ -9929,7 +9995,7 @@
                                     },
                                     {
                                       "type": "ellipse",
-                                      "id": "cJMqJ",
+                                      "id": "MUEc3",
                                       "layoutPosition": "absolute",
                                       "x": 306,
                                       "y": 38.56,
@@ -9941,7 +10007,7 @@
                                     },
                                     {
                                       "type": "path",
-                                      "id": "W6jt0",
+                                      "id": "rCUi6",
                                       "layoutPosition": "absolute",
                                       "x": 40,
                                       "y": 8,
@@ -9961,7 +10027,7 @@
                                     },
                                     {
                                       "type": "ellipse",
-                                      "id": "UfGgc",
+                                      "id": "fPMaz",
                                       "layoutPosition": "absolute",
                                       "x": 306,
                                       "y": 76,
@@ -10097,8 +10163,19 @@
                                                   "name": "Meter fill",
                                                   "width": 69,
                                                   "height": 8,
-                                                  "fill": "$success-fg",
+                                                  "fill": "$chart",
                                                   "cornerRadius": 9999
+                                                },
+                                                {
+                                                  "type": "rectangle",
+                                                  "id": "XDBmp",
+                                                  "layoutPosition": "absolute",
+                                                  "x": 48,
+                                                  "y": 0,
+                                                  "name": "floor",
+                                                  "fill": "$text",
+                                                  "width": 2,
+                                                  "height": 8
                                                 }
                                               ]
                                             },
@@ -10113,7 +10190,7 @@
                                                   "type": "text",
                                                   "id": "Vzk54",
                                                   "name": "coverage",
-                                                  "fill": "$success-text",
+                                                  "fill": "$text",
                                                   "content": "98.9%",
                                                   "lineHeight": 1.25,
                                                   "fontFamily": "$font-mono",
@@ -10460,8 +10537,19 @@
                                                   "name": "Meter fill",
                                                   "width": 67,
                                                   "height": 8,
-                                                  "fill": "$success-fg",
+                                                  "fill": "$chart",
                                                   "cornerRadius": 9999
+                                                },
+                                                {
+                                                  "type": "rectangle",
+                                                  "id": "g4XKpw",
+                                                  "layoutPosition": "absolute",
+                                                  "x": 65,
+                                                  "y": 0,
+                                                  "name": "floor",
+                                                  "fill": "$text",
+                                                  "width": 2,
+                                                  "height": 8
                                                 }
                                               ]
                                             },
@@ -10476,7 +10564,7 @@
                                                   "type": "text",
                                                   "id": "o6Uek",
                                                   "name": "coverage",
-                                                  "fill": "$success-text",
+                                                  "fill": "$text",
                                                   "content": "95.2%",
                                                   "lineHeight": 1.25,
                                                   "fontFamily": "$font-mono",
@@ -12320,13 +12408,13 @@
       "type": "color",
       "value": [
         {
-          "value": "#2F5F8A",
+          "value": "#1F5FA8",
           "theme": {
             "mode": "light"
           }
         },
         {
-          "value": "#7FB0E0",
+          "value": "#4A90DC",
           "theme": {
             "mode": "dark"
           }
@@ -12371,13 +12459,13 @@
       "type": "color",
       "value": [
         {
-          "value": "#2C7A6C",
+          "value": "#0F8060",
           "theme": {
             "mode": "light"
           }
         },
         {
-          "value": "#6CC4B2",
+          "value": "#36A880",
           "theme": {
             "mode": "dark"
           }
@@ -12388,13 +12476,13 @@
       "type": "color",
       "value": [
         {
-          "value": "#9A5B00",
+          "value": "#A0560A",
           "theme": {
             "mode": "light"
           }
         },
         {
-          "value": "#E3B25E",
+          "value": "#C4842C",
           "theme": {
             "mode": "dark"
           }
