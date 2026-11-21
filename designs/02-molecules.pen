@@ -1651,6 +1651,1460 @@
         },
         {
           "type": "frame",
+          "id": "HgHVG",
+          "name": "molecules-coveragemap--crap",
+          "layout": "vertical",
+          "gap": 12,
+          "children": [
+            {
+              "type": "text",
+              "id": "xmnIH",
+              "fill": "$ink-muted",
+              "content": "molecules-coveragemap--crap",
+              "lineHeight": 1.2,
+              "fontFamily": "$font-mono",
+              "fontSize": 16,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "qIiBj",
+              "name": "Tiles",
+              "gap": 48,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "fPyss",
+                  "name": "molecules__desktop__light__molecules-coveragemap--crap",
+                  "theme": {
+                    "mode": "light"
+                  },
+                  "reusable": true,
+                  "clip": true,
+                  "width": 1248,
+                  "height": 496,
+                  "fill": "$bg",
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "m4RKi",
+                      "name": "CoverageMap crap",
+                      "width": 1248,
+                      "layout": "vertical",
+                      "gap": 16,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "J9d1Wi",
+                          "name": "group atoms",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 8,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "r2ifZo",
+                              "fill": "$text-muted",
+                              "content": "atoms · 18",
+                              "lineHeight": 1.5,
+                              "fontFamily": "$font-mono",
+                              "fontSize": 12,
+                              "fontWeight": "700",
+                              "letterSpacing": 1
+                            },
+                            {
+                              "type": "frame",
+                              "id": "vCcDK",
+                              "name": "rows",
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "GbFg9",
+                                  "name": "row",
+                                  "gap": 4,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "kwbuo",
+                                      "name": "file Thumbnail",
+                                      "clip": true,
+                                      "width": 117,
+                                      "height": 56,
+                                      "fill": "$success-surface",
+                                      "cornerRadius": 4,
+                                      "layout": "vertical",
+                                      "gap": 2,
+                                      "padding": 8,
+                                      "justifyContent": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "Yao3d",
+                                          "fill": "$success-fg",
+                                          "content": "Thumbnail",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "t3Z0Al",
+                                          "fill": "$success-fg",
+                                          "content": "CRAP 11.4",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "700"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "j2u24",
+                                      "name": "file IconButton",
+                                      "clip": true,
+                                      "width": 88,
+                                      "height": 56,
+                                      "fill": "$success-surface",
+                                      "cornerRadius": 4,
+                                      "layout": "vertical",
+                                      "gap": 2,
+                                      "padding": 8,
+                                      "justifyContent": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "i8nF1",
+                                          "fill": "$success-fg",
+                                          "content": "IconButton",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "P4mbr",
+                                          "fill": "$success-fg",
+                                          "content": "CRAP 3",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "700"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "blS0R",
+                                      "name": "file Skeleton",
+                                      "clip": true,
+                                      "width": 80,
+                                      "height": 56,
+                                      "fill": "$success-surface",
+                                      "cornerRadius": 4,
+                                      "layout": "vertical",
+                                      "gap": 2,
+                                      "padding": 8,
+                                      "justifyContent": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "h0Fsz",
+                                          "fill": "$success-fg",
+                                          "content": "Skeleton",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "w3t1M",
+                                          "fill": "$success-fg",
+                                          "content": "CRAP 3",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "700"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "EeyUF",
+                                      "name": "file Text",
+                                      "clip": true,
+                                      "width": 72,
+                                      "height": 56,
+                                      "fill": "$success-surface",
+                                      "cornerRadius": 4,
+                                      "layout": "vertical",
+                                      "gap": 2,
+                                      "padding": 8,
+                                      "justifyContent": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "Urlj6",
+                                          "fill": "$success-fg",
+                                          "content": "Text",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "PxCQ7",
+                                          "fill": "$success-fg",
+                                          "content": "CRAP 2",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "700"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "bI6ih",
+                                      "name": "file BucketChip",
+                                      "clip": true,
+                                      "width": 72,
+                                      "height": 56,
+                                      "fill": "$success-surface",
+                                      "cornerRadius": 4,
+                                      "layout": "vertical",
+                                      "gap": 2,
+                                      "padding": 8,
+                                      "justifyContent": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "RZSsz",
+                                          "fill": "$success-fg",
+                                          "content": "BucketChip",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "t7y2eD",
+                                          "fill": "$success-fg",
+                                          "content": "CRAP 1",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "700"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "SvtLb",
+                                      "name": "file TriStateCheckbox",
+                                      "clip": true,
+                                      "width": 72,
+                                      "height": 56,
+                                      "fill": "$success-surface",
+                                      "cornerRadius": 4,
+                                      "layout": "vertical",
+                                      "gap": 2,
+                                      "padding": 8,
+                                      "justifyContent": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "kK6bx",
+                                          "fill": "$success-fg",
+                                          "content": "TriStateCheckbox",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "Y83T6e",
+                                          "fill": "$success-fg",
+                                          "content": "CRAP 2.9",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "700"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "g2cETf",
+                                      "name": "file SegmentedControl",
+                                      "clip": true,
+                                      "width": 72,
+                                      "height": 56,
+                                      "fill": "$success-surface",
+                                      "cornerRadius": 4,
+                                      "layout": "vertical",
+                                      "gap": 2,
+                                      "padding": 8,
+                                      "justifyContent": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "aJ4d0",
+                                          "fill": "$success-fg",
+                                          "content": "SegmentedControl",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "Qj7yx",
+                                          "fill": "$success-fg",
+                                          "content": "CRAP 1.2",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "700"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "TvOlk",
+                                      "name": "file Link",
+                                      "clip": true,
+                                      "width": 72,
+                                      "height": 56,
+                                      "fill": "$success-surface",
+                                      "cornerRadius": 4,
+                                      "layout": "vertical",
+                                      "gap": 2,
+                                      "padding": 8,
+                                      "justifyContent": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "AiQYp",
+                                          "fill": "$success-fg",
+                                          "content": "Link",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "dUZvH",
+                                          "fill": "$success-fg",
+                                          "content": "CRAP 2",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "700"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "C3CTCa",
+                                      "name": "file ThemeToggle",
+                                      "clip": true,
+                                      "width": 72,
+                                      "height": 56,
+                                      "fill": "$success-surface",
+                                      "cornerRadius": 4,
+                                      "layout": "vertical",
+                                      "gap": 2,
+                                      "padding": 8,
+                                      "justifyContent": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "eIqF6",
+                                          "fill": "$success-fg",
+                                          "content": "ThemeToggle",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "P9CKNC",
+                                          "fill": "$success-fg",
+                                          "content": "CRAP 2.9",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "700"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "EJjbq",
+                                      "name": "file Tag",
+                                      "clip": true,
+                                      "width": 72,
+                                      "height": 56,
+                                      "fill": "$success-surface",
+                                      "cornerRadius": 4,
+                                      "layout": "vertical",
+                                      "gap": 2,
+                                      "padding": 8,
+                                      "justifyContent": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "QE9PQ",
+                                          "fill": "$success-fg",
+                                          "content": "Tag",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "j3b0fq",
+                                          "fill": "$success-fg",
+                                          "content": "CRAP 2",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "700"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "n6wG0",
+                                      "name": "file Stack",
+                                      "clip": true,
+                                      "width": 72,
+                                      "height": 56,
+                                      "fill": "$success-surface",
+                                      "cornerRadius": 4,
+                                      "layout": "vertical",
+                                      "gap": 2,
+                                      "padding": 8,
+                                      "justifyContent": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "azVrG",
+                                          "fill": "$success-fg",
+                                          "content": "Stack",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "S5eE7",
+                                          "fill": "$success-fg",
+                                          "content": "CRAP 2",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "700"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "MKtyg",
+                                      "name": "file theme",
+                                      "clip": true,
+                                      "width": 72,
+                                      "height": 56,
+                                      "fill": "$success-surface",
+                                      "cornerRadius": 4,
+                                      "layout": "vertical",
+                                      "gap": 2,
+                                      "padding": 8,
+                                      "justifyContent": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "J0iax3",
+                                          "fill": "$success-fg",
+                                          "content": "theme",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "CkczE",
+                                          "fill": "$success-fg",
+                                          "content": "CRAP 2",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "700"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "mGZRS",
+                                      "name": "file Spinner",
+                                      "clip": true,
+                                      "width": 72,
+                                      "height": 56,
+                                      "fill": "$success-surface",
+                                      "cornerRadius": 4,
+                                      "layout": "vertical",
+                                      "gap": 2,
+                                      "padding": 8,
+                                      "justifyContent": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "E0t1M",
+                                          "fill": "$success-fg",
+                                          "content": "Spinner",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "W4MuCs",
+                                          "fill": "$success-fg",
+                                          "content": "CRAP 1",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "700"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "N4f9OX",
+                                      "name": "file SkipLink",
+                                      "clip": true,
+                                      "width": 72,
+                                      "height": 56,
+                                      "fill": "$success-surface",
+                                      "cornerRadius": 4,
+                                      "layout": "vertical",
+                                      "gap": 2,
+                                      "padding": 8,
+                                      "justifyContent": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "WCoty",
+                                          "fill": "$success-fg",
+                                          "content": "SkipLink",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "C2bR2",
+                                          "fill": "$success-fg",
+                                          "content": "CRAP 2",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "700"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "qMCXC",
+                                      "name": "file Button",
+                                      "clip": true,
+                                      "width": 72,
+                                      "height": 56,
+                                      "fill": "$success-surface",
+                                      "cornerRadius": 4,
+                                      "layout": "vertical",
+                                      "gap": 2,
+                                      "padding": 8,
+                                      "justifyContent": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "WJ7nX",
+                                          "fill": "$success-fg",
+                                          "content": "Button",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "tzt9T",
+                                          "fill": "$success-fg",
+                                          "content": "CRAP 1",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "700"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "JjF7W",
+                                  "name": "row",
+                                  "gap": 4,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "RY8ST",
+                                      "name": "file EmptyState",
+                                      "clip": true,
+                                      "width": 72,
+                                      "height": 56,
+                                      "fill": "$success-surface",
+                                      "cornerRadius": 4,
+                                      "layout": "vertical",
+                                      "gap": 2,
+                                      "padding": 8,
+                                      "justifyContent": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "CBr34",
+                                          "fill": "$success-fg",
+                                          "content": "EmptyState",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "uHfNV",
+                                          "fill": "$success-fg",
+                                          "content": "CRAP 3",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "700"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "X6ikvt",
+                                      "name": "file Badge",
+                                      "clip": true,
+                                      "width": 72,
+                                      "height": 56,
+                                      "fill": "$success-surface",
+                                      "cornerRadius": 4,
+                                      "layout": "vertical",
+                                      "gap": 2,
+                                      "padding": 8,
+                                      "justifyContent": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "p2E0Cm",
+                                          "fill": "$success-fg",
+                                          "content": "Badge",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "r4R1W",
+                                          "fill": "$success-fg",
+                                          "content": "CRAP 1",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "700"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "X2Quf5",
+                                      "name": "file Prose",
+                                      "clip": true,
+                                      "width": 72,
+                                      "height": 56,
+                                      "fill": "$success-surface",
+                                      "cornerRadius": 4,
+                                      "layout": "vertical",
+                                      "gap": 2,
+                                      "padding": 8,
+                                      "justifyContent": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "v7T0m",
+                                          "fill": "$success-fg",
+                                          "content": "Prose",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "USb3I",
+                                          "fill": "$success-fg",
+                                          "content": "CRAP 1",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "700"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Fl98I",
+                          "name": "group molecules",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 8,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "Wazzs",
+                              "fill": "$text-muted",
+                              "content": "molecules · 7",
+                              "lineHeight": 1.5,
+                              "fontFamily": "$font-mono",
+                              "fontSize": 12,
+                              "fontWeight": "700",
+                              "letterSpacing": 1
+                            },
+                            {
+                              "type": "frame",
+                              "id": "fXFi5",
+                              "name": "rows",
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "GiV0G",
+                                  "name": "row",
+                                  "gap": 4,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "CNXru",
+                                      "name": "file Pagination",
+                                      "clip": true,
+                                      "width": 177,
+                                      "height": 56,
+                                      "fill": "$success-surface",
+                                      "cornerRadius": 4,
+                                      "layout": "vertical",
+                                      "gap": 2,
+                                      "padding": 8,
+                                      "justifyContent": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "dEYst",
+                                          "fill": "$success-fg",
+                                          "content": "Pagination",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "z6r0HU",
+                                          "fill": "$success-fg",
+                                          "content": "CRAP 4.9",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "700"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "NET3x",
+                                      "name": "file StepList",
+                                      "clip": true,
+                                      "width": 92,
+                                      "height": 56,
+                                      "fill": "$success-surface",
+                                      "cornerRadius": 4,
+                                      "layout": "vertical",
+                                      "gap": 2,
+                                      "padding": 8,
+                                      "justifyContent": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "d2qqS1",
+                                          "fill": "$success-fg",
+                                          "content": "StepList",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "Xl0tl",
+                                          "fill": "$success-fg",
+                                          "content": "CRAP 4.9",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "700"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "gWdXk",
+                                      "name": "file PostCard",
+                                      "clip": true,
+                                      "width": 77,
+                                      "height": 56,
+                                      "fill": "$success-surface",
+                                      "cornerRadius": 4,
+                                      "layout": "vertical",
+                                      "gap": 2,
+                                      "padding": 8,
+                                      "justifyContent": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "TBdGI",
+                                          "fill": "$success-fg",
+                                          "content": "PostCard",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "zyTcC",
+                                          "fill": "$success-fg",
+                                          "content": "CRAP 1",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "700"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "jowFT",
+                                      "name": "file Card",
+                                      "clip": true,
+                                      "width": 72,
+                                      "height": 56,
+                                      "fill": "$success-surface",
+                                      "cornerRadius": 4,
+                                      "layout": "vertical",
+                                      "gap": 2,
+                                      "padding": 8,
+                                      "justifyContent": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "caedH",
+                                          "fill": "$success-fg",
+                                          "content": "Card",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "y0ya2k",
+                                          "fill": "$success-fg",
+                                          "content": "CRAP 3",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "700"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "n9ZD7",
+                                      "name": "file TagList",
+                                      "clip": true,
+                                      "width": 72,
+                                      "height": 56,
+                                      "fill": "$success-surface",
+                                      "cornerRadius": 4,
+                                      "layout": "vertical",
+                                      "gap": 2,
+                                      "padding": 8,
+                                      "justifyContent": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "y9bbE3",
+                                          "fill": "$success-fg",
+                                          "content": "TagList",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "CvWgW",
+                                          "fill": "$success-fg",
+                                          "content": "CRAP 2",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "700"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "MYjh8",
+                                      "name": "file CodeBlock",
+                                      "clip": true,
+                                      "width": 72,
+                                      "height": 56,
+                                      "fill": "$success-surface",
+                                      "cornerRadius": 4,
+                                      "layout": "vertical",
+                                      "gap": 2,
+                                      "padding": 8,
+                                      "justifyContent": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "bHvLM",
+                                          "fill": "$success-fg",
+                                          "content": "CodeBlock",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "S7CJd",
+                                          "fill": "$success-fg",
+                                          "content": "CRAP 3",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "700"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "LOWYc",
+                                      "name": "file PostMeta",
+                                      "clip": true,
+                                      "width": 72,
+                                      "height": 56,
+                                      "fill": "$success-surface",
+                                      "cornerRadius": 4,
+                                      "layout": "vertical",
+                                      "gap": 2,
+                                      "padding": 8,
+                                      "justifyContent": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "RQL86",
+                                          "fill": "$success-fg",
+                                          "content": "PostMeta",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "K1W1Ci",
+                                          "fill": "$success-fg",
+                                          "content": "CRAP 1.2",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "700"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "QoQfH",
+                          "name": "group organisms",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 8,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "IbDpw",
+                              "fill": "$text-muted",
+                              "content": "organisms · 7",
+                              "lineHeight": 1.5,
+                              "fontFamily": "$font-mono",
+                              "fontSize": 12,
+                              "fontWeight": "700",
+                              "letterSpacing": 1
+                            },
+                            {
+                              "type": "frame",
+                              "id": "hnJEO",
+                              "name": "rows",
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "BpcIh",
+                                  "name": "row",
+                                  "gap": 4,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "djcBH",
+                                      "name": "file PanZoom",
+                                      "clip": true,
+                                      "width": 669,
+                                      "height": 56,
+                                      "fill": "$danger-surface",
+                                      "cornerRadius": 4,
+                                      "layout": "vertical",
+                                      "gap": 2,
+                                      "padding": 8,
+                                      "justifyContent": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "z8ogi",
+                                          "fill": "$danger-fg",
+                                          "content": "PanZoom",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "Zzn68",
+                                          "fill": "$danger-fg",
+                                          "content": "CRAP 49.5",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "700"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "MC9lP",
+                                      "name": "file Dialog",
+                                      "clip": true,
+                                      "width": 233,
+                                      "height": 56,
+                                      "fill": "$success-surface",
+                                      "cornerRadius": 4,
+                                      "layout": "vertical",
+                                      "gap": 2,
+                                      "padding": 8,
+                                      "justifyContent": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "MErID",
+                                          "fill": "$success-fg",
+                                          "content": "Dialog",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "yGSB4",
+                                          "fill": "$success-fg",
+                                          "content": "CRAP 10.4",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "700"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "aiqdT",
+                                      "name": "file geometry",
+                                      "clip": true,
+                                      "width": 196,
+                                      "height": 56,
+                                      "fill": "$success-surface",
+                                      "cornerRadius": 4,
+                                      "layout": "vertical",
+                                      "gap": 2,
+                                      "padding": 8,
+                                      "justifyContent": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "eiwVX",
+                                          "fill": "$success-fg",
+                                          "content": "geometry",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "WE3Pc",
+                                          "fill": "$success-fg",
+                                          "content": "CRAP 4.1",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "700"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "B9FdU",
+                                  "name": "row",
+                                  "gap": 4,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "hNUjO",
+                                      "name": "file Table",
+                                      "clip": true,
+                                      "width": 148,
+                                      "height": 56,
+                                      "fill": "$success-surface",
+                                      "cornerRadius": 4,
+                                      "layout": "vertical",
+                                      "gap": 2,
+                                      "padding": 8,
+                                      "justifyContent": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "bpcCE",
+                                          "fill": "$success-fg",
+                                          "content": "Table",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "L36ljA",
+                                          "fill": "$success-fg",
+                                          "content": "CRAP 13.8",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "700"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "AoExd",
+                                      "name": "file SiteHeader",
+                                      "clip": true,
+                                      "width": 86,
+                                      "height": 56,
+                                      "fill": "$success-surface",
+                                      "cornerRadius": 4,
+                                      "layout": "vertical",
+                                      "gap": 2,
+                                      "padding": 8,
+                                      "justifyContent": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "h2oJwh",
+                                          "fill": "$success-fg",
+                                          "content": "SiteHeader",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "gMiNn",
+                                          "fill": "$success-fg",
+                                          "content": "CRAP 3",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "700"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "fn8Fe",
+                                      "name": "file SiteFooter",
+                                      "clip": true,
+                                      "width": 72,
+                                      "height": 56,
+                                      "fill": "$success-surface",
+                                      "cornerRadius": 4,
+                                      "layout": "vertical",
+                                      "gap": 2,
+                                      "padding": 8,
+                                      "justifyContent": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "s5NMv",
+                                          "fill": "$success-fg",
+                                          "content": "SiteFooter",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "WAqda",
+                                          "fill": "$success-fg",
+                                          "content": "CRAP 2.9",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "700"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "MXD5X",
+                                      "name": "file useFitOnce",
+                                      "clip": true,
+                                      "width": 72,
+                                      "height": 56,
+                                      "fill": "$success-surface",
+                                      "cornerRadius": 4,
+                                      "layout": "vertical",
+                                      "gap": 2,
+                                      "padding": 8,
+                                      "justifyContent": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "cJhEX",
+                                          "fill": "$success-fg",
+                                          "content": "useFitOnce",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "j5fVid",
+                                          "fill": "$success-fg",
+                                          "content": "CRAP 13.8",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "700"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "pI3rn",
+                          "name": "group templates",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 8,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "L0OKQZ",
+                              "fill": "$text-muted",
+                              "content": "templates · 2",
+                              "lineHeight": 1.5,
+                              "fontFamily": "$font-mono",
+                              "fontSize": 12,
+                              "fontWeight": "700",
+                              "letterSpacing": 1
+                            },
+                            {
+                              "type": "frame",
+                              "id": "z3jaSY",
+                              "name": "rows",
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "O5Q2Q",
+                                  "name": "row",
+                                  "gap": 4,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "xoYui",
+                                      "name": "file BlogIndexTemplate",
+                                      "clip": true,
+                                      "width": 77,
+                                      "height": 56,
+                                      "fill": "$success-surface",
+                                      "cornerRadius": 4,
+                                      "layout": "vertical",
+                                      "gap": 2,
+                                      "padding": 8,
+                                      "justifyContent": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "m1ccw9",
+                                          "fill": "$success-fg",
+                                          "content": "BlogIndexTemplate",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "aNwNQ",
+                                          "fill": "$success-fg",
+                                          "content": "CRAP 5.1",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "700"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "LpNoY",
+                                      "name": "file PostTemplate",
+                                      "clip": true,
+                                      "width": 72,
+                                      "height": 56,
+                                      "fill": "$success-surface",
+                                      "cornerRadius": 4,
+                                      "layout": "vertical",
+                                      "gap": 2,
+                                      "padding": 8,
+                                      "justifyContent": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "sEBDY",
+                                          "fill": "$success-fg",
+                                          "content": "PostTemplate",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "q20EQq",
+                                          "fill": "$success-fg",
+                                          "content": "CRAP 1",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "700"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "f9jFh1",
+                  "type": "ref",
+                  "ref": "fPyss",
+                  "name": "molecules__desktop__dark__molecules-coveragemap--crap",
+                  "theme": {
+                    "mode": "dark"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
           "id": "oSc9X",
           "name": "molecules-coveragemap--default",
           "layout": "vertical",
@@ -3241,14 +4695,14 @@
         },
         {
           "type": "frame",
-          "id": "AUKll",
+          "id": "EfRrH",
           "name": "molecules-coveragemap--workspaces",
           "layout": "vertical",
           "gap": 12,
           "children": [
             {
               "type": "text",
-              "id": "UCBj4",
+              "id": "dLznm",
               "fill": "$ink-muted",
               "content": "molecules-coveragemap--workspaces",
               "lineHeight": 1.2,
@@ -3258,13 +4712,13 @@
             },
             {
               "type": "frame",
-              "id": "NVvD1",
+              "id": "cszeE",
               "name": "Tiles",
               "gap": 48,
               "children": [
                 {
                   "type": "frame",
-                  "id": "Msjmj",
+                  "id": "iAOni",
                   "name": "molecules__desktop__light__molecules-coveragemap--workspaces",
                   "theme": {
                     "mode": "light"
@@ -3278,7 +4732,7 @@
                   "children": [
                     {
                       "type": "frame",
-                      "id": "y1pze",
+                      "id": "J2tur",
                       "name": "CoverageMap workspaces",
                       "width": 1248,
                       "layout": "vertical",
@@ -3286,7 +4740,7 @@
                       "children": [
                         {
                           "type": "frame",
-                          "id": "QbX4h",
+                          "id": "I8os9",
                           "name": "group packages",
                           "width": "fill_container",
                           "layout": "vertical",
@@ -3294,7 +4748,7 @@
                           "children": [
                             {
                               "type": "text",
-                              "id": "kodrp",
+                              "id": "KIZBp",
                               "fill": "$text",
                               "content": "packages",
                               "lineHeight": 1.25,
@@ -3304,20 +4758,20 @@
                             },
                             {
                               "type": "frame",
-                              "id": "lUwRb",
+                              "id": "TJUfV",
                               "name": "rows",
                               "layout": "vertical",
                               "gap": 4,
                               "children": [
                                 {
                                   "type": "frame",
-                                  "id": "U4j5jl",
+                                  "id": "Kanwn",
                                   "name": "row",
                                   "gap": 4,
                                   "children": [
                                     {
                                       "type": "frame",
-                                      "id": "rnKFb",
+                                      "id": "C9IP6m",
                                       "name": "workspace @gate/ui",
                                       "clip": true,
                                       "width": 521,
@@ -3331,7 +4785,7 @@
                                       "children": [
                                         {
                                           "type": "text",
-                                          "id": "Q5nAG",
+                                          "id": "F0Z6sq",
                                           "fill": "$success-fg",
                                           "content": "@gate/ui",
                                           "lineHeight": 1.25,
@@ -3341,7 +4795,7 @@
                                         },
                                         {
                                           "type": "text",
-                                          "id": "WPRQB",
+                                          "id": "X9NG3r",
                                           "fill": "$success-fg",
                                           "content": "98.9% · 3.4k lines · floor 70",
                                           "lineHeight": 1.25,
@@ -3353,7 +4807,7 @@
                                     },
                                     {
                                       "type": "frame",
-                                      "id": "umc0k",
+                                      "id": "HHBfZ",
                                       "name": "workspace @gate/visual-diff",
                                       "clip": true,
                                       "width": 327,
@@ -3367,7 +4821,7 @@
                                       "children": [
                                         {
                                           "type": "text",
-                                          "id": "E3dush",
+                                          "id": "Zgx7y",
                                           "fill": "$danger-fg",
                                           "content": "@gate/visual-diff",
                                           "lineHeight": 1.25,
@@ -3377,9 +4831,9 @@
                                         },
                                         {
                                           "type": "text",
-                                          "id": "R2vTPs",
+                                          "id": "sUkgs",
                                           "fill": "$danger-fg",
-                                          "content": "unmeasured · 4.2k lines",
+                                          "content": "unmeasured · 100% reached",
                                           "lineHeight": 1.25,
                                           "fontFamily": "$font-mono",
                                           "fontSize": 12,
@@ -3389,7 +4843,7 @@
                                     },
                                     {
                                       "type": "frame",
-                                      "id": "ddrx2",
+                                      "id": "mByOu",
                                       "name": "workspace @gate/logger",
                                       "clip": true,
                                       "width": 128,
@@ -3403,7 +4857,7 @@
                                       "children": [
                                         {
                                           "type": "text",
-                                          "id": "rwFnp",
+                                          "id": "sWUpA",
                                           "fill": "$danger-fg",
                                           "content": "@gate/logger",
                                           "lineHeight": 1.25,
@@ -3413,9 +4867,9 @@
                                         },
                                         {
                                           "type": "text",
-                                          "id": "haZxn",
+                                          "id": "s2V53",
                                           "fill": "$danger-fg",
-                                          "content": "unmeasured",
+                                          "content": "100% reached",
                                           "lineHeight": 1.25,
                                           "fontFamily": "$font-mono",
                                           "fontSize": 12,
@@ -3425,7 +4879,7 @@
                                     },
                                     {
                                       "type": "frame",
-                                      "id": "YACv7",
+                                      "id": "R4DEO1",
                                       "name": "workspace @gate/links",
                                       "clip": true,
                                       "width": 128,
@@ -3439,7 +4893,7 @@
                                       "children": [
                                         {
                                           "type": "text",
-                                          "id": "p1qtCa",
+                                          "id": "cnZcB",
                                           "fill": "$danger-fg",
                                           "content": "@gate/links",
                                           "lineHeight": 1.25,
@@ -3449,9 +4903,9 @@
                                         },
                                         {
                                           "type": "text",
-                                          "id": "jfuMI",
+                                          "id": "IZ6QW",
                                           "fill": "$danger-fg",
-                                          "content": "unmeasured",
+                                          "content": "100% reached",
                                           "lineHeight": 1.25,
                                           "fontFamily": "$font-mono",
                                           "fontSize": 12,
@@ -3461,7 +4915,7 @@
                                     },
                                     {
                                       "type": "frame",
-                                      "id": "q7weK",
+                                      "id": "WbkS9",
                                       "name": "workspace @gate/tsconfig",
                                       "clip": true,
                                       "width": 128,
@@ -3480,7 +4934,7 @@
                                       "children": [
                                         {
                                           "type": "text",
-                                          "id": "qZcfr",
+                                          "id": "A8WURU",
                                           "fill": "$text-muted",
                                           "content": "@gate/tsconfig",
                                           "lineHeight": 1.25,
@@ -3490,7 +4944,7 @@
                                         },
                                         {
                                           "type": "text",
-                                          "id": "kCnd0",
+                                          "id": "dajHL",
                                           "fill": "$text-muted",
                                           "content": "n/a",
                                           "lineHeight": 1.25,
@@ -3508,7 +4962,7 @@
                         },
                         {
                           "type": "frame",
-                          "id": "x9EyoG",
+                          "id": "Z4Xdp",
                           "name": "group apps",
                           "width": "fill_container",
                           "layout": "vertical",
@@ -3516,7 +4970,7 @@
                           "children": [
                             {
                               "type": "text",
-                              "id": "mUovD",
+                              "id": "w6viAN",
                               "fill": "$text",
                               "content": "apps",
                               "lineHeight": 1.25,
@@ -3526,20 +4980,20 @@
                             },
                             {
                               "type": "frame",
-                              "id": "EY0Fc",
+                              "id": "hL6wh",
                               "name": "rows",
                               "layout": "vertical",
                               "gap": 4,
                               "children": [
                                 {
                                   "type": "frame",
-                                  "id": "c6YI84",
+                                  "id": "R8UWh3",
                                   "name": "row",
                                   "gap": 4,
                                   "children": [
                                     {
                                       "type": "frame",
-                                      "id": "A7I0J",
+                                      "id": "W9tP1",
                                       "name": "workspace @gate/visual-diff-ui",
                                       "clip": true,
                                       "width": 604,
@@ -3553,7 +5007,7 @@
                                       "children": [
                                         {
                                           "type": "text",
-                                          "id": "RStHW",
+                                          "id": "nE4xw",
                                           "fill": "$success-fg",
                                           "content": "@gate/visual-diff-ui",
                                           "lineHeight": 1.25,
@@ -3563,7 +5017,7 @@
                                         },
                                         {
                                           "type": "text",
-                                          "id": "lfOcP",
+                                          "id": "jk6qH",
                                           "fill": "$success-fg",
                                           "content": "95.2% · 19.2k lines · floor 94",
                                           "lineHeight": 1.25,
@@ -3575,7 +5029,7 @@
                                     },
                                     {
                                       "type": "frame",
-                                      "id": "t672iT",
+                                      "id": "L8WhD",
                                       "name": "workspace @gate/blog",
                                       "clip": true,
                                       "width": 244,
@@ -3589,7 +5043,7 @@
                                       "children": [
                                         {
                                           "type": "text",
-                                          "id": "G9inE",
+                                          "id": "M9DnI6",
                                           "fill": "$danger-fg",
                                           "content": "@gate/blog",
                                           "lineHeight": 1.25,
@@ -3599,9 +5053,9 @@
                                         },
                                         {
                                           "type": "text",
-                                          "id": "W0Jfy",
+                                          "id": "pNcrx",
                                           "fill": "$danger-fg",
-                                          "content": "unmeasured · 5.9k lines",
+                                          "content": "unmeasured · 98.1% reached",
                                           "lineHeight": 1.25,
                                           "fontFamily": "$font-mono",
                                           "fontSize": 12,
@@ -3611,7 +5065,7 @@
                                     },
                                     {
                                       "type": "frame",
-                                      "id": "W2orcq",
+                                      "id": "e1qMd",
                                       "name": "workspace @gate/manual",
                                       "clip": true,
                                       "width": 128,
@@ -3625,7 +5079,7 @@
                                       "children": [
                                         {
                                           "type": "text",
-                                          "id": "VkkQi",
+                                          "id": "YBAj3",
                                           "fill": "$danger-fg",
                                           "content": "@gate/manual",
                                           "lineHeight": 1.25,
@@ -3635,9 +5089,9 @@
                                         },
                                         {
                                           "type": "text",
-                                          "id": "nL7Xj",
+                                          "id": "SuUrm",
                                           "fill": "$danger-fg",
-                                          "content": "unmeasured",
+                                          "content": "85.7% reached",
                                           "lineHeight": 1.25,
                                           "fontFamily": "$font-mono",
                                           "fontSize": 12,
@@ -3647,7 +5101,7 @@
                                     },
                                     {
                                       "type": "frame",
-                                      "id": "N67oZ3",
+                                      "id": "YDmsB",
                                       "name": "workspace @gate/e2e",
                                       "clip": true,
                                       "width": 128,
@@ -3661,7 +5115,7 @@
                                       "children": [
                                         {
                                           "type": "text",
-                                          "id": "oqRBw",
+                                          "id": "MZOYu",
                                           "fill": "$danger-fg",
                                           "content": "@gate/e2e",
                                           "lineHeight": 1.25,
@@ -3671,9 +5125,9 @@
                                         },
                                         {
                                           "type": "text",
-                                          "id": "Rr8Uw",
+                                          "id": "LMgkK",
                                           "fill": "$danger-fg",
-                                          "content": "unmeasured",
+                                          "content": "0% reached",
                                           "lineHeight": 1.25,
                                           "fontFamily": "$font-mono",
                                           "fontSize": 12,
@@ -3683,7 +5137,7 @@
                                     },
                                     {
                                       "type": "frame",
-                                      "id": "Q0K4Gw",
+                                      "id": "VdWnZ",
                                       "name": "workspace @gate/storybook",
                                       "clip": true,
                                       "width": 128,
@@ -3697,7 +5151,7 @@
                                       "children": [
                                         {
                                           "type": "text",
-                                          "id": "xSIcI",
+                                          "id": "GqvAA",
                                           "fill": "$danger-fg",
                                           "content": "@gate/storybook",
                                           "lineHeight": 1.25,
@@ -3707,9 +5161,9 @@
                                         },
                                         {
                                           "type": "text",
-                                          "id": "upMoy",
+                                          "id": "vAFg2",
                                           "fill": "$danger-fg",
-                                          "content": "unmeasured",
+                                          "content": "no runtime files",
                                           "lineHeight": 1.25,
                                           "fontFamily": "$font-mono",
                                           "fontSize": 12,
@@ -3725,7 +5179,7 @@
                         },
                         {
                           "type": "frame",
-                          "id": "m14EV",
+                          "id": "HQbQg",
                           "name": "group scripts",
                           "width": "fill_container",
                           "layout": "vertical",
@@ -3733,7 +5187,7 @@
                           "children": [
                             {
                               "type": "text",
-                              "id": "pAJoc",
+                              "id": "hnytj",
                               "fill": "$text",
                               "content": "scripts",
                               "lineHeight": 1.25,
@@ -3743,20 +5197,20 @@
                             },
                             {
                               "type": "frame",
-                              "id": "cWSBc",
+                              "id": "HD3KT",
                               "name": "rows",
                               "layout": "vertical",
                               "gap": 4,
                               "children": [
                                 {
                                   "type": "frame",
-                                  "id": "iPBNW",
+                                  "id": "eynFJ",
                                   "name": "row",
                                   "gap": 4,
                                   "children": [
                                     {
                                       "type": "frame",
-                                      "id": "tmOnW",
+                                      "id": "Z158V",
                                       "name": "workspace .sandcastle/",
                                       "clip": true,
                                       "width": 670,
@@ -3770,7 +5224,7 @@
                                       "children": [
                                         {
                                           "type": "text",
-                                          "id": "QD4bH",
+                                          "id": "d4GfON",
                                           "fill": "$danger-fg",
                                           "content": ".sandcastle/",
                                           "lineHeight": 1.25,
@@ -3780,7 +5234,7 @@
                                         },
                                         {
                                           "type": "text",
-                                          "id": "XxicC",
+                                          "id": "RIVOz",
                                           "fill": "$danger-fg",
                                           "content": "unmeasured · 5.6k lines",
                                           "lineHeight": 1.25,
@@ -3792,7 +5246,7 @@
                                     },
                                     {
                                       "type": "frame",
-                                      "id": "w5zX9t",
+                                      "id": "Qr3BJ",
                                       "name": "workspace scripts/",
                                       "clip": true,
                                       "width": 574,
@@ -3806,7 +5260,7 @@
                                       "children": [
                                         {
                                           "type": "text",
-                                          "id": "Ygq9e",
+                                          "id": "B407v",
                                           "fill": "$danger-fg",
                                           "content": "scripts/",
                                           "lineHeight": 1.25,
@@ -3816,7 +5270,7 @@
                                         },
                                         {
                                           "type": "text",
-                                          "id": "z23o3",
+                                          "id": "BIrwt",
                                           "fill": "$danger-fg",
                                           "content": "unmeasured · 4.8k lines",
                                           "lineHeight": 1.25,
@@ -3837,9 +5291,9 @@
                   ]
                 },
                 {
-                  "id": "GmTCg",
+                  "id": "hB6XE",
                   "type": "ref",
-                  "ref": "Msjmj",
+                  "ref": "iAOni",
                   "name": "molecules__desktop__dark__molecules-coveragemap--workspaces",
                   "theme": {
                     "mode": "dark"
@@ -4109,6 +5563,439 @@
                   "type": "ref",
                   "ref": "Tby4o",
                   "name": "molecules__desktop__dark__molecules-gapbars--default",
+                  "theme": {
+                    "mode": "dark"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "uxG17",
+          "name": "molecules-hotspots--default",
+          "layout": "vertical",
+          "gap": 12,
+          "children": [
+            {
+              "type": "text",
+              "id": "rZHY0",
+              "fill": "$ink-muted",
+              "content": "molecules-hotspots--default",
+              "lineHeight": 1.2,
+              "fontFamily": "$font-mono",
+              "fontSize": 16,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "vvUWf",
+              "name": "Tiles",
+              "gap": 48,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "q9KLy",
+                  "name": "molecules__desktop__light__molecules-hotspots--default",
+                  "theme": {
+                    "mode": "light"
+                  },
+                  "reusable": true,
+                  "clip": true,
+                  "width": 1248,
+                  "height": 320,
+                  "fill": "$bg",
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "Ev08y",
+                      "name": "Hotspots plot",
+                      "width": 1248,
+                      "height": 320,
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "rectangle",
+                          "id": "EHy5c",
+                          "layoutPosition": "absolute",
+                          "x": 44,
+                          "y": 284,
+                          "name": "grid",
+                          "fill": "$border",
+                          "width": 1192,
+                          "height": 1
+                        },
+                        {
+                          "type": "text",
+                          "id": "ZBOvP",
+                          "layoutPosition": "absolute",
+                          "x": 0,
+                          "y": 278,
+                          "fill": "$text-muted",
+                          "content": "0.0",
+                          "lineHeight": 1,
+                          "fontFamily": "$font-mono",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "rectangle",
+                          "id": "GtiFW",
+                          "layoutPosition": "absolute",
+                          "x": 44,
+                          "y": 192,
+                          "name": "grid",
+                          "fill": "$border",
+                          "width": 1192,
+                          "height": 1
+                        },
+                        {
+                          "type": "text",
+                          "id": "aJm5F",
+                          "layoutPosition": "absolute",
+                          "x": 0,
+                          "y": 186,
+                          "fill": "$text-muted",
+                          "content": "0.1",
+                          "lineHeight": 1,
+                          "fontFamily": "$font-mono",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "rectangle",
+                          "id": "ezoQ4",
+                          "layoutPosition": "absolute",
+                          "x": 44,
+                          "y": 100,
+                          "name": "grid",
+                          "fill": "$border",
+                          "width": 1192,
+                          "height": 1
+                        },
+                        {
+                          "type": "text",
+                          "id": "d6s6E",
+                          "layoutPosition": "absolute",
+                          "x": 0,
+                          "y": 94,
+                          "fill": "$text-muted",
+                          "content": "0.2",
+                          "lineHeight": 1,
+                          "fontFamily": "$font-mono",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "rectangle",
+                          "id": "sMXb7",
+                          "layoutPosition": "absolute",
+                          "x": 44,
+                          "y": 8,
+                          "name": "grid",
+                          "fill": "$border",
+                          "width": 1192,
+                          "height": 1
+                        },
+                        {
+                          "type": "text",
+                          "id": "jysB3",
+                          "layoutPosition": "absolute",
+                          "x": 0,
+                          "y": 2,
+                          "fill": "$text-muted",
+                          "content": "0.3",
+                          "lineHeight": 1,
+                          "fontFamily": "$font-mono",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "G1Zats",
+                          "layoutPosition": "absolute",
+                          "x": 38,
+                          "y": 294,
+                          "fill": "$text-muted",
+                          "content": "0",
+                          "lineHeight": 1,
+                          "fontFamily": "$font-mono",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "Af9CL",
+                          "layoutPosition": "absolute",
+                          "x": 435,
+                          "y": 294,
+                          "fill": "$text-muted",
+                          "content": "10",
+                          "lineHeight": 1,
+                          "fontFamily": "$font-mono",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "bmitp",
+                          "layoutPosition": "absolute",
+                          "x": 833,
+                          "y": 294,
+                          "fill": "$text-muted",
+                          "content": "20",
+                          "lineHeight": 1,
+                          "fontFamily": "$font-mono",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "nFG7u",
+                          "layoutPosition": "absolute",
+                          "x": 1230,
+                          "y": 294,
+                          "fill": "$text-muted",
+                          "content": "30",
+                          "lineHeight": 1,
+                          "fontFamily": "$font-mono",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "BIhoz",
+                          "layoutPosition": "absolute",
+                          "x": 1086,
+                          "y": 308,
+                          "fill": "$text-muted",
+                          "content": "commits in 6 months →",
+                          "lineHeight": 1,
+                          "fontFamily": "$font-mono",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "rectangle",
+                          "id": "QqFyq",
+                          "layoutPosition": "absolute",
+                          "x": 640,
+                          "y": 8,
+                          "name": "quad x",
+                          "fill": "$border-strong",
+                          "width": 1,
+                          "height": 276
+                        },
+                        {
+                          "type": "rectangle",
+                          "id": "pNGBU",
+                          "layoutPosition": "absolute",
+                          "x": 44,
+                          "y": 146,
+                          "name": "quad y",
+                          "fill": "$border-strong",
+                          "width": 1192,
+                          "height": 1
+                        },
+                        {
+                          "type": "text",
+                          "id": "q0b5Fr",
+                          "layoutPosition": "absolute",
+                          "x": 648,
+                          "y": 12,
+                          "fill": "$text",
+                          "content": "refactor here",
+                          "lineHeight": 1,
+                          "fontFamily": "$font-mono",
+                          "fontSize": 12,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "ellipse",
+                          "id": "jhupO",
+                          "layoutPosition": "absolute",
+                          "x": 549,
+                          "y": 60,
+                          "name": "hot board-scale-integrity.mjs",
+                          "opacity": 0.85,
+                          "fill": "$text",
+                          "width": 24,
+                          "height": 24
+                        },
+                        {
+                          "type": "text",
+                          "id": "jQJ5J",
+                          "layoutPosition": "absolute",
+                          "x": 579,
+                          "y": 66,
+                          "name": "lab board-scale-integrity.mjs",
+                          "fill": "$text",
+                          "content": "board-scale-integrity.mjs",
+                          "lineHeight": 1,
+                          "fontFamily": "$font-mono",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "ellipse",
+                          "id": "i98PuX",
+                          "layoutPosition": "absolute",
+                          "x": 471,
+                          "y": 62,
+                          "name": "hot policy.test.mjs",
+                          "opacity": 0.85,
+                          "fill": "$text",
+                          "width": 20,
+                          "height": 20
+                        },
+                        {
+                          "type": "text",
+                          "id": "kMdh0",
+                          "layoutPosition": "absolute",
+                          "x": 355,
+                          "y": 52,
+                          "name": "lab policy.test.mjs",
+                          "fill": "$text",
+                          "content": "policy.test.mjs",
+                          "lineHeight": 1,
+                          "fontFamily": "$font-mono",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "ellipse",
+                          "id": "zRXdz",
+                          "layoutPosition": "absolute",
+                          "x": 552,
+                          "y": 128,
+                          "name": "hot comparison.ts",
+                          "opacity": 0.85,
+                          "fill": "$text",
+                          "width": 18,
+                          "height": 18
+                        },
+                        {
+                          "type": "text",
+                          "id": "TvjZP",
+                          "layoutPosition": "absolute",
+                          "x": 576,
+                          "y": 131,
+                          "name": "lab comparison.ts",
+                          "fill": "$text",
+                          "content": "comparison.ts",
+                          "lineHeight": 1,
+                          "fontFamily": "$font-mono",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "ellipse",
+                          "id": "n9a0r",
+                          "layoutPosition": "absolute",
+                          "x": 1063,
+                          "y": 169,
+                          "name": "hot RunPanel.tsx",
+                          "opacity": 0.5,
+                          "fill": "$text-muted",
+                          "width": 28,
+                          "height": 28
+                        },
+                        {
+                          "type": "ellipse",
+                          "id": "sRwjJ",
+                          "layoutPosition": "absolute",
+                          "x": 905,
+                          "y": 161,
+                          "name": "hot console.test.tsx",
+                          "opacity": 0.5,
+                          "fill": "$text-muted",
+                          "width": 26,
+                          "height": 26
+                        },
+                        {
+                          "type": "ellipse",
+                          "id": "wSS2E",
+                          "layoutPosition": "absolute",
+                          "x": 946,
+                          "y": 171,
+                          "name": "hot main.mts",
+                          "opacity": 0.5,
+                          "fill": "$text-muted",
+                          "width": 24,
+                          "height": 24
+                        },
+                        {
+                          "type": "ellipse",
+                          "id": "c3Rma",
+                          "layoutPosition": "absolute",
+                          "x": 590,
+                          "y": 164,
+                          "name": "hot shot-tools.test.tsx",
+                          "opacity": 0.5,
+                          "fill": "$text-muted",
+                          "width": 20,
+                          "height": 20
+                        },
+                        {
+                          "type": "ellipse",
+                          "id": "y2JOtD",
+                          "layoutPosition": "absolute",
+                          "x": 394,
+                          "y": 92,
+                          "name": "hot pages.test.ts",
+                          "opacity": 0.5,
+                          "fill": "$text-muted",
+                          "width": 16,
+                          "height": 16
+                        },
+                        {
+                          "type": "ellipse",
+                          "id": "XOXQP",
+                          "layoutPosition": "absolute",
+                          "x": 789,
+                          "y": 182,
+                          "name": "hot policy.mjs",
+                          "opacity": 0.5,
+                          "fill": "$text-muted",
+                          "width": 20,
+                          "height": 20
+                        },
+                        {
+                          "type": "ellipse",
+                          "id": "LLeSS",
+                          "layoutPosition": "absolute",
+                          "x": 629,
+                          "y": 135,
+                          "name": "hot CurrentJob.tsx",
+                          "opacity": 0.85,
+                          "fill": "$text",
+                          "width": 22,
+                          "height": 22
+                        },
+                        {
+                          "type": "text",
+                          "id": "madQ1",
+                          "layoutPosition": "absolute",
+                          "x": 48,
+                          "y": 12,
+                          "fill": "$text-muted",
+                          "content": "complexity density ↑",
+                          "lineHeight": 1,
+                          "fontFamily": "$font-mono",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "Mqvv5",
+                  "type": "ref",
+                  "ref": "q9KLy",
+                  "name": "molecules__desktop__dark__molecules-hotspots--default",
                   "theme": {
                     "mode": "dark"
                   }
@@ -4966,6 +6853,381 @@
         },
         {
           "type": "frame",
+          "id": "P8YMmp",
+          "name": "molecules-penaltybars--default",
+          "layout": "vertical",
+          "gap": 12,
+          "children": [
+            {
+              "type": "text",
+              "id": "U5cQDf",
+              "fill": "$ink-muted",
+              "content": "molecules-penaltybars--default",
+              "lineHeight": 1.2,
+              "fontFamily": "$font-mono",
+              "fontSize": 16,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "j1a8wq",
+              "name": "Tiles",
+              "gap": 48,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "Ahsor",
+                  "name": "molecules__desktop__light__molecules-penaltybars--default",
+                  "theme": {
+                    "mode": "light"
+                  },
+                  "reusable": true,
+                  "clip": true,
+                  "width": 1248,
+                  "height": 171,
+                  "fill": "$bg",
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "Owx7Q",
+                      "name": "penalties",
+                      "width": 720,
+                      "layout": "vertical",
+                      "gap": 8,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "WGspl",
+                          "fill": "$text-muted",
+                          "content": "WHAT COSTS POINTS",
+                          "lineHeight": 1.25,
+                          "fontFamily": "$font-mono",
+                          "fontSize": 12,
+                          "fontWeight": "700",
+                          "letterSpacing": 1
+                        },
+                        {
+                          "type": "frame",
+                          "id": "YRh1X",
+                          "name": "pen Function size",
+                          "width": 720,
+                          "gap": 12,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "qf3lr",
+                              "fill": "$text",
+                              "textGrowth": "fixed-width",
+                              "width": 150,
+                              "content": "Function size",
+                              "lineHeight": 1.5,
+                              "fontFamily": "$font-mono",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "u2yyK",
+                              "name": "track",
+                              "width": 502,
+                              "height": 8,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "d2nrE",
+                                  "name": "Bar",
+                                  "width": 502,
+                                  "height": 8,
+                                  "fill": "$text-muted",
+                                  "cornerRadius": [
+                                    0,
+                                    4,
+                                    4,
+                                    0
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "goyZv",
+                              "fill": "$text",
+                              "textGrowth": "fixed-width",
+                              "width": 44,
+                              "content": "−10",
+                              "lineHeight": 1.5,
+                              "textAlign": "right",
+                              "fontFamily": "$font-mono",
+                              "fontSize": 12,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "D4GPde",
+                          "name": "pen Coupling",
+                          "width": 720,
+                          "gap": 12,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "EXaNW",
+                              "fill": "$text",
+                              "textGrowth": "fixed-width",
+                              "width": 150,
+                              "content": "Coupling",
+                              "lineHeight": 1.5,
+                              "fontFamily": "$font-mono",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "AdMA3",
+                              "name": "track",
+                              "width": 502,
+                              "height": 8,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "f6EoMF",
+                                  "name": "Bar",
+                                  "width": 90,
+                                  "height": 8,
+                                  "fill": "$text-muted",
+                                  "cornerRadius": [
+                                    0,
+                                    4,
+                                    4,
+                                    0
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "Juaqi",
+                              "fill": "$text",
+                              "textGrowth": "fixed-width",
+                              "width": 44,
+                              "content": "−1.8",
+                              "lineHeight": 1.5,
+                              "textAlign": "right",
+                              "fontFamily": "$font-mono",
+                              "fontSize": 12,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "csVv6",
+                          "name": "pen Maintainability",
+                          "width": 720,
+                          "gap": 12,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "eGXAp",
+                              "fill": "$text",
+                              "textGrowth": "fixed-width",
+                              "width": 150,
+                              "content": "Maintainability",
+                              "lineHeight": 1.5,
+                              "fontFamily": "$font-mono",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "hi2t9",
+                              "name": "track",
+                              "width": 502,
+                              "height": 8,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "mSpv2",
+                                  "name": "Bar",
+                                  "width": 70,
+                                  "height": 8,
+                                  "fill": "$text-muted",
+                                  "cornerRadius": [
+                                    0,
+                                    4,
+                                    4,
+                                    0
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "yEuNA",
+                              "fill": "$text",
+                              "textGrowth": "fixed-width",
+                              "width": 44,
+                              "content": "−1.4",
+                              "lineHeight": 1.5,
+                              "textAlign": "right",
+                              "fontFamily": "$font-mono",
+                              "fontSize": 12,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "VM2Wo",
+                          "name": "pen Dead files",
+                          "width": 720,
+                          "gap": 12,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "zK8h8",
+                              "fill": "$text",
+                              "textGrowth": "fixed-width",
+                              "width": 150,
+                              "content": "Dead files",
+                              "lineHeight": 1.5,
+                              "fontFamily": "$font-mono",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "duEhL",
+                              "name": "track",
+                              "width": 502,
+                              "height": 8,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "bfqWe",
+                                  "name": "Bar",
+                                  "width": 60,
+                                  "height": 8,
+                                  "fill": "$text-muted",
+                                  "cornerRadius": [
+                                    0,
+                                    4,
+                                    4,
+                                    0
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "VhIr6",
+                              "fill": "$text",
+                              "textGrowth": "fixed-width",
+                              "width": 44,
+                              "content": "−1.2",
+                              "lineHeight": 1.5,
+                              "textAlign": "right",
+                              "fontFamily": "$font-mono",
+                              "fontSize": 12,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "v7h5F",
+                          "name": "pen Dead exports",
+                          "width": 720,
+                          "gap": 12,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "fUVsH",
+                              "fill": "$text",
+                              "textGrowth": "fixed-width",
+                              "width": 150,
+                              "content": "Dead exports",
+                              "lineHeight": 1.5,
+                              "fontFamily": "$font-mono",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "D6qWG",
+                              "name": "track",
+                              "width": 502,
+                              "height": 8,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "K1XJc",
+                                  "name": "Bar",
+                                  "width": 45,
+                                  "height": 8,
+                                  "fill": "$text-muted",
+                                  "cornerRadius": [
+                                    0,
+                                    4,
+                                    4,
+                                    0
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "EoU2M",
+                              "fill": "$text",
+                              "textGrowth": "fixed-width",
+                              "width": 44,
+                              "content": "−0.9",
+                              "lineHeight": 1.5,
+                              "textAlign": "right",
+                              "fontFamily": "$font-mono",
+                              "fontSize": 12,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "Hl6T8",
+                          "fill": "$text-muted",
+                          "textGrowth": "fixed-width",
+                          "width": 720,
+                          "content": "0 for complexity, duplication, cycles, unused dependencies and hotspots",
+                          "lineHeight": 1.5,
+                          "fontFamily": "$font-mono",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "ltk8O",
+                  "type": "ref",
+                  "ref": "Ahsor",
+                  "name": "molecules__desktop__dark__molecules-penaltybars--default",
+                  "theme": {
+                    "mode": "dark"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
           "id": "fT56W",
           "name": "molecules-postcard--default",
           "layout": "vertical",
@@ -5700,6 +7962,263 @@
                   "type": "ref",
                   "ref": "F8lqNl",
                   "name": "molecules__desktop__dark__molecules-postmeta--one-minute-read",
+                  "theme": {
+                    "mode": "dark"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "dwaxJ",
+          "name": "molecules-profilebar--default",
+          "layout": "vertical",
+          "gap": 12,
+          "children": [
+            {
+              "type": "text",
+              "id": "vAegP",
+              "fill": "$ink-muted",
+              "content": "molecules-profilebar--default",
+              "lineHeight": 1.2,
+              "fontFamily": "$font-mono",
+              "fontSize": 16,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "zD2cE",
+              "name": "Tiles",
+              "gap": 48,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "sjNUT",
+                  "name": "molecules__desktop__light__molecules-profilebar--default",
+                  "theme": {
+                    "mode": "light"
+                  },
+                  "reusable": true,
+                  "clip": true,
+                  "width": 1248,
+                  "height": 60,
+                  "fill": "$bg",
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "tjXXC",
+                      "name": "profile Function size",
+                      "width": 1248,
+                      "layout": "vertical",
+                      "gap": 6,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "JwIST",
+                          "name": "lab",
+                          "width": 1248,
+                          "justifyContent": "space_between",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "lKfFf",
+                              "fill": "$text",
+                              "content": "Function size",
+                              "lineHeight": 1.5,
+                              "fontFamily": "$font-mono",
+                              "fontSize": 12,
+                              "fontWeight": "700"
+                            },
+                            {
+                              "type": "text",
+                              "id": "qrT0P",
+                              "fill": "$text-muted",
+                              "content": "lines per function",
+                              "lineHeight": 1.5,
+                              "fontFamily": "$font-mono",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "r4YCtQ",
+                          "name": "bar",
+                          "width": 1248,
+                          "height": 12,
+                          "gap": 2,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "VYMe4",
+                              "name": "seg low",
+                              "width": 1040,
+                              "height": 12,
+                              "fill": "$border",
+                              "cornerRadius": [
+                                4,
+                                0,
+                                0,
+                                4
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "YZpXK",
+                              "name": "seg medium",
+                              "width": 112,
+                              "height": 12,
+                              "fill": "$border-strong"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "qLGvU",
+                              "name": "seg high",
+                              "width": 55,
+                              "height": 12,
+                              "fill": "$text-muted"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "V5MoTA",
+                              "name": "seg very high",
+                              "width": 35,
+                              "height": 12,
+                              "fill": "$text",
+                              "cornerRadius": [
+                                0,
+                                4,
+                                4,
+                                0
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "PCGSX",
+                          "name": "key",
+                          "gap": 12,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "cjyem",
+                              "gap": 4,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "rectangle",
+                                  "cornerRadius": 2,
+                                  "id": "CMg32",
+                                  "fill": "$border",
+                                  "width": 8,
+                                  "height": 8
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "E2hji",
+                                  "fill": "$text-muted",
+                                  "content": "low 83.7%",
+                                  "lineHeight": 1.5,
+                                  "fontFamily": "$font-mono",
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "HMJka",
+                              "gap": 4,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "rectangle",
+                                  "cornerRadius": 2,
+                                  "id": "IY6M4",
+                                  "fill": "$border-strong",
+                                  "width": 8,
+                                  "height": 8
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "R2fK68",
+                                  "fill": "$text-muted",
+                                  "content": "medium 9%",
+                                  "lineHeight": 1.5,
+                                  "fontFamily": "$font-mono",
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "irJLI",
+                              "gap": 4,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "rectangle",
+                                  "cornerRadius": 2,
+                                  "id": "rydJ8",
+                                  "fill": "$text-muted",
+                                  "width": 8,
+                                  "height": 8
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "AtuOS",
+                                  "fill": "$text-muted",
+                                  "content": "high 4.4%",
+                                  "lineHeight": 1.5,
+                                  "fontFamily": "$font-mono",
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "BKnH4",
+                              "gap": 4,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "rectangle",
+                                  "cornerRadius": 2,
+                                  "id": "dydlD",
+                                  "fill": "$text",
+                                  "width": 8,
+                                  "height": 8
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "Bv2hV",
+                                  "fill": "$text-muted",
+                                  "content": "very high 2.8%",
+                                  "lineHeight": 1.5,
+                                  "fontFamily": "$font-mono",
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "uSHmx",
+                  "type": "ref",
+                  "ref": "sjNUT",
+                  "name": "molecules__desktop__dark__molecules-profilebar--default",
                   "theme": {
                     "mode": "dark"
                   }
