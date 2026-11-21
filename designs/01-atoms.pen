@@ -1,5 +1,5 @@
 {
-  "version": "2.22",
+  "version": "2.25",
   "children": [
     {
       "type": "frame",
@@ -466,6 +466,95 @@
                   "type": "ref",
                   "ref": "oejuH",
                   "name": "atoms__desktop__dark__atoms-badge--danger",
+                  "theme": {
+                    "mode": "dark"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "mqShD",
+          "name": "atoms-badge--dashed",
+          "layout": "vertical",
+          "gap": 12,
+          "children": [
+            {
+              "type": "text",
+              "id": "F66Rd",
+              "name": "label",
+              "fill": "$ink-muted",
+              "content": "atoms-badge--dashed",
+              "lineHeight": 1.2,
+              "fontFamily": "$font-mono",
+              "fontSize": 16,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "a1Psr",
+              "name": "Tiles",
+              "gap": 48,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "wjyX6",
+                  "name": "atoms__desktop__light__atoms-badge--dashed",
+                  "theme": {
+                    "mode": "light"
+                  },
+                  "reusable": true,
+                  "clip": true,
+                  "width": 1248,
+                  "height": 25,
+                  "fill": "$bg",
+                  "layout": "vertical",
+                  "padding": [
+                    4,
+                    0,
+                    0,
+                    0
+                  ],
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "KtugG",
+                      "name": "Pill",
+                      "cornerRadius": 9999,
+                      "stroke": "$border-strong",
+                      "strokeWidth": 1,
+                      "strokeDash": [
+                        3,
+                        3
+                      ],
+                      "gap": 4,
+                      "padding": [
+                        2,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "coRPp",
+                          "fill": "$text-muted",
+                          "content": "unmeasured",
+                          "lineHeight": 1.4,
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "ON7hy",
+                  "type": "ref",
+                  "ref": "wjyX6",
+                  "name": "atoms__desktop__dark__atoms-badge--dashed",
                   "theme": {
                     "mode": "dark"
                   }
@@ -2173,6 +2262,284 @@
                   "type": "ref",
                   "ref": "gRK4H",
                   "name": "atoms__desktop__dark__atoms-link--muted",
+                  "theme": {
+                    "mode": "dark"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "tgejV",
+          "name": "atoms-meter--partial",
+          "layout": "vertical",
+          "gap": 12,
+          "children": [
+            {
+              "type": "text",
+              "id": "K6zDy",
+              "name": "label",
+              "fill": "$ink-muted",
+              "content": "atoms-meter--partial",
+              "lineHeight": 1.2,
+              "fontFamily": "$font-mono",
+              "fontSize": 16,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "mghQG",
+              "name": "Tiles",
+              "gap": 48,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "BhA9s",
+                  "name": "atoms__desktop__light__atoms-meter--partial",
+                  "theme": {
+                    "mode": "light"
+                  },
+                  "reusable": true,
+                  "clip": true,
+                  "width": 1248,
+                  "height": 8,
+                  "fill": "$bg",
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "dH3PG",
+                      "name": "Meter",
+                      "clip": true,
+                      "width": "fill_container",
+                      "height": 8,
+                      "fill": "$chart-tint",
+                      "cornerRadius": 9999,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "CXLJg",
+                          "name": "Meter fill",
+                          "width": 225,
+                          "height": 8,
+                          "fill": "$chart",
+                          "cornerRadius": 9999
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "dm0OI",
+                  "type": "ref",
+                  "ref": "BhA9s",
+                  "name": "atoms__desktop__dark__atoms-meter--partial",
+                  "theme": {
+                    "mode": "dark"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "aImE0",
+          "name": "atoms-meter--full",
+          "layout": "vertical",
+          "gap": 12,
+          "children": [
+            {
+              "type": "text",
+              "id": "bYVMV",
+              "name": "label",
+              "fill": "$ink-muted",
+              "content": "atoms-meter--full",
+              "lineHeight": 1.2,
+              "fontFamily": "$font-mono",
+              "fontSize": 16,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "CDlVf",
+              "name": "Tiles",
+              "gap": 48,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "GwtF2",
+                  "name": "atoms__desktop__light__atoms-meter--full",
+                  "theme": {
+                    "mode": "light"
+                  },
+                  "reusable": true,
+                  "clip": true,
+                  "width": 1248,
+                  "height": 8,
+                  "fill": "$bg",
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "xrm2s",
+                      "name": "Meter",
+                      "clip": true,
+                      "width": "fill_container",
+                      "height": 8,
+                      "fill": "$chart-tint",
+                      "cornerRadius": 9999,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "h7BebS",
+                          "name": "Meter fill",
+                          "width": 1248,
+                          "height": 8,
+                          "fill": "$chart",
+                          "cornerRadius": 9999
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "dXGsq",
+                  "type": "ref",
+                  "ref": "GwtF2",
+                  "name": "atoms__desktop__dark__atoms-meter--full",
+                  "theme": {
+                    "mode": "dark"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "z9Hb07",
+          "name": "atoms-meter--empty",
+          "layout": "vertical",
+          "gap": 12,
+          "children": [
+            {
+              "type": "text",
+              "id": "Z3M4rD",
+              "name": "label",
+              "fill": "$ink-muted",
+              "content": "atoms-meter--empty",
+              "lineHeight": 1.2,
+              "fontFamily": "$font-mono",
+              "fontSize": 16,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "M2REe7",
+              "name": "Tiles",
+              "gap": 48,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "C0YrU",
+                  "name": "atoms__desktop__light__atoms-meter--empty",
+                  "theme": {
+                    "mode": "light"
+                  },
+                  "reusable": true,
+                  "clip": true,
+                  "width": 1248,
+                  "height": 8,
+                  "fill": "$bg",
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "BVj1S",
+                      "name": "Meter",
+                      "clip": true,
+                      "width": "fill_container",
+                      "height": 8,
+                      "fill": "$bg-muted",
+                      "cornerRadius": 9999
+                    }
+                  ]
+                },
+                {
+                  "id": "ACItn",
+                  "type": "ref",
+                  "ref": "C0YrU",
+                  "name": "atoms__desktop__dark__atoms-meter--empty",
+                  "theme": {
+                    "mode": "dark"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "STOID",
+          "name": "atoms-meter--unmeasured",
+          "layout": "vertical",
+          "gap": 12,
+          "children": [
+            {
+              "type": "text",
+              "id": "W1QJxo",
+              "name": "label",
+              "fill": "$ink-muted",
+              "content": "atoms-meter--unmeasured",
+              "lineHeight": 1.2,
+              "fontFamily": "$font-mono",
+              "fontSize": 16,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "wazPo",
+              "name": "Tiles",
+              "gap": 48,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "RZ7rg",
+                  "name": "atoms__desktop__light__atoms-meter--unmeasured",
+                  "theme": {
+                    "mode": "light"
+                  },
+                  "reusable": true,
+                  "clip": true,
+                  "width": 1248,
+                  "height": 8,
+                  "fill": "$bg",
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "NLODI",
+                      "name": "Meter",
+                      "width": "fill_container",
+                      "height": 8,
+                      "cornerRadius": 9999,
+                      "stroke": "$border-strong",
+                      "strokeWidth": 1,
+                      "strokeDash": [
+                        3,
+                        3
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "LC5BP",
+                  "type": "ref",
+                  "ref": "RZ7rg",
+                  "name": "atoms__desktop__dark__atoms-meter--unmeasured",
                   "theme": {
                     "mode": "dark"
                   }
@@ -5981,6 +6348,176 @@
         },
         {
           "value": "#141614",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "chart": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#2563EB",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#4A8CEB",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "chart-strong": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#1F4466",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#B3D1EF",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "chart-soft": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#5F86AD",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#4F86BD",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "chart-2": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#0E8A57",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#33A576",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "chart-3": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#B45F06",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#C4842C",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "chart-tint": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#BAC1CE",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#283D55",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "chart-2-tint": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#B5C9AE",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#224434",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "chart-3-tint": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#D9C09C",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#4A3B20",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "chart-4": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#7C3AED",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#9B6BE8",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "chart-4-tint": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#CDB8CF",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#3F3454",
           "theme": {
             "mode": "dark"
           }
