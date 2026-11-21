@@ -6,7 +6,7 @@
       "id": "gpAN6",
       "x": 0,
       "y": 0,
-      "name": "05-screens-pyramid-4 — Screens",
+      "name": "05-screens-repo-coverage-4 — Screens",
       "theme": {
         "mode": "light"
       },
@@ -29,7 +29,7 @@
               "id": "Z4ELZw",
               "name": "Stem",
               "fill": "$ink-muted",
-              "content": "05-screens-pyramid-4",
+              "content": "05-screens-repo-coverage-4",
               "fontFamily": "$font-mono",
               "fontSize": 16,
               "fontWeight": "normal"
@@ -51,7 +51,7 @@
               "fill": "$ink-muted",
               "textGrowth": "fixed-width",
               "width": "fill_container",
-              "content": "One tile per screen story — apps/pyramid's pages, drawn before the app exists — desktop and mobile.",
+              "content": "One tile per screen story — apps/repo-coverage's pages, drawn before the app exists — desktop and mobile.",
               "lineHeight": 1.4,
               "fontFamily": "$font-body",
               "fontSize": 20,
@@ -62,7 +62,7 @@
         {
           "type": "frame",
           "id": "VtP2J",
-          "name": "screens-pyramid-workspace--sample",
+          "name": "screens-repo-coverage-workspace--sample",
           "layout": "vertical",
           "gap": 12,
           "children": [
@@ -71,7 +71,7 @@
               "id": "ZI7Ye",
               "name": "Caption",
               "fill": "$ink-muted",
-              "content": "screens-pyramid-workspace--sample",
+              "content": "screens-repo-coverage-workspace--sample",
               "lineHeight": 1.2,
               "fontFamily": "$font-mono",
               "fontSize": 16,
@@ -86,7 +86,7 @@
                 {
                   "type": "frame",
                   "id": "Z1Bb90",
-                  "name": "screens__desktop__light__screens-pyramid-workspace--sample",
+                  "name": "screens__desktop__light__screens-repo-coverage-workspace--sample",
                   "theme": {
                     "mode": "light"
                   },
@@ -141,7 +141,7 @@
                                   "name": "icon triangle",
                                   "width": 20,
                                   "height": 20,
-                                  "icon": "triangle",
+                                  "icon": "scan",
                                   "library": "lucide",
                                   "fill": "$chart"
                                 },
@@ -167,7 +167,7 @@
                                       "id": "x2CzL",
                                       "name": "app",
                                       "fill": "$text",
-                                      "content": "pyramid",
+                                      "content": "repo-coverage",
                                       "lineHeight": 1.25,
                                       "fontFamily": "$font-display",
                                       "fontSize": 18,
@@ -194,7 +194,7 @@
                                   "id": "fi5Ev",
                                   "name": "t",
                                   "fill": "$text-muted",
-                                  "content": "LAYERS",
+                                  "content": "DIMENSIONS",
                                   "lineHeight": 1.5,
                                   "fontFamily": "$font-mono",
                                   "fontSize": 12,
@@ -287,7 +287,7 @@
                                       "name": "icon layers",
                                       "width": 16,
                                       "height": 16,
-                                      "icon": "layers",
+                                      "icon": "code",
                                       "library": "lucide",
                                       "fill": "$text-muted"
                                     },
@@ -296,7 +296,7 @@
                                       "id": "ZxeSL",
                                       "name": "label",
                                       "fill": "$text-muted",
-                                      "content": "Unit",
+                                      "content": "Code",
                                       "lineHeight": 1.5,
                                       "fontFamily": "$font-body",
                                       "fontSize": 14,
@@ -344,7 +344,7 @@
                                       "name": "icon component",
                                       "width": 16,
                                       "height": 16,
-                                      "icon": "component",
+                                      "icon": "image",
                                       "library": "lucide",
                                       "fill": "$text-muted"
                                     },
@@ -353,7 +353,7 @@
                                       "id": "nUoED",
                                       "name": "label",
                                       "fill": "$text-muted",
-                                      "content": "Component",
+                                      "content": "Visual",
                                       "lineHeight": 1.5,
                                       "fontFamily": "$font-body",
                                       "fontSize": 14,
@@ -1246,7 +1246,7 @@
                                           "id": "Yxv9w",
                                           "name": "Link",
                                           "fill": "$accent",
-                                          "content": "pyramid",
+                                          "content": "repo-coverage",
                                           "lineHeight": 1.5,
                                           "fontFamily": "$font-mono",
                                           "fontSize": 14,
@@ -1670,7 +1670,7 @@
                                               "id": "o6UEm",
                                               "name": "label",
                                               "fill": "$text-muted",
-                                              "content": "UNIT",
+                                              "content": "CODE",
                                               "lineHeight": 1.25,
                                               "fontFamily": "$font-mono",
                                               "fontSize": 12,
@@ -1777,7 +1777,7 @@
                                               "id": "iMijl",
                                               "name": "label",
                                               "fill": "$text-muted",
-                                              "content": "COMPONENT",
+                                              "content": "VISUAL",
                                               "lineHeight": 1.25,
                                               "fontFamily": "$font-mono",
                                               "fontSize": 12,
@@ -5565,7 +5565,7 @@
                                                   "id": "UnB3Z",
                                                   "name": "t",
                                                   "fill": "$text-muted",
-                                                  "content": "Component",
+                                                  "content": "Visual",
                                                   "lineHeight": 1.5,
                                                   "fontFamily": "$font-mono",
                                                   "fontSize": 12,
@@ -7356,10 +7356,10 @@
                   ]
                 },
                 {
-                  "id": "PDFof",
+                  "id": "GQ138",
                   "type": "ref",
                   "ref": "Z1Bb90",
-                  "name": "screens__desktop__dark__screens-pyramid-workspace--sample",
+                  "name": "screens__desktop__dark__screens-repo-coverage-workspace--sample",
                   "theme": {
                     "mode": "dark"
                   }
@@ -7367,7 +7367,7 @@
                 {
                   "type": "frame",
                   "id": "xndlv",
-                  "name": "screens__mobile__light__screens-pyramid-workspace--sample",
+                  "name": "screens__mobile__light__screens-repo-coverage-workspace--sample",
                   "theme": {
                     "mode": "light"
                   },
@@ -7447,7 +7447,7 @@
                                       "id": "tYK1P",
                                       "name": "Link",
                                       "fill": "$accent",
-                                      "content": "pyramid",
+                                      "content": "repo-coverage",
                                       "lineHeight": 1.5,
                                       "fontFamily": "$font-mono",
                                       "fontSize": 14,
@@ -7785,7 +7785,7 @@
                                           "id": "Z85Fh",
                                           "name": "label",
                                           "fill": "$text-muted",
-                                          "content": "UNIT",
+                                          "content": "CODE",
                                           "lineHeight": 1.25,
                                           "fontFamily": "$font-mono",
                                           "fontSize": 12,
@@ -7892,7 +7892,7 @@
                                           "id": "u1SM3",
                                           "name": "label",
                                           "fill": "$text-muted",
-                                          "content": "COMPONENT",
+                                          "content": "VISUAL",
                                           "lineHeight": 1.25,
                                           "fontFamily": "$font-mono",
                                           "fontSize": 12,
@@ -12780,10 +12780,10 @@
                   ]
                 },
                 {
-                  "id": "rSEJd",
+                  "id": "MiRco",
                   "type": "ref",
                   "ref": "xndlv",
-                  "name": "screens__mobile__dark__screens-pyramid-workspace--sample",
+                  "name": "screens__mobile__dark__screens-repo-coverage-workspace--sample",
                   "theme": {
                     "mode": "dark"
                   }
@@ -12795,7 +12795,7 @@
         {
           "type": "frame",
           "id": "x1COfz",
-          "name": "screens-pyramid-workspace--unmeasured",
+          "name": "screens-repo-coverage-workspace--unmeasured",
           "layout": "vertical",
           "gap": 12,
           "children": [
@@ -12804,7 +12804,7 @@
               "id": "j5Wpu",
               "name": "Caption",
               "fill": "$ink-muted",
-              "content": "screens-pyramid-workspace--unmeasured",
+              "content": "screens-repo-coverage-workspace--unmeasured",
               "lineHeight": 1.2,
               "fontFamily": "$font-mono",
               "fontSize": 16,
@@ -12819,7 +12819,7 @@
                 {
                   "type": "frame",
                   "id": "NrCwq",
-                  "name": "screens__desktop__light__screens-pyramid-workspace--unmeasured",
+                  "name": "screens__desktop__light__screens-repo-coverage-workspace--unmeasured",
                   "theme": {
                     "mode": "light"
                   },
@@ -12874,7 +12874,7 @@
                                   "name": "icon triangle",
                                   "width": 20,
                                   "height": 20,
-                                  "icon": "triangle",
+                                  "icon": "scan",
                                   "library": "lucide",
                                   "fill": "$chart"
                                 },
@@ -12900,7 +12900,7 @@
                                       "id": "nPLqu",
                                       "name": "app",
                                       "fill": "$text",
-                                      "content": "pyramid",
+                                      "content": "repo-coverage",
                                       "lineHeight": 1.25,
                                       "fontFamily": "$font-display",
                                       "fontSize": 18,
@@ -12927,7 +12927,7 @@
                                   "id": "zys4S",
                                   "name": "t",
                                   "fill": "$text-muted",
-                                  "content": "LAYERS",
+                                  "content": "DIMENSIONS",
                                   "lineHeight": 1.5,
                                   "fontFamily": "$font-mono",
                                   "fontSize": 12,
@@ -13020,7 +13020,7 @@
                                       "name": "icon layers",
                                       "width": 16,
                                       "height": 16,
-                                      "icon": "layers",
+                                      "icon": "code",
                                       "library": "lucide",
                                       "fill": "$text-muted"
                                     },
@@ -13029,7 +13029,7 @@
                                       "id": "xyeCR",
                                       "name": "label",
                                       "fill": "$text-muted",
-                                      "content": "Unit",
+                                      "content": "Code",
                                       "lineHeight": 1.5,
                                       "fontFamily": "$font-body",
                                       "fontSize": 14,
@@ -13077,7 +13077,7 @@
                                       "name": "icon component",
                                       "width": 16,
                                       "height": 16,
-                                      "icon": "component",
+                                      "icon": "image",
                                       "library": "lucide",
                                       "fill": "$text-muted"
                                     },
@@ -13086,7 +13086,7 @@
                                       "id": "a2Ge8X",
                                       "name": "label",
                                       "fill": "$text-muted",
-                                      "content": "Component",
+                                      "content": "Visual",
                                       "lineHeight": 1.5,
                                       "fontFamily": "$font-body",
                                       "fontSize": 14,
@@ -13979,7 +13979,7 @@
                                           "id": "Q3sxq",
                                           "name": "Link",
                                           "fill": "$accent",
-                                          "content": "pyramid",
+                                          "content": "repo-coverage",
                                           "lineHeight": 1.5,
                                           "fontFamily": "$font-mono",
                                           "fontSize": 14,
@@ -14403,7 +14403,7 @@
                                               "id": "SbE9g",
                                               "name": "label",
                                               "fill": "$text-muted",
-                                              "content": "UNIT",
+                                              "content": "CODE",
                                               "lineHeight": 1.25,
                                               "fontFamily": "$font-mono",
                                               "fontSize": 12,
@@ -14503,7 +14503,7 @@
                                               "id": "P7FuHg",
                                               "name": "label",
                                               "fill": "$text-muted",
-                                              "content": "COMPONENT",
+                                              "content": "VISUAL",
                                               "lineHeight": 1.25,
                                               "fontFamily": "$font-mono",
                                               "fontSize": 12,
@@ -14815,7 +14815,7 @@
                                           "id": "F4TQM",
                                           "name": "label",
                                           "fill": "$text-muted",
-                                          "content": "UNIT",
+                                          "content": "CODE",
                                           "lineHeight": 1.25,
                                           "fontFamily": "$font-mono",
                                           "fontSize": 12,
@@ -14968,7 +14968,7 @@
                                                   "id": "EZIc3",
                                                   "name": "label",
                                                   "fill": "$text-muted",
-                                                  "content": "UNIT",
+                                                  "content": "CODE",
                                                   "lineHeight": 1.25,
                                                   "fontFamily": "$font-mono",
                                                   "fontSize": 12,
@@ -15089,7 +15089,7 @@
                                                   "id": "QRpDB",
                                                   "name": "label",
                                                   "fill": "$text-muted",
-                                                  "content": "COMPONENT",
+                                                  "content": "VISUAL",
                                                   "lineHeight": 1.25,
                                                   "fontFamily": "$font-mono",
                                                   "fontSize": 12,
@@ -15762,7 +15762,7 @@
                                                   "id": "x6uBQ",
                                                   "name": "t",
                                                   "fill": "$text-muted",
-                                                  "content": "Component",
+                                                  "content": "Visual",
                                                   "lineHeight": 1.5,
                                                   "fontFamily": "$font-mono",
                                                   "fontSize": 12,
@@ -17112,10 +17112,10 @@
                   ]
                 },
                 {
-                  "id": "axozL",
+                  "id": "N3BaR",
                   "type": "ref",
                   "ref": "NrCwq",
-                  "name": "screens__desktop__dark__screens-pyramid-workspace--unmeasured",
+                  "name": "screens__desktop__dark__screens-repo-coverage-workspace--unmeasured",
                   "theme": {
                     "mode": "dark"
                   }
@@ -17123,7 +17123,7 @@
                 {
                   "type": "frame",
                   "id": "Y89Qnk",
-                  "name": "screens__mobile__light__screens-pyramid-workspace--unmeasured",
+                  "name": "screens__mobile__light__screens-repo-coverage-workspace--unmeasured",
                   "theme": {
                     "mode": "light"
                   },
@@ -17203,7 +17203,7 @@
                                       "id": "KQJVj",
                                       "name": "Link",
                                       "fill": "$accent",
-                                      "content": "pyramid",
+                                      "content": "repo-coverage",
                                       "lineHeight": 1.5,
                                       "fontFamily": "$font-mono",
                                       "fontSize": 14,
@@ -17541,7 +17541,7 @@
                                           "id": "X0ntZ",
                                           "name": "label",
                                           "fill": "$text-muted",
-                                          "content": "UNIT",
+                                          "content": "CODE",
                                           "lineHeight": 1.25,
                                           "fontFamily": "$font-mono",
                                           "fontSize": 12,
@@ -17641,7 +17641,7 @@
                                           "id": "aacj8",
                                           "name": "label",
                                           "fill": "$text-muted",
-                                          "content": "COMPONENT",
+                                          "content": "VISUAL",
                                           "lineHeight": 1.25,
                                           "fontFamily": "$font-mono",
                                           "fontSize": 12,
@@ -17937,7 +17937,7 @@
                                       "id": "YMdkQ",
                                       "name": "label",
                                       "fill": "$text-muted",
-                                      "content": "UNIT",
+                                      "content": "CODE",
                                       "lineHeight": 1.25,
                                       "fontFamily": "$font-mono",
                                       "fontSize": 12,
@@ -18090,7 +18090,7 @@
                                               "id": "aenxE",
                                               "name": "label",
                                               "fill": "$text-muted",
-                                              "content": "UNIT",
+                                              "content": "CODE",
                                               "lineHeight": 1.25,
                                               "fontFamily": "$font-mono",
                                               "fontSize": 12,
@@ -18217,7 +18217,7 @@
                                               "id": "wG7Aq",
                                               "name": "label",
                                               "fill": "$text-muted",
-                                              "content": "COMPONENT",
+                                              "content": "VISUAL",
                                               "lineHeight": 1.25,
                                               "fontFamily": "$font-mono",
                                               "fontSize": 12,
@@ -20217,10 +20217,10 @@
                   ]
                 },
                 {
-                  "id": "XXejS",
+                  "id": "OiKxo",
                   "type": "ref",
                   "ref": "Y89Qnk",
-                  "name": "screens__mobile__dark__screens-pyramid-workspace--unmeasured",
+                  "name": "screens__mobile__dark__screens-repo-coverage-workspace--unmeasured",
                   "theme": {
                     "mode": "dark"
                   }
