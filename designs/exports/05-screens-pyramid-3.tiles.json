@@ -1,0 +1,14 @@
+{
+  "board": "05-screens-pyramid-3 — Screens",
+  "scale": 1.45817,
+  "tiles": {
+    "screens__desktop__dark__screens-pyramid-home--empty": [2030, 7327, 1866, 771],
+    "screens__desktop__dark__screens-pyramid-home--stale": [2030, 402, 1866, 3949],
+    "screens__desktop__light__screens-pyramid-home--empty": [93, 7327, 1866, 771],
+    "screens__desktop__light__screens-pyramid-home--stale": [93, 402, 1866, 3949],
+    "screens__mobile__dark__screens-pyramid-home--empty": [4605, 7327, 569, 719],
+    "screens__mobile__dark__screens-pyramid-home--stale": [4605, 402, 569, 6810],
+    "screens__mobile__light__screens-pyramid-home--empty": [3966, 7327, 569, 719],
+    "screens__mobile__light__screens-pyramid-home--stale": [3966, 402, 569, 6810]
+  }
+}

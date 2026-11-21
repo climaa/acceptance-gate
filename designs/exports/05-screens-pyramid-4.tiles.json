@@ -1,0 +1,14 @@
+{
+  "board": "05-screens-pyramid-4 — Screens",
+  "scale": 1.278401,
+  "tiles": {
+    "screens__desktop__dark__screens-pyramid-workspace--sample": [1780, 353, 1636, 3330],
+    "screens__desktop__dark__screens-pyramid-workspace--unmeasured": [1780, 5029, 1636, 2383],
+    "screens__desktop__light__screens-pyramid-workspace--sample": [82, 353, 1636, 3330],
+    "screens__desktop__light__screens-pyramid-workspace--unmeasured": [82, 5029, 1636, 2383],
+    "screens__mobile__dark__screens-pyramid-workspace--sample": [4037, 353, 499, 4575],
+    "screens__mobile__dark__screens-pyramid-workspace--unmeasured": [4037, 5029, 499, 3081],
+    "screens__mobile__light__screens-pyramid-workspace--sample": [3477, 353, 499, 4575],
+    "screens__mobile__light__screens-pyramid-workspace--unmeasured": [3477, 5029, 499, 3081]
+  }
+}
