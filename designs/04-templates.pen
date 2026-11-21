@@ -4312,6 +4312,40 @@
           }
         }
       ]
+    },
+    "chart-4": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#7C3AED",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#9B6BE8",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "chart-4-tint": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#C9B6D7",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#3A2F4C",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
     }
   },
   "fileToken": "fb0fcfd1-2de1-4a44-bdb0-30fb8790cb3c"
