@@ -438,14 +438,23 @@ export const EXIT = {
  *  ceiling is on the whole directory. 15 MB since every route became a screen
  *  (designs/STANDARD.md): the console's, the blog's and the manual's pages, each a page
  *  tall at both viewports in both themes, came to 14.4 MB, where the four
- *  design-system tiers fit in under 3 MB. The next screen raises it on purpose. */
-export const BASELINE_BUDGET_BYTES = 15_000_000;
+ *  design-system tiers fit in under 3 MB. The next screen raises it on purpose.
+ *  32 MB for census (`apps/census`): its 24 screen PNGs and 64 new tier baselines were
+ *  projected from their drawn tiles against the console's committed screens, at most
+ *  15.7 MB and 1.3 MB beside the set's 14.4 MB. The bound is the densest console
+ *  page's bytes per pixel over every census screen, so the real captures should land
+ *  under it; when they do, the census home's PR lowers this to what they measure. */
+export const BASELINE_BUDGET_BYTES = 32_000_000;
 
 /** Ceiling on one committed baseline. Under the total on purpose: a single PNG this
  *  large is a story rendering something it should not — a whole page shot as an atom,
  *  a photograph inlined into a fixture — and the corpus budget would not catch it until
- *  ten more had landed beside it. */
-export const BASELINE_PNG_BUDGET_BYTES = 512_000;
+ *  ten more had landed beside it. 1.3 MB since census's home screen is 1280 × 8354
+ *  desktop and 390 × 11959 mobile, twice the tallest page baselined before it: projected
+ *  at 0.47–1.22 MB a PNG, where the largest committed baseline was 466 KB. Still far
+ *  over anything a component renders (the largest tier baseline is 65 KB), so a story
+ *  shooting a whole page is still caught. */
+export const BASELINE_PNG_BUDGET_BYTES = 1_300_000;
 
 /** Both budgets, over the set a caller is about to commit. Baselines live in git
  *  forever, so the ceilings are checked before a byte is written and a corpus that

@@ -28,7 +28,7 @@ const notFound = () => new Response('Not found', { status: 404 });
  *
  * The ETag is size and mtime, so a revisit costs a `stat` and a 304 rather than
  * re-reading the file. Buffered rather than streamed, as the report route is and
- * for its reason: policy caps one committed shot at 512 KB.
+ * for its reason: policy caps one committed shot at 1.3 MB.
  *
  * ONE EXCEPTION: the corpus on a deployment. There no accept and no `git pull`
  * can reach it — it was traced into this deployment and leaves with it — so the
