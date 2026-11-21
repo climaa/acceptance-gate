@@ -11,7 +11,7 @@ const notFound = () => new Response('Not found', { status: 404 });
  * against the data directory. A refusal and a miss are both 404 — the reader of
  * the response cannot tell whether they guessed a path that exists.
  *
- * Buffered rather than streamed: policy caps one committed shot at 512 KB, so
+ * Buffered rather than streamed: policy caps one committed shot at 1.3 MB, so
  * the whole file is smaller than the machinery to stream it.
  */
 export async function GET(
