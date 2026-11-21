@@ -1973,7 +1973,7 @@
                                           "name": "Meter",
                                           "clip": true,
                                           "width": 509,
-                                          "height": 10,
+                                          "height": 6,
                                           "fill": "$chart-tint",
                                           "cornerRadius": 9999,
                                           "children": [
@@ -1982,7 +1982,7 @@
                                               "id": "weExP",
                                               "name": "Meter fill",
                                               "width": 158,
-                                              "height": 10,
+                                              "height": 6,
                                               "fill": "$chart",
                                               "cornerRadius": 9999
                                             }
@@ -2110,7 +2110,7 @@
                                           "name": "Meter",
                                           "clip": true,
                                           "width": 509,
-                                          "height": 10,
+                                          "height": 6,
                                           "fill": "$chart-2-tint",
                                           "cornerRadius": 9999,
                                           "children": [
@@ -2119,7 +2119,7 @@
                                               "id": "vzqoC",
                                               "name": "Meter fill",
                                               "width": 387,
-                                              "height": 10,
+                                              "height": 6,
                                               "fill": "$chart-2",
                                               "cornerRadius": 9999
                                             }
@@ -2247,7 +2247,7 @@
                                           "name": "Meter",
                                           "clip": true,
                                           "width": 509,
-                                          "height": 10,
+                                          "height": 6,
                                           "fill": "$chart-3-tint",
                                           "cornerRadius": 9999,
                                           "children": [
@@ -2256,7 +2256,7 @@
                                               "id": "WWUFc",
                                               "name": "Meter fill",
                                               "width": 255,
-                                              "height": 10,
+                                              "height": 6,
                                               "fill": "$chart-3",
                                               "cornerRadius": 9999
                                             }
@@ -2348,7 +2348,7 @@
                                                   "type": "ellipse",
                                                   "id": "K104T9",
                                                   "name": "key",
-                                                  "fill": "$text-muted",
+                                                  "fill": "$chart-4",
                                                   "width": 10,
                                                   "height": 10
                                                 },
@@ -2384,8 +2384,8 @@
                                           "name": "Meter",
                                           "clip": true,
                                           "width": 509,
-                                          "height": 10,
-                                          "fill": "$bg-muted",
+                                          "height": 6,
+                                          "fill": "$chart-4-tint",
                                           "cornerRadius": 9999,
                                           "children": [
                                             {
@@ -2393,8 +2393,8 @@
                                               "id": "qXdZW",
                                               "name": "Meter fill",
                                               "width": 463,
-                                              "height": 10,
-                                              "fill": "$text-muted",
+                                              "height": 6,
+                                              "fill": "$chart-4",
                                               "cornerRadius": 9999
                                             }
                                           ]
@@ -2684,7 +2684,7 @@
                                     },
                                     {
                                       "type": "frame",
-                                      "id": "zcGHq",
+                                      "id": "dTwc8",
                                       "name": "Card gaps by dimension",
                                       "width": 312,
                                       "fill": "$bg-subtle",
@@ -2697,7 +2697,7 @@
                                       "children": [
                                         {
                                           "type": "frame",
-                                          "id": "Cypqr",
+                                          "id": "a3lnwz",
                                           "name": "card heading",
                                           "width": "fill_container",
                                           "layout": "vertical",
@@ -2705,7 +2705,7 @@
                                           "children": [
                                             {
                                               "type": "text",
-                                              "id": "KfcvN",
+                                              "id": "t42Fu",
                                               "fill": "$text-muted",
                                               "content": "GAPS BY DIMENSION",
                                               "lineHeight": 1.25,
@@ -2716,7 +2716,7 @@
                                             },
                                             {
                                               "type": "text",
-                                              "id": "nSqgo",
+                                              "id": "Dy3Jj",
                                               "fill": "$text-muted",
                                               "textGrowth": "fixed-width",
                                               "width": "fill_container",
@@ -2730,217 +2730,267 @@
                                         },
                                         {
                                           "type": "frame",
-                                          "id": "Mcltm",
-                                          "name": "bars",
-                                          "width": "fill_container",
-                                          "layout": "vertical",
-                                          "gap": 14,
+                                          "id": "a43fH9",
+                                          "name": "GapPills",
+                                          "width": 264,
+                                          "height": 200,
+                                          "layout": "none",
                                           "children": [
                                             {
-                                              "type": "frame",
-                                              "id": "OWXaM",
-                                              "name": "bar visual",
-                                              "width": "fill_container",
-                                              "layout": "vertical",
-                                              "gap": 6,
-                                              "children": [
-                                                {
-                                                  "type": "frame",
-                                                  "id": "iyDsE",
-                                                  "name": "lab",
-                                                  "width": "fill_container",
-                                                  "justifyContent": "space_between",
-                                                  "children": [
-                                                    {
-                                                      "type": "text",
-                                                      "id": "oZfmS",
-                                                      "fill": "$text",
-                                                      "content": "visual",
-                                                      "lineHeight": 1.5,
-                                                      "fontFamily": "$font-mono",
-                                                      "fontSize": 12,
-                                                      "fontWeight": "normal"
-                                                    },
-                                                    {
-                                                      "type": "text",
-                                                      "id": "Mdp4O",
-                                                      "fill": "$text",
-                                                      "content": "12",
-                                                      "lineHeight": 1.5,
-                                                      "fontFamily": "$font-mono",
-                                                      "fontSize": 12,
-                                                      "fontWeight": "700"
-                                                    }
-                                                  ]
-                                                },
-                                                {
-                                                  "type": "frame",
-                                                  "id": "w46yHJ",
-                                                  "name": "Bar",
-                                                  "width": 264,
-                                                  "height": 8,
-                                                  "fill": "$chart-2",
-                                                  "cornerRadius": [
-                                                    0,
-                                                    4,
-                                                    4,
-                                                    0
-                                                  ]
-                                                }
-                                              ]
+                                              "type": "rectangle",
+                                              "id": "QkCYL",
+                                              "layoutPosition": "absolute",
+                                              "x": 28,
+                                              "y": 176,
+                                              "name": "grid",
+                                              "fill": "$border",
+                                              "width": 236,
+                                              "height": 1
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "S9kw8",
+                                              "layoutPosition": "absolute",
+                                              "x": 0,
+                                              "y": 170,
+                                              "fill": "$text-muted",
+                                              "content": "0",
+                                              "lineHeight": 1,
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 12,
+                                              "fontWeight": "normal"
+                                            },
+                                            {
+                                              "type": "rectangle",
+                                              "id": "yp4G2",
+                                              "layoutPosition": "absolute",
+                                              "x": 28,
+                                              "y": 123,
+                                              "name": "grid",
+                                              "fill": "$border",
+                                              "width": 236,
+                                              "height": 1
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "KQ8p0",
+                                              "layoutPosition": "absolute",
+                                              "x": 0,
+                                              "y": 117,
+                                              "fill": "$text-muted",
+                                              "content": "4",
+                                              "lineHeight": 1,
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 12,
+                                              "fontWeight": "normal"
+                                            },
+                                            {
+                                              "type": "rectangle",
+                                              "id": "AMYsT",
+                                              "layoutPosition": "absolute",
+                                              "x": 28,
+                                              "y": 69,
+                                              "name": "grid",
+                                              "fill": "$border",
+                                              "width": 236,
+                                              "height": 1
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "MDQsB",
+                                              "layoutPosition": "absolute",
+                                              "x": 0,
+                                              "y": 63,
+                                              "fill": "$text-muted",
+                                              "content": "8",
+                                              "lineHeight": 1,
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 12,
+                                              "fontWeight": "normal"
+                                            },
+                                            {
+                                              "type": "rectangle",
+                                              "id": "GvX34",
+                                              "layoutPosition": "absolute",
+                                              "x": 28,
+                                              "y": 16,
+                                              "name": "grid",
+                                              "fill": "$border",
+                                              "width": 236,
+                                              "height": 1
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "RpO5E",
+                                              "layoutPosition": "absolute",
+                                              "x": 0,
+                                              "y": 10,
+                                              "fill": "$text-muted",
+                                              "content": "12",
+                                              "lineHeight": 1,
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 12,
+                                              "fontWeight": "normal"
                                             },
                                             {
                                               "type": "frame",
-                                              "id": "nGcH1",
-                                              "name": "bar code",
-                                              "width": "fill_container",
-                                              "layout": "vertical",
-                                              "gap": 6,
-                                              "children": [
-                                                {
-                                                  "type": "frame",
-                                                  "id": "D0V9bX",
-                                                  "name": "lab",
-                                                  "width": "fill_container",
-                                                  "justifyContent": "space_between",
-                                                  "children": [
-                                                    {
-                                                      "type": "text",
-                                                      "id": "MTFuJ",
-                                                      "fill": "$text",
-                                                      "content": "code",
-                                                      "lineHeight": 1.5,
-                                                      "fontFamily": "$font-mono",
-                                                      "fontSize": 12,
-                                                      "fontWeight": "normal"
-                                                    },
-                                                    {
-                                                      "type": "text",
-                                                      "id": "z5hGPM",
-                                                      "fill": "$text",
-                                                      "content": "9",
-                                                      "lineHeight": 1.5,
-                                                      "fontFamily": "$font-mono",
-                                                      "fontSize": 12,
-                                                      "fontWeight": "700"
-                                                    }
-                                                  ]
-                                                },
-                                                {
-                                                  "type": "frame",
-                                                  "id": "EBh3g",
-                                                  "name": "Bar",
-                                                  "width": 198,
-                                                  "height": 8,
-                                                  "fill": "$chart",
-                                                  "cornerRadius": [
-                                                    0,
-                                                    4,
-                                                    4,
-                                                    0
-                                                  ]
-                                                }
-                                              ]
+                                              "id": "Md33a",
+                                              "layoutPosition": "absolute",
+                                              "x": 53,
+                                              "y": 16,
+                                              "name": "pill visual",
+                                              "width": 10,
+                                              "height": 160,
+                                              "fill": "$chart-2",
+                                              "cornerRadius": 9999
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "ut7Al",
+                                              "layoutPosition": "absolute",
+                                              "x": 54,
+                                              "y": 0,
+                                              "name": "val visual",
+                                              "fill": "$text",
+                                              "content": "12",
+                                              "lineHeight": 1,
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 12,
+                                              "fontWeight": "700"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "CG1np",
+                                              "layoutPosition": "absolute",
+                                              "x": 36,
+                                              "y": 188,
+                                              "name": "lab visual",
+                                              "fill": "$text-muted",
+                                              "content": "visual",
+                                              "lineHeight": 1,
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 12,
+                                              "fontWeight": "normal"
                                             },
                                             {
                                               "type": "frame",
-                                              "id": "T09IkA",
-                                              "name": "bar acceptance",
-                                              "width": "fill_container",
-                                              "layout": "vertical",
-                                              "gap": 6,
-                                              "children": [
-                                                {
-                                                  "type": "frame",
-                                                  "id": "L1q2rv",
-                                                  "name": "lab",
-                                                  "width": "fill_container",
-                                                  "justifyContent": "space_between",
-                                                  "children": [
-                                                    {
-                                                      "type": "text",
-                                                      "id": "uN9wr",
-                                                      "fill": "$text",
-                                                      "content": "acceptance",
-                                                      "lineHeight": 1.5,
-                                                      "fontFamily": "$font-mono",
-                                                      "fontSize": 12,
-                                                      "fontWeight": "normal"
-                                                    },
-                                                    {
-                                                      "type": "text",
-                                                      "id": "JDiV1",
-                                                      "fill": "$text",
-                                                      "content": "2",
-                                                      "lineHeight": 1.5,
-                                                      "fontFamily": "$font-mono",
-                                                      "fontSize": 12,
-                                                      "fontWeight": "700"
-                                                    }
-                                                  ]
-                                                },
-                                                {
-                                                  "type": "frame",
-                                                  "id": "bgXaS",
-                                                  "name": "Bar",
-                                                  "width": 44,
-                                                  "height": 8,
-                                                  "fill": "$chart-3",
-                                                  "cornerRadius": [
-                                                    0,
-                                                    4,
-                                                    4,
-                                                    0
-                                                  ]
-                                                }
-                                              ]
+                                              "id": "fwqGh",
+                                              "layoutPosition": "absolute",
+                                              "x": 112,
+                                              "y": 56,
+                                              "name": "pill code",
+                                              "width": 10,
+                                              "height": 120,
+                                              "fill": "$chart",
+                                              "cornerRadius": 9999
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "gDrov",
+                                              "layoutPosition": "absolute",
+                                              "x": 113,
+                                              "y": 40,
+                                              "name": "val code",
+                                              "fill": "$text",
+                                              "content": "9",
+                                              "lineHeight": 1,
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 12,
+                                              "fontWeight": "700"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "s6GXd",
+                                              "layoutPosition": "absolute",
+                                              "x": 102,
+                                              "y": 188,
+                                              "name": "lab code",
+                                              "fill": "$text-muted",
+                                              "content": "code",
+                                              "lineHeight": 1,
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 12,
+                                              "fontWeight": "normal"
                                             },
                                             {
                                               "type": "frame",
-                                              "id": "JXYCD",
-                                              "name": "bar health",
-                                              "width": "fill_container",
-                                              "layout": "vertical",
-                                              "gap": 6,
-                                              "children": [
-                                                {
-                                                  "type": "frame",
-                                                  "id": "I2hlZW",
-                                                  "name": "lab",
-                                                  "width": "fill_container",
-                                                  "justifyContent": "space_between",
-                                                  "children": [
-                                                    {
-                                                      "type": "text",
-                                                      "id": "d4Nj9",
-                                                      "fill": "$text",
-                                                      "content": "health",
-                                                      "lineHeight": 1.5,
-                                                      "fontFamily": "$font-mono",
-                                                      "fontSize": 12,
-                                                      "fontWeight": "normal"
-                                                    },
-                                                    {
-                                                      "type": "text",
-                                                      "id": "z6vlR2",
-                                                      "fill": "$text",
-                                                      "content": "0",
-                                                      "lineHeight": 1.5,
-                                                      "fontFamily": "$font-mono",
-                                                      "fontSize": 12,
-                                                      "fontWeight": "700"
-                                                    }
-                                                  ]
-                                                },
-                                                {
-                                                  "type": "rectangle",
-                                                  "id": "R2mkS",
-                                                  "name": "zero",
-                                                  "fill": "$border-strong",
-                                                  "width": 2,
-                                                  "height": 8
-                                                }
-                                              ]
+                                              "id": "kLlCj",
+                                              "layoutPosition": "absolute",
+                                              "x": 171,
+                                              "y": 149,
+                                              "name": "pill acceptance",
+                                              "width": 10,
+                                              "height": 27,
+                                              "fill": "$chart-3",
+                                              "cornerRadius": 9999
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "vYaBw",
+                                              "layoutPosition": "absolute",
+                                              "x": 172,
+                                              "y": 133,
+                                              "name": "val acceptance",
+                                              "fill": "$text",
+                                              "content": "2",
+                                              "lineHeight": 1,
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 12,
+                                              "fontWeight": "700"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "XP7EW",
+                                              "layoutPosition": "absolute",
+                                              "x": 150,
+                                              "y": 188,
+                                              "name": "lab acceptance",
+                                              "fill": "$text-muted",
+                                              "content": "accept.",
+                                              "lineHeight": 1,
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 12,
+                                              "fontWeight": "normal"
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "tboLh",
+                                              "layoutPosition": "absolute",
+                                              "x": 230,
+                                              "y": 166,
+                                              "name": "pill health",
+                                              "width": 10,
+                                              "height": 10,
+                                              "fill": "$chart-4",
+                                              "cornerRadius": 9999
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "awZaf",
+                                              "layoutPosition": "absolute",
+                                              "x": 231,
+                                              "y": 150,
+                                              "name": "val health",
+                                              "fill": "$text",
+                                              "content": "0",
+                                              "lineHeight": 1,
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 12,
+                                              "fontWeight": "700"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "CpcTB",
+                                              "layoutPosition": "absolute",
+                                              "x": 213,
+                                              "y": 188,
+                                              "name": "lab health",
+                                              "fill": "$text-muted",
+                                              "content": "health",
+                                              "lineHeight": 1,
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 12,
+                                              "fontWeight": "normal"
                                             }
                                           ]
                                         }
@@ -3086,7 +3136,7 @@
                                               "name": "Meter",
                                               "clip": true,
                                               "width": 539,
-                                              "height": 10,
+                                              "height": 6,
                                               "fill": "$danger-surface",
                                               "cornerRadius": 9999,
                                               "children": [
@@ -3095,7 +3145,7 @@
                                                   "id": "lr9yT",
                                                   "name": "Meter fill",
                                                   "width": 522,
-                                                  "height": 10,
+                                                  "height": 6,
                                                   "fill": "$chart-2",
                                                   "cornerRadius": 9999
                                                 }
@@ -3199,7 +3249,7 @@
                                               "name": "Meter",
                                               "clip": true,
                                               "width": 539,
-                                              "height": 10,
+                                              "height": 6,
                                               "fill": "$danger-surface",
                                               "cornerRadius": 9999,
                                               "children": [
@@ -3208,7 +3258,7 @@
                                                   "id": "EGK3V",
                                                   "name": "Meter fill",
                                                   "width": 61,
-                                                  "height": 10,
+                                                  "height": 6,
                                                   "fill": "$chart-2",
                                                   "cornerRadius": 9999
                                                 }
@@ -3312,7 +3362,7 @@
                                               "name": "Meter",
                                               "clip": true,
                                               "width": 539,
-                                              "height": 10,
+                                              "height": 6,
                                               "fill": "$danger-surface",
                                               "cornerRadius": 9999,
                                               "children": [
@@ -3321,7 +3371,7 @@
                                                   "id": "Wp5yT",
                                                   "name": "Meter fill",
                                                   "width": 294,
-                                                  "height": 10,
+                                                  "height": 6,
                                                   "fill": "$chart-2",
                                                   "cornerRadius": 9999
                                                 }
@@ -3425,7 +3475,7 @@
                                               "name": "Meter",
                                               "clip": true,
                                               "width": 539,
-                                              "height": 10,
+                                              "height": 6,
                                               "fill": "$danger-surface",
                                               "cornerRadius": 9999,
                                               "children": [
@@ -3434,7 +3484,7 @@
                                                   "id": "wLATB",
                                                   "name": "Meter fill",
                                                   "width": 404,
-                                                  "height": 10,
+                                                  "height": 6,
                                                   "fill": "$chart-2",
                                                   "cornerRadius": 9999
                                                 }
@@ -4308,7 +4358,7 @@
                                               "cornerRadius": 2,
                                               "id": "qGpIu",
                                               "name": "swatch",
-                                              "fill": "$text-muted",
+                                              "fill": "$chart-4",
                                               "width": 14,
                                               "height": 3
                                             },
@@ -4683,7 +4733,7 @@
                                           ],
                                           "width": 815,
                                           "height": 204,
-                                          "stroke": "$text-muted",
+                                          "stroke": "$chart-4",
                                           "strokeWidth": 2
                                         },
                                         {
@@ -4693,7 +4743,7 @@
                                           "x": 851,
                                           "y": 22.359999999999985,
                                           "name": "last",
-                                          "fill": "$text-muted",
+                                          "fill": "$chart-4",
                                           "width": 8,
                                           "height": 8
                                         },
@@ -12232,7 +12282,7 @@
                   ]
                 },
                 {
-                  "id": "riyz7",
+                  "id": "gDxty",
                   "type": "ref",
                   "ref": "gq6XC",
                   "name": "screens__desktop__dark__screens-repo-coverage-home--stale",
@@ -12250,7 +12300,7 @@
                   "reusable": true,
                   "clip": true,
                   "width": 390,
-                  "height": 10502,
+                  "height": 10500,
                   "fill": "$bg",
                   "layout": "none",
                   "children": [
@@ -13038,7 +13088,7 @@
                                       "name": "Meter",
                                       "clip": true,
                                       "width": 318,
-                                      "height": 10,
+                                      "height": 6,
                                       "fill": "$chart-tint",
                                       "cornerRadius": 9999,
                                       "children": [
@@ -13047,7 +13097,7 @@
                                           "id": "DXxAN",
                                           "name": "Meter fill",
                                           "width": 99,
-                                          "height": 10,
+                                          "height": 6,
                                           "fill": "$chart",
                                           "cornerRadius": 9999
                                         }
@@ -13182,7 +13232,7 @@
                                       "name": "Meter",
                                       "clip": true,
                                       "width": 318,
-                                      "height": 10,
+                                      "height": 6,
                                       "fill": "$chart-2-tint",
                                       "cornerRadius": 9999,
                                       "children": [
@@ -13191,7 +13241,7 @@
                                           "id": "S1rKi",
                                           "name": "Meter fill",
                                           "width": 242,
-                                          "height": 10,
+                                          "height": 6,
                                           "fill": "$chart-2",
                                           "cornerRadius": 9999
                                         }
@@ -13326,7 +13376,7 @@
                                       "name": "Meter",
                                       "clip": true,
                                       "width": 318,
-                                      "height": 10,
+                                      "height": 6,
                                       "fill": "$chart-3-tint",
                                       "cornerRadius": 9999,
                                       "children": [
@@ -13335,7 +13385,7 @@
                                           "id": "btW7E",
                                           "name": "Meter fill",
                                           "width": 159,
-                                          "height": 10,
+                                          "height": 6,
                                           "fill": "$chart-3",
                                           "cornerRadius": 9999
                                         }
@@ -13389,7 +13439,7 @@
                                                   "type": "ellipse",
                                                   "id": "GUhKj",
                                                   "name": "key",
-                                                  "fill": "$text-muted",
+                                                  "fill": "$chart-4",
                                                   "width": 10,
                                                   "height": 10
                                                 },
@@ -13470,8 +13520,8 @@
                                       "name": "Meter",
                                       "clip": true,
                                       "width": 318,
-                                      "height": 10,
-                                      "fill": "$bg-muted",
+                                      "height": 6,
+                                      "fill": "$chart-4-tint",
                                       "cornerRadius": 9999,
                                       "children": [
                                         {
@@ -13479,8 +13529,8 @@
                                           "id": "zVRhk",
                                           "name": "Meter fill",
                                           "width": 289,
-                                          "height": 10,
-                                          "fill": "$text-muted",
+                                          "height": 6,
+                                          "fill": "$chart-4",
                                           "cornerRadius": 9999
                                         }
                                       ]
@@ -13718,7 +13768,7 @@
                             },
                             {
                               "type": "frame",
-                              "id": "tLDM3",
+                              "id": "SP6AK",
                               "name": "Card gaps by dimension",
                               "width": "fill_container",
                               "fill": "$bg-subtle",
@@ -13731,7 +13781,7 @@
                               "children": [
                                 {
                                   "type": "frame",
-                                  "id": "bUre0",
+                                  "id": "cASi4",
                                   "name": "card heading",
                                   "width": "fill_container",
                                   "layout": "vertical",
@@ -13739,7 +13789,7 @@
                                   "children": [
                                     {
                                       "type": "text",
-                                      "id": "ojc2p",
+                                      "id": "AciGa",
                                       "fill": "$text-muted",
                                       "content": "GAPS BY DIMENSION",
                                       "lineHeight": 1.25,
@@ -13750,7 +13800,7 @@
                                     },
                                     {
                                       "type": "text",
-                                      "id": "l2KcI2",
+                                      "id": "tlGrF",
                                       "fill": "$text-muted",
                                       "textGrowth": "fixed-width",
                                       "width": "fill_container",
@@ -13764,217 +13814,267 @@
                                 },
                                 {
                                   "type": "frame",
-                                  "id": "eRtEV",
-                                  "name": "bars",
-                                  "width": "fill_container",
-                                  "layout": "vertical",
-                                  "gap": 14,
+                                  "id": "QAG3y",
+                                  "name": "GapPills",
+                                  "width": 318,
+                                  "height": 200,
+                                  "layout": "none",
                                   "children": [
                                     {
-                                      "type": "frame",
-                                      "id": "OrpcD",
-                                      "name": "bar visual",
-                                      "width": "fill_container",
-                                      "layout": "vertical",
-                                      "gap": 6,
-                                      "children": [
-                                        {
-                                          "type": "frame",
-                                          "id": "WDifZ",
-                                          "name": "lab",
-                                          "width": "fill_container",
-                                          "justifyContent": "space_between",
-                                          "children": [
-                                            {
-                                              "type": "text",
-                                              "id": "PamFk",
-                                              "fill": "$text",
-                                              "content": "visual",
-                                              "lineHeight": 1.5,
-                                              "fontFamily": "$font-mono",
-                                              "fontSize": 12,
-                                              "fontWeight": "normal"
-                                            },
-                                            {
-                                              "type": "text",
-                                              "id": "JKqZQ",
-                                              "fill": "$text",
-                                              "content": "12",
-                                              "lineHeight": 1.5,
-                                              "fontFamily": "$font-mono",
-                                              "fontSize": 12,
-                                              "fontWeight": "700"
-                                            }
-                                          ]
-                                        },
-                                        {
-                                          "type": "frame",
-                                          "id": "jfGNA",
-                                          "name": "Bar",
-                                          "width": 318,
-                                          "height": 8,
-                                          "fill": "$chart-2",
-                                          "cornerRadius": [
-                                            0,
-                                            4,
-                                            4,
-                                            0
-                                          ]
-                                        }
-                                      ]
+                                      "type": "rectangle",
+                                      "id": "MUgdC",
+                                      "layoutPosition": "absolute",
+                                      "x": 28,
+                                      "y": 176,
+                                      "name": "grid",
+                                      "fill": "$border",
+                                      "width": 290,
+                                      "height": 1
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "MKVNQ",
+                                      "layoutPosition": "absolute",
+                                      "x": 0,
+                                      "y": 170,
+                                      "fill": "$text-muted",
+                                      "content": "0",
+                                      "lineHeight": 1,
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "rectangle",
+                                      "id": "ila5e",
+                                      "layoutPosition": "absolute",
+                                      "x": 28,
+                                      "y": 123,
+                                      "name": "grid",
+                                      "fill": "$border",
+                                      "width": 290,
+                                      "height": 1
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "k3wLK",
+                                      "layoutPosition": "absolute",
+                                      "x": 0,
+                                      "y": 117,
+                                      "fill": "$text-muted",
+                                      "content": "4",
+                                      "lineHeight": 1,
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "rectangle",
+                                      "id": "F7sGl",
+                                      "layoutPosition": "absolute",
+                                      "x": 28,
+                                      "y": 69,
+                                      "name": "grid",
+                                      "fill": "$border",
+                                      "width": 290,
+                                      "height": 1
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "f6slUp",
+                                      "layoutPosition": "absolute",
+                                      "x": 0,
+                                      "y": 63,
+                                      "fill": "$text-muted",
+                                      "content": "8",
+                                      "lineHeight": 1,
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "rectangle",
+                                      "id": "mBNMs",
+                                      "layoutPosition": "absolute",
+                                      "x": 28,
+                                      "y": 16,
+                                      "name": "grid",
+                                      "fill": "$border",
+                                      "width": 290,
+                                      "height": 1
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "djGM8",
+                                      "layoutPosition": "absolute",
+                                      "x": 0,
+                                      "y": 10,
+                                      "fill": "$text-muted",
+                                      "content": "12",
+                                      "lineHeight": 1,
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
                                     },
                                     {
                                       "type": "frame",
-                                      "id": "F5IxAB",
-                                      "name": "bar code",
-                                      "width": "fill_container",
-                                      "layout": "vertical",
-                                      "gap": 6,
-                                      "children": [
-                                        {
-                                          "type": "frame",
-                                          "id": "A4FkV",
-                                          "name": "lab",
-                                          "width": "fill_container",
-                                          "justifyContent": "space_between",
-                                          "children": [
-                                            {
-                                              "type": "text",
-                                              "id": "H7KcT",
-                                              "fill": "$text",
-                                              "content": "code",
-                                              "lineHeight": 1.5,
-                                              "fontFamily": "$font-mono",
-                                              "fontSize": 12,
-                                              "fontWeight": "normal"
-                                            },
-                                            {
-                                              "type": "text",
-                                              "id": "e6OULZ",
-                                              "fill": "$text",
-                                              "content": "9",
-                                              "lineHeight": 1.5,
-                                              "fontFamily": "$font-mono",
-                                              "fontSize": 12,
-                                              "fontWeight": "700"
-                                            }
-                                          ]
-                                        },
-                                        {
-                                          "type": "frame",
-                                          "id": "xcYyt",
-                                          "name": "Bar",
-                                          "width": 239,
-                                          "height": 8,
-                                          "fill": "$chart",
-                                          "cornerRadius": [
-                                            0,
-                                            4,
-                                            4,
-                                            0
-                                          ]
-                                        }
-                                      ]
+                                      "id": "J8NA4",
+                                      "layoutPosition": "absolute",
+                                      "x": 59,
+                                      "y": 16,
+                                      "name": "pill visual",
+                                      "width": 10,
+                                      "height": 160,
+                                      "fill": "$chart-2",
+                                      "cornerRadius": 9999
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "ZT4yh",
+                                      "layoutPosition": "absolute",
+                                      "x": 60,
+                                      "y": 0,
+                                      "name": "val visual",
+                                      "fill": "$text",
+                                      "content": "12",
+                                      "lineHeight": 1,
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "700"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "v6gEU",
+                                      "layoutPosition": "absolute",
+                                      "x": 43,
+                                      "y": 188,
+                                      "name": "lab visual",
+                                      "fill": "$text-muted",
+                                      "content": "visual",
+                                      "lineHeight": 1,
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
                                     },
                                     {
                                       "type": "frame",
-                                      "id": "Z9JeSh",
-                                      "name": "bar acceptance",
-                                      "width": "fill_container",
-                                      "layout": "vertical",
-                                      "gap": 6,
-                                      "children": [
-                                        {
-                                          "type": "frame",
-                                          "id": "r5xxv",
-                                          "name": "lab",
-                                          "width": "fill_container",
-                                          "justifyContent": "space_between",
-                                          "children": [
-                                            {
-                                              "type": "text",
-                                              "id": "UnNnD",
-                                              "fill": "$text",
-                                              "content": "acceptance",
-                                              "lineHeight": 1.5,
-                                              "fontFamily": "$font-mono",
-                                              "fontSize": 12,
-                                              "fontWeight": "normal"
-                                            },
-                                            {
-                                              "type": "text",
-                                              "id": "cr05x",
-                                              "fill": "$text",
-                                              "content": "2",
-                                              "lineHeight": 1.5,
-                                              "fontFamily": "$font-mono",
-                                              "fontSize": 12,
-                                              "fontWeight": "700"
-                                            }
-                                          ]
-                                        },
-                                        {
-                                          "type": "frame",
-                                          "id": "lm9II",
-                                          "name": "Bar",
-                                          "width": 53,
-                                          "height": 8,
-                                          "fill": "$chart-3",
-                                          "cornerRadius": [
-                                            0,
-                                            4,
-                                            4,
-                                            0
-                                          ]
-                                        }
-                                      ]
+                                      "id": "sHErz",
+                                      "layoutPosition": "absolute",
+                                      "x": 132,
+                                      "y": 56,
+                                      "name": "pill code",
+                                      "width": 10,
+                                      "height": 120,
+                                      "fill": "$chart",
+                                      "cornerRadius": 9999
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "yGFrJ",
+                                      "layoutPosition": "absolute",
+                                      "x": 133,
+                                      "y": 40,
+                                      "name": "val code",
+                                      "fill": "$text",
+                                      "content": "9",
+                                      "lineHeight": 1,
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "700"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "pXjyt",
+                                      "layoutPosition": "absolute",
+                                      "x": 122,
+                                      "y": 188,
+                                      "name": "lab code",
+                                      "fill": "$text-muted",
+                                      "content": "code",
+                                      "lineHeight": 1,
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
                                     },
                                     {
                                       "type": "frame",
-                                      "id": "sJFwS",
-                                      "name": "bar health",
-                                      "width": "fill_container",
-                                      "layout": "vertical",
-                                      "gap": 6,
-                                      "children": [
-                                        {
-                                          "type": "frame",
-                                          "id": "xxjCY",
-                                          "name": "lab",
-                                          "width": "fill_container",
-                                          "justifyContent": "space_between",
-                                          "children": [
-                                            {
-                                              "type": "text",
-                                              "id": "UaL51",
-                                              "fill": "$text",
-                                              "content": "health",
-                                              "lineHeight": 1.5,
-                                              "fontFamily": "$font-mono",
-                                              "fontSize": 12,
-                                              "fontWeight": "normal"
-                                            },
-                                            {
-                                              "type": "text",
-                                              "id": "M5NPoT",
-                                              "fill": "$text",
-                                              "content": "0",
-                                              "lineHeight": 1.5,
-                                              "fontFamily": "$font-mono",
-                                              "fontSize": 12,
-                                              "fontWeight": "700"
-                                            }
-                                          ]
-                                        },
-                                        {
-                                          "type": "rectangle",
-                                          "id": "TQEeh",
-                                          "name": "zero",
-                                          "fill": "$border-strong",
-                                          "width": 2,
-                                          "height": 8
-                                        }
-                                      ]
+                                      "id": "dnslt",
+                                      "layoutPosition": "absolute",
+                                      "x": 204,
+                                      "y": 149,
+                                      "name": "pill acceptance",
+                                      "width": 10,
+                                      "height": 27,
+                                      "fill": "$chart-3",
+                                      "cornerRadius": 9999
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "F3UI8",
+                                      "layoutPosition": "absolute",
+                                      "x": 205,
+                                      "y": 133,
+                                      "name": "val acceptance",
+                                      "fill": "$text",
+                                      "content": "2",
+                                      "lineHeight": 1,
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "700"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "LCrSV",
+                                      "layoutPosition": "absolute",
+                                      "x": 184,
+                                      "y": 188,
+                                      "name": "lab acceptance",
+                                      "fill": "$text-muted",
+                                      "content": "accept.",
+                                      "lineHeight": 1,
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "kl5k2",
+                                      "layoutPosition": "absolute",
+                                      "x": 277,
+                                      "y": 166,
+                                      "name": "pill health",
+                                      "width": 10,
+                                      "height": 10,
+                                      "fill": "$chart-4",
+                                      "cornerRadius": 9999
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "oNYC0",
+                                      "layoutPosition": "absolute",
+                                      "x": 278,
+                                      "y": 150,
+                                      "name": "val health",
+                                      "fill": "$text",
+                                      "content": "0",
+                                      "lineHeight": 1,
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "700"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "c1iPS",
+                                      "layoutPosition": "absolute",
+                                      "x": 260,
+                                      "y": 188,
+                                      "name": "lab health",
+                                      "fill": "$text-muted",
+                                      "content": "health",
+                                      "lineHeight": 1,
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
                                     }
                                   ]
                                 }
@@ -14137,7 +14237,7 @@
                                       "name": "Meter",
                                       "clip": true,
                                       "width": 318,
-                                      "height": 10,
+                                      "height": 6,
                                       "fill": "$danger-surface",
                                       "cornerRadius": 9999,
                                       "children": [
@@ -14146,7 +14246,7 @@
                                           "id": "Nv5a1",
                                           "name": "Meter fill",
                                           "width": 308,
-                                          "height": 10,
+                                          "height": 6,
                                           "fill": "$chart-2",
                                           "cornerRadius": 9999
                                         }
@@ -14248,7 +14348,7 @@
                                       "name": "Meter",
                                       "clip": true,
                                       "width": 318,
-                                      "height": 10,
+                                      "height": 6,
                                       "fill": "$danger-surface",
                                       "cornerRadius": 9999,
                                       "children": [
@@ -14257,7 +14357,7 @@
                                           "id": "oH8Ub",
                                           "name": "Meter fill",
                                           "width": 36,
-                                          "height": 10,
+                                          "height": 6,
                                           "fill": "$chart-2",
                                           "cornerRadius": 9999
                                         }
@@ -14359,7 +14459,7 @@
                                       "name": "Meter",
                                       "clip": true,
                                       "width": 318,
-                                      "height": 10,
+                                      "height": 6,
                                       "fill": "$danger-surface",
                                       "cornerRadius": 9999,
                                       "children": [
@@ -14368,7 +14468,7 @@
                                           "id": "zC1H4",
                                           "name": "Meter fill",
                                           "width": 173,
-                                          "height": 10,
+                                          "height": 6,
                                           "fill": "$chart-2",
                                           "cornerRadius": 9999
                                         }
@@ -14470,7 +14570,7 @@
                                       "name": "Meter",
                                       "clip": true,
                                       "width": 318,
-                                      "height": 10,
+                                      "height": 6,
                                       "fill": "$danger-surface",
                                       "cornerRadius": 9999,
                                       "children": [
@@ -14479,7 +14579,7 @@
                                           "id": "rWNlP",
                                           "name": "Meter fill",
                                           "width": 239,
-                                          "height": 10,
+                                          "height": 6,
                                           "fill": "$chart-2",
                                           "cornerRadius": 9999
                                         }
@@ -15335,7 +15435,7 @@
                                           "cornerRadius": 2,
                                           "id": "QGuKZ",
                                           "name": "swatch",
-                                          "fill": "$text-muted",
+                                          "fill": "$chart-4",
                                           "width": 14,
                                           "height": 3
                                         },
@@ -15618,7 +15718,7 @@
                                       ],
                                       "width": 270,
                                       "height": 144,
-                                      "stroke": "$text-muted",
+                                      "stroke": "$chart-4",
                                       "strokeWidth": 2
                                     },
                                     {
@@ -15628,7 +15728,7 @@
                                       "x": 306,
                                       "y": 16.960000000000008,
                                       "name": "last",
-                                      "fill": "$text-muted",
+                                      "fill": "$chart-4",
                                       "width": 8,
                                       "height": 8
                                     }
@@ -22714,7 +22814,7 @@
                   ]
                 },
                 {
-                  "id": "XXX1T",
+                  "id": "ID2ti",
                   "type": "ref",
                   "ref": "O8W6s",
                   "name": "screens__mobile__dark__screens-repo-coverage-home--stale",
@@ -23546,7 +23646,7 @@
                   ]
                 },
                 {
-                  "id": "fRdRJ",
+                  "id": "h0JfYE",
                   "type": "ref",
                   "ref": "zPbxP",
                   "name": "screens__desktop__dark__screens-repo-coverage-home--empty",
@@ -23888,7 +23988,7 @@
                   ]
                 },
                 {
-                  "id": "BCQmG",
+                  "id": "QfxuR",
                   "type": "ref",
                   "ref": "C3zK0",
                   "name": "screens__mobile__dark__screens-repo-coverage-home--empty",
@@ -24592,13 +24692,13 @@
       "type": "color",
       "value": [
         {
-          "value": "#C9B6D7",
+          "value": "#CDB8CF",
           "theme": {
             "mode": "light"
           }
         },
         {
-          "value": "#3A2F4C",
+          "value": "#3F3454",
           "theme": {
             "mode": "dark"
           }

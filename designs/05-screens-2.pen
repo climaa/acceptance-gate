@@ -6423,13 +6423,13 @@
       "type": "color",
       "value": [
         {
-          "value": "#C9B6D7",
+          "value": "#CDB8CF",
           "theme": {
             "mode": "light"
           }
         },
         {
-          "value": "#3A2F4C",
+          "value": "#3F3454",
           "theme": {
             "mode": "dark"
           }

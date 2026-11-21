@@ -2044,7 +2044,7 @@
                                           "clip": true,
                                           "width": "fill_container",
                                           "height": 8,
-                                          "fill": "$bg-muted",
+                                          "fill": "$chart-4-tint",
                                           "cornerRadius": 9999,
                                           "children": [
                                             {
@@ -2053,7 +2053,7 @@
                                               "name": "Meter fill",
                                               "width": "fill_container",
                                               "height": 8,
-                                              "fill": "$text-muted",
+                                              "fill": "$chart-4",
                                               "cornerRadius": 9999
                                             }
                                           ]
@@ -8449,7 +8449,7 @@
                   ]
                 },
                 {
-                  "id": "ZyPQs",
+                  "id": "kEGJR",
                   "type": "ref",
                   "ref": "Z1Bb90",
                   "name": "screens__desktop__dark__screens-repo-coverage-workspace--sample",
@@ -9261,7 +9261,7 @@
                                       "clip": true,
                                       "width": 141,
                                       "height": 8,
-                                      "fill": "$bg-muted",
+                                      "fill": "$chart-4-tint",
                                       "cornerRadius": 9999,
                                       "children": [
                                         {
@@ -9270,7 +9270,7 @@
                                           "name": "Meter fill",
                                           "width": 141,
                                           "height": 8,
-                                          "fill": "$text-muted",
+                                          "fill": "$chart-4",
                                           "cornerRadius": 9999
                                         }
                                       ]
@@ -14956,7 +14956,7 @@
                   ]
                 },
                 {
-                  "id": "bwmqZ",
+                  "id": "aB6VY",
                   "type": "ref",
                   "ref": "xndlv",
                   "name": "screens__mobile__dark__screens-repo-coverage-workspace--sample",
@@ -16947,7 +16947,7 @@
                                           "clip": true,
                                           "width": "fill_container",
                                           "height": 8,
-                                          "fill": "$bg-muted",
+                                          "fill": "$chart-4-tint",
                                           "cornerRadius": 9999,
                                           "children": [
                                             {
@@ -16956,7 +16956,7 @@
                                               "name": "Meter fill",
                                               "width": "fill_container",
                                               "height": 8,
-                                              "fill": "$text-muted",
+                                              "fill": "$chart-4",
                                               "cornerRadius": 9999
                                             }
                                           ]
@@ -19658,7 +19658,7 @@
                   ]
                 },
                 {
-                  "id": "lVspW",
+                  "id": "sJTOF",
                   "type": "ref",
                   "ref": "NrCwq",
                   "name": "screens__desktop__dark__screens-repo-coverage-workspace--unmeasured",
@@ -20439,7 +20439,7 @@
                                       "clip": true,
                                       "width": 141,
                                       "height": 8,
-                                      "fill": "$bg-muted",
+                                      "fill": "$chart-4-tint",
                                       "cornerRadius": 9999,
                                       "children": [
                                         {
@@ -20448,7 +20448,7 @@
                                           "name": "Meter fill",
                                           "width": 141,
                                           "height": 8,
-                                          "fill": "$text-muted",
+                                          "fill": "$chart-4",
                                           "cornerRadius": 9999
                                         }
                                       ]
@@ -23134,7 +23134,7 @@
                   ]
                 },
                 {
-                  "id": "tUYL8",
+                  "id": "r29uF",
                   "type": "ref",
                   "ref": "Y89Qnk",
                   "name": "screens__mobile__dark__screens-repo-coverage-workspace--unmeasured",
@@ -23838,13 +23838,13 @@
       "type": "color",
       "value": [
         {
-          "value": "#C9B6D7",
+          "value": "#CDB8CF",
           "theme": {
             "mode": "light"
           }
         },
         {
-          "value": "#3A2F4C",
+          "value": "#3F3454",
           "theme": {
             "mode": "dark"
           }
