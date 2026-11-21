@@ -136,6 +136,7 @@ _Avoid_: audit, lint, check — each already names something here.
 One measured property of one element in a token ledger, with its classification:
 a design token, a raw value on the scale, off-scale, or exempt.
 _Avoid_: finding, which belongs to axe; verdict, which belongs to a comparison.
+A measurement has _values_, never readings: the word stays the token ledger's.
 
 **off-scale**:
 A spacing value that is not a step of the spacing scale. A description of the
@@ -182,6 +183,37 @@ sets, reports and jobs. Always qualified; the bare name is ambiguous.
 Unqualified, one cell of the capture matrix — a tier, a viewport, a theme.
 Job modes and comparison modes are always qualified.
 _Avoid_: the bare word for a job tab or a viewer mode.
+
+## Measuring
+
+**measure**:
+The act of producing a measurement. A verb, never a noun.
+_Avoid_: audit, scan, collect.
+
+**measurement**:
+The committed file every dimension's numbers come from, at one commit. One per
+repository.
+_Avoid_: report, which is the console's; snapshot, which is retired; coverage,
+which is one dimension, not the whole.
+
+**history**:
+The committed list of earlier measurements' headline values, one point per
+measured commit.
+_Avoid_: log, timeline.
+
+**dimension**:
+One of the four things a measurement covers: Code, Visual, Acceptance, Health.
+_Layer_ survives only in prose, for a band of the testing pyramid figure.
+_Avoid_: layer, tier (atomic design's), mode.
+
+**category**:
+One of the three groups a workspace belongs to: packages, apps, scripts.
+_Avoid_: tier, group, area.
+
+**gap**:
+One thing a dimension expected and did not find, named by what is missing and
+where. Each one may become an issue.
+_Avoid_: hole; finding, which belongs to axe; violation; failure.
 
 ## Deprecated
 
