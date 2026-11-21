@@ -1,5 +1,5 @@
 {
-  "version": "2.21",
+  "version": "2.25",
   "children": [
     {
       "type": "frame",
@@ -134,7 +134,8 @@
                           "fill": "$text-muted",
                           "content": "acceptance-gate",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -145,7 +146,8 @@
                           "fill": "$text-muted",
                           "content": "/",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -168,7 +170,8 @@
                           "fill": "$text-muted",
                           "content": "the CLI is the engine — this page just drives it",
                           "fontFamily": "$font-body",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -179,7 +182,8 @@
                           "fill": "$text-muted",
                           "content": "Manual",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -259,7 +263,8 @@
                           "fill": "$text-muted",
                           "content": "a committed sample run — this instance has captured nothing of its own",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -280,7 +285,8 @@
                           "fill": "$text-muted",
                           "content": "← console",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -291,7 +297,8 @@
                           "fill": "$text",
                           "content": "main-2026-10-13__main-2026-09-17",
                           "fontFamily": "$font-mono",
-                          "fontSize": 24
+                          "fontSize": 24,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -337,7 +344,8 @@
                           "fill": "$text-muted",
                           "content": "A",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -348,7 +356,8 @@
                           "fill": "$text",
                           "content": "main-2026-10-13",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -359,7 +368,8 @@
                           "fill": "$text-muted",
                           "content": "c013d86",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -370,7 +380,8 @@
                           "fill": "$text-muted",
                           "content": "·",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -381,7 +392,8 @@
                           "fill": "$text-muted",
                           "content": "main",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -392,7 +404,8 @@
                           "fill": "$text-muted",
                           "content": "·",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -403,7 +416,8 @@
                           "fill": "$text-muted",
                           "content": "172",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -414,7 +428,8 @@
                           "fill": "$text-muted",
                           "content": "stories",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -425,7 +440,8 @@
                           "fill": "$text-muted",
                           "content": "B",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -436,7 +452,8 @@
                           "fill": "$text",
                           "content": "main-2026-09-17",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -447,7 +464,8 @@
                           "fill": "$text-muted",
                           "content": "a78c467",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -458,7 +476,8 @@
                           "fill": "$text-muted",
                           "content": "·",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -469,7 +488,8 @@
                           "fill": "$text-muted",
                           "content": "main",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -480,7 +500,8 @@
                           "fill": "$text-muted",
                           "content": "·",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -491,7 +512,8 @@
                           "fill": "$text-muted",
                           "content": "160",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -502,7 +524,8 @@
                           "fill": "$text-muted",
                           "content": "stories",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -513,7 +536,8 @@
                           "fill": "$text-muted",
                           "content": "report details",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -524,7 +548,8 @@
                           "fill": "$text-muted",
                           "content": "thresholds",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -535,7 +560,8 @@
                           "fill": "$text-muted",
                           "content": "40",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -546,7 +572,8 @@
                           "fill": "$text-muted",
                           "content": "px · ratio",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -557,7 +584,8 @@
                           "fill": "$text-muted",
                           "content": "0.0005",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -568,7 +596,8 @@
                           "fill": "$text-muted",
                           "content": "platform",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -579,7 +608,8 @@
                           "fill": "$text-muted",
                           "content": "darwin",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -590,7 +620,8 @@
                           "fill": "$text-muted",
                           "content": "arch",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -601,7 +632,8 @@
                           "fill": "$text-muted",
                           "content": "arm64",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -648,7 +680,8 @@
                           "fill": "$accent",
                           "content": "6",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -683,7 +716,8 @@
                           "fill": "$accent",
                           "content": "0",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -717,7 +751,8 @@
                           "fill": "$danger-fg",
                           "content": "12",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -751,7 +786,8 @@
                           "fill": "$danger-fg",
                           "content": "0",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -785,7 +821,8 @@
                           "fill": "$warning-fg",
                           "content": "0",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -820,7 +857,8 @@
                           "fill": "$text-muted",
                           "content": "154",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -854,7 +892,8 @@
                           "fill": "$text-muted",
                           "content": "172",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -885,7 +924,8 @@
                           "fill": "$text-muted",
                           "content": "title or",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -896,7 +936,8 @@
                           "fill": "$text-muted",
                           "content": "story id",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -930,7 +971,8 @@
                           "fill": "$text",
                           "content": "reviewed",
                           "fontFamily": "$font-mono",
-                          "fontSize": 16
+                          "fontSize": 16,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -941,7 +983,8 @@
                           "fill": "$text",
                           "content": "0",
                           "fontFamily": "$font-mono",
-                          "fontSize": 16
+                          "fontSize": 16,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -952,7 +995,8 @@
                           "fill": "$text",
                           "content": "/",
                           "fontFamily": "$font-mono",
-                          "fontSize": 16
+                          "fontSize": 16,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -963,7 +1007,8 @@
                           "fill": "$text",
                           "content": "18",
                           "fontFamily": "$font-mono",
-                          "fontSize": 16
+                          "fontSize": 16,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -985,7 +1030,8 @@
                           "fill": "$text-muted",
                           "content": "0",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -996,7 +1042,8 @@
                           "fill": "$text-muted",
                           "content": "%",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -1030,7 +1077,8 @@
                           "fill": "$text",
                           "content": "hide reviewed",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -1131,7 +1179,8 @@
                           "fill": "$text",
                           "content": "organisms",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -1142,7 +1191,8 @@
                           "fill": "$text-muted",
                           "content": "(",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -1153,7 +1203,8 @@
                           "fill": "$text-muted",
                           "content": "6",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -1164,7 +1215,8 @@
                           "fill": "$text-muted",
                           "content": ")",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -1175,7 +1227,8 @@
                           "fill": "$text-muted",
                           "content": "0",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -1186,7 +1239,8 @@
                           "fill": "$text-muted",
                           "content": "/",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -1197,7 +1251,8 @@
                           "fill": "$text-muted",
                           "content": "6",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -1208,7 +1263,8 @@
                           "fill": "$text-muted",
                           "content": "collapse",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -1219,7 +1275,8 @@
                           "fill": "$text-muted",
                           "content": "organisms",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -1288,7 +1345,8 @@
                           "fill": "$text",
                           "content": "reviewed",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -1323,7 +1381,8 @@
                           "fill": "$accent",
                           "content": "4",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -1346,7 +1405,8 @@
                           "fill": "$text",
                           "content": "worst",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -1357,7 +1417,8 @@
                           "fill": "$text",
                           "content": "14,136",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -1368,7 +1429,8 @@
                           "fill": "$text",
                           "content": "px",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -1379,7 +1441,8 @@
                           "fill": "$text-muted",
                           "content": "organisms-dialog--open",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -1424,7 +1487,8 @@
                           "fill": "$text",
                           "content": "desktop",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -1435,7 +1499,8 @@
                           "fill": "$text",
                           "content": "/",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -1446,7 +1511,8 @@
                           "fill": "$text",
                           "content": "light",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -1457,7 +1523,8 @@
                           "fill": "$text-muted",
                           "content": "14,136",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -1468,7 +1535,8 @@
                           "fill": "$text-muted",
                           "content": "px",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -1479,7 +1547,8 @@
                           "fill": "$text-muted",
                           "content": "differ in the shared area",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -1490,7 +1559,8 @@
                           "fill": "$accent",
                           "content": "baseline Storybook",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -1501,7 +1571,8 @@
                           "fill": "$text-muted",
                           "content": "A · main-2026-10-13",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -1535,7 +1606,8 @@
                           "fill": "$text-muted",
                           "content": "B · main-2026-09-17",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -1569,7 +1641,8 @@
                           "fill": "$text-muted",
                           "content": "diff",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -1626,7 +1699,8 @@
                           "fill": "$text",
                           "content": "blink",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -1660,7 +1734,8 @@
                           "fill": "$text",
                           "content": "slider overlay",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -1705,7 +1780,8 @@
                           "fill": "$text",
                           "content": "mobile",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -1716,7 +1792,8 @@
                           "fill": "$text",
                           "content": "/",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -1727,7 +1804,8 @@
                           "fill": "$text",
                           "content": "light",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -1738,7 +1816,8 @@
                           "fill": "$text-muted",
                           "content": "12,802",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -1749,7 +1828,8 @@
                           "fill": "$text-muted",
                           "content": "px",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -1760,7 +1840,8 @@
                           "fill": "$text-muted",
                           "content": "differ in the shared area",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -1771,7 +1852,8 @@
                           "fill": "$accent",
                           "content": "baseline Storybook",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -1782,7 +1864,8 @@
                           "fill": "$text-muted",
                           "content": "A · main-2026-10-13",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -1816,7 +1899,8 @@
                           "fill": "$text-muted",
                           "content": "B · main-2026-09-17",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -1850,7 +1934,8 @@
                           "fill": "$text-muted",
                           "content": "diff",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -1907,7 +1992,8 @@
                           "fill": "$text",
                           "content": "blink",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -1941,7 +2027,8 @@
                           "fill": "$text",
                           "content": "slider overlay",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -1986,7 +2073,8 @@
                           "fill": "$text",
                           "content": "desktop",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -1997,7 +2085,8 @@
                           "fill": "$text",
                           "content": "/",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -2008,7 +2097,8 @@
                           "fill": "$text",
                           "content": "dark",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -2019,7 +2109,8 @@
                           "fill": "$text-muted",
                           "content": "11,397",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -2030,7 +2121,8 @@
                           "fill": "$text-muted",
                           "content": "px",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -2041,7 +2133,8 @@
                           "fill": "$text-muted",
                           "content": "differ in the shared area",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -2052,7 +2145,8 @@
                           "fill": "$accent",
                           "content": "baseline Storybook",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -2063,7 +2157,8 @@
                           "fill": "$text-muted",
                           "content": "A · main-2026-10-13",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -2097,7 +2192,8 @@
                           "fill": "$text-muted",
                           "content": "B · main-2026-09-17",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -2131,7 +2227,8 @@
                           "fill": "$text-muted",
                           "content": "diff",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -2188,7 +2285,8 @@
                           "fill": "$text",
                           "content": "blink",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -2222,7 +2320,8 @@
                           "fill": "$text",
                           "content": "slider overlay",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -2267,7 +2366,8 @@
                           "fill": "$text",
                           "content": "mobile",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -2278,7 +2378,8 @@
                           "fill": "$text",
                           "content": "/",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -2289,7 +2390,8 @@
                           "fill": "$text",
                           "content": "dark",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -2300,7 +2402,8 @@
                           "fill": "$text-muted",
                           "content": "9,305",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -2311,7 +2414,8 @@
                           "fill": "$text-muted",
                           "content": "px",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -2322,7 +2426,8 @@
                           "fill": "$text-muted",
                           "content": "differ in the shared area",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -2333,7 +2438,8 @@
                           "fill": "$accent",
                           "content": "baseline Storybook",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -2344,7 +2450,8 @@
                           "fill": "$text-muted",
                           "content": "A · main-2026-10-13",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -2378,7 +2485,8 @@
                           "fill": "$text-muted",
                           "content": "B · main-2026-09-17",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -2412,7 +2520,8 @@
                           "fill": "$text-muted",
                           "content": "diff",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -2469,7 +2578,8 @@
                           "fill": "$text",
                           "content": "blink",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -2503,7 +2613,8 @@
                           "fill": "$text",
                           "content": "slider overlay",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -2572,7 +2683,8 @@
                           "fill": "$text",
                           "content": "reviewed",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -2607,7 +2719,8 @@
                           "fill": "$accent",
                           "content": "2",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -2630,7 +2743,8 @@
                           "fill": "$text",
                           "content": "worst",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -2641,7 +2755,8 @@
                           "fill": "$text",
                           "content": "53",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -2652,7 +2767,8 @@
                           "fill": "$text",
                           "content": "px",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -2663,7 +2779,8 @@
                           "fill": "$text-muted",
                           "content": "organisms-sitefooter--default",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -2708,7 +2825,8 @@
                           "fill": "$text",
                           "content": "mobile",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -2719,7 +2837,8 @@
                           "fill": "$text",
                           "content": "/",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -2730,7 +2849,8 @@
                           "fill": "$text",
                           "content": "light",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -2741,7 +2861,8 @@
                           "fill": "$text-muted",
                           "content": "53",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -2752,7 +2873,8 @@
                           "fill": "$text-muted",
                           "content": "px",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -2763,7 +2885,8 @@
                           "fill": "$text-muted",
                           "content": "differ in the shared area",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -2774,7 +2897,8 @@
                           "fill": "$accent",
                           "content": "baseline Storybook",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -2785,7 +2909,8 @@
                           "fill": "$text-muted",
                           "content": "A · main-2026-10-13",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -2819,7 +2944,8 @@
                           "fill": "$text-muted",
                           "content": "B · main-2026-09-17",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -2853,7 +2979,8 @@
                           "fill": "$text-muted",
                           "content": "diff",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -2910,7 +3037,8 @@
                           "fill": "$text",
                           "content": "blink",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -2944,7 +3072,8 @@
                           "fill": "$text",
                           "content": "slider overlay",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -2989,7 +3118,8 @@
                           "fill": "$text",
                           "content": "mobile",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -3000,7 +3130,8 @@
                           "fill": "$text",
                           "content": "/",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -3011,7 +3142,8 @@
                           "fill": "$text",
                           "content": "dark",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -3022,7 +3154,8 @@
                           "fill": "$text-muted",
                           "content": "52",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -3033,7 +3166,8 @@
                           "fill": "$text-muted",
                           "content": "px",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -3044,7 +3178,8 @@
                           "fill": "$text-muted",
                           "content": "differ in the shared area",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -3055,7 +3190,8 @@
                           "fill": "$accent",
                           "content": "baseline Storybook",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -3066,7 +3202,8 @@
                           "fill": "$text-muted",
                           "content": "A · main-2026-10-13",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -3100,7 +3237,8 @@
                           "fill": "$text-muted",
                           "content": "B · main-2026-09-17",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -3134,7 +3272,8 @@
                           "fill": "$text-muted",
                           "content": "diff",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -3191,7 +3330,8 @@
                           "fill": "$text",
                           "content": "blink",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -3225,7 +3365,8 @@
                           "fill": "$text",
                           "content": "slider overlay",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -3236,7 +3377,8 @@
                           "fill": "$text-muted",
                           "content": "no desktop rows — every desktop variant matched its baseline, and unchanged variants are counted, never written",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -3343,7 +3485,8 @@
                           "fill": "$text-muted",
                           "content": "acceptance-gate",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -3354,7 +3497,8 @@
                           "fill": "$text-muted",
                           "content": "/",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -3377,7 +3521,8 @@
                           "fill": "$text-muted",
                           "content": "the CLI is the engine — this page",
                           "fontFamily": "$font-body",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -3388,7 +3533,8 @@
                           "fill": "$text-muted",
                           "content": "just drives it",
                           "fontFamily": "$font-body",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -3399,7 +3545,8 @@
                           "fill": "$text-muted",
                           "content": "Manual",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -3479,7 +3626,8 @@
                           "fill": "$text-muted",
                           "content": "a committed sample run — this",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -3490,7 +3638,8 @@
                           "fill": "$text-muted",
                           "content": "instance has captured nothing of its",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -3501,7 +3650,8 @@
                           "fill": "$text-muted",
                           "content": "own",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -3522,7 +3672,8 @@
                           "fill": "$text-muted",
                           "content": "← console",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -3533,7 +3684,8 @@
                           "fill": "$text",
                           "content": "main-2026-10-13__main-",
                           "fontFamily": "$font-mono",
-                          "fontSize": 24
+                          "fontSize": 24,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -3544,7 +3696,8 @@
                           "fill": "$text",
                           "content": "2026-09-17",
                           "fontFamily": "$font-mono",
-                          "fontSize": 24
+                          "fontSize": 24,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -3590,7 +3743,8 @@
                           "fill": "$text-muted",
                           "content": "A",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -3601,7 +3755,8 @@
                           "fill": "$text",
                           "content": "main-2026-10-13",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -3612,7 +3767,8 @@
                           "fill": "$text-muted",
                           "content": "c013d86",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -3623,7 +3779,8 @@
                           "fill": "$text-muted",
                           "content": "·",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -3634,7 +3791,8 @@
                           "fill": "$text-muted",
                           "content": "main",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -3645,7 +3803,8 @@
                           "fill": "$text-muted",
                           "content": "·",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -3656,7 +3815,8 @@
                           "fill": "$text-muted",
                           "content": "172",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -3667,7 +3827,8 @@
                           "fill": "$text-muted",
                           "content": "stories",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -3678,7 +3839,8 @@
                           "fill": "$text-muted",
                           "content": "B",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -3689,7 +3851,8 @@
                           "fill": "$text",
                           "content": "main-2026-09-17",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -3700,7 +3863,8 @@
                           "fill": "$text-muted",
                           "content": "a78c467",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -3711,7 +3875,8 @@
                           "fill": "$text-muted",
                           "content": "·",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -3722,7 +3887,8 @@
                           "fill": "$text-muted",
                           "content": "main",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -3733,7 +3899,8 @@
                           "fill": "$text-muted",
                           "content": "·",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -3744,7 +3911,8 @@
                           "fill": "$text-muted",
                           "content": "160",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -3755,7 +3923,8 @@
                           "fill": "$text-muted",
                           "content": "stories",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -3766,7 +3935,8 @@
                           "fill": "$text-muted",
                           "content": "report details",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -3777,7 +3947,8 @@
                           "fill": "$text-muted",
                           "content": "thresholds",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -3788,7 +3959,8 @@
                           "fill": "$text-muted",
                           "content": "40",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -3799,7 +3971,8 @@
                           "fill": "$text-muted",
                           "content": "px · ratio",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -3810,7 +3983,8 @@
                           "fill": "$text-muted",
                           "content": "0.0005",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -3821,7 +3995,8 @@
                           "fill": "$text-muted",
                           "content": "platform",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -3832,7 +4007,8 @@
                           "fill": "$text-muted",
                           "content": "darwin",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -3843,7 +4019,8 @@
                           "fill": "$text-muted",
                           "content": "arch",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -3854,7 +4031,8 @@
                           "fill": "$text-muted",
                           "content": "arm64",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -3901,7 +4079,8 @@
                           "fill": "$accent",
                           "content": "6",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -3936,7 +4115,8 @@
                           "fill": "$accent",
                           "content": "0",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -3970,7 +4150,8 @@
                           "fill": "$danger-fg",
                           "content": "12",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -4004,7 +4185,8 @@
                           "fill": "$danger-fg",
                           "content": "0",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -4038,7 +4220,8 @@
                           "fill": "$warning-fg",
                           "content": "0",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -4073,7 +4256,8 @@
                           "fill": "$text-muted",
                           "content": "154",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -4107,7 +4291,8 @@
                           "fill": "$text-muted",
                           "content": "172",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -4138,7 +4323,8 @@
                           "fill": "$text-muted",
                           "content": "title or",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -4149,7 +4335,8 @@
                           "fill": "$text-muted",
                           "content": "story id",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -4183,7 +4370,8 @@
                           "fill": "$text",
                           "content": "reviewed",
                           "fontFamily": "$font-mono",
-                          "fontSize": 16
+                          "fontSize": 16,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -4194,7 +4382,8 @@
                           "fill": "$text",
                           "content": "0",
                           "fontFamily": "$font-mono",
-                          "fontSize": 16
+                          "fontSize": 16,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -4205,7 +4394,8 @@
                           "fill": "$text",
                           "content": "/",
                           "fontFamily": "$font-mono",
-                          "fontSize": 16
+                          "fontSize": 16,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -4216,7 +4406,8 @@
                           "fill": "$text",
                           "content": "18",
                           "fontFamily": "$font-mono",
-                          "fontSize": 16
+                          "fontSize": 16,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -4238,7 +4429,8 @@
                           "fill": "$text-muted",
                           "content": "0",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -4249,7 +4441,8 @@
                           "fill": "$text-muted",
                           "content": "%",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -4283,7 +4476,8 @@
                           "fill": "$text",
                           "content": "hide reviewed",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -4374,7 +4568,8 @@
                           "fill": "$text",
                           "content": "organisms",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -4385,7 +4580,8 @@
                           "fill": "$text-muted",
                           "content": "(",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -4396,7 +4592,8 @@
                           "fill": "$text-muted",
                           "content": "6",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -4407,7 +4604,8 @@
                           "fill": "$text-muted",
                           "content": ")",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -4418,7 +4616,8 @@
                           "fill": "$text-muted",
                           "content": "0",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -4429,7 +4628,8 @@
                           "fill": "$text-muted",
                           "content": "/",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -4440,7 +4640,8 @@
                           "fill": "$text-muted",
                           "content": "6",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -4451,7 +4652,8 @@
                           "fill": "$text-muted",
                           "content": "collapse",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -4462,7 +4664,8 @@
                           "fill": "$text-muted",
                           "content": "organisms",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -4508,7 +4711,8 @@
                           "fill": "$text",
                           "content": "reviewed",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -4543,7 +4747,8 @@
                           "fill": "$accent",
                           "content": "4",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -4566,7 +4771,8 @@
                           "fill": "$text",
                           "content": "worst",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -4577,7 +4783,8 @@
                           "fill": "$text",
                           "content": "14,136",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -4588,7 +4795,8 @@
                           "fill": "$text",
                           "content": "px",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -4599,7 +4807,8 @@
                           "fill": "$text-muted",
                           "content": "organisms-dialog--open",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -4644,7 +4853,8 @@
                           "fill": "$text",
                           "content": "desktop",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -4655,7 +4865,8 @@
                           "fill": "$text",
                           "content": "/",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -4666,7 +4877,8 @@
                           "fill": "$text",
                           "content": "light",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -4677,7 +4889,8 @@
                           "fill": "$text-muted",
                           "content": "14,136",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -4688,7 +4901,8 @@
                           "fill": "$text-muted",
                           "content": "px",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -4699,7 +4913,8 @@
                           "fill": "$text-muted",
                           "content": "differ in the shared area",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -4710,7 +4925,8 @@
                           "fill": "$accent",
                           "content": "baseline Storybook",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -4721,7 +4937,8 @@
                           "fill": "$text-muted",
                           "content": "A · main-2026-10-13",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -4755,7 +4972,8 @@
                           "fill": "$text-muted",
                           "content": "B · main-2026-09-17",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -4789,7 +5007,8 @@
                           "fill": "$text-muted",
                           "content": "diff",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -4846,7 +5065,8 @@
                           "fill": "$text",
                           "content": "blink",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -4880,7 +5100,8 @@
                           "fill": "$text",
                           "content": "slider overlay",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -4925,7 +5146,8 @@
                           "fill": "$text",
                           "content": "mobile",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -4936,7 +5158,8 @@
                           "fill": "$text",
                           "content": "/",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -4947,7 +5170,8 @@
                           "fill": "$text",
                           "content": "light",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -4958,7 +5182,8 @@
                           "fill": "$text-muted",
                           "content": "12,802",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -4969,7 +5194,8 @@
                           "fill": "$text-muted",
                           "content": "px",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -4980,7 +5206,8 @@
                           "fill": "$text-muted",
                           "content": "differ in the shared area",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -4991,7 +5218,8 @@
                           "fill": "$accent",
                           "content": "baseline Storybook",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -5002,7 +5230,8 @@
                           "fill": "$text-muted",
                           "content": "A · main-2026-10-13",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -5036,7 +5265,8 @@
                           "fill": "$text-muted",
                           "content": "B · main-2026-09-17",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -5070,7 +5300,8 @@
                           "fill": "$text-muted",
                           "content": "diff",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -5127,7 +5358,8 @@
                           "fill": "$text",
                           "content": "blink",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -5161,7 +5393,8 @@
                           "fill": "$text",
                           "content": "slider overlay",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -5206,7 +5439,8 @@
                           "fill": "$text",
                           "content": "desktop",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -5217,7 +5451,8 @@
                           "fill": "$text",
                           "content": "/",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -5228,7 +5463,8 @@
                           "fill": "$text",
                           "content": "dark",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -5239,7 +5475,8 @@
                           "fill": "$text-muted",
                           "content": "11,397",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -5250,7 +5487,8 @@
                           "fill": "$text-muted",
                           "content": "px",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -5261,7 +5499,8 @@
                           "fill": "$text-muted",
                           "content": "differ in the shared area",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -5272,7 +5511,8 @@
                           "fill": "$accent",
                           "content": "baseline Storybook",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -5283,7 +5523,8 @@
                           "fill": "$text-muted",
                           "content": "A · main-2026-10-13",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -5317,7 +5558,8 @@
                           "fill": "$text-muted",
                           "content": "B · main-2026-09-17",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -5351,7 +5593,8 @@
                           "fill": "$text-muted",
                           "content": "diff",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -5408,7 +5651,8 @@
                           "fill": "$text",
                           "content": "blink",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -5442,7 +5686,8 @@
                           "fill": "$text",
                           "content": "slider overlay",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -5487,7 +5732,8 @@
                           "fill": "$text",
                           "content": "mobile",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -5498,7 +5744,8 @@
                           "fill": "$text",
                           "content": "/",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -5509,7 +5756,8 @@
                           "fill": "$text",
                           "content": "dark",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -5520,7 +5768,8 @@
                           "fill": "$text-muted",
                           "content": "9,305",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -5531,7 +5780,8 @@
                           "fill": "$text-muted",
                           "content": "px",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -5542,7 +5792,8 @@
                           "fill": "$text-muted",
                           "content": "differ in the shared area",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -5553,7 +5804,8 @@
                           "fill": "$accent",
                           "content": "baseline Storybook",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -5564,7 +5816,8 @@
                           "fill": "$text-muted",
                           "content": "A · main-2026-10-13",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -5598,7 +5851,8 @@
                           "fill": "$text-muted",
                           "content": "B · main-2026-09-17",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -5632,7 +5886,8 @@
                           "fill": "$text-muted",
                           "content": "diff",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -5689,7 +5944,8 @@
                           "fill": "$text",
                           "content": "blink",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -5723,7 +5979,8 @@
                           "fill": "$text",
                           "content": "slider overlay",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -5769,7 +6026,8 @@
                           "fill": "$text",
                           "content": "reviewed",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -5804,7 +6062,8 @@
                           "fill": "$accent",
                           "content": "2",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -5827,7 +6086,8 @@
                           "fill": "$text",
                           "content": "worst",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -5838,7 +6098,8 @@
                           "fill": "$text",
                           "content": "53",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -5849,7 +6110,8 @@
                           "fill": "$text",
                           "content": "px",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -5860,7 +6122,8 @@
                           "fill": "$text-muted",
                           "content": "organisms-sitefooter--default",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -5905,7 +6168,8 @@
                           "fill": "$text",
                           "content": "mobile",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -5916,7 +6180,8 @@
                           "fill": "$text",
                           "content": "/",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -5927,7 +6192,8 @@
                           "fill": "$text",
                           "content": "light",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -5938,7 +6204,8 @@
                           "fill": "$text-muted",
                           "content": "53",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -5949,7 +6216,8 @@
                           "fill": "$text-muted",
                           "content": "px",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -5960,7 +6228,8 @@
                           "fill": "$text-muted",
                           "content": "differ in the shared area",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -5971,7 +6240,8 @@
                           "fill": "$accent",
                           "content": "baseline Storybook",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -5982,7 +6252,8 @@
                           "fill": "$text-muted",
                           "content": "A · main-2026-10-13",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -6016,7 +6287,8 @@
                           "fill": "$text-muted",
                           "content": "B · main-2026-09-17",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -6050,7 +6322,8 @@
                           "fill": "$text-muted",
                           "content": "diff",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -6107,7 +6380,8 @@
                           "fill": "$text",
                           "content": "blink",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -6141,7 +6415,8 @@
                           "fill": "$text",
                           "content": "slider overlay",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -6186,7 +6461,8 @@
                           "fill": "$text",
                           "content": "mobile",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -6197,7 +6473,8 @@
                           "fill": "$text",
                           "content": "/",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -6208,7 +6485,8 @@
                           "fill": "$text",
                           "content": "dark",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -6219,7 +6497,8 @@
                           "fill": "$text-muted",
                           "content": "52",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -6230,7 +6509,8 @@
                           "fill": "$text-muted",
                           "content": "px",
                           "fontFamily": "$font-mono",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -6241,7 +6521,8 @@
                           "fill": "$text-muted",
                           "content": "differ in the shared area",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -6252,7 +6533,8 @@
                           "fill": "$accent",
                           "content": "baseline Storybook",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -6263,7 +6545,8 @@
                           "fill": "$text-muted",
                           "content": "A · main-2026-10-13",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -6297,7 +6580,8 @@
                           "fill": "$text-muted",
                           "content": "B · main-2026-09-17",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -6331,7 +6615,8 @@
                           "fill": "$text-muted",
                           "content": "diff",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -6388,7 +6673,8 @@
                           "fill": "$text",
                           "content": "blink",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -6422,7 +6708,8 @@
                           "fill": "$text",
                           "content": "slider overlay",
                           "fontFamily": "$font-mono",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -6433,7 +6720,8 @@
                           "fill": "$text-muted",
                           "content": "no desktop rows — every desktop variant",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -6444,7 +6732,8 @@
                           "fill": "$text-muted",
                           "content": "matched its baseline, and unchanged variants",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -6455,7 +6744,8 @@
                           "fill": "$text-muted",
                           "content": "are counted, never written",
                           "fontFamily": "$font-body",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "rectangle",
@@ -7044,6 +7334,23 @@
         },
         {
           "value": "#141614",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "chart": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#2F5F8A",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#7FB0E0",
           "theme": {
             "mode": "dark"
           }

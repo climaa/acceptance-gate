@@ -1,5 +1,5 @@
 {
-  "version": "2.21",
+  "version": "2.25",
   "children": [
     {
       "type": "frame",
@@ -7187,6 +7187,23 @@
         },
         {
           "value": "#141614",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "chart": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#2F5F8A",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#7FB0E0",
           "theme": {
             "mode": "dark"
           }
