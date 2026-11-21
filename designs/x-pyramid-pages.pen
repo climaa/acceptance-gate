@@ -2455,6 +2455,63 @@
                                                       "fill": "$chart",
                                                       "width": 380,
                                                       "height": 96
+                                                    },
+                                                    {
+                                                      "type": "path",
+                                                      "id": "S93Lka",
+                                                      "x": 0,
+                                                      "y": 0,
+                                                      "name": "Outline acceptance",
+                                                      "opacity": 0.55,
+                                                      "geometry": "M171 0l38 0 54.7 96-147.4 0z",
+                                                      "viewBox": [
+                                                        0,
+                                                        0,
+                                                        380,
+                                                        96
+                                                      ],
+                                                      "width": 380,
+                                                      "height": 96,
+                                                      "stroke": "$chart-3",
+                                                      "strokeWidth": 1.5
+                                                    },
+                                                    {
+                                                      "type": "path",
+                                                      "id": "k5w0m",
+                                                      "x": 0,
+                                                      "y": 102,
+                                                      "name": "Outline component",
+                                                      "opacity": 0.55,
+                                                      "geometry": "M112.9 0l154.2 0 54.8 96-263.8 0z",
+                                                      "viewBox": [
+                                                        0,
+                                                        0,
+                                                        380,
+                                                        96
+                                                      ],
+                                                      "width": 380,
+                                                      "height": 96,
+                                                      "stroke": "$chart-2",
+                                                      "strokeWidth": 1.5
+                                                    },
+                                                    {
+                                                      "type": "path",
+                                                      "id": "EjpL7",
+                                                      "x": 0,
+                                                      "y": 204,
+                                                      "name": "Outline unit",
+                                                      "opacity": 0.55,
+                                                      "geometry": "M54.7 0l270.6 0 54.7 96-380 0z",
+                                                      "viewBox": [
+                                                        0,
+                                                        0,
+                                                        380,
+                                                        96
+                                                      ],
+                                                      "width": 380,
+                                                      "height": 96,
+                                                      "stroke": "$chart",
+                                                      "strokeWidth": 1.5
                                                     }
                                                   ]
                                                 },
@@ -10177,6 +10234,63 @@
                                                       "fill": "$chart",
                                                       "width": 380,
                                                       "height": 96
+                                                    },
+                                                    {
+                                                      "type": "path",
+                                                      "id": "F8Rpmt",
+                                                      "x": 0,
+                                                      "y": 0,
+                                                      "name": "Outline acceptance",
+                                                      "opacity": 0.55,
+                                                      "geometry": "M171 0l38 0 54.7 96-147.4 0z",
+                                                      "viewBox": [
+                                                        0,
+                                                        0,
+                                                        380,
+                                                        96
+                                                      ],
+                                                      "width": 380,
+                                                      "height": 96,
+                                                      "stroke": "$chart-3",
+                                                      "strokeWidth": 1.5
+                                                    },
+                                                    {
+                                                      "type": "path",
+                                                      "id": "XbWzx",
+                                                      "x": 0,
+                                                      "y": 102,
+                                                      "name": "Outline component",
+                                                      "opacity": 0.55,
+                                                      "geometry": "M112.9 0l154.2 0 54.8 96-263.8 0z",
+                                                      "viewBox": [
+                                                        0,
+                                                        0,
+                                                        380,
+                                                        96
+                                                      ],
+                                                      "width": 380,
+                                                      "height": 96,
+                                                      "stroke": "$chart-2",
+                                                      "strokeWidth": 1.5
+                                                    },
+                                                    {
+                                                      "type": "path",
+                                                      "id": "JD9Ow",
+                                                      "x": 0,
+                                                      "y": 204,
+                                                      "name": "Outline unit",
+                                                      "opacity": 0.55,
+                                                      "geometry": "M54.7 0l270.6 0 54.7 96-380 0z",
+                                                      "viewBox": [
+                                                        0,
+                                                        0,
+                                                        380,
+                                                        96
+                                                      ],
+                                                      "width": 380,
+                                                      "height": 96,
+                                                      "stroke": "$chart",
+                                                      "strokeWidth": 1.5
                                                     }
                                                   ]
                                                 },
@@ -17901,6 +18015,63 @@
                                                       "fill": "$chart",
                                                       "width": 380,
                                                       "height": 96
+                                                    },
+                                                    {
+                                                      "type": "path",
+                                                      "id": "vawAc",
+                                                      "x": 0,
+                                                      "y": 0,
+                                                      "name": "Outline acceptance",
+                                                      "opacity": 0.165,
+                                                      "geometry": "M171 0l38 0 54.7 96-147.4 0z",
+                                                      "viewBox": [
+                                                        0,
+                                                        0,
+                                                        380,
+                                                        96
+                                                      ],
+                                                      "width": 380,
+                                                      "height": 96,
+                                                      "stroke": "$chart-3",
+                                                      "strokeWidth": 1.5
+                                                    },
+                                                    {
+                                                      "type": "path",
+                                                      "id": "HUzG4",
+                                                      "x": 0,
+                                                      "y": 102,
+                                                      "name": "Outline component",
+                                                      "opacity": 0.165,
+                                                      "geometry": "M112.9 0l154.2 0 54.8 96-263.8 0z",
+                                                      "viewBox": [
+                                                        0,
+                                                        0,
+                                                        380,
+                                                        96
+                                                      ],
+                                                      "width": 380,
+                                                      "height": 96,
+                                                      "stroke": "$chart-2",
+                                                      "strokeWidth": 1.5
+                                                    },
+                                                    {
+                                                      "type": "path",
+                                                      "id": "m6pUM",
+                                                      "x": 0,
+                                                      "y": 204,
+                                                      "name": "Outline unit",
+                                                      "opacity": 0.55,
+                                                      "geometry": "M54.7 0l270.6 0 54.7 96-380 0z",
+                                                      "viewBox": [
+                                                        0,
+                                                        0,
+                                                        380,
+                                                        96
+                                                      ],
+                                                      "width": 380,
+                                                      "height": 96,
+                                                      "stroke": "$chart",
+                                                      "strokeWidth": 1.5
                                                     }
                                                   ]
                                                 },
@@ -24344,6 +24515,63 @@
                                                       "fill": "$chart",
                                                       "width": 380,
                                                       "height": 96
+                                                    },
+                                                    {
+                                                      "type": "path",
+                                                      "id": "rCpXO",
+                                                      "x": 0,
+                                                      "y": 0,
+                                                      "name": "Outline acceptance",
+                                                      "opacity": 0.165,
+                                                      "geometry": "M171 0l38 0 54.7 96-147.4 0z",
+                                                      "viewBox": [
+                                                        0,
+                                                        0,
+                                                        380,
+                                                        96
+                                                      ],
+                                                      "width": 380,
+                                                      "height": 96,
+                                                      "stroke": "$chart-3",
+                                                      "strokeWidth": 1.5
+                                                    },
+                                                    {
+                                                      "type": "path",
+                                                      "id": "U4s81P",
+                                                      "x": 0,
+                                                      "y": 102,
+                                                      "name": "Outline component",
+                                                      "opacity": 0.165,
+                                                      "geometry": "M112.9 0l154.2 0 54.8 96-263.8 0z",
+                                                      "viewBox": [
+                                                        0,
+                                                        0,
+                                                        380,
+                                                        96
+                                                      ],
+                                                      "width": 380,
+                                                      "height": 96,
+                                                      "stroke": "$chart-2",
+                                                      "strokeWidth": 1.5
+                                                    },
+                                                    {
+                                                      "type": "path",
+                                                      "id": "prSet",
+                                                      "x": 0,
+                                                      "y": 204,
+                                                      "name": "Outline unit",
+                                                      "opacity": 0.55,
+                                                      "geometry": "M54.7 0l270.6 0 54.7 96-380 0z",
+                                                      "viewBox": [
+                                                        0,
+                                                        0,
+                                                        380,
+                                                        96
+                                                      ],
+                                                      "width": 380,
+                                                      "height": 96,
+                                                      "stroke": "$chart",
+                                                      "strokeWidth": 1.5
                                                     }
                                                   ]
                                                 },
@@ -30812,6 +31040,63 @@
                                                       "fill": "$chart",
                                                       "width": 380,
                                                       "height": 96
+                                                    },
+                                                    {
+                                                      "type": "path",
+                                                      "id": "AycH8",
+                                                      "x": 0,
+                                                      "y": 0,
+                                                      "name": "Outline acceptance",
+                                                      "opacity": 0.55,
+                                                      "geometry": "M171 0l38 0 54.7 96-147.4 0z",
+                                                      "viewBox": [
+                                                        0,
+                                                        0,
+                                                        380,
+                                                        96
+                                                      ],
+                                                      "width": 380,
+                                                      "height": 96,
+                                                      "stroke": "$chart-3",
+                                                      "strokeWidth": 1.5
+                                                    },
+                                                    {
+                                                      "type": "path",
+                                                      "id": "AJG10",
+                                                      "x": 0,
+                                                      "y": 102,
+                                                      "name": "Outline component",
+                                                      "opacity": 0.55,
+                                                      "geometry": "M112.9 0l154.2 0 54.8 96-263.8 0z",
+                                                      "viewBox": [
+                                                        0,
+                                                        0,
+                                                        380,
+                                                        96
+                                                      ],
+                                                      "width": 380,
+                                                      "height": 96,
+                                                      "stroke": "$chart-2",
+                                                      "strokeWidth": 1.5
+                                                    },
+                                                    {
+                                                      "type": "path",
+                                                      "id": "cD2IU",
+                                                      "x": 0,
+                                                      "y": 204,
+                                                      "name": "Outline unit",
+                                                      "opacity": 0.55,
+                                                      "geometry": "M54.7 0l270.6 0 54.7 96-380 0z",
+                                                      "viewBox": [
+                                                        0,
+                                                        0,
+                                                        380,
+                                                        96
+                                                      ],
+                                                      "width": 380,
+                                                      "height": 96,
+                                                      "stroke": "$chart",
+                                                      "strokeWidth": 1.5
                                                     }
                                                   ]
                                                 },
@@ -38561,6 +38846,63 @@
                                                       "fill": "$chart",
                                                       "width": 380,
                                                       "height": 96
+                                                    },
+                                                    {
+                                                      "type": "path",
+                                                      "id": "E3anR",
+                                                      "x": 0,
+                                                      "y": 0,
+                                                      "name": "Outline acceptance",
+                                                      "opacity": 0.55,
+                                                      "geometry": "M171 0l38 0 54.7 96-147.4 0z",
+                                                      "viewBox": [
+                                                        0,
+                                                        0,
+                                                        380,
+                                                        96
+                                                      ],
+                                                      "width": 380,
+                                                      "height": 96,
+                                                      "stroke": "$chart-3",
+                                                      "strokeWidth": 1.5
+                                                    },
+                                                    {
+                                                      "type": "path",
+                                                      "id": "BotKe",
+                                                      "x": 0,
+                                                      "y": 102,
+                                                      "name": "Outline component",
+                                                      "opacity": 0.55,
+                                                      "geometry": "M112.9 0l154.2 0 54.8 96-263.8 0z",
+                                                      "viewBox": [
+                                                        0,
+                                                        0,
+                                                        380,
+                                                        96
+                                                      ],
+                                                      "width": 380,
+                                                      "height": 96,
+                                                      "stroke": "$chart-2",
+                                                      "strokeWidth": 1.5
+                                                    },
+                                                    {
+                                                      "type": "path",
+                                                      "id": "DqF1U",
+                                                      "x": 0,
+                                                      "y": 204,
+                                                      "name": "Outline unit",
+                                                      "opacity": 0.55,
+                                                      "geometry": "M54.7 0l270.6 0 54.7 96-380 0z",
+                                                      "viewBox": [
+                                                        0,
+                                                        0,
+                                                        380,
+                                                        96
+                                                      ],
+                                                      "width": 380,
+                                                      "height": 96,
+                                                      "stroke": "$chart",
+                                                      "strokeWidth": 1.5
                                                     }
                                                   ]
                                                 },
@@ -45148,6 +45490,63 @@
                                                   "fill": "$chart",
                                                   "width": 326,
                                                   "height": 76
+                                                },
+                                                {
+                                                  "type": "path",
+                                                  "id": "qmUhX",
+                                                  "x": 0,
+                                                  "y": 0,
+                                                  "name": "Outline acceptance",
+                                                  "opacity": 0.55,
+                                                  "geometry": "M146.7 0l32.6 0 46.5 76-125.6 0z",
+                                                  "viewBox": [
+                                                    0,
+                                                    0,
+                                                    326,
+                                                    76
+                                                  ],
+                                                  "width": 326,
+                                                  "height": 76,
+                                                  "stroke": "$chart-3",
+                                                  "strokeWidth": 1.5
+                                                },
+                                                {
+                                                  "type": "path",
+                                                  "id": "WVUDp",
+                                                  "x": 0,
+                                                  "y": 82,
+                                                  "name": "Outline component",
+                                                  "opacity": 0.55,
+                                                  "geometry": "M96.6 0l132.8 0 46.5 76-225.8 0z",
+                                                  "viewBox": [
+                                                    0,
+                                                    0,
+                                                    326,
+                                                    76
+                                                  ],
+                                                  "width": 326,
+                                                  "height": 76,
+                                                  "stroke": "$chart-2",
+                                                  "strokeWidth": 1.5
+                                                },
+                                                {
+                                                  "type": "path",
+                                                  "id": "uFUQF",
+                                                  "x": 0,
+                                                  "y": 164,
+                                                  "name": "Outline unit",
+                                                  "opacity": 0.55,
+                                                  "geometry": "M46.5 0l233 0 46.5 76-326 0z",
+                                                  "viewBox": [
+                                                    0,
+                                                    0,
+                                                    326,
+                                                    76
+                                                  ],
+                                                  "width": 326,
+                                                  "height": 76,
+                                                  "stroke": "$chart",
+                                                  "strokeWidth": 1.5
                                                 }
                                               ]
                                             },
@@ -51374,6 +51773,63 @@
                                                   "fill": "$chart",
                                                   "width": 326,
                                                   "height": 76
+                                                },
+                                                {
+                                                  "type": "path",
+                                                  "id": "brxuX",
+                                                  "x": 0,
+                                                  "y": 0,
+                                                  "name": "Outline acceptance",
+                                                  "opacity": 0.55,
+                                                  "geometry": "M146.7 0l32.6 0 46.5 76-125.6 0z",
+                                                  "viewBox": [
+                                                    0,
+                                                    0,
+                                                    326,
+                                                    76
+                                                  ],
+                                                  "width": 326,
+                                                  "height": 76,
+                                                  "stroke": "$chart-3",
+                                                  "strokeWidth": 1.5
+                                                },
+                                                {
+                                                  "type": "path",
+                                                  "id": "v2Jf9r",
+                                                  "x": 0,
+                                                  "y": 82,
+                                                  "name": "Outline component",
+                                                  "opacity": 0.55,
+                                                  "geometry": "M96.6 0l132.8 0 46.5 76-225.8 0z",
+                                                  "viewBox": [
+                                                    0,
+                                                    0,
+                                                    326,
+                                                    76
+                                                  ],
+                                                  "width": 326,
+                                                  "height": 76,
+                                                  "stroke": "$chart-2",
+                                                  "strokeWidth": 1.5
+                                                },
+                                                {
+                                                  "type": "path",
+                                                  "id": "aALMn",
+                                                  "x": 0,
+                                                  "y": 164,
+                                                  "name": "Outline unit",
+                                                  "opacity": 0.55,
+                                                  "geometry": "M46.5 0l233 0 46.5 76-326 0z",
+                                                  "viewBox": [
+                                                    0,
+                                                    0,
+                                                    326,
+                                                    76
+                                                  ],
+                                                  "width": 326,
+                                                  "height": 76,
+                                                  "stroke": "$chart",
+                                                  "strokeWidth": 1.5
                                                 }
                                               ]
                                             },
@@ -57602,6 +58058,63 @@
                                                   "fill": "$chart",
                                                   "width": 326,
                                                   "height": 76
+                                                },
+                                                {
+                                                  "type": "path",
+                                                  "id": "D9oxhK",
+                                                  "x": 0,
+                                                  "y": 0,
+                                                  "name": "Outline acceptance",
+                                                  "opacity": 0.165,
+                                                  "geometry": "M146.7 0l32.6 0 46.5 76-125.6 0z",
+                                                  "viewBox": [
+                                                    0,
+                                                    0,
+                                                    326,
+                                                    76
+                                                  ],
+                                                  "width": 326,
+                                                  "height": 76,
+                                                  "stroke": "$chart-3",
+                                                  "strokeWidth": 1.5
+                                                },
+                                                {
+                                                  "type": "path",
+                                                  "id": "TwOMl",
+                                                  "x": 0,
+                                                  "y": 82,
+                                                  "name": "Outline component",
+                                                  "opacity": 0.165,
+                                                  "geometry": "M96.6 0l132.8 0 46.5 76-225.8 0z",
+                                                  "viewBox": [
+                                                    0,
+                                                    0,
+                                                    326,
+                                                    76
+                                                  ],
+                                                  "width": 326,
+                                                  "height": 76,
+                                                  "stroke": "$chart-2",
+                                                  "strokeWidth": 1.5
+                                                },
+                                                {
+                                                  "type": "path",
+                                                  "id": "j4dkx",
+                                                  "x": 0,
+                                                  "y": 164,
+                                                  "name": "Outline unit",
+                                                  "opacity": 0.55,
+                                                  "geometry": "M46.5 0l233 0 46.5 76-326 0z",
+                                                  "viewBox": [
+                                                    0,
+                                                    0,
+                                                    326,
+                                                    76
+                                                  ],
+                                                  "width": 326,
+                                                  "height": 76,
+                                                  "stroke": "$chart",
+                                                  "strokeWidth": 1.5
                                                 }
                                               ]
                                             },
@@ -62731,6 +63244,63 @@
                                                   "fill": "$chart",
                                                   "width": 326,
                                                   "height": 76
+                                                },
+                                                {
+                                                  "type": "path",
+                                                  "id": "dBq7w",
+                                                  "x": 0,
+                                                  "y": 0,
+                                                  "name": "Outline acceptance",
+                                                  "opacity": 0.165,
+                                                  "geometry": "M146.7 0l32.6 0 46.5 76-125.6 0z",
+                                                  "viewBox": [
+                                                    0,
+                                                    0,
+                                                    326,
+                                                    76
+                                                  ],
+                                                  "width": 326,
+                                                  "height": 76,
+                                                  "stroke": "$chart-3",
+                                                  "strokeWidth": 1.5
+                                                },
+                                                {
+                                                  "type": "path",
+                                                  "id": "CgqFI",
+                                                  "x": 0,
+                                                  "y": 82,
+                                                  "name": "Outline component",
+                                                  "opacity": 0.165,
+                                                  "geometry": "M96.6 0l132.8 0 46.5 76-225.8 0z",
+                                                  "viewBox": [
+                                                    0,
+                                                    0,
+                                                    326,
+                                                    76
+                                                  ],
+                                                  "width": 326,
+                                                  "height": 76,
+                                                  "stroke": "$chart-2",
+                                                  "strokeWidth": 1.5
+                                                },
+                                                {
+                                                  "type": "path",
+                                                  "id": "NVJFk",
+                                                  "x": 0,
+                                                  "y": 164,
+                                                  "name": "Outline unit",
+                                                  "opacity": 0.55,
+                                                  "geometry": "M46.5 0l233 0 46.5 76-326 0z",
+                                                  "viewBox": [
+                                                    0,
+                                                    0,
+                                                    326,
+                                                    76
+                                                  ],
+                                                  "width": 326,
+                                                  "height": 76,
+                                                  "stroke": "$chart",
+                                                  "strokeWidth": 1.5
                                                 }
                                               ]
                                             },
@@ -67885,6 +68455,63 @@
                                                   "fill": "$chart",
                                                   "width": 326,
                                                   "height": 76
+                                                },
+                                                {
+                                                  "type": "path",
+                                                  "id": "x4nMNK",
+                                                  "x": 0,
+                                                  "y": 0,
+                                                  "name": "Outline acceptance",
+                                                  "opacity": 0.55,
+                                                  "geometry": "M146.7 0l32.6 0 46.5 76-125.6 0z",
+                                                  "viewBox": [
+                                                    0,
+                                                    0,
+                                                    326,
+                                                    76
+                                                  ],
+                                                  "width": 326,
+                                                  "height": 76,
+                                                  "stroke": "$chart-3",
+                                                  "strokeWidth": 1.5
+                                                },
+                                                {
+                                                  "type": "path",
+                                                  "id": "jwcTB",
+                                                  "x": 0,
+                                                  "y": 82,
+                                                  "name": "Outline component",
+                                                  "opacity": 0.55,
+                                                  "geometry": "M96.6 0l132.8 0 46.5 76-225.8 0z",
+                                                  "viewBox": [
+                                                    0,
+                                                    0,
+                                                    326,
+                                                    76
+                                                  ],
+                                                  "width": 326,
+                                                  "height": 76,
+                                                  "stroke": "$chart-2",
+                                                  "strokeWidth": 1.5
+                                                },
+                                                {
+                                                  "type": "path",
+                                                  "id": "cfHM2",
+                                                  "x": 0,
+                                                  "y": 164,
+                                                  "name": "Outline unit",
+                                                  "opacity": 0.55,
+                                                  "geometry": "M46.5 0l233 0 46.5 76-326 0z",
+                                                  "viewBox": [
+                                                    0,
+                                                    0,
+                                                    326,
+                                                    76
+                                                  ],
+                                                  "width": 326,
+                                                  "height": 76,
+                                                  "stroke": "$chart",
+                                                  "strokeWidth": 1.5
                                                 }
                                               ]
                                             },
@@ -74138,6 +74765,63 @@
                                                   "fill": "$chart",
                                                   "width": 326,
                                                   "height": 76
+                                                },
+                                                {
+                                                  "type": "path",
+                                                  "id": "LVRep",
+                                                  "x": 0,
+                                                  "y": 0,
+                                                  "name": "Outline acceptance",
+                                                  "opacity": 0.55,
+                                                  "geometry": "M146.7 0l32.6 0 46.5 76-125.6 0z",
+                                                  "viewBox": [
+                                                    0,
+                                                    0,
+                                                    326,
+                                                    76
+                                                  ],
+                                                  "width": 326,
+                                                  "height": 76,
+                                                  "stroke": "$chart-3",
+                                                  "strokeWidth": 1.5
+                                                },
+                                                {
+                                                  "type": "path",
+                                                  "id": "U5Gx6",
+                                                  "x": 0,
+                                                  "y": 82,
+                                                  "name": "Outline component",
+                                                  "opacity": 0.55,
+                                                  "geometry": "M96.6 0l132.8 0 46.5 76-225.8 0z",
+                                                  "viewBox": [
+                                                    0,
+                                                    0,
+                                                    326,
+                                                    76
+                                                  ],
+                                                  "width": 326,
+                                                  "height": 76,
+                                                  "stroke": "$chart-2",
+                                                  "strokeWidth": 1.5
+                                                },
+                                                {
+                                                  "type": "path",
+                                                  "id": "mZfVC",
+                                                  "x": 0,
+                                                  "y": 164,
+                                                  "name": "Outline unit",
+                                                  "opacity": 0.55,
+                                                  "geometry": "M46.5 0l233 0 46.5 76-326 0z",
+                                                  "viewBox": [
+                                                    0,
+                                                    0,
+                                                    326,
+                                                    76
+                                                  ],
+                                                  "width": 326,
+                                                  "height": 76,
+                                                  "stroke": "$chart",
+                                                  "strokeWidth": 1.5
                                                 }
                                               ]
                                             },

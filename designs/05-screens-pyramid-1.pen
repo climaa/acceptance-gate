@@ -2429,6 +2429,63 @@
                                                       "fill": "$chart",
                                                       "width": 380,
                                                       "height": 96
+                                                    },
+                                                    {
+                                                      "type": "path",
+                                                      "id": "OHCbR",
+                                                      "x": 0,
+                                                      "y": 0,
+                                                      "name": "Outline acceptance",
+                                                      "opacity": 0.55,
+                                                      "geometry": "M171 0l38 0 54.7 96-147.4 0z",
+                                                      "viewBox": [
+                                                        0,
+                                                        0,
+                                                        380,
+                                                        96
+                                                      ],
+                                                      "width": 380,
+                                                      "height": 96,
+                                                      "stroke": "$chart-3",
+                                                      "strokeWidth": 1.5
+                                                    },
+                                                    {
+                                                      "type": "path",
+                                                      "id": "j1lPV",
+                                                      "x": 0,
+                                                      "y": 102,
+                                                      "name": "Outline component",
+                                                      "opacity": 0.55,
+                                                      "geometry": "M112.9 0l154.2 0 54.8 96-263.8 0z",
+                                                      "viewBox": [
+                                                        0,
+                                                        0,
+                                                        380,
+                                                        96
+                                                      ],
+                                                      "width": 380,
+                                                      "height": 96,
+                                                      "stroke": "$chart-2",
+                                                      "strokeWidth": 1.5
+                                                    },
+                                                    {
+                                                      "type": "path",
+                                                      "id": "zhpcc",
+                                                      "x": 0,
+                                                      "y": 204,
+                                                      "name": "Outline unit",
+                                                      "opacity": 0.55,
+                                                      "geometry": "M54.7 0l270.6 0 54.7 96-380 0z",
+                                                      "viewBox": [
+                                                        0,
+                                                        0,
+                                                        380,
+                                                        96
+                                                      ],
+                                                      "width": 380,
+                                                      "height": 96,
+                                                      "stroke": "$chart",
+                                                      "strokeWidth": 1.5
                                                     }
                                                   ]
                                                 },
@@ -9020,6 +9077,63 @@
                                                   "fill": "$chart",
                                                   "width": 326,
                                                   "height": 76
+                                                },
+                                                {
+                                                  "type": "path",
+                                                  "id": "kaM04",
+                                                  "x": 0,
+                                                  "y": 0,
+                                                  "name": "Outline acceptance",
+                                                  "opacity": 0.55,
+                                                  "geometry": "M146.7 0l32.6 0 46.5 76-125.6 0z",
+                                                  "viewBox": [
+                                                    0,
+                                                    0,
+                                                    326,
+                                                    76
+                                                  ],
+                                                  "width": 326,
+                                                  "height": 76,
+                                                  "stroke": "$chart-3",
+                                                  "strokeWidth": 1.5
+                                                },
+                                                {
+                                                  "type": "path",
+                                                  "id": "X8GxfS",
+                                                  "x": 0,
+                                                  "y": 82,
+                                                  "name": "Outline component",
+                                                  "opacity": 0.55,
+                                                  "geometry": "M96.6 0l132.8 0 46.5 76-225.8 0z",
+                                                  "viewBox": [
+                                                    0,
+                                                    0,
+                                                    326,
+                                                    76
+                                                  ],
+                                                  "width": 326,
+                                                  "height": 76,
+                                                  "stroke": "$chart-2",
+                                                  "strokeWidth": 1.5
+                                                },
+                                                {
+                                                  "type": "path",
+                                                  "id": "iM2Cw",
+                                                  "x": 0,
+                                                  "y": 164,
+                                                  "name": "Outline unit",
+                                                  "opacity": 0.55,
+                                                  "geometry": "M46.5 0l233 0 46.5 76-326 0z",
+                                                  "viewBox": [
+                                                    0,
+                                                    0,
+                                                    326,
+                                                    76
+                                                  ],
+                                                  "width": 326,
+                                                  "height": 76,
+                                                  "stroke": "$chart",
+                                                  "strokeWidth": 1.5
                                                 }
                                               ]
                                             },

@@ -5712,6 +5712,63 @@
                           "fill": "$chart",
                           "width": 380,
                           "height": 96
+                        },
+                        {
+                          "type": "path",
+                          "id": "g128fr",
+                          "x": 0,
+                          "y": 0,
+                          "name": "Outline acceptance",
+                          "opacity": 0.55,
+                          "geometry": "M171 0l38 0 54.7 96-147.4 0z",
+                          "viewBox": [
+                            0,
+                            0,
+                            380,
+                            96
+                          ],
+                          "width": 380,
+                          "height": 96,
+                          "stroke": "$chart-3",
+                          "strokeWidth": 1.5
+                        },
+                        {
+                          "type": "path",
+                          "id": "fCPns",
+                          "x": 0,
+                          "y": 102,
+                          "name": "Outline component",
+                          "opacity": 0.55,
+                          "geometry": "M112.9 0l154.2 0 54.8 96-263.8 0z",
+                          "viewBox": [
+                            0,
+                            0,
+                            380,
+                            96
+                          ],
+                          "width": 380,
+                          "height": 96,
+                          "stroke": "$chart-2",
+                          "strokeWidth": 1.5
+                        },
+                        {
+                          "type": "path",
+                          "id": "s0PS1P",
+                          "x": 0,
+                          "y": 204,
+                          "name": "Outline unit",
+                          "opacity": 0.55,
+                          "geometry": "M54.7 0l270.6 0 54.7 96-380 0z",
+                          "viewBox": [
+                            0,
+                            0,
+                            380,
+                            96
+                          ],
+                          "width": 380,
+                          "height": 96,
+                          "stroke": "$chart",
+                          "strokeWidth": 1.5
                         }
                       ]
                     }
@@ -5882,6 +5939,63 @@
                           "fill": "$chart",
                           "width": 380,
                           "height": 96
+                        },
+                        {
+                          "type": "path",
+                          "id": "A95f7m",
+                          "x": 0,
+                          "y": 0,
+                          "name": "Outline acceptance",
+                          "opacity": 0.165,
+                          "geometry": "M171 0l38 0 54.7 96-147.4 0z",
+                          "viewBox": [
+                            0,
+                            0,
+                            380,
+                            96
+                          ],
+                          "width": 380,
+                          "height": 96,
+                          "stroke": "$chart-3",
+                          "strokeWidth": 1.5
+                        },
+                        {
+                          "type": "path",
+                          "id": "NqnwF",
+                          "x": 0,
+                          "y": 102,
+                          "name": "Outline component",
+                          "opacity": 0.165,
+                          "geometry": "M112.9 0l154.2 0 54.8 96-263.8 0z",
+                          "viewBox": [
+                            0,
+                            0,
+                            380,
+                            96
+                          ],
+                          "width": 380,
+                          "height": 96,
+                          "stroke": "$chart-2",
+                          "strokeWidth": 1.5
+                        },
+                        {
+                          "type": "path",
+                          "id": "mr5WA",
+                          "x": 0,
+                          "y": 204,
+                          "name": "Outline unit",
+                          "opacity": 0.55,
+                          "geometry": "M54.7 0l270.6 0 54.7 96-380 0z",
+                          "viewBox": [
+                            0,
+                            0,
+                            380,
+                            96
+                          ],
+                          "width": 380,
+                          "height": 96,
+                          "stroke": "$chart",
+                          "strokeWidth": 1.5
                         }
                       ]
                     }
