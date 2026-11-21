@@ -93,7 +93,7 @@
                   "reusable": true,
                   "clip": true,
                   "width": 1280,
-                  "height": 5788,
+                  "height": 5812,
                   "fill": "$bg",
                   "layout": "none",
                   "children": [
@@ -5371,7 +5371,7 @@
                                               "type": "text",
                                               "id": "yqgsX",
                                               "fill": "$text-muted",
-                                              "content": "2",
+                                              "content": "types nothing references",
                                               "lineHeight": 1.5,
                                               "fontFamily": "$font-mono",
                                               "fontSize": 12,
@@ -5449,7 +5449,7 @@
                                               "type": "text",
                                               "id": "IMvak",
                                               "fill": "$text-muted",
-                                              "content": "2",
+                                              "content": "imported, missing from package.json",
                                               "lineHeight": 1.5,
                                               "fontFamily": "$font-mono",
                                               "fontSize": 12,
@@ -5527,7 +5527,7 @@
                                               "type": "text",
                                               "id": "cIj1c",
                                               "fill": "$text-muted",
-                                              "content": "0",
+                                              "content": "import cycles between modules",
                                               "lineHeight": 1.5,
                                               "fontFamily": "$font-mono",
                                               "fontSize": 12,
@@ -5567,8 +5567,8 @@
                                       "type": "frame",
                                       "id": "uawrC",
                                       "name": "note",
-                                      "gap": 8,
-                                      "alignItems": "center",
+                                      "layout": "vertical",
+                                      "gap": 6,
                                       "children": [
                                         {
                                           "type": "frame",
@@ -10005,7 +10005,7 @@
                   ]
                 },
                 {
-                  "id": "jMP7n",
+                  "id": "OcJn6",
                   "type": "ref",
                   "ref": "eHGpK",
                   "name": "screens__desktop__dark__screens-repo-coverage-home--sample",
@@ -10023,7 +10023,7 @@
                   "reusable": true,
                   "clip": true,
                   "width": 390,
-                  "height": 8017,
+                  "height": 8041,
                   "fill": "$bg",
                   "layout": "none",
                   "children": [
@@ -14064,7 +14064,7 @@
                                               "type": "text",
                                               "id": "s1uMVR",
                                               "fill": "$text-muted",
-                                              "content": "2",
+                                              "content": "types nothing references",
                                               "lineHeight": 1.5,
                                               "fontFamily": "$font-mono",
                                               "fontSize": 12,
@@ -14135,7 +14135,7 @@
                                               "type": "text",
                                               "id": "hWxK7",
                                               "fill": "$text-muted",
-                                              "content": "2",
+                                              "content": "imported, missing from package.json",
                                               "lineHeight": 1.5,
                                               "fontFamily": "$font-mono",
                                               "fontSize": 12,
@@ -14206,7 +14206,7 @@
                                               "type": "text",
                                               "id": "WjWPi",
                                               "fill": "$text-muted",
-                                              "content": "0",
+                                              "content": "import cycles between modules",
                                               "lineHeight": 1.5,
                                               "fontFamily": "$font-mono",
                                               "fontSize": 12,
@@ -14232,8 +14232,8 @@
                                   "type": "frame",
                                   "id": "FhOIa",
                                   "name": "note",
-                                  "gap": 8,
-                                  "alignItems": "center",
+                                  "layout": "vertical",
+                                  "gap": 6,
                                   "children": [
                                     {
                                       "type": "frame",
@@ -18339,7 +18339,7 @@
                   ]
                 },
                 {
-                  "id": "nnJek",
+                  "id": "YhgNb",
                   "type": "ref",
                   "ref": "gnYbQ",
                   "name": "screens__mobile__dark__screens-repo-coverage-home--sample",

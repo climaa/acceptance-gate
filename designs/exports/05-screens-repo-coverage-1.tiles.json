@@ -1,10 +1,10 @@
 {
   "board": "05-screens-repo-coverage-1 — Screens",
-  "scale": 0.980256,
+  "scale": 0.977448,
   "tiles": {
-    "screens__desktop__dark__screens-repo-coverage-home--sample": [1365, 271, 1255, 5674],
-    "screens__desktop__light__screens-repo-coverage-home--sample": [63, 271, 1255, 5674],
-    "screens__mobile__dark__screens-repo-coverage-home--sample": [3096, 271, 382, 7859],
-    "screens__mobile__light__screens-repo-coverage-home--sample": [2666, 271, 382, 7859]
+    "screens__desktop__dark__screens-repo-coverage-home--sample": [1361, 270, 1251, 5681],
+    "screens__desktop__light__screens-repo-coverage-home--sample": [63, 270, 1251, 5681],
+    "screens__mobile__dark__screens-repo-coverage-home--sample": [3087, 270, 381, 7860],
+    "screens__mobile__light__screens-repo-coverage-home--sample": [2659, 270, 381, 7860]
   }
 }
