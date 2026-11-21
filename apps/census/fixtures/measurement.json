@@ -1,0 +1,231 @@
+{
+  "schema": 1,
+  "repo": "climaa/acceptance-gate",
+  "commit": "aebf7ece432666dc6fa20608fbbbc0dc8f8e1319",
+  "measuredAt": "2026-11-21T18:30:00.000Z",
+  "tools": {
+    "vitest": "5.0.5",
+    "fallow": "3.36.0",
+    "storybook": "10.6.2",
+    "node": "22.23.4"
+  },
+  "pyramid": { "unit": 3550, "visual": 286, "acceptance": 88 },
+  "health": {
+    "score": 81.4,
+    "grade": "B",
+    "penalties": [
+      { "name": "complexity", "points": 9.1 },
+      { "name": "duplication", "points": 5.2 },
+      { "name": "dead code", "points": 4.3 }
+    ],
+    "dead": { "files": 2, "exports": 11, "types": 4, "unlistedDeps": 0, "cycles": 1 },
+    "duplication": { "semanticPct": 2.4, "mildPct": 6.8, "lines": 1204, "groups": 37 },
+    "styling": {
+      "score": 88,
+      "grade": "B",
+      "tokenDrift": 3,
+      "duplicateBlocks": 5,
+      "complexSelectors": 2,
+      "important": 0
+    },
+    "hotspots": [
+      { "path": "packages/visual-diff/src/commands.mjs", "churn": 41, "complexity": 18 },
+      { "path": "apps/visual-diff-ui/lib/jobs.ts", "churn": 33, "complexity": 14 }
+    ],
+    "refactorTargets": [
+      {
+        "path": "packages/visual-diff/src/commands.mjs",
+        "priority": 0.82,
+        "effort": "medium"
+      }
+    ],
+    "profiles": {
+      "unitSize": [71.2, 18.4, 7.9, 2.5],
+      "interfacing": [80.1, 14.6, 4.3, 1]
+    },
+    "crapOver30": 19,
+    "crapSource": "measured"
+  },
+  "workspaces": [
+    {
+      "name": "@gate/ui",
+      "path": "packages/ui",
+      "category": "packages",
+      "dimensions": {
+        "code": {
+          "dimension": "code",
+          "state": "measured",
+          "lines": { "covered": 349, "total": 353, "pct": 98.9 },
+          "floor": 70,
+          "staticReachPct": 100,
+          "files": [
+            {
+              "path": "src/organisms/PanZoom/PanZoom.tsx",
+              "group": "organisms",
+              "lines": { "covered": 41, "total": 42, "pct": 97.6 },
+              "maintainability": 71.3,
+              "crap": 49.5
+            },
+            {
+              "path": "src/atoms/Badge/Badge.tsx",
+              "group": "atoms",
+              "lines": { "covered": 12, "total": 12, "pct": 100 },
+              "maintainability": 92.1,
+              "crap": 2
+            }
+          ]
+        },
+        "visual": {
+          "dimension": "visual",
+          "state": "measured",
+          "components": { "total": 30, "storied": 30, "tiled": 30, "baselined": 30 }
+        },
+        "acceptance": {
+          "dimension": "acceptance",
+          "state": "not-applicable",
+          "reason": "A package is not a deployed app"
+        },
+        "health": {
+          "dimension": "health",
+          "state": "measured",
+          "score": 79.3,
+          "grade": "B",
+          "overCeiling": 0,
+          "deadFiles": 0,
+          "deadExports": 1,
+          "refactorTargets": 0
+        }
+      }
+    },
+    {
+      "name": "@gate/blog",
+      "path": "apps/blog",
+      "category": "apps",
+      "dimensions": {
+        "code": {
+          "dimension": "code",
+          "state": "unmeasured",
+          "reason": "No coverage block in vitest.config"
+        },
+        "visual": {
+          "dimension": "visual",
+          "state": "measured",
+          "components": { "total": 11, "storied": 6, "tiled": 0, "baselined": 0 },
+          "screens": { "stories": 8, "tiled": 0, "baselined": 8 },
+          "routes": {
+            "total": 7,
+            "loading": { "own": 1, "inherited": 0, "none": 6 },
+            "error": { "own": 0, "inherited": 7, "none": 0 },
+            "notFound": { "own": 1, "inherited": 6, "none": 0 }
+          }
+        },
+        "acceptance": {
+          "dimension": "acceptance",
+          "state": "measured",
+          "scenarios": 27,
+          "features": [
+            "a11y",
+            "about",
+            "blog",
+            "changelog-comments",
+            "link-preview",
+            "smoke"
+          ]
+        },
+        "health": {
+          "dimension": "health",
+          "state": "measured",
+          "score": 85.8,
+          "grade": "A",
+          "overCeiling": 0,
+          "deadFiles": 0,
+          "deadExports": 0,
+          "refactorTargets": 0
+        }
+      }
+    },
+    {
+      "name": "@gate/manual",
+      "path": "apps/manual",
+      "category": "apps",
+      "dimensions": {
+        "code": {
+          "dimension": "code",
+          "state": "unmeasured",
+          "reason": "No coverage block in vitest.config"
+        },
+        "visual": {
+          "dimension": "visual",
+          "state": "measured",
+          "components": { "total": 3, "storied": 0, "tiled": 0, "baselined": 0 },
+          "screens": { "stories": 3, "tiled": 0, "baselined": 3 }
+        },
+        "acceptance": {
+          "dimension": "acceptance",
+          "state": "measured",
+          "scenarios": 0,
+          "features": []
+        },
+        "health": {
+          "dimension": "health",
+          "state": "measured",
+          "score": 90.2,
+          "grade": "A",
+          "overCeiling": 0,
+          "deadFiles": 0,
+          "deadExports": 0,
+          "refactorTargets": 0
+        }
+      }
+    },
+    {
+      "name": "@gate/tsconfig",
+      "path": "packages/tsconfig",
+      "category": "packages",
+      "dimensions": {
+        "code": { "dimension": "code", "state": "not-applicable", "reason": "No code" },
+        "visual": {
+          "dimension": "visual",
+          "state": "not-applicable",
+          "reason": "No components"
+        },
+        "acceptance": {
+          "dimension": "acceptance",
+          "state": "not-applicable",
+          "reason": "Not an app"
+        },
+        "health": {
+          "dimension": "health",
+          "state": "not-applicable",
+          "reason": "No functions"
+        }
+      }
+    }
+  ],
+  "gaps": [
+    {
+      "id": "unmeasured-workspace:apps/blog",
+      "dimension": "code",
+      "workspace": "@gate/blog",
+      "kind": "unmeasured-workspace",
+      "subject": "apps/blog",
+      "title": "@gate/blog: measure coverage"
+    },
+    {
+      "id": "component-incomplete:apps/blog:screens-blog-about--default",
+      "dimension": "visual",
+      "workspace": "@gate/blog",
+      "kind": "component-incomplete",
+      "subject": "screens-blog-about--default",
+      "title": "screens-blog-about--default: no tile"
+    },
+    {
+      "id": "app-unvisited:apps/manual",
+      "dimension": "acceptance",
+      "workspace": "@gate/manual",
+      "kind": "app-unvisited",
+      "subject": "apps/manual",
+      "title": "@gate/manual: no acceptance scenario"
+    }
+  ]
+}

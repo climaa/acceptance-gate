@@ -62,6 +62,9 @@ apps/
                        or deleted flows straight to the published page rather than
                        drifting from it; page views tracked on the same terms as
                        the blog and the console
+  census/              the repository's census, in progress: the measurement
+                       schema, its validator and the gap rules (`lib/`), unit-
+                       tested over fixtures; no pages and no measure step yet
 packages/
   logger/              the shared error/warn/info logger: silent in production, and
                        `error()` always forwards to a reporter — with the Bugsink
@@ -127,7 +130,7 @@ scripts/               gate/ (the gate, run by `.husky/pre-push`) · complexity-
 
 - `README.md` — thesis, status table, the autonomous loop
 - `AGENTS.md` — the routing table agents read first
-- `RELEASING.md` — the eleven manifests, the index/README refresh that belongs in the same PR, and the four-part shape every release body has carried since 1.0.0
+- `RELEASING.md` — the twelve manifests, the index/README refresh that belongs in the same PR, and the four-part shape every release body has carried since 1.0.0
 - `.sandcastle/agent-docs/CODING_STANDARDS.md` — the review contract (testing conventions, scope discipline)
 - `apps/storybook/src/docs/` — the published written half: System Design, Atomic Design, QA, DevOps, Skills
 - `packages/visual-diff/README.md` — capture matrix, determinism controls, exit codes, and why the job never joins `gate.needs`
@@ -137,7 +140,7 @@ scripts/               gate/ (the gate, run by `.husky/pre-push`) · complexity-
 ## 🧪 Tests
 
 - Orchestrator hermetic suite: 65 files / 958 tests (prompt contracts, merge flow, override grammar, worktree safety, provenance guard)
-- Workspace suites, all in the `test` gate job: `packages/ui` 39 files / 657 tests (70% coverage floor), `apps/blog` 28 / 625 (622 passed, 3 skipped — one per draft post), `packages/visual-diff` 11 / 519, `apps/storybook` 11 / 335, `apps/visual-diff-ui` 83 / 1419, 1 skipped until the corpus is built (floors 93/87/92/94), `packages/logger` 3 / 32, `apps/manual` 10 / 118, `packages/links` 1 / 10, `apps/e2e` 1 / 11 (the analytics guard)
+- Workspace suites, all in the `test` gate job: `packages/ui` 39 files / 657 tests (70% coverage floor), `apps/blog` 28 / 625 (622 passed, 3 skipped — one per draft post), `packages/visual-diff` 11 / 519, `apps/storybook` 11 / 335, `apps/visual-diff-ui` 83 / 1419, 1 skipped until the corpus is built (floors 93/87/92/94), `packages/logger` 3 / 32, `apps/manual` 10 / 118, `packages/links` 1 / 10, `apps/e2e` 1 / 11 (the analytics guard), `apps/census` 3 / 50 (floors 98/96/98/98)
 - `apps/e2e`: 88 acceptance scenarios across smoke, blog, the changelog's release conversations, /about, axe a11y, the visual-diff console, sample mode, the report and its accessibility treatment — in `gate.needs`, blocking. `EXPECTED_SCENARIOS` in `apps/e2e/scripts/suite-integrity.mjs` is the count that must agree. A second lane, `features/local/`, is two scenarios that write to your own tree and clean up after themselves — one captures, compares, reviews and accepts against your `.visual-diff`, the other proves the dev server reflects `apps/blog/content/posts` as it is, which no built app can claim (`EXPECTED_LOCAL_SCENARIOS`). It refuses to run under `CI` and gates nothing
 - `packages/visual-diff`: 286 committed baselines; the capture/compare job runs on every PR but is deliberately never in `gate.needs` (see `packages/visual-diff/README.md#ci-status`)
 

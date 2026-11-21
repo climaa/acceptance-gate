@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "points": [
+    {
+      "commit": "548f743baa441821dd411b40301bcdc28274a5ed",
+      "measuredAt": "2026-11-20T18:00:00.000Z",
+      "dimensions": { "code": 41.2, "visual": 62.5, "acceptance": 50, "health": 80.9 },
+      "fallow": {
+        "score": 80.9,
+        "grade": "B",
+        "dupPct": 2.5,
+        "crapOver": 21,
+        "overCeiling": 3
+      }
+    },
+    {
+      "commit": "aebf7ece432666dc6fa20608fbbbc0dc8f8e1319",
+      "measuredAt": "2026-11-21T18:30:00.000Z",
+      "dimensions": { "code": 41.5, "visual": 62.5, "acceptance": 50, "health": 81.4 },
+      "fallow": {
+        "score": 81.4,
+        "grade": "B",
+        "dupPct": 2.4,
+        "crapOver": 19,
+        "overCeiling": 3
+      }
+    }
+  ]
+}
