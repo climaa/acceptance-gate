@@ -93,7 +93,7 @@
                   "reusable": true,
                   "clip": true,
                   "width": 1280,
-                  "height": 7123,
+                  "height": 8355,
                   "fill": "$bg",
                   "layout": "none",
                   "children": [
@@ -1835,6 +1835,211 @@
                                 },
                                 {
                                   "type": "frame",
+                                  "id": "uymcu",
+                                  "name": "Card summary",
+                                  "width": "fill_container",
+                                  "fill": "$bg-subtle",
+                                  "cornerRadius": 16,
+                                  "stroke": "$border",
+                                  "strokeWidth": 1,
+                                  "layout": "vertical",
+                                  "gap": 12,
+                                  "padding": 24,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "Zo8hL",
+                                      "name": "card heading",
+                                      "width": "fill_container",
+                                      "layout": "vertical",
+                                      "gap": 4,
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "PIw0r",
+                                          "fill": "$text-muted",
+                                          "content": "SUMMARY",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "700",
+                                          "letterSpacing": 1
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "J2tTtc",
+                                          "fill": "$text-muted",
+                                          "textGrowth": "fixed-width",
+                                          "width": "fill_container",
+                                          "content": "What changed and what to file first · measured 20 Nov 2026 at 0514dc9.",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-body",
+                                          "fontSize": 14,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "P0QOKR",
+                                      "name": "highlights",
+                                      "width": "fill_container",
+                                      "layout": "vertical",
+                                      "gap": 4,
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "I4tX2d",
+                                          "name": "highlight",
+                                          "width": "fill_container",
+                                          "gap": 10,
+                                          "padding": [
+                                            6,
+                                            0
+                                          ],
+                                          "children": [
+                                            {
+                                              "type": "frame",
+                                              "id": "v5zEp",
+                                              "name": "Badge alert",
+                                              "fill": "$danger-surface",
+                                              "cornerRadius": 9999,
+                                              "padding": [
+                                                2,
+                                                8
+                                              ],
+                                              "children": [
+                                                {
+                                                  "type": "text",
+                                                  "id": "p2GJn",
+                                                  "fill": "$danger-fg",
+                                                  "content": "alert",
+                                                  "lineHeight": 1.25,
+                                                  "fontFamily": "$font-mono",
+                                                  "fontSize": 12,
+                                                  "fontWeight": "700"
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "D4KcJA",
+                                              "fill": "$text",
+                                              "textGrowth": "fixed-width",
+                                              "width": 897,
+                                              "content": "Visual is the widest gap: 39 of 44 console components have no story.",
+                                              "lineHeight": 1.5,
+                                              "fontFamily": "$font-body",
+                                              "fontSize": 14,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "T5Q0I",
+                                          "name": "highlight",
+                                          "width": "fill_container",
+                                          "gap": 10,
+                                          "padding": [
+                                            6,
+                                            0
+                                          ],
+                                          "children": [
+                                            {
+                                              "type": "ellipse",
+                                              "id": "y46qL",
+                                              "name": "key",
+                                              "fill": "$chart",
+                                              "width": 8,
+                                              "height": 8
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "l42O6d",
+                                              "fill": "$text",
+                                              "textGrowth": "fixed-width",
+                                              "width": 943,
+                                              "content": "Most red coverage is unmeasured, not untested: 93.7% of files are reached by a test.",
+                                              "lineHeight": 1.5,
+                                              "fontFamily": "$font-body",
+                                              "fontSize": 14,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "sDZ7y",
+                                          "name": "highlight",
+                                          "width": "fill_container",
+                                          "gap": 10,
+                                          "padding": [
+                                            6,
+                                            0
+                                          ],
+                                          "children": [
+                                            {
+                                              "type": "ellipse",
+                                              "id": "mbOXH",
+                                              "name": "key",
+                                              "fill": "$chart-3",
+                                              "width": 8,
+                                              "height": 8
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "Ac5db",
+                                              "fill": "$text",
+                                              "textGrowth": "fixed-width",
+                                              "width": 943,
+                                              "content": "Acceptance rose 25 points in 30 days: 2 of 4 apps now have a scenario.",
+                                              "lineHeight": 1.5,
+                                              "fontFamily": "$font-body",
+                                              "fontSize": 14,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "ENyXW",
+                                          "name": "highlight",
+                                          "width": "fill_container",
+                                          "gap": 10,
+                                          "padding": [
+                                            6,
+                                            0
+                                          ],
+                                          "children": [
+                                            {
+                                              "type": "ellipse",
+                                              "id": "U84EoH",
+                                              "name": "key",
+                                              "fill": "$chart-4",
+                                              "width": 8,
+                                              "height": 8
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "QslqH",
+                                              "fill": "$text",
+                                              "textGrowth": "fixed-width",
+                                              "width": 943,
+                                              "content": "Health 84.7 B. Function size costs 10 of the 15.3 points it loses.",
+                                              "lineHeight": 1.5,
+                                              "fontFamily": "$font-body",
+                                              "fontSize": 14,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
                                   "id": "n0qnp",
                                   "name": "Card coverage dimensions",
                                   "width": "fill_container",
@@ -2416,6 +2621,798 @@
                                               ]
                                             }
                                           ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "RFDnD",
+                                  "name": "Card metrics table",
+                                  "width": "fill_container",
+                                  "fill": "$bg-subtle",
+                                  "cornerRadius": 16,
+                                  "stroke": "$border",
+                                  "strokeWidth": 1,
+                                  "layout": "vertical",
+                                  "gap": 4,
+                                  "padding": 24,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "K4e0cD",
+                                      "name": "card heading",
+                                      "width": "fill_container",
+                                      "layout": "vertical",
+                                      "gap": 4,
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "AeSQh",
+                                          "fill": "$text-muted",
+                                          "content": "METRICS",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "700",
+                                          "letterSpacing": 1
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "a6H17",
+                                          "fill": "$text-muted",
+                                          "textGrowth": "fixed-width",
+                                          "width": "fill_container",
+                                          "content": "The same figures as a table: what the bars and pies above show, readable without them.",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-body",
+                                          "fontSize": 14,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "aJzGY",
+                                      "name": "thead",
+                                      "width": "fill_container",
+                                      "gap": 12,
+                                      "padding": [
+                                        0,
+                                        0,
+                                        8,
+                                        0
+                                      ],
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "Rppia",
+                                          "fill": "$text-muted",
+                                          "textGrowth": "fixed-width",
+                                          "width": 130,
+                                          "content": "DIMENSION",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "700",
+                                          "letterSpacing": 1
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "X6w3Ng",
+                                          "fill": "$text-muted",
+                                          "textGrowth": "fixed-width",
+                                          "width": 280,
+                                          "content": "METRIC",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "700",
+                                          "letterSpacing": 1
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "tyGsk",
+                                          "fill": "$text-muted",
+                                          "textGrowth": "fixed-width",
+                                          "width": 110,
+                                          "content": "VALUE",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "700",
+                                          "letterSpacing": 1
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "yX1Zk",
+                                          "fill": "$text-muted",
+                                          "textGrowth": "fixed-width",
+                                          "width": 130,
+                                          "content": "UNIT",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "700",
+                                          "letterSpacing": 1
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "TRCBh",
+                                          "fill": "$text-muted",
+                                          "textGrowth": "fixed-width",
+                                          "width": 110,
+                                          "content": "CHANGE",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "700",
+                                          "letterSpacing": 1
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "MhVcO",
+                                          "fill": "$text-muted",
+                                          "textGrowth": "fixed-width",
+                                          "width": 80,
+                                          "content": "PERIOD",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "700",
+                                          "letterSpacing": 1
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "rectangle",
+                                      "id": "UpLNo",
+                                      "name": "rule",
+                                      "fill": "$border",
+                                      "width": "fill_container",
+                                      "height": 1
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "B13arX",
+                                      "name": "tr",
+                                      "width": "fill_container",
+                                      "gap": 12,
+                                      "padding": [
+                                        8,
+                                        0
+                                      ],
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "I33mic",
+                                          "fill": "$text",
+                                          "textGrowth": "fixed-width",
+                                          "width": 130,
+                                          "content": "Code",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "t1kGU",
+                                          "fill": "$text-muted",
+                                          "textGrowth": "fixed-width",
+                                          "width": 280,
+                                          "content": "lines covered",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "O0U6Ed",
+                                          "fill": "$text",
+                                          "textGrowth": "fixed-width",
+                                          "width": 110,
+                                          "content": "31",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 13,
+                                          "fontWeight": "700"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "THczX",
+                                          "fill": "$text-muted",
+                                          "textGrowth": "fixed-width",
+                                          "width": 130,
+                                          "content": "%",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "SJkhx",
+                                          "fill": "$success-text",
+                                          "textGrowth": "fixed-width",
+                                          "width": 110,
+                                          "content": "+7 pts",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 13,
+                                          "fontWeight": "700"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "q3lFbd",
+                                          "fill": "$text-muted",
+                                          "textGrowth": "fixed-width",
+                                          "width": 80,
+                                          "content": "30 d",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "rectangle",
+                                      "id": "MT1X0",
+                                      "name": "rule",
+                                      "fill": "$border",
+                                      "width": "fill_container",
+                                      "height": 1
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "tT8xE",
+                                      "name": "tr",
+                                      "width": "fill_container",
+                                      "gap": 12,
+                                      "padding": [
+                                        8,
+                                        0
+                                      ],
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "XzbJ3",
+                                          "fill": "$text",
+                                          "textGrowth": "fixed-width",
+                                          "width": 130,
+                                          "content": "Visual",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "BPcLO",
+                                          "fill": "$text-muted",
+                                          "textGrowth": "fixed-width",
+                                          "width": 280,
+                                          "content": "story · tile · baseline",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "GAFAb",
+                                          "fill": "$text",
+                                          "textGrowth": "fixed-width",
+                                          "width": 110,
+                                          "content": "37 / 49",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 13,
+                                          "fontWeight": "700"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "icQDz",
+                                          "fill": "$text-muted",
+                                          "textGrowth": "fixed-width",
+                                          "width": 130,
+                                          "content": "components",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "ywgOM",
+                                          "fill": "$success-text",
+                                          "textGrowth": "fixed-width",
+                                          "width": 110,
+                                          "content": "+4",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 13,
+                                          "fontWeight": "700"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "AXttg",
+                                          "fill": "$text-muted",
+                                          "textGrowth": "fixed-width",
+                                          "width": 80,
+                                          "content": "30 d",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "rectangle",
+                                      "id": "m6mWP",
+                                      "name": "rule",
+                                      "fill": "$border",
+                                      "width": "fill_container",
+                                      "height": 1
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "V1sfZ4",
+                                      "name": "tr",
+                                      "width": "fill_container",
+                                      "gap": 12,
+                                      "padding": [
+                                        8,
+                                        0
+                                      ],
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "iyueV",
+                                          "fill": "$text",
+                                          "textGrowth": "fixed-width",
+                                          "width": 130,
+                                          "content": "Acceptance",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "jLKWY",
+                                          "fill": "$text-muted",
+                                          "textGrowth": "fixed-width",
+                                          "width": 280,
+                                          "content": "apps visited",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "qp5eg",
+                                          "fill": "$text",
+                                          "textGrowth": "fixed-width",
+                                          "width": 110,
+                                          "content": "2 / 4",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 13,
+                                          "fontWeight": "700"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "nIP7T",
+                                          "fill": "$text-muted",
+                                          "textGrowth": "fixed-width",
+                                          "width": 130,
+                                          "content": "apps",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "Ei7Jt",
+                                          "fill": "$success-text",
+                                          "textGrowth": "fixed-width",
+                                          "width": 110,
+                                          "content": "+1",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 13,
+                                          "fontWeight": "700"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "dHO9N",
+                                          "fill": "$text-muted",
+                                          "textGrowth": "fixed-width",
+                                          "width": 80,
+                                          "content": "30 d",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "rectangle",
+                                      "id": "grSzM",
+                                      "name": "rule",
+                                      "fill": "$border",
+                                      "width": "fill_container",
+                                      "height": 1
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "GjxAq",
+                                      "name": "tr",
+                                      "width": "fill_container",
+                                      "gap": 12,
+                                      "padding": [
+                                        8,
+                                        0
+                                      ],
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "J3J35d",
+                                          "fill": "$text",
+                                          "textGrowth": "fixed-width",
+                                          "width": 130,
+                                          "content": "Health",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "VZUyn",
+                                          "fill": "$text-muted",
+                                          "textGrowth": "fixed-width",
+                                          "width": 280,
+                                          "content": "scopes under the ceiling",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "gGaxq",
+                                          "fill": "$text",
+                                          "textGrowth": "fixed-width",
+                                          "width": 110,
+                                          "content": "10 / 11",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 13,
+                                          "fontWeight": "700"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "RkJS8",
+                                          "fill": "$text-muted",
+                                          "textGrowth": "fixed-width",
+                                          "width": 130,
+                                          "content": "scopes",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "JXFVX",
+                                          "fill": "$success-text",
+                                          "textGrowth": "fixed-width",
+                                          "width": 110,
+                                          "content": "+1",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 13,
+                                          "fontWeight": "700"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "B8aOHs",
+                                          "fill": "$text-muted",
+                                          "textGrowth": "fixed-width",
+                                          "width": 80,
+                                          "content": "30 d",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "rectangle",
+                                      "id": "EgSyR",
+                                      "name": "rule",
+                                      "fill": "$border",
+                                      "width": "fill_container",
+                                      "height": 1
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "U0DLj",
+                                      "name": "tr",
+                                      "width": "fill_container",
+                                      "gap": 12,
+                                      "padding": [
+                                        8,
+                                        0
+                                      ],
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "TGFsD",
+                                          "fill": "$text",
+                                          "textGrowth": "fixed-width",
+                                          "width": 130,
+                                          "content": "Health",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "qaOIP",
+                                          "fill": "$text-muted",
+                                          "textGrowth": "fixed-width",
+                                          "width": 280,
+                                          "content": "fallow score",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "j3NQo",
+                                          "fill": "$text",
+                                          "textGrowth": "fixed-width",
+                                          "width": 110,
+                                          "content": "84.7",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 13,
+                                          "fontWeight": "700"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "i5asd",
+                                          "fill": "$text-muted",
+                                          "textGrowth": "fixed-width",
+                                          "width": 130,
+                                          "content": "of 100",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "O47eD",
+                                          "fill": "$success-text",
+                                          "textGrowth": "fixed-width",
+                                          "width": 110,
+                                          "content": "+2.1",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 13,
+                                          "fontWeight": "700"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "V3OSJ3",
+                                          "fill": "$text-muted",
+                                          "textGrowth": "fixed-width",
+                                          "width": 80,
+                                          "content": "30 d",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "rectangle",
+                                      "id": "nDJRR",
+                                      "name": "rule",
+                                      "fill": "$border",
+                                      "width": "fill_container",
+                                      "height": 1
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "uM0RS",
+                                      "name": "tr",
+                                      "width": "fill_container",
+                                      "gap": 12,
+                                      "padding": [
+                                        8,
+                                        0
+                                      ],
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "fiTjF",
+                                          "fill": "$text",
+                                          "textGrowth": "fixed-width",
+                                          "width": 130,
+                                          "content": "Visual",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "xHTpy",
+                                          "fill": "$text-muted",
+                                          "textGrowth": "fixed-width",
+                                          "width": 280,
+                                          "content": "components without a story",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "WJCmX",
+                                          "fill": "$text",
+                                          "textGrowth": "fixed-width",
+                                          "width": 110,
+                                          "content": "46 / 90",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 13,
+                                          "fontWeight": "700"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "h2HXm",
+                                          "fill": "$text-muted",
+                                          "textGrowth": "fixed-width",
+                                          "width": 130,
+                                          "content": "components",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "MVSxV",
+                                          "fill": "$text",
+                                          "textGrowth": "fixed-width",
+                                          "width": 110,
+                                          "content": "—",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 13,
+                                          "fontWeight": "700"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "Ddrr1",
+                                          "fill": "$text-muted",
+                                          "textGrowth": "fixed-width",
+                                          "width": 80,
+                                          "content": "now",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "rectangle",
+                                      "id": "OrCGT",
+                                      "name": "rule",
+                                      "fill": "$border",
+                                      "width": "fill_container",
+                                      "height": 1
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "KGVct",
+                                      "name": "tr",
+                                      "width": "fill_container",
+                                      "gap": 12,
+                                      "padding": [
+                                        8,
+                                        0
+                                      ],
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "j9AGZq",
+                                          "fill": "$text",
+                                          "textGrowth": "fixed-width",
+                                          "width": 130,
+                                          "content": "Visual",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "T74d4K",
+                                          "fill": "$text-muted",
+                                          "textGrowth": "fixed-width",
+                                          "width": 280,
+                                          "content": "routes without loading",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "iKAcJ",
+                                          "fill": "$text",
+                                          "textGrowth": "fixed-width",
+                                          "width": 110,
+                                          "content": "13 / 17",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 13,
+                                          "fontWeight": "700"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "fNXGM",
+                                          "fill": "$text-muted",
+                                          "textGrowth": "fixed-width",
+                                          "width": 130,
+                                          "content": "routes",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "zfAGI",
+                                          "fill": "$text",
+                                          "textGrowth": "fixed-width",
+                                          "width": 110,
+                                          "content": "—",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 13,
+                                          "fontWeight": "700"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "uMWBZ",
+                                          "fill": "$text-muted",
+                                          "textGrowth": "fixed-width",
+                                          "width": 80,
+                                          "content": "now",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
                                         }
                                       ]
                                     }
@@ -12245,6 +13242,337 @@
                                       ]
                                     }
                                   ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "QTLo3",
+                                  "name": "Card notes",
+                                  "width": "fill_container",
+                                  "fill": "$bg-subtle",
+                                  "cornerRadius": 16,
+                                  "stroke": "$border",
+                                  "strokeWidth": 1,
+                                  "layout": "vertical",
+                                  "gap": 20,
+                                  "padding": 24,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "kCQoj",
+                                      "name": "card heading",
+                                      "width": "fill_container",
+                                      "layout": "vertical",
+                                      "gap": 4,
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "Ktfmv",
+                                          "fill": "$text-muted",
+                                          "content": "NOTES AND CAVEATS",
+                                          "lineHeight": 1.25,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "700",
+                                          "letterSpacing": 1
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "MLZBH",
+                                          "fill": "$text-muted",
+                                          "textGrowth": "fixed-width",
+                                          "width": "fill_container",
+                                          "content": "What this page cannot tell you yet.",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-body",
+                                          "fontSize": 14,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "A1ZN7",
+                                      "name": "notes",
+                                      "width": "fill_container",
+                                      "layout": "vertical",
+                                      "gap": 8,
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "hjxSp",
+                                          "width": "fill_container",
+                                          "gap": 8,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "ePxSd",
+                                              "fill": "$text",
+                                              "content": "·",
+                                              "lineHeight": 1.5,
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 12,
+                                              "fontWeight": "normal"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "Cy1zy",
+                                              "fill": "$text",
+                                              "textGrowth": "fixed-width",
+                                              "width": 951,
+                                              "content": "Code's 31% and every trend line are sample history; the first pnpm repo-coverage:measure writes real points.",
+                                              "lineHeight": 1.5,
+                                              "fontFamily": "$font-body",
+                                              "fontSize": 14,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "HRJ4g",
+                                          "width": "fill_container",
+                                          "gap": 8,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "j79gD",
+                                              "fill": "$text",
+                                              "content": "·",
+                                              "lineHeight": 1.5,
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 12,
+                                              "fontWeight": "normal"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "U5mR4s",
+                                              "fill": "$text",
+                                              "textGrowth": "fixed-width",
+                                              "width": 951,
+                                              "content": "CRAP is estimated until the measure step passes coverage-final.json to fallow.",
+                                              "lineHeight": 1.5,
+                                              "fontFamily": "$font-body",
+                                              "fontSize": 14,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "R7B9H",
+                                          "width": "fill_container",
+                                          "gap": 8,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "GDC01",
+                                              "fill": "$text",
+                                              "content": "·",
+                                              "lineHeight": 1.5,
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 12,
+                                              "fontWeight": "normal"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "boq5n",
+                                              "fill": "$text",
+                                              "textGrowth": "fixed-width",
+                                              "width": 951,
+                                              "content": "Stories are counted by import: a component counts as storied when a story imports it.",
+                                              "lineHeight": 1.5,
+                                              "fontFamily": "$font-body",
+                                              "fontSize": 14,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "gDoni",
+                                          "width": "fill_container",
+                                          "gap": 8,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "BKP7a",
+                                              "fill": "$text",
+                                              "content": "·",
+                                              "lineHeight": 1.5,
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 12,
+                                              "fontWeight": "normal"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "Zl6mj",
+                                              "fill": "$text",
+                                              "textGrowth": "fixed-width",
+                                              "width": 951,
+                                              "content": "Test counts are a grep of the tree (vitest cases, screenshots, scenarios); the measure step reads them exactly.",
+                                              "lineHeight": 1.5,
+                                              "fontFamily": "$font-body",
+                                              "fontSize": 14,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "rectangle",
+                                      "id": "GotcH",
+                                      "name": "rule",
+                                      "fill": "$border",
+                                      "width": "fill_container",
+                                      "height": 1
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "IXGF2",
+                                      "fill": "$text-muted",
+                                      "content": "RERUN INPUTS",
+                                      "lineHeight": 1.25,
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "700",
+                                      "letterSpacing": 1
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "DJQke",
+                                      "name": "rerun",
+                                      "width": "fill_container",
+                                      "fill": "$code-bg",
+                                      "cornerRadius": 8,
+                                      "layout": "vertical",
+                                      "gap": 4,
+                                      "padding": 16,
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "bjJv9",
+                                          "fill": "$code-fg",
+                                          "textGrowth": "fixed-width",
+                                          "width": 935,
+                                          "content": "workflow: pnpm repo-coverage:measure",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "rDFr1",
+                                          "fill": "$code-fg",
+                                          "textGrowth": "fixed-width",
+                                          "width": 935,
+                                          "content": "commit: 0514dc9 · measured 20 Nov 2026",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "nUlVS",
+                                          "fill": "$code-fg",
+                                          "textGrowth": "fixed-width",
+                                          "width": 935,
+                                          "content": "date_range: 90D",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "fesBe",
+                                          "fill": "$code-fg",
+                                          "textGrowth": "fixed-width",
+                                          "width": 935,
+                                          "content": "tools: vitest 5.0.5 · fallow 3.36.0 · storybook 10.6.2",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "z0Mgx",
+                                          "fill": "$code-fg",
+                                          "textGrowth": "fixed-width",
+                                          "width": 935,
+                                          "content": "output: apps/repo-coverage/measurement.json · history.json",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "Asrtb",
+                                      "name": "exports",
+                                      "gap": 10,
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "X4gjkZ",
+                                          "name": "Button Download JSON",
+                                          "height": 36,
+                                          "fill": "$text",
+                                          "cornerRadius": 8,
+                                          "gap": 8,
+                                          "padding": [
+                                            8,
+                                            14
+                                          ],
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "KoObf",
+                                              "fill": "$bg",
+                                              "content": "Download JSON",
+                                              "lineHeight": 1.5,
+                                              "fontFamily": "$font-body",
+                                              "fontSize": 13,
+                                              "fontWeight": "600"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "n9azKb",
+                                          "name": "Button Copy Markdown",
+                                          "height": 36,
+                                          "cornerRadius": 8,
+                                          "stroke": "$border-strong",
+                                          "strokeWidth": 1,
+                                          "gap": 8,
+                                          "padding": [
+                                            8,
+                                            14
+                                          ],
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "FdEwu",
+                                              "fill": "$text",
+                                              "content": "Copy Markdown",
+                                              "lineHeight": 1.5,
+                                              "fontFamily": "$font-body",
+                                              "fontSize": 13,
+                                              "fontWeight": "600"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
                                 }
                               ]
                             }
@@ -12255,7 +13583,7 @@
                   ]
                 },
                 {
-                  "id": "ttm4n",
+                  "id": "Mq9uj",
                   "type": "ref",
                   "ref": "eHGpK",
                   "name": "screens__desktop__dark__screens-repo-coverage-home--sample",
@@ -12273,7 +13601,7 @@
                   "reusable": true,
                   "clip": true,
                   "width": 390,
-                  "height": 10422,
+                  "height": 11958,
                   "fill": "$bg",
                   "layout": "none",
                   "children": [
@@ -12864,6 +14192,211 @@
                                       "fontFamily": "$font-mono",
                                       "fontSize": 12,
                                       "fontWeight": "normal"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "vTFl0",
+                              "name": "Card summary",
+                              "width": "fill_container",
+                              "fill": "$bg-subtle",
+                              "cornerRadius": 16,
+                              "stroke": "$border",
+                              "strokeWidth": 1,
+                              "layout": "vertical",
+                              "gap": 12,
+                              "padding": 20,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "r1aC7",
+                                  "name": "card heading",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 4,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "j2tH0P",
+                                      "fill": "$text-muted",
+                                      "content": "SUMMARY",
+                                      "lineHeight": 1.25,
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "700",
+                                      "letterSpacing": 1
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "j5XVE",
+                                      "fill": "$text-muted",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "What changed and what to file first · measured 20 Nov 2026 at 0514dc9.",
+                                      "lineHeight": 1.5,
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 14,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "iJv1R",
+                                  "name": "highlights",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 4,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "ZdO7G",
+                                      "name": "highlight",
+                                      "width": "fill_container",
+                                      "gap": 10,
+                                      "padding": [
+                                        6,
+                                        0
+                                      ],
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "xw6dL",
+                                          "name": "Badge alert",
+                                          "fill": "$danger-surface",
+                                          "cornerRadius": 9999,
+                                          "padding": [
+                                            2,
+                                            8
+                                          ],
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "h17rcC",
+                                              "fill": "$danger-fg",
+                                              "content": "alert",
+                                              "lineHeight": 1.25,
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 12,
+                                              "fontWeight": "700"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "HC4CD",
+                                          "fill": "$text",
+                                          "textGrowth": "fixed-width",
+                                          "width": 254,
+                                          "content": "Visual is the widest gap: 39 of 44 console components have no story.",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-body",
+                                          "fontSize": 14,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "RXRjt",
+                                      "name": "highlight",
+                                      "width": "fill_container",
+                                      "gap": 10,
+                                      "padding": [
+                                        6,
+                                        0
+                                      ],
+                                      "children": [
+                                        {
+                                          "type": "ellipse",
+                                          "id": "I46GPk",
+                                          "name": "key",
+                                          "fill": "$chart",
+                                          "width": 8,
+                                          "height": 8
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "Q8Ccg7",
+                                          "fill": "$text",
+                                          "textGrowth": "fixed-width",
+                                          "width": 298,
+                                          "content": "Most red coverage is unmeasured, not untested: 93.7% of files are reached by a test.",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-body",
+                                          "fontSize": 14,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "eZmxW",
+                                      "name": "highlight",
+                                      "width": "fill_container",
+                                      "gap": 10,
+                                      "padding": [
+                                        6,
+                                        0
+                                      ],
+                                      "children": [
+                                        {
+                                          "type": "ellipse",
+                                          "id": "IxeEn",
+                                          "name": "key",
+                                          "fill": "$chart-3",
+                                          "width": 8,
+                                          "height": 8
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "YwfvI",
+                                          "fill": "$text",
+                                          "textGrowth": "fixed-width",
+                                          "width": 298,
+                                          "content": "Acceptance rose 25 points in 30 days: 2 of 4 apps now have a scenario.",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-body",
+                                          "fontSize": 14,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "Oxzv9",
+                                      "name": "highlight",
+                                      "width": "fill_container",
+                                      "gap": 10,
+                                      "padding": [
+                                        6,
+                                        0
+                                      ],
+                                      "children": [
+                                        {
+                                          "type": "ellipse",
+                                          "id": "BUDad",
+                                          "name": "key",
+                                          "fill": "$chart-4",
+                                          "width": 8,
+                                          "height": 8
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "g1bJW",
+                                          "fill": "$text",
+                                          "textGrowth": "fixed-width",
+                                          "width": 298,
+                                          "content": "Health 84.7 B. Function size costs 10 of the 15.3 points it loses.",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-body",
+                                          "fontSize": 14,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
                                     }
                                   ]
                                 }
@@ -13480,6 +15013,507 @@
                                           "cornerRadius": 9999
                                         }
                                       ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "bzXY9",
+                              "name": "Card metrics table",
+                              "width": "fill_container",
+                              "fill": "$bg-subtle",
+                              "cornerRadius": 16,
+                              "stroke": "$border",
+                              "strokeWidth": 1,
+                              "layout": "vertical",
+                              "gap": 4,
+                              "padding": 20,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "gMNP7",
+                                  "name": "card heading",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 4,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "Vhyyi",
+                                      "fill": "$text-muted",
+                                      "content": "METRICS",
+                                      "lineHeight": 1.25,
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "700",
+                                      "letterSpacing": 1
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "zArc9",
+                                      "fill": "$text-muted",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "The same figures as a table: what the bars and pies above show, readable without them.",
+                                      "lineHeight": 1.5,
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 14,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "v3Ykv4",
+                                  "name": "thead",
+                                  "width": "fill_container",
+                                  "gap": 12,
+                                  "padding": [
+                                    0,
+                                    0,
+                                    8,
+                                    0
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "FsiU1",
+                                      "fill": "$text-muted",
+                                      "textGrowth": "fixed-width",
+                                      "width": 96,
+                                      "content": "DIMENSION",
+                                      "lineHeight": 1.25,
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "700",
+                                      "letterSpacing": 1
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "pz3qd",
+                                      "fill": "$text-muted",
+                                      "textGrowth": "fixed-width",
+                                      "width": 130,
+                                      "content": "METRIC",
+                                      "lineHeight": 1.25,
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "700",
+                                      "letterSpacing": 1
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "WM96F",
+                                      "fill": "$text-muted",
+                                      "textGrowth": "fixed-width",
+                                      "width": 80,
+                                      "content": "VALUE",
+                                      "lineHeight": 1.25,
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "700",
+                                      "letterSpacing": 1
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "rectangle",
+                                  "id": "MQ6S1",
+                                  "name": "rule",
+                                  "fill": "$border",
+                                  "width": "fill_container",
+                                  "height": 1
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "mZkCy",
+                                  "name": "tr",
+                                  "width": "fill_container",
+                                  "gap": 12,
+                                  "padding": [
+                                    8,
+                                    0
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "xSTrj",
+                                      "fill": "$text",
+                                      "textGrowth": "fixed-width",
+                                      "width": 96,
+                                      "content": "Code",
+                                      "lineHeight": 1.5,
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "GzTRV",
+                                      "fill": "$text-muted",
+                                      "textGrowth": "fixed-width",
+                                      "width": 130,
+                                      "content": "lines covered",
+                                      "lineHeight": 1.5,
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "I9sicP",
+                                      "fill": "$text",
+                                      "textGrowth": "fixed-width",
+                                      "width": 80,
+                                      "content": "31%",
+                                      "lineHeight": 1.5,
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 13,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "rectangle",
+                                  "id": "M3JjHl",
+                                  "name": "rule",
+                                  "fill": "$border",
+                                  "width": "fill_container",
+                                  "height": 1
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "R9hqmy",
+                                  "name": "tr",
+                                  "width": "fill_container",
+                                  "gap": 12,
+                                  "padding": [
+                                    8,
+                                    0
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "EJ74f",
+                                      "fill": "$text",
+                                      "textGrowth": "fixed-width",
+                                      "width": 96,
+                                      "content": "Visual",
+                                      "lineHeight": 1.5,
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "AolyV",
+                                      "fill": "$text-muted",
+                                      "textGrowth": "fixed-width",
+                                      "width": 130,
+                                      "content": "story · tile · baseline",
+                                      "lineHeight": 1.5,
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "ZugLN",
+                                      "fill": "$text",
+                                      "textGrowth": "fixed-width",
+                                      "width": 80,
+                                      "content": "37 / 49",
+                                      "lineHeight": 1.5,
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 13,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "rectangle",
+                                  "id": "RusTM",
+                                  "name": "rule",
+                                  "fill": "$border",
+                                  "width": "fill_container",
+                                  "height": 1
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "SmoW3",
+                                  "name": "tr",
+                                  "width": "fill_container",
+                                  "gap": 12,
+                                  "padding": [
+                                    8,
+                                    0
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "JcR07",
+                                      "fill": "$text",
+                                      "textGrowth": "fixed-width",
+                                      "width": 96,
+                                      "content": "Acceptance",
+                                      "lineHeight": 1.5,
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "MotWa",
+                                      "fill": "$text-muted",
+                                      "textGrowth": "fixed-width",
+                                      "width": 130,
+                                      "content": "apps visited",
+                                      "lineHeight": 1.5,
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "Lj76S",
+                                      "fill": "$text",
+                                      "textGrowth": "fixed-width",
+                                      "width": 80,
+                                      "content": "2 / 4",
+                                      "lineHeight": 1.5,
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 13,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "rectangle",
+                                  "id": "jUKfT",
+                                  "name": "rule",
+                                  "fill": "$border",
+                                  "width": "fill_container",
+                                  "height": 1
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "uhy5X",
+                                  "name": "tr",
+                                  "width": "fill_container",
+                                  "gap": 12,
+                                  "padding": [
+                                    8,
+                                    0
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "ZAHZK",
+                                      "fill": "$text",
+                                      "textGrowth": "fixed-width",
+                                      "width": 96,
+                                      "content": "Health",
+                                      "lineHeight": 1.5,
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "T2ohk",
+                                      "fill": "$text-muted",
+                                      "textGrowth": "fixed-width",
+                                      "width": 130,
+                                      "content": "scopes under the ceiling",
+                                      "lineHeight": 1.5,
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "JqdCp",
+                                      "fill": "$text",
+                                      "textGrowth": "fixed-width",
+                                      "width": 80,
+                                      "content": "10 / 11",
+                                      "lineHeight": 1.5,
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 13,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "rectangle",
+                                  "id": "IAyHV",
+                                  "name": "rule",
+                                  "fill": "$border",
+                                  "width": "fill_container",
+                                  "height": 1
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "h44G3T",
+                                  "name": "tr",
+                                  "width": "fill_container",
+                                  "gap": 12,
+                                  "padding": [
+                                    8,
+                                    0
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "JKIdK",
+                                      "fill": "$text",
+                                      "textGrowth": "fixed-width",
+                                      "width": 96,
+                                      "content": "Health",
+                                      "lineHeight": 1.5,
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "WLkXn",
+                                      "fill": "$text-muted",
+                                      "textGrowth": "fixed-width",
+                                      "width": 130,
+                                      "content": "fallow score",
+                                      "lineHeight": 1.5,
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "OO8oX",
+                                      "fill": "$text",
+                                      "textGrowth": "fixed-width",
+                                      "width": 80,
+                                      "content": "84.7",
+                                      "lineHeight": 1.5,
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 13,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "rectangle",
+                                  "id": "PQ9ML",
+                                  "name": "rule",
+                                  "fill": "$border",
+                                  "width": "fill_container",
+                                  "height": 1
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "F4naX",
+                                  "name": "tr",
+                                  "width": "fill_container",
+                                  "gap": 12,
+                                  "padding": [
+                                    8,
+                                    0
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "hpPyP",
+                                      "fill": "$text",
+                                      "textGrowth": "fixed-width",
+                                      "width": 96,
+                                      "content": "Visual",
+                                      "lineHeight": 1.5,
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "H9csJ",
+                                      "fill": "$text-muted",
+                                      "textGrowth": "fixed-width",
+                                      "width": 130,
+                                      "content": "components without a story",
+                                      "lineHeight": 1.5,
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "oFV59",
+                                      "fill": "$text",
+                                      "textGrowth": "fixed-width",
+                                      "width": 80,
+                                      "content": "46 / 90",
+                                      "lineHeight": 1.5,
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 13,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "rectangle",
+                                  "id": "Zh2Bz",
+                                  "name": "rule",
+                                  "fill": "$border",
+                                  "width": "fill_container",
+                                  "height": 1
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "pdZ8S",
+                                  "name": "tr",
+                                  "width": "fill_container",
+                                  "gap": 12,
+                                  "padding": [
+                                    8,
+                                    0
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "xckPU",
+                                      "fill": "$text",
+                                      "textGrowth": "fixed-width",
+                                      "width": 96,
+                                      "content": "Visual",
+                                      "lineHeight": 1.5,
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "u94BP",
+                                      "fill": "$text-muted",
+                                      "textGrowth": "fixed-width",
+                                      "width": 130,
+                                      "content": "routes without loading",
+                                      "lineHeight": 1.5,
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "W3Gx7",
+                                      "fill": "$text",
+                                      "textGrowth": "fixed-width",
+                                      "width": 80,
+                                      "content": "13 / 17",
+                                      "lineHeight": 1.5,
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 13,
+                                      "fontWeight": "700"
                                     }
                                   ]
                                 }
@@ -22752,6 +24786,337 @@
                                   ]
                                 }
                               ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "lHOHn",
+                              "name": "Card notes",
+                              "width": "fill_container",
+                              "fill": "$bg-subtle",
+                              "cornerRadius": 16,
+                              "stroke": "$border",
+                              "strokeWidth": 1,
+                              "layout": "vertical",
+                              "gap": 20,
+                              "padding": 20,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "clVmB",
+                                  "name": "card heading",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 4,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "I42ox",
+                                      "fill": "$text-muted",
+                                      "content": "NOTES AND CAVEATS",
+                                      "lineHeight": 1.25,
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "700",
+                                      "letterSpacing": 1
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "muSCq",
+                                      "fill": "$text-muted",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "What this page cannot tell you yet.",
+                                      "lineHeight": 1.5,
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 14,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "FLT7f",
+                                  "name": "notes",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 8,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "y7ly7K",
+                                      "width": "fill_container",
+                                      "gap": 8,
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "H3gQpI",
+                                          "fill": "$text",
+                                          "content": "·",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "zID7v",
+                                          "fill": "$text",
+                                          "textGrowth": "fixed-width",
+                                          "width": 302,
+                                          "content": "Code's 31% and every trend line are sample history; the first pnpm repo-coverage:measure writes real points.",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-body",
+                                          "fontSize": 14,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "Wpfjg",
+                                      "width": "fill_container",
+                                      "gap": 8,
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "Id4Bw",
+                                          "fill": "$text",
+                                          "content": "·",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "B2TUFA",
+                                          "fill": "$text",
+                                          "textGrowth": "fixed-width",
+                                          "width": 302,
+                                          "content": "CRAP is estimated until the measure step passes coverage-final.json to fallow.",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-body",
+                                          "fontSize": 14,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "DuXkW",
+                                      "width": "fill_container",
+                                      "gap": 8,
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "N5zOXb",
+                                          "fill": "$text",
+                                          "content": "·",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "IRjIH",
+                                          "fill": "$text",
+                                          "textGrowth": "fixed-width",
+                                          "width": 302,
+                                          "content": "Stories are counted by import: a component counts as storied when a story imports it.",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-body",
+                                          "fontSize": 14,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "Io32j",
+                                      "width": "fill_container",
+                                      "gap": 8,
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "UtbO7",
+                                          "fill": "$text",
+                                          "content": "·",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "g2o1q",
+                                          "fill": "$text",
+                                          "textGrowth": "fixed-width",
+                                          "width": 302,
+                                          "content": "Test counts are a grep of the tree (vitest cases, screenshots, scenarios); the measure step reads them exactly.",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-body",
+                                          "fontSize": 14,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "rectangle",
+                                  "id": "zGnJE",
+                                  "name": "rule",
+                                  "fill": "$border",
+                                  "width": "fill_container",
+                                  "height": 1
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "lPT5V",
+                                  "fill": "$text-muted",
+                                  "content": "RERUN INPUTS",
+                                  "lineHeight": 1.25,
+                                  "fontFamily": "$font-mono",
+                                  "fontSize": 12,
+                                  "fontWeight": "700",
+                                  "letterSpacing": 1
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "yWLJy",
+                                  "name": "rerun",
+                                  "width": "fill_container",
+                                  "fill": "$code-bg",
+                                  "cornerRadius": 8,
+                                  "layout": "vertical",
+                                  "gap": 4,
+                                  "padding": 16,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "L9rrP",
+                                      "fill": "$code-fg",
+                                      "textGrowth": "fixed-width",
+                                      "width": 286,
+                                      "content": "workflow: pnpm repo-coverage:measure",
+                                      "lineHeight": 1.5,
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "cmNJe",
+                                      "fill": "$code-fg",
+                                      "textGrowth": "fixed-width",
+                                      "width": 286,
+                                      "content": "commit: 0514dc9 · measured 20 Nov 2026",
+                                      "lineHeight": 1.5,
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "tIEGl",
+                                      "fill": "$code-fg",
+                                      "textGrowth": "fixed-width",
+                                      "width": 286,
+                                      "content": "date_range: 90D",
+                                      "lineHeight": 1.5,
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "Cg4Oh",
+                                      "fill": "$code-fg",
+                                      "textGrowth": "fixed-width",
+                                      "width": 286,
+                                      "content": "tools: vitest 5.0.5 · fallow 3.36.0 · storybook 10.6.2",
+                                      "lineHeight": 1.5,
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "SgHxF",
+                                      "fill": "$code-fg",
+                                      "textGrowth": "fixed-width",
+                                      "width": 286,
+                                      "content": "output: apps/repo-coverage/measurement.json · history.json",
+                                      "lineHeight": 1.5,
+                                      "fontFamily": "$font-mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "ZdjNm",
+                                  "name": "exports",
+                                  "gap": 10,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "txAes",
+                                      "name": "Button Download JSON",
+                                      "height": 36,
+                                      "fill": "$text",
+                                      "cornerRadius": 8,
+                                      "gap": 8,
+                                      "padding": [
+                                        8,
+                                        14
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "Wmdsk",
+                                          "fill": "$bg",
+                                          "content": "Download JSON",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-body",
+                                          "fontSize": 13,
+                                          "fontWeight": "600"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "JsY8a",
+                                      "name": "Button Copy Markdown",
+                                      "height": 36,
+                                      "cornerRadius": 8,
+                                      "stroke": "$border-strong",
+                                      "strokeWidth": 1,
+                                      "gap": 8,
+                                      "padding": [
+                                        8,
+                                        14
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "E1xFvM",
+                                          "fill": "$text",
+                                          "content": "Copy Markdown",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-body",
+                                          "fontSize": 13,
+                                          "fontWeight": "600"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
                             }
                           ]
                         }
@@ -22760,7 +25125,7 @@
                   ]
                 },
                 {
-                  "id": "QPDzj",
+                  "id": "wo7iX",
                   "type": "ref",
                   "ref": "gnYbQ",
                   "name": "screens__mobile__dark__screens-repo-coverage-home--sample",
