@@ -2,9 +2,9 @@
   "board": "05-screens-pyramid-2 — Screens",
   "scale": 2,
   "tiles": {
-    "screens__desktop__dark__screens-pyramid-home--filtered": [2784, 552, 2560, 4000],
-    "screens__desktop__light__screens-pyramid-home--filtered": [128, 552, 2560, 4000],
-    "screens__mobile__dark__screens-pyramid-home--filtered": [6316, 552, 780, 7084],
-    "screens__mobile__light__screens-pyramid-home--filtered": [5440, 552, 780, 7084]
+    "screens__desktop__dark__screens-pyramid-home--filtered": [2784, 552, 2560, 4446],
+    "screens__desktop__light__screens-pyramid-home--filtered": [128, 552, 2560, 4446],
+    "screens__mobile__dark__screens-pyramid-home--filtered": [6316, 552, 780, 6792],
+    "screens__mobile__light__screens-pyramid-home--filtered": [5440, 552, 780, 6792]
   }
 }
