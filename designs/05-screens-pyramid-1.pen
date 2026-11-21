@@ -2332,7 +2332,7 @@
                                                       "y": 0,
                                                       "name": "Band acceptance",
                                                       "opacity": 0.18,
-                                                      "geometry": "M171 0l38 0 54.7 96-147.4 0z",
+                                                      "geometry": "M190 0l60.8 96-121.6 0z",
                                                       "viewBox": [
                                                         0,
                                                         0,
@@ -2349,7 +2349,7 @@
                                                       "x": 0,
                                                       "y": 0,
                                                       "name": "Measured acceptance",
-                                                      "geometry": "M143.6 48l92.8 0 27.3 48-147.4 0z",
+                                                      "geometry": "M159.6 48l60.8 0 30.4 48-121.6 0z",
                                                       "viewBox": [
                                                         0,
                                                         0,
@@ -2367,7 +2367,7 @@
                                                       "y": 102,
                                                       "name": "Band component",
                                                       "opacity": 0.18,
-                                                      "geometry": "M112.9 0l154.2 0 54.8 96-263.8 0z",
+                                                      "geometry": "M125.4 0l129.2 0 60.8 96-250.8 0z",
                                                       "viewBox": [
                                                         0,
                                                         0,
@@ -2384,7 +2384,7 @@
                                                       "x": 0,
                                                       "y": 102,
                                                       "name": "Measured component",
-                                                      "geometry": "M99.7 23l180.6 0 41.6 73-263.8 0z",
+                                                      "geometry": "M110.8 23l158.4 0 46.2 73-250.8 0z",
                                                       "viewBox": [
                                                         0,
                                                         0,
@@ -2402,7 +2402,7 @@
                                                       "y": 204,
                                                       "name": "Band unit",
                                                       "opacity": 0.18,
-                                                      "geometry": "M54.7 0l270.6 0 54.7 96-380 0z",
+                                                      "geometry": "M60.8 0l258.4 0 60.8 96-380 0z",
                                                       "viewBox": [
                                                         0,
                                                         0,
@@ -2419,7 +2419,7 @@
                                                       "x": 0,
                                                       "y": 204,
                                                       "name": "Measured unit",
-                                                      "geometry": "M9.8 78.7l360.4 0 9.8 17.3-380 0z",
+                                                      "geometry": "M11 78.7l358 0 11 17.3-380 0z",
                                                       "viewBox": [
                                                         0,
                                                         0,
@@ -2437,7 +2437,7 @@
                                                       "y": 0,
                                                       "name": "Outline acceptance",
                                                       "opacity": 0.55,
-                                                      "geometry": "M171 0l38 0 54.7 96-147.4 0z",
+                                                      "geometry": "M190 0l60.8 96-121.6 0z",
                                                       "viewBox": [
                                                         0,
                                                         0,
@@ -2456,7 +2456,7 @@
                                                       "y": 102,
                                                       "name": "Outline component",
                                                       "opacity": 0.55,
-                                                      "geometry": "M112.9 0l154.2 0 54.8 96-263.8 0z",
+                                                      "geometry": "M125.4 0l129.2 0 60.8 96-250.8 0z",
                                                       "viewBox": [
                                                         0,
                                                         0,
@@ -2475,7 +2475,7 @@
                                                       "y": 204,
                                                       "name": "Outline unit",
                                                       "opacity": 0.55,
-                                                      "geometry": "M54.7 0l270.6 0 54.7 96-380 0z",
+                                                      "geometry": "M60.8 0l258.4 0 60.8 96-380 0z",
                                                       "viewBox": [
                                                         0,
                                                         0,
@@ -8980,7 +8980,7 @@
                                                   "y": 0,
                                                   "name": "Band acceptance",
                                                   "opacity": 0.18,
-                                                  "geometry": "M146.7 0l32.6 0 46.5 76-125.6 0z",
+                                                  "geometry": "M163 0l51.6 76-103.2 0z",
                                                   "viewBox": [
                                                     0,
                                                     0,
@@ -8997,7 +8997,7 @@
                                                   "x": 0,
                                                   "y": 0,
                                                   "name": "Measured acceptance",
-                                                  "geometry": "M123.5 38l79 0 23.3 38-125.6 0z",
+                                                  "geometry": "M137.2 38l51.6 0 25.8 38-103.2 0z",
                                                   "viewBox": [
                                                     0,
                                                     0,
@@ -9015,7 +9015,7 @@
                                                   "y": 82,
                                                   "name": "Band component",
                                                   "opacity": 0.18,
-                                                  "geometry": "M96.6 0l132.8 0 46.5 76-225.8 0z",
+                                                  "geometry": "M107.3 0l111.4 0 51.6 76-214.6 0z",
                                                   "viewBox": [
                                                     0,
                                                     0,
@@ -9032,7 +9032,7 @@
                                                   "x": 0,
                                                   "y": 82,
                                                   "name": "Measured component",
-                                                  "geometry": "M85.4 18.2l155.2 0 35.3 57.8-225.8 0z",
+                                                  "geometry": "M94.9 18.2l136.2 0 39.2 57.8-214.6 0z",
                                                   "viewBox": [
                                                     0,
                                                     0,
@@ -9050,7 +9050,7 @@
                                                   "y": 164,
                                                   "name": "Band unit",
                                                   "opacity": 0.18,
-                                                  "geometry": "M46.5 0l233 0 46.5 76-326 0z",
+                                                  "geometry": "M51.6 0l222.8 0 51.6 76-326 0z",
                                                   "viewBox": [
                                                     0,
                                                     0,
@@ -9067,7 +9067,7 @@
                                                   "x": 0,
                                                   "y": 164,
                                                   "name": "Measured unit",
-                                                  "geometry": "M8.4 62.3l309.2 0 8.4 13.7-326 0z",
+                                                  "geometry": "M9.3 62.3l307.4 0 9.3 13.7-326 0z",
                                                   "viewBox": [
                                                     0,
                                                     0,
@@ -9085,7 +9085,7 @@
                                                   "y": 0,
                                                   "name": "Outline acceptance",
                                                   "opacity": 0.55,
-                                                  "geometry": "M146.7 0l32.6 0 46.5 76-125.6 0z",
+                                                  "geometry": "M163 0l51.6 76-103.2 0z",
                                                   "viewBox": [
                                                     0,
                                                     0,
@@ -9104,7 +9104,7 @@
                                                   "y": 82,
                                                   "name": "Outline component",
                                                   "opacity": 0.55,
-                                                  "geometry": "M96.6 0l132.8 0 46.5 76-225.8 0z",
+                                                  "geometry": "M107.3 0l111.4 0 51.6 76-214.6 0z",
                                                   "viewBox": [
                                                     0,
                                                     0,
@@ -9123,7 +9123,7 @@
                                                   "y": 164,
                                                   "name": "Outline unit",
                                                   "opacity": 0.55,
-                                                  "geometry": "M46.5 0l233 0 46.5 76-326 0z",
+                                                  "geometry": "M51.6 0l222.8 0 51.6 76-326 0z",
                                                   "viewBox": [
                                                     0,
                                                     0,
