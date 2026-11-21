@@ -7209,6 +7209,40 @@
           }
         }
       ]
+    },
+    "chart-strong": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#1F4466",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#B3D1EF",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "chart-soft": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#5F86AD",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#4F86BD",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
     }
   },
   "fileToken": "fb0fcfd1-2de1-4a44-bdb0-30fb8790cb3c"

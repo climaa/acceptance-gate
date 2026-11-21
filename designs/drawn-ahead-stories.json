@@ -1,0 +1,22 @@
+{
+  "stories": [
+    "atoms-badge--dashed",
+    "atoms-meter--partial",
+    "atoms-meter--full",
+    "atoms-meter--empty",
+    "atoms-meter--unmeasured",
+    "molecules-breadcrumb--path",
+    "molecules-breadcrumb--filter",
+    "molecules-coveragebars--default",
+    "molecules-coveragemap--default",
+    "molecules-gapdonut--default",
+    "molecules-gapdonut--empty",
+    "molecules-pyramidfigure--default",
+    "molecules-pyramidfigure--filtered",
+    "molecules-stattile--measured",
+    "molecules-stattile--gaps",
+    "molecules-stattile--unmeasured",
+    "molecules-stattile--not-applicable",
+    "molecules-volumebars--default"
+  ]
+}
