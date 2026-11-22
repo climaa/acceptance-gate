@@ -1,0 +1,3896 @@
+{
+  "schema": 1,
+  "repo": "climaa/acceptance-gate",
+  "commit": "6d4ee88c6c1fdb535bc5ec9be7e7650c57814c51",
+  "measuredAt": "2026-11-22T09:26:51.955Z",
+  "tools": {
+    "vitest": "5.0.5",
+    "fallow": "3.36.0",
+    "storybook": "10.6.2",
+    "node": "22.23.4"
+  },
+  "pyramid": {
+    "unit": 4831,
+    "visual": 286,
+    "acceptance": 88
+  },
+  "health": {
+    "score": 84.8,
+    "grade": "B",
+    "penalties": [
+      {
+        "name": "unit size",
+        "points": 10
+      },
+      {
+        "name": "coupling",
+        "points": 1.7
+      },
+      {
+        "name": "maintainability",
+        "points": 1.4
+      },
+      {
+        "name": "dead files",
+        "points": 1.2
+      },
+      {
+        "name": "dead exports",
+        "points": 0.9
+      }
+    ],
+    "dead": {
+      "files": 49,
+      "exports": 47,
+      "types": 3,
+      "unlistedDeps": 2,
+      "cycles": 0
+    },
+    "duplication": {
+      "semanticPct": 6.7,
+      "mildPct": 1.6,
+      "lines": 958,
+      "groups": 18
+    },
+    "styling": {
+      "score": 98.7,
+      "grade": "A",
+      "tokenDrift": 1,
+      "duplicateBlocks": 4,
+      "complexSelectors": 71,
+      "important": 2
+    },
+    "hotspots": [
+      {
+        "path": "scripts/board-scale-integrity.mjs",
+        "churn": 13,
+        "complexity": 121
+      },
+      {
+        "path": "packages/visual-diff/src/__tests__/policy.test.mjs",
+        "churn": 11,
+        "complexity": 11
+      },
+      {
+        "path": "apps/visual-diff-ui/lib/comparison.ts",
+        "churn": 13,
+        "complexity": 13
+      },
+      {
+        "path": "apps/visual-diff-ui/components/RunPanel.tsx",
+        "churn": 26,
+        "complexity": 77
+      },
+      {
+        "path": "apps/visual-diff-ui/__tests__/console.test.tsx",
+        "churn": 22,
+        "complexity": 13
+      },
+      {
+        "path": ".sandcastle/main.mts",
+        "churn": 23,
+        "complexity": 109
+      },
+      {
+        "path": "packages/visual-diff/src/policy.mjs",
+        "churn": 20,
+        "complexity": 25
+      },
+      {
+        "path": "apps/visual-diff-ui/__tests__/shot-tools.test.tsx",
+        "churn": 14,
+        "complexity": 2
+      },
+      {
+        "path": "apps/blog/__tests__/pages.test.ts",
+        "churn": 9,
+        "complexity": 4
+      },
+      {
+        "path": "apps/visual-diff-ui/components/CurrentJob.tsx",
+        "churn": 15,
+        "complexity": 58
+      },
+      {
+        "path": "packages/visual-diff/src/ledger.mjs",
+        "churn": 7,
+        "complexity": 110
+      },
+      {
+        "path": "apps/visual-diff-ui/components/SpacingReadings.tsx",
+        "churn": 8,
+        "complexity": 54
+      },
+      {
+        "path": "apps/visual-diff-ui/lib/jobs.ts",
+        "churn": 15,
+        "complexity": 45
+      },
+      {
+        "path": "apps/visual-diff-ui/__tests__/run-panel.test.tsx",
+        "churn": 19,
+        "complexity": 13
+      },
+      {
+        "path": "packages/visual-diff/src/__tests__/capture.test.mjs",
+        "churn": 9,
+        "complexity": 10
+      },
+      {
+        "path": "packages/visual-diff/src/capture.mjs",
+        "churn": 11,
+        "complexity": 65
+      },
+      {
+        "path": "apps/visual-diff-ui/components/BoardPane.tsx",
+        "churn": 10,
+        "complexity": 26
+      },
+      {
+        "path": "apps/visual-diff-ui/__tests__/jobs.test.ts",
+        "churn": 17,
+        "complexity": 23
+      },
+      {
+        "path": "apps/visual-diff-ui/components/ShotView.tsx",
+        "churn": 17,
+        "complexity": 25
+      },
+      {
+        "path": "apps/visual-diff-ui/hooks/useShotTools.ts",
+        "churn": 7,
+        "complexity": 23
+      }
+    ],
+    "refactorTargets": [
+      {
+        "path": "scripts/pen/place-tiles.js",
+        "priority": 35,
+        "effort": "medium"
+      },
+      {
+        "path": "apps/e2e/pages/link-preview.ts",
+        "priority": 32.5,
+        "effort": "medium"
+      },
+      {
+        "path": "apps/e2e/pages/console.ts",
+        "priority": 32.4,
+        "effort": "medium"
+      },
+      {
+        "path": "apps/e2e/steps/local/fixtures.ts",
+        "priority": 29.4,
+        "effort": "medium"
+      },
+      {
+        "path": ".sandcastle/sandcastle-pr-queue-gh.mts",
+        "priority": 27.5,
+        "effort": "medium"
+      },
+      {
+        "path": "apps/e2e/pages/about.ts",
+        "priority": 25.3,
+        "effort": "medium"
+      },
+      {
+        "path": "apps/e2e/pages/visual-diff-hosts.ts",
+        "priority": 23.9,
+        "effort": "medium"
+      },
+      {
+        "path": "apps/visual-diff-ui/components/DesignStage.tsx",
+        "priority": 23.1,
+        "effort": "medium"
+      },
+      {
+        "path": "apps/visual-diff-ui/components/SetsTable.tsx",
+        "priority": 22.6,
+        "effort": "medium"
+      },
+      {
+        "path": "scripts/pen/tiles-from-dom/svg.mjs",
+        "priority": 22,
+        "effort": "medium"
+      },
+      {
+        "path": "apps/visual-diff-ui/components/DashboardTemplate.tsx",
+        "priority": 20.8,
+        "effort": "medium"
+      },
+      {
+        "path": "apps/e2e/scripts/lib/suite-integrity-core.mjs",
+        "priority": 20.4,
+        "effort": "medium"
+      },
+      {
+        "path": "apps/visual-diff-ui/components/CurrentJob.tsx",
+        "priority": 29.5,
+        "effort": "high"
+      },
+      {
+        "path": "apps/manual/__tests__/pages.test.ts",
+        "priority": 16.5,
+        "effort": "medium"
+      },
+      {
+        "path": ".sandcastle/sandcastle-stranded-branches.mts",
+        "priority": 16.3,
+        "effort": "medium"
+      },
+      {
+        "path": "apps/visual-diff-ui/components/StoryCard.tsx",
+        "priority": 15.8,
+        "effort": "medium"
+      },
+      {
+        "path": "apps/visual-diff-ui/components/OverlayStage.tsx",
+        "priority": 15.4,
+        "effort": "medium"
+      },
+      {
+        "path": "scripts/board-scale-integrity.mjs",
+        "priority": 22.3,
+        "effort": "high"
+      },
+      {
+        "path": "apps/visual-diff-ui/components/VariantRow.tsx",
+        "priority": 14.7,
+        "effort": "medium"
+      },
+      {
+        "path": "apps/visual-diff-ui/app/api/jobs/current/route.ts",
+        "priority": 14.2,
+        "effort": "medium"
+      },
+      {
+        "path": "apps/visual-diff-ui/components/ReportsTable.tsx",
+        "priority": 13,
+        "effort": "medium"
+      },
+      {
+        "path": "apps/visual-diff-ui/__tests__/console.test.tsx",
+        "priority": 18,
+        "effort": "high"
+      },
+      {
+        "path": ".sandcastle/sandcastle-run-issue.mts",
+        "priority": 11.7,
+        "effort": "medium"
+      },
+      {
+        "path": "apps/visual-diff-ui/__tests__/shot-tools.test.tsx",
+        "priority": 14.6,
+        "effort": "high"
+      },
+      {
+        "path": "scripts/pen/tiles-from-dom/extract-page.mjs",
+        "priority": 12.4,
+        "effort": "high"
+      },
+      {
+        "path": "apps/visual-diff-ui/__tests__/story-card.test.tsx",
+        "priority": 8.2,
+        "effort": "medium"
+      }
+    ],
+    "profiles": {
+      "unitSize": [
+        83.7,
+        9.1,
+        4.5,
+        2.7
+      ],
+      "interfacing": [
+        97.6,
+        2.3,
+        0.1,
+        0
+      ]
+    },
+    "crapOver30": 68,
+    "crapSource": "measured"
+  },
+  "workspaces": [
+    {
+      "name": "@gate/blog",
+      "path": "apps/blog",
+      "category": "apps",
+      "dimensions": {
+        "code": {
+          "dimension": "code",
+          "state": "unmeasured",
+          "reason": "No coverage block in apps/blog/vitest.config.mts"
+        },
+        "visual": {
+          "dimension": "visual",
+          "state": "measured",
+          "components": {
+            "total": 13,
+            "storied": 6,
+            "tiled": 0,
+            "baselined": 6
+          },
+          "screens": {
+            "stories": 8,
+            "tiled": 0,
+            "baselined": 8
+          },
+          "routes": {
+            "total": 7,
+            "loading": {
+              "own": 3,
+              "inherited": 1,
+              "none": 3
+            },
+            "error": {
+              "own": 1,
+              "inherited": 6,
+              "none": 0
+            },
+            "notFound": {
+              "own": 1,
+              "inherited": 6,
+              "none": 0
+            }
+          }
+        },
+        "acceptance": {
+          "dimension": "acceptance",
+          "state": "measured",
+          "scenarios": 34,
+          "features": [
+            "a11y",
+            "about",
+            "blog",
+            "changelog-comments",
+            "link-preview",
+            "smoke"
+          ]
+        },
+        "health": {
+          "dimension": "health",
+          "state": "measured",
+          "score": 85.8,
+          "grade": "A",
+          "overCeiling": 0,
+          "deadFiles": 14,
+          "deadExports": 8,
+          "refactorTargets": 0
+        }
+      }
+    },
+    {
+      "name": "@gate/census",
+      "path": "apps/census",
+      "category": "apps",
+      "dimensions": {
+        "code": {
+          "dimension": "code",
+          "state": "measured",
+          "lines": {
+            "covered": 336,
+            "total": 336,
+            "pct": 100
+          },
+          "floor": 98,
+          "staticReachPct": 100,
+          "files": [
+            {
+              "path": "lib/assemble.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 33,
+                "total": 33,
+                "pct": 100
+              },
+              "maintainability": 86.7,
+              "crap": 4
+            },
+            {
+              "path": "lib/collect/acceptance.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 20,
+                "total": 20,
+                "pct": 100
+              },
+              "maintainability": 87.8,
+              "crap": 4
+            },
+            {
+              "path": "lib/collect/code.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 41,
+                "total": 41,
+                "pct": 100
+              },
+              "maintainability": 90.1,
+              "crap": 11
+            },
+            {
+              "path": "lib/collect/health.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 39,
+                "total": 39,
+                "pct": 100
+              },
+              "maintainability": 91.5,
+              "crap": 5
+            },
+            {
+              "path": "lib/collect/routes.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 24,
+                "total": 24,
+                "pct": 100
+              },
+              "maintainability": 89.7,
+              "crap": 4
+            },
+            {
+              "path": "lib/collect/visual.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 71,
+                "total": 71,
+                "pct": 100
+              },
+              "maintainability": 86.9,
+              "crap": 5
+            },
+            {
+              "path": "lib/features.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 8,
+                "total": 8,
+                "pct": 100
+              },
+              "maintainability": 97,
+              "crap": 3
+            },
+            {
+              "path": "lib/gaps.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 26,
+                "total": 26,
+                "pct": 100
+              },
+              "maintainability": 90.5,
+              "crap": 4
+            },
+            {
+              "path": "lib/measurement.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 25,
+                "total": 25,
+                "pct": 100
+              },
+              "maintainability": 91.4,
+              "crap": 3
+            },
+            {
+              "path": "lib/validate.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 49,
+                "total": 49,
+                "pct": 100
+              },
+              "maintainability": 88.4,
+              "crap": 3
+            }
+          ]
+        },
+        "visual": {
+          "dimension": "visual",
+          "state": "not-applicable",
+          "reason": "No components"
+        },
+        "acceptance": {
+          "dimension": "acceptance",
+          "state": "measured",
+          "scenarios": 0,
+          "features": []
+        },
+        "health": {
+          "dimension": "health",
+          "state": "measured",
+          "score": 93.3,
+          "grade": "A",
+          "overCeiling": 0,
+          "deadFiles": 0,
+          "deadExports": 2,
+          "refactorTargets": 0
+        }
+      }
+    },
+    {
+      "name": "@gate/e2e",
+      "path": "apps/e2e",
+      "category": "apps",
+      "dimensions": {
+        "code": {
+          "dimension": "code",
+          "state": "unmeasured",
+          "reason": "No coverage block in apps/e2e/vitest.config.ts"
+        },
+        "visual": {
+          "dimension": "visual",
+          "state": "not-applicable",
+          "reason": "No components"
+        },
+        "acceptance": {
+          "dimension": "acceptance",
+          "state": "not-applicable",
+          "reason": "The acceptance suite itself"
+        },
+        "health": {
+          "dimension": "health",
+          "state": "measured",
+          "score": 59.5,
+          "grade": "C",
+          "overCeiling": 0,
+          "deadFiles": 29,
+          "deadExports": 4,
+          "refactorTargets": 6
+        }
+      }
+    },
+    {
+      "name": "@gate/manual",
+      "path": "apps/manual",
+      "category": "apps",
+      "dimensions": {
+        "code": {
+          "dimension": "code",
+          "state": "unmeasured",
+          "reason": "No coverage block in apps/manual/vitest.config.mts"
+        },
+        "visual": {
+          "dimension": "visual",
+          "state": "measured",
+          "components": {
+            "total": 5,
+            "storied": 3,
+            "tiled": 0,
+            "baselined": 3
+          },
+          "screens": {
+            "stories": 3,
+            "tiled": 0,
+            "baselined": 3
+          },
+          "routes": {
+            "total": 3,
+            "loading": {
+              "own": 0,
+              "inherited": 0,
+              "none": 3
+            },
+            "error": {
+              "own": 1,
+              "inherited": 2,
+              "none": 0
+            },
+            "notFound": {
+              "own": 1,
+              "inherited": 2,
+              "none": 0
+            }
+          }
+        },
+        "acceptance": {
+          "dimension": "acceptance",
+          "state": "measured",
+          "scenarios": 0,
+          "features": []
+        },
+        "health": {
+          "dimension": "health",
+          "state": "measured",
+          "score": 84.5,
+          "grade": "B",
+          "overCeiling": 0,
+          "deadFiles": 0,
+          "deadExports": 0,
+          "refactorTargets": 1
+        }
+      }
+    },
+    {
+      "name": "@gate/storybook",
+      "path": "apps/storybook",
+      "category": "apps",
+      "dimensions": {
+        "code": {
+          "dimension": "code",
+          "state": "unmeasured",
+          "reason": "No coverage block in apps/storybook/vitest.config.ts"
+        },
+        "visual": {
+          "dimension": "visual",
+          "state": "not-applicable",
+          "reason": "Renders the stories; owns none"
+        },
+        "acceptance": {
+          "dimension": "acceptance",
+          "state": "measured",
+          "scenarios": 0,
+          "features": []
+        },
+        "health": {
+          "dimension": "health",
+          "state": "measured",
+          "score": 96.7,
+          "grade": "A",
+          "overCeiling": 0,
+          "deadFiles": 0,
+          "deadExports": 0,
+          "refactorTargets": 0
+        }
+      }
+    },
+    {
+      "name": "@gate/visual-diff-ui",
+      "path": "apps/visual-diff-ui",
+      "category": "apps",
+      "dimensions": {
+        "code": {
+          "dimension": "code",
+          "state": "measured",
+          "lines": {
+            "covered": 2710,
+            "total": 2865,
+            "pct": 94.6
+          },
+          "floor": 94,
+          "staticReachPct": 94.1,
+          "files": [
+            {
+              "path": "app/_screens/ComparisonScreen.stories.tsx",
+              "group": "app",
+              "lines": {
+                "covered": 0,
+                "total": 3,
+                "pct": 0
+              },
+              "maintainability": 91.1,
+              "crap": 2
+            },
+            {
+              "path": "app/_screens/DashboardScreen.stories.tsx",
+              "group": "app",
+              "lines": {
+                "covered": 0,
+                "total": 3,
+                "pct": 0
+              },
+              "maintainability": 93,
+              "crap": 2
+            },
+            {
+              "path": "app/_screens/ReportScreen.stories.tsx",
+              "group": "app",
+              "lines": {
+                "covered": 0,
+                "total": 6,
+                "pct": 0
+              },
+              "maintainability": 92.2,
+              "crap": 2
+            },
+            {
+              "path": "app/_screens/SetScreen.stories.tsx",
+              "group": "app",
+              "lines": {
+                "covered": 0,
+                "total": 4,
+                "pct": 0
+              },
+              "maintainability": 90.4,
+              "crap": 2
+            },
+            {
+              "path": "app/_screens/ShotScreen.stories.tsx",
+              "group": "app",
+              "lines": {
+                "covered": 0,
+                "total": 5,
+                "pct": 0
+              },
+              "maintainability": 90.2,
+              "crap": 6
+            },
+            {
+              "path": "app/_screens/board-sample.ts",
+              "group": "app",
+              "lines": {
+                "covered": 5,
+                "total": 5,
+                "pct": 100
+              },
+              "maintainability": 94.9,
+              "crap": 0
+            },
+            {
+              "path": "app/_screens/console.tsx",
+              "group": "app",
+              "lines": {
+                "covered": 18,
+                "total": 18,
+                "pct": 100
+              },
+              "maintainability": 90.9,
+              "crap": 4
+            },
+            {
+              "path": "app/_screens/dashboard-sample.ts",
+              "group": "app",
+              "lines": {
+                "covered": 5,
+                "total": 5,
+                "pct": 100
+              },
+              "maintainability": 94.4,
+              "crap": 1
+            },
+            {
+              "path": "app/_screens/report-sample.ts",
+              "group": "app",
+              "lines": {
+                "covered": 7,
+                "total": 7,
+                "pct": 100
+              }
+            },
+            {
+              "path": "app/_screens/set-sample.ts",
+              "group": "app",
+              "lines": {
+                "covered": 15,
+                "total": 15,
+                "pct": 100
+              },
+              "maintainability": 90.7,
+              "crap": 2
+            },
+            {
+              "path": "app/api/designs/route.ts",
+              "group": "app",
+              "lines": {
+                "covered": 13,
+                "total": 15,
+                "pct": 86.7
+              },
+              "maintainability": 92.3,
+              "crap": 5.1
+            },
+            {
+              "path": "app/api/env/route.ts",
+              "group": "app",
+              "lines": {
+                "covered": 3,
+                "total": 3,
+                "pct": 100
+              },
+              "maintainability": 95,
+              "crap": 1
+            },
+            {
+              "path": "app/api/jobs/current/route.ts",
+              "group": "app",
+              "lines": {
+                "covered": 9,
+                "total": 9,
+                "pct": 100
+              },
+              "maintainability": 90.1,
+              "crap": 7
+            },
+            {
+              "path": "app/api/jobs/route.ts",
+              "group": "app",
+              "lines": {
+                "covered": 15,
+                "total": 16,
+                "pct": 93.8
+              },
+              "maintainability": 86.4,
+              "crap": 7.1
+            },
+            {
+              "path": "app/api/label/route.ts",
+              "group": "app",
+              "lines": {
+                "covered": 6,
+                "total": 6,
+                "pct": 100
+              },
+              "maintainability": 90.4,
+              "crap": 4
+            },
+            {
+              "path": "app/api/prune/route.ts",
+              "group": "app",
+              "lines": {
+                "covered": 25,
+                "total": 25,
+                "pct": 100
+              },
+              "maintainability": 89.2,
+              "crap": 5
+            },
+            {
+              "path": "app/api/reports/[id]/route.ts",
+              "group": "app",
+              "lines": {
+                "covered": 15,
+                "total": 15,
+                "pct": 100
+              },
+              "maintainability": 89.8,
+              "crap": 4
+            },
+            {
+              "path": "app/api/reports/route.ts",
+              "group": "app",
+              "lines": {
+                "covered": 3,
+                "total": 3,
+                "pct": 100
+              },
+              "maintainability": 96.7,
+              "crap": 1
+            },
+            {
+              "path": "app/api/sets/[label]/route.ts",
+              "group": "app",
+              "lines": {
+                "covered": 12,
+                "total": 12,
+                "pct": 100
+              },
+              "maintainability": 89.5,
+              "crap": 6
+            },
+            {
+              "path": "app/api/sets/[label]/shots/[file]/route.ts",
+              "group": "app",
+              "lines": {
+                "covered": 17,
+                "total": 17,
+                "pct": 100
+              },
+              "maintainability": 91.8,
+              "crap": 4
+            },
+            {
+              "path": "app/api/sets/route.ts",
+              "group": "app",
+              "lines": {
+                "covered": 3,
+                "total": 3,
+                "pct": 100
+              },
+              "maintainability": 96.6,
+              "crap": 1
+            },
+            {
+              "path": "app/api/shots/[report]/[file]/route.ts",
+              "group": "app",
+              "lines": {
+                "covered": 9,
+                "total": 9,
+                "pct": 100
+              },
+              "maintainability": 94.9,
+              "crap": 3
+            },
+            {
+              "path": "app/api/stories/route.ts",
+              "group": "app",
+              "lines": {
+                "covered": 3,
+                "total": 3,
+                "pct": 100
+              },
+              "maintainability": 95.1,
+              "crap": 1
+            },
+            {
+              "path": "app/error.tsx",
+              "group": "app",
+              "lines": {
+                "covered": 4,
+                "total": 4,
+                "pct": 100
+              },
+              "maintainability": 93.3,
+              "crap": 1
+            },
+            {
+              "path": "app/global-error.tsx",
+              "group": "app",
+              "lines": {
+                "covered": 5,
+                "total": 5,
+                "pct": 100
+              },
+              "maintainability": 91.9,
+              "crap": 1
+            },
+            {
+              "path": "app/layout.tsx",
+              "group": "app",
+              "lines": {
+                "covered": 6,
+                "total": 6,
+                "pct": 100
+              },
+              "maintainability": 90.5,
+              "crap": 2
+            },
+            {
+              "path": "app/not-found.tsx",
+              "group": "app",
+              "lines": {
+                "covered": 0,
+                "total": 2,
+                "pct": 0
+              },
+              "maintainability": 95,
+              "crap": 2
+            },
+            {
+              "path": "app/og/site.png/route.tsx",
+              "group": "app",
+              "lines": {
+                "covered": 1,
+                "total": 1,
+                "pct": 100
+              },
+              "maintainability": 96.6,
+              "crap": 1
+            },
+            {
+              "path": "app/page.tsx",
+              "group": "app",
+              "lines": {
+                "covered": 1,
+                "total": 8,
+                "pct": 12.5
+              },
+              "maintainability": 89.6,
+              "crap": 12
+            },
+            {
+              "path": "app/report/[id]/@modal/(.)compare/[key]/page.tsx",
+              "group": "app",
+              "lines": {
+                "covered": 0,
+                "total": 2,
+                "pct": 0
+              },
+              "maintainability": 94.5,
+              "crap": 2
+            },
+            {
+              "path": "app/report/[id]/@modal/default.tsx",
+              "group": "app",
+              "lines": {
+                "covered": 0,
+                "total": 1,
+                "pct": 0
+              },
+              "maintainability": 99.4,
+              "crap": 2
+            },
+            {
+              "path": "app/report/[id]/compare/[key]/opengraph-image.tsx",
+              "group": "app",
+              "lines": {
+                "covered": 8,
+                "total": 8,
+                "pct": 100
+              },
+              "maintainability": 94.4,
+              "crap": 2
+            },
+            {
+              "path": "app/report/[id]/compare/[key]/page.tsx",
+              "group": "app",
+              "lines": {
+                "covered": 0,
+                "total": 2,
+                "pct": 0
+              },
+              "maintainability": 92.5,
+              "crap": 2
+            },
+            {
+              "path": "app/report/[id]/layout.tsx",
+              "group": "app",
+              "lines": {
+                "covered": 0,
+                "total": 1,
+                "pct": 0
+              },
+              "maintainability": 99.4,
+              "crap": 2
+            },
+            {
+              "path": "app/report/[id]/page.tsx",
+              "group": "app",
+              "lines": {
+                "covered": 4,
+                "total": 5,
+                "pct": 80
+              },
+              "maintainability": 90.5,
+              "crap": 2
+            },
+            {
+              "path": "app/set/[label]/@modal/(.)shot/[key]/page.tsx",
+              "group": "app",
+              "lines": {
+                "covered": 0,
+                "total": 2,
+                "pct": 0
+              },
+              "maintainability": 94.4,
+              "crap": 2
+            },
+            {
+              "path": "app/set/[label]/@modal/default.tsx",
+              "group": "app",
+              "lines": {
+                "covered": 0,
+                "total": 1,
+                "pct": 0
+              },
+              "maintainability": 99.4,
+              "crap": 2
+            },
+            {
+              "path": "app/set/[label]/layout.tsx",
+              "group": "app",
+              "lines": {
+                "covered": 0,
+                "total": 1,
+                "pct": 0
+              },
+              "maintainability": 99.4,
+              "crap": 2
+            },
+            {
+              "path": "app/set/[label]/page.tsx",
+              "group": "app",
+              "lines": {
+                "covered": 3,
+                "total": 14,
+                "pct": 21.4
+              },
+              "maintainability": 87.1,
+              "crap": 42
+            },
+            {
+              "path": "app/set/[label]/shot/[key]/page.tsx",
+              "group": "app",
+              "lines": {
+                "covered": 0,
+                "total": 2,
+                "pct": 0
+              },
+              "maintainability": 93.3,
+              "crap": 2
+            },
+            {
+              "path": "app/site-analytics.tsx",
+              "group": "app",
+              "lines": {
+                "covered": 2,
+                "total": 2,
+                "pct": 100
+              },
+              "maintainability": 96.6,
+              "crap": 1
+            },
+            {
+              "path": "components/BoardPane.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 33,
+                "total": 34,
+                "pct": 97.1
+              },
+              "maintainability": 89.4,
+              "crap": 21
+            },
+            {
+              "path": "components/BucketChipRow.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 11,
+                "total": 11,
+                "pct": 100
+              },
+              "maintainability": 90.9,
+              "crap": 2
+            },
+            {
+              "path": "components/CanonicalSet.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 1,
+                "total": 1,
+                "pct": 100
+              },
+              "maintainability": 91.3,
+              "crap": 2
+            },
+            {
+              "path": "components/ComparePickers.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 27,
+                "total": 27,
+                "pct": 100
+              },
+              "maintainability": 90.9,
+              "crap": 7
+            },
+            {
+              "path": "components/CompareStart.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 12,
+                "total": 12,
+                "pct": 100
+              },
+              "maintainability": 96.7,
+              "crap": 2
+            },
+            {
+              "path": "components/ComparisonContents.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 5,
+                "total": 5,
+                "pct": 100
+              },
+              "maintainability": 91.8,
+              "crap": 2
+            },
+            {
+              "path": "components/ComparisonModal.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 101,
+                "total": 111,
+                "pct": 91
+              },
+              "maintainability": 86.5,
+              "crap": 12
+            },
+            {
+              "path": "components/ComparisonRoute.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 23,
+                "total": 23,
+                "pct": 100
+              },
+              "maintainability": 88.3,
+              "crap": 7
+            },
+            {
+              "path": "components/ConfirmDialogs.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 43,
+                "total": 44,
+                "pct": 97.7
+              },
+              "maintainability": 92.1,
+              "crap": 4
+            },
+            {
+              "path": "components/ConsoleChrome.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 3,
+                "total": 3,
+                "pct": 100
+              },
+              "maintainability": 88.1,
+              "crap": 1
+            },
+            {
+              "path": "components/CopyLink.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 12,
+                "total": 12,
+                "pct": 100
+              },
+              "maintainability": 94.8,
+              "crap": 3
+            },
+            {
+              "path": "components/CurrentJob.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 122,
+                "total": 122,
+                "pct": 100
+              },
+              "maintainability": 86.3,
+              "crap": 15
+            },
+            {
+              "path": "components/DashboardTemplate.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 12,
+                "total": 12,
+                "pct": 100
+              },
+              "maintainability": 86,
+              "crap": 10
+            },
+            {
+              "path": "components/DesignStage.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 20,
+                "total": 20,
+                "pct": 100
+              },
+              "maintainability": 90.1,
+              "crap": 11
+            },
+            {
+              "path": "components/DevStorybookLink.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 6,
+                "total": 6,
+                "pct": 100
+              },
+              "maintainability": 94.3,
+              "crap": 2
+            },
+            {
+              "path": "components/Field.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 1,
+                "total": 1,
+                "pct": 100
+              },
+              "maintainability": 96.6,
+              "crap": 1
+            },
+            {
+              "path": "components/FilterPicker.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 19,
+                "total": 19,
+                "pct": 100
+              },
+              "maintainability": 90.3,
+              "crap": 5
+            },
+            {
+              "path": "components/HistoryTable.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 8,
+                "total": 8,
+                "pct": 100
+              },
+              "maintainability": 91.5,
+              "crap": 5
+            },
+            {
+              "path": "components/LogTail.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 6,
+                "total": 6,
+                "pct": 100
+              },
+              "maintainability": 98.2,
+              "crap": 2
+            },
+            {
+              "path": "components/ModeTabs.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 24,
+                "total": 24,
+                "pct": 100
+              },
+              "maintainability": 94.9,
+              "crap": 3
+            },
+            {
+              "path": "components/Note.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 1,
+                "total": 1,
+                "pct": 100
+              },
+              "maintainability": 99.4,
+              "crap": 1
+            },
+            {
+              "path": "components/OutcomeWord.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 1,
+                "total": 1,
+                "pct": 100
+              },
+              "maintainability": 94.4,
+              "crap": 2
+            },
+            {
+              "path": "components/OverlayStage.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 37,
+                "total": 39,
+                "pct": 94.9
+              },
+              "maintainability": 89.5,
+              "crap": 12
+            },
+            {
+              "path": "components/ReportBuckets.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 5,
+                "total": 5,
+                "pct": 100
+              },
+              "maintainability": 83.3,
+              "crap": 2
+            },
+            {
+              "path": "components/ReportContents.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 0,
+                "total": 6,
+                "pct": 0
+              },
+              "maintainability": 91,
+              "crap": 12
+            },
+            {
+              "path": "components/ReportResults.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 61,
+                "total": 63,
+                "pct": 96.8
+              },
+              "maintainability": 85.4,
+              "crap": 4
+            },
+            {
+              "path": "components/ReportTemplate.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 8,
+                "total": 8,
+                "pct": 100
+              },
+              "maintainability": 90.1,
+              "crap": 8
+            },
+            {
+              "path": "components/ReportsTable.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 13,
+                "total": 13,
+                "pct": 100
+              },
+              "maintainability": 90.3,
+              "crap": 5.3
+            },
+            {
+              "path": "components/RetentionControl.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 6,
+                "total": 7,
+                "pct": 85.7
+              },
+              "maintainability": 94.1,
+              "crap": 2
+            },
+            {
+              "path": "components/ReviewBar.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 8,
+                "total": 8,
+                "pct": 100
+              },
+              "maintainability": 95.7,
+              "crap": 2
+            },
+            {
+              "path": "components/RunPanel.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 111,
+                "total": 112,
+                "pct": 99.1
+              },
+              "maintainability": 85.6,
+              "crap": 11
+            },
+            {
+              "path": "components/SetFilterBar.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 18,
+                "total": 18,
+                "pct": 100
+              },
+              "maintainability": 87.4,
+              "crap": 2
+            },
+            {
+              "path": "components/SetFilterUrl.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 15,
+                "total": 15,
+                "pct": 100
+              },
+              "maintainability": 91.3,
+              "crap": 5.4
+            },
+            {
+              "path": "components/SetTemplate.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 10,
+                "total": 10,
+                "pct": 100
+              },
+              "maintainability": 88,
+              "crap": 6
+            },
+            {
+              "path": "components/SetsTable.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 15,
+                "total": 15,
+                "pct": 100
+              },
+              "maintainability": 80.7,
+              "crap": 6
+            },
+            {
+              "path": "components/ShotContents.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 6,
+                "total": 6,
+                "pct": 100
+              },
+              "maintainability": 89.8,
+              "crap": 3
+            },
+            {
+              "path": "components/ShotView.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 38,
+                "total": 38,
+                "pct": 100
+              },
+              "maintainability": 86.5,
+              "crap": 9
+            },
+            {
+              "path": "components/SpacingReadings.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 67,
+                "total": 67,
+                "pct": 100
+              },
+              "maintainability": 89.1,
+              "crap": 18
+            },
+            {
+              "path": "components/StoryCard.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 10,
+                "total": 10,
+                "pct": 100
+              },
+              "maintainability": 89.6,
+              "crap": 5
+            },
+            {
+              "path": "components/StoryScreenshots.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 10,
+                "total": 10,
+                "pct": 100
+              },
+              "maintainability": 90.1,
+              "crap": 8
+            },
+            {
+              "path": "components/ThreeUp.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 10,
+                "total": 10,
+                "pct": 100
+              },
+              "maintainability": 91.3,
+              "crap": 2
+            },
+            {
+              "path": "components/TierSection.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 7,
+                "total": 7,
+                "pct": 100
+              },
+              "maintainability": 90.4,
+              "crap": 7
+            },
+            {
+              "path": "components/VariantRow.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 5,
+                "total": 5,
+                "pct": 100
+              },
+              "maintainability": 90.2,
+              "crap": 6
+            },
+            {
+              "path": "components/ViewControls.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 5,
+                "total": 6,
+                "pct": 83.3
+              },
+              "maintainability": 92.3,
+              "crap": 6
+            },
+            {
+              "path": "hooks/useBoardCrop.ts",
+              "group": "hooks",
+              "lines": {
+                "covered": 55,
+                "total": 56,
+                "pct": 98.2
+              },
+              "maintainability": 87.7,
+              "crap": 6
+            },
+            {
+              "path": "hooks/useDismissedJob.ts",
+              "group": "hooks",
+              "lines": {
+                "covered": 33,
+                "total": 34,
+                "pct": 97.1
+              },
+              "maintainability": 93.9,
+              "crap": 3
+            },
+            {
+              "path": "hooks/useJsonOnMount.ts",
+              "group": "hooks",
+              "lines": {
+                "covered": 13,
+                "total": 13,
+                "pct": 100
+              },
+              "maintainability": 94.5,
+              "crap": 4
+            },
+            {
+              "path": "hooks/useMediaQuery.ts",
+              "group": "hooks",
+              "lines": {
+                "covered": 11,
+                "total": 11,
+                "pct": 100
+              },
+              "maintainability": 95.7,
+              "crap": 2
+            },
+            {
+              "path": "hooks/useMutation.ts",
+              "group": "hooks",
+              "lines": {
+                "covered": 32,
+                "total": 32,
+                "pct": 100
+              },
+              "maintainability": 91.8,
+              "crap": 8
+            },
+            {
+              "path": "hooks/useOverlayAlignment.ts",
+              "group": "hooks",
+              "lines": {
+                "covered": 9,
+                "total": 9,
+                "pct": 100
+              },
+              "maintainability": 93.3,
+              "crap": 5
+            },
+            {
+              "path": "hooks/useReportKeys.ts",
+              "group": "hooks",
+              "lines": {
+                "covered": 49,
+                "total": 49,
+                "pct": 100
+              },
+              "maintainability": 90.6,
+              "crap": 14
+            },
+            {
+              "path": "hooks/useReshow.ts",
+              "group": "hooks",
+              "lines": {
+                "covered": 6,
+                "total": 6,
+                "pct": 100
+              },
+              "maintainability": 98.2,
+              "crap": 2
+            },
+            {
+              "path": "hooks/useReviewMarks.ts",
+              "group": "hooks",
+              "lines": {
+                "covered": 33,
+                "total": 34,
+                "pct": 97.1
+              },
+              "maintainability": 91.2,
+              "crap": 7
+            },
+            {
+              "path": "hooks/useShotAddress.ts",
+              "group": "hooks",
+              "lines": {
+                "covered": 22,
+                "total": 22,
+                "pct": 100
+              },
+              "maintainability": 87.5,
+              "crap": 4
+            },
+            {
+              "path": "hooks/useShotTools.ts",
+              "group": "hooks",
+              "lines": {
+                "covered": 39,
+                "total": 41,
+                "pct": 95.1
+              },
+              "maintainability": 86.8,
+              "crap": 7
+            },
+            {
+              "path": "hooks/useShotWalk.ts",
+              "group": "hooks",
+              "lines": {
+                "covered": 22,
+                "total": 22,
+                "pct": 100
+              },
+              "maintainability": 77.6,
+              "crap": 9.1
+            },
+            {
+              "path": "instrumentation-client.ts",
+              "lines": {
+                "covered": 3,
+                "total": 3,
+                "pct": 100
+              },
+              "maintainability": 95.5,
+              "crap": 1
+            },
+            {
+              "path": "instrumentation.ts",
+              "lines": {
+                "covered": 4,
+                "total": 4,
+                "pct": 100
+              },
+              "maintainability": 95.5,
+              "crap": 2
+            },
+            {
+              "path": "lib/anchors.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 1,
+                "total": 1,
+                "pct": 100
+              }
+            },
+            {
+              "path": "lib/api-contract.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 9,
+                "total": 9,
+                "pct": 100
+              }
+            },
+            {
+              "path": "lib/baselines.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 24,
+                "total": 24,
+                "pct": 100
+              },
+              "maintainability": 92,
+              "crap": 8
+            },
+            {
+              "path": "lib/board-crop.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 20,
+                "total": 20,
+                "pct": 100
+              },
+              "maintainability": 90.5,
+              "crap": 5
+            },
+            {
+              "path": "lib/board-homes.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 11,
+                "total": 11,
+                "pct": 100
+              },
+              "maintainability": 91.5,
+              "crap": 4
+            },
+            {
+              "path": "lib/browser-storage.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 4,
+                "total": 4,
+                "pct": 100
+              },
+              "maintainability": 98.2,
+              "crap": 3
+            },
+            {
+              "path": "lib/comparison-meta.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 14,
+                "total": 14,
+                "pct": 100
+              },
+              "maintainability": 89.2,
+              "crap": 3
+            },
+            {
+              "path": "lib/comparison.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 52,
+                "total": 52,
+                "pct": 100
+              },
+              "maintainability": 88.8,
+              "crap": 6
+            },
+            {
+              "path": "lib/data-dir.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 8,
+                "total": 8,
+                "pct": 100
+              },
+              "maintainability": 97.6,
+              "crap": 3
+            },
+            {
+              "path": "lib/data.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 70,
+                "total": 72,
+                "pct": 97.2
+              },
+              "maintainability": 88.3,
+              "crap": 4
+            },
+            {
+              "path": "lib/design-exports.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 1,
+                "total": 1,
+                "pct": 100
+              }
+            },
+            {
+              "path": "lib/design-urls.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 6,
+                "total": 6,
+                "pct": 100
+              },
+              "maintainability": 95.4,
+              "crap": 1
+            },
+            {
+              "path": "lib/dismiss-state.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 6,
+                "total": 6,
+                "pct": 100
+              },
+              "maintainability": 93.9,
+              "crap": 3
+            },
+            {
+              "path": "lib/docker.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 9,
+                "total": 10,
+                "pct": 90
+              },
+              "maintainability": 96,
+              "crap": 3
+            },
+            {
+              "path": "lib/git.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 28,
+                "total": 28,
+                "pct": 100
+              },
+              "maintainability": 97.3,
+              "crap": 8
+            },
+            {
+              "path": "lib/guard.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 7,
+                "total": 7,
+                "pct": 100
+              },
+              "maintainability": 91.8,
+              "crap": 5
+            },
+            {
+              "path": "lib/host.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 8,
+                "total": 8,
+                "pct": 100
+              },
+              "maintainability": 91.8,
+              "crap": 4
+            },
+            {
+              "path": "lib/job-contract.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 20,
+                "total": 20,
+                "pct": 100
+              },
+              "maintainability": 99.4,
+              "crap": 3
+            },
+            {
+              "path": "lib/jobs.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 127,
+                "total": 131,
+                "pct": 96.9
+              },
+              "maintainability": 87.2,
+              "crap": 5.1
+            },
+            {
+              "path": "lib/ledger.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 13,
+                "total": 13,
+                "pct": 100
+              },
+              "maintainability": 85.5,
+              "crap": 3
+            },
+            {
+              "path": "lib/local.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 8,
+                "total": 8,
+                "pct": 100
+              },
+              "maintainability": 95.9,
+              "crap": 5
+            },
+            {
+              "path": "lib/network.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 8,
+                "total": 8,
+                "pct": 100
+              },
+              "maintainability": 91.5,
+              "crap": 3
+            },
+            {
+              "path": "lib/outcome.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 42,
+                "total": 42,
+                "pct": 100
+              },
+              "maintainability": 93.6,
+              "crap": 5
+            },
+            {
+              "path": "lib/overlay-params.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 26,
+                "total": 26,
+                "pct": 100
+              },
+              "maintainability": 86.8,
+              "crap": 6
+            },
+            {
+              "path": "lib/page-refresh.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 19,
+                "total": 19,
+                "pct": 100
+              },
+              "maintainability": 97.6,
+              "crap": 5
+            },
+            {
+              "path": "lib/paths.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 31,
+                "total": 31,
+                "pct": 100
+              },
+              "maintainability": 92.6,
+              "crap": 3
+            },
+            {
+              "path": "lib/provenance.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 17,
+                "total": 17,
+                "pct": 100
+              },
+              "maintainability": 94.5,
+              "crap": 3
+            },
+            {
+              "path": "lib/readings.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 19,
+                "total": 19,
+                "pct": 100
+              },
+              "maintainability": 93.3,
+              "crap": 10.3
+            },
+            {
+              "path": "lib/refusal-copy.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 11,
+                "total": 11,
+                "pct": 100
+              },
+              "maintainability": 96.9,
+              "crap": 1
+            },
+            {
+              "path": "lib/refusals.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 8,
+                "total": 8,
+                "pct": 100
+              },
+              "maintainability": 92,
+              "crap": 2
+            },
+            {
+              "path": "lib/report-order.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 2,
+                "total": 2,
+                "pct": 100
+              },
+              "maintainability": 98.2,
+              "crap": 3.3
+            },
+            {
+              "path": "lib/report-view.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 80,
+                "total": 80,
+                "pct": 100
+              },
+              "maintainability": 89.7,
+              "crap": 4
+            },
+            {
+              "path": "lib/review-state.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 13,
+                "total": 13,
+                "pct": 100
+              },
+              "maintainability": 90.9,
+              "crap": 3
+            },
+            {
+              "path": "lib/runner.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 116,
+                "total": 124,
+                "pct": 93.5
+              },
+              "maintainability": 84.7,
+              "crap": 12
+            },
+            {
+              "path": "lib/sections.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 16,
+                "total": 16,
+                "pct": 100
+              },
+              "maintainability": 93.6,
+              "crap": 3
+            },
+            {
+              "path": "lib/set-filter.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 5,
+                "total": 5,
+                "pct": 100
+              },
+              "maintainability": 95.4,
+              "crap": 3
+            },
+            {
+              "path": "lib/set-ledger.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 10,
+                "total": 10,
+                "pct": 100
+              },
+              "maintainability": 89,
+              "crap": 4
+            },
+            {
+              "path": "lib/set-shots.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 44,
+                "total": 44,
+                "pct": 100
+              },
+              "maintainability": 88,
+              "crap": 8
+            },
+            {
+              "path": "lib/set-view.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 66,
+                "total": 66,
+                "pct": 100
+              },
+              "maintainability": 88.8,
+              "crap": 5
+            },
+            {
+              "path": "lib/share.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 6,
+                "total": 6,
+                "pct": 100
+              },
+              "maintainability": 94.4,
+              "crap": 2
+            },
+            {
+              "path": "lib/shot-meta.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 6,
+                "total": 6,
+                "pct": 100
+              },
+              "maintainability": 90.5,
+              "crap": 3
+            },
+            {
+              "path": "lib/shot-props.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 11,
+                "total": 11,
+                "pct": 100
+              },
+              "maintainability": 87.3,
+              "crap": 9
+            },
+            {
+              "path": "lib/shots.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 34,
+                "total": 34,
+                "pct": 100
+              },
+              "maintainability": 92.4,
+              "crap": 6
+            },
+            {
+              "path": "lib/sidecar.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 9,
+                "total": 9,
+                "pct": 100
+              },
+              "maintainability": 94.7,
+              "crap": 4
+            },
+            {
+              "path": "lib/site.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 17,
+                "total": 17,
+                "pct": 100
+              },
+              "maintainability": 96.6,
+              "crap": 0
+            },
+            {
+              "path": "lib/stories.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 23,
+                "total": 23,
+                "pct": 100
+              },
+              "maintainability": 89.4,
+              "crap": 9
+            },
+            {
+              "path": "lib/summary.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 10,
+                "total": 10,
+                "pct": 100
+              },
+              "maintainability": 96.3,
+              "crap": 1
+            },
+            {
+              "path": "lib/tags.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 4,
+                "total": 4,
+                "pct": 100
+              },
+              "maintainability": 99.4,
+              "crap": 1
+            },
+            {
+              "path": "lib/theme.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 6,
+                "total": 6,
+                "pct": 100
+              },
+              "maintainability": 95.4,
+              "crap": 3
+            },
+            {
+              "path": "lib/title.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 10,
+                "total": 10,
+                "pct": 100
+              },
+              "maintainability": 97,
+              "crap": 2
+            },
+            {
+              "path": "proxy.ts",
+              "lines": {
+                "covered": 51,
+                "total": 63,
+                "pct": 81
+              },
+              "maintainability": 86.4,
+              "crap": 42
+            },
+            {
+              "path": "scripts/baselines-stamp.mjs",
+              "group": "scripts",
+              "lines": {
+                "covered": 14,
+                "total": 14,
+                "pct": 100
+              },
+              "maintainability": 96.1,
+              "crap": 5
+            },
+            {
+              "path": "scripts/capture-set.mjs",
+              "group": "scripts",
+              "lines": {
+                "covered": 26,
+                "total": 67,
+                "pct": 38.8
+              },
+              "maintainability": 91.4,
+              "crap": 56
+            }
+          ]
+        },
+        "visual": {
+          "dimension": "visual",
+          "state": "measured",
+          "components": {
+            "total": 52,
+            "storied": 5,
+            "tiled": 3,
+            "baselined": 5
+          },
+          "screens": {
+            "stories": 7,
+            "tiled": 6,
+            "baselined": 7
+          },
+          "routes": {
+            "total": 5,
+            "loading": {
+              "own": 0,
+              "inherited": 0,
+              "none": 5
+            },
+            "error": {
+              "own": 1,
+              "inherited": 4,
+              "none": 0
+            },
+            "notFound": {
+              "own": 1,
+              "inherited": 4,
+              "none": 0
+            }
+          }
+        },
+        "acceptance": {
+          "dimension": "acceptance",
+          "state": "measured",
+          "scenarios": 54,
+          "features": [
+            "visual-diff-a11y",
+            "visual-diff-console",
+            "visual-diff-design",
+            "visual-diff-report",
+            "visual-diff-sample",
+            "visual-diff-share",
+            "visual-diff-shot",
+            "visual-diff-tokens"
+          ]
+        },
+        "health": {
+          "dimension": "health",
+          "state": "measured",
+          "score": 87.6,
+          "grade": "A",
+          "overCeiling": 0,
+          "deadFiles": 0,
+          "deadExports": 9,
+          "refactorTargets": 12
+        }
+      }
+    },
+    {
+      "name": "@gate/links",
+      "path": "packages/links",
+      "category": "packages",
+      "dimensions": {
+        "code": {
+          "dimension": "code",
+          "state": "unmeasured",
+          "reason": "No coverage block in packages/links/vitest.config.ts"
+        },
+        "visual": {
+          "dimension": "visual",
+          "state": "not-applicable",
+          "reason": "No components"
+        },
+        "acceptance": {
+          "dimension": "acceptance",
+          "state": "not-applicable",
+          "reason": "Not a deployed app"
+        },
+        "health": {
+          "dimension": "health",
+          "state": "measured",
+          "score": 90,
+          "grade": "A",
+          "overCeiling": 0,
+          "deadFiles": 0,
+          "deadExports": 0,
+          "refactorTargets": 0
+        }
+      }
+    },
+    {
+      "name": "@gate/logger",
+      "path": "packages/logger",
+      "category": "packages",
+      "dimensions": {
+        "code": {
+          "dimension": "code",
+          "state": "unmeasured",
+          "reason": "No coverage block in packages/logger/vitest.config.ts"
+        },
+        "visual": {
+          "dimension": "visual",
+          "state": "not-applicable",
+          "reason": "No components"
+        },
+        "acceptance": {
+          "dimension": "acceptance",
+          "state": "not-applicable",
+          "reason": "Not a deployed app"
+        },
+        "health": {
+          "dimension": "health",
+          "state": "measured",
+          "score": 94.2,
+          "grade": "A",
+          "overCeiling": 0,
+          "deadFiles": 0,
+          "deadExports": 0,
+          "refactorTargets": 0
+        }
+      }
+    },
+    {
+      "name": "@gate/tsconfig",
+      "path": "packages/tsconfig",
+      "category": "packages",
+      "dimensions": {
+        "code": {
+          "dimension": "code",
+          "state": "not-applicable",
+          "reason": "No code"
+        },
+        "visual": {
+          "dimension": "visual",
+          "state": "not-applicable",
+          "reason": "No components"
+        },
+        "acceptance": {
+          "dimension": "acceptance",
+          "state": "not-applicable",
+          "reason": "Not a deployed app"
+        },
+        "health": {
+          "dimension": "health",
+          "state": "not-applicable",
+          "reason": "No source file for fallow to score"
+        }
+      }
+    },
+    {
+      "name": "@gate/ui",
+      "path": "packages/ui",
+      "category": "packages",
+      "dimensions": {
+        "code": {
+          "dimension": "code",
+          "state": "measured",
+          "lines": {
+            "covered": 349,
+            "total": 353,
+            "pct": 98.9
+          },
+          "floor": 70,
+          "staticReachPct": 100,
+          "files": [
+            {
+              "path": "src/atoms/Badge/Badge.tsx",
+              "group": "atoms",
+              "lines": {
+                "covered": 1,
+                "total": 1,
+                "pct": 100
+              },
+              "maintainability": 99.4,
+              "crap": 1
+            },
+            {
+              "path": "src/atoms/BucketChip/BucketChip.tsx",
+              "group": "atoms",
+              "lines": {
+                "covered": 3,
+                "total": 3,
+                "pct": 100
+              },
+              "maintainability": 99.7,
+              "crap": 1
+            },
+            {
+              "path": "src/atoms/Button/Button.tsx",
+              "group": "atoms",
+              "lines": {
+                "covered": 1,
+                "total": 1,
+                "pct": 100
+              },
+              "maintainability": 99.4,
+              "crap": 1
+            },
+            {
+              "path": "src/atoms/EmptyState/EmptyState.tsx",
+              "group": "atoms",
+              "lines": {
+                "covered": 1,
+                "total": 1,
+                "pct": 100
+              },
+              "maintainability": 98.1,
+              "crap": 3
+            },
+            {
+              "path": "src/atoms/IconButton/IconButton.tsx",
+              "group": "atoms",
+              "lines": {
+                "covered": 3,
+                "total": 3,
+                "pct": 100
+              },
+              "maintainability": 99.1,
+              "crap": 3
+            },
+            {
+              "path": "src/atoms/Link/Link.tsx",
+              "group": "atoms",
+              "lines": {
+                "covered": 2,
+                "total": 2,
+                "pct": 100
+              },
+              "maintainability": 98.8,
+              "crap": 2
+            },
+            {
+              "path": "src/atoms/Prose/Prose.tsx",
+              "group": "atoms",
+              "lines": {
+                "covered": 1,
+                "total": 1,
+                "pct": 100
+              },
+              "maintainability": 99.4,
+              "crap": 1
+            },
+            {
+              "path": "src/atoms/SegmentedControl/SegmentedControl.tsx",
+              "group": "atoms",
+              "lines": {
+                "covered": 4,
+                "total": 4,
+                "pct": 100
+              },
+              "maintainability": 98.8,
+              "crap": 1
+            },
+            {
+              "path": "src/atoms/Skeleton/Skeleton.tsx",
+              "group": "atoms",
+              "lines": {
+                "covered": 8,
+                "total": 8,
+                "pct": 100
+              },
+              "maintainability": 97.6,
+              "crap": 3
+            },
+            {
+              "path": "src/atoms/SkipLink/SkipLink.tsx",
+              "group": "atoms",
+              "lines": {
+                "covered": 1,
+                "total": 1,
+                "pct": 100
+              },
+              "maintainability": 98.9,
+              "crap": 2
+            },
+            {
+              "path": "src/atoms/Spinner/Spinner.tsx",
+              "group": "atoms",
+              "lines": {
+                "covered": 1,
+                "total": 1,
+                "pct": 100
+              },
+              "maintainability": 99.4,
+              "crap": 1
+            },
+            {
+              "path": "src/atoms/Stack/Stack.tsx",
+              "group": "atoms",
+              "lines": {
+                "covered": 1,
+                "total": 1,
+                "pct": 100
+              },
+              "maintainability": 98.7,
+              "crap": 2
+            },
+            {
+              "path": "src/atoms/Tag/Tag.tsx",
+              "group": "atoms",
+              "lines": {
+                "covered": 2,
+                "total": 2,
+                "pct": 100
+              },
+              "maintainability": 98.9,
+              "crap": 2
+            },
+            {
+              "path": "src/atoms/Text/Text.tsx",
+              "group": "atoms",
+              "lines": {
+                "covered": 4,
+                "total": 4,
+                "pct": 100
+              },
+              "maintainability": 99.1,
+              "crap": 2
+            },
+            {
+              "path": "src/atoms/ThemeToggle/ThemeToggle.tsx",
+              "group": "atoms",
+              "lines": {
+                "covered": 10,
+                "total": 10,
+                "pct": 100
+              },
+              "maintainability": 95.1,
+              "crap": 2
+            },
+            {
+              "path": "src/atoms/ThemeToggle/theme.ts",
+              "group": "atoms",
+              "lines": {
+                "covered": 6,
+                "total": 6,
+                "pct": 100
+              },
+              "maintainability": 98.8,
+              "crap": 2
+            },
+            {
+              "path": "src/atoms/Thumbnail/Thumbnail.tsx",
+              "group": "atoms",
+              "lines": {
+                "covered": 16,
+                "total": 16,
+                "pct": 100
+              },
+              "maintainability": 92.1,
+              "crap": 11
+            },
+            {
+              "path": "src/atoms/TriStateCheckbox/TriStateCheckbox.tsx",
+              "group": "atoms",
+              "lines": {
+                "covered": 7,
+                "total": 7,
+                "pct": 100
+              },
+              "maintainability": 97.9,
+              "crap": 2
+            },
+            {
+              "path": "src/molecules/Card/Card.tsx",
+              "group": "molecules",
+              "lines": {
+                "covered": 3,
+                "total": 3,
+                "pct": 100
+              },
+              "maintainability": 97.6,
+              "crap": 3
+            },
+            {
+              "path": "src/molecules/CodeBlock/CodeBlock.tsx",
+              "group": "molecules",
+              "lines": {
+                "covered": 2,
+                "total": 2,
+                "pct": 100
+              },
+              "maintainability": 98.1,
+              "crap": 3
+            },
+            {
+              "path": "src/molecules/Pagination/Pagination.tsx",
+              "group": "molecules",
+              "lines": {
+                "covered": 20,
+                "total": 20,
+                "pct": 100
+              },
+              "maintainability": 91.5,
+              "crap": 4
+            },
+            {
+              "path": "src/molecules/PostCard/PostCard.tsx",
+              "group": "molecules",
+              "lines": {
+                "covered": 1,
+                "total": 1,
+                "pct": 100
+              },
+              "maintainability": 92.5,
+              "crap": 1
+            },
+            {
+              "path": "src/molecules/PostMeta/PostMeta.tsx",
+              "group": "molecules",
+              "lines": {
+                "covered": 2,
+                "total": 2,
+                "pct": 100
+              },
+              "maintainability": 96.1,
+              "crap": 1
+            },
+            {
+              "path": "src/molecules/StepList/StepList.tsx",
+              "group": "molecules",
+              "lines": {
+                "covered": 10,
+                "total": 10,
+                "pct": 100
+              },
+              "maintainability": 97,
+              "crap": 3
+            },
+            {
+              "path": "src/molecules/TagList/TagList.tsx",
+              "group": "molecules",
+              "lines": {
+                "covered": 5,
+                "total": 5,
+                "pct": 100
+              },
+              "maintainability": 93.2,
+              "crap": 2
+            },
+            {
+              "path": "src/organisms/Dialog/Dialog.tsx",
+              "group": "organisms",
+              "lines": {
+                "covered": 48,
+                "total": 48,
+                "pct": 100
+              },
+              "maintainability": 96.7,
+              "crap": 5
+            },
+            {
+              "path": "src/organisms/PanZoom/PanZoom.tsx",
+              "group": "organisms",
+              "lines": {
+                "covered": 120,
+                "total": 124,
+                "pct": 96.8
+              },
+              "maintainability": 90.3,
+              "crap": 13
+            },
+            {
+              "path": "src/organisms/PanZoom/geometry.ts",
+              "group": "organisms",
+              "lines": {
+                "covered": 36,
+                "total": 36,
+                "pct": 100
+              },
+              "maintainability": 93.6,
+              "crap": 4
+            },
+            {
+              "path": "src/organisms/PanZoom/useFitOnce.ts",
+              "group": "organisms",
+              "lines": {
+                "covered": 7,
+                "total": 7,
+                "pct": 100
+              },
+              "maintainability": 93,
+              "crap": 6
+            },
+            {
+              "path": "src/organisms/SiteFooter/SiteFooter.tsx",
+              "group": "organisms",
+              "lines": {
+                "covered": 5,
+                "total": 5,
+                "pct": 100
+              },
+              "maintainability": 93.8,
+              "crap": 2
+            },
+            {
+              "path": "src/organisms/SiteHeader/SiteHeader.tsx",
+              "group": "organisms",
+              "lines": {
+                "covered": 2,
+                "total": 2,
+                "pct": 100
+              },
+              "maintainability": 96,
+              "crap": 3
+            },
+            {
+              "path": "src/organisms/Table/Table.tsx",
+              "group": "organisms",
+              "lines": {
+                "covered": 12,
+                "total": 12,
+                "pct": 100
+              },
+              "maintainability": 95.5,
+              "crap": 6
+            },
+            {
+              "path": "src/templates/BlogIndexTemplate/BlogIndexTemplate.tsx",
+              "group": "templates",
+              "lines": {
+                "covered": 3,
+                "total": 3,
+                "pct": 100
+              },
+              "maintainability": 92.4,
+              "crap": 5
+            },
+            {
+              "path": "src/templates/PostTemplate/PostTemplate.tsx",
+              "group": "templates",
+              "lines": {
+                "covered": 1,
+                "total": 1,
+                "pct": 100
+              },
+              "maintainability": 95.3,
+              "crap": 1
+            }
+          ]
+        },
+        "visual": {
+          "dimension": "visual",
+          "state": "measured",
+          "components": {
+            "total": 31,
+            "storied": 31,
+            "tiled": 31,
+            "baselined": 31
+          }
+        },
+        "acceptance": {
+          "dimension": "acceptance",
+          "state": "not-applicable",
+          "reason": "Not a deployed app"
+        },
+        "health": {
+          "dimension": "health",
+          "state": "measured",
+          "score": 89.3,
+          "grade": "A",
+          "overCeiling": 0,
+          "deadFiles": 0,
+          "deadExports": 2,
+          "refactorTargets": 0
+        }
+      }
+    },
+    {
+      "name": "@gate/visual-diff",
+      "path": "packages/visual-diff",
+      "category": "packages",
+      "dimensions": {
+        "code": {
+          "dimension": "code",
+          "state": "unmeasured",
+          "reason": "No coverage block in packages/visual-diff/vitest.config.mjs"
+        },
+        "visual": {
+          "dimension": "visual",
+          "state": "not-applicable",
+          "reason": "No components"
+        },
+        "acceptance": {
+          "dimension": "acceptance",
+          "state": "not-applicable",
+          "reason": "Not a deployed app"
+        },
+        "health": {
+          "dimension": "health",
+          "state": "measured",
+          "score": 87.7,
+          "grade": "A",
+          "overCeiling": 0,
+          "deadFiles": 0,
+          "deadExports": 0,
+          "refactorTargets": 0
+        }
+      }
+    },
+    {
+      "name": "scripts/",
+      "path": "scripts",
+      "category": "scripts",
+      "dimensions": {
+        "code": {
+          "dimension": "code",
+          "state": "unmeasured",
+          "reason": "No coverage block in vitest.sandcastle.config.mts"
+        },
+        "visual": {
+          "dimension": "visual",
+          "state": "not-applicable",
+          "reason": "No components"
+        },
+        "acceptance": {
+          "dimension": "acceptance",
+          "state": "not-applicable",
+          "reason": "Not a deployed app"
+        },
+        "health": {
+          "dimension": "health",
+          "state": "measured",
+          "score": 72.5,
+          "grade": "B",
+          "overCeiling": 3,
+          "deadFiles": 5,
+          "deadExports": 14,
+          "refactorTargets": 4
+        }
+      }
+    },
+    {
+      "name": ".sandcastle/",
+      "path": ".sandcastle",
+      "category": "scripts",
+      "dimensions": {
+        "code": {
+          "dimension": "code",
+          "state": "unmeasured",
+          "reason": "No coverage block in vitest.sandcastle.config.mts"
+        },
+        "visual": {
+          "dimension": "visual",
+          "state": "not-applicable",
+          "reason": "No components"
+        },
+        "acceptance": {
+          "dimension": "acceptance",
+          "state": "not-applicable",
+          "reason": "Not a deployed app"
+        },
+        "health": {
+          "dimension": "health",
+          "state": "measured",
+          "score": 87.9,
+          "grade": "A",
+          "overCeiling": 0,
+          "deadFiles": 0,
+          "deadExports": 8,
+          "refactorTargets": 3
+        }
+      }
+    },
+    {
+      "name": ".claude/skills/pixel-perfect-session/",
+      "path": ".claude/skills/pixel-perfect-session",
+      "category": "scripts",
+      "dimensions": {
+        "code": {
+          "dimension": "code",
+          "state": "unmeasured",
+          "reason": "No vitest config"
+        },
+        "visual": {
+          "dimension": "visual",
+          "state": "not-applicable",
+          "reason": "No components"
+        },
+        "acceptance": {
+          "dimension": "acceptance",
+          "state": "not-applicable",
+          "reason": "Not a deployed app"
+        },
+        "health": {
+          "dimension": "health",
+          "state": "measured",
+          "score": 85,
+          "grade": "A",
+          "overCeiling": 0,
+          "deadFiles": 1,
+          "deadExports": 0,
+          "refactorTargets": 0
+        }
+      }
+    }
+  ],
+  "gaps": [
+    {
+      "id": "unmeasured-workspace:apps/blog",
+      "workspace": "@gate/blog",
+      "dimension": "code",
+      "kind": "unmeasured-workspace",
+      "subject": "apps/blog",
+      "title": "@gate/blog: measure coverage"
+    },
+    {
+      "id": "component-incomplete:apps/blog:screens-blog-about--default",
+      "workspace": "@gate/blog",
+      "dimension": "visual",
+      "kind": "component-incomplete",
+      "subject": "screens-blog-about--default",
+      "title": "screens-blog-about--default: no tile"
+    },
+    {
+      "id": "component-incomplete:apps/blog:screens-blog-changelog--releases",
+      "workspace": "@gate/blog",
+      "dimension": "visual",
+      "kind": "component-incomplete",
+      "subject": "screens-blog-changelog--releases",
+      "title": "screens-blog-changelog--releases: no tile"
+    },
+    {
+      "id": "component-incomplete:apps/blog:screens-blog-home--latest",
+      "workspace": "@gate/blog",
+      "dimension": "visual",
+      "kind": "component-incomplete",
+      "subject": "screens-blog-home--latest",
+      "title": "screens-blog-home--latest: no tile"
+    },
+    {
+      "id": "component-incomplete:apps/blog:screens-blog-index--first-page",
+      "workspace": "@gate/blog",
+      "dimension": "visual",
+      "kind": "component-incomplete",
+      "subject": "screens-blog-index--first-page",
+      "title": "screens-blog-index--first-page: no tile"
+    },
+    {
+      "id": "component-incomplete:apps/blog:screens-blog-index--later-page",
+      "workspace": "@gate/blog",
+      "dimension": "visual",
+      "kind": "component-incomplete",
+      "subject": "screens-blog-index--later-page",
+      "title": "screens-blog-index--later-page: no tile"
+    },
+    {
+      "id": "component-incomplete:apps/blog:screens-blog-notfound--default",
+      "workspace": "@gate/blog",
+      "dimension": "visual",
+      "kind": "component-incomplete",
+      "subject": "screens-blog-notfound--default",
+      "title": "screens-blog-notfound--default: no tile"
+    },
+    {
+      "id": "component-incomplete:apps/blog:screens-blog-post--article",
+      "workspace": "@gate/blog",
+      "dimension": "visual",
+      "kind": "component-incomplete",
+      "subject": "screens-blog-post--article",
+      "title": "screens-blog-post--article: no tile"
+    },
+    {
+      "id": "component-incomplete:apps/blog:screens-blog-tag--tagged",
+      "workspace": "@gate/blog",
+      "dimension": "visual",
+      "kind": "component-incomplete",
+      "subject": "screens-blog-tag--tagged",
+      "title": "screens-blog-tag--tagged: no tile"
+    },
+    {
+      "id": "story-missing:apps/blog:SiteAnalytics",
+      "workspace": "@gate/blog",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "SiteAnalytics",
+      "title": "@gate/blog: SiteAnalytics has no story"
+    },
+    {
+      "id": "story-missing:apps/blog:BlogFrame",
+      "workspace": "@gate/blog",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "BlogFrame",
+      "title": "@gate/blog: BlogFrame has no story"
+    },
+    {
+      "id": "story-missing:apps/blog:ChangelogSyncButton",
+      "workspace": "@gate/blog",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "ChangelogSyncButton",
+      "title": "@gate/blog: ChangelogSyncButton has no story"
+    },
+    {
+      "id": "story-missing:apps/blog:ChangelogSyncStill",
+      "workspace": "@gate/blog",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "ChangelogSyncStill",
+      "title": "@gate/blog: ChangelogSyncStill has no story"
+    },
+    {
+      "id": "story-missing:apps/blog:LottieBlock",
+      "workspace": "@gate/blog",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "LottieBlock",
+      "title": "@gate/blog: LottieBlock has no story"
+    },
+    {
+      "id": "story-missing:apps/blog:MermaidDiagram",
+      "workspace": "@gate/blog",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "MermaidDiagram",
+      "title": "@gate/blog: MermaidDiagram has no story"
+    },
+    {
+      "id": "story-missing:apps/blog:BlogIndexLoading",
+      "workspace": "@gate/blog",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "BlogIndexLoading",
+      "title": "@gate/blog: BlogIndexLoading has no story"
+    },
+    {
+      "id": "route-state-missing:apps/blog:/:loading",
+      "workspace": "@gate/blog",
+      "dimension": "visual",
+      "kind": "route-state-missing",
+      "subject": "/:loading",
+      "title": "@gate/blog: / has no loading state"
+    },
+    {
+      "id": "route-state-missing:apps/blog:/about:loading",
+      "workspace": "@gate/blog",
+      "dimension": "visual",
+      "kind": "route-state-missing",
+      "subject": "/about:loading",
+      "title": "@gate/blog: /about has no loading state"
+    },
+    {
+      "id": "route-state-missing:apps/blog:/changelog:loading",
+      "workspace": "@gate/blog",
+      "dimension": "visual",
+      "kind": "route-state-missing",
+      "subject": "/changelog:loading",
+      "title": "@gate/blog: /changelog has no loading state"
+    },
+    {
+      "id": "app-unvisited:apps/census",
+      "workspace": "@gate/census",
+      "dimension": "acceptance",
+      "kind": "app-unvisited",
+      "subject": "apps/census",
+      "title": "@gate/census: no acceptance scenario"
+    },
+    {
+      "id": "unmeasured-workspace:apps/e2e",
+      "workspace": "@gate/e2e",
+      "dimension": "code",
+      "kind": "unmeasured-workspace",
+      "subject": "apps/e2e",
+      "title": "@gate/e2e: measure coverage"
+    },
+    {
+      "id": "unmeasured-workspace:apps/manual",
+      "workspace": "@gate/manual",
+      "dimension": "code",
+      "kind": "unmeasured-workspace",
+      "subject": "apps/manual",
+      "title": "@gate/manual: measure coverage"
+    },
+    {
+      "id": "component-incomplete:apps/manual:screens-manual-index--default",
+      "workspace": "@gate/manual",
+      "dimension": "visual",
+      "kind": "component-incomplete",
+      "subject": "screens-manual-index--default",
+      "title": "screens-manual-index--default: no tile"
+    },
+    {
+      "id": "component-incomplete:apps/manual:screens-manual-page--console",
+      "workspace": "@gate/manual",
+      "dimension": "visual",
+      "kind": "component-incomplete",
+      "subject": "screens-manual-page--console",
+      "title": "screens-manual-page--console: no tile"
+    },
+    {
+      "id": "component-incomplete:apps/manual:screens-manual-start--default",
+      "workspace": "@gate/manual",
+      "dimension": "visual",
+      "kind": "component-incomplete",
+      "subject": "screens-manual-start--default",
+      "title": "screens-manual-start--default: no tile"
+    },
+    {
+      "id": "story-missing:apps/manual:SiteAnalytics",
+      "workspace": "@gate/manual",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "SiteAnalytics",
+      "title": "@gate/manual: SiteAnalytics has no story"
+    },
+    {
+      "id": "story-missing:apps/manual:ManualFrame",
+      "workspace": "@gate/manual",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "ManualFrame",
+      "title": "@gate/manual: ManualFrame has no story"
+    },
+    {
+      "id": "route-state-missing:apps/manual:/:loading",
+      "workspace": "@gate/manual",
+      "dimension": "visual",
+      "kind": "route-state-missing",
+      "subject": "/:loading",
+      "title": "@gate/manual: / has no loading state"
+    },
+    {
+      "id": "route-state-missing:apps/manual:/[slug]:loading",
+      "workspace": "@gate/manual",
+      "dimension": "visual",
+      "kind": "route-state-missing",
+      "subject": "/[slug]:loading",
+      "title": "@gate/manual: /[slug] has no loading state"
+    },
+    {
+      "id": "route-state-missing:apps/manual:/start:loading",
+      "workspace": "@gate/manual",
+      "dimension": "visual",
+      "kind": "route-state-missing",
+      "subject": "/start:loading",
+      "title": "@gate/manual: /start has no loading state"
+    },
+    {
+      "id": "app-unvisited:apps/manual",
+      "workspace": "@gate/manual",
+      "dimension": "acceptance",
+      "kind": "app-unvisited",
+      "subject": "apps/manual",
+      "title": "@gate/manual: no acceptance scenario"
+    },
+    {
+      "id": "unmeasured-workspace:apps/storybook",
+      "workspace": "@gate/storybook",
+      "dimension": "code",
+      "kind": "unmeasured-workspace",
+      "subject": "apps/storybook",
+      "title": "@gate/storybook: measure coverage"
+    },
+    {
+      "id": "app-unvisited:apps/storybook",
+      "workspace": "@gate/storybook",
+      "dimension": "acceptance",
+      "kind": "app-unvisited",
+      "subject": "apps/storybook",
+      "title": "@gate/storybook: no acceptance scenario"
+    },
+    {
+      "id": "uncovered-file:apps/visual-diff-ui:app/_screens/ComparisonScreen.stories.tsx",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "code",
+      "kind": "uncovered-file",
+      "subject": "app/_screens/ComparisonScreen.stories.tsx",
+      "title": "@gate/visual-diff-ui: app/_screens/ComparisonScreen.stories.tsx has no test"
+    },
+    {
+      "id": "uncovered-file:apps/visual-diff-ui:app/_screens/DashboardScreen.stories.tsx",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "code",
+      "kind": "uncovered-file",
+      "subject": "app/_screens/DashboardScreen.stories.tsx",
+      "title": "@gate/visual-diff-ui: app/_screens/DashboardScreen.stories.tsx has no test"
+    },
+    {
+      "id": "uncovered-file:apps/visual-diff-ui:app/_screens/ReportScreen.stories.tsx",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "code",
+      "kind": "uncovered-file",
+      "subject": "app/_screens/ReportScreen.stories.tsx",
+      "title": "@gate/visual-diff-ui: app/_screens/ReportScreen.stories.tsx has no test"
+    },
+    {
+      "id": "uncovered-file:apps/visual-diff-ui:app/_screens/SetScreen.stories.tsx",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "code",
+      "kind": "uncovered-file",
+      "subject": "app/_screens/SetScreen.stories.tsx",
+      "title": "@gate/visual-diff-ui: app/_screens/SetScreen.stories.tsx has no test"
+    },
+    {
+      "id": "uncovered-file:apps/visual-diff-ui:app/_screens/ShotScreen.stories.tsx",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "code",
+      "kind": "uncovered-file",
+      "subject": "app/_screens/ShotScreen.stories.tsx",
+      "title": "@gate/visual-diff-ui: app/_screens/ShotScreen.stories.tsx has no test"
+    },
+    {
+      "id": "uncovered-file:apps/visual-diff-ui:app/not-found.tsx",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "code",
+      "kind": "uncovered-file",
+      "subject": "app/not-found.tsx",
+      "title": "@gate/visual-diff-ui: app/not-found.tsx has no test"
+    },
+    {
+      "id": "uncovered-file:apps/visual-diff-ui:app/report/[id]/@modal/(.)compare/[key]/page.tsx",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "code",
+      "kind": "uncovered-file",
+      "subject": "app/report/[id]/@modal/(.)compare/[key]/page.tsx",
+      "title": "@gate/visual-diff-ui: app/report/[id]/@modal/(.)compare/[key]/page.tsx has no test"
+    },
+    {
+      "id": "uncovered-file:apps/visual-diff-ui:app/report/[id]/@modal/default.tsx",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "code",
+      "kind": "uncovered-file",
+      "subject": "app/report/[id]/@modal/default.tsx",
+      "title": "@gate/visual-diff-ui: app/report/[id]/@modal/default.tsx has no test"
+    },
+    {
+      "id": "uncovered-file:apps/visual-diff-ui:app/report/[id]/compare/[key]/page.tsx",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "code",
+      "kind": "uncovered-file",
+      "subject": "app/report/[id]/compare/[key]/page.tsx",
+      "title": "@gate/visual-diff-ui: app/report/[id]/compare/[key]/page.tsx has no test"
+    },
+    {
+      "id": "uncovered-file:apps/visual-diff-ui:app/report/[id]/layout.tsx",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "code",
+      "kind": "uncovered-file",
+      "subject": "app/report/[id]/layout.tsx",
+      "title": "@gate/visual-diff-ui: app/report/[id]/layout.tsx has no test"
+    },
+    {
+      "id": "uncovered-file:apps/visual-diff-ui:app/set/[label]/@modal/(.)shot/[key]/page.tsx",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "code",
+      "kind": "uncovered-file",
+      "subject": "app/set/[label]/@modal/(.)shot/[key]/page.tsx",
+      "title": "@gate/visual-diff-ui: app/set/[label]/@modal/(.)shot/[key]/page.tsx has no test"
+    },
+    {
+      "id": "uncovered-file:apps/visual-diff-ui:app/set/[label]/@modal/default.tsx",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "code",
+      "kind": "uncovered-file",
+      "subject": "app/set/[label]/@modal/default.tsx",
+      "title": "@gate/visual-diff-ui: app/set/[label]/@modal/default.tsx has no test"
+    },
+    {
+      "id": "uncovered-file:apps/visual-diff-ui:app/set/[label]/layout.tsx",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "code",
+      "kind": "uncovered-file",
+      "subject": "app/set/[label]/layout.tsx",
+      "title": "@gate/visual-diff-ui: app/set/[label]/layout.tsx has no test"
+    },
+    {
+      "id": "uncovered-file:apps/visual-diff-ui:app/set/[label]/shot/[key]/page.tsx",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "code",
+      "kind": "uncovered-file",
+      "subject": "app/set/[label]/shot/[key]/page.tsx",
+      "title": "@gate/visual-diff-ui: app/set/[label]/shot/[key]/page.tsx has no test"
+    },
+    {
+      "id": "uncovered-file:apps/visual-diff-ui:components/ReportContents.tsx",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "code",
+      "kind": "uncovered-file",
+      "subject": "components/ReportContents.tsx",
+      "title": "@gate/visual-diff-ui: components/ReportContents.tsx has no test"
+    },
+    {
+      "id": "component-incomplete:apps/visual-diff-ui:screens-visual-diff-ui-shot--expanded",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "visual",
+      "kind": "component-incomplete",
+      "subject": "screens-visual-diff-ui-shot--expanded",
+      "title": "screens-visual-diff-ui-shot--expanded: no tile"
+    },
+    {
+      "id": "story-missing:apps/visual-diff-ui:SiteAnalytics",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "SiteAnalytics",
+      "title": "@gate/visual-diff-ui: SiteAnalytics has no story"
+    },
+    {
+      "id": "story-missing:apps/visual-diff-ui:BoardPane",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "BoardPane",
+      "title": "@gate/visual-diff-ui: BoardPane has no story"
+    },
+    {
+      "id": "story-missing:apps/visual-diff-ui:BucketChipRow",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "BucketChipRow",
+      "title": "@gate/visual-diff-ui: BucketChipRow has no story"
+    },
+    {
+      "id": "story-missing:apps/visual-diff-ui:CanonicalSet",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "CanonicalSet",
+      "title": "@gate/visual-diff-ui: CanonicalSet has no story"
+    },
+    {
+      "id": "story-missing:apps/visual-diff-ui:ComparePickers",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "ComparePickers",
+      "title": "@gate/visual-diff-ui: ComparePickers has no story"
+    },
+    {
+      "id": "story-missing:apps/visual-diff-ui:CompareStartProvider",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "CompareStartProvider",
+      "title": "@gate/visual-diff-ui: CompareStartProvider has no story"
+    },
+    {
+      "id": "story-missing:apps/visual-diff-ui:ComparisonContents",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "ComparisonContents",
+      "title": "@gate/visual-diff-ui: ComparisonContents has no story"
+    },
+    {
+      "id": "story-missing:apps/visual-diff-ui:ComparisonModal",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "ComparisonModal",
+      "title": "@gate/visual-diff-ui: ComparisonModal has no story"
+    },
+    {
+      "id": "story-missing:apps/visual-diff-ui:DeleteReportButton",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "DeleteReportButton",
+      "title": "@gate/visual-diff-ui: DeleteReportButton has no story"
+    },
+    {
+      "id": "story-missing:apps/visual-diff-ui:DeleteReportFromPage",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "DeleteReportFromPage",
+      "title": "@gate/visual-diff-ui: DeleteReportFromPage has no story"
+    },
+    {
+      "id": "story-missing:apps/visual-diff-ui:DeleteSetButton",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "DeleteSetButton",
+      "title": "@gate/visual-diff-ui: DeleteSetButton has no story"
+    },
+    {
+      "id": "story-missing:apps/visual-diff-ui:PruneButton",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "PruneButton",
+      "title": "@gate/visual-diff-ui: PruneButton has no story"
+    },
+    {
+      "id": "story-missing:apps/visual-diff-ui:Brand",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "Brand",
+      "title": "@gate/visual-diff-ui: Brand has no story"
+    },
+    {
+      "id": "story-missing:apps/visual-diff-ui:SampleBanner",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "SampleBanner",
+      "title": "@gate/visual-diff-ui: SampleBanner has no story"
+    },
+    {
+      "id": "story-missing:apps/visual-diff-ui:ConsoleFrame",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "ConsoleFrame",
+      "title": "@gate/visual-diff-ui: ConsoleFrame has no story"
+    },
+    {
+      "id": "story-missing:apps/visual-diff-ui:CopyLink",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "CopyLink",
+      "title": "@gate/visual-diff-ui: CopyLink has no story"
+    },
+    {
+      "id": "story-missing:apps/visual-diff-ui:CurrentJobProvider",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "CurrentJobProvider",
+      "title": "@gate/visual-diff-ui: CurrentJobProvider has no story"
+    },
+    {
+      "id": "story-missing:apps/visual-diff-ui:CurrentJob",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "CurrentJob",
+      "title": "@gate/visual-diff-ui: CurrentJob has no story"
+    },
+    {
+      "id": "story-missing:apps/visual-diff-ui:DesignStage",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "DesignStage",
+      "title": "@gate/visual-diff-ui: DesignStage has no story"
+    },
+    {
+      "id": "story-missing:apps/visual-diff-ui:DevStorybookLink",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "DevStorybookLink",
+      "title": "@gate/visual-diff-ui: DevStorybookLink has no story"
+    },
+    {
+      "id": "story-missing:apps/visual-diff-ui:Field",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "Field",
+      "title": "@gate/visual-diff-ui: Field has no story"
+    },
+    {
+      "id": "story-missing:apps/visual-diff-ui:FilterPicker",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "FilterPicker",
+      "title": "@gate/visual-diff-ui: FilterPicker has no story"
+    },
+    {
+      "id": "story-missing:apps/visual-diff-ui:HistoryTable",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "HistoryTable",
+      "title": "@gate/visual-diff-ui: HistoryTable has no story"
+    },
+    {
+      "id": "story-missing:apps/visual-diff-ui:LogTail",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "LogTail",
+      "title": "@gate/visual-diff-ui: LogTail has no story"
+    },
+    {
+      "id": "story-missing:apps/visual-diff-ui:ModeTabs",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "ModeTabs",
+      "title": "@gate/visual-diff-ui: ModeTabs has no story"
+    },
+    {
+      "id": "story-missing:apps/visual-diff-ui:Note",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "Note",
+      "title": "@gate/visual-diff-ui: Note has no story"
+    },
+    {
+      "id": "story-missing:apps/visual-diff-ui:OutcomeWord",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "OutcomeWord",
+      "title": "@gate/visual-diff-ui: OutcomeWord has no story"
+    },
+    {
+      "id": "story-missing:apps/visual-diff-ui:OverlayStage",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "OverlayStage",
+      "title": "@gate/visual-diff-ui: OverlayStage has no story"
+    },
+    {
+      "id": "story-missing:apps/visual-diff-ui:ReportBuckets",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "ReportBuckets",
+      "title": "@gate/visual-diff-ui: ReportBuckets has no story"
+    },
+    {
+      "id": "story-missing:apps/visual-diff-ui:ReportContents",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "ReportContents",
+      "title": "@gate/visual-diff-ui: ReportContents has no story"
+    },
+    {
+      "id": "story-missing:apps/visual-diff-ui:ReportResults",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "ReportResults",
+      "title": "@gate/visual-diff-ui: ReportResults has no story"
+    },
+    {
+      "id": "story-missing:apps/visual-diff-ui:ReportsTable",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "ReportsTable",
+      "title": "@gate/visual-diff-ui: ReportsTable has no story"
+    },
+    {
+      "id": "story-missing:apps/visual-diff-ui:RetentionControl",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "RetentionControl",
+      "title": "@gate/visual-diff-ui: RetentionControl has no story"
+    },
+    {
+      "id": "story-missing:apps/visual-diff-ui:ReviewBar",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "ReviewBar",
+      "title": "@gate/visual-diff-ui: ReviewBar has no story"
+    },
+    {
+      "id": "story-missing:apps/visual-diff-ui:RunPanel",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "RunPanel",
+      "title": "@gate/visual-diff-ui: RunPanel has no story"
+    },
+    {
+      "id": "story-missing:apps/visual-diff-ui:Filtered",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "Filtered",
+      "title": "@gate/visual-diff-ui: Filtered has no story"
+    },
+    {
+      "id": "story-missing:apps/visual-diff-ui:SetFilterBar",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "SetFilterBar",
+      "title": "@gate/visual-diff-ui: SetFilterBar has no story"
+    },
+    {
+      "id": "story-missing:apps/visual-diff-ui:SetFilterUrl",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "SetFilterUrl",
+      "title": "@gate/visual-diff-ui: SetFilterUrl has no story"
+    },
+    {
+      "id": "story-missing:apps/visual-diff-ui:SetsTable",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "SetsTable",
+      "title": "@gate/visual-diff-ui: SetsTable has no story"
+    },
+    {
+      "id": "story-missing:apps/visual-diff-ui:ShotContents",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "ShotContents",
+      "title": "@gate/visual-diff-ui: ShotContents has no story"
+    },
+    {
+      "id": "story-missing:apps/visual-diff-ui:SpacingReadings",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "SpacingReadings",
+      "title": "@gate/visual-diff-ui: SpacingReadings has no story"
+    },
+    {
+      "id": "story-missing:apps/visual-diff-ui:StoryCard",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "StoryCard",
+      "title": "@gate/visual-diff-ui: StoryCard has no story"
+    },
+    {
+      "id": "story-missing:apps/visual-diff-ui:StoryScreenshots",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "StoryScreenshots",
+      "title": "@gate/visual-diff-ui: StoryScreenshots has no story"
+    },
+    {
+      "id": "story-missing:apps/visual-diff-ui:ThreeUp",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "ThreeUp",
+      "title": "@gate/visual-diff-ui: ThreeUp has no story"
+    },
+    {
+      "id": "story-missing:apps/visual-diff-ui:TierSection",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "TierSection",
+      "title": "@gate/visual-diff-ui: TierSection has no story"
+    },
+    {
+      "id": "story-missing:apps/visual-diff-ui:VariantRow",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "VariantRow",
+      "title": "@gate/visual-diff-ui: VariantRow has no story"
+    },
+    {
+      "id": "story-missing:apps/visual-diff-ui:ViewControls",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "ViewControls",
+      "title": "@gate/visual-diff-ui: ViewControls has no story"
+    },
+    {
+      "id": "route-state-missing:apps/visual-diff-ui:/:loading",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "visual",
+      "kind": "route-state-missing",
+      "subject": "/:loading",
+      "title": "@gate/visual-diff-ui: / has no loading state"
+    },
+    {
+      "id": "route-state-missing:apps/visual-diff-ui:/report/[id]:loading",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "visual",
+      "kind": "route-state-missing",
+      "subject": "/report/[id]:loading",
+      "title": "@gate/visual-diff-ui: /report/[id] has no loading state"
+    },
+    {
+      "id": "route-state-missing:apps/visual-diff-ui:/report/[id]/compare/[key]:loading",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "visual",
+      "kind": "route-state-missing",
+      "subject": "/report/[id]/compare/[key]:loading",
+      "title": "@gate/visual-diff-ui: /report/[id]/compare/[key] has no loading state"
+    },
+    {
+      "id": "route-state-missing:apps/visual-diff-ui:/set/[label]:loading",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "visual",
+      "kind": "route-state-missing",
+      "subject": "/set/[label]:loading",
+      "title": "@gate/visual-diff-ui: /set/[label] has no loading state"
+    },
+    {
+      "id": "route-state-missing:apps/visual-diff-ui:/set/[label]/shot/[key]:loading",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "visual",
+      "kind": "route-state-missing",
+      "subject": "/set/[label]/shot/[key]:loading",
+      "title": "@gate/visual-diff-ui: /set/[label]/shot/[key] has no loading state"
+    },
+    {
+      "id": "unmeasured-workspace:packages/links",
+      "workspace": "@gate/links",
+      "dimension": "code",
+      "kind": "unmeasured-workspace",
+      "subject": "packages/links",
+      "title": "@gate/links: measure coverage"
+    },
+    {
+      "id": "unmeasured-workspace:packages/logger",
+      "workspace": "@gate/logger",
+      "dimension": "code",
+      "kind": "unmeasured-workspace",
+      "subject": "packages/logger",
+      "title": "@gate/logger: measure coverage"
+    },
+    {
+      "id": "unmeasured-workspace:packages/visual-diff",
+      "workspace": "@gate/visual-diff",
+      "dimension": "code",
+      "kind": "unmeasured-workspace",
+      "subject": "packages/visual-diff",
+      "title": "@gate/visual-diff: measure coverage"
+    },
+    {
+      "id": "unmeasured-workspace:scripts",
+      "workspace": "scripts/",
+      "dimension": "code",
+      "kind": "unmeasured-workspace",
+      "subject": "scripts",
+      "title": "scripts/: measure coverage"
+    },
+    {
+      "id": "unmeasured-workspace:.sandcastle",
+      "workspace": ".sandcastle/",
+      "dimension": "code",
+      "kind": "unmeasured-workspace",
+      "subject": ".sandcastle",
+      "title": ".sandcastle/: measure coverage"
+    },
+    {
+      "id": "unmeasured-workspace:.claude/skills/pixel-perfect-session",
+      "workspace": ".claude/skills/pixel-perfect-session/",
+      "dimension": "code",
+      "kind": "unmeasured-workspace",
+      "subject": ".claude/skills/pixel-perfect-session",
+      "title": ".claude/skills/pixel-perfect-session/: measure coverage"
+    }
+  ]
+}
