@@ -84,3 +84,7 @@ apps/blog/content/posts/zz-local-lane-probe.mdx
 
 # Turborepo
 .turbo
+
+# What `pnpm census:measure` writes before it commits anything: per-workspace coverage
+# summaries, fallow's snapshot. Inputs to apps/census/measurement.json, never committed.
+/.census/

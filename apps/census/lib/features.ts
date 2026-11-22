@@ -53,7 +53,7 @@ export const LOCAL_FEATURES: ReadonlySet<string> = new Set([
 
 /** `acceptance/visual-diff-shot.feature` → `visual-diff-shot`. */
 export function featureName(file: string): string {
-  const base = file.split('/').at(-1) ?? file;
+  const base = String(file.split('/').at(-1));
   return base.endsWith('.feature') ? base.slice(0, -'.feature'.length) : base;
 }
 

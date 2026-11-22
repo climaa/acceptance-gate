@@ -87,3 +87,9 @@ describe('featureWorkspace', () => {
     expect(workspace).toBeUndefined();
   });
 });
+
+describe('featureName without a directory or extension', () => {
+  it('returns the name as given', () => {
+    expect(featureName('smoke')).toBe('smoke');
+  });
+});
