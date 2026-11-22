@@ -1,0 +1,59 @@
+/* The figure and its counts side by side, each count level with its band: the
+   counts column is as tall as the figure and spreads its three entries around
+   the same thirds the bands occupy. */
+.ds-test-pyramid {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+.ds-test-pyramid__figure {
+  display: block;
+  flex: none;
+}
+
+/* Solid in the dimension hue, as every board that draws the figure fills it. */
+.ds-test-pyramid__band--chart {
+  fill: var(--color-chart);
+}
+
+.ds-test-pyramid__band--chart-2 {
+  fill: var(--color-chart-2);
+}
+
+.ds-test-pyramid__band--chart-3 {
+  fill: var(--color-chart-3);
+}
+
+.ds-test-pyramid__counts {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-self: stretch;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ds-test-pyramid__count {
+  display: flex;
+  flex-direction: column;
+}
+
+/* The board's 24px on a 1.1 line: --text-2xl is the size, and a solid line is
+   the nearest the scale comes to 1.1 (2.4px shorter than drawn). */
+.ds-test-pyramid__value {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-semibold);
+  line-height: 1;
+  color: var(--color-text);
+}
+
+.ds-test-pyramid__label {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-normal);
+  line-height: var(--leading-normal);
+  color: var(--color-text-muted);
+}

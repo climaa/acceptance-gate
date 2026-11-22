@@ -62,3 +62,30 @@ export {
   type StoriesListProps,
   type StoriesWorkspace,
 } from './StoriesList/StoriesList';
+export {
+  TestPyramid,
+  bandRatio,
+  bandWidths,
+  formatCount,
+  pyramidBands,
+  type PyramidBand,
+  type PyramidBox,
+  type PyramidDimension,
+  type PyramidShape,
+  type TestPyramidProps,
+} from './TestPyramid/TestPyramid';
+export {
+  TrendChart,
+  monthTicks,
+  placeEndLabels,
+  trendDomain,
+  trendLines,
+  xScale,
+  yScale,
+  type MonthTick,
+  type TrendChartProps,
+  type TrendLine,
+  type TrendPoint,
+  type TrendRange,
+  type TrendSeries,
+} from './TrendChart/TrendChart';
