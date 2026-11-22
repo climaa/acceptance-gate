@@ -1,7 +1,5 @@
 {
   "stories": [
-    "molecules-breadcrumb--path",
-    "molecules-breadcrumb--filter",
     "molecules-coveragelist--default",
     "molecules-gappills--default",
     "molecules-hotspots--default",
@@ -10,12 +8,7 @@
     "molecules-icicle--repository",
     "molecules-penaltybars--default",
     "molecules-profilebar--default",
-    "molecules-sparkstat--default",
     "molecules-statepies--default",
-    "molecules-stattile--measured",
-    "molecules-stattile--gaps",
-    "molecules-stattile--unmeasured",
-    "molecules-stattile--not-applicable",
     "molecules-storieslist--default",
     "molecules-testpyramid--default",
     "molecules-trendchart--default",

@@ -1,0 +1,68 @@
+/* One of a row of small multiples, so it sits on the page ground rather than a
+   raised surface: the row reads as one figure, not four cards. */
+.ds-spark-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg);
+}
+
+.ds-spark-stat > p {
+  margin: 0;
+}
+
+/* Drawn at 700 on the board; the mono face ships 400 alone (see tokens.css). */
+.ds-spark-stat__label {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-normal);
+  letter-spacing: var(--tracking-wide);
+  line-height: var(--leading-tight);
+  color: var(--color-text-muted);
+}
+
+/* The board's 28px on a 1.1 line is off the scale. --text-3xl is the nearest
+   step, and a solid line keeps its box within a pixel of the drawn 30.8. */
+.ds-spark-stat__value {
+  font-family: var(--font-display);
+  font-size: var(--text-3xl);
+  font-weight: var(--weight-semibold);
+  line-height: 1;
+  color: var(--color-text);
+}
+
+.ds-spark-stat__change {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  line-height: var(--leading-normal);
+  color: var(--color-text-muted);
+}
+
+.ds-spark-stat__delta {
+  font-family: var(--font-mono);
+  font-weight: var(--weight-normal);
+}
+
+.ds-spark-stat__line {
+  display: block;
+  overflow: visible;
+}
+
+.ds-spark-stat__line polyline {
+  fill: none;
+  stroke: var(--color-text);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.ds-spark-stat__line circle {
+  fill: var(--color-text);
+}
