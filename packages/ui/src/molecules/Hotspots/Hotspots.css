@@ -1,0 +1,108 @@
+/* The board's plot runs from 44px in to 12px short of the right edge and from
+   8px down to 36px above the bottom, where the ticks and the churn axis'
+   title sit; every position inside it is a percentage. Its labels are 12px on
+   a line-height of 1, and the quadrant title is drawn at 700, a weight the
+   self-hosted mono face does not ship. */
+.ds-hotspots {
+  position: relative;
+  block-size: 20rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-normal);
+  line-height: 1;
+  color: var(--color-text-muted);
+}
+
+.ds-hotspots__plot {
+  position: absolute;
+  inset-block: var(--space-2) calc(var(--space-8) + var(--space-1));
+  inset-inline: 2.75rem var(--space-3);
+}
+
+.ds-hotspots__plot > * {
+  position: absolute;
+  white-space: nowrap;
+}
+
+.ds-hotspots__grid {
+  inset-inline: 0;
+  border-block-start: 1px solid var(--color-border);
+}
+
+.ds-hotspots__y-tick {
+  inset-inline-start: -2.75rem;
+  translate: 0 -50%;
+}
+
+.ds-hotspots__x-tick {
+  inset-block-start: calc(100% + var(--space-2) + var(--space-1) / 2);
+  translate: -50% 0;
+}
+
+.ds-hotspots__quadrant--x {
+  inset-block: 0;
+  inset-inline-start: 50%;
+  border-inline-start: 1px solid var(--color-border-strong);
+}
+
+.ds-hotspots__quadrant--y {
+  inset-block-start: 50%;
+  inset-inline: 0;
+  border-block-start: 1px solid var(--color-border-strong);
+}
+
+.ds-hotspots__y-title {
+  inset-block-start: var(--space-1);
+  inset-inline-start: var(--space-1);
+}
+
+.ds-hotspots__quadrant-title {
+  inset-block-start: var(--space-1);
+  inset-inline-start: calc(50% + var(--space-2));
+  color: var(--color-text);
+}
+
+.ds-hotspots__dot {
+  inset-block-start: var(--hotspot-y);
+  inset-inline-start: var(--hotspot-x);
+  inline-size: var(--hotspot-size);
+  block-size: var(--hotspot-size);
+  translate: -50% -50%;
+  border-radius: var(--radius-full);
+}
+
+.ds-hotspots__dot--hot {
+  background-color: var(--color-text);
+  opacity: 0.85;
+}
+
+.ds-hotspots__dot--cool {
+  background-color: var(--color-text-muted);
+  opacity: 0.5;
+}
+
+.ds-hotspots__label {
+  color: var(--color-text);
+}
+
+.ds-hotspots__label--end {
+  inset-block-start: var(--hotspot-y);
+  inset-inline-start: calc(
+    var(--hotspot-x) + var(--hotspot-size) / 2 + var(--space-1) * 1.5
+  );
+  translate: 0 -50%;
+}
+
+/* Before the dot and lifted clear of it, where a label after it would cross
+   a neighbour. */
+.ds-hotspots__label--start {
+  inset-block-start: calc(var(--hotspot-y) - var(--space-2));
+  inset-inline-start: calc(var(--hotspot-x) - var(--hotspot-size) / 2 - var(--space-2));
+  translate: -100% -100%;
+}
+
+.ds-hotspots__x-title {
+  position: absolute;
+  inset-block-end: 0;
+  inset-inline-end: var(--space-3);
+}

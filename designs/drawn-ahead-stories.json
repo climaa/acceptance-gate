@@ -1,9 +1,5 @@
 {
   "stories": [
-    "molecules-hotspots--default",
-    "molecules-penaltybars--default",
-    "molecules-profilebar--default",
-    "molecules-statepies--default",
     "organisms-sidebar--expanded",
     "organisms-sidebar--collapsed",
     "organisms-topbar--default",

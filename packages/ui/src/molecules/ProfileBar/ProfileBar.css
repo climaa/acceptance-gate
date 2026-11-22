@@ -1,0 +1,81 @@
+/* The board stacks the head, the bar and the key 6px apart and parts the
+   segments with 2px seams; both are halves of --space-1 and --space-3. The
+   title is drawn at 700, which the self-hosted mono face does not ship. */
+.ds-profile-bar {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--space-1) * 1.5);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-normal);
+  line-height: var(--leading-normal);
+}
+
+.ds-profile-bar p {
+  margin: 0;
+}
+
+.ds-profile-bar__head {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.ds-profile-bar__title {
+  color: var(--color-text);
+}
+
+.ds-profile-bar__unit {
+  color: var(--color-text-muted);
+}
+
+.ds-profile-bar__bar {
+  display: flex;
+  gap: calc(var(--space-1) / 2);
+  block-size: var(--space-3);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.ds-profile-bar__segment {
+  flex-basis: 0;
+  flex-shrink: 1;
+}
+
+.ds-profile-bar__key {
+  display: flex;
+  column-gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--color-text-muted);
+}
+
+.ds-profile-bar__key-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.ds-profile-bar__swatch {
+  flex: none;
+  inline-size: var(--space-2);
+  block-size: var(--space-2);
+  border-radius: calc(var(--radius-sm) / 2);
+}
+
+.ds-profile-bar__band--low {
+  background-color: var(--color-border);
+}
+
+.ds-profile-bar__band--medium {
+  background-color: var(--color-border-strong);
+}
+
+.ds-profile-bar__band--high {
+  background-color: var(--color-text-muted);
+}
+
+.ds-profile-bar__band--very-high {
+  background-color: var(--color-text);
+}

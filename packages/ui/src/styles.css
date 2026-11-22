@@ -64,3 +64,7 @@
 @import './molecules/TestPyramid/TestPyramid.css';
 @import './molecules/TrendChart/TrendChart.css';
 @import './molecules/Icicle/Icicle.css';
+@import './molecules/PenaltyBars/PenaltyBars.css';
+@import './molecules/ProfileBar/ProfileBar.css';
+@import './molecules/Hotspots/Hotspots.css';
+@import './molecules/StatePies/StatePies.css';

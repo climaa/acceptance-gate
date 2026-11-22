@@ -99,3 +99,38 @@ export {
   type IcicleProps,
   type IcicleTone,
 } from './Icicle/Icicle';
+export {
+  PenaltyBars,
+  formatPenalty,
+  listFree,
+  penaltyBars,
+  type Penalty,
+  type PenaltyBar,
+  type PenaltyBarsProps,
+} from './PenaltyBars/PenaltyBars';
+export {
+  ProfileBar,
+  formatShare,
+  profileSegments,
+  type ProfileBand,
+  type ProfileBarProps,
+  type ProfileSegment,
+} from './ProfileBar/ProfileBar';
+export {
+  Hotspots,
+  hotspotDots,
+  niceAxis,
+  type HotspotAxis,
+  type Hotspot,
+  type HotspotDot,
+  type HotspotsProps,
+} from './Hotspots/Hotspots';
+export {
+  StatePies,
+  pieSlices,
+  slicePath,
+  type BoundarySource,
+  type PieSlice,
+  type RouteState,
+  type StatePiesProps,
+} from './StatePies/StatePies';
