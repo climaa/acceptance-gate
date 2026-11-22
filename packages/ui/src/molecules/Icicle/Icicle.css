@@ -25,15 +25,17 @@
   padding-block-start: var(--space-1);
   padding-inline: var(--space-2);
   border-inline-end: 2px solid transparent;
+  border-radius: var(--radius-sm);
   background-clip: padding-box;
   overflow: hidden;
 }
 
 /* The board sets the value line in bold, a weight the self-hosted JetBrains
-   Mono does not ship; both lines keep the one weight it has. The board's 16px
-   pitch sits between the scale's tight (15px) and normal (18px) lines. Normal
-   lands the first line on the board's ink and the second 2px under it, where
-   tight would set both 2-3px high. */
+   Mono does not ship; both lines keep the one weight it has. The board stacks
+   two 14.4px lines (line-height 1.2) under 6px of padding with a 2px gap,
+   centring them at 13.2px and 29.6px; none of those is on the scale. A normal
+   first line under --space-1 centres at 13px, and a tight second line under it
+   at 29.5px, so both land on the board's ink rows. */
 .ds-icicle__label,
 .ds-icicle__detail {
   font-family: var(--font-mono);
@@ -42,6 +44,10 @@
   line-height: var(--leading-normal);
   white-space: nowrap;
   color: var(--color-text);
+}
+
+.ds-icicle__detail {
+  line-height: var(--leading-tight);
 }
 
 .ds-icicle__cell--neutral {
