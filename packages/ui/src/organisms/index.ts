@@ -9,6 +9,8 @@ export {
   gridStep as panZoomGridStep,
   ZOOM_STEP as PAN_ZOOM_STEP,
 } from './PanZoom/geometry';
+export { SearchPalette, type SearchPaletteProps } from './SearchPalette/SearchPalette';
+export type { SearchEntry, SearchKind } from './SearchPalette/search';
 export {
   SiteFooter,
   type SiteFooterLink,
