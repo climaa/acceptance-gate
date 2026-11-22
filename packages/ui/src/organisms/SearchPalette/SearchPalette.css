@@ -42,7 +42,9 @@
   align-self: center;
   width: var(--space-10);
   height: var(--space-1);
-  margin-top: var(--space-2);
+  /* The tile pads the bar's row by 4px above and below (rows 521–525 of 517–529
+     on the mobile tile); a top margin alone hung the bar 4px low. */
+  margin: var(--space-1) 0;
   border-radius: var(--radius-full);
   background: var(--color-bg-muted);
 }
@@ -112,8 +114,19 @@
   padding: var(--space-1) var(--space-2) var(--space-2);
 }
 
+/* The tile spaces every row of the list 2px apart, a step the scale does not
+   have. A group's rows sit one --space-1 apart and its heading keeps
+   --space-1 below it; measured on the desktop tile, that lands every heading
+   and result line within 2 rows of the tile's (they had drifted 12 rows short
+   by the last result). */
+.ds-search-palette__group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
 .ds-search-palette__heading {
-  padding: var(--space-3) var(--space-2) var(--space-2);
+  padding: var(--space-3) var(--space-2) var(--space-1);
   color: var(--color-text-muted);
   font-family: var(--font-mono);
   font-size: var(--text-xs);
@@ -138,13 +151,19 @@
   font-weight: var(--weight-bold);
 }
 
+/* The active result's glyph is inked like its title, as the tile draws it. */
+.ds-search-palette__option[aria-selected='true'] .ds-search-palette__icon {
+  color: var(--color-text);
+}
+
 .ds-search-palette__option[data-kind='file'] .ds-search-palette__title {
   font-family: var(--font-mono);
   font-size: var(--text-xs);
 }
 
 .ds-search-palette__option[data-kind='gap'] .ds-search-palette__icon {
-  color: var(--color-danger-fg);
+  /* -text, not -fg: the glyph sits on the page ground, not on a danger chip. */
+  color: var(--color-danger-text);
 }
 
 .ds-search-palette__title {
