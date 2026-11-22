@@ -71,8 +71,8 @@ packages/
   logger/              the shared error/warn/info logger: silent in production, and
                        `error()` always forwards to a reporter — with the Bugsink
                        adapter behind `@gate/logger/bugsink`, inert until a DSN exists
-  ui/                  design system: tokens.css + 31 components in 4 tiers
-                       (17 atoms · 10 molecules · 5 organisms · 2 templates); every
+  ui/                  design system: tokens.css + 34 components in 4 tiers
+                       (17 atoms · 13 molecules · 5 organisms · 2 templates); every
                        one storied but Stack, the layout primitive with nothing
                        of its own to capture
   visual-diff/         the self-built visual-regression CLI + 310 committed baselines;

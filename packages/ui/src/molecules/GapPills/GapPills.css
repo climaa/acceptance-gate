@@ -1,0 +1,60 @@
+/* A fixed plot, drawn at the board's size: the component places every mark
+   in px inside it (GapPills.tsx), so the box itself must not stretch. */
+.ds-gap-pills {
+  position: relative;
+  inline-size: 16.5rem;
+  block-size: 12.5rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  line-height: 1;
+}
+
+.ds-gap-pills > span > span {
+  position: absolute;
+}
+
+.ds-gap-pills__grid {
+  inset-inline: 1.75rem 0;
+  block-size: 1px;
+  background: var(--color-border);
+}
+
+/* Each axis value sits centred on its gridline. */
+.ds-gap-pills__tick {
+  inset-inline-start: 0;
+  transform: translateY(-50%);
+  color: var(--color-text-muted);
+}
+
+.ds-gap-pills__pill {
+  inline-size: 0.625rem;
+  border-radius: var(--radius-full);
+  transform: translateX(-50%);
+}
+.ds-gap-pills__pill--chart {
+  background: var(--color-chart);
+}
+.ds-gap-pills__pill--chart-2 {
+  background: var(--color-chart-2);
+}
+.ds-gap-pills__pill--chart-3 {
+  background: var(--color-chart-3);
+}
+.ds-gap-pills__pill--chart-4 {
+  background: var(--color-chart-4);
+}
+
+/* The count stands a line and a gap above its pill. Drawn at 700 on the board;
+   the mono face ships 400 alone. */
+.ds-gap-pills__count {
+  font-weight: var(--weight-normal);
+  color: var(--color-text);
+  transform: translate(-50%, calc(-100% - var(--space-1)));
+}
+
+.ds-gap-pills__label {
+  inset-block-end: 0;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  transform: translateX(-50%);
+}

@@ -1,7 +1,5 @@
 {
   "stories": [
-    "molecules-coveragelist--default",
-    "molecules-gappills--default",
     "molecules-hotspots--default",
     "molecules-icicle--complexity",
     "molecules-icicle--files",
@@ -9,7 +7,6 @@
     "molecules-penaltybars--default",
     "molecules-profilebar--default",
     "molecules-statepies--default",
-    "molecules-storieslist--default",
     "molecules-testpyramid--default",
     "molecules-trendchart--default",
     "organisms-sidebar--expanded",
