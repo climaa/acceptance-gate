@@ -23,7 +23,8 @@ const config = defineConfig({
       // Only these two are this suite's subject: step definitions and page
       // objects run under Playwright, and the acceptance suite exercises them.
       include: [
-        // The integrity checks the `check:suite` / `check:local` scripts run.
+        // The integrity checks `check:suite` / `check:local` run, and the
+        // visual-diff seed the Playwright config hands its data directory to.
         'scripts/**/*.mjs',
         // The suite's own support code (the analytics guard).
         'support/**/*.ts',
