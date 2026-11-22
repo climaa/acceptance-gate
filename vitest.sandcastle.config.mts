@@ -11,7 +11,11 @@ import { preset } from './vitest.shared.mjs';
 // as the orchestrator's, and it needs a suite that CI runs.
 const config = defineConfig({
   test: {
-    include: ['.sandcastle/__tests__/**/*.test.ts', 'scripts/__tests__/**/*.test.ts'],
+    include: [
+      '.sandcastle/__tests__/**/*.test.ts',
+      'scripts/__tests__/**/*.test.ts',
+      '.claude/skills/pixel-perfect-session/scripts/__tests__/**/*.test.ts',
+    ],
     environment: 'node',
     globals: true,
     coverage: {
@@ -26,19 +30,25 @@ const config = defineConfig({
         'scripts/**/*.mjs',
         // The Sandcastle orchestrator: planner, merge flow, sandbox hooks.
         '.sandcastle/**/*.mts',
+        // The pixel-perfect-session skill's script: tile rows against shot rows.
+        '.claude/skills/pixel-perfect-session/scripts/**/*.mjs',
       ],
       // Tests are not the code under measurement. `scripts/pen/*.js` stay out by
       // extension: they are snippets pasted into Pencil's `execute`, not Node modules.
-      exclude: ['scripts/__tests__/**', '.sandcastle/__tests__/**'],
+      exclude: [
+        'scripts/__tests__/**',
+        '.sandcastle/__tests__/**',
+        '.claude/skills/pixel-perfect-session/scripts/__tests__/**',
+      ],
       // Explicit, so a plain run writes no `coverage/` directory.
       reporter: ['text', 'text-summary'],
       // FLOORS, measured rather than aspired to: what the suite covers today less
       // about two points, rounded down. Raise one when its real number moves up;
       // never lower one to make a red run green.
       //
-      // One per directory, because the two are 30 points apart and a shared floor
+      // One per directory, because they sit up to 35 points apart and a shared floor
       // would let either slide. No global numbers: Vitest counts glob-matched
-      // files into the global thresholds too, so they would blur the two again.
+      // files into the global thresholds too, so they would blur them together again.
       thresholds: {
         // scripts/ measured 28.14 / 27.96 / 41.12 / 28.66.
         'scripts/**/*.mjs': { statements: 26, branches: 25, functions: 39, lines: 26 },
@@ -48,6 +58,13 @@ const config = defineConfig({
           branches: 68,
           functions: 56,
           lines: 58,
+        },
+        // The pixel-perfect-session script measured 63.18 / 45.45 / 56.66 / 63.31.
+        '.claude/skills/pixel-perfect-session/scripts/**/*.mjs': {
+          statements: 61,
+          branches: 43,
+          functions: 54,
+          lines: 61,
         },
       },
     },

@@ -32,7 +32,14 @@
 // purpose: this script lives with its skill, outside any workspace package, and
 // the differ's PNG reader is the one reader the corpus already trusts.
 import { createRequire } from 'node:module';
-import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  realpathSync,
+  writeFileSync,
+} from 'node:fs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -64,7 +71,7 @@ const TINT_SHARE = 0.3;
 /** The shot view's path is `/set/<label>/shot/<key>`; anything else is a variant
  *  key typed by hand, which reads the committed baselines.
  *  @param {string} arg @returns {Target} */
-function parseTarget(arg) {
+export function parseTarget(arg) {
   if (!/^https?:\/\//.test(arg)) return { key: arg, label: 'baselines' };
 
   const url = new URL(arg);
@@ -82,7 +89,7 @@ function parseTarget(arg) {
 /** A variant key is tier, viewport, theme and story id joined by `__`, with a
  *  locale between the theme and the story id for a story listed for that axis.
  *  @param {string} key @returns {Variant} */
-function parseKey(key) {
+export function parseKey(key) {
   const parts = key.split('__');
   if (parts.length === 4) {
     const [tier, viewport, theme, storyId] = parts;
@@ -106,7 +113,7 @@ function usageError(why) {
 }
 
 /** @param {string} argv0 @param {string[]} rest */
-function parseArgs(argv0, rest) {
+export function parseArgs(argv0, rest) {
   /** @type {{ png: string | undefined, storybook: string, save: string | undefined }} */
   const flags = { png: undefined, storybook: STORYBOOK, save: undefined };
   for (let i = 0; i < rest.length; i += 2) {
@@ -186,7 +193,7 @@ async function storySource(storybook, storyId) {
 /** The Storybook globals that render a variant: the theme always, the locale for
  *  a story listed for it. The viewport is the manager's, never the iframe's.
  *  @param {Variant} variant */
-function globalsOf(variant) {
+export function globalsOf(variant) {
   const globals = [`${COLOR_SCHEME_GLOBAL}:${variant.theme}`];
   if (variant.locale) globals.push(`${LOCALE_GLOBAL}:${variant.locale}`);
   return globals.join(';');
@@ -240,7 +247,7 @@ async function printAddresses({ target, storybook }, variant, tile, shotFrom) {
  *  seam as a column of ink on every row. The crop is therefore sampled one export
  *  pixel in from each edge: an edge cell takes its colour from its inner neighbour.
  *  @param {Image} board @param {number[]} rect @param {number} scale @returns {Image} */
-function cropToDesignPixels(board, [x0, y0, w, h], scale) {
+export function cropToDesignPixels(board, [x0, y0, w, h], scale) {
   const width = Math.round(w / scale);
   const height = Math.round(h / scale);
   const data = new Uint8Array(width * height * 4);
@@ -268,7 +275,7 @@ function cropToDesignPixels(board, [x0, y0, w, h], scale) {
  *  so an edge cell reads its inner neighbour rather than the seam.
  *  @param {number} start @param {number} scale @param {[number, number]} bounds
  *  @returns {[number, number]} first pixel, and one past the last */
-function sourceSpan(start, scale, [first, last]) {
+export function sourceSpan(start, scale, [first, last]) {
   const from = Math.min(Math.max(Math.floor(start), first), last);
   const to = Math.min(Math.max(from + 1, Math.floor(start + scale)), last + 1);
   return [from, to];
@@ -277,7 +284,7 @@ function sourceSpan(start, scale, [first, last]) {
 /** One design pixel's colour: the mean of the export pixels it covers.
  *  @param {Image} board @param {number} left @param {number} top @param {number} scale
  *  @param {Inset} inset @returns {[number, number, number]} */
-function averageCell(board, left, top, scale, inset) {
+export function averageCell(board, left, top, scale, inset) {
   const sum = [0, 0, 0];
   let count = 0;
   const [sx0, sx1] = sourceSpan(left, scale, inset.x);
@@ -306,13 +313,13 @@ function rgb(image, x, y) {
 
 /** The ground, sampled two pixels in from the corner, past the border the shot
  *  draws and the corner radius the tile rounds. @param {Image} image */
-function groundOf(image) {
+export function groundOf(image) {
   const [r, g, b] = rgb(image, 2, 2);
   return r + g + b;
 }
 
 /** @param {Image} image @param {number} x @param {number} y @param {number} groundSum */
-function isInk(image, x, y, groundSum) {
+export function isInk(image, x, y, groundSum) {
   const [r, g, b] = rgb(image, x, y);
   return Math.abs(r + g + b - groundSum) > INK_DISTANCE;
 }
@@ -320,7 +327,7 @@ function isInk(image, x, y, groundSum) {
 /** One row's reading.
  *  @param {Image} image @param {number} y @param {number} groundSum
  *  @returns {'ink' | 'tint' | 'plain'} */
-function classifyRow(image, y, groundSum) {
+export function classifyRow(image, y, groundSum) {
   let tinted = 0;
   for (let x = 0; x < image.width; x += 1) {
     if (isInk(image, x, y, groundSum)) return 'ink';
@@ -333,7 +340,7 @@ function classifyRow(image, y, groundSum) {
 /** @typedef {{ kind: 'ink' | 'tint' | 'plain', from: number, to: number }} Run */
 
 /** @param {Image} image @returns {Run[]} */
-function rowRuns(image) {
+export function rowRuns(image) {
   const groundSum = groundOf(image);
   /** @type {Run[]} */
   const runs = [];
@@ -347,7 +354,7 @@ function rowRuns(image) {
 }
 
 /** @param {Image} image @param {Run} run @param {number} x @param {number} groundSum */
-function columnHasInk(image, run, x, groundSum) {
+export function columnHasInk(image, run, x, groundSum) {
   for (let y = run.from; y <= run.to; y += 1) {
     if (isInk(image, x, y, groundSum)) return true;
   }
@@ -357,7 +364,7 @@ function columnHasInk(image, run, x, groundSum) {
 /** The columns an ink run spans: its first and last inked column, so a width
  *  (a weight, a tracking, a face) reads beside its rows.
  *  @param {Image} image @param {Run} run @returns {[number, number] | null} */
-function inkColumns(image, run) {
+export function inkColumns(image, run) {
   const groundSum = groundOf(image);
   let first = -1;
   let last = -1;
@@ -370,7 +377,7 @@ function inkColumns(image, run) {
 }
 
 /** @param {Run} run @returns {string} */
-const formatRun = (run) =>
+export const formatRun = (run) =>
   `${run.kind.padEnd(5)} ${String(run.from).padStart(4)}–${String(run.to).padEnd(4)} (${run.to - run.from + 1})`;
 
 /** @param {string} label @param {Image} image */
@@ -434,4 +441,19 @@ async function main() {
   if (args.save) saveImages(args.save, tileImage, shot.image);
 }
 
-await main();
+/** Whether node was pointed at this file rather than at something importing it,
+ *  so the tests can import the functions above without running the CLI. Both
+ *  sides go through `realpathSync`, as apps/visual-diff-ui/scripts/capture-set.mjs
+ *  explains: on macOS every /tmp path is a symlink, and a raw comparison would
+ *  exit 0 having read nothing. */
+function invokedDirectly() {
+  const invoked = process.argv[1];
+  if (!invoked) return false;
+  try {
+    return realpathSync(invoked) === fileURLToPath(import.meta.url);
+  } catch {
+    return false;
+  }
+}
+
+if (invokedDirectly()) await main();
