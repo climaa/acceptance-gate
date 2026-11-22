@@ -44,6 +44,24 @@ const config = defineConfig({
     environment: 'node',
     // No `globals` — the suite imports from 'vitest' explicitly, because
     // tsconfig's `**/*.ts` include means tsc typechecks it.
+    // A FLOOR, measured rather than aspired to: what the suite covered when it
+    // was installed, less about two points, rounded down.
+    coverage: {
+      // On for the plain `vitest run`: thresholds are only evaluated when
+      // coverage is enabled. The reason apps/visual-diff-ui gives for its own.
+      enabled: true,
+      provider: 'v8',
+      // Read from the filesystem, not from what the suite imports, so a module
+      // with no test counts as zero instead of being invisible. `app/` holds the
+      // routes, layouts and metadata files; `components/` the screens they
+      // compose; `lib/` the parser, allowlist and helpers.
+      include: ['app/**/*.{ts,tsx}', 'components/**/*.tsx', 'lib/**/*.{ts,tsx}'],
+      // Explicit, so a run writes no `coverage/` directory.
+      reporter: ['text', 'text-summary'],
+      // Measured at 83.13 / 82.5 / 82.25 / 83.43. Raise them when the real number
+      // moves up; never lower them to make a red run green.
+      thresholds: { statements: 81, branches: 80, functions: 80, lines: 81 },
+    },
   },
 });
 
