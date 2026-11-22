@@ -1,0 +1,22 @@
+{
+  "schema": 1,
+  "points": [
+    {
+      "commit": "6d4ee88c6c1fdb535bc5ec9be7e7650c57814c51",
+      "measuredAt": "2026-11-22T09:26:51.955Z",
+      "dimensions": {
+        "code": 95.5,
+        "visual": 88,
+        "acceptance": 40,
+        "health": 84.8
+      },
+      "fallow": {
+        "score": 84.8,
+        "grade": "B",
+        "dupPct": 1.6,
+        "crapOver": 68,
+        "overCeiling": 3
+      }
+    }
+  ]
+}

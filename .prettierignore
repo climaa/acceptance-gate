@@ -80,3 +80,8 @@ apps/e2e/.worlds/
 # a re-export diffs by the tiles that moved. Prettier would wrap the long keys'
 # arrays over three lines and turn every regeneration into a diff.
 designs/exports/*.tiles.json
+
+# Census's committed files, written only by `pnpm census:measure` (2-space JSON.stringify).
+# Prettier would fold short arrays onto one line, a hand edit the next run undoes.
+apps/census/measurement.json
+apps/census/history.json
