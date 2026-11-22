@@ -61,3 +61,5 @@
 @import './molecules/CoverageList/CoverageList.css';
 @import './molecules/GapPills/GapPills.css';
 @import './molecules/StoriesList/StoriesList.css';
+@import './molecules/TestPyramid/TestPyramid.css';
+@import './molecules/TrendChart/TrendChart.css';
