@@ -49,7 +49,7 @@ const svgProps = {
   height: 16,
   fill: 'none',
   stroke: 'currentColor',
-  strokeWidth: 1.75,
+  strokeWidth: 2,
   strokeLinecap: 'round',
   strokeLinejoin: 'round',
 } as const;
@@ -99,7 +99,7 @@ const iconFor = (entry: SearchEntry) =>
   );
 
 const SEARCH_ICON = (
-  <svg {...svgProps} width={18} height={18}>
+  <svg {...svgProps}>
     <circle cx="11" cy="11" r="7" />
     <path d="M20 20l-3.5-3.5" />
   </svg>
