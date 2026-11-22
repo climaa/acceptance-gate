@@ -1,0 +1,52 @@
+.ds-meter {
+  position: relative;
+  display: block;
+  box-sizing: border-box;
+  inline-size: 100%;
+  block-size: 6px;
+  border-radius: var(--radius-full);
+  background: var(--meter-track);
+}
+
+.ds-meter--chart {
+  --meter-fill: var(--color-chart);
+  --meter-track: var(--color-chart-tint);
+}
+.ds-meter--chart-2 {
+  --meter-fill: var(--color-chart-2);
+  --meter-track: var(--color-chart-2-tint);
+}
+.ds-meter--chart-3 {
+  --meter-fill: var(--color-chart-3);
+  --meter-track: var(--color-chart-3-tint);
+}
+.ds-meter--chart-4 {
+  --meter-fill: var(--color-chart-4);
+  --meter-track: var(--color-chart-4-tint);
+}
+
+/* Nothing filled has no hue to show: the empty track is the neutral ground. */
+.ds-meter--empty {
+  --meter-track: var(--color-bg-muted);
+}
+
+.ds-meter--unmeasured {
+  --meter-track: transparent;
+  border: 1px dashed var(--color-border-strong);
+}
+
+.ds-meter__fill {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  border-radius: var(--radius-full);
+  background: var(--meter-fill);
+}
+
+.ds-meter__floor {
+  position: absolute;
+  inset-block: 0;
+  inline-size: 2px;
+  transform: translateX(-50%);
+  background: var(--color-text);
+}
