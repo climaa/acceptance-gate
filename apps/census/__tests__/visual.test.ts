@@ -180,6 +180,20 @@ describe('appComponents', () => {
 
     expect(components).toEqual([]);
   });
+
+  it('skips metadata image routes, which render an image response, not a page', () => {
+    const components = appComponents(
+      [
+        'apps/visual-diff-ui/app/report/[id]/compare/[key]/opengraph-image.tsx',
+        'apps/blog/app/twitter-image.tsx',
+        'apps/blog/app/icon.tsx',
+        'apps/blog/app/icon2.tsx',
+        'apps/blog/app/apple-icon.tsx',
+      ].map((path) => ({ path, source: 'export default async function Image() {}' })),
+    );
+
+    expect(components).toEqual([]);
+  });
 });
 
 describe('storyImports', () => {

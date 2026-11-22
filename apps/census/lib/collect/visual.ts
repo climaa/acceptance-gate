@@ -30,8 +30,9 @@ export interface Story {
 const STORYBOOK_DIR = 'apps/storybook';
 const SKIP_TAG = 'visual-diff:skip';
 const TIERS = new Set(['atoms', 'molecules', 'organisms', 'templates']);
+/** App Router special files, metadata image routes (`icon2.tsx`) included: none is a component. */
 const ROUTE_FILE =
-  /^(page|layout|loading|error|not-found|global-error|global-not-found|template|default|route)\.tsx$/;
+  /^(page|layout|loading|error|not-found|global-error|global-not-found|template|default|route|(opengraph-image|twitter-image|icon|apple-icon)\d*)\.tsx$/;
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
