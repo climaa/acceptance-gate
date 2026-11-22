@@ -114,12 +114,13 @@ describe('Meter', () => {
       expect(meter.getAttribute('aria-valuetext')).toBeNull();
     });
 
-    it('places the tick at the floor as a percentage of the track', () => {
+    it('places the tick at the floor, measured from the inline start the fill grows from', () => {
       render(<Meter label="Code coverage" value={42} floor={60} />);
 
       const floor = floorOf(screen.getByRole('meter'));
 
-      expect(floor?.style.left).toBe('60%');
+      expect(floor?.style.insetInlineStart).toBe('60%');
+      expect(floor?.style.left).toBe('');
     });
 
     it('clamps a floor outside 0–100 onto the track', () => {
@@ -127,7 +128,7 @@ describe('Meter', () => {
 
       const floor = floorOf(screen.getByRole('meter'));
 
-      expect(floor?.style.left).toBe('100%');
+      expect(floor?.style.insetInlineStart).toBe('100%');
     });
 
     it('speaks the floor beside the value, since the tick alone is only seen', () => {

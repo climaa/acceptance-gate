@@ -43,10 +43,13 @@
   background: var(--meter-fill);
 }
 
+/* Placed from the inline start, like the fill, so in a right-to-left page the
+   tick still marks the floor on the side the bar grows from. Half its width
+   back centres it on the floor in either direction; a translate would not. */
 .ds-meter__floor {
   position: absolute;
   inset-block: 0;
   inline-size: 2px;
-  transform: translateX(-50%);
+  margin-inline-start: -1px;
   background: var(--color-text);
 }
