@@ -1,0 +1,216 @@
+/* The ⌘K palette, in its two presentations: a bottom sheet below 768px and a
+   panel hung near the top of the viewport above it. The media query is the only
+   switch. Nothing here animates: the palette opens as its resting frame.
+
+   The scrim is Dialog's, for Dialog's reason (dark in both themes, aliased from
+   the two roles that are dark in their own theme, no literal colour). */
+.ds-search-palette {
+  --ds-search-palette-scrim: var(--color-text);
+
+  position: fixed;
+  inset: 0;
+  /* Dialog's layer: the two are never open together. */
+  z-index: 100;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+[data-theme='dark'] .ds-search-palette {
+  --ds-search-palette-scrim: var(--color-text-inverted);
+}
+
+.ds-search-palette__backdrop {
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--ds-search-palette-scrim) 87%, transparent);
+}
+
+.ds-search-palette__surface {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-height: calc(100% - var(--space-8));
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  box-shadow: var(--shadow-lg);
+}
+
+.ds-search-palette__grabber {
+  align-self: center;
+  width: var(--space-10);
+  height: var(--space-1);
+  margin-top: var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--color-bg-muted);
+}
+
+.ds-search-palette__field {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.ds-search-palette__search-icon,
+.ds-search-palette__icon {
+  display: inline-flex;
+  flex: none;
+  color: var(--color-text-muted);
+}
+
+.ds-search-palette__input {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--text-base);
+  line-height: var(--leading-tight);
+}
+
+/* The input is the palette's one focus: the caret and the active result already
+   say where the keyboard is, and a ring round the whole field would be a third. */
+.ds-search-palette__input:focus {
+  outline: none;
+}
+
+.ds-search-palette__input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.ds-search-palette__kbd {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 var(--space-1);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  line-height: var(--leading-normal);
+}
+
+.ds-search-palette__close {
+  cursor: pointer;
+}
+
+.ds-search-palette__close:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+.ds-search-palette__list {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--space-1) var(--space-2) var(--space-2);
+}
+
+.ds-search-palette__heading {
+  padding: var(--space-3) var(--space-2) var(--space-2);
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+}
+
+.ds-search-palette__option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  cursor: pointer;
+}
+
+.ds-search-palette__option[aria-selected='true'] {
+  background: var(--color-bg-subtle);
+  font-weight: var(--weight-bold);
+}
+
+.ds-search-palette__option[data-kind='file'] .ds-search-palette__title {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+}
+
+.ds-search-palette__option[data-kind='gap'] .ds-search-palette__icon {
+  color: var(--color-danger-fg);
+}
+
+.ds-search-palette__title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Detail for a pointer-width screen; the sheet keeps the line for the title. */
+.ds-search-palette__meta {
+  display: none;
+  flex: none;
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-normal);
+}
+
+.ds-search-palette__empty {
+  margin: 0;
+  padding: var(--space-4);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+/* Keyboard hints, so they exist only where a keyboard is likely. */
+.ds-search-palette__hints {
+  display: none;
+  gap: var(--space-4);
+  padding: var(--space-2) var(--space-4);
+  border-top: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+}
+
+.ds-search-palette__hint {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+@media (min-width: 768px) {
+  .ds-search-palette {
+    align-items: flex-start;
+    padding: calc(var(--space-16) + var(--space-8)) var(--space-8) var(--space-8);
+  }
+
+  .ds-search-palette__surface {
+    width: 40rem;
+    max-height: 100%;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-lg);
+  }
+
+  .ds-search-palette__grabber {
+    display: none;
+  }
+
+  .ds-search-palette__meta {
+    display: inline;
+  }
+
+  .ds-search-palette__hints {
+    display: flex;
+  }
+}

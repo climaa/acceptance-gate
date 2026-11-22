@@ -2,7 +2,6 @@
   "stories": [
     "organisms-sidebar--expanded",
     "organisms-sidebar--collapsed",
-    "organisms-topbar--default",
-    "organisms-searchpalette--results"
+    "organisms-topbar--default"
   ]
 }
