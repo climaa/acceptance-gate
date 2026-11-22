@@ -38,12 +38,16 @@
 
 /* A rule over every row, the first included: it parts the rows from the
    headline too. The board's 10px gaps and 2px/6px inner gaps are off the
-   scale; --space-2 and --space-1 are the nearest steps. */
+   scale; --space-2 and --space-1 are the nearest steps. Each one lands 2px off
+   the board, so the rule's far side takes --space-5 (the board's 10 + 8 = 18)
+   to give back the 2px its near side loses: the 2px inner gaps already cancel,
+   and the rows then keep the board's 99px pitch instead of drifting 4px each
+   (measured against the tile's ink rows 90, 188, 287, 387). */
 .ds-stories-list__row {
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
-  padding-block: var(--space-4) var(--space-2);
+  padding-block: var(--space-5) var(--space-2);
   border-top: 1px solid var(--color-border);
 }
 
