@@ -30,3 +30,10 @@
   background: var(--color-danger-surface);
   color: var(--color-danger-fg);
 }
+/* Something with no value to show: "unmeasured", "n/a". An outline on the
+   page ground rather than a filled chip, so it never reads as a state. */
+.ds-badge--dashed {
+  background: transparent;
+  color: var(--color-text-muted);
+  border: 1px dashed var(--color-border-strong);
+}

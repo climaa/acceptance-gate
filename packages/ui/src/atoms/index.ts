@@ -13,6 +13,7 @@ export {
   type IconButtonVariant,
 } from './IconButton/IconButton';
 export { Link, type LinkProps, type LinkTone } from './Link/Link';
+export { Meter, type MeterHue, type MeterProps } from './Meter/Meter';
 export { Prose } from './Prose/Prose';
 export {
   SegmentedControl,

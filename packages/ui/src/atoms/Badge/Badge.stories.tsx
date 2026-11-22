@@ -30,3 +30,7 @@ export const Warning: Story = {
 export const Danger: Story = {
   args: { tone: 'danger', children: 'Deprecated' },
 };
+
+export const Dashed: Story = {
+  args: { tone: 'dashed', children: 'unmeasured' },
+};
