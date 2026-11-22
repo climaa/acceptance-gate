@@ -89,3 +89,13 @@ export {
   type TrendRange,
   type TrendSeries,
 } from './TrendChart/TrendChart';
+export {
+  Icicle,
+  fitLabel,
+  icicleRows,
+  nodeWeight,
+  type IcicleCell,
+  type IcicleNode,
+  type IcicleProps,
+  type IcicleTone,
+} from './Icicle/Icicle';

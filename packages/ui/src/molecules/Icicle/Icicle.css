@@ -1,0 +1,96 @@
+/* The board parts the cells with 2px seams of page ground, off the spacing
+   scale. They are drawn as transparent rules rather than gaps, so the rows
+   keep the board's 58px pitch and the figure its 172px height. */
+.ds-icicle__rows {
+  display: flex;
+  flex-direction: column;
+}
+
+.ds-icicle__row {
+  position: relative;
+  box-sizing: content-box;
+  block-size: calc(var(--space-12) + var(--space-2));
+}
+
+.ds-icicle__row + .ds-icicle__row {
+  border-block-start: 2px solid transparent;
+}
+
+.ds-icicle__cell {
+  position: absolute;
+  inset-block: 0;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  padding-block-start: var(--space-1);
+  padding-inline: var(--space-2);
+  border-inline-end: 2px solid transparent;
+  background-clip: padding-box;
+  overflow: hidden;
+}
+
+/* The board sets the value line in bold, a weight the self-hosted JetBrains
+   Mono does not ship; both lines keep the one weight it has. The board's 16px
+   pitch sits between the scale's tight (15px) and normal (18px) lines. Normal
+   lands the first line on the board's ink and the second 2px under it, where
+   tight would set both 2-3px high. */
+.ds-icicle__label,
+.ds-icicle__detail {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-normal);
+  line-height: var(--leading-normal);
+  white-space: nowrap;
+  color: var(--color-text);
+}
+
+.ds-icicle__cell--neutral {
+  background-color: var(--color-bg-muted);
+}
+
+.ds-icicle__cell--success {
+  background-color: var(--color-success-surface);
+}
+
+.ds-icicle__cell--warning {
+  background-color: var(--color-warning-surface);
+}
+
+.ds-icicle__cell--danger {
+  background-color: var(--color-danger-surface);
+}
+
+.ds-icicle__cell--success > * {
+  color: var(--color-success-fg);
+}
+
+.ds-icicle__cell--warning > * {
+  color: var(--color-warning-fg);
+}
+
+.ds-icicle__cell--danger > * {
+  color: var(--color-danger-fg);
+}
+
+/* The heat steps climb the neutral ramp from a border's tone to the text's,
+   and the two darkest turn their ink to the page ground. */
+.ds-icicle__cell--heat-1 {
+  background-color: var(--color-border);
+}
+
+.ds-icicle__cell--heat-2 {
+  background-color: var(--color-border-strong);
+}
+
+.ds-icicle__cell--heat-3 {
+  background-color: var(--color-text-muted);
+}
+
+.ds-icicle__cell--heat-4 {
+  background-color: var(--color-text);
+}
+
+.ds-icicle__cell--heat-3 > *,
+.ds-icicle__cell--heat-4 > * {
+  color: var(--color-bg);
+}
