@@ -1,9 +1,6 @@
 {
   "stories": [
     "molecules-hotspots--default",
-    "molecules-icicle--complexity",
-    "molecules-icicle--files",
-    "molecules-icicle--repository",
     "molecules-penaltybars--default",
     "molecules-profilebar--default",
     "molecules-statepies--default",
