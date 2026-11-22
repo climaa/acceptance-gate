@@ -45,9 +45,13 @@
   color: var(--color-text-muted);
 }
 
+/* The board sets the delta on the label's tight line, as StatTile's badge row
+   does: the badge's own 1.4 line made the change row 20.8px against the tile's
+   19 and pushed the sparkline 1.8px down (rows 113–148 on the tile). */
 .ds-spark-stat__delta {
   font-family: var(--font-mono);
   font-weight: var(--weight-normal);
+  line-height: var(--leading-tight);
 }
 
 .ds-spark-stat__line {
