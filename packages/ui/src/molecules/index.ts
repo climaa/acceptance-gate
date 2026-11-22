@@ -35,3 +35,30 @@ export {
   type StatTileProps,
   type StatTileState,
 } from './StatTile/StatTile';
+export {
+  CoverageList,
+  dimensionHue,
+  formatCoverage,
+  formatPointsDelta,
+  type CoverageDimension,
+  type CoverageListProps,
+  type CoverageRow,
+} from './CoverageList/CoverageList';
+export {
+  GapPills,
+  gapAxis,
+  gapPillLayout,
+  sortByCount,
+  type Gap,
+  type GapPill,
+  type GapPillsProps,
+  type GapTick,
+} from './GapPills/GapPills';
+export {
+  StoriesList,
+  listMissing,
+  storiesTotals,
+  storyShare,
+  type StoriesListProps,
+  type StoriesWorkspace,
+} from './StoriesList/StoriesList';

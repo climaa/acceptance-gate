@@ -1,0 +1,93 @@
+.ds-stories-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.ds-stories-list p {
+  margin: 0;
+}
+
+.ds-stories-list__headline {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-3);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  color: var(--color-text-muted);
+}
+
+/* The board sets the count at 56px, past the top of the type scale; it keeps
+   --text-4xl, the scale's largest step and StatTile's figure. */
+.ds-stories-list__count {
+  font-family: var(--font-display);
+  font-size: var(--text-4xl);
+  font-weight: var(--weight-semibold);
+  line-height: 1;
+  color: var(--color-text);
+}
+
+.ds-stories-list__rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* A rule over every row, the first included: it parts the rows from the
+   headline too. The board's 10px gaps and 2px/6px inner gaps are off the
+   scale; --space-2 and --space-1 are the nearest steps. */
+.ds-stories-list__row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding-block: var(--space-4) var(--space-2);
+  border-top: 1px solid var(--color-border);
+}
+
+/* The board's columns are fixed, and the row does not stretch the Meter to the
+   page's width: the counts stay close to the bars they read. */
+.ds-stories-list__head {
+  display: grid;
+  grid-template-columns: 15rem minmax(0, 33.6875rem) 8.75rem;
+  column-gap: var(--space-6);
+  align-items: center;
+}
+
+.ds-stories-list__name {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.ds-stories-list__workspace,
+.ds-stories-list__detail,
+.ds-stories-list__missing {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  line-height: var(--leading-normal);
+  color: var(--color-text-muted);
+}
+
+.ds-stories-list__workspace {
+  color: var(--color-accent);
+}
+
+/* What is missing is the track: the danger surface under the hue of the
+   stories that exist. */
+.ds-meter.ds-stories-list__meter {
+  --meter-track: var(--color-danger-surface);
+}
+
+/* Drawn in -fg at 700 on the board. A state word on the page ground takes the
+   -text role (tokens.css), and the mono face ships 400 alone. */
+.ds-stories-list__figure {
+  justify-self: end;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-normal);
+  line-height: var(--leading-normal);
+  color: var(--color-danger-text);
+}
