@@ -221,6 +221,8 @@ describe('sandboxTurboEnv', () => {
     const env = code.match(/env:\s*(.+),\s*$/m)?.[1];
 
     // Assert
-    expect(env).toBe('sandboxTurboEnv(turboToken, turboTeam)');
+    expect(env).toBe(
+      '{ ...sandboxTurboEnv(turboToken, turboTeam), ...WORKTREE_PNPM_ENV }',
+    );
   });
 });

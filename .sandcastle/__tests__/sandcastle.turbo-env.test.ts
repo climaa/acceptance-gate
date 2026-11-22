@@ -135,9 +135,9 @@ describe('sandcastle turbo-env passthrough', () => {
     // sandboxTurboEnv(), whose cases sandcastle.turbo-cache.test.ts holds as
     // unit tests. Here: the worktree sandbox passes exactly that, with the
     // resolved credentials.
-    it('createSandbox env is sandboxTurboEnv(turboToken, turboTeam)', () => {
+    it('createSandbox env spreads sandboxTurboEnv(turboToken, turboTeam)', () => {
       expect(createSandboxCall).toMatch(
-        /env\s*:\s*sandboxTurboEnv\(turboToken,\s*turboTeam\)/,
+        /env\s*:\s*\{\s*\.\.\.sandboxTurboEnv\(turboToken,\s*turboTeam\)/,
       );
     });
 
