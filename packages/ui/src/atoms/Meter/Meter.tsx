@@ -49,7 +49,7 @@ export function Meter({ label, value, hue = 'chart', floor, className }: MeterPr
     >
       {now > 0 && <span className="ds-meter__fill" style={{ width: `${now}%` }} />}
       {tick !== undefined && (
-        <span className="ds-meter__floor" style={{ left: `${tick}%` }} />
+        <span className="ds-meter__floor" style={{ insetInlineStart: `${tick}%` }} />
       )}
     </div>
   );
