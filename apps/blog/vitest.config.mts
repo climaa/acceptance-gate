@@ -44,9 +44,6 @@ const config = defineConfig({
     environment: 'node',
     // No `globals` — the suite imports from 'vitest' explicitly, because
     // tsconfig's `**/*.ts` include means tsc typechecks it.
-    // A FLOOR, measured rather than aspired to: what this suite covers today,
-    // less about two points of slack. Raise it when the real number moves up;
-    // never lower it to make a red run green.
     coverage: {
       // On for the plain `vitest run`: thresholds are only evaluated when
       // coverage is enabled, so otherwise the floor would never gate `test`.
@@ -66,6 +63,9 @@ const config = defineConfig({
       exclude: ['**/*.test.{ts,tsx}'],
       // `text` writes to stdout only, so a run leaves no `coverage/` directory.
       reporter: ['text', 'text-summary'],
+      // A FLOOR, measured rather than aspired to: 67.0 / 65.9 / 65.7 / 67.3 when
+      // it landed, less about two points of slack. Raise it when the real number
+      // moves up; never lower it to make a red run green.
       thresholds: { statements: 64, branches: 63, functions: 63, lines: 65 },
     },
   },
