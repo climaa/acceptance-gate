@@ -139,10 +139,24 @@ export const SANDBOX_MARK_HOOK: SandboxHook = {
 // container stamps its store path into the host's node_modules — CI=true is
 // the right answer inside a disposable worktree and the wrong one for a
 // developer's checkout, which is why head-mode simply does not install.
+//
+// `timeout` because the hook's own `timeoutMs` does not end it. The SDK races
+// the hook against that limit, but the race waits on a `docker exec` it cannot
+// interrupt: on a slow registry an install stalled with no socket open and no
+// write for over an hour, and the run waited with it. Killed from inside the
+// container, the install fails the hook instead, and the issue with it. The
+// limit is 15 minutes: twice the 7 a whole install took when the registry
+// answered metadata in 10–18 s.
 export const PNPM_INSTALL_HOOK: SandboxHook = {
-  command: 'CI=true pnpm install',
-  timeoutMs: 600_000,
+  command: 'CI=true timeout -k 30 900 pnpm install',
+  timeoutMs: 960_000,
 };
+
+// pnpm fetches 16 packages at a time by default. On that same slow registry a
+// whole install at 16 aborted on fetch timeouts, and at 4 it finished. Set on
+// the worktree sandbox's env, not the hook, so the agent's own installs inherit
+// it. pnpm 11 reads the `pnpm_config_` prefix (see headSandboxOptions below).
+export const WORKTREE_PNPM_ENV = { pnpm_config_network_concurrency: '4' } as const;
 
 /**
  * Hooks for a sandbox mounting `mount`. Returns a fresh object each call so a

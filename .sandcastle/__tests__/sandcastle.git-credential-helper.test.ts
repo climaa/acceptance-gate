@@ -5,6 +5,7 @@ import { join } from 'node:path';
 
 import {
   GH_AUTH_SETUP_HOOK,
+  PNPM_INSTALL_HOOK,
   type SandboxMount,
   hooksFor,
 } from '../sandcastle-sandbox-hooks.mts';
@@ -40,10 +41,12 @@ describe('sandcastle git credential helper', () => {
     expect(commandsFor('head')).toContain(GH_AUTH_SETUP_HOOK.command);
   });
 
-  it('keeps the existing CI=true pnpm install hook for worktree-mounted sandboxes', () => {
+  it('keeps the CI=true pnpm install hook for worktree-mounted sandboxes', () => {
     // Head-mounted sandboxes deliberately no longer install — see
-    // sandcastle.head-mode-install.test.ts.
-    expect(commandsFor('worktree')).toContain('CI=true pnpm install');
+    // sandcastle.head-mode-install.test.ts; its time limit is in
+    // sandcastle.bounded-install.test.ts.
+    expect(commandsFor('worktree')).toContain(PNPM_INSTALL_HOOK.command);
+    expect(PNPM_INSTALL_HOOK.command).toMatch(/^CI=true .*\bpnpm install$/);
   });
 
   // Every checkout's origin is git@github.com:…, so the credential helper
