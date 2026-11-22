@@ -2304,7 +2304,7 @@
                   "reusable": true,
                   "clip": true,
                   "width": 1248,
-                  "height": 8,
+                  "height": 6,
                   "fill": "$bg",
                   "layout": "vertical",
                   "children": [
@@ -2314,7 +2314,7 @@
                       "name": "Meter",
                       "clip": true,
                       "width": "fill_container",
-                      "height": 8,
+                      "height": 6,
                       "fill": "$chart-tint",
                       "cornerRadius": 9999,
                       "children": [
@@ -2323,7 +2323,7 @@
                           "id": "CXLJg",
                           "name": "Meter fill",
                           "width": 225,
-                          "height": 8,
+                          "height": 6,
                           "fill": "$chart",
                           "cornerRadius": 9999
                         }
@@ -2378,7 +2378,7 @@
                   "reusable": true,
                   "clip": true,
                   "width": 1248,
-                  "height": 8,
+                  "height": 6,
                   "fill": "$bg",
                   "layout": "vertical",
                   "children": [
@@ -2388,7 +2388,7 @@
                       "name": "Meter",
                       "clip": true,
                       "width": "fill_container",
-                      "height": 8,
+                      "height": 6,
                       "fill": "$chart-tint",
                       "cornerRadius": 9999,
                       "children": [
@@ -2397,7 +2397,7 @@
                           "id": "h7BebS",
                           "name": "Meter fill",
                           "width": 1248,
-                          "height": 8,
+                          "height": 6,
                           "fill": "$chart",
                           "cornerRadius": 9999
                         }
@@ -2452,7 +2452,7 @@
                   "reusable": true,
                   "clip": true,
                   "width": 1248,
-                  "height": 8,
+                  "height": 6,
                   "fill": "$bg",
                   "layout": "vertical",
                   "children": [
@@ -2462,7 +2462,7 @@
                       "name": "Meter",
                       "clip": true,
                       "width": "fill_container",
-                      "height": 8,
+                      "height": 6,
                       "fill": "$bg-muted",
                       "cornerRadius": 9999
                     }
@@ -2515,7 +2515,7 @@
                   "reusable": true,
                   "clip": true,
                   "width": 1248,
-                  "height": 8,
+                  "height": 6,
                   "fill": "$bg",
                   "layout": "vertical",
                   "children": [
@@ -2524,7 +2524,7 @@
                       "id": "NLODI",
                       "name": "Meter",
                       "width": "fill_container",
-                      "height": 8,
+                      "height": 6,
                       "cornerRadius": 9999,
                       "stroke": "$border-strong",
                       "strokeWidth": 1,
