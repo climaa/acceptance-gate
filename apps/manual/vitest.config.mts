@@ -44,11 +44,12 @@ const config = defineConfig({
     environment: 'node',
     // No `globals` — the suite imports from 'vitest' explicitly, because
     // tsconfig's `**/*.ts` include means tsc typechecks it.
+
     // A FLOOR, measured rather than aspired to: what the suite covered when it
     // was installed, less about two points, rounded down.
     coverage: {
       // On for the plain `vitest run`: thresholds are only evaluated when
-      // coverage is enabled. The reason apps/visual-diff-ui gives for its own.
+      // coverage is enabled — the same reason apps/visual-diff-ui gives.
       enabled: true,
       provider: 'v8',
       // Read from the filesystem, not from what the suite imports, so a module
