@@ -48,6 +48,12 @@ const OUT = join(ROOT, '.census');
 const CENSUS = join(ROOT, 'apps', 'census');
 const FALLOW = ['-y', 'fallow@3.36.0'];
 const SHARED_CONFIG = 'vitest.sandcastle.config.mts';
+/** The pseudo-workspaces the shared hermetic config measures: none has a config of its own. */
+const SHARED_CONFIG_PATHS = new Set([
+  'scripts',
+  '.sandcastle',
+  '.claude/skills/pixel-perfect-session',
+]);
 const CONFIG_NAMES = [
   'vitest.config.mts',
   'vitest.config.ts',
@@ -99,7 +105,7 @@ function workspaces() {
 
 /** The vitest config a workspace runs under, repo-relative, if any. */
 function configOf(ws) {
-  if (ws.path === 'scripts' || ws.path === '.sandcastle') return SHARED_CONFIG;
+  if (SHARED_CONFIG_PATHS.has(ws.path)) return SHARED_CONFIG;
   const name = CONFIG_NAMES.find((n) => existsSync(join(ROOT, ws.path, n)));
   return name ? `${ws.path}/${name}` : undefined;
 }
