@@ -1,0 +1,35 @@
+/* Inline crumbs rather than a flex row: a long path wraps between crumbs as text
+   does, at any width, without a width-dependent rule the desktop-only capture
+   could not see. */
+.ds-breadcrumb__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+}
+
+.ds-breadcrumb__item {
+  display: inline;
+}
+
+.ds-breadcrumb__separator {
+  padding-inline: var(--space-2);
+  color: var(--color-text-muted);
+}
+
+.ds-breadcrumb__link {
+  color: var(--color-accent);
+  text-decoration: none;
+  text-underline-offset: 2px;
+}
+
+.ds-breadcrumb__link:hover,
+.ds-breadcrumb__link:focus-visible {
+  text-decoration: underline;
+}
+
+.ds-breadcrumb__current {
+  color: var(--color-text);
+}

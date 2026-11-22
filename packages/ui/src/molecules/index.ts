@@ -15,3 +15,23 @@ export {
   type StepMeaning,
 } from './StepList/StepList';
 export { TagList, type TagListProps } from './TagList/TagList';
+export {
+  Breadcrumb,
+  type BreadcrumbItem,
+  type BreadcrumbProps,
+} from './Breadcrumb/Breadcrumb';
+export {
+  SparkStat,
+  deltaTone,
+  formatDelta,
+  sparklinePoints,
+  type SparkBox,
+  type SparkDirection,
+  type SparkStatProps,
+} from './SparkStat/SparkStat';
+export {
+  StatTile,
+  statTileBadge,
+  type StatTileProps,
+  type StatTileState,
+} from './StatTile/StatTile';

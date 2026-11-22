@@ -1,0 +1,74 @@
+.ds-stat-tile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background: var(--color-bg-subtle);
+}
+
+.ds-stat-tile > p {
+  margin: 0;
+}
+
+.ds-stat-tile__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+/* The board sets the badge on the label's tight line, so a tile with a badge
+   stands only the badge's padding taller than one without. */
+.ds-stat-tile__header > .ds-badge {
+  line-height: var(--leading-tight);
+}
+
+/* The dashed badge's outline is drawn inside its box on the board; here it is a
+   border outside, and taking its width back keeps the "n/a" row as tall as the
+   filled badges' rows. */
+.ds-stat-tile__header > .ds-badge--dashed {
+  margin-block: -1px;
+}
+
+/* The board draws the label at 700, but the mono face ships 400 alone and a
+   synthesized bold rasterizes per engine (tokens.css). */
+.ds-stat-tile__label {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-normal);
+  letter-spacing: var(--tracking-wide);
+  line-height: var(--leading-tight);
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.ds-stat-tile__value {
+  font-family: var(--font-display);
+  font-size: var(--text-4xl);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
+  color: var(--color-text);
+}
+
+.ds-stat-tile__detail {
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  color: var(--color-text-muted);
+}
+
+/* A gap count and a missing measurement are both work left to do. */
+.ds-stat-tile--gaps .ds-stat-tile__value,
+.ds-stat-tile--unmeasured .ds-stat-tile__value {
+  color: var(--color-danger-text);
+}
+
+/* Nothing to measure: the tile steps back to an outline, as its badge does. */
+.ds-stat-tile--not-applicable {
+  border-style: dashed;
+  border-color: var(--color-border-strong);
+}
+.ds-stat-tile--not-applicable .ds-stat-tile__value {
+  color: var(--color-text-muted);
+}
