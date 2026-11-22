@@ -1,0 +1,157 @@
+/* Census's top bar. Below 768px — Sidebar's breakpoint, so the menu button shows
+   exactly while the sidebar is a drawer — the search field folds to its glyph,
+   GitHub leaves and the breadcrumb keeps its last two crumbs. No `position:
+   sticky`, for SiteHeader's reason: a bar that moves under the differ is a diff. */
+.ds-topbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  box-sizing: border-box;
+  min-height: 3.5rem;
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-bg);
+}
+
+.ds-topbar__breadcrumb {
+  flex: 1;
+  min-width: 0;
+}
+
+.ds-topbar__end {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.ds-topbar__search {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  box-sizing: border-box;
+  min-width: 2rem;
+  min-height: 2rem;
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  font: inherit;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.ds-topbar__search:hover {
+  color: var(--color-text);
+}
+
+.ds-topbar__placeholder,
+.ds-topbar__kbd,
+.ds-topbar__github {
+  display: none;
+}
+
+.ds-topbar__kbd {
+  padding: 0 var(--space-1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  line-height: var(--leading-normal);
+  color: var(--color-text-muted);
+}
+
+.ds-topbar__github {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+.ds-topbar__github:hover,
+.ds-topbar__github:focus-visible {
+  color: var(--color-accent-hover);
+  text-decoration: underline;
+}
+
+.ds-topbar__search:focus-visible,
+.ds-topbar__github:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+/* The board draws the theme switch here as a round icon button, not the pill
+   the atom is on its own: the atom keeps its state and its name, this bar
+   reshapes its track around the knob. Imported after ThemeToggle.css, so the
+   same specificity wins on source order. */
+.ds-topbar__theme.ds-theme-toggle,
+.ds-topbar__theme.ds-theme-toggle[aria-pressed='true'] {
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  background: var(--color-bg);
+}
+
+/* The glyph is ink in both states here: the board draws no pressed tint, and
+   `aria-pressed` still carries the state. Matches the atom's pressed rule on
+   specificity and follows it, so it wins on order. */
+.ds-topbar__theme.ds-theme-toggle .ds-theme-toggle__knob,
+.ds-topbar__theme.ds-theme-toggle[aria-pressed='true'] .ds-theme-toggle__knob {
+  background: none;
+  box-shadow: none;
+  color: var(--color-text);
+}
+
+@media (width < 768px) {
+  /* The last two crumbs: the page and the one above it. A crumb's separator
+     sits before it, so the first one kept drops its own. */
+  .ds-topbar__breadcrumb .ds-breadcrumb__item:not(:nth-last-child(-n + 2)) {
+    display: none;
+  }
+
+  .ds-topbar__breadcrumb
+    .ds-breadcrumb__item:nth-last-child(2)
+    .ds-breadcrumb__separator {
+    display: none;
+  }
+}
+
+@media (width >= 768px) {
+  .ds-topbar {
+    gap: var(--space-4);
+    padding-inline: var(--space-8);
+  }
+
+  .ds-topbar__menu {
+    display: none;
+  }
+
+  .ds-topbar__end {
+    gap: var(--space-4);
+  }
+
+  .ds-topbar__search {
+    justify-content: flex-start;
+    width: 18.75rem;
+    min-height: 2.25rem;
+    padding-inline: var(--space-3);
+    background: var(--color-bg-subtle);
+  }
+
+  .ds-topbar__placeholder {
+    display: block;
+    flex: 1;
+    overflow: hidden;
+    text-align: left;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .ds-topbar__kbd,
+  .ds-topbar__github {
+    display: inline;
+  }
+}

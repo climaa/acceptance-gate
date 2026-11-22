@@ -69,3 +69,5 @@
 @import './molecules/Hotspots/Hotspots.css';
 @import './molecules/StatePies/StatePies.css';
 @import './organisms/SearchPalette/SearchPalette.css';
+@import './organisms/Sidebar/Sidebar.css';
+@import './organisms/TopBar/TopBar.css';

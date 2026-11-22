@@ -12,6 +12,15 @@ export {
 export { SearchPalette, type SearchPaletteProps } from './SearchPalette/SearchPalette';
 export type { SearchEntry, SearchKind } from './SearchPalette/search';
 export {
+  Sidebar,
+  type SidebarCategory,
+  type SidebarDimension,
+  type SidebarDimensionId,
+  type SidebarProps,
+  type SidebarWorkspace,
+  type SidebarWorkspaceStatus,
+} from './Sidebar/Sidebar';
+export {
   SiteFooter,
   type SiteFooterLink,
   type SiteFooterProps,
@@ -29,3 +38,4 @@ export {
   type TableRow,
   type TitledCell,
 } from './Table/Table';
+export { TopBar, type TopBarProps } from './TopBar/TopBar';
