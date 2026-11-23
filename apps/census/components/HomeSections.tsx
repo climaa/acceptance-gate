@@ -137,7 +137,7 @@ export function StatesCard({ data }: Of<'states'>) {
   );
 }
 
-function Score({
+export function Score({
   score,
   grade,
   source,

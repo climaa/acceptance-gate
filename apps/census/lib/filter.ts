@@ -3,7 +3,6 @@
  * prerendered once, unfiltered; the reader's query is applied in the browser by
  * these functions, so a filtered home needs no server and no second build.
  */
-import { blobHref } from './links.ts';
 import {
   CATEGORIES,
   DIMENSIONS,
@@ -11,6 +10,7 @@ import {
   type Dimension,
   type Measurement,
 } from './measurement.ts';
+import { workspaceHref } from './workspace-address.ts';
 
 export interface HomeFilter {
   dimension: Dimension | null;
@@ -59,7 +59,7 @@ export function gapRows(measurement: Measurement): GapRow[] {
       kind: gap.kind,
       title: gap.title,
       workspace: gap.workspace,
-      workspaceHref: blobHref(measurement, ws.path),
+      workspaceHref: workspaceHref(ws),
     };
   });
 }

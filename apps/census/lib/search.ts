@@ -9,6 +9,7 @@ import { LOCAL_FEATURES } from './features.ts';
 import { gapAnchor } from './filter.ts';
 import { blobHref } from './links.ts';
 import type { Measurement, Workspace } from './measurement.ts';
+import { workspaceHref } from './workspace-address.ts';
 
 export interface SearchIndex {
   entries: SearchEntry[];
@@ -29,7 +30,7 @@ function workspaceEntries(m: Measurement): Indexed[] {
     kind: 'workspace',
     title: ws.name,
     meta: ws.category,
-    href: blobHref(m, ws.path),
+    href: workspaceHref(ws),
   }));
 }
 

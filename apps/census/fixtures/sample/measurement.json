@@ -204,59 +204,367 @@
           "staticReachPct": 97.4,
           "files": [
             {
-              "path": "src/atoms/Badge/Badge.tsx",
-              "group": "atoms",
+              "path": "src/organisms/PanZoom/PanZoom.tsx",
+              "group": "organisms",
               "lines": {
-                "covered": 12,
-                "total": 12,
-                "pct": 100
+                "covered": 62,
+                "total": 64,
+                "pct": 96.9
               },
-              "maintainability": 92.1,
-              "crap": 2
-            },
-            {
-              "path": "src/molecules/CoverageList/CoverageList.tsx",
-              "group": "molecules",
-              "lines": {
-                "covered": 48,
-                "total": 48,
-                "pct": 100
-              },
-              "maintainability": 81.6,
-              "crap": 4
-            },
-            {
-              "path": "src/molecules/TrendChart/TrendChart.tsx",
-              "group": "molecules",
-              "lines": {
-                "covered": 131,
-                "total": 134,
-                "pct": 97.8
-              },
-              "maintainability": 64.2,
-              "crap": 18.3
+              "maintainability": 71.3,
+              "crap": 49.5
             },
             {
               "path": "src/organisms/Table/Table.tsx",
               "group": "organisms",
               "lines": {
-                "covered": 61,
-                "total": 61,
+                "covered": 41,
+                "total": 41,
                 "pct": 100
               },
               "maintainability": 77.9,
               "crap": 6
             },
             {
-              "path": "src/organisms/PanZoom/PanZoom.tsx",
+              "path": "src/organisms/Dialog/Dialog.tsx",
               "group": "organisms",
               "lines": {
-                "covered": 41,
-                "total": 42,
-                "pct": 97.6
+                "covered": 33,
+                "total": 33,
+                "pct": 100
               },
-              "maintainability": 71.3,
-              "crap": 49.5
+              "maintainability": 74.6,
+              "crap": 10.4
+            },
+            {
+              "path": "src/molecules/Pagination/Pagination.tsx",
+              "group": "molecules",
+              "lines": {
+                "covered": 24,
+                "total": 24,
+                "pct": 100
+              },
+              "maintainability": 80.2,
+              "crap": 5
+            },
+            {
+              "path": "src/atoms/SegmentedControl/SegmentedControl.tsx",
+              "group": "atoms",
+              "lines": {
+                "covered": 22,
+                "total": 22,
+                "pct": 100
+              },
+              "maintainability": 82.4,
+              "crap": 4.1
+            },
+            {
+              "path": "src/atoms/Thumbnail/Thumbnail.tsx",
+              "group": "atoms",
+              "lines": {
+                "covered": 18,
+                "total": 19,
+                "pct": 94.7
+              },
+              "maintainability": 84.0,
+              "crap": 3.2
+            },
+            {
+              "path": "src/atoms/ThemeToggle/ThemeToggle.tsx",
+              "group": "atoms",
+              "lines": {
+                "covered": 17,
+                "total": 18,
+                "pct": 94.4
+              },
+              "maintainability": 85.1,
+              "crap": 3
+            },
+            {
+              "path": "src/atoms/TriStateCheckbox/TriStateCheckbox.tsx",
+              "group": "atoms",
+              "lines": {
+                "covered": 16,
+                "total": 16,
+                "pct": 100
+              },
+              "maintainability": 86.3,
+              "crap": 2.4
+            },
+            {
+              "path": "src/molecules/CodeBlock/CodeBlock.tsx",
+              "group": "molecules",
+              "lines": {
+                "covered": 14,
+                "total": 14,
+                "pct": 100
+              },
+              "maintainability": 88.2,
+              "crap": 2
+            },
+            {
+              "path": "src/organisms/SiteHeader/SiteHeader.tsx",
+              "group": "organisms",
+              "lines": {
+                "covered": 12,
+                "total": 12,
+                "pct": 100
+              },
+              "maintainability": 89.0,
+              "crap": 2
+            },
+            {
+              "path": "src/atoms/Text/Text.tsx",
+              "group": "atoms",
+              "lines": {
+                "covered": 11,
+                "total": 11,
+                "pct": 100
+              },
+              "maintainability": 90.4,
+              "crap": 2
+            },
+            {
+              "path": "src/templates/sample/below-floor.ts",
+              "group": "templates",
+              "lines": {
+                "covered": 6,
+                "total": 10,
+                "pct": 60
+              },
+              "maintainability": 79.5,
+              "crap": 16.2
+            },
+            {
+              "path": "src/molecules/StepList/StepList.tsx",
+              "group": "molecules",
+              "lines": {
+                "covered": 9,
+                "total": 9,
+                "pct": 100
+              },
+              "maintainability": 91.2,
+              "crap": 1
+            },
+            {
+              "path": "src/templates/sample/no-test.ts",
+              "group": "templates",
+              "lines": {
+                "covered": 0,
+                "total": 8,
+                "pct": 0
+              },
+              "maintainability": 83.0,
+              "crap": 30.6
+            },
+            {
+              "path": "src/atoms/Badge/Badge.tsx",
+              "group": "atoms",
+              "lines": {
+                "covered": 8,
+                "total": 8,
+                "pct": 100
+              },
+              "maintainability": 92.0,
+              "crap": 1
+            },
+            {
+              "path": "src/atoms/BucketChip/BucketChip.tsx",
+              "group": "atoms",
+              "lines": {
+                "covered": 7,
+                "total": 7,
+                "pct": 100
+              },
+              "maintainability": 92.3,
+              "crap": 1
+            },
+            {
+              "path": "src/atoms/Button/Button.tsx",
+              "group": "atoms",
+              "lines": {
+                "covered": 6,
+                "total": 6,
+                "pct": 100
+              },
+              "maintainability": 92.6,
+              "crap": 1
+            },
+            {
+              "path": "src/atoms/EmptyState/EmptyState.tsx",
+              "group": "atoms",
+              "lines": {
+                "covered": 5,
+                "total": 5,
+                "pct": 100
+              },
+              "maintainability": 92.9,
+              "crap": 1
+            },
+            {
+              "path": "src/atoms/IconButton/IconButton.tsx",
+              "group": "atoms",
+              "lines": {
+                "covered": 4,
+                "total": 4,
+                "pct": 100
+              },
+              "maintainability": 93.2,
+              "crap": 1
+            },
+            {
+              "path": "src/atoms/Link/Link.tsx",
+              "group": "atoms",
+              "lines": {
+                "covered": 3,
+                "total": 3,
+                "pct": 100
+              },
+              "maintainability": 93.5,
+              "crap": 1
+            },
+            {
+              "path": "src/atoms/Meter/Meter.tsx",
+              "group": "atoms",
+              "lines": {
+                "covered": 8,
+                "total": 8,
+                "pct": 100
+              },
+              "maintainability": 93.8,
+              "crap": 1
+            },
+            {
+              "path": "src/atoms/Prose/Prose.tsx",
+              "group": "atoms",
+              "lines": {
+                "covered": 7,
+                "total": 7,
+                "pct": 100
+              },
+              "maintainability": 94.1,
+              "crap": 1
+            },
+            {
+              "path": "src/atoms/Skeleton/Skeleton.tsx",
+              "group": "atoms",
+              "lines": {
+                "covered": 6,
+                "total": 6,
+                "pct": 100
+              },
+              "maintainability": 94.4,
+              "crap": 1
+            },
+            {
+              "path": "src/atoms/SkipLink/SkipLink.tsx",
+              "group": "atoms",
+              "lines": {
+                "covered": 5,
+                "total": 5,
+                "pct": 100
+              },
+              "maintainability": 94.7,
+              "crap": 1
+            },
+            {
+              "path": "src/atoms/Spinner/Spinner.tsx",
+              "group": "atoms",
+              "lines": {
+                "covered": 4,
+                "total": 4,
+                "pct": 100
+              },
+              "maintainability": 95.0,
+              "crap": 1
+            },
+            {
+              "path": "src/atoms/Tag/Tag.tsx",
+              "group": "atoms",
+              "lines": {
+                "covered": 3,
+                "total": 3,
+                "pct": 100
+              },
+              "maintainability": 95.3,
+              "crap": 1
+            },
+            {
+              "path": "src/molecules/Breadcrumb/Breadcrumb.tsx",
+              "group": "molecules",
+              "lines": {
+                "covered": 8,
+                "total": 8,
+                "pct": 100
+              },
+              "maintainability": 95.6,
+              "crap": 1
+            },
+            {
+              "path": "src/molecules/Card/Card.tsx",
+              "group": "molecules",
+              "lines": {
+                "covered": 7,
+                "total": 7,
+                "pct": 100
+              },
+              "maintainability": 95.9,
+              "crap": 1
+            },
+            {
+              "path": "src/molecules/PostCard/PostCard.tsx",
+              "group": "molecules",
+              "lines": {
+                "covered": 6,
+                "total": 6,
+                "pct": 100
+              },
+              "maintainability": 96.2,
+              "crap": 1
+            },
+            {
+              "path": "src/molecules/PostMeta/PostMeta.tsx",
+              "group": "molecules",
+              "lines": {
+                "covered": 5,
+                "total": 5,
+                "pct": 100
+              },
+              "maintainability": 96.5,
+              "crap": 1
+            },
+            {
+              "path": "src/molecules/TagList/TagList.tsx",
+              "group": "molecules",
+              "lines": {
+                "covered": 4,
+                "total": 4,
+                "pct": 100
+              },
+              "maintainability": 96.8,
+              "crap": 1
+            },
+            {
+              "path": "src/organisms/SiteFooter/SiteFooter.tsx",
+              "group": "organisms",
+              "lines": {
+                "covered": 3,
+                "total": 3,
+                "pct": 100
+              },
+              "maintainability": 97.1,
+              "crap": 1
+            },
+            {
+              "path": "src/templates/PostTemplate/PostTemplate.tsx",
+              "group": "templates",
+              "lines": {
+                "covered": 8,
+                "total": 8,
+                "pct": 100
+              },
+              "maintainability": 97.4,
+              "crap": 1
             }
           ]
         },
@@ -268,7 +576,255 @@
             "storied": 30,
             "tiled": 30,
             "baselined": 30
-          }
+          },
+          "inventory": [
+            {
+              "name": "Badge",
+              "tier": "atoms",
+              "story": "atoms-badge--default",
+              "tiled": true,
+              "board": "01-atoms",
+              "baselined": true
+            },
+            {
+              "name": "BucketChip",
+              "tier": "atoms",
+              "story": "atoms-bucketchip--default",
+              "tiled": true,
+              "board": "01-atoms",
+              "baselined": true
+            },
+            {
+              "name": "Button",
+              "tier": "atoms",
+              "story": "atoms-button--default",
+              "tiled": true,
+              "board": "01-atoms",
+              "baselined": true
+            },
+            {
+              "name": "EmptyState",
+              "tier": "atoms",
+              "story": "atoms-emptystate--default",
+              "tiled": true,
+              "board": "01-atoms",
+              "baselined": true
+            },
+            {
+              "name": "IconButton",
+              "tier": "atoms",
+              "story": "atoms-iconbutton--default",
+              "tiled": true,
+              "board": "01-atoms",
+              "baselined": true
+            },
+            {
+              "name": "Link",
+              "tier": "atoms",
+              "story": "atoms-link--default",
+              "tiled": true,
+              "board": "01-atoms",
+              "baselined": true
+            },
+            {
+              "name": "Meter",
+              "tier": "atoms",
+              "story": "atoms-meter--default",
+              "tiled": true,
+              "board": "01-atoms",
+              "baselined": true
+            },
+            {
+              "name": "Prose",
+              "tier": "atoms",
+              "story": "atoms-prose--default",
+              "tiled": true,
+              "board": "01-atoms",
+              "baselined": true
+            },
+            {
+              "name": "SegmentedControl",
+              "tier": "atoms",
+              "story": "atoms-segmentedcontrol--default",
+              "tiled": true,
+              "board": "01-atoms",
+              "baselined": true
+            },
+            {
+              "name": "Skeleton",
+              "tier": "atoms",
+              "story": "atoms-skeleton--default",
+              "tiled": true,
+              "board": "01-atoms",
+              "baselined": true
+            },
+            {
+              "name": "SkipLink",
+              "tier": "atoms",
+              "story": "atoms-skiplink--default",
+              "tiled": true,
+              "board": "01-atoms",
+              "baselined": true
+            },
+            {
+              "name": "Spinner",
+              "tier": "atoms",
+              "story": "atoms-spinner--default",
+              "tiled": true,
+              "board": "01-atoms",
+              "baselined": true
+            },
+            {
+              "name": "Stack",
+              "tier": "atoms",
+              "tiled": false,
+              "baselined": false
+            },
+            {
+              "name": "Tag",
+              "tier": "atoms",
+              "story": "atoms-tag--default",
+              "tiled": true,
+              "board": "01-atoms",
+              "baselined": true
+            },
+            {
+              "name": "Text",
+              "tier": "atoms",
+              "story": "atoms-text--default",
+              "tiled": true,
+              "board": "01-atoms",
+              "baselined": true
+            },
+            {
+              "name": "ThemeToggle",
+              "tier": "atoms",
+              "story": "atoms-themetoggle--default",
+              "tiled": true,
+              "board": "01-atoms",
+              "baselined": true
+            },
+            {
+              "name": "Thumbnail",
+              "tier": "atoms",
+              "story": "atoms-thumbnail--default",
+              "tiled": true,
+              "board": "01-atoms",
+              "baselined": true
+            },
+            {
+              "name": "TriStateCheckbox",
+              "tier": "atoms",
+              "story": "atoms-tristatecheckbox--default",
+              "tiled": true,
+              "board": "01-atoms",
+              "baselined": true
+            },
+            {
+              "name": "Breadcrumb",
+              "tier": "molecules",
+              "story": "molecules-breadcrumb--default",
+              "tiled": true,
+              "board": "02-molecules",
+              "baselined": true
+            },
+            {
+              "name": "Card",
+              "tier": "molecules",
+              "story": "molecules-card--default",
+              "tiled": true,
+              "board": "02-molecules",
+              "baselined": true
+            },
+            {
+              "name": "CodeBlock",
+              "tier": "molecules",
+              "story": "molecules-codeblock--default",
+              "tiled": true,
+              "board": "02-molecules",
+              "baselined": true
+            },
+            {
+              "name": "Pagination",
+              "tier": "molecules",
+              "story": "molecules-pagination--default",
+              "tiled": true,
+              "board": "02-molecules",
+              "baselined": true
+            },
+            {
+              "name": "PostCard",
+              "tier": "molecules",
+              "story": "molecules-postcard--default",
+              "tiled": true,
+              "board": "02-molecules",
+              "baselined": true
+            },
+            {
+              "name": "PostMeta",
+              "tier": "molecules",
+              "story": "molecules-postmeta--default",
+              "tiled": true,
+              "board": "02-molecules",
+              "baselined": true
+            },
+            {
+              "name": "StepList",
+              "tier": "molecules",
+              "story": "molecules-steplist--default",
+              "tiled": true,
+              "board": "02-molecules",
+              "baselined": true
+            },
+            {
+              "name": "TagList",
+              "tier": "molecules",
+              "story": "molecules-taglist--default",
+              "tiled": true,
+              "board": "02-molecules",
+              "baselined": true
+            },
+            {
+              "name": "Dialog",
+              "tier": "organisms",
+              "story": "organisms-dialog--default",
+              "tiled": true,
+              "board": "03-organisms",
+              "baselined": true
+            },
+            {
+              "name": "PanZoom",
+              "tier": "organisms",
+              "story": "organisms-panzoom--default",
+              "tiled": true,
+              "board": "03-organisms",
+              "baselined": true
+            },
+            {
+              "name": "SiteFooter",
+              "tier": "organisms",
+              "story": "organisms-sitefooter--default",
+              "tiled": true,
+              "board": "03-organisms",
+              "baselined": true
+            },
+            {
+              "name": "SiteHeader",
+              "tier": "organisms",
+              "story": "organisms-siteheader--default",
+              "tiled": true,
+              "board": "03-organisms",
+              "baselined": true
+            },
+            {
+              "name": "Table",
+              "tier": "organisms",
+              "story": "organisms-table--default",
+              "tiled": true,
+              "board": "03-organisms",
+              "baselined": true
+            }
+          ]
         },
         "acceptance": {
           "dimension": "acceptance",
@@ -553,7 +1109,65 @@
               "inherited": 7,
               "none": 0
             }
-          }
+          },
+          "inventory": [
+            {
+              "name": "screens-blog-about--default",
+              "tier": "screens",
+              "story": "screens-blog-about--default",
+              "tiled": false,
+              "baselined": true
+            },
+            {
+              "name": "screens-blog-changelog--releases",
+              "tier": "screens",
+              "story": "screens-blog-changelog--releases",
+              "tiled": false,
+              "baselined": true
+            },
+            {
+              "name": "screens-blog-home--latest",
+              "tier": "screens",
+              "story": "screens-blog-home--latest",
+              "tiled": false,
+              "baselined": true
+            },
+            {
+              "name": "screens-blog-index--first-page",
+              "tier": "screens",
+              "story": "screens-blog-index--first-page",
+              "tiled": false,
+              "baselined": true
+            },
+            {
+              "name": "screens-blog-index--later-page",
+              "tier": "screens",
+              "story": "screens-blog-index--later-page",
+              "tiled": false,
+              "baselined": true
+            },
+            {
+              "name": "screens-blog-notfound--default",
+              "tier": "screens",
+              "story": "screens-blog-notfound--default",
+              "tiled": false,
+              "baselined": true
+            },
+            {
+              "name": "screens-blog-post--article",
+              "tier": "screens",
+              "story": "screens-blog-post--article",
+              "tiled": false,
+              "baselined": true
+            },
+            {
+              "name": "screens-blog-tag--tagged",
+              "tier": "screens",
+              "story": "screens-blog-tag--tagged",
+              "tiled": false,
+              "baselined": true
+            }
+          ]
         },
         "acceptance": {
           "dimension": "acceptance",

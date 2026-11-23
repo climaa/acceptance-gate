@@ -68,6 +68,11 @@
   color: var(--color-text-muted);
 }
 
+/* With no filters before it, on a workspace page, the measurement leads the band. */
+.census-bar__meta:first-child {
+  margin-inline-start: 0;
+}
+
 .census-bar__commit {
   color: var(--color-accent);
   text-decoration: none;
@@ -616,6 +621,111 @@
   overflow-wrap: anywhere;
 }
 
+/* ── /[workspace] ─────────────────────────────────────────────────────── */
+
+.census-workspace__title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.census-workspace__path {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.census-tiles {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-6);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.census-tiles > li {
+  display: grid;
+}
+
+/* A workspace's own gap list has no workspace column: two, the title and its kind. */
+.census-gap--own {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.census-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding-block-start: var(--space-6);
+}
+
+.census-section__title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
+}
+
+.census-more {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.census-file {
+  font-family: var(--font-mono);
+  color: var(--color-accent);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+/* The file views sit under the score, behind a rule, as the tile draws them. */
+.census-views {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding-block-start: var(--space-5);
+  border-block-start: 1px solid var(--color-border-strong);
+}
+
+.census-views__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.census-views__note {
+  margin: 0;
+  font-family: var(--font-mono);
+}
+
+.census-mark--yes {
+  color: var(--color-success-fg);
+}
+
+.census-mark--no {
+  color: var(--color-danger-fg);
+}
+
+.census-open {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.census-open a {
+  font-weight: var(--weight-semibold);
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
 @media (width < 768px) {
   .census-bar {
     padding-inline: var(--space-4);
@@ -862,5 +972,49 @@
 
   .census-score__value {
     font-size: var(--text-3xl);
+  }
+  .census-tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-3);
+  }
+
+  .census-gap--own {
+    grid-template-columns: 1fr;
+  }
+
+  .census-section__title {
+    font-size: var(--text-xl);
+  }
+  /* The phone tile lists files and components as ruled rows, not the Table's
+     cards: the name on its own line, its figures under it. The names need no
+     label; the figures keep theirs. */
+  .census-files .ds-table__row,
+  .census-inventory .ds-table__row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--space-1) var(--space-3);
+    padding: var(--space-2) 0;
+    border: 0;
+    border-block-end: 1px solid var(--color-border);
+    border-radius: 0;
+  }
+
+  .census-files .ds-table__row + .ds-table__row,
+  .census-inventory .ds-table__row + .ds-table__row {
+    margin-top: 0;
+  }
+
+  .census-files td.ds-table__cell:first-child,
+  .census-inventory td.ds-table__cell:first-child {
+    flex-basis: 100%;
+  }
+
+  .census-files td.ds-table__cell:first-child::before,
+  .census-files td.ds-table__cell:last-child::before,
+  .census-inventory td.ds-table__cell:first-child::before,
+  .census-inventory td.ds-table__cell:nth-child(2)::before,
+  .census-inventory td.ds-table__cell:last-child::before {
+    content: none;
   }
 }

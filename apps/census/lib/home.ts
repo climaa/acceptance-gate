@@ -12,10 +12,10 @@ import {
   type Workspace,
 } from './measurement.ts';
 import { utcDate } from './dates.ts';
-import { blobHref } from './links.ts';
 import { overviewOf, type Overview } from './overview.ts';
 import { searchIndex, type SearchIndex } from './search.ts';
 import { ageInDays, isStale } from './stale.ts';
+import { workspaceHref } from './workspace-address.ts';
 
 /** The repository census measures, for the GitHub link before any measurement. */
 export const REPOSITORY = 'climaa/acceptance-gate';
@@ -140,8 +140,7 @@ function workspaceStatus(
 function shellWorkspaces(measurement: Measurement): ShellWorkspace[] {
   return measurement.workspaces.map((ws) => ({
     name: ws.name,
-    // The workspace page is #739's; until it lands, the workspace's directory.
-    href: blobHref(measurement, ws.path),
+    href: workspaceHref(ws),
     category: ws.category,
     status: workspaceStatus(measurement, ws),
   }));

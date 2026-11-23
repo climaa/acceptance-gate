@@ -144,6 +144,37 @@ describe('uiVisual', () => {
 
     expect(visual.unstoried).toEqual([]);
   });
+
+  it('lists each component by name and tier, with its story, its board and its baseline', () => {
+    const tiled = new Set(['atoms-badge--neutral', 'molecules-card--default']);
+    const boards = new Map([
+      ['atoms-badge--neutral', '01-atoms'],
+      ['molecules-card--default', '02-molecules'],
+    ]);
+    const baselined = new Set(['atoms-badge--neutral']);
+
+    const visual = uiVisual(files, [badge, card], tiled, baselined, new Map(), boards);
+
+    expect(visual.value.state === 'measured' && visual.value.inventory).toEqual([
+      {
+        name: 'Badge',
+        tier: 'atoms',
+        story: 'atoms-badge--neutral',
+        tiled: true,
+        board: '01-atoms',
+        baselined: true,
+      },
+      {
+        name: 'Card',
+        tier: 'molecules',
+        story: 'molecules-card--default',
+        tiled: true,
+        board: '02-molecules',
+        baselined: false,
+      },
+      { name: 'Shell', tier: 'organisms', tiled: false, baselined: false },
+    ]);
+  });
 });
 
 describe('appComponents', () => {
@@ -249,7 +280,38 @@ describe('appVisual', () => {
       components: { total: 2, storied: 1, tiled: 0, baselined: 1 },
       screens: { stories: 1, tiled: 0, baselined: 1 },
       routes,
+      inventory: [
+        {
+          name: 'screens-blog-home--latest',
+          tier: 'screens',
+          story: 'screens-blog-home--latest',
+          tiled: false,
+          baselined: true,
+        },
+      ],
     });
+  });
+
+  it('lists a tiled screen with the board its tile is on', () => {
+    const visual = appVisual('apps/blog', {
+      components,
+      imports,
+      stories: [screen],
+      tiled: new Set(['screens-blog-home--latest']),
+      boards: new Map([['screens-blog-home--latest', '05-screens-blog-1']]),
+      baselined: new Set(),
+    });
+
+    expect(visual.value.state === 'measured' && visual.value.inventory).toEqual([
+      {
+        name: 'screens-blog-home--latest',
+        tier: 'screens',
+        story: 'screens-blog-home--latest',
+        tiled: true,
+        board: '05-screens-blog-1',
+        baselined: false,
+      },
+    ]);
   });
 
   it('names each app component no story imports', () => {
@@ -296,6 +358,7 @@ describe('appVisual without screens or routes', () => {
       dimension: 'visual',
       state: 'measured',
       components: { total: 0, storied: 0, tiled: 0, baselined: 0 },
+      inventory: [],
     });
   });
 });

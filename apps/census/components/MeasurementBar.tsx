@@ -1,9 +1,10 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 
 import { Badge, SegmentedControl } from '@gate/ui';
 import { filterHref, type HomeFilter } from '@/lib/filter.ts';
+import { frameAt } from '@/lib/frame.ts';
 import type { HomeView } from '@/lib/home.ts';
 import type { Category, Dimension } from '@/lib/measurement.ts';
 
@@ -13,13 +14,14 @@ export interface MeasurementBarProps {
 }
 
 /**
- * The band under the top bar while a measurement is committed: the dimension
- * and category filters, then what was measured — its state, its commit linked
+ * The band under the top bar while a measurement is committed: on the home the
+ * dimension and category filters, then, on every page, what was measured — its state, its commit linked
  * to the repository, and its date. With nothing measured the band stays, empty,
  * as the tile draws it: there is nothing to filter and nothing to date.
  */
 export function MeasurementBar({ view, filter }: MeasurementBarProps) {
   const router = useRouter();
+  const { band } = frameAt(view, filter, usePathname());
   if (view.state === 'empty') return <div className="census-bar" />;
   const { filters, meta } = view;
   const go = (key: 'dimension' | 'category') => (value: string) =>
@@ -31,28 +33,32 @@ export function MeasurementBar({ view, filter }: MeasurementBarProps) {
 
   return (
     <div className="census-bar">
-      {/* One strip per width, the other `display: none`: the tile drops the
+      {band === 'filters' && (
+        <>
+          {/* One strip per width, the other `display: none`: the tile drops the
           counts on a phone so the five segments keep to one row. */}
-      <SegmentedControl
-        className="census-bar__wide"
-        label="Dimension"
-        options={filters.dimensions}
-        value={filter.dimension ?? 'all'}
-        onChange={go('dimension')}
-      />
-      <SegmentedControl
-        className="census-bar__narrow"
-        label="Dimension"
-        options={filters.dimensionsShort}
-        value={filter.dimension ?? 'all'}
-        onChange={go('dimension')}
-      />
-      <SegmentedControl
-        label="Category"
-        options={filters.categories}
-        value={filter.category ?? 'all'}
-        onChange={go('category')}
-      />
+          <SegmentedControl
+            className="census-bar__wide"
+            label="Dimension"
+            options={filters.dimensions}
+            value={filter.dimension ?? 'all'}
+            onChange={go('dimension')}
+          />
+          <SegmentedControl
+            className="census-bar__narrow"
+            label="Dimension"
+            options={filters.dimensionsShort}
+            value={filter.dimension ?? 'all'}
+            onChange={go('dimension')}
+          />
+          <SegmentedControl
+            label="Category"
+            options={filters.categories}
+            value={filter.category ?? 'all'}
+            onChange={go('category')}
+          />
+        </>
+      )}
       <p className="census-bar__meta">
         {meta.staleDays === null ? (
           <Badge>measured</Badge>

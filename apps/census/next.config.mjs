@@ -11,10 +11,11 @@ const nextConfig = {
   // why at length), so the flag could only be satisfied with casts.
   // The design system and the logger ship as uncompiled TypeScript.
   transpilePackages: ['@gate/logger', '@gate/ui'],
-  // The home regenerates about daily (app/home-view.ts) and re-reads both files
+  // The pages regenerate about daily (app/home-view.ts) and re-read the files
   // when it does, off a path no bundler can follow, so name them.
   outputFileTracingIncludes: {
     '/': ['./measurement.json', './history.json'],
+    '/[workspace]': ['./measurement.json'],
   },
   experimental: {
     optimizePackageImports: ['@gate/ui'],
