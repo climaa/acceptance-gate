@@ -28,17 +28,18 @@ a dev server's. Browsers are **not** installed by `pnpm install`; without the
 
 ## What boots when you run it
 
-The config starts three servers, all from built output. None of them is the dev server:
+The config starts four servers, all from built output. None of them is the dev server:
 
 | Server               | Port   | What it is                                                           |
 | -------------------- | ------ | -------------------------------------------------------------------- |
 | blog                 | `3100` | `next start` of `@gate/blog` — not 3000, so a dev server can stay up |
 | visual-diff `seeded` | `3200` | the console on a seeded, read-only data tree                         |
 | visual-diff `sample` | `3201` | the console on an **empty** data tree — fixture-fallback mode        |
+| census               | `3202` | `next start` of `@gate/census`, reading the committed measurement    |
 
-There used to be a fourth on `3202` — a tree the `@mutating` scenarios were allowed to
-wreck. Those requirements now live in the local lane, against your own captures, so this
-suite boots nothing that anything writes to.
+`3202` once served a tree the `@mutating` scenarios were allowed to wreck. Those
+requirements now live in the local lane, against your own captures, so this suite boots
+nothing that anything writes to; the port went to census.
 
 Port **3300** — `pnpm --filter @gate/visual-diff-ui dev`, reading your real
 `.visual-diff` captures — is deliberately not on that list. The suite never targets the
@@ -46,8 +47,8 @@ dev server or your real data: each world's tree is wiped and re-seeded by
 `scripts/seed-visual-diff.mjs` every time its server boots, which is exactly what keeps
 scenarios independent of whatever the last run did.
 
-Locally, both are reused if already up (`reuseExistingServer`) — safe, because neither
-tree is ever written to.
+Locally, all four are reused if already up (`reuseExistingServer`) — safe, because nothing
+they serve is ever written to.
 
 ## The data you're watching is half real, half fabricated — on purpose
 

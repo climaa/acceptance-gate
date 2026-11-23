@@ -39,6 +39,7 @@ export const FEATURE_APPS: Readonly<Record<string, App>> = {
   'visual-diff-share': 'console',
   'visual-diff-shot': 'console',
   'visual-diff-tokens': 'console',
+  census: 'census',
   // `features/local/`: run on a machine with a data directory, never in the gate.
   // Counted apart from the acceptance suite, so never what makes an app visited.
   'blog-content': 'blog',

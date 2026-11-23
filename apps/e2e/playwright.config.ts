@@ -1,6 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 import { defineBddConfig } from 'playwright-bdd';
 
+import { CENSUS_HOST } from './pages/census';
 import { VD_HOSTS, type VdWorld, vdWorldDir } from './pages/visual-diff-hosts';
 
 // Generate Playwright specs from Gherkin .feature files + step definitions.
@@ -138,10 +139,10 @@ export default defineConfig({
       grepInvert: /@desktop/,
     },
   ],
-  // Three servers, all BUILT — production behavior (draft filtering, prerendered
+  // Four servers, all BUILT — production behavior (draft filtering, prerendered
   // routes, the real cache-tag invalidation), not a dev server's. `turbo run
-  // e2e` builds both apps first, via the task dependencies in the root
-  // turbo.json.
+  // e2e` builds the three apps first, via the task dependencies in the root
+  // turbo.json. census reads the committed measurement, so it needs no seed.
   webServer: [
     {
       command: `pnpm --filter @gate/blog exec next start --port ${PORT}`,
@@ -151,5 +152,11 @@ export default defineConfig({
     },
     visualDiffServer('seeded'),
     visualDiffServer('sample'),
+    {
+      command: `pnpm --filter @gate/census exec next start --port ${new URL(CENSUS_HOST).port}`,
+      url: CENSUS_HOST,
+      reuseExistingServer: !isCI,
+      timeout: 120_000,
+    },
   ],
 });

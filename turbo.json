@@ -38,7 +38,11 @@
       ]
     },
     "e2e": {
-      "dependsOn": ["@gate/blog#build", "@gate/visual-diff-ui#build"],
+      "dependsOn": [
+        "@gate/blog#build",
+        "@gate/visual-diff-ui#build",
+        "@gate/census#build"
+      ],
       "cache": false
     },
     "health": {
