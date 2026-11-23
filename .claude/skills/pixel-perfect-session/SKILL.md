@@ -203,7 +203,7 @@ board. Follow STANDARD.md's "Working on a .pen":
 2. Set the tile frame's `height`. The `board` address names the file and the frame; the
    differ's summary table holds the sizes.
 3. Run `scripts/pen/export-boards.js` through the MCP and keep its `MANIFEST` line. Then run
-   `node scripts/pen/finish-export.mjs <manifest>`. On a paged board (`05-screens-1…4`), run
+   `node scripts/pen/finish-export.mjs <manifest>`. On a paged board (`05-screens-visual-diff-ui-1…4`), run
    `finish-export` after **each** export.
 4. Save the document in Pencil, then run `pnpm boards:check`.
 

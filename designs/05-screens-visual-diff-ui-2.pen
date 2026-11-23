@@ -6,7 +6,7 @@
       "id": "Z6WMxL",
       "x": 0,
       "y": 0,
-      "name": "05-screens-2 — Screens",
+      "name": "05-screens-visual-diff-ui-2 — Screens",
       "theme": {
         "mode": "light"
       },
@@ -29,7 +29,7 @@
               "id": "y4FZa3",
               "name": "Stem",
               "fill": "$ink-muted",
-              "content": "05-screens-2",
+              "content": "05-screens-visual-diff-ui-2",
               "fontFamily": "$font-mono",
               "fontSize": 16,
               "fontWeight": "normal"

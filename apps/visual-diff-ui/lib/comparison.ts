@@ -188,10 +188,10 @@ export const DESIGN_BOARDS = [
   '02-molecules',
   '03-organisms',
   '04-templates',
-  '05-screens-1',
-  '05-screens-2',
-  '05-screens-3',
-  '05-screens-4',
+  '05-screens-visual-diff-ui-1',
+  '05-screens-visual-diff-ui-2',
+  '05-screens-visual-diff-ui-3',
+  '05-screens-visual-diff-ui-4',
   '05-pages',
   'x-visual-diff-pages',
   '06-flows-decisions',
@@ -219,16 +219,23 @@ const boardsOf = (stem: string): DesignBoard[] => {
   return DESIGN_BOARDS.filter((board) => own.test(board));
 };
 
-/** A tier's board, or its pages in order when it is paged. */
-export const tierBoards = (tier: Variant['tier']): DesignBoard[] =>
-  boardsOf(TIER_STEMS[tier]);
+/** A tier's board, or its pages in order when it is paged. The `screens` tier's
+ *  boards are every app's screens boards too (`05-screens-<app>`, designs/STANDARD.md),
+ *  so a screen whose app has no board of its own still opens on a screens board. */
+export const tierBoards = (tier: Variant['tier']): DesignBoard[] => {
+  const stem = TIER_STEMS[tier];
+  if (tier !== APP_TIER) return boardsOf(stem);
+
+  return DESIGN_BOARDS.filter((board) => board === stem || board.startsWith(`${stem}-`));
+};
 
 /**
  * The boards a variant belongs on (designs/STANDARD.md, "One app's screens"): a
  * screen's own app's — `05-screens-<app>` where its screens are tiled, else
  * `05-pages-<app>` where only its pages are drawn — and every other variant its
- * tier's. A project with one app keeps `05-screens`, and a screen whose app the
- * policy does not name, or whose app has no board of its own, falls back to it.
+ * tier's. A project with one app keeps `05-screens`; a screen whose app the policy
+ * does not name, or whose app has no board of its own, falls back to the tier's
+ * boards.
  */
 export const variantBoards = (variant: {
   tier: Variant['tier'];

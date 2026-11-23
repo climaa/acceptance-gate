@@ -41,7 +41,9 @@
 // a story an agent writes needs the attended board step before it can pass.
 // The planned variants are read off `storybook-static/index.json` by the
 // differ's own `planCaptures`, so the join cannot disagree with what is
-// photographed. Boards other than 01–04 are reference only and never joined.
+// photographed. The joined boards are 01–04 and the screens boards: `05-screens` in a
+// project with one app, else each app's `05-screens-<app>` for the apps the policy
+// names. Every other board is reference only and never joined.
 //
 // WHY A ROOT TURBO TASK (`boards:check`) AND NOT A WORKSPACE TEST: designs/
 // belongs to no workspace, and the join needs a Storybook build. The task names
@@ -53,7 +55,7 @@
 // export checks, and prints one line per board. It is for boards that come before
 // their stories, and for a designer iterating on a `.pen`:
 //
-//   ok   05-screens-3.pen           colour 0 · size 0 · exempt 10 · chrome 0 · variables 37
+//   ok   05-screens-census-3.pen    colour 0 · size 0 · exempt 10 · chrome 0 · variables 37
 //
 // TRACKED FILES ONLY. Boards, their PNGs and their tile maps are listed with `git
 // ls-files`, never off the disk, so what is checked is what a clean checkout of
@@ -70,7 +72,7 @@ import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { parseVariantKey } from '../packages/visual-diff/src/policy.mjs';
+import { APPS, appOf, parseVariantKey } from '../packages/visual-diff/src/policy.mjs';
 import { planCaptures } from '../packages/visual-diff/src/storybook-index.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -93,12 +95,26 @@ export const TIER_BOARDS = {
 };
 
 const PAGE_SUFFIX = /-\d+$/;
-const TIER_STEMS = new Set(Object.values(TIER_BOARDS));
+
+/** A project whose `screens` tier spans more than one app tiles each app's screens
+ *  on `05-screens-<app>`, paged as `05-screens-<app>-1`, … (designs/STANDARD.md, "One
+ *  app's screens"). Only the apps the policy names are joined: an app whose screens
+ *  are drawn before the app is wired into the policy keeps its board unjoined. */
+const APP_SCREENS = new Set(APPS.map((app) => `${TIER_BOARDS.screens}-${app}`));
+const TIER_STEMS = new Set([...Object.values(TIER_BOARDS), ...APP_SCREENS]);
 
 /** The tier board a stem belongs to, or null for a board that is never joined. */
 const tierBoardOf = (stem) => {
   const board = stem.replace(PAGE_SUFFIX, '');
   return TIER_STEMS.has(board) ? board : null;
+};
+
+/** The board a variant's tile belongs on: a screen's own app's screens board when
+ *  the project draws one, else its tier's board. */
+const homeOf = (variant, boards) => {
+  const own =
+    variant.tier === 'screens' ? `${TIER_BOARDS.screens}-${appOf(variant.id)}` : null;
+  return own !== null && boards.has(own) ? own : TIER_BOARDS[variant.tier];
 };
 
 /** A variant as a reader names it in a failure: the story, then where it is. */
@@ -142,6 +158,7 @@ export function joinProblems(
   const problems = [];
   const plannedKeys = new Set(planned);
   const drawnOn = new Map();
+  const boards = new Set(Object.keys(tileNames).map(tierBoardOf).filter(Boolean));
 
   for (const [stem, names] of Object.entries(tileNames)) {
     const board = tierBoardOf(stem);
@@ -155,9 +172,9 @@ export function joinProblems(
         );
         continue;
       }
-      if (TIER_BOARDS[variant.tier] !== board) {
+      if (homeOf(variant, boards) !== board) {
         problems.push(
-          `${stem} draws ${named(variant)}, whose tier board is ${TIER_BOARDS[variant.tier]}`,
+          `${stem} draws ${named(variant)}, whose tier board is ${homeOf(variant, boards)}`,
         );
       }
       if (!plannedKeys.has(name) && !aheadIds.has(variant.id)) {
@@ -179,7 +196,7 @@ export function joinProblems(
     const variant = parseVariantKey(key);
     if (!variant || sharedIds.has(variant.id) || undrawnIds.has(variant.id)) continue;
     problems.push(
-      `${named(variant)} has no tile on ${TIER_BOARDS[variant.tier]}: a new story ships with its tile (designs/STANDARD.md)`,
+      `${named(variant)} has no tile on ${homeOf(variant, boards)}: a new story ships with its tile (designs/STANDARD.md)`,
     );
   }
 
