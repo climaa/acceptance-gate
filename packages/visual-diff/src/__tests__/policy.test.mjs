@@ -423,10 +423,10 @@ describe('LEDGER.exempt', () => {
 });
 
 describe('APPS', () => {
-  // Every app that serves web routes is a screens app: the console, the blog and
-  // the manual. `apps/storybook` and `apps/e2e` serve none.
+  // Every app that serves web routes is a screens app: the console, the blog,
+  // the manual and census. `apps/storybook` and `apps/e2e` serve none.
   it('names every app whose route tree places under the screens tier', () => {
-    const placed = ['visual-diff-ui', 'blog', 'manual'].filter(
+    const placed = ['visual-diff-ui', 'blog', 'manual', 'census'].filter(
       (app) => tierOf(`apps/${app}/app/page.stories.tsx`) === APP_TIER,
     );
 
@@ -434,7 +434,7 @@ describe('APPS', () => {
   });
 
   it('names each app by its directory under apps/', () => {
-    expect(APPS).toEqual(['visual-diff-ui', 'blog', 'manual']);
+    expect(APPS).toEqual(['visual-diff-ui', 'blog', 'manual', 'census']);
   });
 });
 

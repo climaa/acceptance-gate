@@ -7,6 +7,10 @@ import screens1 from '../../../../designs/exports/05-screens-visual-diff-ui-1.ti
 import screens2 from '../../../../designs/exports/05-screens-visual-diff-ui-2.tiles.json';
 import screens3 from '../../../../designs/exports/05-screens-visual-diff-ui-3.tiles.json';
 import screens4 from '../../../../designs/exports/05-screens-visual-diff-ui-4.tiles.json';
+import census1 from '../../../../designs/exports/05-screens-census-1.tiles.json';
+import census2 from '../../../../designs/exports/05-screens-census-2.tiles.json';
+import census3 from '../../../../designs/exports/05-screens-census-3.tiles.json';
+import census4 from '../../../../designs/exports/05-screens-census-4.tiles.json';
 
 /**
  * The board each variant's tile is drawn on, as `readBoardHomes`
@@ -24,6 +28,10 @@ const TILE_MAPS = [
   ['05-screens-visual-diff-ui-2', screens2],
   ['05-screens-visual-diff-ui-3', screens3],
   ['05-screens-visual-diff-ui-4', screens4],
+  ['05-screens-census-1', census1],
+  ['05-screens-census-2', census2],
+  ['05-screens-census-3', census3],
+  ['05-screens-census-4', census4],
 ] as const;
 
 const homes: Record<string, (typeof TILE_MAPS)[number][0]> = {};

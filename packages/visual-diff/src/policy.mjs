@@ -134,14 +134,15 @@ const UI_SRCS = [
 /** The app directories whose stories are `screens`, named one by one rather than
  *  matched as every app's `app/`: every app that serves web routes, one section
  *  each (designs/STANDARD.md, "Every route is a screen"). Here the console comes
- *  first, because in this repository it is the product; the blog and the manual
- *  follow. A child lists its own apps and captures its console review-only, since
+ *  first, because in this repository it is the product; the blog, the manual
+ *  and census follow. A child lists its own apps and captures its console review-only, since
  *  there it is the tool rather than the thing shot.
  *  @type {readonly (readonly string[])[]} */
 export const APP_ROOTS = [
   ['apps', 'visual-diff-ui', 'app'],
   ['apps', 'blog', 'app'],
   ['apps', 'manual', 'app'],
+  ['apps', 'census', 'app'],
 ];
 
 /** The name an {@link APP_ROOTS} entry gives its app: the directory under `apps/`,
