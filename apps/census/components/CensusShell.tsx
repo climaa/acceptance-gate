@@ -2,8 +2,11 @@
 
 import { type ReactNode, useEffect, useState, useSyncExternalStore } from 'react';
 
-import { SearchPalette, Sidebar, TopBar } from '@gate/ui';
-import type { ShellDimension } from '@/lib/home.ts';
+import { SearchPalette, Sidebar, TopBar, type SearchEntry } from '@gate/ui';
+import type { HomeFilter } from '@/lib/filter.ts';
+import type { HomeView } from '@/lib/home.ts';
+import type { SearchIndex } from '@/lib/search.ts';
+import { DIMENSION_LABEL } from '@/lib/trend.ts';
 
 /** Sidebar's breakpoint: below it the sidebar is a drawer, closed until asked. */
 const DRAWER_QUERY = '(width < 768px)';
@@ -19,9 +22,18 @@ const isDrawerWidth = () => window.matchMedia(DRAWER_QUERY).matches;
 const noSubscription = () => () => {};
 
 export interface CensusShellProps {
-  dimensions: readonly ShellDimension[];
-  githubHref: string;
+  view: HomeView;
+  filter: HomeFilter;
   children: ReactNode;
+}
+
+const NO_SEARCH: SearchIndex = { entries: [], hrefs: {} };
+
+/** A gap leads to its row on this page; everything else, to GitHub. */
+function follow(href: string | undefined) {
+  if (href === undefined) return;
+  if (href.startsWith('#')) window.location.hash = href;
+  else window.location.assign(href);
 }
 
 /**
@@ -34,7 +46,12 @@ export interface CensusShellProps {
  * server renders the desktop column; until hydration `globals.css` keeps the
  * drawer shut below 768px (`[data-ready]`), and after it the media query picks.
  */
-export function CensusShell({ dimensions, githubHref, children }: CensusShellProps) {
+export function CensusShell({ view, filter, children }: CensusShellProps) {
+  const { githubHref } = view;
+  const search = view.state === 'measured' ? view.search : NO_SEARCH;
+  const lit = filter.dimension ?? 'overview';
+  const dimensions = view.dimensions.map((d) => ({ ...d, current: d.id === lit }));
+  const here = filter.dimension === null ? 'Overview' : DIMENSION_LABEL[filter.dimension];
   // `false` on the server and through hydration, `true` after: the first
   // client render must match the markup the server sent.
   const ready = useSyncExternalStore(
@@ -73,7 +90,7 @@ export function CensusShell({ dimensions, githubHref, children }: CensusShellPro
         title="census"
         dimensionsLabel="Dimensions"
         dimensions={dimensions}
-        workspaces={[]}
+        workspaces={view.workspaces}
         collapsed={collapsed}
         onCollapsedChange={setCollapsed}
       />
@@ -82,7 +99,7 @@ export function CensusShell({ dimensions, githubHref, children }: CensusShellPro
           breadcrumb={[
             { label: 'acceptance-gate', href: githubHref },
             { label: 'census', href: '/' },
-            { label: 'Overview' },
+            { label: here },
           ]}
           onSearch={() => setSearching(true)}
           githubHref={githubHref}
@@ -95,12 +112,14 @@ export function CensusShell({ dimensions, githubHref, children }: CensusShellPro
       <SearchPalette
         open={searching}
         onClose={() => setSearching(false)}
-        // The index (workspaces, files, components, gaps, scenarios) is built
-        // from the measurement by the home that renders it (#737).
-        entries={[]}
+        // Built at build from the measurement (`lib/search.ts`).
+        entries={search.entries}
         query={query}
         onQueryChange={setQuery}
-        onSelect={() => setSearching(false)}
+        onSelect={(entry: SearchEntry) => {
+          setSearching(false);
+          follow(search.hrefs[entry.id]);
+        }}
       />
     </div>
   );

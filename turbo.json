@@ -78,7 +78,7 @@
         "$TURBO_ROOT$/apps/visual-diff-ui/scripts/project-name.mjs",
         "$TURBO_ROOT$/apps/blog/app/_screens/**",
         "$TURBO_ROOT$/apps/manual/app/_screens/**",
-        "$TURBO_ROOT$/apps/census/{app,components,lib}/**",
+        "$TURBO_ROOT$/apps/census/{app,components,lib,fixtures}/**",
         "$TURBO_ROOT$/package.json"
       ],
       "outputs": ["storybook-static/**"]

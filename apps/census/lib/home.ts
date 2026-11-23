@@ -9,7 +9,12 @@ import {
   DIMENSIONS,
   type Dimension,
   type Measurement,
+  type Workspace,
 } from './measurement.ts';
+import { utcDate } from './dates.ts';
+import { blobHref } from './links.ts';
+import { overviewOf, type Overview } from './overview.ts';
+import { searchIndex, type SearchIndex } from './search.ts';
 import { ageInDays, isStale } from './stale.ts';
 
 /** The repository census measures, for the GitHub link before any measurement. */
@@ -25,21 +30,6 @@ const DIMENSION_LABEL: Record<Dimension, string> = {
 /** The runtime is recorded beside the tools but measures nothing. */
 const RUNTIMES = new Set(['node']);
 
-const MONTHS = [
-  'Jan',
-  'Feb',
-  'Mar',
-  'Apr',
-  'May',
-  'Jun',
-  'Jul',
-  'Aug',
-  'Sep',
-  'Oct',
-  'Nov',
-  'Dec',
-] as const;
-
 /** One sidebar row: the overview, or a dimension with its open gaps. */
 export interface ShellDimension {
   id: 'overview' | Dimension;
@@ -48,6 +38,15 @@ export interface ShellDimension {
   /** Open gaps; absent when nothing is measured. */
   count?: number;
   current: boolean;
+}
+
+/** One sidebar workspace row, grouped by its category. */
+export interface ShellWorkspace {
+  name: string;
+  href: string;
+  category: Workspace['category'];
+  /** `gaps` with any open, `unmeasured` when no dimension measures it, else `clear`. */
+  status: 'clear' | 'gaps' | 'unmeasured';
 }
 
 export interface FilterOption {
@@ -67,6 +66,7 @@ export interface MeasurementMeta {
 
 interface ViewBase {
   dimensions: ShellDimension[];
+  workspaces: ShellWorkspace[];
   githubHref: string;
 }
 
@@ -76,6 +76,8 @@ export type HomeView =
       state: 'measured';
       filters: { dimensions: FilterOption[]; categories: FilterOption[] };
       meta: MeasurementMeta;
+      overview: Overview;
+      search: SearchIndex;
     });
 
 const githubOf = (repo: string) => `https://github.com/${repo}`;
@@ -103,11 +105,6 @@ function shellDimensions(measurement: Measurement | null): ShellDimension[] {
   ];
 }
 
-function utcDate(iso: string): string {
-  const date = new Date(iso);
-  return `${date.getUTCDate()} ${MONTHS[date.getUTCMonth()]} ${date.getUTCFullYear()}`;
-}
-
 function metaOf(measurement: Measurement, now: number): MeasurementMeta {
   return {
     commit: {
@@ -122,6 +119,27 @@ function metaOf(measurement: Measurement, now: number): MeasurementMeta {
       .filter(([tool]) => !RUNTIMES.has(tool))
       .map(([tool, version]) => `${tool} ${version}`),
   };
+}
+
+function workspaceStatus(
+  measurement: Measurement,
+  ws: Workspace,
+): ShellWorkspace['status'] {
+  if (measurement.gaps.some((gap) => gap.workspace === ws.name)) return 'gaps';
+  const measured = Object.values(ws.dimensions).some(
+    (value) => value.state === 'measured',
+  );
+  return measured ? 'clear' : 'unmeasured';
+}
+
+function shellWorkspaces(measurement: Measurement): ShellWorkspace[] {
+  return measurement.workspaces.map((ws) => ({
+    name: ws.name,
+    // The workspace page is #739's; until it lands, the workspace's directory.
+    href: blobHref(measurement, ws.path),
+    category: ws.category,
+    status: workspaceStatus(measurement, ws),
+  }));
 }
 
 function filtersOf(measurement: Measurement) {
@@ -147,15 +165,19 @@ export function homeView(committed: Committed, now: number): HomeView {
     return {
       state: 'empty',
       dimensions: shellDimensions(null),
+      workspaces: [],
       githubHref: githubOf(REPOSITORY),
     };
   }
-  const { measurement } = committed;
+  const { measurement, history } = committed;
   return {
     state: 'measured',
     dimensions: shellDimensions(measurement),
+    workspaces: shellWorkspaces(measurement),
     githubHref: githubOf(measurement.repo),
     filters: filtersOf(measurement),
     meta: metaOf(measurement, now),
+    overview: overviewOf(measurement, history),
+    search: searchIndex(measurement),
   };
 }

@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 
-import { CensusShell } from '@/components/CensusShell';
-import { MeasurementBar } from '@/components/MeasurementBar';
+import { CensusFrame } from '@/components/CensusFrame';
+import { FilteredFrame } from '@/components/Filtered';
 import { loadHomeView } from './home-view';
 import { THEME_SCRIPT } from './theme';
 import './globals.css';
@@ -23,10 +24,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
       </head>
       <body>
-        <CensusShell dimensions={view.dimensions} githubHref={view.githubHref}>
-          <MeasurementBar view={view} />
-          {children}
-        </CensusShell>
+        {/* The query is the browser's: the prerendered frame is the unfiltered one. */}
+        <Suspense fallback={<CensusFrame view={view}>{children}</CensusFrame>}>
+          <FilteredFrame view={view}>{children}</FilteredFrame>
+        </Suspense>
       </body>
     </html>
   );

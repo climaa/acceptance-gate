@@ -38,6 +38,13 @@
   border-block: 1px solid var(--color-border);
 }
 
+/* The tile draws the band's filters a step smaller than the control's default,
+   so both strips and the meta share one row at desktop width. */
+.census-bar .ds-segmented__segment {
+  padding-inline: var(--space-2);
+  font-size: var(--text-xs);
+}
+
 .census-bar__meta {
   display: flex;
   align-items: center;
@@ -115,6 +122,422 @@
   padding: var(--space-3) var(--space-4);
 }
 
+/* The stale notice under the intro: the warning surface, since the figures
+   below describe a commit the repository has moved on from. */
+.census-stale {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-warning-fg);
+  border-radius: var(--radius-md);
+  background: var(--color-warning-surface);
+  font-size: var(--text-sm);
+  color: var(--color-warning-text);
+}
+
+/* Every card of the measured home: the same plate and heading CoverageList
+   draws, so the hand-built cards and the design system's read as one set. */
+.census-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+  padding: var(--space-6);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background: var(--color-bg-subtle);
+}
+
+.census-card p,
+.census-card h2,
+.census-card h3,
+.census-card ul {
+  margin: 0;
+}
+
+.census-card ul {
+  padding: 0;
+  list-style: none;
+}
+
+.census-card__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.census-card__heading {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.census-card__title,
+.census-subtitle-caps {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-wide);
+  line-height: var(--leading-tight);
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.census-card__description {
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  color: var(--color-text-muted);
+}
+
+.census-caption {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.census-highlights {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.census-highlight {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+}
+
+/* A dimension's key: its chart role, never a status colour. */
+.census-key {
+  flex: none;
+  width: var(--space-2);
+  height: var(--space-2);
+  border-radius: var(--radius-full);
+}
+.census-key--code {
+  background: var(--color-chart);
+}
+.census-key--visual {
+  background: var(--color-chart-2);
+}
+.census-key--acceptance {
+  background: var(--color-chart-3);
+}
+.census-key--health {
+  background: var(--color-chart-4);
+}
+
+/* `?dimension=` lights one row of the coverage list and dims the others. The
+   rows are drawn in DIMENSIONS order: code, visual, acceptance, health. Only
+   the key and the meter fade; the text turns muted instead, so a dimmed row
+   still reads at AA contrast. */
+.census-coverage[data-lit='code']
+  .ds-coverage-list__row:not(:nth-child(1))
+  .ds-coverage-list__key,
+.census-coverage[data-lit='visual']
+  .ds-coverage-list__row:not(:nth-child(2))
+  .ds-coverage-list__key,
+.census-coverage[data-lit='acceptance']
+  .ds-coverage-list__row:not(:nth-child(3))
+  .ds-coverage-list__key,
+.census-coverage[data-lit='health']
+  .ds-coverage-list__row:not(:nth-child(4))
+  .ds-coverage-list__key,
+.census-coverage[data-lit='code'] .ds-coverage-list__row:not(:nth-child(1)) .ds-meter,
+.census-coverage[data-lit='visual'] .ds-coverage-list__row:not(:nth-child(2)) .ds-meter,
+.census-coverage[data-lit='acceptance']
+  .ds-coverage-list__row:not(:nth-child(3))
+  .ds-meter,
+.census-coverage[data-lit='health'] .ds-coverage-list__row:not(:nth-child(4)) .ds-meter {
+  opacity: 0.4;
+}
+
+.census-coverage[data-lit='code']
+  .ds-coverage-list__row:not(:nth-child(1))
+  .ds-coverage-list__dimension,
+.census-coverage[data-lit='visual']
+  .ds-coverage-list__row:not(:nth-child(2))
+  .ds-coverage-list__dimension,
+.census-coverage[data-lit='acceptance']
+  .ds-coverage-list__row:not(:nth-child(3))
+  .ds-coverage-list__dimension,
+.census-coverage[data-lit='health']
+  .ds-coverage-list__row:not(:nth-child(4))
+  .ds-coverage-list__dimension,
+.census-coverage[data-lit='code']
+  .ds-coverage-list__row:not(:nth-child(1))
+  .ds-coverage-list__value,
+.census-coverage[data-lit='visual']
+  .ds-coverage-list__row:not(:nth-child(2))
+  .ds-coverage-list__value,
+.census-coverage[data-lit='acceptance']
+  .ds-coverage-list__row:not(:nth-child(3))
+  .ds-coverage-list__value,
+.census-coverage[data-lit='health']
+  .ds-coverage-list__row:not(:nth-child(4))
+  .ds-coverage-list__value,
+.census-coverage[data-lit='code']
+  .ds-coverage-list__row:not(:nth-child(1))
+  .ds-coverage-list__delta,
+.census-coverage[data-lit='visual']
+  .ds-coverage-list__row:not(:nth-child(2))
+  .ds-coverage-list__delta,
+.census-coverage[data-lit='acceptance']
+  .ds-coverage-list__row:not(:nth-child(3))
+  .ds-coverage-list__delta,
+.census-coverage[data-lit='health']
+  .ds-coverage-list__row:not(:nth-child(4))
+  .ds-coverage-list__delta {
+  color: var(--color-text-muted);
+}
+
+.census-coverage[data-lit='code']
+  .ds-coverage-list__row:not(:nth-child(1))
+  .ds-coverage-list__delta,
+.census-coverage[data-lit='visual']
+  .ds-coverage-list__row:not(:nth-child(2))
+  .ds-coverage-list__delta,
+.census-coverage[data-lit='acceptance']
+  .ds-coverage-list__row:not(:nth-child(3))
+  .ds-coverage-list__delta,
+.census-coverage[data-lit='health']
+  .ds-coverage-list__row:not(:nth-child(4))
+  .ds-coverage-list__delta {
+  background: none;
+}
+
+.census-metrics {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+}
+
+.census-bento {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--space-6);
+  align-items: start;
+}
+
+.census-routes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-block-start: var(--space-4);
+  border-block-start: 1px solid var(--color-border);
+}
+
+.census-routes__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+}
+
+.census-split {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: var(--space-6);
+}
+
+.census-score {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.census-score__value {
+  font-family: var(--font-display);
+  font-size: var(--text-4xl);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
+}
+
+.census-score__grade {
+  font-family: var(--font-mono);
+  font-size: var(--text-base);
+  font-weight: var(--weight-normal);
+}
+
+.census-sparks {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.census-counts,
+.census-targets {
+  display: flex;
+  flex-direction: column;
+}
+
+.census-count,
+.census-target {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding-block: var(--space-3);
+  border-block-end: 1px solid var(--color-border);
+}
+
+.census-count:last-child,
+.census-target:last-child {
+  border-block-end: 0;
+}
+
+.census-count__name {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: var(--text-sm);
+}
+
+.census-count__name span {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.census-count__value {
+  margin-inline-start: auto;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+}
+
+.census-target a {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-accent);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.census-targets__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.census-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.census-notes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+}
+
+.census-notes li::before {
+  content: '· ';
+  color: var(--color-text-muted);
+}
+
+.census-exports {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.census-exports a {
+  text-decoration: none;
+}
+
+.census-metrics td,
+.census-metrics th {
+  white-space: nowrap;
+}
+
+/* The gap list sits on the page's ground, not a card, as the tile draws it. */
+.census-gaps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.census-gaps__title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
+}
+
+.census-gaps__chips,
+.census-gaps__rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.census-gaps__chips {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.census-chip {
+  display: inline-flex;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-full);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.census-gaps__dimension {
+  margin: 0;
+  padding-block-end: var(--space-2);
+  border-block-end: 1px solid var(--color-border-strong);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.census-gap {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 10rem) auto;
+  align-items: center;
+  gap: var(--space-4);
+  padding-block: var(--space-1);
+  border-block-end: 1px solid var(--color-border);
+}
+
+.census-gap__title {
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  color: var(--color-text);
+  text-align: start;
+  overflow-wrap: anywhere;
+  cursor: copy;
+}
+
+.census-gap__workspace {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-accent);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
 @media (width < 768px) {
   .census-bar {
     padding-inline: var(--space-4);
@@ -135,5 +558,56 @@
 
   .census-empty.ds-empty {
     padding: var(--space-6);
+  }
+
+  .census-card {
+    padding: var(--space-4);
+  }
+
+  /* CoverageList's columns are fixed (13.75rem + 11.875rem) and do not fit a
+     phone; here the name and figure share a row and the meter runs under them. */
+  .census-coverage .ds-coverage-list {
+    padding: var(--space-4);
+  }
+
+  .census-coverage .ds-coverage-list__row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    row-gap: var(--space-2);
+  }
+
+  /* TestPyramid sets its figure beside its counts at a fixed width; on a
+     phone the counts would leave the card, so they go under the figure. */
+  .census-pyramid .ds-test-pyramid {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-4);
+  }
+
+  .census-pyramid .ds-test-pyramid__figure {
+    max-width: 100%;
+    height: auto;
+  }
+
+  .census-coverage .ds-coverage-list__row > .ds-meter {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .census-bento,
+  .census-split {
+    grid-template-columns: 1fr;
+  }
+
+  .census-sparks {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .census-gap {
+    grid-template-columns: 1fr;
+    gap: var(--space-1);
+  }
+
+  .census-score__value {
+    font-size: var(--text-3xl);
   }
 }

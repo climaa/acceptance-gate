@@ -1,0 +1,1232 @@
+{
+  "schema": 1,
+  "repo": "climaa/acceptance-gate",
+  "commit": "0514dc9a3f6e2b7c8d1e4f5a6b7c8d9e0f1a2b3c",
+  "measuredAt": "2026-11-20T17:42:00.000Z",
+  "tools": {
+    "vitest": "5.0.5",
+    "fallow": "3.36.0",
+    "storybook": "10.6.2",
+    "node": "22.23.4"
+  },
+  "pyramid": {
+    "unit": 3550,
+    "visual": 286,
+    "acceptance": 88
+  },
+  "health": {
+    "score": 84.7,
+    "grade": "B",
+    "penalties": [
+      {
+        "name": "Function size",
+        "points": 10
+      },
+      {
+        "name": "Coupling",
+        "points": 1.8
+      },
+      {
+        "name": "Maintainability",
+        "points": 1.4
+      },
+      {
+        "name": "Dead files",
+        "points": 1.2
+      },
+      {
+        "name": "Dead exports",
+        "points": 0.9
+      },
+      {
+        "name": "complexity",
+        "points": 0
+      },
+      {
+        "name": "duplication",
+        "points": 0
+      },
+      {
+        "name": "cycles",
+        "points": 0
+      },
+      {
+        "name": "unused dependencies",
+        "points": 0
+      },
+      {
+        "name": "hotspots",
+        "points": 0
+      }
+    ],
+    "dead": {
+      "files": 49,
+      "exports": 76,
+      "types": 2,
+      "unlistedDeps": 2,
+      "cycles": 0
+    },
+    "duplication": {
+      "semanticPct": 6.9,
+      "mildPct": 1.6,
+      "lines": 771,
+      "groups": 24
+    },
+    "styling": {
+      "score": 98.7,
+      "grade": "A",
+      "tokenDrift": 1,
+      "duplicateBlocks": 4,
+      "complexSelectors": 71,
+      "important": 1
+    },
+    "hotspots": [
+      {
+        "path": "scripts/pen/board-scale-integrity.mjs",
+        "churn": 14,
+        "complexity": 0.22
+      },
+      {
+        "path": "scripts/policy.test.mjs",
+        "churn": 11,
+        "complexity": 0.22
+      },
+      {
+        "path": "apps/visual-diff-ui/lib/comparison.ts",
+        "churn": 13,
+        "complexity": 0.15
+      },
+      {
+        "path": "apps/visual-diff-ui/components/RunPanel.tsx",
+        "churn": 15,
+        "complexity": 0.14
+      },
+      {
+        "path": "apps/visual-diff-ui/__tests__/console.test.tsx",
+        "churn": 9,
+        "complexity": 0.18
+      },
+      {
+        "path": ".sandcastle/main.mts",
+        "churn": 14,
+        "complexity": 0.11
+      },
+      {
+        "path": "apps/visual-diff-ui/__tests__/shot-tools.test.tsx",
+        "churn": 19,
+        "complexity": 0.09
+      },
+      {
+        "path": "apps/e2e/pages.test.ts",
+        "churn": 22,
+        "complexity": 0.1
+      },
+      {
+        "path": "scripts/policy.mjs",
+        "churn": 23,
+        "complexity": 0.09
+      },
+      {
+        "path": "apps/visual-diff-ui/components/CurrentJob.tsx",
+        "churn": 26,
+        "complexity": 0.09
+      }
+    ],
+    "refactorTargets": [
+      {
+        "path": "scripts/pen/place-tiles.js",
+        "priority": 35,
+        "effort": "medium"
+      },
+      {
+        "path": "apps/e2e/pages/link-preview.ts",
+        "priority": 32.5,
+        "effort": "medium"
+      },
+      {
+        "path": "apps/e2e/pages/console.ts",
+        "priority": 32.4,
+        "effort": "medium"
+      },
+      {
+        "path": "apps/e2e/steps/local/fixtures.ts",
+        "priority": 29.4,
+        "effort": "medium"
+      },
+      {
+        "path": ".sandcastle/sandcastle-pr-queue-gh.mts",
+        "priority": 27.5,
+        "effort": "medium"
+      },
+      {
+        "path": "scripts/gate/manifest.mjs",
+        "priority": 24.1,
+        "effort": "medium"
+      },
+      {
+        "path": "scripts/pen/board-scale-integrity.mjs",
+        "priority": 22.8,
+        "effort": "medium"
+      },
+      {
+        "path": "scripts/policy.test.mjs",
+        "priority": 21.3,
+        "effort": "medium"
+      },
+      {
+        "path": "apps/visual-diff-ui/lib/comparison.ts",
+        "priority": 19.6,
+        "effort": "medium"
+      }
+    ],
+    "profiles": {
+      "unitSize": [83.7, 9, 4.4, 2.8],
+      "interfacing": [97.6, 2.3, 0.1, 0]
+    },
+    "crapOver30": 7,
+    "crapSource": "estimated"
+  },
+  "workspaces": [
+    {
+      "name": "@gate/ui",
+      "path": "packages/ui",
+      "category": "packages",
+      "dimensions": {
+        "code": {
+          "dimension": "code",
+          "state": "measured",
+          "lines": {
+            "covered": 3254,
+            "total": 3290,
+            "pct": 98.9
+          },
+          "floor": 90,
+          "staticReachPct": 97.4,
+          "files": [
+            {
+              "path": "src/atoms/Badge/Badge.tsx",
+              "group": "atoms",
+              "lines": {
+                "covered": 12,
+                "total": 12,
+                "pct": 100
+              },
+              "maintainability": 92.1,
+              "crap": 2
+            },
+            {
+              "path": "src/molecules/CoverageList/CoverageList.tsx",
+              "group": "molecules",
+              "lines": {
+                "covered": 48,
+                "total": 48,
+                "pct": 100
+              },
+              "maintainability": 81.6,
+              "crap": 4
+            },
+            {
+              "path": "src/molecules/TrendChart/TrendChart.tsx",
+              "group": "molecules",
+              "lines": {
+                "covered": 131,
+                "total": 134,
+                "pct": 97.8
+              },
+              "maintainability": 64.2,
+              "crap": 18.3
+            },
+            {
+              "path": "src/organisms/Table/Table.tsx",
+              "group": "organisms",
+              "lines": {
+                "covered": 61,
+                "total": 61,
+                "pct": 100
+              },
+              "maintainability": 77.9,
+              "crap": 6
+            },
+            {
+              "path": "src/organisms/PanZoom/PanZoom.tsx",
+              "group": "organisms",
+              "lines": {
+                "covered": 41,
+                "total": 42,
+                "pct": 97.6
+              },
+              "maintainability": 71.3,
+              "crap": 49.5
+            }
+          ]
+        },
+        "visual": {
+          "dimension": "visual",
+          "state": "measured",
+          "components": {
+            "total": 31,
+            "storied": 30,
+            "tiled": 30,
+            "baselined": 30
+          }
+        },
+        "acceptance": {
+          "dimension": "acceptance",
+          "state": "not-applicable",
+          "reason": "A package is not a deployed app"
+        },
+        "health": {
+          "dimension": "health",
+          "state": "measured",
+          "score": 88.2,
+          "grade": "A",
+          "overCeiling": 0,
+          "deadFiles": 0,
+          "deadExports": 0,
+          "refactorTargets": 0
+        }
+      }
+    },
+    {
+      "name": "@gate/links",
+      "path": "packages/links",
+      "category": "packages",
+      "dimensions": {
+        "code": {
+          "dimension": "code",
+          "state": "unmeasured",
+          "reason": "No coverage block in vitest.config"
+        },
+        "visual": {
+          "dimension": "visual",
+          "state": "not-applicable",
+          "reason": "No components"
+        },
+        "acceptance": {
+          "dimension": "acceptance",
+          "state": "not-applicable",
+          "reason": "Not an app"
+        },
+        "health": {
+          "dimension": "health",
+          "state": "measured",
+          "score": 93.4,
+          "grade": "A",
+          "overCeiling": 0,
+          "deadFiles": 0,
+          "deadExports": 0,
+          "refactorTargets": 0
+        }
+      }
+    },
+    {
+      "name": "@gate/logger",
+      "path": "packages/logger",
+      "category": "packages",
+      "dimensions": {
+        "code": {
+          "dimension": "code",
+          "state": "unmeasured",
+          "reason": "No coverage block in vitest.config"
+        },
+        "visual": {
+          "dimension": "visual",
+          "state": "not-applicable",
+          "reason": "No components"
+        },
+        "acceptance": {
+          "dimension": "acceptance",
+          "state": "not-applicable",
+          "reason": "Not an app"
+        },
+        "health": {
+          "dimension": "health",
+          "state": "measured",
+          "score": 95.1,
+          "grade": "A",
+          "overCeiling": 0,
+          "deadFiles": 0,
+          "deadExports": 0,
+          "refactorTargets": 0
+        }
+      }
+    },
+    {
+      "name": "@gate/visual-diff",
+      "path": "packages/visual-diff",
+      "category": "packages",
+      "dimensions": {
+        "code": {
+          "dimension": "code",
+          "state": "unmeasured",
+          "reason": "No coverage block in vitest.config"
+        },
+        "visual": {
+          "dimension": "visual",
+          "state": "not-applicable",
+          "reason": "No components"
+        },
+        "acceptance": {
+          "dimension": "acceptance",
+          "state": "not-applicable",
+          "reason": "Not an app"
+        },
+        "health": {
+          "dimension": "health",
+          "state": "measured",
+          "score": 79.6,
+          "grade": "B",
+          "overCeiling": 0,
+          "deadFiles": 0,
+          "deadExports": 0,
+          "refactorTargets": 0
+        }
+      }
+    },
+    {
+      "name": "@gate/tsconfig",
+      "path": "packages/tsconfig",
+      "category": "packages",
+      "dimensions": {
+        "code": {
+          "dimension": "code",
+          "state": "not-applicable",
+          "reason": "No code"
+        },
+        "visual": {
+          "dimension": "visual",
+          "state": "not-applicable",
+          "reason": "No components"
+        },
+        "acceptance": {
+          "dimension": "acceptance",
+          "state": "not-applicable",
+          "reason": "Not an app"
+        },
+        "health": {
+          "dimension": "health",
+          "state": "not-applicable",
+          "reason": "No functions"
+        }
+      }
+    },
+    {
+      "name": "@gate/visual-diff-ui",
+      "path": "apps/visual-diff-ui",
+      "category": "apps",
+      "dimensions": {
+        "code": {
+          "dimension": "code",
+          "state": "measured",
+          "lines": {
+            "covered": 11424,
+            "total": 12000,
+            "pct": 95.2
+          },
+          "floor": 94,
+          "staticReachPct": 92.7,
+          "files": [
+            {
+              "path": "lib/jobs.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 402,
+                "total": 418,
+                "pct": 96.2
+              },
+              "maintainability": 58.3,
+              "crap": 21.7
+            },
+            {
+              "path": "lib/comparison.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 288,
+                "total": 290,
+                "pct": 99.3
+              },
+              "maintainability": 61.9,
+              "crap": 12.4
+            },
+            {
+              "path": "components/RunPanel.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 176,
+                "total": 190,
+                "pct": 92.6
+              },
+              "maintainability": 55.1,
+              "crap": 33.8
+            }
+          ]
+        },
+        "visual": {
+          "dimension": "visual",
+          "state": "measured",
+          "components": {
+            "total": 19,
+            "storied": 5,
+            "tiled": 5,
+            "baselined": 5
+          },
+          "screens": {
+            "stories": 9,
+            "tiled": 8,
+            "baselined": 9
+          },
+          "routes": {
+            "total": 7,
+            "loading": {
+              "own": 2,
+              "inherited": 0,
+              "none": 5
+            },
+            "error": {
+              "own": 0,
+              "inherited": 7,
+              "none": 0
+            },
+            "notFound": {
+              "own": 0,
+              "inherited": 7,
+              "none": 0
+            }
+          }
+        },
+        "acceptance": {
+          "dimension": "acceptance",
+          "state": "measured",
+          "scenarios": 61,
+          "features": ["visual-diff-console", "visual-diff-report", "visual-diff-shot"]
+        },
+        "health": {
+          "dimension": "health",
+          "state": "measured",
+          "score": 82.7,
+          "grade": "B",
+          "overCeiling": 0,
+          "deadFiles": 0,
+          "deadExports": 0,
+          "refactorTargets": 0
+        }
+      }
+    },
+    {
+      "name": "@gate/blog",
+      "path": "apps/blog",
+      "category": "apps",
+      "dimensions": {
+        "code": {
+          "dimension": "code",
+          "state": "unmeasured",
+          "reason": "No coverage block in vitest.config"
+        },
+        "visual": {
+          "dimension": "visual",
+          "state": "measured",
+          "components": {
+            "total": 11,
+            "storied": 6,
+            "tiled": 6,
+            "baselined": 6
+          },
+          "screens": {
+            "stories": 8,
+            "tiled": 0,
+            "baselined": 8
+          },
+          "routes": {
+            "total": 7,
+            "loading": {
+              "own": 1,
+              "inherited": 1,
+              "none": 5
+            },
+            "error": {
+              "own": 0,
+              "inherited": 7,
+              "none": 0
+            },
+            "notFound": {
+              "own": 0,
+              "inherited": 7,
+              "none": 0
+            }
+          }
+        },
+        "acceptance": {
+          "dimension": "acceptance",
+          "state": "measured",
+          "scenarios": 27,
+          "features": [
+            "a11y",
+            "about",
+            "blog",
+            "changelog-comments",
+            "link-preview",
+            "smoke"
+          ]
+        },
+        "health": {
+          "dimension": "health",
+          "state": "measured",
+          "score": 85.8,
+          "grade": "A",
+          "overCeiling": 0,
+          "deadFiles": 0,
+          "deadExports": 0,
+          "refactorTargets": 0
+        }
+      }
+    },
+    {
+      "name": "@gate/e2e",
+      "path": "apps/e2e",
+      "category": "apps",
+      "dimensions": {
+        "code": {
+          "dimension": "code",
+          "state": "unmeasured",
+          "reason": "No coverage block in vitest.config"
+        },
+        "visual": {
+          "dimension": "visual",
+          "state": "not-applicable",
+          "reason": "No components"
+        },
+        "acceptance": {
+          "dimension": "acceptance",
+          "state": "not-applicable",
+          "reason": "The acceptance suite itself"
+        },
+        "health": {
+          "dimension": "health",
+          "state": "measured",
+          "score": 77.4,
+          "grade": "B",
+          "overCeiling": 0,
+          "deadFiles": 0,
+          "deadExports": 0,
+          "refactorTargets": 0
+        }
+      }
+    },
+    {
+      "name": "@gate/manual",
+      "path": "apps/manual",
+      "category": "apps",
+      "dimensions": {
+        "code": {
+          "dimension": "code",
+          "state": "unmeasured",
+          "reason": "No coverage block in vitest.config"
+        },
+        "visual": {
+          "dimension": "visual",
+          "state": "measured",
+          "components": {
+            "total": 4,
+            "storied": 3,
+            "tiled": 3,
+            "baselined": 3
+          },
+          "screens": {
+            "stories": 3,
+            "tiled": 0,
+            "baselined": 3
+          },
+          "routes": {
+            "total": 3,
+            "loading": {
+              "own": 0,
+              "inherited": 0,
+              "none": 3
+            },
+            "error": {
+              "own": 0,
+              "inherited": 3,
+              "none": 0
+            },
+            "notFound": {
+              "own": 0,
+              "inherited": 3,
+              "none": 0
+            }
+          }
+        },
+        "acceptance": {
+          "dimension": "acceptance",
+          "state": "measured",
+          "scenarios": 0,
+          "features": []
+        },
+        "health": {
+          "dimension": "health",
+          "state": "measured",
+          "score": 90.2,
+          "grade": "A",
+          "overCeiling": 0,
+          "deadFiles": 0,
+          "deadExports": 0,
+          "refactorTargets": 0
+        }
+      }
+    },
+    {
+      "name": "@gate/storybook",
+      "path": "apps/storybook",
+      "category": "apps",
+      "dimensions": {
+        "code": {
+          "dimension": "code",
+          "state": "unmeasured",
+          "reason": "No coverage block in vitest.config"
+        },
+        "visual": {
+          "dimension": "visual",
+          "state": "not-applicable",
+          "reason": "Renders other workspaces’ stories"
+        },
+        "acceptance": {
+          "dimension": "acceptance",
+          "state": "measured",
+          "scenarios": 0,
+          "features": []
+        },
+        "health": {
+          "dimension": "health",
+          "state": "measured",
+          "score": 91.3,
+          "grade": "A",
+          "overCeiling": 0,
+          "deadFiles": 0,
+          "deadExports": 0,
+          "refactorTargets": 0
+        }
+      }
+    },
+    {
+      "name": "scripts/",
+      "path": "scripts",
+      "category": "scripts",
+      "dimensions": {
+        "code": {
+          "dimension": "code",
+          "state": "unmeasured",
+          "reason": "No coverage block in vitest.config"
+        },
+        "visual": {
+          "dimension": "visual",
+          "state": "not-applicable",
+          "reason": "No components"
+        },
+        "acceptance": {
+          "dimension": "acceptance",
+          "state": "not-applicable",
+          "reason": "Not an app"
+        },
+        "health": {
+          "dimension": "health",
+          "state": "measured",
+          "score": 71.9,
+          "grade": "C",
+          "overCeiling": 3,
+          "deadFiles": 0,
+          "deadExports": 0,
+          "refactorTargets": 0
+        }
+      }
+    },
+    {
+      "name": ".sandcastle/",
+      "path": ".sandcastle",
+      "category": "scripts",
+      "dimensions": {
+        "code": {
+          "dimension": "code",
+          "state": "unmeasured",
+          "reason": "No coverage block in vitest.config"
+        },
+        "visual": {
+          "dimension": "visual",
+          "state": "not-applicable",
+          "reason": "No components"
+        },
+        "acceptance": {
+          "dimension": "acceptance",
+          "state": "not-applicable",
+          "reason": "Not an app"
+        },
+        "health": {
+          "dimension": "health",
+          "state": "measured",
+          "score": 80.5,
+          "grade": "B",
+          "overCeiling": 0,
+          "deadFiles": 0,
+          "deadExports": 0,
+          "refactorTargets": 0
+        }
+      }
+    }
+  ],
+  "gaps": [
+    {
+      "id": "unmeasured-workspace:packages/links",
+      "dimension": "code",
+      "workspace": "@gate/links",
+      "kind": "unmeasured-workspace",
+      "subject": "packages/links",
+      "title": "@gate/links: measure coverage"
+    },
+    {
+      "id": "unmeasured-workspace:packages/logger",
+      "dimension": "code",
+      "workspace": "@gate/logger",
+      "kind": "unmeasured-workspace",
+      "subject": "packages/logger",
+      "title": "@gate/logger: measure coverage"
+    },
+    {
+      "id": "unmeasured-workspace:packages/visual-diff",
+      "dimension": "code",
+      "workspace": "@gate/visual-diff",
+      "kind": "unmeasured-workspace",
+      "subject": "packages/visual-diff",
+      "title": "@gate/visual-diff: measure coverage"
+    },
+    {
+      "id": "unmeasured-workspace:apps/blog",
+      "dimension": "code",
+      "workspace": "@gate/blog",
+      "kind": "unmeasured-workspace",
+      "subject": "apps/blog",
+      "title": "@gate/blog: measure coverage"
+    },
+    {
+      "id": "unmeasured-workspace:apps/e2e",
+      "dimension": "code",
+      "workspace": "@gate/e2e",
+      "kind": "unmeasured-workspace",
+      "subject": "apps/e2e",
+      "title": "@gate/e2e: measure coverage"
+    },
+    {
+      "id": "unmeasured-workspace:apps/manual",
+      "dimension": "code",
+      "workspace": "@gate/manual",
+      "kind": "unmeasured-workspace",
+      "subject": "apps/manual",
+      "title": "@gate/manual: measure coverage"
+    },
+    {
+      "id": "unmeasured-workspace:apps/storybook",
+      "dimension": "code",
+      "workspace": "@gate/storybook",
+      "kind": "unmeasured-workspace",
+      "subject": "apps/storybook",
+      "title": "@gate/storybook: measure coverage"
+    },
+    {
+      "id": "unmeasured-workspace:scripts",
+      "dimension": "code",
+      "workspace": "scripts/",
+      "kind": "unmeasured-workspace",
+      "subject": "scripts",
+      "title": "scripts/: measure coverage"
+    },
+    {
+      "id": "unmeasured-workspace:.sandcastle",
+      "dimension": "code",
+      "workspace": ".sandcastle/",
+      "kind": "unmeasured-workspace",
+      "subject": ".sandcastle",
+      "title": ".sandcastle/: measure coverage"
+    },
+    {
+      "id": "component-incomplete:apps/blog:screens-blog-about--default",
+      "dimension": "visual",
+      "workspace": "@gate/blog",
+      "kind": "component-incomplete",
+      "subject": "screens-blog-about--default",
+      "title": "screens-blog-about--default: no tile"
+    },
+    {
+      "id": "component-incomplete:apps/blog:screens-blog-changelog--releases",
+      "dimension": "visual",
+      "workspace": "@gate/blog",
+      "kind": "component-incomplete",
+      "subject": "screens-blog-changelog--releases",
+      "title": "screens-blog-changelog--releases: no tile"
+    },
+    {
+      "id": "component-incomplete:apps/blog:screens-blog-home--latest",
+      "dimension": "visual",
+      "workspace": "@gate/blog",
+      "kind": "component-incomplete",
+      "subject": "screens-blog-home--latest",
+      "title": "screens-blog-home--latest: no tile"
+    },
+    {
+      "id": "component-incomplete:apps/blog:screens-blog-index--first-page",
+      "dimension": "visual",
+      "workspace": "@gate/blog",
+      "kind": "component-incomplete",
+      "subject": "screens-blog-index--first-page",
+      "title": "screens-blog-index--first-page: no tile"
+    },
+    {
+      "id": "component-incomplete:apps/blog:screens-blog-index--later-page",
+      "dimension": "visual",
+      "workspace": "@gate/blog",
+      "kind": "component-incomplete",
+      "subject": "screens-blog-index--later-page",
+      "title": "screens-blog-index--later-page: no tile"
+    },
+    {
+      "id": "component-incomplete:apps/blog:screens-blog-notfound--default",
+      "dimension": "visual",
+      "workspace": "@gate/blog",
+      "kind": "component-incomplete",
+      "subject": "screens-blog-notfound--default",
+      "title": "screens-blog-notfound--default: no tile"
+    },
+    {
+      "id": "component-incomplete:apps/blog:screens-blog-post--article",
+      "dimension": "visual",
+      "workspace": "@gate/blog",
+      "kind": "component-incomplete",
+      "subject": "screens-blog-post--article",
+      "title": "screens-blog-post--article: no tile"
+    },
+    {
+      "id": "component-incomplete:apps/blog:screens-blog-tag--tagged",
+      "dimension": "visual",
+      "workspace": "@gate/blog",
+      "kind": "component-incomplete",
+      "subject": "screens-blog-tag--tagged",
+      "title": "screens-blog-tag--tagged: no tile"
+    },
+    {
+      "id": "component-incomplete:apps/manual:screens-manual-index--default",
+      "dimension": "visual",
+      "workspace": "@gate/manual",
+      "kind": "component-incomplete",
+      "subject": "screens-manual-index--default",
+      "title": "screens-manual-index--default: no tile"
+    },
+    {
+      "id": "component-incomplete:apps/manual:screens-manual-page--console",
+      "dimension": "visual",
+      "workspace": "@gate/manual",
+      "kind": "component-incomplete",
+      "subject": "screens-manual-page--console",
+      "title": "screens-manual-page--console: no tile"
+    },
+    {
+      "id": "component-incomplete:apps/manual:screens-manual-start--default",
+      "dimension": "visual",
+      "workspace": "@gate/manual",
+      "kind": "component-incomplete",
+      "subject": "screens-manual-start--default",
+      "title": "screens-manual-start--default: no tile"
+    },
+    {
+      "id": "component-incomplete:apps/visual-diff-ui:screens-visual-diff-ui-shot--expanded",
+      "dimension": "visual",
+      "workspace": "@gate/visual-diff-ui",
+      "kind": "component-incomplete",
+      "subject": "screens-visual-diff-ui-shot--expanded",
+      "title": "screens-visual-diff-ui-shot--expanded: no tile"
+    },
+    {
+      "id": "story-missing:packages/ui:Stack",
+      "dimension": "visual",
+      "workspace": "@gate/ui",
+      "kind": "story-missing",
+      "subject": "Stack",
+      "title": "@gate/ui: Stack has no story"
+    },
+    {
+      "id": "story-missing:apps/visual-diff-ui:RunPanel",
+      "dimension": "visual",
+      "workspace": "@gate/visual-diff-ui",
+      "kind": "story-missing",
+      "subject": "RunPanel",
+      "title": "@gate/visual-diff-ui: RunPanel has no story"
+    },
+    {
+      "id": "story-missing:apps/visual-diff-ui:Note",
+      "dimension": "visual",
+      "workspace": "@gate/visual-diff-ui",
+      "kind": "story-missing",
+      "subject": "Note",
+      "title": "@gate/visual-diff-ui: Note has no story"
+    },
+    {
+      "id": "story-missing:apps/visual-diff-ui:ConfirmDialogs",
+      "dimension": "visual",
+      "workspace": "@gate/visual-diff-ui",
+      "kind": "story-missing",
+      "subject": "ConfirmDialogs",
+      "title": "@gate/visual-diff-ui: ConfirmDialogs has no story"
+    },
+    {
+      "id": "story-missing:apps/visual-diff-ui:SetFilterBar",
+      "dimension": "visual",
+      "workspace": "@gate/visual-diff-ui",
+      "kind": "story-missing",
+      "subject": "SetFilterBar",
+      "title": "@gate/visual-diff-ui: SetFilterBar has no story"
+    },
+    {
+      "id": "story-missing:apps/visual-diff-ui:OverlayStage",
+      "dimension": "visual",
+      "workspace": "@gate/visual-diff-ui",
+      "kind": "story-missing",
+      "subject": "OverlayStage",
+      "title": "@gate/visual-diff-ui: OverlayStage has no story"
+    },
+    {
+      "id": "story-missing:apps/visual-diff-ui:CurrentJob",
+      "dimension": "visual",
+      "workspace": "@gate/visual-diff-ui",
+      "kind": "story-missing",
+      "subject": "CurrentJob",
+      "title": "@gate/visual-diff-ui: CurrentJob has no story"
+    },
+    {
+      "id": "story-missing:apps/visual-diff-ui:JobLog",
+      "dimension": "visual",
+      "workspace": "@gate/visual-diff-ui",
+      "kind": "story-missing",
+      "subject": "JobLog",
+      "title": "@gate/visual-diff-ui: JobLog has no story"
+    },
+    {
+      "id": "story-missing:apps/visual-diff-ui:JobQueue",
+      "dimension": "visual",
+      "workspace": "@gate/visual-diff-ui",
+      "kind": "story-missing",
+      "subject": "JobQueue",
+      "title": "@gate/visual-diff-ui: JobQueue has no story"
+    },
+    {
+      "id": "story-missing:apps/visual-diff-ui:ReportHeader",
+      "dimension": "visual",
+      "workspace": "@gate/visual-diff-ui",
+      "kind": "story-missing",
+      "subject": "ReportHeader",
+      "title": "@gate/visual-diff-ui: ReportHeader has no story"
+    },
+    {
+      "id": "story-missing:apps/visual-diff-ui:ReportGrid",
+      "dimension": "visual",
+      "workspace": "@gate/visual-diff-ui",
+      "kind": "story-missing",
+      "subject": "ReportGrid",
+      "title": "@gate/visual-diff-ui: ReportGrid has no story"
+    },
+    {
+      "id": "story-missing:apps/visual-diff-ui:ReportCard",
+      "dimension": "visual",
+      "workspace": "@gate/visual-diff-ui",
+      "kind": "story-missing",
+      "subject": "ReportCard",
+      "title": "@gate/visual-diff-ui: ReportCard has no story"
+    },
+    {
+      "id": "story-missing:apps/visual-diff-ui:BucketFilter",
+      "dimension": "visual",
+      "workspace": "@gate/visual-diff-ui",
+      "kind": "story-missing",
+      "subject": "BucketFilter",
+      "title": "@gate/visual-diff-ui: BucketFilter has no story"
+    },
+    {
+      "id": "story-missing:apps/visual-diff-ui:ShotFrame",
+      "dimension": "visual",
+      "workspace": "@gate/visual-diff-ui",
+      "kind": "story-missing",
+      "subject": "ShotFrame",
+      "title": "@gate/visual-diff-ui: ShotFrame has no story"
+    },
+    {
+      "id": "story-missing:apps/visual-diff-ui:ShotToolbar",
+      "dimension": "visual",
+      "workspace": "@gate/visual-diff-ui",
+      "kind": "story-missing",
+      "subject": "ShotToolbar",
+      "title": "@gate/visual-diff-ui: ShotToolbar has no story"
+    },
+    {
+      "id": "story-missing:apps/blog:MermaidDiagram",
+      "dimension": "visual",
+      "workspace": "@gate/blog",
+      "kind": "story-missing",
+      "subject": "MermaidDiagram",
+      "title": "@gate/blog: MermaidDiagram has no story"
+    },
+    {
+      "id": "story-missing:apps/blog:LottieBlock",
+      "dimension": "visual",
+      "workspace": "@gate/blog",
+      "kind": "story-missing",
+      "subject": "LottieBlock",
+      "title": "@gate/blog: LottieBlock has no story"
+    },
+    {
+      "id": "story-missing:apps/blog:BlogFrame",
+      "dimension": "visual",
+      "workspace": "@gate/blog",
+      "kind": "story-missing",
+      "subject": "BlogFrame",
+      "title": "@gate/blog: BlogFrame has no story"
+    },
+    {
+      "id": "story-missing:apps/blog:ChangelogSyncStill",
+      "dimension": "visual",
+      "workspace": "@gate/blog",
+      "kind": "story-missing",
+      "subject": "ChangelogSyncStill",
+      "title": "@gate/blog: ChangelogSyncStill has no story"
+    },
+    {
+      "id": "story-missing:apps/blog:ChangelogSyncButton",
+      "dimension": "visual",
+      "workspace": "@gate/blog",
+      "kind": "story-missing",
+      "subject": "ChangelogSyncButton",
+      "title": "@gate/blog: ChangelogSyncButton has no story"
+    },
+    {
+      "id": "story-missing:apps/manual:ManualFrame",
+      "dimension": "visual",
+      "workspace": "@gate/manual",
+      "kind": "story-missing",
+      "subject": "ManualFrame",
+      "title": "@gate/manual: ManualFrame has no story"
+    },
+    {
+      "id": "route-state-missing:apps/manual:/:loading",
+      "dimension": "visual",
+      "workspace": "@gate/manual",
+      "kind": "route-state-missing",
+      "subject": "/:loading",
+      "title": "@gate/manual: / has no loading state"
+    },
+    {
+      "id": "route-state-missing:apps/manual:/[slug]:loading",
+      "dimension": "visual",
+      "workspace": "@gate/manual",
+      "kind": "route-state-missing",
+      "subject": "/[slug]:loading",
+      "title": "@gate/manual: /[slug] has no loading state"
+    },
+    {
+      "id": "route-state-missing:apps/manual:/start:loading",
+      "dimension": "visual",
+      "workspace": "@gate/manual",
+      "kind": "route-state-missing",
+      "subject": "/start:loading",
+      "title": "@gate/manual: /start has no loading state"
+    },
+    {
+      "id": "route-state-missing:apps/visual-diff-ui:/:loading",
+      "dimension": "visual",
+      "workspace": "@gate/visual-diff-ui",
+      "kind": "route-state-missing",
+      "subject": "/:loading",
+      "title": "@gate/visual-diff-ui: / has no loading state"
+    },
+    {
+      "id": "route-state-missing:apps/visual-diff-ui:/report/[id]:loading",
+      "dimension": "visual",
+      "workspace": "@gate/visual-diff-ui",
+      "kind": "route-state-missing",
+      "subject": "/report/[id]:loading",
+      "title": "@gate/visual-diff-ui: /report/[id] has no loading state"
+    },
+    {
+      "id": "route-state-missing:apps/visual-diff-ui:/report/[id]/compare/[key]:loading",
+      "dimension": "visual",
+      "workspace": "@gate/visual-diff-ui",
+      "kind": "route-state-missing",
+      "subject": "/report/[id]/compare/[key]:loading",
+      "title": "@gate/visual-diff-ui: /report/[id]/compare/[key] has no loading state"
+    },
+    {
+      "id": "route-state-missing:apps/visual-diff-ui:/set/[label]:loading",
+      "dimension": "visual",
+      "workspace": "@gate/visual-diff-ui",
+      "kind": "route-state-missing",
+      "subject": "/set/[label]:loading",
+      "title": "@gate/visual-diff-ui: /set/[label] has no loading state"
+    },
+    {
+      "id": "route-state-missing:apps/visual-diff-ui:/set/[label]/shot/[key]:loading",
+      "dimension": "visual",
+      "workspace": "@gate/visual-diff-ui",
+      "kind": "route-state-missing",
+      "subject": "/set/[label]/shot/[key]:loading",
+      "title": "@gate/visual-diff-ui: /set/[label]/shot/[key] has no loading state"
+    },
+    {
+      "id": "route-state-missing:apps/blog:/:loading",
+      "dimension": "visual",
+      "workspace": "@gate/blog",
+      "kind": "route-state-missing",
+      "subject": "/:loading",
+      "title": "@gate/blog: / has no loading state"
+    },
+    {
+      "id": "route-state-missing:apps/blog:/about:loading",
+      "dimension": "visual",
+      "workspace": "@gate/blog",
+      "kind": "route-state-missing",
+      "subject": "/about:loading",
+      "title": "@gate/blog: /about has no loading state"
+    },
+    {
+      "id": "route-state-missing:apps/blog:/changelog:loading",
+      "dimension": "visual",
+      "workspace": "@gate/blog",
+      "kind": "route-state-missing",
+      "subject": "/changelog:loading",
+      "title": "@gate/blog: /changelog has no loading state"
+    },
+    {
+      "id": "route-state-missing:apps/blog:/tag/[tag]:loading",
+      "dimension": "visual",
+      "workspace": "@gate/blog",
+      "kind": "route-state-missing",
+      "subject": "/tag/[tag]:loading",
+      "title": "@gate/blog: /tag/[tag] has no loading state"
+    },
+    {
+      "id": "route-state-missing:apps/blog:/[slug]:loading",
+      "dimension": "visual",
+      "workspace": "@gate/blog",
+      "kind": "route-state-missing",
+      "subject": "/[slug]:loading",
+      "title": "@gate/blog: /[slug] has no loading state"
+    },
+    {
+      "id": "app-unvisited:apps/manual",
+      "dimension": "acceptance",
+      "workspace": "@gate/manual",
+      "kind": "app-unvisited",
+      "subject": "apps/manual",
+      "title": "@gate/manual: no acceptance scenario"
+    },
+    {
+      "id": "app-unvisited:apps/storybook",
+      "dimension": "acceptance",
+      "workspace": "@gate/storybook",
+      "kind": "app-unvisited",
+      "subject": "apps/storybook",
+      "title": "@gate/storybook: no acceptance scenario"
+    }
+  ]
+}
