@@ -185,6 +185,8 @@
   gap: var(--space-1);
 }
 
+/* The card title is Text's `label` role (mono, xs) set as the board's caps
+   heading: bold, tracked, uppercase, tight. The in-card subheadings share it. */
 .census-card__title,
 .census-subtitle-caps {
   font-family: var(--font-mono);
@@ -197,8 +199,6 @@
 }
 
 .census-card__description {
-  font-size: var(--text-sm);
-  line-height: var(--leading-normal);
   color: var(--color-text-muted);
 }
 

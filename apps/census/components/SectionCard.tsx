@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react';
 
+import { Text } from '@gate/ui';
+
 export interface SectionCardProps {
   title: string;
   description?: ReactNode;
@@ -21,9 +23,13 @@ export function SectionCard({
     <section className={['census-card', className].filter(Boolean).join(' ')}>
       <div className="census-card__head">
         <header className="census-card__heading">
-          <h2 className="census-card__title">{title}</h2>
+          <Text as="h2" variant="label" className="census-card__title">
+            {title}
+          </Text>
           {description !== undefined && (
-            <p className="census-card__description">{description}</p>
+            <Text variant="body-sm" className="census-card__description">
+              {description}
+            </Text>
           )}
         </header>
         {aside}
