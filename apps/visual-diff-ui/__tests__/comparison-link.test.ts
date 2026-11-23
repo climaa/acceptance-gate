@@ -143,12 +143,12 @@ describe('defaultBoard', () => {
     expect(chosen).toBe(board);
   });
 
-  // One app's screens: a project with a single app keeps `05-screens`
-  // (designs/STANDARD.md), so the console's screens open on its first page. So
-  // does a screen whose app the policy does not name.
+  // One app's screens (designs/STANDARD.md): the console's screens open on the
+  // first page of its own screens board, and a screen whose app the policy does
+  // not name on the first of the tier's boards.
   it.each([
-    ['screens-visual-diff-ui-dashboard--sample', '05-screens-1'],
-    ['screens-garden-reader-plantscreen--default', '05-screens-1'],
+    ['screens-visual-diff-ui-dashboard--sample', '05-screens-visual-diff-ui-1'],
+    ['screens-garden-reader-plantscreen--default', '05-screens-visual-diff-ui-1'],
   ] as const)('opens the screen %s on %s', (id, board) => {
     const chosen = defaultBoard(
       { tier: 'screens', key: `screens__mobile__dark__${id}` },
@@ -176,19 +176,18 @@ describe('tierBoards', () => {
 });
 
 describe('variantBoards', () => {
-  // A project with one app keeps `05-screens` (designs/STANDARD.md): the
-  // console's screens have no board of their own app, so they open on every
-  // page of the screens board, in order.
-  it("is every page of the screens board for the console's screens", () => {
+  // The console's screens are tiled on its own app's board (designs/STANDARD.md,
+  // "One app's screens"), so they open on every page of it, in order.
+  it("is every page of the console's own screens board for its screens", () => {
     const key = 'screens__desktop__light__screens-visual-diff-ui-dashboard--sample';
 
     const boards = variantBoards({ tier: 'screens', key });
 
     expect(boards).toEqual([
-      '05-screens-1',
-      '05-screens-2',
-      '05-screens-3',
-      '05-screens-4',
+      '05-screens-visual-diff-ui-1',
+      '05-screens-visual-diff-ui-2',
+      '05-screens-visual-diff-ui-3',
+      '05-screens-visual-diff-ui-4',
     ]);
   });
 

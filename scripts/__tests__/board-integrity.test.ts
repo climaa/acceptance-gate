@@ -100,6 +100,60 @@ describe('joinProblems', () => {
     expect(problems).toEqual([]);
   });
 
+  // A project whose screens span apps tiles each app's screens on
+  // 05-screens-<app>, paged as 05-screens-<app>-1… (designs/STANDARD.md).
+  const CONSOLE_SCREEN =
+    'screens__desktop__light__screens-visual-diff-ui-dashboard--sample';
+
+  it('reads an app’s paged screens board as that app’s screens board', () => {
+    const problems = check({ '05-screens-visual-diff-ui-2': [CONSOLE_SCREEN] }, [
+      CONSOLE_SCREEN,
+    ]);
+
+    expect(problems).toEqual([]);
+  });
+
+  it('names an app’s missing screen tile on that app’s screens board', () => {
+    const blog = 'screens__desktop__light__screens-blog-home--default';
+
+    const problems = check({ '05-screens-visual-diff-ui-1': [CONSOLE_SCREEN] }, [
+      CONSOLE_SCREEN,
+      blog,
+    ]);
+
+    expect(problems).toEqual([
+      'screens-blog-home--default (desktop, light) has no tile on 05-screens: a new story ships with its tile (designs/STANDARD.md)',
+    ]);
+  });
+
+  it('names a screen drawn on another app’s screens board', () => {
+    const blog = 'screens__desktop__light__screens-blog-home--default';
+
+    const problems = check(
+      { '05-screens-visual-diff-ui-1': [CONSOLE_SCREEN, blog], '05-screens-blog-1': [] },
+      [CONSOLE_SCREEN, blog],
+    );
+
+    expect(problems).toEqual([
+      '05-screens-visual-diff-ui-1 draws screens-blog-home--default (desktop, light), whose tier board is 05-screens-blog',
+    ]);
+  });
+
+  // An app the policy does not name yet keeps its screens board unjoined: its
+  // tiles are drawn before the app is wired in.
+  it('never joins the screens board of an app the policy does not name', () => {
+    const problems = check(
+      {
+        '05-screens-someday-1': [
+          'screens__desktop__light__screens-someday-home--default',
+        ],
+      },
+      [],
+    );
+
+    expect(problems).toEqual([]);
+  });
+
   // 00-, 05-, 06- and x- boards are reference: their frames are never joined.
   it('never joins a reference board', () => {
     const problems = check(
