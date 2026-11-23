@@ -43,9 +43,8 @@
   list-style: none;
 }
 
-/* The board pads a row 14px above and below, off the scale, and parts the name
-   from its sub-line by 2px. --space-3 and --space-1 are the nearest steps; the
-   row ends up 2px shorter than the board's. A rule parts each row from the one
+/* A row is padded --space-3 above and below, and its name sits --space-1 above
+   its sub-line, as the board draws them. A rule parts each row from the one
    before, with the list's gap on both of its sides. */
 .ds-coverage-list__row {
   display: grid;

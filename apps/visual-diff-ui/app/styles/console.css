@@ -29,7 +29,9 @@
   align-items: center;
   gap: var(--space-2);
   /* Type from <Text variant="label">; the case and the tracking stay here, being
-     the panel's and not the role's. Never bold: JetBrains Mono ships no 700. */
+     the panel's and not the role's. It keeps the role's normal weight; JetBrains
+     Mono's 700 face is committed too (fonts.css), so a bold title would not be
+     synthesized. */
   letter-spacing: var(--tracking-wide);
   text-transform: uppercase;
   color: var(--color-text-muted);

@@ -5,8 +5,9 @@
 
    The pairings are the type scale on board 00 ("Drawing Prose typeset"): the
    display face for headings at --weight-semibold, its only face; Atkinson
-   Hyperlegible at normal or bold, its two; JetBrains Mono at normal alone, since
-   it ships no bold and a synthesized one is drawn differently by every engine. */
+   Hyperlegible at normal or bold, its two; JetBrains Mono at normal, the weight
+   the board draws its two roles at. Its 700 face is committed too (fonts.css),
+   so a mono role drawn bold would take a real face, not a synthesized one. */
 
 .ds-text {
   margin: 0;

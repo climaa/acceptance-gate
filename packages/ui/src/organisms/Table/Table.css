@@ -61,9 +61,9 @@
 /* Mono and tabular figures together: the face keeps digit stems even, and
    `tabular-nums` keeps their advance widths equal, so a column of numbers lines
    up on its digits rather than on its right edge alone. Body cells only — the
-   heading is a word, and JetBrains Mono is committed at 400 alone, so the bold
-   above paired with this family would be a weight the engine synthesizes (see
-   the fonts rule in src/__tests__/tokens.test.ts). */
+   heading is a word, and the board draws it in the sans face at the bold above.
+   JetBrains Mono has a committed 700 face now (fonts.css), so this keeps the
+   heading sans by choice, not because the mono family has no bold. */
 td.ds-table__cell--numeric {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
