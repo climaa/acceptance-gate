@@ -22,8 +22,8 @@
 /* The count is the one number on the chip and the column it lines up in when a
    row of chips stacks, so it takes the mono face and tabular figures: 1 and 7
    then occupy the same advance and the counts stop shifting as they update.
-   JetBrains Mono ships a 400 face only — the weight is stated rather than
-   inherited from the chip's bold, which the engine would otherwise synthesize. */
+   The weight is stated rather than inherited from the chip's bold: the board
+   draws the count at normal. */
 .ds-bucket-chip__count {
   font-family: var(--font-mono);
   font-weight: var(--weight-normal);

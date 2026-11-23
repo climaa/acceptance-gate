@@ -318,8 +318,8 @@
 
 /* Read down as values rather than across as prose, so every body cell takes the
    mono face — the generic table gives it to numeric columns only, and a token
-   name is not a number. The heading row keeps the sans face: it is bold, and
-   JetBrains Mono is committed at 400 alone (see Table.css). */
+   name is not a number. The heading row keeps the generic table's bold sans
+   face (see Table.css). */
 .vd-readings__table td.ds-table__cell {
   padding: var(--space-2) var(--space-3);
   font-family: var(--font-mono);
@@ -337,9 +337,8 @@
 
 /* The element's own name, as the accessibility tree gave it — a value to press,
    not a call to action, so it is set in the face of the row it names and packed
-   to the start of its cell. The weight is not a preference: `.ds-btn` is bold,
-   JetBrains Mono is committed at 400 alone, and the two together would be a
-   weight the engine synthesizes. */
+   to the start of its cell. `.ds-btn` is bold; the name is set back to normal,
+   the weight the board draws it at. */
 .vd-readings__element {
   max-inline-size: 100%;
   justify-content: flex-start;

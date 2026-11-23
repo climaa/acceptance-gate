@@ -8998,7 +8998,7 @@
                       "width": 32,
                       "height": 32,
                       "fill": "$bg",
-                      "cornerRadius": 6,
+                      "cornerRadius": 4,
                       "stroke": "$border-strong",
                       "strokeWidth": 1,
                       "justifyContent": "center",
@@ -9522,13 +9522,14 @@
                                   "type": "frame",
                                   "id": "kg9aR",
                                   "name": "Kbd",
+                                  "context": "size-exempt: padding is 0 --space-1 plus the 1px border CSS draws outside it",
                                   "fill": "$bg",
                                   "cornerRadius": 4,
                                   "stroke": "$border-strong",
                                   "strokeWidth": 1,
                                   "padding": [
                                     1,
-                                    6
+                                    5
                                   ],
                                   "children": [
                                     {
@@ -9639,7 +9640,7 @@
                               "name": "MenuButton",
                               "width": 32,
                               "height": 32,
-                              "cornerRadius": 6,
+                              "cornerRadius": 4,
                               "stroke": "$border-strong",
                               "strokeWidth": 1,
                               "justifyContent": "center",
@@ -9714,7 +9715,7 @@
                               "name": "SearchButton",
                               "width": 32,
                               "height": 32,
-                              "cornerRadius": 6,
+                              "cornerRadius": 8,
                               "stroke": "$border-strong",
                               "strokeWidth": 1,
                               "justifyContent": "center",
@@ -9918,7 +9919,6 @@
                               "id": "CTzSD",
                               "name": "query",
                               "width": "fill_container",
-                              "gap": 1,
                               "alignItems": "center",
                               "children": [
                                 {
@@ -9930,14 +9930,6 @@
                                   "fontFamily": "$font-body",
                                   "fontSize": 16,
                                   "fontWeight": "normal"
-                                },
-                                {
-                                  "type": "rectangle",
-                                  "id": "BZvsR",
-                                  "name": "caret",
-                                  "fill": "$text",
-                                  "width": 1,
-                                  "height": 20
                                 }
                               ]
                             },
@@ -10602,7 +10594,6 @@
                               "id": "qPz52",
                               "name": "query",
                               "width": "fill_container",
-                              "gap": 1,
                               "alignItems": "center",
                               "children": [
                                 {
@@ -10614,14 +10605,6 @@
                                   "fontFamily": "$font-body",
                                   "fontSize": 16,
                                   "fontWeight": "normal"
-                                },
-                                {
-                                  "type": "rectangle",
-                                  "id": "M8PoV",
-                                  "name": "caret",
-                                  "fill": "$text",
-                                  "width": 1,
-                                  "height": 20
                                 }
                               ]
                             },

@@ -85,7 +85,8 @@ main,
 .vd-mono {
   font-family: var(--font-mono);
   /* Pinned, not inherited: these sit inside bold labels, headings and links, and
-     JetBrains Mono ships no 700 — an inherited bold would be synthesized. */
+     stay at normal there. JetBrains Mono's 700 face is committed too
+     (fonts.css), so an inherited bold would no longer be synthesized. */
   font-weight: var(--weight-normal);
   font-variant-numeric: tabular-nums;
 }
