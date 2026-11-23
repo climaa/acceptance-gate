@@ -22,6 +22,9 @@ const CONSOLE_DIR = join(APPS_DIR, 'visual-diff-ui');
 /** The manual, whose feature sources are swapped for raw imports below. */
 const MANUAL_DIR = join(APPS_DIR, 'manual');
 
+/** census, whose 3D pyramid is swapped for the flat figure below. */
+const CENSUS_DIR = join(APPS_DIR, 'census');
+
 /** Each storied app's root. Every one maps `@/*` to itself in its tsconfig, which is
  *  why `@/…` is resolved by {@link appAlias} rather than by an alias entry. The
  *  same apps, in the same order, as the policy's `APP_ROOTS`. */
@@ -52,6 +55,12 @@ const DESIGN_URLS = join(dirname(fileURLToPath(import.meta.url)), 'design-urls.t
 /** The manual's feature sources, swapped for raw imports (manual-sources.ts). */
 const MANUAL_SOURCES = join(dirname(fileURLToPath(import.meta.url)), 'manual-sources.ts');
 
+/** census's pyramid, swapped for the flat figure alone (census-pyramid.tsx). */
+const CENSUS_PYRAMID = join(
+  dirname(fileURLToPath(import.meta.url)),
+  'census-pyramid.tsx',
+);
+
 /**
  * The app modules a story cannot load as they are, each swapped for a file beside
  * this config that answers the same exports in a browser:
@@ -60,11 +69,15 @@ const MANUAL_SOURCES = join(dirname(fileURLToPath(import.meta.url)), 'manual-sou
  *   which a static build cannot answer, so a screen reads the same files off
  *   `/designs` instead;
  * - the manual's `@/lib/sources`: it reads the published `.feature` files with
- *   `readFileSync`, so a screen imports the same files as text.
+ *   `readFileSync`, so a screen imports the same files as text;
+ * - census's `@/app/_components/PyramidScene`: it lays a WebGL scene over the flat
+ *   pyramid where the GPU allows, and a capture must not depend on the GPU of the
+ *   machine that takes it, so a screen draws the flat figure alone.
  */
 const SWAPS: Readonly<Record<string, Readonly<Record<string, string>>>> = {
   [CONSOLE_DIR]: { '@/lib/design-urls': DESIGN_URLS },
   [MANUAL_DIR]: { '@/lib/sources': MANUAL_SOURCES },
+  [CENSUS_DIR]: { '@/app/_components/PyramidScene': CENSUS_PYRAMID },
 };
 
 /**

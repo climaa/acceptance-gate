@@ -11,8 +11,8 @@ import {
   StatePies,
   StoriesList,
   Table,
-  TestPyramid,
 } from '@gate/ui';
+import { PyramidFigure } from '@/app/_components/PyramidScene';
 import type { HomeFilter } from '@/lib/filter.ts';
 import { WINDOW, type NamedCount, type Overview } from '@/lib/overview.ts';
 import { CopyButton } from './CopyButton';
@@ -88,7 +88,7 @@ export function PyramidCard({ data }: Of<'pyramid'>) {
       title="Testing pyramid"
       description="Tests per level, one unit each: cases, screenshots, scenarios."
     >
-      <TestPyramid bands={data.bands} />
+      <PyramidFigure bands={data.bands} />
       {data.caption !== undefined && <p className="census-caption">{data.caption}</p>}
     </SectionCard>
   );
