@@ -156,6 +156,32 @@
   color: var(--color-warning-text);
 }
 
+/* The 3D pyramid (app/_components/PyramidScene) lies over the flat figure's
+   box. The flat figure keeps its place in the layout and its counts beside it,
+   and its drawing is hidden only once the scene's first frame is on screen, so
+   a scene that never loads leaves the flat figure as it was. */
+.census-pyramid-figure {
+  position: relative;
+}
+
+.census-pyramid-scene {
+  position: absolute;
+  cursor: grab;
+}
+
+.census-pyramid-scene:active {
+  cursor: grabbing;
+}
+
+.census-pyramid-scene--still,
+.census-pyramid-scene--still:active {
+  cursor: auto;
+}
+
+.census-pyramid-figure--scene .ds-test-pyramid__figure {
+  visibility: hidden;
+}
+
 /* Every card of the measured home: the same plate and heading CoverageList
    draws, so the hand-built cards and the design system's read as one set.
    20px between its parts is the tile's rhythm for most cards (pyramid, states,
