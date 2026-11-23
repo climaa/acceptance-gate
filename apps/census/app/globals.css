@@ -701,6 +701,64 @@
     display: none;
   }
 
+  /* StoriesList's head is three fixed columns (15rem, the meter, 8.75rem).
+     The tile puts the count on the workspace's row and the meter full width
+     under both. */
+  .census-card .ds-stories-list__head {
+    grid-template-columns: minmax(0, 1fr) auto;
+    row-gap: var(--space-2);
+  }
+
+  .census-card .ds-stories-list__name {
+    grid-area: 1 / 1;
+  }
+
+  .census-card .ds-stories-list__figure {
+    grid-area: 1 / 2;
+  }
+
+  .census-card .ds-stories-list__meter {
+    grid-area: 2 / 1 / 3 / -1;
+  }
+
+  /* StatePies gives each state a fixed 13.75rem column and its pie a fixed
+     height; three shrink in a phone's row and the pies turn into ovals. The
+     tile draws three round pies sharing the row. */
+  .census-card .ds-state-pies__state {
+    flex: 1 1 0;
+    min-width: 0;
+    inline-size: auto;
+  }
+
+  .census-card .ds-state-pies__pie {
+    inline-size: 100%;
+    max-inline-size: calc(var(--space-16) * 2);
+    block-size: auto;
+    aspect-ratio: 1;
+  }
+
+  /* TrendChart keeps its range beside the title and its legend on one line;
+     the tile puts the range under the title and one series per line. */
+  .census-trend .ds-trend-chart__head {
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .census-trend .ds-trend-chart__legend {
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  /* A hotspot's label wraps before the plot's right edge rather than leaving
+     the card. */
+  .census-card .ds-hotspots__label--end {
+    max-inline-size: calc(
+      100% - var(--hotspot-x) - var(--hotspot-size) / 2 - var(--space-2)
+    );
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+
   /* The bar stacks: dimensions, categories, then the meta, each on its row,
      the dimensions without their counts. */
   .census-bar {
