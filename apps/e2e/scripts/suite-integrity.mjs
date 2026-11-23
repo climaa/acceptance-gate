@@ -120,12 +120,15 @@ const LANES = ['acceptance', 'local'];
  * board is read now, and gained one for an added story, which has no before
  * and so links to its design instead.
  *
+ * It was 88 until census became a deployed app the suite visits: one happy path,
+ * its home showing the testing pyramid and one workspace opening its page.
+ *
  * Exact equality, not a floor: a floor decays, and after ten more scenarios a
  * floor of 47 would permit deleting ten of them. Raising this alongside a new
  * scenario is a two-line diff; LOWERING it is a product decision and belongs in
  * its own hand-authored PR with the reason written down.
  */
-const EXPECTED_SCENARIOS = 88;
+const EXPECTED_SCENARIOS = 89;
 
 /** The two project selectors. Carrying both excludes a scenario from both. */
 const PROJECT_TAGS = ['@desktop', '@mobile'];

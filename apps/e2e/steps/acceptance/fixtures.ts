@@ -3,6 +3,7 @@ import { test as base } from 'playwright-bdd';
 
 import { AboutPage } from '../../pages/about';
 import { BlogIndexPage } from '../../pages/blog-index';
+import { CensusPage } from '../../pages/census';
 import { ChangelogPage } from '../../pages/changelog';
 import { Chrome } from '../../pages/chrome';
 import { ComparisonModal } from '../../pages/comparison-modal';
@@ -35,6 +36,8 @@ export interface ScenarioState {
   releaseTag?: string;
   /** The pages a link-preview scenario read, as a crawler got them. */
   previews?: Preview[];
+  /** The workspace a census scenario opened, read off the link it clicked. */
+  workspaceName?: string;
 }
 
 /** Page objects reach the steps as fixtures, never as `new` inside a step: two steps
@@ -49,6 +52,7 @@ export interface ScenarioState {
 export const test = base.extend<{
   about: AboutPage;
   blogIndex: BlogIndexPage;
+  census: CensusPage;
   changelog: ChangelogPage;
   giscus: Giscus;
   linkPreviews: LinkPreviews;
@@ -66,6 +70,9 @@ export const test = base.extend<{
   },
   blogIndex: async ({ page }, use) => {
     await use(new BlogIndexPage(page));
+  },
+  census: async ({ page }, use) => {
+    await use(new CensusPage(page));
   },
   changelog: async ({ page }, use) => {
     await use(new ChangelogPage(page));
