@@ -97,6 +97,10 @@
 
 .census-subtitle {
   margin: 0;
+  /* The tile's lead is 18px on 1.5: 27px rows, which put the stamp's ink 3px
+     lower than the body size did (rows 197–224 on the desktop tile). */
+  font-size: var(--text-lg);
+  line-height: var(--leading-normal);
   color: var(--color-text-muted);
 }
 
@@ -148,11 +152,14 @@
 }
 
 /* Every card of the measured home: the same plate and heading CoverageList
-   draws, so the hand-built cards and the design system's read as one set. */
+   draws, so the hand-built cards and the design system's read as one set.
+   20px between its parts is the tile's rhythm for most cards (pyramid, states,
+   trend, code health, styling, hotspots, coverage, notes); the cards the tile
+   packs tighter set their own below. */
 .census-card {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--space-5);
   min-width: 0;
   padding: var(--space-6);
   border: 1px solid var(--color-border);
@@ -208,16 +215,24 @@
   color: var(--color-text-muted);
 }
 
+/* Summary: the tile sets its lines 37px apart (6px above and below each 21px
+   line, 4px between). On the scale that is 4px of padding and 8px between,
+   with the card's gap kept at 16px so the card is the tile's 244px tall. */
+.census-card:has(> .census-highlights) {
+  gap: var(--space-4);
+}
+
 .census-highlights {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--space-2);
 }
 
 .census-highlight {
   display: flex;
   align-items: baseline;
   gap: var(--space-2);
+  padding-block: var(--space-1);
   font-size: var(--text-sm);
   line-height: var(--leading-normal);
 }
@@ -326,6 +341,16 @@
   font-size: var(--text-xs);
 }
 
+/* The tile hangs the metrics table 4px under its heading, and the stories'
+   headline 8px under its own. */
+.census-card:has(> .census-metrics) {
+  gap: var(--space-1);
+}
+
+.census-card:has(> .ds-stories-list) {
+  gap: var(--space-2);
+}
+
 .census-bento {
   display: grid;
   grid-template-columns: 2fr 1fr;
@@ -336,23 +361,33 @@
 .census-routes {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
-  padding-block-start: var(--space-4);
+  gap: var(--space-5);
+  padding-block-start: var(--space-5);
   border-block-start: 1px solid var(--color-border);
 }
 
+/* The tile sets the routes 22px apart: 18px lines, 4px between. */
 .census-routes__list {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: var(--space-1);
   font-family: var(--font-mono);
   font-size: var(--text-xs);
 }
 
+/* The score beside what costs points: the tile gives the score a quarter of
+   the card (220px of 967) and 48px before the penalties. A rule closes the
+   pair, as it closes the styling card's score. */
 .census-split {
   display: grid;
-  grid-template-columns: 1fr 2fr;
-  gap: var(--space-6);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);
+  gap: var(--space-12);
+}
+
+.census-split,
+.census-card > .census-score {
+  padding-block-end: var(--space-5);
+  border-block-end: 1px solid var(--color-border);
 }
 
 .census-score {
@@ -378,6 +413,8 @@
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: var(--space-4);
+  padding-block-start: var(--space-5);
+  border-block-start: 1px solid var(--color-border);
 }
 
 .census-counts,
@@ -386,14 +423,25 @@
   flex-direction: column;
 }
 
+/* The tile's styling findings and refactor targets sit 8px inside their rules;
+   the dead-code rows, which the tile spaces with the card's 8px gap as well,
+   16px. */
 .census-count,
 .census-target {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-4);
-  padding-block: var(--space-3);
+  padding-block: var(--space-2);
   border-block-end: 1px solid var(--color-border);
+}
+
+.census-card:has(> .census-counts):not(:has(> .census-score)) {
+  gap: var(--space-1);
+}
+
+.census-card:has(> .census-counts):not(:has(> .census-score)) .census-count {
+  padding-block: var(--space-4);
 }
 
 .census-count:last-child,
@@ -445,6 +493,8 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
+  padding-block-end: var(--space-5);
+  border-block-end: 1px solid var(--color-border);
   font-size: var(--text-sm);
 }
 
@@ -474,11 +524,14 @@
   white-space: nowrap;
 }
 
-/* The gap list sits on the page's ground, not a card, as the tile draws it. */
+/* The gap list sits on the page's ground, not a card, as the tile draws it:
+   24px further from the card above than the cards are from each other, and
+   24px between its heading and each group. */
 .census-gaps {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--space-6);
+  padding-block-start: var(--space-6);
 }
 
 .census-gaps__title {
@@ -581,23 +634,20 @@
     font-size: var(--text-3xl);
   }
 
+  /* The phone tile keeps the lead at the body size. */
+  .census-subtitle {
+    font-size: var(--text-base);
+  }
+
   .census-empty.ds-empty {
     padding: var(--space-6);
   }
 
+  /* The phone tile pads every card 20px, but at 20px Table's columns and
+     TestPyramid's counts wrap a line more than the tile's do and every card
+     below drops further from its tile; 16px stays. */
   .census-card {
     padding: var(--space-4);
-  }
-
-  /* CoverageList's columns are fixed (13.75rem + 11.875rem) and do not fit a
-     phone; here the name and figure share a row and the meter runs under them. */
-  .census-coverage .ds-coverage-list {
-    padding: var(--space-4);
-  }
-
-  .census-coverage .ds-coverage-list__row {
-    grid-template-columns: minmax(0, 1fr) auto;
-    row-gap: var(--space-2);
   }
 
   /* TestPyramid's figure is a fixed 2:1 box beside its counts; the tile keeps
@@ -784,6 +834,17 @@
     grid-template-columns: 1fr;
   }
 
+  /* Stacked, the score sits 20px above what costs points. */
+  .census-split {
+    gap: var(--space-5);
+  }
+
+  /* On a phone the tile puts 16px above the gap list and under its heading. */
+  .census-gaps {
+    gap: var(--space-4);
+    padding-block-start: var(--space-4);
+  }
+
   .census-sparks {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -792,6 +853,11 @@
     grid-template-columns: 1fr;
     gap: var(--space-1);
     padding-block: var(--space-2);
+  }
+
+  /* The phone tile draws the Gaps heading at 20px. */
+  .census-gaps__title {
+    font-size: var(--text-xl);
   }
 
   .census-score__value {
