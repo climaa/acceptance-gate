@@ -125,7 +125,7 @@ describe('the stylesheet is attached to the markup', () => {
  * The determinism rule `packages/ui`'s token suite holds its own sheets to, held
  * to the console's: every family asked for a weight must ship a face at that
  * weight. The design system's test never read these sheets, and the console had
- * asked JetBrains Mono — committed at 400 alone — for bold in seven rules, each
+ * asked JetBrains Mono — then committed at 400 alone — for bold in seven rules, each
  * one drawn as a synthesized bold that every engine thickens its own way.
  *
  * Per rule, as the design system's is: a rule that names no family is checked
@@ -172,7 +172,7 @@ describe('the stylesheet asks each family only for a weight it has a face for', 
     new RegExp(`(?:^|;)\\s*${prop}:\\s*([^;]+)`).exec(body)?.[1];
 
   it('reads the faces it checks against', () => {
-    expect(facesByFamily.get('JetBrains Mono')).toEqual(new Set(['400']));
+    expect(facesByFamily.get('JetBrains Mono')).toEqual(new Set(['400', '700']));
     expect(rules.length).toBeGreaterThan(100);
   });
 
