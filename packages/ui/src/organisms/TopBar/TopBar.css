@@ -21,7 +21,7 @@
   display: flex;
   flex: none;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--space-4);
 }
 
 .ds-topbar__search {
@@ -33,8 +33,11 @@
   min-width: 2rem;
   min-height: 2rem;
   padding: 0;
-  border: 1px solid var(--color-border);
+  /* The edge is drawn inside the box, as the board strokes it, so the field's
+     glyph and placeholder sit their full padding from its outer edge. */
+  border: 0;
   border-radius: var(--radius-md);
+  box-shadow: inset 0 0 0 1px var(--color-border);
   background: var(--color-bg);
   font: inherit;
   font-size: var(--text-sm);
@@ -85,13 +88,15 @@
 /* The board draws the theme switch here as a round icon button, not the pill
    the atom is on its own: the atom keeps its state and its name, this bar
    reshapes its track around the knob. Imported after ThemeToggle.css, so the
-   same specificity wins on source order. */
+   same specificity wins on source order. The board's circle is 28px, the
+   atom's own track height, edged in the strong border. */
 .ds-topbar__theme.ds-theme-toggle,
 .ds-topbar__theme.ds-theme-toggle[aria-pressed='true'] {
   justify-content: center;
-  width: 2rem;
-  height: 2rem;
+  width: 1.75rem;
+  height: 1.75rem;
   padding: 0;
+  border-color: var(--color-border-strong);
   background: var(--color-bg);
 }
 
@@ -129,16 +134,19 @@
     display: none;
   }
 
-  .ds-topbar__end {
-    gap: var(--space-4);
-  }
-
+  /* The field draws a 14px glyph where the mobile button draws 16px. */
   .ds-topbar__search {
     justify-content: flex-start;
     width: 18.75rem;
     min-height: 2.25rem;
     padding-inline: var(--space-3);
     background: var(--color-bg-subtle);
+  }
+
+  .ds-topbar__search svg {
+    flex: none;
+    width: 0.875rem;
+    height: 0.875rem;
   }
 
   .ds-topbar__placeholder {
