@@ -74,7 +74,12 @@ export type HomeView =
   | (ViewBase & { state: 'empty' })
   | (ViewBase & {
       state: 'measured';
-      filters: { dimensions: FilterOption[]; categories: FilterOption[] };
+      filters: {
+        dimensions: FilterOption[];
+        /** The same, without the counts: what a phone's band has room for. */
+        dimensionsShort: FilterOption[];
+        categories: FilterOption[];
+      };
       meta: MeasurementMeta;
       overview: Overview;
       search: SearchIndex;
@@ -151,6 +156,10 @@ function filtersOf(measurement: Measurement) {
         value: d,
         label: `${DIMENSION_LABEL[d]} ${counts[d]}`,
       })),
+    ],
+    dimensionsShort: [
+      { value: 'all', label: 'All' },
+      ...DIMENSIONS.map((d) => ({ value: d, label: DIMENSION_LABEL[d] })),
     ],
     categories: [
       { value: 'all', label: 'All' },

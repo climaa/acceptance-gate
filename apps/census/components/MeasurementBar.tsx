@@ -31,9 +31,19 @@ export function MeasurementBar({ view, filter }: MeasurementBarProps) {
 
   return (
     <div className="census-bar">
+      {/* One strip per width, the other `display: none`: the tile drops the
+          counts on a phone so the five segments keep to one row. */}
       <SegmentedControl
+        className="census-bar__wide"
         label="Dimension"
         options={filters.dimensions}
+        value={filter.dimension ?? 'all'}
+        onChange={go('dimension')}
+      />
+      <SegmentedControl
+        className="census-bar__narrow"
+        label="Dimension"
+        options={filters.dimensionsShort}
         value={filter.dimension ?? 'all'}
         onChange={go('dimension')}
       />
