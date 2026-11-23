@@ -50,7 +50,10 @@ describe('answerAsSample', () => {
 
     await fetch('/designs/05-screens-visual-diff-ui-1.json');
 
-    expect(served).toHaveBeenCalledWith('/designs/05-screens-visual-diff-ui-1.json', undefined);
+    expect(served).toHaveBeenCalledWith(
+      '/designs/05-screens-visual-diff-ui-1.json',
+      undefined,
+    );
   });
 
   it('answers a route it does not know 404, and says which', async () => {
