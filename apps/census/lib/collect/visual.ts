@@ -16,7 +16,7 @@
 import { posix } from 'node:path';
 
 import type { StoryPart } from '../gaps.ts';
-import type { Workspace } from '../measurement.ts';
+import type { InventoryItem, Workspace } from '../measurement.ts';
 
 export interface Story {
   id: string;
@@ -119,6 +119,29 @@ function folderStories(
   return stories.filter((s) => importers.has(s.file));
 }
 
+/** Story id → the stem of the design board its tile is on. */
+export type Boards = ReadonlyMap<string, string>;
+
+/** One inventory row: the story its links open, and the board when every story is tiled. */
+function inventoryItem(
+  name: string,
+  tier: string,
+  stories: readonly Story[],
+  judged: { tiled: boolean; baselined: boolean },
+  boards: Boards,
+): InventoryItem {
+  const story = stories[0]?.id;
+  const board = story === undefined || !judged.tiled ? undefined : boards.get(story);
+  return {
+    name,
+    tier,
+    ...(story === undefined ? {} : { story }),
+    tiled: judged.tiled,
+    ...(board === undefined ? {} : { board }),
+    baselined: judged.baselined,
+  };
+}
+
 /** Names once each, in first-seen order. */
 const unique = (names: readonly string[]) => [...new Set(names)];
 
@@ -129,6 +152,7 @@ export function uiVisual(
   tiled: ReadonlySet<string>,
   baselined: ReadonlySet<string>,
   imports: ReadonlyMap<string, ReadonlySet<string>>,
+  boards: Boards = new Map(),
 ) {
   const folders = [
     ...new Set(
@@ -140,14 +164,21 @@ export function uiVisual(
         .map((parts) => parts.slice(0, 5).join('/')),
     ),
   ].sort();
-  const judged = folders.map((folder) => ({
-    name: folder.split('/').at(-1) ?? folder,
-    ...judge(folderStories(folder, stories, imports), tiled, baselined),
-  }));
+  const judged = folders.map((folder) => {
+    const own = folderStories(folder, stories, imports);
+    const name = folder.split('/').at(-1) ?? folder;
+    const verdict = judge(own, tiled, baselined);
+    return {
+      name,
+      ...verdict,
+      item: inventoryItem(name, folder.split('/')[3] ?? '', own, verdict, boards),
+    };
+  });
   const value: Workspace['dimensions']['visual'] = {
     dimension: 'visual',
     state: 'measured',
     components: counts(judged),
+    inventory: judged.map((j) => j.item),
   };
   return {
     value,
@@ -210,6 +241,7 @@ interface AppInputs {
   stories: readonly Story[];
   tiled: ReadonlySet<string>;
   baselined: ReadonlySet<string>;
+  boards?: Boards;
   routes?: NonNullable<
     Extract<Workspace['dimensions']['visual'], { state: 'measured' }>['routes']
   >;
@@ -247,6 +279,15 @@ export function appVisual(appPath: string, inputs: AppInputs) {
           },
         }),
     ...(inputs.routes === undefined ? {} : { routes: inputs.routes }),
+    inventory: screens.map((s) =>
+      inventoryItem(
+        s.id,
+        'screens',
+        [s],
+        judge([s], tiled, baselined),
+        inputs.boards ?? new Map(),
+      ),
+    ),
   };
   return {
     value,

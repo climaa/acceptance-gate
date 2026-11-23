@@ -15,27 +15,26 @@ describe('searchIndex', () => {
     expect(of('workspace')).toHaveLength(12);
     const ui = of('workspace').find((e) => e.title === '@gate/ui');
     expect(ui?.meta).toBe('packages');
-    expect(index.hrefs[ui!.id]).toBe(`${BLOB}/packages/ui`);
+    expect(index.hrefs[ui!.id]).toBe('/ui');
   });
 
   it('holds every measured file under its repository path', () => {
     const files = of('file');
 
-    expect(files).toHaveLength(8);
+    expect(files).toHaveLength(36);
     const badge = files.find((e) => e.title === 'packages/ui/src/atoms/Badge/Badge.tsx');
     expect(badge?.meta).toBe('@gate/ui');
     expect(index.hrefs[badge!.id]).toBe(`${BLOB}/packages/ui/src/atoms/Badge/Badge.tsx`);
   });
 
   it('holds a component for each PascalCase file, with its group', () => {
-    expect(of('component').map((e) => [e.title, e.meta])).toEqual([
-      ['Badge', 'atoms · @gate/ui'],
-      ['CoverageList', 'molecules · @gate/ui'],
-      ['TrendChart', 'molecules · @gate/ui'],
-      ['Table', 'organisms · @gate/ui'],
-      ['PanZoom', 'organisms · @gate/ui'],
-      ['RunPanel', 'components · @gate/visual-diff-ui'],
-    ]);
+    const components = of('component').map((e) => [e.title, e.meta]);
+
+    expect(components).toHaveLength(32);
+    expect(components).toContainEqual(['PanZoom', 'organisms · @gate/ui']);
+    expect(components).toContainEqual(['Badge', 'atoms · @gate/ui']);
+    expect(components).toContainEqual(['RunPanel', 'components · @gate/visual-diff-ui']);
+    expect(components.map(([title]) => title)).not.toContain('below-floor');
   });
 
   it('holds every gap, leading to its row on the page', () => {

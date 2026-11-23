@@ -1,12 +1,13 @@
 'use client';
 
 import { type ReactNode, useEffect, useState, useSyncExternalStore } from 'react';
+import { usePathname } from 'next/navigation';
 
 import { SearchPalette, Sidebar, TopBar, type SearchEntry } from '@gate/ui';
 import type { HomeFilter } from '@/lib/filter.ts';
+import { frameAt } from '@/lib/frame.ts';
 import type { HomeView } from '@/lib/home.ts';
 import type { SearchIndex } from '@/lib/search.ts';
-import { DIMENSION_LABEL } from '@/lib/trend.ts';
 
 /** Sidebar's breakpoint: below it the sidebar is a drawer, closed until asked. */
 const DRAWER_QUERY = '(width < 768px)';
@@ -49,9 +50,7 @@ function follow(href: string | undefined) {
 export function CensusShell({ view, filter, children }: CensusShellProps) {
   const { githubHref } = view;
   const search = view.state === 'measured' ? view.search : NO_SEARCH;
-  const lit = filter.dimension ?? 'overview';
-  const dimensions = view.dimensions.map((d) => ({ ...d, current: d.id === lit }));
-  const here = filter.dimension === null ? 'Overview' : DIMENSION_LABEL[filter.dimension];
+  const frame = frameAt(view, filter, usePathname());
   // `false` on the server and through hydration, `true` after: the first
   // client render must match the markup the server sent.
   const ready = useSyncExternalStore(
@@ -89,18 +88,14 @@ export function CensusShell({ view, filter, children }: CensusShellProps) {
         repository="acceptance-gate"
         title="census"
         dimensionsLabel="Dimensions"
-        dimensions={dimensions}
-        workspaces={view.workspaces}
+        dimensions={frame.dimensions}
+        workspaces={frame.workspaces}
         collapsed={collapsed}
         onCollapsedChange={setCollapsed}
       />
       <div className="census-shell__column">
         <TopBar
-          breadcrumb={[
-            { label: 'acceptance-gate', href: githubHref },
-            { label: 'census', href: '/' },
-            { label: here },
-          ]}
+          breadcrumb={frame.breadcrumb}
           onSearch={() => setSearching(true)}
           githubHref={githubHref}
           onMenuClick={() => setCollapsed(false)}

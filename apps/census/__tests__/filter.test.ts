@@ -42,7 +42,7 @@ describe('gapRows', () => {
       category: 'packages',
       anchor: 'gap-unmeasured-workspace:packages/links',
     });
-    expect(rows[0]?.workspaceHref).toMatch(/\/blob\/0514dc9a[0-9a-f]+\/packages\/links$/);
+    expect(rows[0]?.workspaceHref).toBe('/links');
   });
 });
 

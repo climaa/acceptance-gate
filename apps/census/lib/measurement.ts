@@ -73,6 +73,21 @@ const reasoned = <D extends Dimension>(dimension: D) => [
   }),
 ];
 
+/**
+ * One thing the Visual dimension judges, by name: a `packages/ui` component or an
+ * app's screen story. `story` is the one its links open; `board` the design board
+ * its tile is on, when it has one. Optional on the value, since a measurement
+ * written before the list was recorded has none.
+ */
+const inventoryItem = z.object({
+  name: z.string().min(1),
+  tier: z.string().min(1),
+  story: z.string().min(1).optional(),
+  tiled: z.boolean(),
+  board: z.string().min(1).optional(),
+  baselined: z.boolean(),
+});
+
 const codeValue = z.discriminatedUnion('state', [
   z.object({
     dimension: z.literal('code'),
@@ -104,6 +119,7 @@ const visualValue = z.discriminatedUnion('state', [
         notFound: stateCount,
       })
       .optional(),
+    inventory: z.array(inventoryItem).optional(),
   }),
   ...reasoned('visual'),
 ]);
@@ -240,6 +256,7 @@ export type Measurement = z.infer<typeof measurementSchema>;
 export type Workspace = z.infer<typeof workspace>;
 export type DimensionValue = Workspace['dimensions'][Dimension];
 export type FileValue = z.infer<typeof fileValue>;
+export type InventoryItem = z.infer<typeof inventoryItem>;
 export type RepositoryHealth = z.infer<typeof repositoryHealth>;
 export type Gap = z.infer<typeof gap>;
 export type History = z.infer<typeof historySchema>;

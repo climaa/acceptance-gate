@@ -241,8 +241,16 @@ function storybookStories() {
 }
 
 function visualSources() {
-  const tileKeys = tracked('designs/exports/*.tiles.json').flatMap((file) =>
-    Object.keys(readJson(join(ROOT, file)).tiles),
+  const tileMaps = tracked('designs/exports/*.tiles.json').map((file) => ({
+    board: file
+      .split('/')
+      .at(-1)
+      .replace(/\.tiles\.json$/, ''),
+    keys: Object.keys(readJson(join(ROOT, file)).tiles),
+  }));
+  const tileKeys = tileMaps.flatMap((map) => map.keys);
+  const boards = new Map(
+    tileMaps.flatMap(({ board, keys }) => [...storyIdsOf(keys)].map((id) => [id, board])),
   );
   const baselines = tracked('packages/visual-diff/__baselines__').filter((f) =>
     f.endsWith('.png'),
@@ -255,6 +263,7 @@ function visualSources() {
   );
   return {
     tiled: storyIdsOf(tileKeys),
+    boards,
     baselined: storyIdsOf(baselines.map((f) => f.split('/').at(-1))),
     baselines,
     imports,
@@ -320,6 +329,7 @@ function visualDimension(ws, stories, sources) {
       sources.tiled,
       sources.baselined,
       sources.imports,
+      sources.boards,
     );
     return {
       value: ui.value,
@@ -355,6 +365,7 @@ function visualDimension(ws, stories, sources) {
     imports: sources.imports,
     stories,
     tiled: sources.tiled,
+    boards: sources.boards,
     baselined: sources.baselined,
     ...(routes.length === 0 ? {} : { routes: routeSummary(routes) }),
   });

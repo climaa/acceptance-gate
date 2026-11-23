@@ -122,6 +122,17 @@ describe('homeView with a measurement committed', () => {
     expect(view.state === 'measured' && view.meta.staleDays).toBe(21);
   });
 
+  it('leads each sidebar workspace to its page', () => {
+    const view = homeView(measured(), FIXTURE_DAY);
+
+    expect(view.workspaces.map((ws) => [ws.name, ws.href])).toEqual([
+      ['@gate/ui', '/ui'],
+      ['@gate/blog', '/blog'],
+      ['@gate/manual', '/manual'],
+      ['@gate/tsconfig', '/tsconfig'],
+    ]);
+  });
+
   it('points GitHub at the measured repository', () => {
     const view = homeView(measured(), FIXTURE_DAY);
 
