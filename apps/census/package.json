@@ -4,19 +4,29 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "dev": "next dev --port 3510",
+    "build": "next build",
+    "start": "next start --port 3510",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
     "health": "node ../../scripts/complexity-gate.mjs",
-    "clean": "rm -rf .turbo node_modules"
+    "clean": "rm -rf .next .turbo node_modules"
   },
   "dependencies": {
+    "@gate/logger": "workspace:*",
+    "@gate/ui": "workspace:*",
+    "next": "^16.4.5",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
     "zod": "^4.6.7"
   },
   "devDependencies": {
     "@cucumber/gherkin": "^42.0.1",
     "@gate/tsconfig": "workspace:*",
     "@types/node": "^22.20.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
     "@vitest/coverage-v8": "^5.0.5",
     "eslint": "^9.39.5",
     "eslint-config-next": "^16.4.3",

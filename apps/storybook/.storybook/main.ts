@@ -25,7 +25,7 @@ const MANUAL_DIR = join(APPS_DIR, 'manual');
 /** Each storied app's root. Every one maps `@/*` to itself in its tsconfig, which is
  *  why `@/…` is resolved by {@link appAlias} rather than by an alias entry. The
  *  same apps, in the same order, as the policy's `APP_ROOTS`. */
-const STORIED_APPS = ['visual-diff-ui', 'blog', 'manual'].map((app) =>
+const STORIED_APPS = ['visual-diff-ui', 'blog', 'manual', 'census'].map((app) =>
   join(APPS_DIR, app),
 );
 
@@ -145,6 +145,7 @@ const config: StorybookConfig = {
     '../../visual-diff-ui/app/**/*.stories.tsx',
     '../../blog/app/**/*.stories.tsx',
     '../../manual/app/**/*.stories.tsx',
+    '../../census/app/**/*.stories.tsx',
     '../src/**/*.mdx',
   ],
   framework: '@storybook/nextjs-vite',

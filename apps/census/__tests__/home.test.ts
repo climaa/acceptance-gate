@@ -1,0 +1,118 @@
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+import { describe, expect, it } from 'vitest';
+
+import { parseCommitted } from '@/lib/committed.ts';
+import { homeView } from '@/lib/home.ts';
+
+const FIXTURES = path.resolve(import.meta.dirname, '..', 'fixtures');
+const text = (name: 'measurement' | 'history') =>
+  readFileSync(path.join(FIXTURES, `${name}.json`), 'utf8');
+const measured = () =>
+  parseCommitted({ measurement: text('measurement'), history: text('history') });
+
+/** The fixture is measured on 21 Nov 2026 at 18:30 UTC. */
+const FIXTURE_DAY = Date.parse('2026-11-21T18:30:00.000Z');
+const DAY = 86_400_000;
+
+describe('homeView with no measurement committed', () => {
+  const view = homeView({ state: 'empty' }, FIXTURE_DAY);
+
+  it('is the empty state', () => {
+    expect(view.state).toBe('empty');
+  });
+
+  it('lists the overview and the four dimensions, the overview current', () => {
+    expect(view.dimensions.map((d) => [d.id, d.label, d.href, d.current])).toEqual([
+      ['overview', 'Overview', '/', true],
+      ['code', 'Code', '/?dimension=code', false],
+      ['visual', 'Visual', '/?dimension=visual', false],
+      ['acceptance', 'Acceptance', '/?dimension=acceptance', false],
+      ['health', 'Health', '/?dimension=health', false],
+    ]);
+  });
+
+  it('counts nothing, since nothing was measured', () => {
+    expect(view.dimensions.map((d) => d.count)).toEqual([
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+    ]);
+  });
+});
+
+describe('homeView with a measurement committed', () => {
+  it('counts the open gaps per dimension, the overview all of them', () => {
+    const view = homeView(measured(), FIXTURE_DAY);
+
+    expect(view.dimensions.map((d) => d.count)).toEqual([3, 1, 1, 1, 0]);
+  });
+
+  it('labels each dimension filter with its gaps, after All', () => {
+    const view = homeView(measured(), FIXTURE_DAY);
+
+    expect(view.state === 'measured' && view.filters.dimensions).toEqual([
+      { value: 'all', label: 'All 3' },
+      { value: 'code', label: 'Code 1' },
+      { value: 'visual', label: 'Visual 1' },
+      { value: 'acceptance', label: 'Acceptance 1' },
+      { value: 'health', label: 'Health 0' },
+    ]);
+  });
+
+  it('offers every category after All', () => {
+    const view = homeView(measured(), FIXTURE_DAY);
+
+    expect(view.state === 'measured' && view.filters.categories).toEqual([
+      { value: 'all', label: 'All' },
+      { value: 'packages', label: 'packages' },
+      { value: 'apps', label: 'apps' },
+      { value: 'scripts', label: 'scripts' },
+    ]);
+  });
+
+  it('links the short commit to the commit on GitHub', () => {
+    const view = homeView(measured(), FIXTURE_DAY);
+
+    expect(view.state === 'measured' && view.meta.commit).toEqual({
+      short: 'aebf7ec',
+      href: 'https://github.com/climaa/acceptance-gate/commit/aebf7ece432666dc6fa20608fbbbc0dc8f8e1319',
+    });
+  });
+
+  it('dates the measurement as day, month and year in UTC', () => {
+    const view = homeView(measured(), FIXTURE_DAY);
+
+    expect(view.state === 'measured' && view.meta.date).toBe('21 Nov 2026');
+  });
+
+  it('lists the measuring tools with their versions, not the runtime', () => {
+    const view = homeView(measured(), FIXTURE_DAY);
+
+    expect(view.state === 'measured' && view.meta.tools).toEqual([
+      'vitest 5.0.5',
+      'fallow 3.36.0',
+      'storybook 10.6.2',
+    ]);
+  });
+
+  it('is not stale within fourteen days', () => {
+    const view = homeView(measured(), FIXTURE_DAY + 14 * DAY);
+
+    expect(view.state === 'measured' && view.meta.staleDays).toBeNull();
+  });
+
+  it('is stale by its age in days once older than fourteen', () => {
+    const view = homeView(measured(), FIXTURE_DAY + 21 * DAY);
+
+    expect(view.state === 'measured' && view.meta.staleDays).toBe(21);
+  });
+
+  it('points GitHub at the measured repository', () => {
+    const view = homeView(measured(), FIXTURE_DAY);
+
+    expect(view.githubHref).toBe('https://github.com/climaa/acceptance-gate');
+  });
+});
