@@ -30,8 +30,7 @@
   overflow: hidden;
 }
 
-/* The board sets the value line in bold, a weight the self-hosted JetBrains
-   Mono does not ship; both lines keep the one weight it has. The board stacks
+/* The board sets the value line in bold. It stacks
    two 14.4px lines (line-height 1.2) under 6px of padding with a 2px gap,
    centring them at 13.2px and 29.6px; none of those is on the scale. A normal
    first line under --space-1 centres at 13px, and a tight second line under it
@@ -47,6 +46,7 @@
 }
 
 .ds-icicle__detail {
+  font-weight: var(--weight-bold);
   line-height: var(--leading-tight);
 }
 

@@ -1,7 +1,6 @@
 /* The board's 220px columns, 24px apart, each a 128px pie over its name and
-   its counts. It sets the name at 13px and 700 and the missing count at 700:
-   13px is off the type scale, so the name takes --text-sm, and the
-   self-hosted mono face ships 400 alone. The 10px under the pie and the 2px
+   its counts. It sets the name at 13px, off the type scale, so the name takes
+   --text-sm. The 10px under the pie and the 2px
    between counts are --space-2 and --space-1 plus and less half a step. */
 .ds-state-pies {
   display: flex;
@@ -44,6 +43,7 @@
 
 .ds-state-pies__name {
   margin: 0;
+  font-weight: var(--weight-bold);
   font-size: var(--text-sm);
   color: var(--color-text);
 }
@@ -61,5 +61,6 @@
 }
 
 .ds-state-pies__count--missing {
+  font-weight: var(--weight-bold);
   color: var(--color-danger-fg);
 }

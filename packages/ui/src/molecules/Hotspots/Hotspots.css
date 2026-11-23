@@ -1,8 +1,7 @@
 /* The board's plot runs from 44px in to 12px short of the right edge and from
    8px down to 36px above the bottom, where the ticks and the churn axis'
    title sit; every position inside it is a percentage. Its labels are 12px on
-   a line-height of 1, and the quadrant title is drawn at 700, a weight the
-   self-hosted mono face does not ship. */
+   a line-height of 1. */
 .ds-hotspots {
   position: relative;
   block-size: 20rem;
@@ -57,6 +56,7 @@
 }
 
 .ds-hotspots__quadrant-title {
+  font-weight: var(--weight-bold);
   inset-block-start: var(--space-1);
   inset-inline-start: calc(50% + var(--space-2));
   color: var(--color-text);

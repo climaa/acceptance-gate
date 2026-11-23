@@ -1,5 +1,3 @@
-/* The board sets the title and the points at 700, a weight the self-hosted
-   JetBrains Mono does not ship; they keep the 400 it has. */
 .ds-penalty-bars {
   display: flex;
   flex-direction: column;
@@ -17,6 +15,7 @@
 }
 
 .ds-penalty-bars__title {
+  font-weight: var(--weight-bold);
   line-height: var(--leading-tight);
   letter-spacing: var(--tracking-wide);
   text-transform: uppercase;
@@ -54,6 +53,7 @@
 }
 
 .ds-penalty-bars__points {
+  font-weight: var(--weight-bold);
   text-align: end;
 }
 

@@ -44,7 +44,16 @@ export function ThemeToggle({ className, label = 'Dark theme' }: ThemeToggleProp
       {/* The knob and its crescent are the affordance, not the name: they say
           nothing `aria-label` and `aria-pressed` have not already said. */}
       <span className="ds-theme-toggle__knob" aria-hidden="true">
-        <svg className="ds-theme-toggle__icon" viewBox="0 0 24 24">
+        {/* lucide `moon`, ISC License, Copyright (c) Lucide Contributors — https://lucide.dev */}
+        <svg
+          className="ds-theme-toggle__icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={2}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
           <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
         </svg>
       </span>

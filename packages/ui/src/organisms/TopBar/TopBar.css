@@ -17,6 +17,11 @@
   min-width: 0;
 }
 
+/* Drawn at 600, which the mono face does not ship: 700 is its nearest face. */
+.ds-topbar__breadcrumb .ds-breadcrumb__current {
+  font-weight: var(--weight-bold);
+}
+
 .ds-topbar__end {
   display: flex;
   flex: none;

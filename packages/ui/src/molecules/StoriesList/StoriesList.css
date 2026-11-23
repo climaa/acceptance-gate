@@ -85,13 +85,13 @@
   --meter-track: var(--color-danger-surface);
 }
 
-/* Drawn in -fg at 700 on the board. A state word on the page ground takes the
-   -text role (tokens.css), and the mono face ships 400 alone. */
+/* Drawn in -fg on the board. A state word on the page ground takes the -text
+   role (tokens.css). */
 .ds-stories-list__figure {
   justify-self: end;
   font-family: var(--font-mono);
   font-size: var(--text-sm);
-  font-weight: var(--weight-normal);
+  font-weight: var(--weight-bold);
   line-height: var(--leading-normal);
   color: var(--color-danger-text);
 }
