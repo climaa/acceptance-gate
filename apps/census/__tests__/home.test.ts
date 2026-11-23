@@ -62,6 +62,18 @@ describe('homeView with a measurement committed', () => {
     ]);
   });
 
+  it('labels the dimensions without counts for a phone, as the mobile tile draws them', () => {
+    const view = homeView(measured(), FIXTURE_DAY);
+
+    expect(view.state === 'measured' && view.filters.dimensionsShort).toEqual([
+      { value: 'all', label: 'All' },
+      { value: 'code', label: 'Code' },
+      { value: 'visual', label: 'Visual' },
+      { value: 'acceptance', label: 'Acceptance' },
+      { value: 'health', label: 'Health' },
+    ]);
+  });
+
   it('offers every category after All', () => {
     const view = homeView(measured(), FIXTURE_DAY);
 

@@ -1,0 +1,192 @@
+{
+  "schema": 1,
+  "points": [
+    {
+      "commit": "01a1b2c3d4e5f60718293a4b5c6d7e8f90123456",
+      "measuredAt": "2026-08-28T17:00:00.000Z",
+      "dimensions": {
+        "code": 12,
+        "visual": 55,
+        "acceptance": 0,
+        "health": 72.7
+      },
+      "fallow": {
+        "score": 80.1,
+        "grade": "B",
+        "dupPct": 2.6,
+        "crapOver": 13,
+        "overCeiling": 5
+      }
+    },
+    {
+      "commit": "02a1b2c3d4e5f60718293a4b5c6d7e8f90123456",
+      "measuredAt": "2026-09-08T17:00:00.000Z",
+      "dimensions": {
+        "code": 12,
+        "visual": 57,
+        "acceptance": 0,
+        "health": 72.7
+      },
+      "fallow": {
+        "score": 80.4,
+        "grade": "B",
+        "dupPct": 2.5,
+        "crapOver": 12,
+        "overCeiling": 5
+      }
+    },
+    {
+      "commit": "03a1b2c3d4e5f60718293a4b5c6d7e8f90123456",
+      "measuredAt": "2026-09-15T17:00:00.000Z",
+      "dimensions": {
+        "code": 14,
+        "visual": 59,
+        "acceptance": 25,
+        "health": 81.8
+      },
+      "fallow": {
+        "score": 80.9,
+        "grade": "B",
+        "dupPct": 2.4,
+        "crapOver": 12,
+        "overCeiling": 5
+      }
+    },
+    {
+      "commit": "04a1b2c3d4e5f60718293a4b5c6d7e8f90123456",
+      "measuredAt": "2026-09-24T17:00:00.000Z",
+      "dimensions": {
+        "code": 14,
+        "visual": 61,
+        "acceptance": 25,
+        "health": 81.8
+      },
+      "fallow": {
+        "score": 81.3,
+        "grade": "B",
+        "dupPct": 2.3,
+        "crapOver": 11,
+        "overCeiling": 4
+      }
+    },
+    {
+      "commit": "05a1b2c3d4e5f60718293a4b5c6d7e8f90123456",
+      "measuredAt": "2026-10-02T17:00:00.000Z",
+      "dimensions": {
+        "code": 18,
+        "visual": 63,
+        "acceptance": 25,
+        "health": 81.8
+      },
+      "fallow": {
+        "score": 81.8,
+        "grade": "B",
+        "dupPct": 2.2,
+        "crapOver": 11,
+        "overCeiling": 4
+      }
+    },
+    {
+      "commit": "06a1b2c3d4e5f60718293a4b5c6d7e8f90123456",
+      "measuredAt": "2026-10-12T17:00:00.000Z",
+      "dimensions": {
+        "code": 22,
+        "visual": 66,
+        "acceptance": 25,
+        "health": 81.8
+      },
+      "fallow": {
+        "score": 82.2,
+        "grade": "B",
+        "dupPct": 2.1,
+        "crapOver": 10,
+        "overCeiling": 4
+      }
+    },
+    {
+      "commit": "07a1b2c3d4e5f60718293a4b5c6d7e8f90123456",
+      "measuredAt": "2026-10-19T17:00:00.000Z",
+      "dimensions": {
+        "code": 24,
+        "visual": 69,
+        "acceptance": 25,
+        "health": 81.8
+      },
+      "fallow": {
+        "score": 82.6,
+        "grade": "B",
+        "dupPct": 2,
+        "crapOver": 10,
+        "overCeiling": 4
+      }
+    },
+    {
+      "commit": "08a1b2c3d4e5f60718293a4b5c6d7e8f90123456",
+      "measuredAt": "2026-10-26T17:00:00.000Z",
+      "dimensions": {
+        "code": 24,
+        "visual": 69,
+        "acceptance": 25,
+        "health": 90.9
+      },
+      "fallow": {
+        "score": 83.1,
+        "grade": "B",
+        "dupPct": 1.9,
+        "crapOver": 9,
+        "overCeiling": 4
+      }
+    },
+    {
+      "commit": "09a1b2c3d4e5f60718293a4b5c6d7e8f90123456",
+      "measuredAt": "2026-11-03T17:00:00.000Z",
+      "dimensions": {
+        "code": 26,
+        "visual": 71,
+        "acceptance": 25,
+        "health": 90.9
+      },
+      "fallow": {
+        "score": 83.6,
+        "grade": "B",
+        "dupPct": 1.8,
+        "crapOver": 9,
+        "overCeiling": 3
+      }
+    },
+    {
+      "commit": "0aa1b2c3d4e5f60718293a4b5c6d7e8f90123456",
+      "measuredAt": "2026-11-12T17:00:00.000Z",
+      "dimensions": {
+        "code": 28,
+        "visual": 73,
+        "acceptance": 50,
+        "health": 90.9
+      },
+      "fallow": {
+        "score": 84.2,
+        "grade": "B",
+        "dupPct": 1.7,
+        "crapOver": 8,
+        "overCeiling": 3
+      }
+    },
+    {
+      "commit": "0514dc9a3f6e2b7c8d1e4f5a6b7c8d9e0f1a2b3c",
+      "measuredAt": "2026-11-20T17:42:00.000Z",
+      "dimensions": {
+        "code": 31,
+        "visual": 76,
+        "acceptance": 50,
+        "health": 90.9
+      },
+      "fallow": {
+        "score": 84.7,
+        "grade": "B",
+        "dupPct": 1.6,
+        "crapOver": 7,
+        "overCeiling": 3
+      }
+    }
+  ]
+}

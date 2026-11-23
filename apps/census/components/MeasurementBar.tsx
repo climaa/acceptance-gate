@@ -3,10 +3,13 @@
 import { useRouter } from 'next/navigation';
 
 import { Badge, SegmentedControl } from '@gate/ui';
+import { filterHref, type HomeFilter } from '@/lib/filter.ts';
 import type { HomeView } from '@/lib/home.ts';
+import type { Category, Dimension } from '@/lib/measurement.ts';
 
 export interface MeasurementBarProps {
   view: HomeView;
+  filter: HomeFilter;
 }
 
 /**
@@ -15,25 +18,39 @@ export interface MeasurementBarProps {
  * to the repository, and its date. With nothing measured the band stays, empty,
  * as the tile draws it: there is nothing to filter and nothing to date.
  */
-export function MeasurementBar({ view }: MeasurementBarProps) {
+export function MeasurementBar({ view, filter }: MeasurementBarProps) {
   const router = useRouter();
   if (view.state === 'empty') return <div className="census-bar" />;
   const { filters, meta } = view;
   const go = (key: 'dimension' | 'category') => (value: string) =>
-    router.push(value === 'all' ? '/' : `/?${key}=${value}`);
+    router.push(
+      filterHref(filter, {
+        [key]: value === 'all' ? null : (value as Dimension & Category),
+      }),
+    );
 
   return (
     <div className="census-bar">
+      {/* One strip per width, the other `display: none`: the tile drops the
+          counts on a phone so the five segments keep to one row. */}
       <SegmentedControl
+        className="census-bar__wide"
         label="Dimension"
         options={filters.dimensions}
-        value="all"
+        value={filter.dimension ?? 'all'}
+        onChange={go('dimension')}
+      />
+      <SegmentedControl
+        className="census-bar__narrow"
+        label="Dimension"
+        options={filters.dimensionsShort}
+        value={filter.dimension ?? 'all'}
         onChange={go('dimension')}
       />
       <SegmentedControl
         label="Category"
         options={filters.categories}
-        value="all"
+        value={filter.category ?? 'all'}
         onChange={go('category')}
       />
       <p className="census-bar__meta">

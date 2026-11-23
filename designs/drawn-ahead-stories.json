@@ -1,9 +1,3 @@
 {
-  "stories": [
-    "screens-census-home--sample",
-    "screens-census-home--filtered",
-    "screens-census-home--stale",
-    "screens-census-workspace--sample",
-    "screens-census-workspace--unmeasured"
-  ]
+  "stories": ["screens-census-workspace--sample", "screens-census-workspace--unmeasured"]
 }
