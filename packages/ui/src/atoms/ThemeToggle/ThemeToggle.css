@@ -40,10 +40,8 @@
   color: var(--color-accent);
 }
 
-/* The glyph is a filled crescent, not a stroked one — a stroke would need a
-   width of its own, and `currentColor` lets the knob rule above own the tint. */
+/* The glyph strokes in `currentColor`, so the knob rule above owns the tint. */
 .ds-theme-toggle__icon {
   width: 0.8125rem;
   height: 0.8125rem;
-  fill: currentColor;
 }

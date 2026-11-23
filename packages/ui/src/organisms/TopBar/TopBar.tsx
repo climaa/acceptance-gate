@@ -33,9 +33,10 @@ const svgProps = {
   strokeLinejoin: 'round',
 } as const;
 
+// lucide `menu`, ISC License, Copyright (c) Lucide Contributors — https://lucide.dev
 const MENU_ICON = (
   <svg {...svgProps}>
-    <path d="M4 7h16 M4 12h16 M4 17h16" />
+    <path d="M4 6h16 M4 12h16 M4 18h16" />
   </svg>
 );
 

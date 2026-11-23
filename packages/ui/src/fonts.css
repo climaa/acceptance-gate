@@ -31,8 +31,11 @@
  * WEIGHTS. Only the weights a --weight-* token asks for, and only weights the
  * family actually draws: Fraunces 600 (the board's display weight), Atkinson
  * Hyperlegible 400 and 700 — the two it ships, there is no 500 or 600 — and
- * JetBrains Mono 400. A token whose weight has no face renders as a synthesized
- * bold, which is per-engine: the same non-determinism, one layer down.
+ * JetBrains Mono 400 and 700. The mono family draws every weight, but only these
+ * two are committed: the board's mono labels are 700, and a mono 600 would be a
+ * second bold no token asks for. A token whose weight has no face renders as a
+ * synthesized bold, which is per-engine: the same non-determinism, one layer
+ * down.
  *
  * src/fonts/og/Fraunces9pt-SemiBold.ttf is the one documented exemption from
  * woff2-only: next/og renders through satori, which reads neither page CSS nor
@@ -40,9 +43,9 @@
  * title is a heading, so the display face is the one it needs. It is referenced
  * by no @font-face below, and the token suite excludes that directory by name.
  *
- * THE FOUR BLOCKS REPEAT, AND THAT IS NOT FIXABLE HERE. They differ only in
+ * THE FIVE BLOCKS REPEAT, AND THAT IS NOT FIXABLE HERE. They differ only in
  * font-family, font-weight and src; the bulk of what they share is the
- * unicode-range, written out four times. Plain CSS offers nothing to hoist it
+ * unicode-range, written out five times. Plain CSS offers nothing to hoist it
  * with: @import pulls in whole sheets rather than parameterizing a rule, there
  * are no mixins, and `var()` is not resolved inside @font-face descriptors — so
  * even `unicode-range: var(--latin-subset)` would silently fail.
@@ -50,7 +53,7 @@
  * next/font/local WOULD collapse them: one localFont() call per family takes a
  * src array of {path, weight, style} and generates the rules, with a
  * `declarations` option for the range. It is rejected because of who reads this
- * file. These four blocks are the only @font-face in the repo, and both apps
+ * file. These five blocks are the only @font-face in the repo, and both apps
  * reach them through @gate/ui/styles.css — apps/blog via app/globals.css,
  * apps/storybook via .storybook/preview.ts. next/font emits its rules inside the
  * Next app, and Storybook is Vite-based and could not consume them: its captures
@@ -61,7 +64,7 @@
  *
  * What guards a mis-copied block is not the absence of repetition but
  * __tests__/tokens.test.ts, which parameterizes over the faces it parses out of
- * this file: a fifth block is covered the moment it is added, and a src: URL
+ * this file: a sixth block is covered the moment it is added, and a src: URL
  * pointing at a file that does not exist fails the suite. Deduplicating the CSS
  * would not have caught that; the test does.
  */
@@ -105,6 +108,17 @@
   font-weight: 400;
   font-display: block;
   src: url('./fonts/jetbrains-mono-latin-400-normal.woff2') format('woff2');
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308,
+    U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 700;
+  font-display: block;
+  src: url('./fonts/jetbrains-mono-latin-700-normal.woff2') format('woff2');
   unicode-range:
     U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308,
     U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;

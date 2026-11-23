@@ -237,10 +237,11 @@
   /* Every step here has a face of its own in fonts.css. A weight with no face is
    * drawn as a synthesized bold, which each engine slants and thickens its own
    * way — so an unbacked step reintroduces exactly the drift self-hosting removes.
-   * The scale is therefore the union of two partial families, and the steps do
+   * The scale is therefore the union of partial families, and the steps do
    * not interchange: --weight-semibold is Fraunces's only weight and belongs
-   * with --font-display, while normal and bold are the two Atkinson
-   * Hyperlegible draws. There is no 500 step because neither family has one. */
+   * with --font-display, while normal and bold are the two faces committed for
+   * both Atkinson Hyperlegible and JetBrains Mono. There is no 500 step because
+   * no committed family has one. */
   --weight-normal: 400;
   --weight-semibold: 600;
   --weight-bold: 700;

@@ -44,10 +44,9 @@
   background: var(--color-chart-4);
 }
 
-/* The count stands a line and a gap above its pill. Drawn at 700 on the board;
-   the mono face ships 400 alone. */
+/* The count stands a line and a gap above its pill. */
 .ds-gap-pills__count {
-  font-weight: var(--weight-normal);
+  font-weight: var(--weight-bold);
   color: var(--color-text);
   transform: translate(-50%, calc(-100% - var(--space-1)));
 }

@@ -25,11 +25,10 @@
   gap: var(--space-1);
 }
 
-/* Drawn at 700; the mono face ships 400 alone (tokens.css). */
 .ds-trend-chart__title {
   font-family: var(--font-mono);
   font-size: var(--text-xs);
-  font-weight: var(--weight-normal);
+  font-weight: var(--weight-bold);
   letter-spacing: var(--tracking-wide);
   line-height: var(--leading-tight);
   text-transform: uppercase;
@@ -87,16 +86,16 @@
   background: currentColor;
 }
 
-/* Drawn at 600; the mono face ships 400 alone. */
+/* Drawn at 600, which the mono face does not ship: 700 is its nearest face. */
 .ds-trend-chart__latest {
   font-family: var(--font-mono);
   font-size: var(--text-xs);
-  font-weight: var(--weight-normal);
+  font-weight: var(--weight-bold);
 }
 
 .ds-trend-chart__delta {
   font-family: var(--font-mono);
-  font-weight: var(--weight-normal);
+  font-weight: var(--weight-bold);
   line-height: var(--leading-tight);
 }
 

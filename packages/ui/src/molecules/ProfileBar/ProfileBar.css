@@ -1,6 +1,5 @@
 /* The board stacks the head, the bar and the key 6px apart and parts the
-   segments with 2px seams; both are halves of --space-1 and --space-3. The
-   title is drawn at 700, which the self-hosted mono face does not ship. */
+   segments with 2px seams; both are halves of --space-1 and --space-3. */
 .ds-profile-bar {
   display: flex;
   flex-direction: column;
@@ -22,6 +21,7 @@
 }
 
 .ds-profile-bar__title {
+  font-weight: var(--weight-bold);
   color: var(--color-text);
 }
 
