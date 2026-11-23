@@ -36,10 +36,16 @@ export const CAMPAIGN_PARAM = 'utm_source';
  *
  * The list is closed here and accepted there: `climaa/portafolio` deletes any
  * `utm_source` outside its own `CAMPAIGN_SOURCES`, silently, at the locale
- * redirect. A fifth value is a line here AND a line there, in that order — the
+ * redirect. A new value is a line here AND a line there, in that order — the
  * reverse looks like it works and does nothing.
  */
-export const SOURCES = ['blog', 'manual', 'visual-diff-ui', 'storybook'] as const;
+export const SOURCES = [
+  'blog',
+  'manual',
+  'visual-diff-ui',
+  'storybook',
+  'census',
+] as const;
 
 /** One of {@link SOURCES}. */
 export type Source = (typeof SOURCES)[number];

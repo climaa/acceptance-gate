@@ -1,0 +1,10 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "git": {
+    "deploymentEnabled": {
+      "**": false,
+      "production": true
+    }
+  },
+  "ignoreCommand": "if [ -z \"$VERCEL_GIT_PREVIOUS_SHA\" ]; then exit 1; fi; npx --yes turbo@^2.10.8 query affected --packages @gate/census --base=$VERCEL_GIT_PREVIOUS_SHA --exit-code"
+}

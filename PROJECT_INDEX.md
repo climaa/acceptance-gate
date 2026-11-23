@@ -67,7 +67,9 @@ apps/
                        `pnpm census:measure`, which runs every suite, fallow and
                        the Storybook build and writes the two files the pages
                        read; the Next app's shell, its home and one page per
-                       workspace (port 3510), validating both files at build
+                       workspace (port 3510), validating both files at build;
+                       deployed to census.carloslima.dev with an OG card, page
+                       views tracked on the same terms as the blog and the console
 packages/
   logger/              the shared error/warn/info logger: silent in production, and
                        `error()` always forwards to a reporter — with the Bugsink
@@ -101,6 +103,7 @@ scripts/               gate/ (the gate, run by `.husky/pre-push`) · complexity-
 - Visual-diff console: `pnpm --filter @gate/visual-diff-ui dev` on :3300 — points `VISUAL_DIFF_DATA_DIR` at a gitignored `.visual-diff/` at the repo root and seeds it, so a local console is live rather than in sample mode. `capture`/`run` build Storybook on the host, then run the differ inside the pinned container (`lib/docker.ts` + `scripts/capture-set.mjs`), so **Docker must be running** — the panel says so and disables the button when it is not. Jobs are refused off localhost (`lib/local.ts`, and again in `POST /api/jobs`); `next start` sets no variable, so an instance without one serves the committed sample data
 - Acceptance suite: `pnpm turbo run e2e` (builds the blog and the visual-diff console first, seeds the three worlds, then runs the scenarios)
 - Manual: `pnpm --filter @gate/manual dev` on :3400
+- Census: `pnpm --filter @gate/census dev` on :3510
 - Visual diff: `pnpm visual-diff` / `pnpm visual-diff:accept`
 - Gate: `pnpm gate` (`scripts/gate/`), run by `.husky/pre-push` before every push; `pnpm gate --tier full` adds visual-diff in the pinned container. The per-PR workflows (`pr.yml`) are disabled on GitHub since #580
 - Orchestrator tests: `pnpm test:sandcastle` → `vitest.sandcastle.config.mts`

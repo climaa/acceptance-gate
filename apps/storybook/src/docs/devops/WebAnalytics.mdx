@@ -6,16 +6,17 @@ import { Mermaid } from '../Mermaid';
 
 # Web analytics
 
-All four published surfaces — the blog, the visual-diff console, the manual and this
-Storybook — count page views with Vercel Web Analytics, and only on their production
+All five published surfaces — the blog, the visual-diff console, the manual, census and
+this Storybook — count page views with Vercel Web Analytics, and only on their production
 deployment. Every preview is login-protected, so a view one could report is a reviewer or a
 machine, and it would land in the same dataset as the live site where it reads as a reader.
 
-That gate is the one thing all four share. Everything else on this page splits in two: the
-three Next.js apps gate a React component at render time, and are what the measurements
-below were taken from; Storybook has no React shell to put a component in and gates a
-string at build time instead. The Next.js mechanism comes first; the section on the fourth
-surface contradicts two of its conclusions, and says which two.
+That gate is the one thing all five share. Everything else on this page splits in two: the
+four Next.js apps gate a React component at render time — the blog, the console and the
+manual are what the measurements below were taken from, and census draws the same gate —
+while Storybook has no React shell to put a component in and gates a string at build time
+instead. The Next.js mechanism comes first; the section on the fifth surface contradicts
+two of its conclusions, and says which two.
 
 This is the only thing these sites do that phones home. It is cookieless, and for a reader
 it writes no client-side storage, so it adds nothing to the one `localStorage` key each Next
@@ -80,7 +81,7 @@ than one of its own.
 
 ## Two things that look wrong and are not
 
-Both are properties of the component, so both are true of the three Next apps and neither
+Both are properties of the component, so both are true of the four Next apps and neither
 is true of Storybook — the first one is exactly inverted there.
 
 **No `<script>` tag appears in any Next build's HTML.** Grepping a prerendered `index.html`
@@ -98,7 +99,7 @@ It is contained to that boundary, whose fallback is `null`; the route still prer
 static. The package wrapping itself in `<Suspense>` is what keeps this from failing the
 build, not what keeps it free.
 
-## The fourth surface: Storybook
+## The fifth surface: Storybook
 
 Storybook is not a Next.js app, so `@vercel/analytics/next` has nothing to attach to. It is
 a static build with two halves: the **manager** (`index.html`), which owns the sidebar and
@@ -115,7 +116,7 @@ what keeps the baselines clean: the manager is not in any capture's path at all.
 **A plain HTML snippet, and no new dependency.** Vercel documents an HTML integration — a
 queue stub plus a deferred `<script>` — and `.storybook/analytics-head.ts` emits exactly
 that, modelled on the four functions in `@vercel/analytics` that decide the loader's URL.
-Bump that package in the other three apps and those four functions are worth a diff against
+Bump that package in the other four apps and those four functions are worth a diff against
 this file.
 
 **Here the gate withholds the bytes too**, which is the opposite of the measured result
@@ -217,10 +218,10 @@ configs naming different script paths:
 
 Its cost is not zero, and the shape of it is worth writing down because it looks alarming
 and is not. `build.env` is the **shared** task, so naming a variable there moves the build
-hash of every workspace — the three Next apps and `@gate/ui` included, none of which read
+hash of every workspace — the four Next apps and `@gate/ui` included, none of which read
 this one. Two consequences follow, and only one is ongoing:
 
-- Editing `turbo.json` at all marks every package affected, so all four Vercel projects
+- Editing `turbo.json` at all marks every package affected, so all five Vercel projects
   redeploy once. That is the edit and not the variable: any change to this file does it.
 - Were the intake path ever rotated, every workspace's next build would be a cache miss
   rather than only Storybook's. Affected-ness is computed from changed files and never from
@@ -275,10 +276,10 @@ zero on a correct production build. Run the server and read what it serves.
 
 Each Next app's `__tests__/analytics.test.ts` covers the same three branches at the unit
 layer with the component stubbed, because the real one appends its `<script>` in an effect
-no server render runs. They differ in renderer, and only one of them for a reason: the blog
-and the manual use `renderToStaticMarkup`, the console `renderToReadableStream`, because
-its sample-mode badge is an async component behind `<Suspense>` that the static renderer
-cannot resolve.
+no server render runs. They differ in renderer, and only one of them for a reason: the blog,
+the manual and census use `renderToStaticMarkup` (census awaits its async layout first, with
+its frame stubbed), the console `renderToReadableStream`, because its sample-mode badge is
+an async component behind `<Suspense>` that the static renderer cannot resolve.
 
 Storybook's `__tests__/analytics-head.test.ts` covers the same three branches and rather
 more, because here there is a real artifact to inspect rather than a stubbed component: it

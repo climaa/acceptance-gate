@@ -12,10 +12,14 @@ const nextConfig = {
   // The design system and the logger ship as uncompiled TypeScript.
   transpilePackages: ['@gate/logger', '@gate/ui'],
   // The pages regenerate about daily (app/home-view.ts) and re-read the files
-  // when it does, off a path no bundler can follow, so name them.
+  // when it does, off a path no bundler can follow, so name them. The site card
+  // reads the display face with `readFile` the same way: named so the function
+  // ships the bytes if the card ever renders on demand, instead of 500ing —
+  // apps/blog learnt it (#495).
   outputFileTracingIncludes: {
     '/': ['./measurement.json', './history.json'],
     '/[workspace]': ['./measurement.json'],
+    '/og/site.png': ['../../packages/ui/src/fonts/og/Fraunces9pt-SemiBold.ttf'],
   },
   experimental: {
     optimizePackageImports: ['@gate/ui'],
