@@ -1042,7 +1042,7 @@
                   "reusable": true,
                   "clip": true,
                   "width": 1248,
-                  "height": 485,
+                  "height": 477,
                   "fill": "$bg",
                   "layout": "vertical",
                   "children": [
@@ -1099,7 +1099,7 @@
                           "width": "fill_container",
                           "gap": 24,
                           "padding": [
-                            14,
+                            12,
                             0
                           ],
                           "alignItems": "center",
@@ -1110,7 +1110,7 @@
                               "name": "name",
                               "width": 220,
                               "layout": "vertical",
-                              "gap": 2,
+                              "gap": 4,
                               "children": [
                                 {
                                   "type": "frame",
@@ -1236,7 +1236,7 @@
                           "width": "fill_container",
                           "gap": 24,
                           "padding": [
-                            14,
+                            12,
                             0
                           ],
                           "alignItems": "center",
@@ -1247,7 +1247,7 @@
                               "name": "name",
                               "width": 220,
                               "layout": "vertical",
-                              "gap": 2,
+                              "gap": 4,
                               "children": [
                                 {
                                   "type": "frame",
@@ -1373,7 +1373,7 @@
                           "width": "fill_container",
                           "gap": 24,
                           "padding": [
-                            14,
+                            12,
                             0
                           ],
                           "alignItems": "center",
@@ -1384,7 +1384,7 @@
                               "name": "name",
                               "width": 220,
                               "layout": "vertical",
-                              "gap": 2,
+                              "gap": 4,
                               "children": [
                                 {
                                   "type": "frame",
@@ -1510,7 +1510,7 @@
                           "width": "fill_container",
                           "gap": 24,
                           "padding": [
-                            14,
+                            12,
                             0
                           ],
                           "alignItems": "center",
@@ -1521,7 +1521,7 @@
                               "name": "name",
                               "width": 220,
                               "layout": "vertical",
-                              "gap": 2,
+                              "gap": 4,
                               "children": [
                                 {
                                   "type": "frame",
@@ -2112,7 +2112,7 @@
                           "type": "text",
                           "id": "G1Zats",
                           "layoutPosition": "absolute",
-                          "x": 38,
+                          "x": 40.4,
                           "y": 294,
                           "fill": "$text-muted",
                           "content": "0",
@@ -2456,11 +2456,10 @@
                           "width": 1246,
                           "height": 56,
                           "fill": "$bg-muted",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ],
                           "children": [
@@ -2469,7 +2468,7 @@
                               "id": "fvsGM",
                               "fill": "$text",
                               "content": "repository",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.5,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "normal"
@@ -2479,7 +2478,7 @@
                               "id": "f05JS0",
                               "fill": "$text",
                               "content": "3,798 cognitive complexity",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.25,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "700"
@@ -2497,11 +2496,10 @@
                           "width": 416,
                           "height": 56,
                           "fill": "$bg-muted",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ],
                           "children": [
@@ -2510,7 +2508,7 @@
                               "id": "NGEKe",
                               "fill": "$text",
                               "content": "@gate/visual-diff-ui",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.5,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "normal"
@@ -2520,7 +2518,7 @@
                               "id": "g6jRR",
                               "fill": "$text",
                               "content": "1272",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.25,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "700"
@@ -2538,11 +2536,10 @@
                           "width": 186,
                           "height": 56,
                           "fill": "$border-strong",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ],
                           "children": [
@@ -2551,7 +2548,7 @@
                               "id": "FVPKe",
                               "fill": "$text",
                               "content": "components",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.5,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "normal"
@@ -2561,7 +2558,7 @@
                               "id": "BluzQ",
                               "fill": "$text",
                               "content": "571 · 0.07/line",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.25,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "700"
@@ -2579,11 +2576,10 @@
                           "width": 134,
                           "height": 56,
                           "fill": "$border-strong",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ],
                           "children": [
@@ -2592,7 +2588,7 @@
                               "id": "Z3iE9j",
                               "fill": "$text",
                               "content": "lib",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.5,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "normal"
@@ -2602,7 +2598,7 @@
                               "id": "WKWVi",
                               "fill": "$text",
                               "content": "414 · 0.06/line",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.25,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "700"
@@ -2620,11 +2616,10 @@
                           "width": 46,
                           "height": 56,
                           "fill": "$text-muted",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ],
                           "children": [
@@ -2633,7 +2628,7 @@
                               "id": "PSXTJ",
                               "fill": "$bg",
                               "content": "hoo…",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.5,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "normal"
@@ -2651,11 +2646,10 @@
                           "width": 20,
                           "height": 56,
                           "fill": "$border",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         },
@@ -2670,11 +2664,10 @@
                           "width": 10,
                           "height": 56,
                           "fill": "$border-strong",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         },
@@ -2689,11 +2682,10 @@
                           "width": 10,
                           "height": 56,
                           "fill": "$border-strong",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         },
@@ -2708,11 +2700,10 @@
                           "width": 244,
                           "height": 56,
                           "fill": "$bg-muted",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ],
                           "children": [
@@ -2721,7 +2712,7 @@
                               "id": "D2h5sL",
                               "fill": "$text",
                               "content": "scripts/",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.5,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "normal"
@@ -2731,7 +2722,7 @@
                               "id": "HqESJ",
                               "fill": "$text",
                               "content": "750",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.25,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "700"
@@ -2749,11 +2740,10 @@
                           "width": 125,
                           "height": 56,
                           "fill": "$text",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ],
                           "children": [
@@ -2762,7 +2752,7 @@
                               "id": "poTai",
                               "fill": "$bg",
                               "content": "pen",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.5,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "normal"
@@ -2772,7 +2762,7 @@
                               "id": "YWJ8C",
                               "fill": "$bg",
                               "content": "386 · 0.23/li…",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.25,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "700"
@@ -2790,11 +2780,10 @@
                           "width": 80,
                           "height": 56,
                           "fill": "$text-muted",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ],
                           "children": [
@@ -2803,7 +2792,7 @@
                               "id": "X9Mit",
                               "fill": "$bg",
                               "content": "(root)",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.5,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "normal"
@@ -2821,11 +2810,10 @@
                           "width": 35,
                           "height": 56,
                           "fill": "$border-strong",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         },
@@ -2840,11 +2828,10 @@
                           "width": 191,
                           "height": 56,
                           "fill": "$bg-muted",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ],
                           "children": [
@@ -2853,7 +2840,7 @@
                               "id": "nZYVS",
                               "fill": "$text",
                               "content": ".sandcastle/",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.5,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "normal"
@@ -2863,7 +2850,7 @@
                               "id": "f0VZz",
                               "fill": "$text",
                               "content": "586",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.25,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "700"
@@ -2881,11 +2868,10 @@
                           "width": 191,
                           "height": 56,
                           "fill": "$text-muted",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ],
                           "children": [
@@ -2894,7 +2880,7 @@
                               "id": "E9wJ9",
                               "fill": "$bg",
                               "content": "(root)",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.5,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "normal"
@@ -2904,7 +2890,7 @@
                               "id": "D7pcHn",
                               "fill": "$bg",
                               "content": "586 · 0.11/line",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.25,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "700"
@@ -2922,11 +2908,10 @@
                           "width": 111,
                           "height": 56,
                           "fill": "$bg-muted",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ],
                           "children": [
@@ -2935,7 +2920,7 @@
                               "id": "n12jix",
                               "fill": "$text",
                               "content": "@gate/visua…",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.5,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "normal"
@@ -2945,7 +2930,7 @@
                               "id": "hNgQg",
                               "fill": "$text",
                               "content": "343",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.25,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "700"
@@ -2963,11 +2948,10 @@
                           "width": 111,
                           "height": 56,
                           "fill": "$border-strong",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ],
                           "children": [
@@ -2976,7 +2960,7 @@
                               "id": "Y4MXu0",
                               "fill": "$text",
                               "content": "src",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.5,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "normal"
@@ -2986,7 +2970,7 @@
                               "id": "fPGUi",
                               "fill": "$text",
                               "content": "343 · 0.08/…",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.25,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "700"
@@ -3004,11 +2988,10 @@
                           "width": 96,
                           "height": 56,
                           "fill": "$bg-muted",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ],
                           "children": [
@@ -3017,7 +3000,7 @@
                               "id": "M6fuE",
                               "fill": "$text",
                               "content": "@gate/blog",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.5,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "normal"
@@ -3027,7 +3010,7 @@
                               "id": "cBhMJ",
                               "fill": "$text",
                               "content": "297",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.25,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "700"
@@ -3045,11 +3028,10 @@
                           "width": 29,
                           "height": 56,
                           "fill": "$border",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         },
@@ -3064,11 +3046,10 @@
                           "width": 26,
                           "height": 56,
                           "fill": "$border-strong",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         },
@@ -3083,11 +3064,10 @@
                           "width": 19,
                           "height": 56,
                           "fill": "$text-muted",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         },
@@ -3102,11 +3082,10 @@
                           "width": 7,
                           "height": 56,
                           "fill": "$border-strong",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         },
@@ -3121,11 +3100,10 @@
                           "width": 3,
                           "height": 56,
                           "fill": "$border-strong",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         },
@@ -3140,11 +3118,10 @@
                           "width": 2,
                           "height": 56,
                           "fill": "$border",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         },
@@ -3159,11 +3136,10 @@
                           "width": 78,
                           "height": 56,
                           "fill": "$bg-muted",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ],
                           "children": [
@@ -3172,7 +3148,7 @@
                               "id": "MNRp6",
                               "fill": "$text",
                               "content": "@gate/ui",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.5,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "normal"
@@ -3190,11 +3166,10 @@
                           "width": 45,
                           "height": 56,
                           "fill": "$border-strong",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ],
                           "children": [
@@ -3203,7 +3178,7 @@
                               "id": "Ib71L",
                               "fill": "$text",
                               "content": "org…",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.5,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "normal"
@@ -3221,11 +3196,10 @@
                           "width": 14,
                           "height": 56,
                           "fill": "$border-strong",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         },
@@ -3240,11 +3214,10 @@
                           "width": 10,
                           "height": 56,
                           "fill": "$border-strong",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         },
@@ -3259,11 +3232,10 @@
                           "width": 2,
                           "height": 56,
                           "fill": "$border-strong",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         },
@@ -3278,11 +3250,10 @@
                           "width": 58,
                           "height": 56,
                           "fill": "$bg-muted",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ],
                           "children": [
@@ -3291,7 +3262,7 @@
                               "id": "i7bGi",
                               "fill": "$text",
                               "content": "@gat…",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.5,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "normal"
@@ -3309,11 +3280,10 @@
                           "width": 31,
                           "height": 56,
                           "fill": "$border-strong",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         },
@@ -3328,11 +3298,10 @@
                           "width": 17,
                           "height": 56,
                           "fill": "$border",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         },
@@ -3347,11 +3316,10 @@
                           "width": 3,
                           "height": 56,
                           "fill": "$border",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         },
@@ -3366,11 +3334,10 @@
                           "width": 1,
                           "height": 56,
                           "fill": "$border",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         },
@@ -3385,11 +3352,10 @@
                           "width": 1,
                           "height": 56,
                           "fill": "$border-strong",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         },
@@ -3404,11 +3370,10 @@
                           "width": 19,
                           "height": 56,
                           "fill": "$bg-muted",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         },
@@ -3423,11 +3388,10 @@
                           "width": 12,
                           "height": 56,
                           "fill": "$border-strong",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         },
@@ -3442,11 +3406,10 @@
                           "width": 5,
                           "height": 56,
                           "fill": "$text",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         },
@@ -3461,11 +3424,10 @@
                           "width": 9,
                           "height": 56,
                           "fill": "$bg-muted",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         },
@@ -3480,11 +3442,10 @@
                           "width": 4,
                           "height": 56,
                           "fill": "$border",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         },
@@ -3499,11 +3460,10 @@
                           "width": 1,
                           "height": 56,
                           "fill": "$border",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         },
@@ -3518,11 +3478,10 @@
                           "width": 1,
                           "height": 56,
                           "fill": "$border-strong",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         },
@@ -3537,11 +3496,10 @@
                           "width": 4,
                           "height": 56,
                           "fill": "$bg-muted",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         },
@@ -3556,11 +3514,10 @@
                           "width": 4,
                           "height": 56,
                           "fill": "$border-strong",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         },
@@ -3575,11 +3532,10 @@
                           "width": 1,
                           "height": 56,
                           "fill": "$bg-muted",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         },
@@ -3594,11 +3550,10 @@
                           "width": 1,
                           "height": 56,
                           "fill": "$border-strong",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         }
@@ -3675,11 +3630,10 @@
                           "width": 1246,
                           "height": 56,
                           "fill": "$bg-muted",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ],
                           "children": [
@@ -3688,7 +3642,7 @@
                               "id": "ltR4d",
                               "fill": "$text",
                               "content": "@gate/ui",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.5,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "normal"
@@ -3698,7 +3652,7 @@
                               "id": "IBhF9",
                               "fill": "$text",
                               "content": "3.4k lines · 98.9% lines covered",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.25,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "700"
@@ -3716,11 +3670,10 @@
                           "width": 576,
                           "height": 56,
                           "fill": "$bg-muted",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ],
                           "children": [
@@ -3729,7 +3682,7 @@
                               "id": "ZCkLY",
                               "fill": "$text",
                               "content": "organisms",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.5,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "normal"
@@ -3739,7 +3692,7 @@
                               "id": "OCwf7",
                               "fill": "$text",
                               "content": "1.6k lines",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.25,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "700"
@@ -3757,11 +3710,10 @@
                           "width": 269,
                           "height": 56,
                           "fill": "$success-surface",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ],
                           "children": [
@@ -3770,7 +3722,7 @@
                               "id": "tAgZV",
                               "fill": "$success-fg",
                               "content": "PanZoom",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.5,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "normal"
@@ -3780,7 +3732,7 @@
                               "id": "n7r1DG",
                               "fill": "$success-fg",
                               "content": "96.9%",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.25,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "700"
@@ -3798,11 +3750,10 @@
                           "width": 92,
                           "height": 56,
                           "fill": "$success-surface",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ],
                           "children": [
@@ -3811,7 +3762,7 @@
                               "id": "U2PmkG",
                               "fill": "$success-fg",
                               "content": "Dialog",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.5,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "normal"
@@ -3821,7 +3772,7 @@
                               "id": "UxIKl",
                               "fill": "$success-fg",
                               "content": "100%",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.25,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "700"
@@ -3839,11 +3790,10 @@
                           "width": 77,
                           "height": 56,
                           "fill": "$success-surface",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ],
                           "children": [
@@ -3852,7 +3802,7 @@
                               "id": "wbOvW",
                               "fill": "$success-fg",
                               "content": "geometry",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.5,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "normal"
@@ -3870,11 +3820,10 @@
                           "width": 58,
                           "height": 56,
                           "fill": "$success-surface",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ],
                           "children": [
@@ -3883,7 +3832,7 @@
                               "id": "S7rNN8",
                               "fill": "$success-fg",
                               "content": "Table",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.5,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "normal"
@@ -3901,11 +3850,10 @@
                           "width": 33,
                           "height": 56,
                           "fill": "$success-surface",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         },
@@ -3920,11 +3868,10 @@
                           "width": 27,
                           "height": 56,
                           "fill": "$success-surface",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         },
@@ -3939,11 +3886,10 @@
                           "width": 8,
                           "height": 56,
                           "fill": "$success-surface",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         },
@@ -3958,11 +3904,10 @@
                           "width": 362,
                           "height": 56,
                           "fill": "$bg-muted",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ],
                           "children": [
@@ -3971,7 +3916,7 @@
                               "id": "r7Dld",
                               "fill": "$text",
                               "content": "atoms",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.5,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "normal"
@@ -3981,7 +3926,7 @@
                               "id": "knHgi",
                               "fill": "$text",
                               "content": "998 lines",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.25,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "700"
@@ -3999,11 +3944,10 @@
                           "width": 45,
                           "height": 56,
                           "fill": "$success-surface",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ],
                           "children": [
@@ -4012,7 +3956,7 @@
                               "id": "DiFYG",
                               "fill": "$success-fg",
                               "content": "Thu…",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.5,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "normal"
@@ -4030,11 +3974,10 @@
                           "width": 34,
                           "height": 56,
                           "fill": "$success-surface",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         },
@@ -4049,11 +3992,10 @@
                           "width": 30,
                           "height": 56,
                           "fill": "$success-surface",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         },
@@ -4068,11 +4010,10 @@
                           "width": 26,
                           "height": 56,
                           "fill": "$success-surface",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         },
@@ -4087,11 +4028,10 @@
                           "width": 26,
                           "height": 56,
                           "fill": "$success-surface",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         },
@@ -4106,11 +4046,10 @@
                           "width": 23,
                           "height": 56,
                           "fill": "$success-surface",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         },
@@ -4125,11 +4064,10 @@
                           "width": 23,
                           "height": 56,
                           "fill": "$success-surface",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         },
@@ -4144,11 +4082,10 @@
                           "width": 18,
                           "height": 56,
                           "fill": "$success-surface",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         },
@@ -4163,11 +4100,10 @@
                           "width": 18,
                           "height": 56,
                           "fill": "$success-surface",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         },
@@ -4182,11 +4118,10 @@
                           "width": 15,
                           "height": 56,
                           "fill": "$success-surface",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         },
@@ -4201,11 +4136,10 @@
                           "width": 13,
                           "height": 56,
                           "fill": "$success-surface",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         },
@@ -4220,11 +4154,10 @@
                           "width": 13,
                           "height": 56,
                           "fill": "$success-surface",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         },
@@ -4239,11 +4172,10 @@
                           "width": 10,
                           "height": 56,
                           "fill": "$success-surface",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         },
@@ -4258,11 +4190,10 @@
                           "width": 9,
                           "height": 56,
                           "fill": "$success-surface",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         },
@@ -4277,11 +4208,10 @@
                           "width": 8,
                           "height": 56,
                           "fill": "$success-surface",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         },
@@ -4296,11 +4226,10 @@
                           "width": 7,
                           "height": 56,
                           "fill": "$success-surface",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         },
@@ -4315,11 +4244,10 @@
                           "width": 5,
                           "height": 56,
                           "fill": "$success-surface",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         },
@@ -4334,11 +4262,10 @@
                           "width": 3,
                           "height": 56,
                           "fill": "$success-surface",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         },
@@ -4353,11 +4280,10 @@
                           "width": 210,
                           "height": 56,
                           "fill": "$bg-muted",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ],
                           "children": [
@@ -4366,7 +4292,7 @@
                               "id": "rp6W0",
                               "fill": "$text",
                               "content": "molecules",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.5,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "normal"
@@ -4376,7 +4302,7 @@
                               "id": "Hj2zc",
                               "fill": "$text",
                               "content": "582 lines",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.25,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "700"
@@ -4394,11 +4320,10 @@
                           "width": 70,
                           "height": 56,
                           "fill": "$success-surface",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ],
                           "children": [
@@ -4407,7 +4332,7 @@
                               "id": "R0j0KI",
                               "fill": "$success-fg",
                               "content": "Pagina…",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.5,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "normal"
@@ -4425,11 +4350,10 @@
                           "width": 35,
                           "height": 56,
                           "fill": "$success-surface",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         },
@@ -4444,11 +4368,10 @@
                           "width": 29,
                           "height": 56,
                           "fill": "$success-surface",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         },
@@ -4463,11 +4386,10 @@
                           "width": 21,
                           "height": 56,
                           "fill": "$success-surface",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         },
@@ -4482,11 +4404,10 @@
                           "width": 17,
                           "height": 56,
                           "fill": "$success-surface",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         },
@@ -4501,11 +4422,10 @@
                           "width": 14,
                           "height": 56,
                           "fill": "$success-surface",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         },
@@ -4520,11 +4440,10 @@
                           "width": 12,
                           "height": 56,
                           "fill": "$success-surface",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         },
@@ -4539,11 +4458,10 @@
                           "width": 54,
                           "height": 56,
                           "fill": "$bg-muted",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ],
                           "children": [
@@ -4552,7 +4470,7 @@
                               "id": "ctMvm",
                               "fill": "$text",
                               "content": "temp…",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.5,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "normal"
@@ -4570,11 +4488,10 @@
                           "width": 29,
                           "height": 56,
                           "fill": "$success-surface",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         },
@@ -4589,11 +4506,10 @@
                           "width": 23,
                           "height": 56,
                           "fill": "$success-surface",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         },
@@ -4608,11 +4524,10 @@
                           "width": 36,
                           "height": 56,
                           "fill": "$bg-muted",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         },
@@ -4627,11 +4542,10 @@
                           "width": 20,
                           "height": 56,
                           "fill": "$warning-surface",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         },
@@ -4646,11 +4560,10 @@
                           "width": 14,
                           "height": 56,
                           "fill": "$danger-surface",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         }
@@ -4727,11 +4640,10 @@
                           "width": 1246,
                           "height": 56,
                           "fill": "$bg-muted",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ],
                           "children": [
@@ -4740,7 +4652,7 @@
                               "id": "ka0Tg",
                               "fill": "$text",
                               "content": "repository",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.5,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "normal"
@@ -4750,7 +4662,7 @@
                               "id": "Hzb9H",
                               "fill": "$text",
                               "content": "48k lines · 2 of 11 workspaces measure",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.25,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "700"
@@ -4768,11 +4680,10 @@
                           "width": 768,
                           "height": 56,
                           "fill": "$bg-muted",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ],
                           "children": [
@@ -4781,7 +4692,7 @@
                               "id": "hGlMQ",
                               "fill": "$text",
                               "content": "apps",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.5,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "normal"
@@ -4791,7 +4702,7 @@
                               "id": "Hk2RW",
                               "fill": "$text",
                               "content": "29.6k lines",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.25,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "700"
@@ -4809,11 +4720,10 @@
                           "width": 498,
                           "height": 56,
                           "fill": "$success-surface",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ],
                           "children": [
@@ -4822,7 +4732,7 @@
                               "id": "W7vYJ",
                               "fill": "$success-fg",
                               "content": "@gate/visual-diff-ui",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.5,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "normal"
@@ -4832,7 +4742,7 @@
                               "id": "MYtbI",
                               "fill": "$success-fg",
                               "content": "95.2% · floor 94",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.25,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "700"
@@ -4850,11 +4760,10 @@
                           "width": 151,
                           "height": 56,
                           "fill": "$danger-surface",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ],
                           "children": [
@@ -4863,7 +4772,7 @@
                               "id": "EAtoc",
                               "fill": "$danger-fg",
                               "content": "@gate/blog",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.5,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "normal"
@@ -4873,7 +4782,7 @@
                               "id": "k5UOR",
                               "fill": "$danger-fg",
                               "content": "98.1% reached",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.25,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "700"
@@ -4891,11 +4800,10 @@
                           "width": 52,
                           "height": 56,
                           "fill": "$danger-surface",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ],
                           "children": [
@@ -4904,7 +4812,7 @@
                               "id": "lpNXE",
                               "fill": "$danger-fg",
                               "content": "@ga…",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.5,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "normal"
@@ -4922,11 +4830,10 @@
                           "width": 32,
                           "height": 56,
                           "fill": "$danger-surface",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         },
@@ -4941,11 +4848,10 @@
                           "width": 28,
                           "height": 56,
                           "fill": "$danger-surface",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         },
@@ -4960,11 +4866,10 @@
                           "width": 268,
                           "height": 56,
                           "fill": "$bg-muted",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ],
                           "children": [
@@ -4973,7 +4878,7 @@
                               "id": "zB0Ju",
                               "fill": "$text",
                               "content": "scripts",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.5,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "normal"
@@ -4983,7 +4888,7 @@
                               "id": "e4GFwM",
                               "fill": "$text",
                               "content": "10.4k lines",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.25,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "700"
@@ -5001,11 +4906,10 @@
                           "width": 144,
                           "height": 56,
                           "fill": "$danger-surface",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ],
                           "children": [
@@ -5014,7 +4918,7 @@
                               "id": "t4zdFn",
                               "fill": "$danger-fg",
                               "content": ".sandcastle/",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.5,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "normal"
@@ -5024,7 +4928,7 @@
                               "id": "MXVH4",
                               "fill": "$danger-fg",
                               "content": "unmeasured",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.25,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "700"
@@ -5042,11 +4946,10 @@
                           "width": 123,
                           "height": 56,
                           "fill": "$danger-surface",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ],
                           "children": [
@@ -5055,7 +4958,7 @@
                               "id": "LAYkn",
                               "fill": "$danger-fg",
                               "content": "scripts/",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.5,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "normal"
@@ -5065,7 +4968,7 @@
                               "id": "SOJU0",
                               "fill": "$danger-fg",
                               "content": "unmeasured",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.25,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "700"
@@ -5083,11 +4986,10 @@
                           "width": 206,
                           "height": 56,
                           "fill": "$bg-muted",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ],
                           "children": [
@@ -5096,7 +4998,7 @@
                               "id": "XAWTP",
                               "fill": "$text",
                               "content": "packages",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.5,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "normal"
@@ -5106,7 +5008,7 @@
                               "id": "ALXBr",
                               "fill": "$text",
                               "content": "8k lines",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.25,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "700"
@@ -5124,11 +5026,10 @@
                           "width": 108,
                           "height": 56,
                           "fill": "$danger-surface",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ],
                           "children": [
@@ -5137,7 +5038,7 @@
                               "id": "Tt0Fq",
                               "fill": "$danger-fg",
                               "content": "@gate/visua…",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.5,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "normal"
@@ -5147,7 +5048,7 @@
                               "id": "iHn5q",
                               "fill": "$danger-fg",
                               "content": "100% reached",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.25,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "700"
@@ -5165,11 +5066,10 @@
                           "width": 86,
                           "height": 56,
                           "fill": "$success-surface",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ],
                           "children": [
@@ -5178,7 +5078,7 @@
                               "id": "RJ63x",
                               "fill": "$success-fg",
                               "content": "@gate/ui",
-                              "lineHeight": 1.2,
+                              "lineHeight": 1.5,
                               "fontFamily": "$font-mono",
                               "fontSize": 12,
                               "fontWeight": "normal"
@@ -5196,11 +5096,10 @@
                           "width": 5,
                           "height": 56,
                           "fill": "$danger-surface",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         },
@@ -5215,11 +5114,10 @@
                           "width": 1,
                           "height": 56,
                           "fill": "$danger-surface",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "layout": "vertical",
-                          "gap": 2,
                           "padding": [
-                            6,
+                            4,
                             8
                           ]
                         }
@@ -7496,7 +7394,7 @@
                   "reusable": true,
                   "clip": true,
                   "width": 1248,
-                  "height": 173,
+                  "height": 174,
                   "fill": "$bg",
                   "layout": "vertical",
                   "children": [
@@ -7537,9 +7435,9 @@
                               "id": "zuZO3",
                               "fill": "$text",
                               "content": "7",
-                              "lineHeight": 1.1,
+                              "lineHeight": 1,
                               "fontFamily": "$font-display",
-                              "fontSize": 28,
+                              "fontSize": 30,
                               "fontWeight": "600"
                             }
                           ]
@@ -7548,7 +7446,7 @@
                           "type": "frame",
                           "id": "qP7N3",
                           "name": "delta",
-                          "gap": 6,
+                          "gap": 8,
                           "alignItems": "center",
                           "children": [
                             {
@@ -7677,7 +7575,7 @@
                   "reusable": true,
                   "clip": true,
                   "width": 1248,
-                  "height": 226,
+                  "height": 227,
                   "fill": "$bg",
                   "layout": "vertical",
                   "children": [
@@ -7752,7 +7650,7 @@
                               "content": "loading",
                               "lineHeight": 1.5,
                               "fontFamily": "$font-mono",
-                              "fontSize": 13,
+                              "fontSize": 14,
                               "fontWeight": "700"
                             },
                             {
@@ -7834,7 +7732,7 @@
                               "content": "error",
                               "lineHeight": 1.5,
                               "fontFamily": "$font-mono",
-                              "fontSize": 13,
+                              "fontSize": 14,
                               "fontWeight": "700"
                             },
                             {
@@ -7916,7 +7814,7 @@
                               "content": "not-found",
                               "lineHeight": 1.5,
                               "fontFamily": "$font-mono",
-                              "fontSize": 13,
+                              "fontSize": 14,
                               "fontWeight": "700"
                             },
                             {
@@ -8105,7 +8003,7 @@
                           "name": "Meter",
                           "clip": true,
                           "width": 230,
-                          "height": 8,
+                          "height": 6,
                           "fill": "$chart-tint",
                           "cornerRadius": 9999,
                           "children": [
@@ -8114,7 +8012,7 @@
                               "id": "A2AdD",
                               "name": "Meter fill",
                               "width": 227,
-                              "height": 8,
+                              "height": 6,
                               "fill": "$chart",
                               "cornerRadius": 9999
                             }
@@ -8171,7 +8069,7 @@
                   "reusable": true,
                   "clip": true,
                   "width": 1248,
-                  "height": 137,
+                  "height": 139,
                   "fill": "$bg",
                   "layout": "vertical",
                   "children": [
@@ -8378,7 +8276,7 @@
                           "id": "V6de0m",
                           "name": "Meter unmeasured",
                           "width": 230,
-                          "height": 8,
+                          "height": 6,
                           "cornerRadius": 9999,
                           "stroke": "$border-strong",
                           "strokeWidth": 1,
@@ -8438,7 +8336,7 @@
                   "reusable": true,
                   "clip": true,
                   "width": 1248,
-                  "height": 141,
+                  "height": 143,
                   "fill": "$bg",
                   "layout": "vertical",
                   "children": [
@@ -8871,7 +8769,7 @@
                   "reusable": true,
                   "clip": true,
                   "width": 1248,
-                  "height": 452,
+                  "height": 432,
                   "fill": "$bg",
                   "layout": "vertical",
                   "children": [
@@ -8881,7 +8779,7 @@
                       "name": "StoriesList",
                       "width": 1248,
                       "layout": "vertical",
-                      "gap": 10,
+                      "gap": 8,
                       "children": [
                         {
                           "type": "frame",
@@ -8897,7 +8795,7 @@
                               "content": "46",
                               "lineHeight": 1,
                               "fontFamily": "$font-display",
-                              "fontSize": 56,
+                              "fontSize": 36,
                               "fontWeight": "600"
                             },
                             {
@@ -8926,8 +8824,10 @@
                           "name": "row @gate/ui",
                           "width": "fill_container",
                           "layout": "vertical",
-                          "gap": 6,
+                          "gap": 4,
                           "padding": [
+                            12,
+                            0,
                             8,
                             0
                           ],
@@ -8945,7 +8845,7 @@
                                   "name": "name",
                                   "width": 240,
                                   "layout": "vertical",
-                                  "gap": 2,
+                                  "gap": 4,
                                   "children": [
                                     {
                                       "type": "text",
@@ -9000,7 +8900,7 @@
                                     {
                                       "type": "text",
                                       "id": "tRbkv",
-                                      "fill": "$danger-fg",
+                                      "fill": "$danger-text",
                                       "content": "1 missing",
                                       "lineHeight": 1.5,
                                       "fontFamily": "$font-mono",
@@ -9039,8 +8939,10 @@
                           "name": "row @gate/visual-diff-ui",
                           "width": "fill_container",
                           "layout": "vertical",
-                          "gap": 6,
+                          "gap": 4,
                           "padding": [
+                            12,
+                            0,
                             8,
                             0
                           ],
@@ -9058,7 +8960,7 @@
                                   "name": "name",
                                   "width": 240,
                                   "layout": "vertical",
-                                  "gap": 2,
+                                  "gap": 4,
                                   "children": [
                                     {
                                       "type": "text",
@@ -9113,7 +9015,7 @@
                                     {
                                       "type": "text",
                                       "id": "qr6c9",
-                                      "fill": "$danger-fg",
+                                      "fill": "$danger-text",
                                       "content": "39 missing",
                                       "lineHeight": 1.5,
                                       "fontFamily": "$font-mono",
@@ -9152,8 +9054,10 @@
                           "name": "row @gate/blog",
                           "width": "fill_container",
                           "layout": "vertical",
-                          "gap": 6,
+                          "gap": 4,
                           "padding": [
+                            12,
+                            0,
                             8,
                             0
                           ],
@@ -9171,7 +9075,7 @@
                                   "name": "name",
                                   "width": 240,
                                   "layout": "vertical",
-                                  "gap": 2,
+                                  "gap": 4,
                                   "children": [
                                     {
                                       "type": "text",
@@ -9226,7 +9130,7 @@
                                     {
                                       "type": "text",
                                       "id": "m8dVg",
-                                      "fill": "$danger-fg",
+                                      "fill": "$danger-text",
                                       "content": "5 missing",
                                       "lineHeight": 1.5,
                                       "fontFamily": "$font-mono",
@@ -9265,8 +9169,10 @@
                           "name": "row @gate/manual",
                           "width": "fill_container",
                           "layout": "vertical",
-                          "gap": 6,
+                          "gap": 4,
                           "padding": [
+                            12,
+                            0,
                             8,
                             0
                           ],
@@ -9284,7 +9190,7 @@
                                   "name": "name",
                                   "width": 240,
                                   "layout": "vertical",
-                                  "gap": 2,
+                                  "gap": 4,
                                   "children": [
                                     {
                                       "type": "text",
@@ -9339,7 +9245,7 @@
                                     {
                                       "type": "text",
                                       "id": "mRe1o",
-                                      "fill": "$danger-fg",
+                                      "fill": "$danger-text",
                                       "content": "1 missing",
                                       "lineHeight": 1.5,
                                       "fontFamily": "$font-mono",
@@ -9772,7 +9678,7 @@
                                   "id": "kWRBk",
                                   "fill": "$text",
                                   "content": "88",
-                                  "lineHeight": 1.1,
+                                  "lineHeight": 1,
                                   "fontFamily": "$font-display",
                                   "fontSize": 24,
                                   "fontWeight": "600"
@@ -9800,7 +9706,7 @@
                                   "id": "EJMNK",
                                   "fill": "$text",
                                   "content": "286",
-                                  "lineHeight": 1.1,
+                                  "lineHeight": 1,
                                   "fontFamily": "$font-display",
                                   "fontSize": 24,
                                   "fontWeight": "600"
@@ -9828,7 +9734,7 @@
                                   "id": "JMVFB",
                                   "fill": "$text",
                                   "content": "3,550",
-                                  "lineHeight": 1.1,
+                                  "lineHeight": 1,
                                   "fontFamily": "$font-display",
                                   "fontSize": 24,
                                   "fontWeight": "600"
@@ -9897,7 +9803,7 @@
                   "reusable": true,
                   "clip": true,
                   "width": 1248,
-                  "height": 389,
+                  "height": 393,
                   "fill": "$bg",
                   "layout": "vertical",
                   "children": [
@@ -9959,22 +9865,25 @@
                               "type": "frame",
                               "id": "erRJ8",
                               "name": "SegmentedControl range",
-                              "fill": "$bg-subtle",
+                              "context": "size-exempt: padding 5 is the atom's --space-1 plus the 1px border CSS draws outside it",
+                              "fill": "$bg-muted",
                               "cornerRadius": 8,
                               "stroke": "$border",
                               "strokeWidth": 1,
-                              "gap": 2,
-                              "padding": 2,
+                              "gap": 4,
+                              "padding": 5,
                               "children": [
                                 {
                                   "type": "frame",
                                   "id": "ecAsG",
                                   "name": "option",
+                                  "height": 32,
                                   "cornerRadius": 4,
                                   "padding": [
-                                    6,
-                                    12
+                                    4,
+                                    13
                                   ],
+                                  "alignItems": "center",
                                   "children": [
                                     {
                                       "type": "text",
@@ -9992,14 +9901,26 @@
                                   "type": "frame",
                                   "id": "Wdf6X",
                                   "name": "option",
+                                  "height": 32,
                                   "fill": "$bg",
                                   "cornerRadius": 4,
                                   "stroke": "$border-strong",
                                   "strokeWidth": 1,
+                                  "effect": {
+                                    "type": "shadow",
+                                    "shadowType": "outer",
+                                    "color": "#0000000D",
+                                    "offset": {
+                                      "x": 0,
+                                      "y": 1
+                                    },
+                                    "blur": 2
+                                  },
                                   "padding": [
-                                    6,
-                                    12
+                                    4,
+                                    13
                                   ],
+                                  "alignItems": "center",
                                   "children": [
                                     {
                                       "type": "text",
@@ -10017,11 +9938,13 @@
                                   "type": "frame",
                                   "id": "Bz7t1",
                                   "name": "option",
+                                  "height": 32,
                                   "cornerRadius": 4,
                                   "padding": [
-                                    6,
-                                    12
+                                    4,
+                                    13
                                   ],
+                                  "alignItems": "center",
                                   "children": [
                                     {
                                       "type": "text",
@@ -10080,7 +10003,7 @@
                                   "lineHeight": 1.5,
                                   "fontFamily": "$font-mono",
                                   "fontSize": 12,
-                                  "fontWeight": "600"
+                                  "fontWeight": "700"
                                 },
                                 {
                                   "type": "frame",
@@ -10142,7 +10065,7 @@
                                   "lineHeight": 1.5,
                                   "fontFamily": "$font-mono",
                                   "fontSize": 12,
-                                  "fontWeight": "600"
+                                  "fontWeight": "700"
                                 },
                                 {
                                   "type": "frame",
@@ -10204,7 +10127,7 @@
                                   "lineHeight": 1.5,
                                   "fontFamily": "$font-mono",
                                   "fontSize": 12,
-                                  "fontWeight": "600"
+                                  "fontWeight": "700"
                                 },
                                 {
                                   "type": "frame",
@@ -10266,7 +10189,7 @@
                                   "lineHeight": 1.5,
                                   "fontFamily": "$font-mono",
                                   "fontSize": 12,
-                                  "fontWeight": "600"
+                                  "fontWeight": "700"
                                 },
                                 {
                                   "type": "frame",
@@ -10433,7 +10356,7 @@
                               "type": "text",
                               "id": "r499SS",
                               "layoutPosition": "absolute",
-                              "x": 117,
+                              "x": 115.8,
                               "y": 224,
                               "name": "x Sep 2026",
                               "fill": "$text-muted",
@@ -10447,7 +10370,7 @@
                               "type": "text",
                               "id": "ldGus",
                               "layoutPosition": "absolute",
-                              "x": 467,
+                              "x": 483.1,
                               "y": 224,
                               "name": "x Oct",
                               "fill": "$text-muted",
@@ -10461,7 +10384,7 @@
                               "type": "text",
                               "id": "NAnIT",
                               "layoutPosition": "absolute",
-                              "x": 816,
+                              "x": 844.1,
                               "y": 224,
                               "name": "x Nov",
                               "fill": "$text-muted",
