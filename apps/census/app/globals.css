@@ -726,6 +726,42 @@
   text-decoration: none;
 }
 
+/* The desktop workspace tile, measured row by row (05-screens-census-4).
+   Desktop only: on a phone the tile draws a vertical Icicle and a Health card
+   the page cannot fill, so moving the page's rows there moves them away from
+   the tile's below that point. The home keeps its own spacing. */
+@media (width >= 768px) {
+  /* One rule between the score and the file views, as the tile draws it, and
+     none under a score that ends the card. */
+  .census-workspace .census-card > .census-score:has(+ .census-views),
+  .census-workspace .census-card > .census-score:last-child {
+    padding-block-end: 0;
+    border-block-end: 0;
+  }
+
+  /* The tile's rule is `$border`, and the head, legend, Icicle and note keep
+     the Health card's 20px gap. */
+  .census-views {
+    gap: var(--space-5);
+    border-block-start-color: var(--color-border);
+  }
+
+  /* The tile's grade is mono 16 bold beside the score. */
+  .census-workspace .census-score__grade {
+    font-family: var(--font-mono);
+    font-weight: var(--weight-bold);
+  }
+
+  /* The tile's chips sit 12px apart, and the row is as tall as a chip. */
+  .census-workspace .census-legend {
+    gap: var(--space-3);
+  }
+
+  .census-workspace .census-legend > li {
+    display: flex;
+  }
+}
+
 @media (width < 768px) {
   .census-bar {
     padding-inline: var(--space-4);
