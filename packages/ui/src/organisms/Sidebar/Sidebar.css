@@ -280,10 +280,15 @@
 
 /* ---- The column and the rail, at 768px and up ---- */
 @media (width >= 768px) {
+  /* The board draws a 1px rule outside the column's 200px (and the rail's
+     56px): content-box keeps the width the column's own and puts the rule
+     beside it. */
   .ds-sidebar {
     position: sticky;
     top: 0;
+    box-sizing: content-box;
     width: 12.5rem;
+    border-inline-end: 1px solid var(--color-border);
   }
 
   .ds-sidebar--collapsed {
@@ -300,8 +305,17 @@
     padding-inline: var(--space-2);
   }
 
+  /* The rail's brand sits 16px above its rows, and the rows run on from it at
+     their own 2px pitch, as the board stacks them (first row at y 58). The
+     column keeps 20px under its brand: its rows are 32px to the board's 33
+     (a 6px padding the scale lacks), and 20 is what keeps the list on its
+     rows overall. */
+  .ds-sidebar--collapsed .ds-sidebar__head {
+    padding-bottom: var(--space-4);
+  }
+
   .ds-sidebar--collapsed .ds-sidebar__section {
-    padding-top: 0;
+    padding-top: var(--ds-sidebar-row-gap);
   }
 
   .ds-sidebar--collapsed .ds-sidebar__row {
