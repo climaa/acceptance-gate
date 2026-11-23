@@ -1,7 +1,7 @@
 /**
  * Vercel Web Analytics for the published Storybook.
  *
- * The three Next.js surfaces get this from a React component (see the Web
+ * The four Next.js surfaces get this from a React component (see the Web
  * Analytics docs page). This app has no React shell to put a component in — it
  * is a static `storybook build` — so the beacon is a pair of script tags
  * written into the manager's head at build time.
@@ -16,7 +16,7 @@
  * Modelled on @vercel/analytics 2.0.1 `dist/index.mjs` — `initQueue`,
  * `loadProps`, `getScriptSrc` and `makeAbsolute` — because that is the contract
  * the `script.js` this loads expects to be called under. When that package is
- * bumped in the other three apps, diff those four functions against this file,
+ * bumped in the other four apps, diff those four functions against this file,
  * and re-check the beacon paths `apps/e2e/support/analytics-guard.ts` aborts.
  */
 
@@ -57,7 +57,8 @@ const QUEUE_STUB =
 
 /**
  * The owner's opt-out (`?va-disable=1` / `?va-disable=0`), from the same
- * function apps/blog, apps/manual and apps/visual-diff-ui hand `<Analytics />`.
+ * function apps/blog, apps/manual, apps/visual-diff-ui and apps/census hand
+ * `<Analytics />`.
  * It is written self-contained for exactly this: inlined, it runs here in an
  * empty scope.
  *
@@ -223,8 +224,8 @@ const snippet = (config: AnalyticsConfig) => {
 /**
  * The manager-head snippet for this environment, or the empty string.
  *
- * The same gate apps/blog, apps/manual and apps/visual-diff-ui draw, for the
- * same reason: a preview build sets NODE_ENV=production too, so the vendor's
+ * The same gate apps/blog, apps/manual, apps/visual-diff-ui and apps/census
+ * draw, for the same reason: a preview build sets NODE_ENV=production too, so the vendor's
  * own environment detection would count a reviewer clicking through a
  * login-protected preview as a reader, into the live dataset. `VERCEL_ENV` is
  * injected by Vercel, is absent locally and in CI, and nobody declares it.

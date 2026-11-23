@@ -5,16 +5,27 @@ import { preset } from '../../vitest.shared.mjs';
 
 // census's contracts: the measurement and history schemas refuse a malformed
 // file and name every failing path; each gap rule yields its kind and only its
-// kind; the feature → app map covers every `.feature` the acceptance suite has.
+// kind; the feature → app map covers every `.feature` the acceptance suite has;
+// the site card is the PNG crawlers crop against, and the page-view beacon
+// reports for the production deployment and nothing else.
 // All pure node tests over fixtures — `lib/` reads no disk and spawns nothing.
 // Run: pnpm --filter @gate/census test  (or `turbo run test` from the root)
 //
 // `.mts`, not `.ts` — see apps/blog/vitest.config.mts for why the extension
 // and `import.meta.dirname` are one change rather than two.
 const config = defineConfig({
+  // The site card and the layout are `.tsx`. tsconfig says `jsx: preserve`
+  // because Next owns the JSX transform, so name the runtime Next actually uses
+  // — apps/manual/vitest.config.mts records why this is `oxc`, not `esbuild`.
+  oxc: { jsx: { runtime: 'automatic' } },
   resolve: {
     // Mirrors tsconfig's "@/*": ["./*"]; vitest doesn't read tsconfig paths.
-    alias: { '@': path.resolve(import.meta.dirname) },
+    alias: {
+      '@': path.resolve(import.meta.dirname),
+      // `cacheLife()` throws without the compiled `cacheComponents` config, so
+      // lib/og.tsx would fail at import. See the stub.
+      'next/cache': path.resolve(import.meta.dirname, '__tests__/stubs/next-cache.ts'),
+    },
   },
   test: {
     include: ['__tests__/**/*.test.ts'],

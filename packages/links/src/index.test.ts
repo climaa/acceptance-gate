@@ -8,14 +8,20 @@ describe('SOURCES', () => {
   /**
    * Named rather than derived, and it is the whole point of the list.
    *
-   * These four values are accepted by `climaa/portafolio`'s `CAMPAIGN_SOURCES`,
+   * These five values are accepted by `climaa/portafolio`'s `CAMPAIGN_SOURCES`,
    * which deletes anything outside it — silently, at the locale redirect, so the
    * visit counts as direct and both dashboards read exactly as they did before.
    * A value renamed here and not there does not half-work; it stops counting.
    * So the spelling is pinned where changing it has to be deliberate.
    */
-  it('is the four values the portfolio accepts', () => {
-    expect([...SOURCES]).toEqual(['blog', 'manual', 'visual-diff-ui', 'storybook']);
+  it('is the five values the portfolio accepts', () => {
+    expect([...SOURCES]).toEqual([
+      'blog',
+      'manual',
+      'visual-diff-ui',
+      'storybook',
+      'census',
+    ]);
   });
 });
 

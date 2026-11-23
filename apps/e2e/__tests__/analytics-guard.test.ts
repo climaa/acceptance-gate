@@ -46,6 +46,7 @@ describe('isAnalyticsBeacon', () => {
     'https://blog.carloslima.dev/_vercel/insights/view',
     'https://manual.carloslima.dev/0f1e2d3c4b5a6978/script.js',
     'https://visual-diff-ui.carloslima.dev/0f1e2d3c4b5a6978/view',
+    'https://census.carloslima.dev/0f1e2d3c4b5a6978/script.js',
   ])('matches the beacon request %s', (url) => {
     // Arrange / Act
     const matched = isAnalyticsBeacon(url);
