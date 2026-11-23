@@ -78,14 +78,18 @@ const DIMENSION_ICON: Record<SidebarDimensionId, ReactNode> = {
       <path d="M4 4h6v6H4z M14 4h6v4h-6z M14 12h6v8h-6z M4 14h6v6H4z" />
     </svg>
   ),
+  // lucide `code`, ISC License, Copyright (c) Lucide Contributors — https://lucide.dev
   code: (
     <svg {...svgProps}>
-      <path d="M12 3l9 5-9 5-9-5z M3 12l9 5 9-5 M3 16l9 5 9-5" />
+      <path d="m16 18 6-6-6-6 M8 6l-6 6 6 6" />
     </svg>
   ),
+  // lucide `image`, ISC License, Copyright (c) Lucide Contributors — https://lucide.dev
   visual: (
     <svg {...svgProps}>
-      <path d="M12 2.5l3 3-3 3-3-3z M5.5 9l3 3-3 3-3-3z M18.5 9l3 3-3 3-3-3z M12 15.5l3 3-3 3-3-3z" />
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <circle cx="9" cy="9" r="2" />
+      <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
     </svg>
   ),
   acceptance: (
@@ -101,9 +105,10 @@ const DIMENSION_ICON: Record<SidebarDimensionId, ReactNode> = {
   ),
 };
 
+// lucide `scan`, ISC License, Copyright (c) Lucide Contributors — https://lucide.dev
 const BRAND_ICON = (
   <svg {...svgProps} width={20} height={20}>
-    <path d="M12 4L21 19.5H3z" />
+    <path d="M3 7V5a2 2 0 0 1 2-2h2 M17 3h2a2 2 0 0 1 2 2v2 M21 17v2a2 2 0 0 1-2 2h-2 M7 21H5a2 2 0 0 1-2-2v-2" />
   </svg>
 );
 

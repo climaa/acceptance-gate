@@ -6724,10 +6724,10 @@
                             {
                               "type": "icon",
                               "id": "k7Qk0T",
-                              "name": "icon triangle",
+                              "name": "icon scan",
                               "width": 20,
                               "height": 20,
-                              "icon": "triangle",
+                              "icon": "scan",
                               "library": "lucide",
                               "fill": "$chart"
                             },
@@ -6892,10 +6892,10 @@
                                         {
                                           "type": "icon",
                                           "id": "e8TdCs",
-                                          "name": "icon layers",
+                                          "name": "icon code",
                                           "width": 16,
                                           "height": 16,
-                                          "icon": "layers",
+                                          "icon": "code",
                                           "library": "lucide",
                                           "fill": "$text-muted"
                                         },
@@ -6950,10 +6950,10 @@
                                         {
                                           "type": "icon",
                                           "id": "QBw4q",
-                                          "name": "icon component",
+                                          "name": "icon image",
                                           "width": 16,
                                           "height": 16,
-                                          "icon": "component",
+                                          "icon": "image",
                                           "library": "lucide",
                                           "fill": "$text-muted"
                                         },
@@ -7904,10 +7904,10 @@
                             {
                               "type": "icon",
                               "id": "IrT31",
-                              "name": "icon triangle",
+                              "name": "icon scan",
                               "width": 20,
                               "height": 20,
-                              "icon": "triangle",
+                              "icon": "scan",
                               "library": "lucide",
                               "fill": "$chart"
                             },
@@ -8072,10 +8072,10 @@
                                         {
                                           "type": "icon",
                                           "id": "DUT8r",
-                                          "name": "icon layers",
+                                          "name": "icon code",
                                           "width": 16,
                                           "height": 16,
-                                          "icon": "layers",
+                                          "icon": "code",
                                           "library": "lucide",
                                           "fill": "$text-muted"
                                         },
@@ -8130,10 +8130,10 @@
                                         {
                                           "type": "icon",
                                           "id": "mddkW",
-                                          "name": "icon component",
+                                          "name": "icon image",
                                           "width": 16,
                                           "height": 16,
-                                          "icon": "component",
+                                          "icon": "image",
                                           "library": "lucide",
                                           "fill": "$text-muted"
                                         },
@@ -9096,10 +9096,10 @@
                             {
                               "type": "icon",
                               "id": "jWy7f",
-                              "name": "icon triangle",
+                              "name": "icon scan",
                               "width": 20,
                               "height": 20,
-                              "icon": "triangle",
+                              "icon": "scan",
                               "library": "lucide",
                               "fill": "$chart"
                             }
@@ -9144,7 +9144,7 @@
                         {
                           "type": "frame",
                           "id": "q6JWp7",
-                          "name": "NavItem layers",
+                          "name": "NavItem code",
                           "width": 40,
                           "height": 32,
                           "cornerRadius": 4,
@@ -9154,10 +9154,10 @@
                             {
                               "type": "icon",
                               "id": "eNsFU",
-                              "name": "icon layers",
+                              "name": "icon code",
                               "width": 16,
                               "height": 16,
-                              "icon": "layers",
+                              "icon": "code",
                               "library": "lucide",
                               "fill": "$text-muted"
                             },
@@ -9177,7 +9177,7 @@
                         {
                           "type": "frame",
                           "id": "DaI6E",
-                          "name": "NavItem component",
+                          "name": "NavItem image",
                           "width": 40,
                           "height": 32,
                           "cornerRadius": 4,
@@ -9187,10 +9187,10 @@
                             {
                               "type": "icon",
                               "id": "bn8d8",
-                              "name": "icon component",
+                              "name": "icon image",
                               "width": 16,
                               "height": 16,
-                              "icon": "component",
+                              "icon": "image",
                               "library": "lucide",
                               "fill": "$text-muted"
                             },
