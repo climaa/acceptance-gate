@@ -882,6 +882,11 @@
     padding: var(--space-4);
   }
 
+  /* Dead code's lines wrap the same at the tile's 20px. */
+  .census-card:has(> .census-counts):not(:has(> .census-score)) {
+    padding: var(--space-5);
+  }
+
   /* TestPyramid's figure is a fixed 2:1 box beside its counts; the tile keeps
      the pair side by side on a phone, the figure at half the card. */
   .census-pyramid .ds-test-pyramid {
