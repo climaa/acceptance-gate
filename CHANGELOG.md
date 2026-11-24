@@ -7,6 +7,8 @@ transcribed from the GitHub Releases that existed when this file was created (20
 
 ## Unreleased
 
+- `changelog-deploy.yml` waits for the release's own entry on `/changelog` (`id="vX.Y.Z"`) instead of the bare tag. The footer carries the version on every page, so the old poll passed on its first attempt, before the rebuild it had just asked for. A test renders the page and holds the two together, and `turbo.json` names the workflow in `test`'s inputs so an edit to it re-runs that test.
+
 ## v1.10.0 — census counts what the repository covers, and names what it does not
 
 _Released 2026-11-24._

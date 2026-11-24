@@ -7,6 +7,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import * as runtime from 'react/jsx-runtime';
 import { compile, run } from '@mdx-js/mdx';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { ChangelogScreen } from '../components/ChangelogScreen';
 import { changelogMdxOptions, mdxComponents } from '../lib/mdx';
 import { getReleases, narrativeTitle } from '../lib/releases';
 import {
@@ -543,5 +544,38 @@ describe('the workflows that watch the deployed page', () => {
 
     expect(needle).toBeDefined();
     expect(CHANGELOG_RELEASE_LINK_PREFIX).toContain(needle);
+  });
+
+  // Regression: v1.10.0's poll grepped for the bare tag and passed 0.6 s after
+  // asking for the rebuild. The footer shows the version on every page, so the
+  // tag was there before the release was. Only the entry's own id proves it.
+  it('changelog-deploy.yml waits for the release entry, not for the bare tag', () => {
+    const tag = 'v9.9.9';
+    const needle = envValue(workflow('changelog-deploy.yml'), 'ENTRY')?.replace(
+      '${{ env.TAG }}',
+      tag,
+    );
+    const footerOnly = renderToStaticMarkup(
+      createElement('a', { href: '/changelog' }, tag),
+    );
+    const page = renderToStaticMarkup(
+      createElement(ChangelogScreen, {
+        releases: [
+          {
+            tag,
+            title: 'a release',
+            date: '2026-01-01',
+            displayDate: 'January 1, 2026',
+            url: 'https://github.com/climaa/acceptance-gate/releases/tag/v9.9.9',
+            body: 'The body.',
+          },
+        ],
+      }),
+    );
+
+    expect(needle).toBeDefined();
+    expect(page).toContain(needle);
+    expect(footerOnly).not.toContain(needle);
+    expect(workflow('changelog-deploy.yml')).toContain('grep -qF "$ENTRY"');
   });
 });
