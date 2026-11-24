@@ -89,16 +89,17 @@ export {
   type TrendRange,
   type TrendSeries,
 } from './TrendChart/TrendChart';
+export { Icicle, type IcicleProps } from './Icicle/Icicle';
+// Not through Icicle.tsx: a Server Component gets a `'use client'` module's
+// functions as references it cannot call.
 export {
-  Icicle,
   fitLabel,
   icicleRows,
   nodeWeight,
   type IcicleCell,
   type IcicleNode,
-  type IcicleProps,
   type IcicleTone,
-} from './Icicle/Icicle';
+} from './Icicle/geometry';
 export {
   PenaltyBars,
   formatPenalty,

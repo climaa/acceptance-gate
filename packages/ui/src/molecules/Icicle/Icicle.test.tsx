@@ -1,16 +1,30 @@
-import { cleanup, render, screen, within } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { act, cleanup, render, screen, within } from '@testing-library/react';
+import { renderToString } from 'react-dom/server';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
-  Icicle,
   fitLabel,
   icicleRows,
   nodeWeight,
   type IcicleCell,
   type IcicleNode,
-} from './Icicle';
+} from './geometry';
+import { Icicle } from './Icicle';
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  vi.restoreAllMocks();
+  vi.unstubAllGlobals();
+});
+
+/** Lays every element out `width` px wide: jsdom has no layout of its own. */
+const layOut = (width: number) =>
+  vi
+    .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+    .mockReturnValue(new DOMRect(0, 0, width, 172));
+
+const drawnLabels = (container: Element) =>
+  [...container.querySelectorAll('.ds-icicle__label')].map((el) => el.textContent);
 
 const leaf = (label: string, weight: number, extra: Partial<IcicleNode> = {}) => ({
   label,
@@ -211,6 +225,70 @@ describe('Icicle', () => {
       (el) => el.textContent,
     );
     expect(labels).toEqual(['repository', 'apps', 'scr…', '@gate/cons…', '@ga…', 'scr…']);
+  });
+
+  it('fits each label to the rendered width once it is narrower than expected', () => {
+    layOut(318);
+
+    const { container } = render(<Icicle root={TREE} />);
+
+    expect(drawnLabels(container)).toEqual([
+      'repository',
+      'apps',
+      'scripts',
+      '@gate/console',
+      '@gate/b…',
+      'scripts/',
+    ]);
+  });
+
+  it('leaves a cell with no room at the rendered width unlabelled', () => {
+    layOut(120);
+
+    const { container } = render(<Icicle root={TREE} />);
+
+    expect(drawnLabels(container)).toEqual(['repository', 'apps', '@gat…']);
+  });
+
+  it('fits the labels again when the figure is resized', () => {
+    let resize = () => {};
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        constructor(callback: () => void) {
+          resize = callback;
+        }
+        observe() {}
+        disconnect() {}
+      },
+    );
+    layOut(1248);
+    const { container } = render(<Icicle root={TREE} />);
+
+    layOut(120);
+    act(() => resize());
+
+    expect(drawnLabels(container)).toEqual(['repository', 'apps', '@gat…']);
+  });
+
+  it('keeps its width while it is not displayed', () => {
+    layOut(0);
+
+    const { container } = render(<Icicle root={TREE} />);
+
+    expect(drawnLabels(container)).toContain('@gate/console');
+  });
+
+  it('hydrates a narrow figure from the markup the server sent', () => {
+    const mismatch = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const container = document.createElement('div');
+    container.innerHTML = renderToString(<Icicle root={TREE} />);
+    layOut(120);
+
+    render(<Icicle root={TREE} />, { container, hydrate: true });
+
+    expect(mismatch).not.toHaveBeenCalled();
+    expect(drawnLabels(container)).toEqual(['repository', 'apps', '@gat…']);
   });
 
   it('gives a reader every node whole, nested as the tree is, whatever the cells show', () => {

@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
-import { Icicle, type IcicleNode, type IcicleTone } from './Icicle';
+import type { IcicleNode, IcicleTone } from './geometry';
+import { Icicle } from './Icicle';
 
 const meta: Meta<typeof Icicle> = {
   title: 'Molecules/Icicle',
