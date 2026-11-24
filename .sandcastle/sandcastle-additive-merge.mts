@@ -29,7 +29,8 @@
 // the merge commit from the host, so `pre-push` runs the gate on it (`--at`)
 // exactly as it does on every other host push. It refuses to push at all where
 // that hook would not run (no hook installed, or `SC_SKIP_GATE=1`): main's
-// ruleset requires no check, so an ungated push here could auto-merge unread.
+// ruleset requires `gate`, but this repository's children run this file too, and
+// where no check is required an ungated push could auto-merge unread.
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';

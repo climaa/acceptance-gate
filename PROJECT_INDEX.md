@@ -92,7 +92,7 @@ scripts/               gate/ (the gate, run by `.husky/pre-push`) · complexity-
                        apply-ruleset.mjs
 .claude/skills/        six committed agent skills: four Next.js ones,
                        pixel-perfect-session and ui-ux-pro-max (+ PROVENANCE.md)
-.github/               pr.yml (the gate until #580, now disabled) · changelog-deploy.yml + changelog-check.yml
+.github/               pr.yml (the gate's checks on GitHub; `gate` is required) · changelog-deploy.yml + changelog-check.yml
                        (the release → /changelog edge, and the alarm that reads the
                        deployed page back) · dependabot.yml · auto-merge · rulesets/ ·
                        CODEOWNERS · SECURITY.md · issue and PR templates
@@ -108,7 +108,7 @@ scripts/               gate/ (the gate, run by `.husky/pre-push`) · complexity-
 - Manual: `pnpm --filter @gate/manual dev` on :3400
 - Census: `pnpm --filter @gate/census dev` on :3510
 - Visual diff: `pnpm visual-diff` / `pnpm visual-diff:accept`
-- Gate: `pnpm gate` (`scripts/gate/`), run by `.husky/pre-push` before every push; `pnpm gate --tier full` adds visual-diff in the pinned container. The per-PR workflows (`pr.yml`) are disabled on GitHub since #580
+- Gate: `pnpm gate` (`scripts/gate/`), run by `.husky/pre-push` before every push; `pnpm gate --tier full` adds visual-diff in the pinned container. `pr.yml` runs the same checks on GitHub for every PR and push to `main`, with visual-diff informational; `main` requires its `gate` job
 - Orchestrator tests: `pnpm test:sandcastle` → `vitest.sandcastle.config.mts`
 
 ## 📦 Core Modules
@@ -131,7 +131,7 @@ scripts/               gate/ (the gate, run by `.husky/pre-push`) · complexity-
 - `vitest.shared.mjs` — the vitest preset every config extends with `mergeConfig`: `testTimeout` and `hookTimeout` at 20 s, a floor a workspace may raise and never lower. Named in the `test` tasks' turbo `inputs`, so editing it re-runs every suite. The gate's `test` check runs at `--concurrency=50%` of the logical processors, or the exported `TURBO_CONCURRENCY`
 - `pnpm-workspace.yaml` — apps/* + packages/*; `allowBuilds` for sharp, unrs-resolver; `minimumReleaseAge: 4320`, so a dependency bump must name a version at least three days old
 - `package.json` — pnpm 11.20.0 pinned (sha512), Node `>=22.22.2 <23`, turbo ^2.11.10. `@types/node` is deliberately held on the `^22` line: it describes the runtime `engines` pins and `.sandcastle/Dockerfile` (`node:22-bookworm`) runs, so a newer major would type built-ins that do not exist here. It moves when the runtime moves, not when `ncu` says so
-- `.github/rulesets/main.json` — the branch ruleset as committed JSON: PR required, squash-only, `gate` the sole required status check, no bypass actors. Since #580 the applied ruleset requires no status check, so this file no longer matches what `main` enforces
+- `.github/rulesets/main.json` — the branch ruleset as committed JSON: PR required, squash-only, `gate` the sole required status check, no bypass actors. Between #580 (19 Oct 2026) and 25 Nov 2026 the applied ruleset required no status check; `node scripts/apply-ruleset.mjs` says whether the two match now
 - `.gitattributes` — `designs/*.pen` binary
 - Exact pins that are never bot-bumped: `@playwright/test` and `playwright` at `1.62.1`, matched to the `mcr.microsoft.com/playwright:v1.62.1-noble` capture container
 

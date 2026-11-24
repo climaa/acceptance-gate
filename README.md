@@ -28,12 +28,13 @@ lint · typecheck · build · test · format · health · boards · sandcastle �
 One gate runs per machine, across checkouts: a second `pnpm gate`, in this
 checkout or another, waits for the first and says once whose turn it is
 (`pnpm gate --no-wait` refuses instead), because two at once share e2e ports
-and time out each other's suites. The gate is a hook, so a push with `--no-verify` skips it, and `main` requires
-no status check since the GitHub Actions minutes ran out. `visual-diff` is not
-in the list above: it needs Docker and several minutes, so it runs as
+and time out each other's suites. The gate is a hook, so a push with `--no-verify` skips it. `pr.yml` runs the
+same nine checks on GitHub for every pull request, and `main` requires its `gate`
+job, which aggregates them, so a red run there blocks the merge. `visual-diff` is not in the
+list above: it needs Docker and several minutes, so it runs as
 `pnpm gate --tier full` before a change to `packages/ui` or the baselines
-merges, and it never accepts a baseline by itself — a person reads the changed
-screenshots and commits the new baselines, the same as reviewing a code diff,
+merges, and as an informational job in `pr.yml`. It never accepts a baseline by
+itself — a person reads the changed screenshots and commits the new baselines, the same as reviewing a code diff,
 rather than a numeric threshold silently blocking (or silently passing) a
 change. See
 [`packages/visual-diff/README.md`](packages/visual-diff/README.md#ci-status)
