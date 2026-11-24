@@ -799,7 +799,7 @@
   flex-direction: column;
   gap: var(--space-4);
   padding-block-start: var(--space-5);
-  border-block-start: 1px solid var(--color-border-strong);
+  border-block-start: 1px solid var(--color-border);
 }
 
 .census-views__head {
@@ -839,7 +839,10 @@
   display: none;
 }
 
-/* The file views draw the rule under the score and its penalties. */
+/* The file views draw the rule under the score and its penalties, and nothing
+   does under a score that ends the card. */
+.census-workspace .census-card > .census-score:has(+ .census-views),
+.census-workspace .census-card > .census-score:last-child,
 .census-workspace .census-card > .census-split:has(+ .census-views),
 .census-workspace .census-card > .census-split:last-child {
   padding-block-end: 0;
@@ -851,19 +854,9 @@
    so moving the page's rows there moves them away from the tile's below that
    point. The home keeps its own spacing. */
 @media (width >= 768px) {
-  /* One rule between the score and the file views, as the tile draws it, and
-     none under a score that ends the card. */
-  .census-workspace .census-card > .census-score:has(+ .census-views),
-  .census-workspace .census-card > .census-score:last-child {
-    padding-block-end: 0;
-    border-block-end: 0;
-  }
-
-  /* The tile's rule is `$border`, and the head, legend, Icicle and note keep
-     the Health card's 20px gap. */
+  /* The tile's head, legend, Icicle and note keep the Health card's 20px gap. */
   .census-views {
     gap: var(--space-5);
-    border-block-start-color: var(--color-border);
   }
 
   /* The tile's grade is mono 16 bold beside the score. */
@@ -1214,6 +1207,16 @@
   .census-tiles {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--space-3);
+  }
+
+  /* The phone tile pads a StatTile 16px and sets its value at 30px, so
+     "0 over 20" keeps to one line. */
+  .census-tiles .ds-stat-tile {
+    padding: var(--space-4);
+  }
+
+  .census-tiles .ds-stat-tile__value {
+    font-size: var(--text-3xl);
   }
 
   .census-gap--own {
