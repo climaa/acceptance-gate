@@ -107,6 +107,15 @@ describe('SparkStat', () => {
     expect(screen.getByText('in 30 days')).toBeTruthy();
   });
 
+  it('leaves out the change and its window when no change is known', () => {
+    const { container } = render(
+      <SparkStat label="Files" value="3" window="in 30 days" series={[]} />,
+    );
+
+    expect(container.querySelector('.ds-badge')).toBeNull();
+    expect(screen.queryByText('in 30 days')).toBeNull();
+  });
+
   it('hides the sparkline from assistive tech: the figures carry the meaning', () => {
     const { container } = render(
       <SparkStat label="Files" value="3" delta={0} series={[3, 3]} />,

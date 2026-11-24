@@ -182,7 +182,15 @@ export function HealthCard({ data }: Of<'health'>) {
           <li key={s.label}>
             <SparkStat
               label={s.label}
-              value={s.value}
+              value={
+                s.aside === undefined ? (
+                  s.value
+                ) : (
+                  <span className="census-sparks__value">
+                    {s.value} <span className="census-sparks__aside">{s.aside}</span>
+                  </span>
+                )
+              }
               delta={s.delta}
               better={s.better}
               window="in 30 days"

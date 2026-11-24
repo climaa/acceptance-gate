@@ -244,6 +244,8 @@ const historyPoint = z.object({
     dupPct: percent,
     crapOver: count,
     overCeiling: count,
+    // Optional: points written before the count was recorded have none.
+    deadFiles: count.optional(),
   }),
 });
 

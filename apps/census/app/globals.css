@@ -452,8 +452,36 @@
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: var(--space-4);
-  padding-block-start: var(--space-5);
   border-block-start: 1px solid var(--color-border);
+}
+
+/* Outranks `.census-card ul`, which zeroes a list's padding: the tile sets the
+   panels 20px under their rule. */
+.census-card .census-sparks {
+  padding-block-start: var(--space-5);
+}
+
+/* A panel with no change row is as tall as its row. */
+.census-sparks > li {
+  display: grid;
+}
+
+.census-sparks .ds-spark-stat__label {
+  text-transform: uppercase;
+}
+
+.census-sparks__value {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  column-gap: var(--space-2);
+}
+
+.census-sparks__aside {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-normal);
+  line-height: var(--leading-normal);
 }
 
 .census-counts,
@@ -1027,6 +1055,7 @@
 
   .census-sparks {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-3);
   }
 
   .census-gap {
