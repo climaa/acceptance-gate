@@ -62,14 +62,15 @@ apps/
                        or deleted flows straight to the published page rather than
                        drifting from it; page views tracked on the same terms as
                        the blog and the console
-  census/              the repository's census, in progress: the measurement
+  census/              the repository's census: the measurement
                        schema, its validator and the gap rules (`lib/`), and
                        `pnpm census:measure`, which runs every suite, fallow and
                        the Storybook build and writes the two files the pages
                        read; the Next app's shell, its home and one page per
                        workspace (port 3510), validating both files at build;
-                       deployed to census.carloslima.dev with an OG card, page
-                       views tracked on the same terms as the blog and the console
+                       deployed to census.carloslima.dev with a sitemap,
+                       robots.txt and an OG card, page views tracked on the same
+                       terms as the blog and the console
 packages/
   logger/              the shared error/warn/info logger: silent in production, and
                        `error()` always forwards to a reporter — with the Bugsink

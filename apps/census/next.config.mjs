@@ -19,6 +19,7 @@ const nextConfig = {
   outputFileTracingIncludes: {
     '/': ['./measurement.json', './history.json'],
     '/[workspace]': ['./measurement.json'],
+    '/sitemap.xml': ['./measurement.json'],
     '/og/site.png': ['../../packages/ui/src/fonts/og/Fraunces9pt-SemiBold.ttf'],
   },
   experimental: {

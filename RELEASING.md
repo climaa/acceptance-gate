@@ -136,17 +136,17 @@ Release title and the permanent `/changelog` entry.
 
 ## Production is a branch
 
-Each of the four Vercel projects deploys production from the `production` branch, not from
+Each of the five Vercel projects deploys production from the `production` branch, not from
 `main`. A merge to `main` builds previews only; nothing reaches `*.carloslima.dev` until
 `production` moves. Every production build is kept for a week, so building one per merge
 took the Hobby plan's deployment storage to 75% in a fortnight — one per release does not.
 
-Nothing else deploys. Git deployments are turned off on all four Vercel projects (Settings →
+Nothing else deploys. Git deployments are turned off on all five Vercel projects (Settings →
 Git, `gitProviderOptions.createDeployments: disabled`), so a pull request, a merge to `main`
 or a Sandcastle branch creates nothing on Vercel. Despite the setting's name, a move of
 `production` still deploys — measured on 2026-10-18, when v1.6.0's ref move built all four
-projects before any hook was fired. The blog keeps one deploy hook, `changelog-deploy`, for
-the `/changelog` refresh below. Previews were login-protected and read by nothing —
+projects there were then before any hook was fired. The blog keeps one deploy hook,
+`changelog-deploy`, for the `/changelog` refresh below. Previews were login-protected and read by nothing —
 not the `gate`, not the e2e suite — and every one spent the Hobby plan's daily deployment cap
 that a release needs.
 
