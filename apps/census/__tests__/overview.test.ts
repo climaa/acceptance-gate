@@ -109,7 +109,7 @@ describe('overviewOf the sample: health', () => {
     });
   });
 
-  it('draws four sparklines from the history', () => {
+  it("draws the tile's four panels, in its order", () => {
     expect(
       view.health.sparks.map((s) => [
         s.label,
@@ -119,11 +119,56 @@ describe('overviewOf the sample: health', () => {
         s.series.length,
       ]),
     ).toEqual([
-      ['Score', '84.7', 2.1, 'up', 11],
       ['CRAP ≥ 30', '7', -3, 'down', 11],
       ['Over ceiling', '3', -1, 'down', 11],
       ['Duplication', '1.6%', -0.4, 'down', 11],
+      ['Dead files', '49', undefined, 'down', 0],
     ]);
+  });
+
+  it('reads the semantic duplication beside the mild figure, and nowhere else', () => {
+    expect(view.health.sparks.map((s) => s.aside)).toEqual([
+      undefined,
+      undefined,
+      '6.9% semantic',
+      undefined,
+    ]);
+  });
+
+  it('draws dead files over time from the points that recorded them', () => {
+    const { measurement, history } = sample();
+    const counts = new Map([
+      [8, 53],
+      [9, 51],
+      [10, 49],
+    ]);
+    const recorded: History = {
+      ...history,
+      points: history.points.map((p, i) => ({
+        ...p,
+        fallow: { ...p.fallow, deadFiles: counts.get(i) },
+      })),
+    };
+
+    const dead = overviewOf(measurement, recorded).health.sparks.at(-1);
+
+    expect(dead).toMatchObject({ value: '49', series: [53, 51, 49] });
+    expect(dead?.delta).toBeUndefined();
+  });
+
+  it('compares dead files with the point 30 days back when it recorded them', () => {
+    const { measurement, history } = sample();
+    const recorded: History = {
+      ...history,
+      points: history.points.map((p, i, all) => ({
+        ...p,
+        fallow: { ...p.fallow, deadFiles: i === all.length - 1 ? 49 : 53 },
+      })),
+    };
+
+    const dead = overviewOf(measurement, recorded).health.sparks.at(-1);
+
+    expect(dead?.delta).toBe(-4);
   });
 
   it('lists dead code and the styling findings', () => {
@@ -310,6 +355,15 @@ describe('overviewOf a thin measurement', () => {
     expect(leaves?.map((l) => [l.detail, l.tone])).toEqual([
       ['98.9% · floor 99.5', 'warning'],
       ['50%', 'success'],
+    ]);
+  });
+
+  it('gives a panel no delta when the history is shorter than the window', () => {
+    expect(thinView.health.sparks.map((s) => s.delta)).toEqual([
+      undefined,
+      undefined,
+      undefined,
+      undefined,
     ]);
   });
 

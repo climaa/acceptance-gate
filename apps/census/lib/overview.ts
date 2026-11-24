@@ -59,7 +59,10 @@ export interface MetricRow {
 export interface SparkView {
   label: string;
   value: string;
-  delta: number;
+  /** A second figure beside the value, in small type. */
+  aside?: string;
+  /** Absent when the history does not reach back the whole window. */
+  delta: number | undefined;
   better: 'up' | 'down';
   series: number[];
 }
@@ -357,23 +360,22 @@ function statesOf(m: Measurement): Overview['states'] {
   };
 }
 
-function sparksOf(history: History): SparkView[] {
+function sparksOf(m: Measurement, history: History): SparkView[] {
   const points = history.points;
   const last = latest(history)!;
   const spark = (
     label: string,
-    pick: (p: (typeof points)[number]) => number,
+    pick: (p: (typeof points)[number]) => number | undefined,
     value: string,
     better: 'up' | 'down',
   ): SparkView => ({
     label,
     value,
-    delta: deltaOf(points, pick) ?? 0,
+    delta: deltaOf(points, (p) => pick(p) ?? null),
     better,
-    series: points.map(pick),
+    series: points.flatMap((p) => pick(p) ?? []),
   });
   return [
-    spark('Score', (p) => p.fallow.score, String(last.fallow.score), 'up'),
     spark('CRAP ≥ 30', (p) => p.fallow.crapOver, String(last.fallow.crapOver), 'down'),
     spark(
       'Over ceiling',
@@ -381,7 +383,11 @@ function sparksOf(history: History): SparkView[] {
       String(last.fallow.overCeiling),
       'down',
     ),
-    spark('Duplication', (p) => p.fallow.dupPct, `${last.fallow.dupPct}%`, 'down'),
+    {
+      ...spark('Duplication', (p) => p.fallow.dupPct, `${last.fallow.dupPct}%`, 'down'),
+      aside: `${m.health.duplication.semanticPct}% semantic`,
+    },
+    spark('Dead files', (p) => p.fallow.deadFiles, String(m.health.dead.files), 'down'),
   ];
 }
 
@@ -397,7 +403,7 @@ function healthOf(m: Measurement, history: History): Overview['health'] {
     unitSize: m.health.profiles.unitSize as unknown as Overview['health']['unitSize'],
     interfacing: m.health.profiles
       .interfacing as unknown as Overview['health']['interfacing'],
-    sparks: history.points.length === 0 ? [] : sparksOf(history),
+    sparks: history.points.length === 0 ? [] : sparksOf(m, history),
   };
 }
 

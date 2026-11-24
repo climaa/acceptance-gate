@@ -7,8 +7,9 @@ export type SparkDirection = 'up' | 'down';
 export interface SparkStatProps {
   label: string;
   value: ReactNode;
-  /** The change over the window, in the value's own unit. */
-  delta: number;
+  /** The change over the window, in the value's own unit. Left out when there is
+   *  nothing to compare with: no change is not a change of zero. */
+  delta?: number | undefined;
   /** Which way is an improvement. Decides the delta's tone. Defaults to `up`. */
   better?: SparkDirection;
   /** The window the delta spans, as read after it: `in 30 days`. */
@@ -85,12 +86,14 @@ export function SparkStat({
     <div className={['ds-spark-stat', className].filter(Boolean).join(' ')}>
       <span className="ds-spark-stat__label">{label}</span>
       <p className="ds-spark-stat__value">{value}</p>
-      <p className="ds-spark-stat__change">
-        <Badge tone={deltaTone(delta, better)} className="ds-spark-stat__delta">
-          {formatDelta(delta)}
-        </Badge>
-        {window && <span>{window}</span>}
-      </p>
+      {delta !== undefined && (
+        <p className="ds-spark-stat__change">
+          <Badge tone={deltaTone(delta, better)} className="ds-spark-stat__delta">
+            {formatDelta(delta)}
+          </Badge>
+          {window && <span>{window}</span>}
+        </p>
+      )}
       <svg
         className="ds-spark-stat__line"
         viewBox={`0 0 ${BOX.width} ${BOX.height}`}

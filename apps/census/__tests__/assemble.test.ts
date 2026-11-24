@@ -65,7 +65,14 @@ describe('historyPoint', () => {
       commit: measurement.commit,
       measuredAt: measurement.measuredAt,
       dimensions: { code: 98.9, visual: 62.5, acceptance: 50, health: 81.4 },
-      fallow: { score: 81.4, grade: 'B', dupPct: 1.6, crapOver: 19, overCeiling: 3 },
+      fallow: {
+        score: 81.4,
+        grade: 'B',
+        dupPct: 1.6,
+        crapOver: 19,
+        overCeiling: 3,
+        deadFiles: measurement.health.dead.files,
+      },
     });
   });
 

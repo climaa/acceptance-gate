@@ -86,6 +86,7 @@ export function historyPoint(
       dupPct: extra.dupPct,
       crapOver: measurement.health.crapOver30,
       overCeiling: extra.overCeiling,
+      deadFiles: measurement.health.dead.files,
     },
   };
 }
