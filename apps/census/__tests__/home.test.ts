@@ -85,6 +85,52 @@ describe('homeView with a measurement committed', () => {
     ]);
   });
 
+  const statusOf = (name: string, committed = measured()) =>
+    homeView(committed, FIXTURE_DAY).workspaces.find((ws) => ws.name === name)?.status;
+
+  it('marks a workspace whose Code is measured as measured', () => {
+    const status = statusOf('@gate/ui');
+
+    expect(status).toBe('measured');
+  });
+
+  it('keeps it measured with gaps open and coverage under the floor', () => {
+    const committed = measured();
+    if (committed.state === 'empty') throw new Error('the fixture is measured');
+    const [gap] = committed.measurement.gaps;
+    const ui = committed.measurement.workspaces.find((ws) => ws.name === '@gate/ui');
+    if (!gap || ui?.dimensions.code.state !== 'measured')
+      throw new Error('the fixture lost its gap or the measured Code of @gate/ui');
+    ui.dimensions.code.lines.pct = 1;
+    committed.measurement.gaps.push({ ...gap, workspace: '@gate/ui' });
+
+    const status = statusOf('@gate/ui', committed);
+
+    expect(status).toBe('measured');
+  });
+
+  it('marks a workspace whose Code is unmeasured as unmeasured, with no gap open', () => {
+    const committed = measured();
+    if (committed.state === 'empty') throw new Error('the fixture is measured');
+    committed.measurement.gaps = [];
+
+    const status = statusOf('@gate/blog', committed);
+
+    expect(status).toBe('unmeasured');
+  });
+
+  it('marks a workspace with no code as not-applicable, whatever its gaps', () => {
+    const committed = measured();
+    if (committed.state === 'empty') throw new Error('the fixture is measured');
+    const [gap] = committed.measurement.gaps;
+    if (!gap) throw new Error('the fixture lost its gap');
+    committed.measurement.gaps.push({ ...gap, workspace: '@gate/tsconfig' });
+
+    const status = statusOf('@gate/tsconfig', committed);
+
+    expect(status).toBe('not-applicable');
+  });
+
   it('links the short commit to the commit on GitHub', () => {
     const view = homeView(measured(), FIXTURE_DAY);
 

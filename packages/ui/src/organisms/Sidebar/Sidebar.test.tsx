@@ -19,9 +19,9 @@ const PROPS: SidebarProps = {
     { id: 'health', label: 'Health', href: '/?dimension=health', count: 0 },
   ],
   workspaces: [
-    { name: '@gate/ui', href: '/ui', category: 'packages', status: 'clear' },
-    { name: '@gate/blog', href: '/blog', category: 'apps', status: 'gaps' },
-    { name: 'scripts/', href: '/scripts', category: 'scripts', status: 'unmeasured' },
+    { name: '@gate/ui', href: '/ui', category: 'packages', status: 'measured' },
+    { name: '@gate/blog', href: '/blog', category: 'apps', status: 'unmeasured' },
+    { name: 'scripts/', href: '/scripts', category: 'scripts', status: 'not-applicable' },
   ],
   collapsed: false,
   onCollapsedChange: () => {},
@@ -70,12 +70,16 @@ describe('Sidebar', () => {
     ]);
   });
 
-  it('names each workspace’s status in text, not only in the dot’s colour', () => {
+  it.each([
+    ['@gate/ui', 'code measured'],
+    ['@gate/blog', 'code not measured'],
+    ['scripts/', 'no code'],
+  ])('says in text what the dot of %s means: %s', (name, text) => {
     render(sidebarWith());
 
-    const blog = screen.getByRole('link', { name: /@gate\/blog/ });
+    const link = screen.getByRole('link', { name: `${name}, ${text}` });
 
-    expect(blog.textContent).toContain('has gaps');
+    expect(link.textContent).toBe(`${name}, ${text}`);
   });
 
   it('announces the expanded state on the collapse toggle', () => {
