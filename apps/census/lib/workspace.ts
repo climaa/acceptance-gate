@@ -15,7 +15,7 @@ import {
   type Measurement,
   type Workspace,
 } from './measurement.ts';
-import { kilo } from './overview.ts';
+import { kilo, penaltyLabel } from './overview.ts';
 import { type TargetView, targetViews } from './targets.ts';
 import { workspaceSlug } from './workspace-address.ts';
 
@@ -64,6 +64,8 @@ export interface HealthSection {
   score: number;
   grade: string;
   source: string;
+  /** Empty when the measurement recorded none. */
+  penalties: { name: string; points: number }[];
   /** The files drawn by CRAP, coverage and maintainability; empty where coverage is unmeasured. */
   views: FileView[];
   note: string;
@@ -409,6 +411,10 @@ function healthSection(m: Measurement, ws: Workspace): HealthSection | null {
     score: health.score,
     grade: health.grade,
     source: m.tools.fallow === undefined ? 'of 100' : `of 100 · fallow ${m.tools.fallow}`,
+    penalties: (health.penalties ?? []).map((p) => ({
+      name: penaltyLabel(p.name),
+      points: p.points,
+    })),
     views: fileViews(ws),
     note: `${crap} Maintainability: under 70 is low.`,
     targets,

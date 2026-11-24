@@ -3,7 +3,7 @@ import type { IcicleTone } from '@gate/ui';
 import type { InventoryRow, WorkspaceView } from '@/lib/workspace.ts';
 import { CopyButton } from './CopyButton';
 import { FileViews } from './FileViews';
-import { Score } from './HomeSections';
+import { PenalisedScore } from './HomeSections';
 import { Legend } from './Legend';
 import { RefactorTargets } from './RefactorTargets';
 import { SectionCard } from './SectionCard';
@@ -77,7 +77,7 @@ function HealthCard({ data, files }: Of<'health'> & { files: number }) {
   if (data === null) return null;
   return (
     <SectionCard title={data.title} description={data.caption}>
-      <Score score={data.score} grade={data.grade} source={data.source} />
+      <PenalisedScore data={data} />
       {data.targets.length > 0 && (
         <RefactorTargets targets={data.targets} count={data.targets.length} />
       )}
