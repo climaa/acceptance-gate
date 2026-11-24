@@ -13,6 +13,10 @@ import type { Metadata } from 'next';
  */
 export const SITE_URL = new URL('https://census.carloslima.dev');
 
+export function absoluteUrl(pathname: string): string {
+  return new URL(pathname, SITE_URL).toString();
+}
+
 export const SITE_TITLE = 'Census';
 
 export const SITE_DESCRIPTION =
