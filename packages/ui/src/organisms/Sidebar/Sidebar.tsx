@@ -26,8 +26,11 @@ export interface SidebarDimension {
 
 export type SidebarCategory = 'packages' | 'apps' | 'scripts';
 
-/** `clear`: measured with no gap; `gaps`: at least one; `unmeasured`: no numbers yet. */
-export type SidebarWorkspaceStatus = 'clear' | 'gaps' | 'unmeasured';
+/**
+ * The workspace's Code dimension, never its gaps. `measured`: it has coverage, at
+ * any level; `unmeasured`: it has code and no coverage; `not-applicable`: no code.
+ */
+export type SidebarWorkspaceStatus = 'measured' | 'unmeasured' | 'not-applicable';
 
 export interface SidebarWorkspace {
   name: string;
@@ -126,9 +129,9 @@ const CLOSE_ICON = (
 );
 
 const STATUS_TEXT: Record<SidebarWorkspaceStatus, string> = {
-  clear: 'no gaps',
-  gaps: 'has gaps',
-  unmeasured: 'not measured',
+  measured: 'code measured',
+  unmeasured: 'code not measured',
+  'not-applicable': 'no code',
 };
 
 const hasGaps = (count: number | undefined) => count !== undefined && count > 0;

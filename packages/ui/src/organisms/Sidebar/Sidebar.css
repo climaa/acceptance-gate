@@ -219,11 +219,11 @@
   background: var(--color-border-strong);
 }
 
-.ds-sidebar__dot[data-status='clear'] {
+.ds-sidebar__dot[data-status='measured'] {
   background: var(--color-chart);
 }
 
-.ds-sidebar__dot[data-status='gaps'] {
+.ds-sidebar__dot[data-status='unmeasured'] {
   background: var(--color-danger-text);
 }
 

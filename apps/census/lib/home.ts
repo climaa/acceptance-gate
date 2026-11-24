@@ -45,8 +45,8 @@ export interface ShellWorkspace {
   name: string;
   href: string;
   category: Workspace['category'];
-  /** `gaps` with any open, `unmeasured` when no dimension measures it, else `clear`. */
-  status: 'clear' | 'gaps' | 'unmeasured';
+  /** Its Code dimension's state: gaps and the coverage floor never change it. */
+  status: Workspace['dimensions']['code']['state'];
 }
 
 export interface FilterOption {
@@ -126,23 +126,12 @@ function metaOf(measurement: Measurement, now: number): MeasurementMeta {
   };
 }
 
-function workspaceStatus(
-  measurement: Measurement,
-  ws: Workspace,
-): ShellWorkspace['status'] {
-  if (measurement.gaps.some((gap) => gap.workspace === ws.name)) return 'gaps';
-  const measured = Object.values(ws.dimensions).some(
-    (value) => value.state === 'measured',
-  );
-  return measured ? 'clear' : 'unmeasured';
-}
-
 function shellWorkspaces(measurement: Measurement): ShellWorkspace[] {
   return measurement.workspaces.map((ws) => ({
     name: ws.name,
     href: workspaceHref(ws),
     category: ws.category,
-    status: workspaceStatus(measurement, ws),
+    status: ws.dimensions.code.state,
   }));
 }
 

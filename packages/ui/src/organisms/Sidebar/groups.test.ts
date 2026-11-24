@@ -7,7 +7,7 @@ const ws = (name: string, category: SidebarWorkspace['category']): SidebarWorksp
   name,
   href: `/${name}`,
   category,
-  status: 'clear',
+  status: 'measured',
 });
 
 describe('groupWorkspaces', () => {
