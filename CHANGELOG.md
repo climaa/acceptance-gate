@@ -7,7 +7,55 @@ transcribed from the GitHub Releases that existed when this file was created (20
 
 ## Unreleased
 
-- `changelog-deploy.yml` waits for the release's own entry on `/changelog` (`id="vX.Y.Z"`) instead of the bare tag. The footer carries the version on every page, so the old poll passed on its first attempt, before the rebuild it had just asked for. A test renders the page and holds the two together, and `turbo.json` names the workflow in `test`'s inputs so an edit to it re-runs that test.
+## v1.10.1 — census's pages match their drawings
+
+_Released 2026-11-24._
+
+Thirteen PRs since [v1.10.0](https://github.com/climaa/acceptance-gate/releases/tag/v1.10.0) (#801 → #813), telling one story: **census's pages match their drawings.** v1.10.0 shipped census. This cycle reads its home and workspace pages against their tiles and closes the gaps that reading named.
+
+### What earns the patch
+
+| Layer                                                                                                                                                                                                                   | PRs                          |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
+| census's Health: the meters and the boundaries pill on Dead code, What costs points on Styling and on the workspace card, the action column on Refactor targets, and a Health tile meter that says what its figure says | #801, #802, #805, #806, #812 |
+| census on a phone: vertical Icicles on the workspace and home pages, the workspace tiles and the score                                                                                                                  | #807, #808, #813             |
+| Sidebar's workspace dots follow each workspace's Code, the pixel-perfect pass on the chain, and Icicle cells that keep their share below 18px                                                                           | #809, #810, #811             |
+| The changelog: `changelog-deploy` waits for the release's own entry (`id="vX.Y.Z"`) instead of the bare tag, which the footer prints on every page; v1.10.0's section corrected to what its tag holds                   | #803, #804                   |
+
+Every census row was already drawn on a board; none of these draws a new page. `changelog-deploy`'s old poll passed on its first attempt, before the rebuild it had just asked for. A test now renders the page and holds the two together, and `turbo.json` names the workflow in `test`'s inputs.
+
+### Twelve manifests
+
+All twelve move from 1.10.0 to 1.10.1 together. Every internal dependency is `workspace:*`, and `pnpm install --frozen-lockfile` resolves with `pnpm-lock.yaml` untouched.
+
+### The corpus
+
+No baseline joined or left: 374, with 24 re-accepted. The corpus is 29,359,285 bytes against a budget of 32 MB.
+
+### The index, measured rather than adjusted
+
+Every count was measured again with the turbo cache forced off. Two had moved:
+
+| Claim                  | Corrected to |
+| ---------------------- | ------------ |
+| `packages/ui` 58 / 991 | 58 / **998** |
+| `apps/census` 26 / 341 | **28 / 372** |
+
+Unchanged and checked: the orchestrator's 67 / 989, every other workspace suite, 89 scenarios (166 tests), 2 local scenarios and 374 baselines.
+
+### Known gaps
+
+**census still differs from its tiles in places.** The last reading of 533c56d listed nine groups. Among them: `home--filtered` does not dim the other dimensions, the `stale` notice sits too low on desktop, the phone home clips its Rerun lines, SegmentedControl is taller than drawn, and on a phone the Acceptance tile runs under Health. None is ticketed yet.
+
+**The committed measurement is older than the pages.** `apps/census/measurement.json` was taken at 6d4ee88 on 2026-11-22 and still counts ten unmeasured workspaces that have since gained a floor.
+
+**One test timed out under load.** `runner.test.ts` in the console failed once in the forced run and passed alone, the pattern #716 tracks.
+
+**`nightly-determinism` is red,** on every run from 19 to 24 November. It is not a required check.
+
+**The docs lag.** `RELEASING.md` and its neighbours still say the workflows are disabled; they are on.
+
+**Full changelog:** https://github.com/climaa/acceptance-gate/compare/v1.10.0...v1.10.1
 
 ## v1.10.0 — census counts what the repository covers, and names what it does not
 
