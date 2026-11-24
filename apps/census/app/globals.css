@@ -372,6 +372,14 @@
   font-size: var(--text-xs);
 }
 
+/* The tile sets the header row as the caps subtitle and leaves the body cells in
+   sentence case. Table already gives it that subtitle's size, weight and colour. */
+.census-metrics th {
+  letter-spacing: var(--tracking-wide);
+  line-height: var(--leading-tight);
+  text-transform: uppercase;
+}
+
 /* The tile hangs the metrics table 4px under its heading, and the stories'
    headline 8px under its own. */
 .census-card:has(> .census-metrics) {
