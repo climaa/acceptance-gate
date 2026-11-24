@@ -2,7 +2,7 @@ import { Badge, type BadgeTone, EmptyState, StatTile, Table } from '@gate/ui';
 import type { IcicleTone } from '@gate/ui';
 import type { InventoryRow, WorkspaceView } from '@/lib/workspace.ts';
 import { CopyButton } from './CopyButton';
-import { FilesIcicle } from './FilesIcicle';
+import { TallIcicle } from './TallIcicle';
 import { FileViews } from './FileViews';
 import { PenalisedScore } from './HomeSections';
 import { Legend } from './Legend';
@@ -69,7 +69,7 @@ function CodeCard({ data }: Of<'code'>) {
       description="One block per file, as wide as its lines, coloured by coverage."
     >
       <Legend items={data.legend} />
-      <FilesIcicle root={data.root} label="Coverage by file" />
+      <TallIcicle root={data.root} label="Coverage by file" />
     </SectionCard>
   );
 }
