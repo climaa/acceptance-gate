@@ -140,7 +140,7 @@ const METER_LABEL: Record<Dimension, string> = {
   code: 'Code: lines covered',
   visual: 'Visual: components complete',
   acceptance: 'Acceptance: visited by a scenario',
-  health: 'Health: score of 100',
+  health: 'Health: functions under the ceiling',
 };
 const HUE: Record<Dimension, MeterHue> = {
   code: 'chart',
@@ -224,7 +224,11 @@ function measuredTile(m: Measurement, ws: Workspace, value: MeasuredValue): Tile
             ? 'every function under the ceiling'
             : `${over} ${plural(over, 'function')} over the ceiling`,
         state: 'measured',
-        meter: { label: METER_LABEL.health, value: value.score, hue: HUE.health },
+        // The measurement counts the functions over the ceiling, not all of them:
+        // over 0, there is no share to draw.
+        ...(over === 0
+          ? { meter: { label: METER_LABEL.health, value: 100, hue: HUE.health } }
+          : {}),
       };
     }
   }
