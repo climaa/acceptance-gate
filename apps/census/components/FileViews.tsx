@@ -2,8 +2,9 @@
 
 import { useState } from 'react';
 
-import { Icicle, SegmentedControl } from '@gate/ui';
+import { SegmentedControl } from '@gate/ui';
 import type { FileView } from '@/lib/workspace.ts';
+import { FilesIcicle } from './FilesIcicle';
 import { Legend } from './Legend';
 
 export interface FileViewsProps {
@@ -37,7 +38,7 @@ export function FileViews({ views, files, note }: FileViewsProps) {
         />
       </div>
       <Legend items={view.legend} />
-      <Icicle root={view.root} label={`${view.label} by file`} />
+      <FilesIcicle root={view.root} label={`${view.label} by file`} />
       <p className="census-caption census-views__note">{note}</p>
     </div>
   );

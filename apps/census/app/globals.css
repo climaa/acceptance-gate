@@ -834,6 +834,11 @@
   text-decoration: none;
 }
 
+/* The files' Icicle lies down on desktop and stands up on a phone. */
+.census-icicle__columns {
+  display: none;
+}
+
 /* The file views draw the rule under the score and its penalties. */
 .census-workspace .census-card > .census-split:has(+ .census-views),
 .census-workspace .census-card > .census-split:last-child {
@@ -842,9 +847,9 @@
 }
 
 /* The desktop workspace tile, measured row by row (05-screens-census-4).
-   Desktop only: on a phone the tile draws a vertical Icicle and a Health card
-   the page cannot fill, so moving the page's rows there moves them away from
-   the tile's below that point. The home keeps its own spacing. */
+   Desktop only: on a phone the tile draws a Health card the page cannot fill,
+   so moving the page's rows there moves them away from the tile's below that
+   point. The home keeps its own spacing. */
 @media (width >= 768px) {
   /* One rule between the score and the file views, as the tile draws it, and
      none under a score that ends the card. */
@@ -880,6 +885,54 @@
 @media (width < 768px) {
   .census-bar {
     padding-inline: var(--space-4);
+  }
+
+  /* The phone tile's Icicle: a 900px figure, its root 56px wide, its groups 86px
+     and its files the rest, with the molecule's 2px seams between the cells. */
+  .census-icicle .ds-icicle__rows {
+    display: none;
+  }
+
+  .census-icicle__columns {
+    display: flex;
+    block-size: calc(var(--space-16) * 14 + var(--space-1));
+  }
+
+  .census-icicle__column {
+    position: relative;
+    flex: none;
+    inline-size: calc(var(--space-16) + var(--space-6));
+  }
+
+  .census-icicle__column:first-child {
+    box-sizing: content-box;
+    inline-size: calc(var(--space-12) + var(--space-2));
+    border-inline-end: 2px solid transparent;
+  }
+
+  .census-icicle__column:last-child {
+    flex: 1;
+    min-inline-size: 0;
+  }
+
+  .census-icicle__cell.ds-icicle__cell {
+    inset: auto 0;
+    border-inline-end: 0;
+    border-block-end: 2px solid transparent;
+  }
+
+  .census-icicle__column:nth-child(2):not(:last-child) > .census-icicle__cell {
+    border-inline-end: 2px solid transparent;
+  }
+
+  /* The thinnest file is 2px tall, less than a cell's own padding. */
+  .census-icicle__cell.ds-icicle__cell:empty {
+    padding: 0;
+  }
+
+  .census-icicle__cell > * {
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .census-main {
