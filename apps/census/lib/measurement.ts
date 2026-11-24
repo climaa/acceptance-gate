@@ -161,12 +161,14 @@ const workspace = z.object({
   }),
 });
 
+const penalties = z.array(
+  z.object({ name: z.string().min(1), points: z.number().nonnegative() }),
+);
+
 const repositoryHealth = z.object({
   score: percent,
   grade: z.string().min(1),
-  penalties: z.array(
-    z.object({ name: z.string().min(1), points: z.number().nonnegative() }),
-  ),
+  penalties,
   dead: z.object({
     files: count,
     exports: count,
@@ -192,6 +194,8 @@ const repositoryHealth = z.object({
       duplicateBlocks: count,
       complexSelectors: count,
       important: count,
+      // Optional: measurements written before these were recorded have none.
+      penalties: penalties.optional(),
     })
     .optional(),
   hotspots: z.array(

@@ -242,12 +242,20 @@ export function DeadCodeCard({ data }: Of<'dead'>) {
 
 export function StylingCard({ data }: Of<'styling'>) {
   if (data === null) return null;
+  const score = <Score score={data.score} grade={data.grade} source={data.source} />;
   return (
     <SectionCard
       title="Styling health"
       description="fallow --css: how well the CSS keeps to the design tokens."
     >
-      <Score score={data.score} grade={data.grade} source={data.source} />
+      {data.penalties.length === 0 ? (
+        score
+      ) : (
+        <div className="census-split">
+          {score}
+          <PenaltyBars title="What costs points" penalties={data.penalties} />
+        </div>
+      )}
       <CountRows rows={data.findings} />
     </SectionCard>
   );
