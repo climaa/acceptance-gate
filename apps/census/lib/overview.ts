@@ -19,7 +19,6 @@ import {
   unstoriedShare,
   type Share,
 } from './figures.ts';
-import { blobHref } from './links.ts';
 import {
   DIMENSIONS,
   type Dimension,
@@ -27,6 +26,7 @@ import {
   type Measurement,
 } from './measurement.ts';
 import { summaryOf, type Summary } from './summary.ts';
+import { type TargetView, targetViews } from './targets.ts';
 import {
   DIMENSION_LABEL,
   WINDOW_DAYS,
@@ -131,7 +131,7 @@ export interface Overview {
       label?: 'start' | 'end';
     }[];
     complexity: IcicleNode;
-    targets: { path: string; href: string; effort: string; priority: number }[];
+    targets: TargetView[];
     targetCount: number;
   };
   codeCoverage: IcicleNode;
@@ -577,15 +577,7 @@ function hotspotsOf(m: Measurement): Overview['hotspots'] {
         : {}),
     })),
     complexity: complexityTree(m),
-    targets: [...refactorTargets]
-      .sort((a, b) => b.priority - a.priority)
-      .slice(0, TARGETS_SHOWN)
-      .map((t) => ({
-        path: t.path,
-        href: blobHref(m, t.path),
-        effort: t.effort,
-        priority: t.priority,
-      })),
+    targets: targetViews(m, refactorTargets).slice(0, TARGETS_SHOWN),
     targetCount: refactorTargets.length,
   };
 }

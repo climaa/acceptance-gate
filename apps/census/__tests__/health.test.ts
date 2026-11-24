@@ -49,7 +49,14 @@ const REPORTS: FallowReports = {
       },
     ],
     hotspots: [{ path: 'scripts/board.mjs', score: 43.9, commits: 13 }],
-    targets: [{ path: 'scripts/board.mjs', priority: 35, effort: 'medium' }],
+    targets: [
+      {
+        path: 'scripts/board.mjs',
+        priority: 35,
+        effort: 'medium',
+        recommendation: 'Remove 5 unused exports to reduce surface area (100% dead)',
+      },
+    ],
     coverage_gaps: { files: [{ path: 'scripts/board.mjs' }] },
     styling_health: {
       score: 98.7,
@@ -156,6 +163,19 @@ describe('repositoryHealth', () => {
 
     expect(health.hotspots).toEqual([
       { path: 'scripts/board.mjs', churn: 13, complexity: 90 },
+    ]);
+  });
+
+  it("keeps each refactor target with fallow's recommendation", () => {
+    const health = repositoryHealth(REPORTS);
+
+    expect(health.refactorTargets).toEqual([
+      {
+        path: 'scripts/board.mjs',
+        priority: 35,
+        effort: 'medium',
+        recommendation: 'Remove 5 unused exports to reduce surface area (100% dead)',
+      },
     ]);
   });
 

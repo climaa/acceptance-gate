@@ -5,6 +5,7 @@ import { CopyButton } from './CopyButton';
 import { FileViews } from './FileViews';
 import { Score } from './HomeSections';
 import { Legend } from './Legend';
+import { RefactorTargets } from './RefactorTargets';
 import { SectionCard } from './SectionCard';
 
 type Of<K extends keyof WorkspaceView> = { data: WorkspaceView[K] };
@@ -78,23 +79,7 @@ function HealthCard({ data, files }: Of<'health'> & { files: number }) {
     <SectionCard title={data.title} description={data.caption}>
       <Score score={data.score} grade={data.grade} source={data.source} />
       {data.targets.length > 0 && (
-        <>
-          <div className="census-targets__head">
-            <h3 className="census-subtitle-caps">
-              Refactor targets · {data.targets.length}
-            </h3>
-            <span className="census-caption">priority</span>
-          </div>
-          <ul className="census-targets">
-            {data.targets.map((t) => (
-              <li key={t.path} className="census-target">
-                <a href={t.href}>{t.path}</a>
-                <Badge tone="dashed">{t.effort}</Badge>
-                <span className="census-count__value">{t.priority}</span>
-              </li>
-            ))}
-          </ul>
-        </>
+        <RefactorTargets targets={data.targets} count={data.targets.length} />
       )}
       {data.views.length > 0 && (
         <FileViews views={data.views} files={files} note={data.note} />

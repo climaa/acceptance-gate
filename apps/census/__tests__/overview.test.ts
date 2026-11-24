@@ -278,6 +278,27 @@ describe('overviewOf the sample: health', () => {
     );
   });
 
+  it('leaves the action empty when the measurement recorded no recommendation', () => {
+    expect(view.hotspots.targets.map((t) => t.action)).toEqual(['', '', '', '', '']);
+  });
+
+  it('carries the action of a target whose recommendation was recorded', () => {
+    const { measurement, history } = sample();
+    Object.assign(measurement.health.refactorTargets[1]!, {
+      recommendation: 'Remove 5 unused exports to reduce surface area (100% dead)',
+    });
+
+    const { targets } = overviewOf(measurement, history).hotspots;
+
+    expect(targets.map((t) => t.action)).toEqual([
+      '',
+      'remove 5 unused exports',
+      '',
+      '',
+      '',
+    ]);
+  });
+
   it('labels a crowded dot on its left', () => {
     expect(view.hotspots.dots.filter((d) => d.hot).map((d) => [d.path, d.label])).toEqual(
       [

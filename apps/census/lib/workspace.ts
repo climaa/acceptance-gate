@@ -16,6 +16,7 @@ import {
   type Workspace,
 } from './measurement.ts';
 import { kilo } from './overview.ts';
+import { type TargetView, targetViews } from './targets.ts';
 import { workspaceSlug } from './workspace-address.ts';
 
 export { workspaceHref, workspaceParams, workspaceSlug } from './workspace-address.ts';
@@ -55,13 +56,6 @@ export interface FileView {
   label: string;
   legend: LegendItem[];
   root: IcicleNode;
-}
-
-export interface TargetView {
-  path: string;
-  href: string;
-  effort: string;
-  priority: number;
 }
 
 export interface HealthSection {
@@ -391,15 +385,10 @@ const counted = (n: number, one: string, many: string) =>
 function healthSection(m: Measurement, ws: Workspace): HealthSection | null {
   const health = ws.dimensions.health;
   if (health.state !== 'measured') return null;
-  const targets = m.health.refactorTargets
-    .filter((t) => t.path.startsWith(`${ws.path}/`))
-    .sort((a, b) => b.priority - a.priority)
-    .map((t) => ({
-      path: t.path,
-      href: blobHref(m, t.path),
-      effort: t.effort,
-      priority: t.priority,
-    }));
+  const targets = targetViews(
+    m,
+    m.health.refactorTargets.filter((t) => t.path.startsWith(`${ws.path}/`)),
+  );
   const found = [
     counted(
       health.overCeiling,
