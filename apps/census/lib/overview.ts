@@ -118,6 +118,8 @@ export interface Overview {
     score: number;
     grade: string;
     source: string;
+    /** Empty when the measurement recorded none. */
+    penalties: { name: string; points: number }[];
     findings: NamedCount[];
   } | null;
   hotspots: {
@@ -454,6 +456,12 @@ function deadRows(m: Measurement): NamedCount[] {
   ];
 }
 
+/** fallow's penalty name as the card reads it: `dead surface` → `Dead surface`. */
+function penaltyLabel(name: string): string {
+  if (name === 'structural') return 'Structure';
+  return name.charAt(0).toUpperCase() + name.slice(1);
+}
+
 function stylingOf(m: Measurement): Overview['styling'] {
   const styling = m.health.styling;
   if (styling === undefined) return null;
@@ -462,6 +470,10 @@ function stylingOf(m: Measurement): Overview['styling'] {
     score: styling.score,
     grade: styling.grade,
     source: `of 100${fallow}`,
+    penalties: (styling.penalties ?? []).map((p) => ({
+      name: penaltyLabel(p.name),
+      points: p.points,
+    })),
     findings: [
       {
         name: 'Token drift',

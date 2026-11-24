@@ -46,7 +46,11 @@ export interface FallowReports {
     hotspots: (Path & { score: number; commits: number })[];
     targets: (Path & { priority: number; effort: string })[];
     coverage_gaps: { files: Path[] };
-    styling_health?: { score: number; grade: string };
+    styling_health?: {
+      score: number;
+      grade: string;
+      penalties: Record<string, number>;
+    };
     styling_findings?: { code: string; sub_kind?: string }[];
     css_analytics?: { files: { analytics: { important_declarations: number } }[] };
   };
@@ -71,6 +75,7 @@ export interface FallowReports {
 }
 
 const HOTSPOTS_SHOWN = 20;
+const penaltyName = (key: string) => key.replaceAll('_', ' ');
 const round1 = (n: number) => Math.round(n * 10) / 10;
 const profile = (risk: Risk) => [
   risk.low_risk,
@@ -96,6 +101,11 @@ function styling(health: FallowReports['health']): RepositoryHealth['styling'] {
       (sum, file) => sum + file.analytics.important_declarations,
       0,
     ),
+    // Those that cost nothing are kept: the card names them.
+    penalties: Object.entries(health.styling_health.penalties).map(([name, points]) => ({
+      name: penaltyName(name),
+      points,
+    })),
   };
 }
 
@@ -109,7 +119,7 @@ export function repositoryHealth(reports: FallowReports): RepositoryHealth {
     grade: health.health_score.grade,
     penalties: Object.entries(health.health_score.penalties)
       .filter(([, points]) => points > 0)
-      .map(([name, points]) => ({ name: name.replaceAll('_', ' '), points }))
+      .map(([name, points]) => ({ name: penaltyName(name), points }))
       .sort((a, b) => b.points - a.points),
     dead: {
       files: dead.summary.unused_files,

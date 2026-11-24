@@ -177,6 +177,38 @@ describe('overviewOf the sample: health', () => {
     expect(view.styling?.source).toBe('of 100 · fallow 3.36.0');
   });
 
+  it('labels what costs styling points, the free ones kept for the note', () => {
+    const { measurement, history } = sample();
+    Object.assign(measurement.health.styling!, {
+      penalties: [
+        { name: 'duplication', points: 1 },
+        { name: 'dead surface', points: 0.3 },
+        { name: 'broken references', points: 0 },
+        { name: 'token erosion', points: 0 },
+        { name: 'structural', points: 0 },
+      ],
+    });
+
+    const styling = overviewOf(measurement, history).styling;
+
+    expect(styling?.penalties).toEqual([
+      { name: 'Duplication', points: 1 },
+      { name: 'Dead surface', points: 0.3 },
+      { name: 'Broken references', points: 0 },
+      { name: 'Token erosion', points: 0 },
+      { name: 'Structure', points: 0 },
+    ]);
+  });
+
+  it('has no styling penalties when the measurement recorded none', () => {
+    const { measurement, history } = sample();
+    delete measurement.health.styling!.penalties;
+
+    const styling = overviewOf(measurement, history).styling;
+
+    expect(styling?.penalties).toEqual([]);
+  });
+
   it('gives unused files and exports their share of what was measured', () => {
     const { measurement, history } = sample();
     Object.assign(measurement.health.dead, { totalFiles: 822, totalExports: 1752 });

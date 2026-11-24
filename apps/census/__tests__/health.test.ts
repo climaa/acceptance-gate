@@ -51,7 +51,11 @@ const REPORTS: FallowReports = {
     hotspots: [{ path: 'scripts/board.mjs', score: 43.9, commits: 13 }],
     targets: [{ path: 'scripts/board.mjs', priority: 35, effort: 'medium' }],
     coverage_gaps: { files: [{ path: 'scripts/board.mjs' }] },
-    styling_health: { score: 98.7, grade: 'A' },
+    styling_health: {
+      score: 98.7,
+      grade: 'A',
+      penalties: { duplication: 1, dead_surface: 0.3, broken_references: 0 },
+    },
     styling_findings: [
       { code: 'css-token-drift' },
       { code: 'css-duplicate-block' },
@@ -139,6 +143,11 @@ describe('repositoryHealth', () => {
       duplicateBlocks: 1,
       complexSelectors: 2,
       important: 3,
+      penalties: [
+        { name: 'duplication', points: 1 },
+        { name: 'dead surface', points: 0.3 },
+        { name: 'broken references', points: 0 },
+      ],
     });
   });
 
