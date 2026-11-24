@@ -70,12 +70,20 @@ export interface FallowReports {
   boundaries: { boundaries: { configured: boolean } };
   dupesMild: { stats: DupeStats };
   dupesSemantic: { stats: DupeStats };
-  /** Score and grade by fallow group key: a package name, or a top directory. */
-  groups: Readonly<Record<string, { score: number; grade: string }>>;
+  /** Score, grade and penalties by fallow group key: a package name, or a top directory. */
+  groups: Readonly<
+    Record<string, { score: number; grade: string; penalties: Record<string, number> }>
+  >;
 }
 
 const HOTSPOTS_SHOWN = 20;
 const penaltyName = (key: string) => key.replaceAll('_', ' ');
+/** What cost points, largest first. */
+const charged = (penalties: Record<string, number>) =>
+  Object.entries(penalties)
+    .filter(([, points]) => points > 0)
+    .map(([name, points]) => ({ name: penaltyName(name), points }))
+    .sort((a, b) => b.points - a.points);
 const round1 = (n: number) => Math.round(n * 10) / 10;
 const profile = (risk: Risk) => [
   risk.low_risk,
@@ -117,10 +125,7 @@ export function repositoryHealth(reports: FallowReports): RepositoryHealth {
   return {
     score: health.health_score.score,
     grade: health.health_score.grade,
-    penalties: Object.entries(health.health_score.penalties)
-      .filter(([, points]) => points > 0)
-      .map(([name, points]) => ({ name: penaltyName(name), points }))
-      .sort((a, b) => b.points - a.points),
+    penalties: charged(health.health_score.penalties),
     dead: {
       files: dead.summary.unused_files,
       exports: dead.summary.unused_exports,
@@ -194,6 +199,7 @@ export function workspaceHealth(
     deadFiles: under(reports.dead.unused_files),
     deadExports: under(reports.dead.unused_exports),
     refactorTargets: under(reports.health.targets),
+    penalties: charged(group.penalties),
   };
 }
 

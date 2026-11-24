@@ -139,7 +139,7 @@ export function StatesCard({ data }: Of<'states'>) {
   );
 }
 
-export function Score({
+function Score({
   score,
   grade,
   source,
@@ -155,6 +155,27 @@ export function Score({
         {score} <span className="census-score__grade">{grade}</span>
       </p>
       <p className="census-caption">{source}</p>
+    </div>
+  );
+}
+
+/** The score beside what costs points; alone when no penalty was recorded. */
+export function PenalisedScore({
+  data,
+}: {
+  data: {
+    score: number;
+    grade: string;
+    source: string;
+    penalties: { name: string; points: number }[];
+  };
+}) {
+  const score = <Score score={data.score} grade={data.grade} source={data.source} />;
+  if (data.penalties.length === 0) return score;
+  return (
+    <div className="census-split">
+      {score}
+      <PenaltyBars title="What costs points" penalties={data.penalties} />
     </div>
   );
 }
@@ -243,20 +264,12 @@ export function DeadCodeCard({ data }: Of<'dead'>) {
 
 export function StylingCard({ data }: Of<'styling'>) {
   if (data === null) return null;
-  const score = <Score score={data.score} grade={data.grade} source={data.source} />;
   return (
     <SectionCard
       title="Styling health"
       description="fallow --css: how well the CSS keeps to the design tokens."
     >
-      {data.penalties.length === 0 ? (
-        score
-      ) : (
-        <div className="census-split">
-          {score}
-          <PenaltyBars title="What costs points" penalties={data.penalties} />
-        </div>
-      )}
+      <PenalisedScore data={data} />
       <CountRows rows={data.findings} />
     </SectionCard>
   );

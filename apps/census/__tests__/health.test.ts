@@ -97,8 +97,12 @@ const REPORTS: FallowReports = {
     stats: { duplication_percentage: 6.8614, duplicated_lines: 4126, clone_groups: 133 },
   },
   groups: {
-    '@gate/ui': { score: 89.3, grade: 'A' },
-    scripts: { score: 72.5, grade: 'B' },
+    '@gate/ui': {
+      score: 89.3,
+      grade: 'A',
+      penalties: { dead_exports: 0.1, complexity: 0, unit_size: 10, coupling: 0.6 },
+    },
+    scripts: { score: 72.5, grade: 'B', penalties: {} },
   },
 };
 
@@ -219,6 +223,12 @@ describe('workspaceHealth', () => {
       deadFiles: 0,
       deadExports: 1,
       refactorTargets: 0,
+      // Largest first, the free ones left out.
+      penalties: [
+        { name: 'unit size', points: 10 },
+        { name: 'coupling', points: 0.6 },
+        { name: 'dead exports', points: 0.1 },
+      ],
     });
   });
 
@@ -249,7 +259,13 @@ describe('workspaceHealth', () => {
 
   it('does not count a sibling whose path only starts the same', () => {
     const value = workspaceHealth(
-      { ...REPORTS, groups: { ...REPORTS.groups, '@gate/u': { score: 90, grade: 'A' } } },
+      {
+        ...REPORTS,
+        groups: {
+          ...REPORTS.groups,
+          '@gate/u': { score: 90, grade: 'A', penalties: {} },
+        },
+      },
       { name: '@gate/u', path: 'packages/u' },
     );
 
@@ -325,7 +341,7 @@ describe('repositoryHealth edge cases', () => {
 describe('workspaceHealth edge cases', () => {
   it('is not applicable when fallow grades outside A–F', () => {
     const value = workspaceHealth(
-      { ...REPORTS, groups: { '@gate/ui': { score: 50, grade: 'E' } } },
+      { ...REPORTS, groups: { '@gate/ui': { score: 50, grade: 'E', penalties: {} } } },
       { name: '@gate/ui', path: 'packages/ui' },
     );
 

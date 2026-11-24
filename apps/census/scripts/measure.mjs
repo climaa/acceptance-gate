@@ -178,7 +178,11 @@ function groupsOf(report) {
   return Object.fromEntries(
     report.groups.map((g) => [
       g.key,
-      { score: g.health_score.score, grade: g.health_score.grade },
+      {
+        score: g.health_score.score,
+        grade: g.health_score.grade,
+        penalties: g.health_score.penalties,
+      },
     ]),
   );
 }

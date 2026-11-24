@@ -394,6 +394,50 @@ describe('the health section', () => {
   });
 });
 
+describe('what costs the workspace points', () => {
+  const withPenalties = (penalties: { name: string; points: number }[]) =>
+    withWorkspace('@gate/ui', (ws) =>
+      ws.dimensions.health.state === 'measured'
+        ? {
+            ...ws,
+            dimensions: {
+              ...ws.dimensions,
+              health: { ...ws.dimensions.health, penalties },
+            },
+          }
+        : ws,
+    );
+
+  it("labels the workspace's own penalties as the card reads them", () => {
+    const measured = withPenalties([
+      { name: 'unit size', points: 10 },
+      { name: 'coupling', points: 0.6 },
+      { name: 'dead exports', points: 0.1 },
+    ]);
+
+    const penalties = viewOf('ui', measured).health?.penalties;
+
+    expect(penalties).toEqual([
+      { name: 'Function size', points: 10 },
+      { name: 'Coupling', points: 0.6 },
+      { name: 'Dead exports', points: 0.1 },
+    ]);
+  });
+
+  it('is empty when nothing cost points', () => {
+    const penalties = viewOf('ui', withPenalties([])).health?.penalties;
+
+    expect(penalties).toEqual([]);
+  });
+
+  it("is empty, never the repository's, when the measurement recorded none", () => {
+    const penalties = viewOf('ui').health?.penalties;
+
+    expect(measurement.health.penalties.length).toBeGreaterThan(0);
+    expect(penalties).toEqual([]);
+  });
+});
+
 describe('the health section, measured otherwise', () => {
   it('says CRAP is measured once the measure step feeds coverage to fallow', () => {
     const measured = {

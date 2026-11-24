@@ -457,7 +457,8 @@ function deadRows(m: Measurement): NamedCount[] {
 }
 
 /** fallow's penalty name as the card reads it: `dead surface` → `Dead surface`. */
-function penaltyLabel(name: string): string {
+export function penaltyLabel(name: string): string {
+  if (name === 'unit size') return 'Function size';
   if (name === 'structural') return 'Structure';
   return name.charAt(0).toUpperCase() + name.slice(1);
 }

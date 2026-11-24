@@ -134,6 +134,10 @@ const acceptanceValue = z.discriminatedUnion('state', [
   ...reasoned('acceptance'),
 ]);
 
+const penalties = z.array(
+  z.object({ name: z.string().min(1), points: z.number().nonnegative() }),
+);
+
 const healthValue = z.discriminatedUnion('state', [
   z.object({
     dimension: z.literal('health'),
@@ -144,6 +148,8 @@ const healthValue = z.discriminatedUnion('state', [
     deadFiles: count,
     deadExports: count,
     refactorTargets: count,
+    // Optional: measurements written before these were recorded have none.
+    penalties: penalties.optional(),
   }),
   ...reasoned('health'),
 ]);
@@ -160,10 +166,6 @@ const workspace = z.object({
     health: healthValue,
   }),
 });
-
-const penalties = z.array(
-  z.object({ name: z.string().min(1), points: z.number().nonnegative() }),
-);
 
 const repositoryHealth = z.object({
   score: percent,
