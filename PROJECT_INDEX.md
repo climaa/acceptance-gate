@@ -1,6 +1,6 @@
 # Project Index: acceptance-gate
 
-Version 1.9.0 · generated 2026-11-17 (regenerate with `/sc:index-repo` — a stale date here
+Version 1.10.0 · generated 2026-11-24 (regenerate with `/sc:index-repo` — a stale date here
 means the index needs a refresh)
 
 ## 📁 Project Structure
@@ -17,7 +17,7 @@ means the index needs a refresh)
                        plan-eligibility · plan-parse · pr-queue (+ gh) · push hold ·
                        sandbox hooks · turbo cache · variables · orchestrator
   agent-docs/          the four phase prompts + CODING_STANDARDS.md
-  __tests__/           67 hermetic vitest files (985 tests) guarding the contracts
+  __tests__/           67 hermetic vitest files (989 tests) guarding the contracts
 apps/
   blog/                Next.js 16 App Router + MDX (English) — index (paged four posts
                        at a time, each page at its own address), post, tag, about,
@@ -27,9 +27,10 @@ apps/
                        web analytics on the production deployment only; Bugsink error
                        reporting live in both realms on the production deployment,
                        inert anywhere the DSN is unset
-  storybook/           Storybook 10 + nextjs-vite — 45 stories, 21 docs pages
-  e2e/                 playwright-bdd — 88 acceptance scenarios across the blog and
-                       two seeded visual-diff worlds (:3200/:3201), plus a two-scenario
+  storybook/           Storybook 10 + nextjs-vite — 64 story files, 21 docs pages
+  e2e/                 playwright-bdd — 89 acceptance scenarios across the blog,
+                       two seeded visual-diff worlds (:3200/:3201) and census
+                       (:3202), plus a two-scenario
                        local lane that runs against your own tree
   visual-diff-ui/      Next.js 16 console over the differ — zod-validated read path,
                        locked job runner + guarded mutations, sample fixtures,
@@ -75,8 +76,8 @@ packages/
   logger/              the shared error/warn/info logger: silent in production, and
                        `error()` always forwards to a reporter — with the Bugsink
                        adapter behind `@gate/logger/bugsink`, inert until a DSN exists
-  ui/                  design system: tokens.css + 37 components in 4 tiers
-                       (17 atoms · 19 molecules · 8 organisms · 2 templates); every
+  ui/                  design system: tokens.css + 48 components in 4 tiers
+                       (18 atoms · 20 molecules · 8 organisms · 2 templates); every
                        one storied but Stack, the layout primitive with nothing
                        of its own to capture
   visual-diff/         the self-built visual-regression CLI + 374 committed baselines;
@@ -89,7 +90,8 @@ scripts/               gate/ (the gate, run by `.husky/pre-push`) · complexity-
                        (the health gate) · index-integrity.mjs (this file, checked
                        against the repo it describes) · board-scale-integrity.mjs ·
                        apply-ruleset.mjs
-.claude/skills/        four committed Next.js agent skills (+ PROVENANCE.md)
+.claude/skills/        six committed agent skills: four Next.js ones,
+                       pixel-perfect-session and ui-ux-pro-max (+ PROVENANCE.md)
 .github/               pr.yml (the gate until #580, now disabled) · changelog-deploy.yml + changelog-check.yml
                        (the release → /changelog edge, and the alarm that reads the
                        deployed page back) · dependabot.yml · auto-merge · rulesets/ ·
@@ -102,7 +104,7 @@ scripts/               gate/ (the gate, run by `.husky/pre-push`) · complexity-
 - Blog: `pnpm dev` → `apps/blog` on :3000
 - Storybook: `pnpm --filter @gate/storybook dev` on :6006
 - Visual-diff console: `pnpm --filter @gate/visual-diff-ui dev` on :3300 — points `VISUAL_DIFF_DATA_DIR` at a gitignored `.visual-diff/` at the repo root and seeds it, so a local console is live rather than in sample mode. `capture`/`run` build Storybook on the host, then run the differ inside the pinned container (`lib/docker.ts` + `scripts/capture-set.mjs`), so **Docker must be running** — the panel says so and disables the button when it is not. Jobs are refused off localhost (`lib/local.ts`, and again in `POST /api/jobs`); `next start` sets no variable, so an instance without one serves the committed sample data
-- Acceptance suite: `pnpm turbo run e2e` (builds the blog and the visual-diff console first, seeds the three worlds, then runs the scenarios)
+- Acceptance suite: `pnpm turbo run e2e` (builds the blog, the visual-diff console and census first, seeds the two visual-diff worlds, then runs the scenarios)
 - Manual: `pnpm --filter @gate/manual dev` on :3400
 - Census: `pnpm --filter @gate/census dev` on :3510
 - Visual diff: `pnpm visual-diff` / `pnpm visual-diff:accept`
@@ -125,10 +127,10 @@ scripts/               gate/ (the gate, run by `.husky/pre-push`) · complexity-
 
 ## 🔧 Configuration
 
-- `turbo.json` — `build`/`lint`/`typecheck`/`test` (+`dependsOn: ["^build"]`), `e2e` (dependsOn `@gate/blog#build` and `@gate/visual-diff-ui#build`, uncached), `health` (whose `inputs` include `$TURBO_ROOT$/scripts/complexity-gate.mjs`, so editing the gate script busts every cached result), `dev`, `clean`. `build.env` is `VERCEL_ENV`, `NEXT_PUBLIC_BUGSINK_DSN`, `BLOG_RELEASES_FIXTURE` and `GITHUB_TOKEN` — the values a build reads, so a fixture build and a real one never share a cache entry. `BUGSINK_DSN` is deliberately absent: the server reads it per request, so changing it must not invalidate a build
+- `turbo.json` — `build`/`lint`/`typecheck`/`test` (+`dependsOn: ["^build"]`), `e2e` (dependsOn `@gate/blog#build`, `@gate/visual-diff-ui#build` and `@gate/census#build`, uncached), `health` (whose `inputs` include `$TURBO_ROOT$/scripts/complexity-gate.mjs`, so editing the gate script busts every cached result), `dev`, `clean`. `build.env` is `VERCEL_ENV`, `NEXT_PUBLIC_BUGSINK_DSN`, `BLOG_RELEASES_FIXTURE` and `GITHUB_TOKEN` — the values a build reads, so a fixture build and a real one never share a cache entry. `BUGSINK_DSN` is deliberately absent: the server reads it per request, so changing it must not invalidate a build
 - `vitest.shared.mjs` — the vitest preset every config extends with `mergeConfig`: `testTimeout` and `hookTimeout` at 20 s, a floor a workspace may raise and never lower. Named in the `test` tasks' turbo `inputs`, so editing it re-runs every suite. The gate's `test` check runs at `--concurrency=50%` of the logical processors, or the exported `TURBO_CONCURRENCY`
 - `pnpm-workspace.yaml` — apps/* + packages/*; `allowBuilds` for sharp, unrs-resolver; `minimumReleaseAge: 4320`, so a dependency bump must name a version at least three days old
-- `package.json` — pnpm 11.20.0 pinned (sha512), Node `>=22.22.2 <23`, turbo ^2.11.7. `@types/node` is deliberately held on the `^22` line: it describes the runtime `engines` pins and `.sandcastle/Dockerfile` (`node:22-bookworm`) runs, so a newer major would type built-ins that do not exist here. It moves when the runtime moves, not when `ncu` says so
+- `package.json` — pnpm 11.20.0 pinned (sha512), Node `>=22.22.2 <23`, turbo ^2.11.10. `@types/node` is deliberately held on the `^22` line: it describes the runtime `engines` pins and `.sandcastle/Dockerfile` (`node:22-bookworm`) runs, so a newer major would type built-ins that do not exist here. It moves when the runtime moves, not when `ncu` says so
 - `.github/rulesets/main.json` — the branch ruleset as committed JSON: PR required, squash-only, `gate` the sole required status check, no bypass actors. Since #580 the applied ruleset requires no status check, so this file no longer matches what `main` enforces
 - `.gitattributes` — `designs/*.pen` binary
 - Exact pins that are never bot-bumped: `@playwright/test` and `playwright` at `1.62.1`, matched to the `mcr.microsoft.com/playwright:v1.62.1-noble` capture container
@@ -141,24 +143,26 @@ scripts/               gate/ (the gate, run by `.husky/pre-push`) · complexity-
 - `.sandcastle/agent-docs/CODING_STANDARDS.md` — the review contract (testing conventions, scope discipline)
 - `apps/storybook/src/docs/` — the published written half: System Design, Atomic Design, QA, DevOps, Skills
 - `packages/visual-diff/README.md` — capture matrix, determinism controls, exit codes, and why the job never joins `gate.needs`
-- `apps/e2e/README.md` — the three-layer split, the tag→project matrix and the three visual-diff worlds
+- `apps/e2e/README.md` — the three-layer split, the tag→project matrix and the two visual-diff worlds
 - `designs/exports/` — one PNG per board (`designs/STANDARD.md`): `00-foundations`, the tier boards `01-atoms`–`04-templates` and `05-screens` (normative inventory, one tile per story, each with a `.tiles.json` keyed by variant key; each app with screen stories draws them on its own `05-screens-<app>` board, paged by height: the console's on `05-screens-visual-diff-ui-1`–`-4`, census's on `05-screens-census-1`–`-4`), `05-pages`, `06-flows-decisions`, `x-console-components`, `x-visual-diff-pages` (console `/` and `/report/[id]`)
 
 ## 🧪 Tests
 
-- Orchestrator hermetic suite: 67 files / 985 tests (prompt contracts, merge flow, override grammar, worktree safety, provenance guard)
-- Workspace suites, all in the `test` gate job: `packages/ui` 39 files / 657 tests (70% coverage floor), `apps/blog` 28 / 625 (622 passed, 3 skipped — one per draft post), `packages/visual-diff` 11 / 519, `apps/storybook` 11 / 335, `apps/visual-diff-ui` 83 / 1419, 1 skipped until the corpus is built (floors 93/87/92/94), `packages/logger` 3 / 32, `apps/manual` 10 / 118, `packages/links` 1 / 10, `apps/e2e` 1 / 11 (the analytics guard), `apps/census` 21 / 285 (floors 98/96/98/98)
-- `apps/e2e`: 88 acceptance scenarios across smoke, blog, the changelog's release conversations, /about, axe a11y, the visual-diff console, sample mode, the report and its accessibility treatment — in `gate.needs`, blocking. `EXPECTED_SCENARIOS` in `apps/e2e/scripts/suite-integrity.mjs` is the count that must agree. A second lane, `features/local/`, is two scenarios that write to your own tree and clean up after themselves — one captures, compares, reviews and accepts against your `.visual-diff`, the other proves the dev server reflects `apps/blog/content/posts` as it is, which no built app can claim (`EXPECTED_LOCAL_SCENARIOS`). It refuses to run under `CI` and gates nothing
+- Orchestrator hermetic suite: 67 files / 989 tests (prompt contracts, merge flow, override grammar, worktree safety, provenance guard)
+- Workspace suites, all in the `test` gate job: `packages/ui` 58 files / 990 tests (70% coverage floor), `apps/blog` 28 / 625 (622 passed, 3 skipped — one per draft post), `packages/visual-diff` 11 / 519, `apps/storybook` 11 / 358, `apps/visual-diff-ui` 83 / 1428, 1 skipped until the corpus is built, `packages/logger` 3 / 32, `apps/manual` 10 / 118, `packages/links` 1 / 10, `apps/e2e` 1 / 12 (the analytics guard), `apps/census` 26 / 331
+- Coverage floors, statements/branches/functions/lines, each set about two points under what its suite measured: `apps/blog` 64/63/63/65, `apps/census` 98/96/98/98, `apps/e2e` 2/3/4/2 (its `scripts/` and `support/` only), `apps/manual` 81/80/80/81, `apps/storybook` 69/56/63/73, `apps/visual-diff-ui` 93/87/92/94, `packages/links` 98/98/98/98, `packages/logger` 96/94/98/96, `packages/visual-diff` 90/86/91/91, `scripts/` 26/25/39/26, `.sandcastle/` 59/68/56/58; the pixel-perfect-session script has one too
+- `apps/e2e`: 89 acceptance scenarios (166 tests) across smoke, blog, the changelog's release conversations, /about, axe a11y, the visual-diff console, sample mode, the report and its accessibility treatment, and census — in `gate.needs`, blocking. `EXPECTED_SCENARIOS` in `apps/e2e/scripts/suite-integrity.mjs` is the count that must agree. A second lane, `features/local/`, is two scenarios that write to your own tree and clean up after themselves — one captures, compares, reviews and accepts against your `.visual-diff`, the other proves the dev server reflects `apps/blog/content/posts` as it is, which no built app can claim (`EXPECTED_LOCAL_SCENARIOS`). It refuses to run under `CI` and gates nothing
 - `packages/visual-diff`: 374 committed baselines; the capture/compare job runs on every PR but is deliberately never in `gate.needs` (see `packages/visual-diff/README.md#ci-status`)
 
 ## 🔗 Key Dependencies
 
 - `@ai-hero/sandcastle` 0.12.0 — sandbox engine under `.sandcastle/`
-- `next` ^16.4.0 / `react` ^19.3.0 — blog, storybook, the console and the manual
+- `next` ^16.4.5 / `react` ^19.3.1 — blog, storybook, the console, the manual and census
+- `three` 0.187.0 / `detect-gpu` 5.0.70 (exact) — census's pyramid scene
 - `storybook` 10 with `nextjs-vite` — the visual single source of truth
 - `dotenv` 18 — its own CLI wraps every root turbo script (`dotenv run -q --override --`); `dotenv-cli` is gone, because the two install one command
 - `playwright` 1.62.1 (exact) — acceptance suite and pixel capture
-- `turbo` ^2.11.7 — task graph + remote cache (team-ID-scoped)
+- `turbo` ^2.11.10 — task graph + remote cache (team-ID-scoped)
 
 ## 🧒 Child projects
 
