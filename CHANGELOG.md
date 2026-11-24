@@ -11,14 +11,14 @@ transcribed from the GitHub Releases that existed when this file was created (20
 
 _Released 2026-11-24._
 
-Fifty PRs since [v1.9.0](https://github.com/climaa/acceptance-gate/releases/tag/v1.9.0) (#719 → #798), telling one story: **census counts what the repository covers, and names what it does not.** v1.9.0 made every route a screen. This cycle adds a fifth site, [census](https://census.carloslima.dev), which reads one committed measurement of the repository's tests, stories, scenarios and code health and lists every gap it found.
+Fifty-one PRs since [v1.9.0](https://github.com/climaa/acceptance-gate/releases/tag/v1.9.0) (#719 → #800), telling one story: **census counts what the repository covers, and names what it does not.** v1.9.0 made every route a screen. This cycle adds a fifth site, [census](https://census.carloslima.dev), which reads one committed measurement of the repository's tests, stories, scenarios and code health and lists every gap it found.
 
 ### What earns the minor
 
 | Layer                                                                                                                                                                                                   | PRs                                                                                            |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
 | The measurement: census's vocabulary in the glossary, the schema, its validator and the gap rules, `pnpm census:measure`, and the first measurement and history                                         | #742, #744, #745, #746, #747                                                                   |
-| The census app: the shell, a home for the four dimensions, a page per workspace, and a three.js testing pyramid that falls back to the flat one where the device cannot afford it and in every capture  | #788, #789, #790, #792, #793, #794, #797                                                       |
+| The census app: the shell, a home for the four dimensions, a page per workspace, and a three.js testing pyramid that falls back to the flat one where the device cannot afford it and in every capture  | #788, #789, #790, #792, #793, #794, #797, #800                                                 |
 | census in the acceptance suite: a fourth built server and one scenario                                                                                                                                  | #795                                                                                           |
 | census deployed: the Vercel project's configuration, analytics, outbound links, a sitemap and `robots.txt`                                                                                              | #796, #798                                                                                     |
 | `packages/ui`: the Meter atom, thirteen chart and list molecules, the Sidebar, TopBar and SearchPalette organisms, chart colour roles, JetBrains Mono bold, and the passes that set them on their tiles | #769, #771, #772, #773, #774, #775, #776, #777, #778, #779, #780, #781, #782, #783, #784, #791 |
@@ -36,7 +36,7 @@ Twelve now, where v1.9.0 moved eleven: `apps/census` joins. All move to 1.10.0 t
 
 ### The corpus
 
-88 baselines joined, 286 to 374: 64 for the new components and 24 census screens; 28 more were re-accepted. The corpus is 29,255,650 bytes against a budget raised from 15 to 32 MB in #743, about 2.74 MB left. The largest single PNG is 1,146,727 bytes against a per-file budget of 1.3 MB.
+88 baselines joined, 286 to 374: 64 for the new components and 24 census screens; 28 more were re-accepted. The corpus is 29,235,236 bytes against a budget raised from 15 to 32 MB in #743, about 2.76 MB left. The largest single PNG is 1,145,762 bytes against a per-file budget of 1.3 MB.
 
 ### The index, measured rather than adjusted
 
@@ -47,11 +47,11 @@ Twelve now, where v1.9.0 moved eleven: `apps/census` joins. All move to 1.10.0 t
 | Version 1.9.0                                | **1.10.0**                                          |
 | Eleven manifests                             | **twelve**                                          |
 | Orchestrator suite 65 files / 958 tests      | **67 / 989**                                        |
-| `packages/ui` 39 / 657                       | **58 / 990**                                        |
+| `packages/ui` 39 / 657                       | **58 / 991**                                        |
 | `apps/storybook` 11 / 335                    | 11 / **358**                                        |
 | `apps/visual-diff-ui` 83 / 1419              | 83 / **1428** (1 skipped until the corpus is built) |
 | `apps/e2e` unit suite 1 / 11                 | 1 / **12**                                          |
-| `apps/census`: not listed                    | **26 / 331**                                        |
+| `apps/census`: not listed                    | **26 / 335**                                        |
 | `packages/ui` 31 components (17 · 7 · 5 · 2) | **48** (18 · 20 · 8 · 2)                            |
 | `apps/storybook` 45 stories                  | **64** story files                                  |
 | 88 acceptance scenarios (164 tests)          | **89** (166 tests)                                  |
@@ -68,19 +68,17 @@ The component count was also wrong in the cycle itself: the index said 37 while 
 
 **No gap issue is still held, because only ten of 107 gaps were filed.** The other 97 have no issue: 56 missing stories, 15 uncovered files, 12 incomplete components, 11 missing route states and 3 apps with no scenario. A fresh measurement comes before filing them, since some may have closed.
 
-**Parts of census still drift from their tiles.** The pixel-perfect pass found nine places and #797 closed one. Open: the code health figures, the dead-code meters, the styling and workspace penalty lists, the refactor targets' actions, the mobile icicle, two mobile controls, and the sidebar's dots.
+**Parts of census still drift from their tiles.** The pixel-perfect pass found nine places; #797 and #800 closed two. Open: the dead-code meters, the styling and workspace penalty lists, the refactor targets' actions, the mobile icicle, two mobile controls, and the sidebar's dots.
 
 **census shows no version.** Its pages have no footer, and the sibling sites' footers do not link to it. Both wait for a tile.
 
 **Some floors are low.** Each is set under what its suite measured: `apps/e2e`'s own scripts sit at 2% of lines and `scripts/` at 26%. They stop a fall; they do not claim coverage.
 
-**Publishing does not refresh `/changelog` by itself.** `changelog-deploy.yml` is still disabled with the rest.
+**The docs still say the workflows are disabled.** GitHub Actions is running again, `changelog-deploy.yml` and the per-PR `gate` included; `RELEASING.md`, `AGENTS.md`, `README.md` and `PROJECT_INDEX.md` describe them as off.
 
-**The gate is still a hook, not a check.** A push with `--no-verify` reaches `main` ungated. A push whose gate waited on the machine lock can also fail after a green gate, because GitHub closes the SSH connection ([#721](https://github.com/climaa/acceptance-gate/issues/721)).
+**The gate is still a hook, not a required check.** A push with `--no-verify` reaches `main` ungated. A push whose gate waited on the machine lock can also fail after a green gate, because GitHub closes the SSH connection ([#721](https://github.com/climaa/acceptance-gate/issues/721)).
 
 **Unit tests still time out under parallel load now and then** ([#716](https://github.com/climaa/acceptance-gate/issues/716)).
-
-**The README still carries the `pr.yml` badge,** a workflow that no longer runs.
 
 **The ledger still reads spacing only.** Colour, type and radius are not measured.
 
