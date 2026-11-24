@@ -34,7 +34,8 @@
         "$TURBO_DEFAULT$",
         "$TURBO_ROOT$/vitest.shared.mjs",
         "$TURBO_ROOT$/.github/workflows/pr.yml",
-        "$TURBO_ROOT$/.github/workflows/changelog-check.yml"
+        "$TURBO_ROOT$/.github/workflows/changelog-check.yml",
+        "$TURBO_ROOT$/.github/workflows/changelog-deploy.yml"
       ]
     },
     "e2e": {
