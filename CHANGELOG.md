@@ -7,8 +7,86 @@ transcribed from the GitHub Releases that existed when this file was created (20
 
 ## Unreleased
 
-- `designs/STANDARD.md`: a child carries no console screens. The rule that had each child capture its own console as review-only `Screens / Visual-diff-ui` is replaced. The console's code is maintained here, so a child writes no story for its pages, holds no such screenshot, and leaves the console out of `APP_ROOTS` and of its `screen-routes` test.
-- Dependabot alerts #19–#21 closed. Next moves to 16.4.6 (GHSA-mfr8-8qww-v76h: a `'use cache'` function reached through `unstable_cache()` could hand one root param's cached data to another on a cold start). glob 13 and minimatch 10 (GHSA-3g3m-2fjr-6pw4, GHSA-g3hv-75wg-m249) leave the tree: Sentry moves to 11.12, whose bundler plugins already ask for glob 14, and two scoped overrides lift the parents that still pin the old majors — Storybook's docgen plugin (glob) and typescript-estree 8.72 (minimatch) — each with its exit condition beside it in `pnpm-workspace.yaml`.
+## v1.10.0 — census counts what the repository covers, and names what it does not
+
+_Released 2026-11-24._
+
+Fifty PRs since [v1.9.0](https://github.com/climaa/acceptance-gate/releases/tag/v1.9.0) (#719 → #798), telling one story: **census counts what the repository covers, and names what it does not.** v1.9.0 made every route a screen. This cycle adds a fifth site, [census](https://census.carloslima.dev), which reads one committed measurement of the repository's tests, stories, scenarios and code health and lists every gap it found.
+
+### What earns the minor
+
+| Layer                                                                                                                                                                                                   | PRs                                                                                            |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| The measurement: census's vocabulary in the glossary, the schema, its validator and the gap rules, `pnpm census:measure`, and the first measurement and history                                         | #742, #744, #745, #746, #747                                                                   |
+| The census app: the shell, a home for the four dimensions, a page per workspace, and a three.js testing pyramid that falls back to the flat one where the device cannot afford it and in every capture  | #788, #789, #790, #792, #793, #794, #797                                                       |
+| census in the acceptance suite: a fourth built server and one scenario                                                                                                                                  | #795                                                                                           |
+| census deployed: the Vercel project's configuration, analytics, outbound links, a sitemap and `robots.txt`                                                                                              | #796, #798                                                                                     |
+| `packages/ui`: the Meter atom, thirteen chart and list molecules, the Sidebar, TopBar and SearchPalette organisms, chart colour roles, JetBrains Mono bold, and the passes that set them on their tiles | #769, #771, #772, #773, #774, #775, #776, #777, #778, #779, #780, #781, #782, #783, #784, #791 |
+| Boards: census drawn before its code, its tiles redrawn onto the token scale, and one screens board per app                                                                                             | #722, #770, #785, #786, #787                                                                   |
+| A coverage floor for all ten places the first measurement found with none                                                                                                                               | #759, #760, #761, #762, #763, #764, #765, #766, #767, #768                                     |
+| The visual-diff baseline budgets, raised for census's screens                                                                                                                                           | #743                                                                                           |
+| Sandcastle: the worktree sandbox's install ends itself and fetches four at a time                                                                                                                       | #758                                                                                           |
+| Dependencies and the standard: Dependabot alerts #19–#21 closed, and a child carries no console screens                                                                                                 | #719, #720                                                                                     |
+
+Every census component was drawn on its board first. The first measurement named ten places with no coverage number, each became an issue, and all ten closed inside the cycle.
+
+### Twelve manifests
+
+Twelve now, where v1.9.0 moved eleven: `apps/census` joins. All move to 1.10.0 together. Every internal dependency is `workspace:*`, and `pnpm install --frozen-lockfile` resolves with `pnpm-lock.yaml` untouched.
+
+### The corpus
+
+88 baselines joined, 286 to 374: 64 for the new components and 24 census screens; 28 more were re-accepted. The corpus is 29,255,650 bytes against a budget raised from 15 to 32 MB in #743, about 2.74 MB left. The largest single PNG is 1,146,727 bytes against a per-file budget of 1.3 MB.
+
+### The index, measured rather than adjusted
+
+`PROJECT_INDEX.md` was stamped 2026-11-17. Every count was measured again with the turbo cache forced off (0 of 10 test tasks cached). The left column is what v1.9.0 claimed; some of these moved during the cycle:
+
+| Claim                                        | Corrected to                                        |
+| -------------------------------------------- | --------------------------------------------------- |
+| Version 1.9.0                                | **1.10.0**                                          |
+| Eleven manifests                             | **twelve**                                          |
+| Orchestrator suite 65 files / 958 tests      | **67 / 989**                                        |
+| `packages/ui` 39 / 657                       | **58 / 990**                                        |
+| `apps/storybook` 11 / 335                    | 11 / **358**                                        |
+| `apps/visual-diff-ui` 83 / 1419              | 83 / **1428** (1 skipped until the corpus is built) |
+| `apps/e2e` unit suite 1 / 11                 | 1 / **12**                                          |
+| `apps/census`: not listed                    | **26 / 331**                                        |
+| `packages/ui` 31 components (17 · 7 · 5 · 2) | **48** (18 · 20 · 8 · 2)                            |
+| `apps/storybook` 45 stories                  | **64** story files                                  |
+| 88 acceptance scenarios (164 tests)          | **89** (166 tests)                                  |
+| 286 baselines                                | **374**                                             |
+| Four committed agent skills                  | **six**; two were never counted                     |
+| The acceptance suite seeds three worlds      | **two**, and census boots beside them               |
+| README: 30 components, nine exported boards  | **48**, **eighteen**                                |
+
+The component count was also wrong in the cycle itself: the index said 37 while its own tier figures added up to 46. Unchanged, and measured: `apps/blog` 28 / 625 (622 passed, 3 skipped), `packages/visual-diff` 11 / 519, `apps/manual` 10 / 118, `packages/logger` 3 / 32, `packages/links` 1 / 10, 33 `sandcastle-*.mts` modules, 21 docs pages, 2 local scenarios.
+
+### Known gaps
+
+**census publishes a measurement older than census.** The committed file was measured on 2026-11-22 at `6d4ee88`, before the app's pages and the new components existed and before the ten coverage floors landed. It still lists ten unmeasured workspaces that are measured now.
+
+**No gap issue is still held, because only ten of 107 gaps were filed.** The other 97 have no issue: 56 missing stories, 15 uncovered files, 12 incomplete components, 11 missing route states and 3 apps with no scenario. A fresh measurement comes before filing them, since some may have closed.
+
+**Parts of census still drift from their tiles.** The pixel-perfect pass found nine places and #797 closed one. Open: the code health figures, the dead-code meters, the styling and workspace penalty lists, the refactor targets' actions, the mobile icicle, two mobile controls, and the sidebar's dots.
+
+**census shows no version.** Its pages have no footer, and the sibling sites' footers do not link to it. Both wait for a tile.
+
+**Some floors are low.** Each is set under what its suite measured: `apps/e2e`'s own scripts sit at 2% of lines and `scripts/` at 26%. They stop a fall; they do not claim coverage.
+
+**Publishing does not refresh `/changelog` by itself.** `changelog-deploy.yml` is still disabled with the rest.
+
+**The gate is still a hook, not a check.** A push with `--no-verify` reaches `main` ungated. A push whose gate waited on the machine lock can also fail after a green gate, because GitHub closes the SSH connection ([#721](https://github.com/climaa/acceptance-gate/issues/721)).
+
+**Unit tests still time out under parallel load now and then** ([#716](https://github.com/climaa/acceptance-gate/issues/716)).
+
+**The README still carries the `pr.yml` badge,** a workflow that no longer runs.
+
+**The ledger still reads spacing only.** Colour, type and radius are not measured.
+
+**Upstream and unchanged:** [#68](https://github.com/climaa/acceptance-gate/issues/68) ESLint 10 is unreachable, and [#47](https://github.com/climaa/acceptance-gate/issues/47) TypeScript 7 is blocked.
+
+**Full changelog:** https://github.com/climaa/acceptance-gate/compare/v1.9.0...v1.10.0
 
 ## v1.9.0 — every route is a screen, and the gate stops refusing a correct tree
 
