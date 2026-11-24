@@ -126,7 +126,11 @@ describe('the stat tiles', () => {
         value: '0 over 20',
         detail: 'every function under the ceiling',
         state: 'measured',
-        meter: { label: 'Health: score of 100', value: 88.2, hue: 'chart-4' },
+        meter: {
+          label: 'Health: functions under the ceiling',
+          value: 100,
+          hue: 'chart-4',
+        },
       },
     ]);
   });
@@ -213,6 +217,17 @@ describe('the stat tiles', () => {
       detail: '3 functions over the ceiling',
     });
     expect(viewOf('scripts', one).tiles[3]?.detail).toBe('1 function over the ceiling');
+  });
+
+  it('draws no Health bar over the ceiling, where no share was measured', () => {
+    const health = viewOf('scripts').tiles[3];
+
+    expect(health).toEqual({
+      label: 'Health',
+      value: '3 over 20',
+      detail: '3 functions over the ceiling',
+      state: 'measured',
+    });
   });
 
   it('leaves the floor out of a Code card whose workspace sets none', () => {
