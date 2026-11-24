@@ -932,23 +932,9 @@
     gap: var(--space-5);
   }
 
-  /* The tile's metrics columns: 130, 280, 110, 130 and 110px, 12px apart. */
+  /* The tile's metrics columns sit 12px apart. */
   .census-metrics .ds-table__cell {
     padding-inline: 0 var(--space-3);
-  }
-
-  .census-metrics th:nth-child(1),
-  .census-metrics th:nth-child(4) {
-    width: calc(var(--space-16) * 2 + var(--space-3));
-  }
-
-  .census-metrics th:nth-child(2) {
-    width: calc(var(--space-16) * 4 + var(--space-8) + var(--space-1));
-  }
-
-  .census-metrics th:nth-child(3),
-  .census-metrics th:nth-child(5) {
-    width: calc(var(--space-12) * 2 + var(--space-6) + var(--space-1));
   }
 
   /* The tile's chips sit 12px apart, and the row is as tall as a chip. */
@@ -992,6 +978,47 @@
   /* No card closes these tables, so the tile rules off their last row too. */
   .census-section .ds-table__body .ds-table__row:last-child .ds-table__cell {
     border-block-end: 1px solid var(--color-border);
+  }
+}
+
+/* The tile's metrics columns, 130, 280, 110, 130 and 110px, at the tile's own
+   width and up. A narrower window cannot hold them, and a fixed table would
+   leave its card rather than shrink. */
+@media (width >= 1280px) {
+  .census-metrics th:nth-child(1),
+  .census-metrics th:nth-child(4) {
+    width: calc(var(--space-16) * 2 + var(--space-3));
+  }
+
+  .census-metrics th:nth-child(2) {
+    width: calc(var(--space-16) * 4 + var(--space-8) + var(--space-1));
+  }
+
+  .census-metrics th:nth-child(3),
+  .census-metrics th:nth-child(5) {
+    width: calc(var(--space-12) * 2 + var(--space-6) + var(--space-1));
+  }
+}
+
+/* There the columns keep the tile's proportions and their words wrap. */
+@media (768px <= width < 1280px) {
+  .census-metrics th:nth-child(1),
+  .census-metrics th:nth-child(4) {
+    width: 14.5%;
+  }
+
+  .census-metrics th:nth-child(2) {
+    width: 30%;
+  }
+
+  .census-metrics th:nth-child(3),
+  .census-metrics th:nth-child(5) {
+    width: 13%;
+  }
+
+  .census-metrics td,
+  .census-metrics th {
+    white-space: normal;
   }
 }
 
