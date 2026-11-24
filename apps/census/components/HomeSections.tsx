@@ -5,6 +5,7 @@ import {
   GapPills,
   Hotspots,
   Icicle,
+  Meter,
   PenaltyBars,
   ProfileBar,
   SparkStat,
@@ -212,6 +213,9 @@ function CountRows({ rows }: { rows: readonly NamedCount[] }) {
             <strong>{row.name}</strong>
             <span>{row.detail}</span>
           </span>
+          {row.share !== undefined && (
+            <Meter className="census-count__meter" label={row.name} value={row.share} />
+          )}
           <span className="census-count__value">{row.value}</span>
         </li>
       ))}
@@ -225,7 +229,13 @@ export function DeadCodeCard({ data }: Of<'dead'>) {
       title="Dead code"
       description="What nothing imports. Each one is a removal or an issue."
     >
-      <CountRows rows={data} />
+      <CountRows rows={data.rows} />
+      {!data.boundariesConfigured && (
+        <div className="census-boundaries">
+          <Badge tone="dashed">boundaries not configured</Badge>
+          <p className="census-caption">architecture rules are not measured</p>
+        </div>
+      )}
     </SectionCard>
   );
 }

@@ -172,9 +172,63 @@ describe('overviewOf the sample: health', () => {
   });
 
   it('lists dead code and the styling findings', () => {
-    expect(view.dead.map((d) => d.value)).toEqual(['49', '76', '2', '2', '0']);
+    expect(view.dead.rows.map((d) => d.value)).toEqual(['49', '76', '2', '2', '0']);
     expect(view.styling?.findings.map((f) => f.value)).toEqual(['1', '4', '71', '1']);
     expect(view.styling?.source).toBe('of 100 · fallow 3.36.0');
+  });
+
+  it('gives unused files and exports their share of what was measured', () => {
+    const { measurement, history } = sample();
+    Object.assign(measurement.health.dead, { totalFiles: 822, totalExports: 1752 });
+
+    const rows = overviewOf(measurement, history).dead.rows;
+
+    expect(rows.slice(0, 2)).toEqual([
+      { name: 'Unused files', detail: '49 of 822', value: '6%', share: 6 },
+      { name: 'Unused exports', detail: '76 of 1,752', value: '4.3%', share: 4.3 },
+    ]);
+    expect(rows.slice(2).map((r) => r.share)).toEqual([undefined, undefined, undefined]);
+  });
+
+  it('keeps the plain count when the measurement recorded no total', () => {
+    const rows = view.dead.rows;
+
+    expect(rows[0]).toEqual({
+      name: 'Unused files',
+      detail: 'files nothing imports',
+      value: '49',
+    });
+    expect(rows[1]).toEqual({
+      name: 'Unused exports',
+      detail: 'exports nothing imports',
+      value: '76',
+    });
+  });
+
+  it('keeps the plain count when there was nothing to take a share of', () => {
+    const { measurement, history } = sample();
+    Object.assign(measurement.health.dead, { files: 0, totalFiles: 0 });
+
+    const row = overviewOf(measurement, history).dead.rows[0];
+
+    expect(row).toEqual({
+      name: 'Unused files',
+      detail: 'files nothing imports',
+      value: '0',
+    });
+  });
+
+  it.each([
+    [undefined, false],
+    [false, false],
+    [true, true],
+  ])('reads boundaries recorded as %s as configured: %s', (recorded, configured) => {
+    const { measurement, history } = sample();
+    Object.assign(measurement.health.dead, { boundaries: recorded });
+
+    const { dead } = overviewOf(measurement, history);
+
+    expect(dead.boundariesConfigured).toBe(configured);
   });
 
   it('marks the hotspots that are refactor targets, and shows the top five targets', () => {

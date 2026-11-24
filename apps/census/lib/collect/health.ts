@@ -6,7 +6,7 @@
  * measure step runs: `health` (score, vital signs, file scores, hotspots, targets,
  * coverage gaps, styling), a complexity-only `health` with the cognitive ceiling
  * at 20 (the same functions `scripts/complexity-gate.mjs` names), `dead-code`, and
- * `dupes` in its mild and semantic modes. A workspace's score is its fallow group:
+ * `dupes` in its mild and semantic modes. `list` says whether boundaries are configured. A workspace's score is its fallow group:
  * `--group-by package` for a workspace, `--group-by directory` for a
  * pseudo-workspace, which fallow cannot see as a package.
  */
@@ -33,6 +33,7 @@ export interface FallowReports {
     health_score: { score: number; grade: string; penalties: Record<string, number> };
     vital_signs: {
       duplication_pct: number;
+      counts: { total_files: number; total_exports: number };
       unit_size_profile: Risk;
       unit_interfacing_profile: Risk;
     };
@@ -61,6 +62,8 @@ export interface FallowReports {
     unused_files: Path[];
     unused_exports: Path[];
   };
+  /** Whether any architecture boundary is configured for fallow to check. */
+  boundaries: { boundaries: { configured: boolean } };
   dupesMild: { stats: DupeStats };
   dupesSemantic: { stats: DupeStats };
   /** Score and grade by fallow group key: a package name, or a top directory. */
@@ -98,7 +101,7 @@ function styling(health: FallowReports['health']): RepositoryHealth['styling'] {
 
 /** The repository-wide Health block of a measurement. */
 export function repositoryHealth(reports: FallowReports): RepositoryHealth {
-  const { health, dead, dupesMild, dupesSemantic } = reports;
+  const { health, dead, boundaries, dupesMild, dupesSemantic } = reports;
   const cognitive = new Map(health.file_scores.map((f) => [f.path, f.total_cognitive]));
   const css = styling(health);
   return {
@@ -114,6 +117,9 @@ export function repositoryHealth(reports: FallowReports): RepositoryHealth {
       types: dead.summary.unused_types,
       unlistedDeps: dead.summary.unlisted_dependencies,
       cycles: dead.summary.circular_dependencies,
+      totalFiles: health.vital_signs.counts.total_files,
+      totalExports: health.vital_signs.counts.total_exports,
+      boundaries: boundaries.boundaries.configured,
     },
     duplication: {
       semanticPct: round1(dupesSemantic.stats.duplication_percentage),

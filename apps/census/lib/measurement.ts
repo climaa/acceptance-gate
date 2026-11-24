@@ -173,6 +173,10 @@ const repositoryHealth = z.object({
     types: count,
     unlistedDeps: count,
     cycles: count,
+    // Optional: measurements written before these were recorded have none.
+    totalFiles: count.optional(),
+    totalExports: count.optional(),
+    boundaries: z.boolean().optional(),
   }),
   duplication: z.object({
     semanticPct: percent,
