@@ -42,7 +42,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-4);
+  gap: var(--space-4) var(--space-6);
   padding: var(--space-3) var(--space-8);
   border-block: 1px solid var(--color-border);
 }
@@ -83,6 +83,29 @@
   flex-direction: column;
   gap: var(--space-6);
   padding: var(--space-8) var(--space-8) var(--space-12);
+}
+
+/* Badge takes the face of the text it sits in: the display face inside a heading,
+   which ships no bold, and the body's elsewhere. Every chip the tiles draw is mono. */
+.census-main .ds-badge {
+  font-family: var(--font-mono);
+}
+
+/* What the tiles draw as a tag (a workspace's category, a component's tier, a
+   gap's kind) is regular and 12px in at each side. */
+.census-title .ds-badge,
+.census-inventory .ds-badge,
+.census-gap .census-gap__kind {
+  padding-inline: var(--space-3);
+  font-family: var(--font-mono);
+  font-weight: var(--weight-normal);
+}
+
+/* Beside the title the tag is the tile's 23px. In a row it keeps the atom's
+   height: the rows already stand taller than drawn. */
+.census-title .ds-badge {
+  padding-block: var(--space-1);
+  line-height: var(--leading-tight);
 }
 
 .census-intro {
@@ -149,7 +172,6 @@
 .census-stale {
   margin: 0;
   padding: var(--space-3) var(--space-4);
-  border: 1px solid var(--color-warning-fg);
   border-radius: var(--radius-md);
   background: var(--color-warning-surface);
   font-size: var(--text-sm);
@@ -378,6 +400,24 @@
   letter-spacing: var(--tracking-wide);
   line-height: var(--leading-tight);
   text-transform: uppercase;
+  border-block-end-color: var(--color-border);
+}
+
+/* The tile sets every metrics column from its start, the two figures in bold and
+   the words around them muted. */
+.census-metrics .ds-table__cell {
+  text-align: start;
+}
+
+.census-metrics td:nth-child(2),
+.census-metrics td:nth-child(4),
+.census-metrics td:nth-child(6) {
+  color: var(--color-text-muted);
+}
+
+.census-metrics td.ds-table__cell--numeric {
+  font-family: var(--font-mono);
+  font-weight: var(--weight-bold);
 }
 
 /* The tile hangs the metrics table 4px under its heading, and the stories'
@@ -390,9 +430,12 @@
   gap: var(--space-2);
 }
 
+/* The tile gives the gap pills 312px and the pyramid the rest. */
 .census-bento {
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns:
+    minmax(0, 1fr)
+    min(var(--space-16) * 4 + var(--space-12) + var(--space-2), 33%);
   gap: var(--space-6);
   align-items: start;
 }
@@ -405,6 +448,11 @@
   border-block-start: 1px solid var(--color-border);
 }
 
+/* The tile centres the figure and its counts in the card. */
+.census-pyramid .ds-test-pyramid {
+  justify-content: center;
+}
+
 /* The tile sets the routes 22px apart: 18px lines, 4px between. */
 .census-routes__list {
   display: flex;
@@ -414,12 +462,14 @@
   font-size: var(--text-xs);
 }
 
-/* The score beside what costs points: the tile gives the score a quarter of
-   the card (220px of 967) and 48px before the penalties. A rule closes the
+/* The score beside what costs points: the tile gives the score 220px and 48px
+   before the penalties. A rule closes the
    pair, as it closes the styling card's score. */
 .census-split {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);
+  grid-template-columns:
+    min(var(--space-16) * 3 + var(--space-6) + var(--space-1), 25%)
+    minmax(0, 1fr);
   gap: var(--space-12);
 }
 
@@ -445,7 +495,7 @@
 .census-score__grade {
   font-family: var(--font-mono);
   font-size: var(--text-base);
-  font-weight: var(--weight-normal);
+  font-weight: var(--weight-bold);
 }
 
 .census-sparks {
@@ -606,14 +656,26 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-  padding-block-end: var(--space-5);
   border-block-end: 1px solid var(--color-border);
   font-size: var(--text-sm);
 }
 
+/* Outranks `.census-card ul`, which zeroes a list's padding: the tile sets the
+   notes 20px above their rule. */
+.census-card .census-notes {
+  padding-block-end: var(--space-5);
+}
+
+/* The tile hangs the notes 8px from a mono dot. */
+.census-notes li {
+  display: flex;
+  gap: var(--space-2);
+}
+
 .census-notes li::before {
-  content: '· ';
-  color: var(--color-text-muted);
+  content: '·';
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
 }
 
 .census-exports {
@@ -690,14 +752,24 @@
   font-size: var(--text-xs);
   font-weight: var(--weight-bold);
   letter-spacing: var(--tracking-wide);
+  line-height: var(--leading-tight);
   text-transform: uppercase;
   color: var(--color-text-muted);
 }
 
+.census-gaps__dimension span {
+  font-family: var(--font-mono);
+  font-weight: var(--weight-normal);
+}
+
 .census-gap {
   display: grid;
-  /* The tile's three columns: title, workspace, kind, the pill at its column's start. */
-  grid-template-columns: minmax(0, 3fr) minmax(0, 1fr) minmax(0, 1fr);
+  /* The tile's three columns: the title, 180px of workspace, 200px of kind, the
+     pill at its column's start. They yield on a window too narrow for them. */
+  grid-template-columns:
+    minmax(0, 1fr)
+    min(var(--space-16) * 2 + var(--space-12) + var(--space-1), 20%)
+    min(var(--space-16) * 3 + var(--space-2), 20%);
   align-items: center;
   gap: var(--space-4);
   padding-block: var(--space-3);
@@ -734,7 +806,7 @@
 .census-workspace__title {
   display: flex;
   align-items: center;
-  gap: var(--space-4);
+  gap: var(--space-3);
 }
 
 .census-workspace__path {
@@ -747,6 +819,7 @@
 .census-tiles {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: start;
   gap: var(--space-6);
   margin: 0;
   padding: 0;
@@ -759,7 +832,7 @@
 
 /* A workspace's own gap list has no workspace column: two, the title and its kind. */
 .census-gap--own {
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) min(var(--space-16) * 3 + var(--space-2), 40%);
 }
 
 .census-section {
@@ -829,7 +902,7 @@
 }
 
 .census-open a {
-  font-weight: var(--weight-semibold);
+  font-weight: var(--weight-bold);
   color: var(--color-accent);
   text-decoration: none;
 }
@@ -859,19 +932,66 @@
     gap: var(--space-5);
   }
 
-  /* The tile's grade is mono 16 bold beside the score. */
-  .census-workspace .census-score__grade {
-    font-family: var(--font-mono);
-    font-weight: var(--weight-bold);
+  /* The tile's metrics columns: 130, 280, 110, 130 and 110px, 12px apart. */
+  .census-metrics .ds-table__cell {
+    padding-inline: 0 var(--space-3);
+  }
+
+  .census-metrics th:nth-child(1),
+  .census-metrics th:nth-child(4) {
+    width: calc(var(--space-16) * 2 + var(--space-3));
+  }
+
+  .census-metrics th:nth-child(2) {
+    width: calc(var(--space-16) * 4 + var(--space-8) + var(--space-1));
+  }
+
+  .census-metrics th:nth-child(3),
+  .census-metrics th:nth-child(5) {
+    width: calc(var(--space-12) * 2 + var(--space-6) + var(--space-1));
   }
 
   /* The tile's chips sit 12px apart, and the row is as tall as a chip. */
-  .census-workspace .census-legend {
+  .census-legend {
     gap: var(--space-3);
   }
 
-  .census-workspace .census-legend > li {
+  .census-legend > li {
     display: flex;
+  }
+
+  /* Files and components, on the page's own ground: 24px under their heading, each
+     column from its start, 16px before the next, under a header of mono words
+     with 8px to its rule. */
+  .census-section {
+    gap: var(--space-3);
+  }
+
+  .census-section__title {
+    margin-block-end: var(--space-3);
+  }
+
+  .census-files .ds-table__cell,
+  .census-inventory .ds-table__cell {
+    padding-inline: 0 var(--space-4);
+    text-align: start;
+  }
+
+  .census-files .ds-table__cell--header,
+  .census-inventory .ds-table__cell--header {
+    padding-block: 0 var(--space-2);
+    border-block-end-color: var(--color-border);
+    font-family: var(--font-mono);
+    font-weight: var(--weight-normal);
+  }
+
+  .census-files td.ds-table__cell--numeric {
+    color: var(--color-text-muted);
+  }
+
+  /* No card closes these tables, so the tile rules off their last row too. */
+  .census-section .ds-table__body .ds-table__row:last-child .ds-table__cell {
+    border-block-end: 1px solid var(--color-border);
   }
 }
 
@@ -1080,6 +1200,24 @@
     display: none;
   }
 
+  /* The phone tile's columns: 96px of dimension and the metric, 12px apart, then
+     the value. */
+  .census-metrics .ds-table__cell {
+    padding-inline: 0 var(--space-3);
+  }
+
+  .census-metrics th:nth-child(1) {
+    width: calc(var(--space-16) + var(--space-10) + var(--space-1));
+  }
+
+  .census-metrics th:nth-child(3) {
+    width: calc(var(--space-16) + var(--space-2));
+  }
+
+  .census-metrics .ds-table__cell:nth-child(3) {
+    padding-inline-end: 0;
+  }
+
   /* StoriesList's head is three fixed columns (15rem, the meter, 8.75rem).
      The tile puts the count on the workspace's row and the meter full width
      under both. */
@@ -1201,9 +1339,6 @@
     grid-area: 2 / 1 / 3 / -1;
   }
 
-  .census-score__value {
-    font-size: var(--text-3xl);
-  }
   .census-tiles {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--space-3);
@@ -1223,9 +1358,26 @@
     grid-template-columns: 1fr;
   }
 
+  /* The phone tile's shorter legend labels fit one row in mono; the page's, the
+     desktop's own, do not. */
+  .census-legend .ds-badge {
+    font-family: var(--font-sans);
+  }
+
   .census-section__title {
     font-size: var(--text-xl);
   }
+
+  /* The phone tile's paths are 12px, so none of them wraps. */
+  .census-file {
+    font-size: var(--text-xs);
+  }
+
+  .census-files td.ds-table__cell--numeric {
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+  }
+
   /* The phone tile lists files and components as ruled rows, not the Table's
      cards: the name on its own line, its figures under it. The names need no
      label; the figures keep theirs. */
@@ -1249,6 +1401,12 @@
   .census-files td.ds-table__cell:first-child,
   .census-inventory td.ds-table__cell:first-child {
     flex-basis: 100%;
+  }
+
+  /* The tile's file rows are 64px apart: 10px of padding and 6px between its lines
+     there, 8px of each here. */
+  .census-files .ds-table__row {
+    row-gap: var(--space-2);
   }
 
   .census-files td.ds-table__cell:first-child::before,
