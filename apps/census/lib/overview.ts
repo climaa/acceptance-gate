@@ -71,6 +71,8 @@ export interface NamedCount {
   name: string;
   detail: string;
   value: string;
+  /** 0–100, for a count that is part of a measured total. */
+  share?: number;
 }
 
 export interface Overview {
@@ -111,7 +113,7 @@ export interface Overview {
     interfacing: readonly [number, number, number, number];
     sparks: SparkView[];
   };
-  dead: NamedCount[];
+  dead: { rows: NamedCount[]; boundariesConfigured: boolean };
   styling: {
     score: number;
     grade: string;
@@ -407,15 +409,33 @@ function healthOf(m: Measurement, history: History): Overview['health'] {
   };
 }
 
-function deadOf(m: Measurement): NamedCount[] {
+/** A count as its share of `total`, or the plain count when no total was measured. */
+function shareRow(
+  name: string,
+  detail: string,
+  count: number,
+  total: number | undefined,
+): NamedCount {
+  if (!total) return { name, detail, value: String(count) };
+  const share = Math.round((count / total) * 1000) / 10;
+  return {
+    name,
+    detail: `${count.toLocaleString('en-US')} of ${total.toLocaleString('en-US')}`,
+    value: `${share}%`,
+    share,
+  };
+}
+
+function deadRows(m: Measurement): NamedCount[] {
   const { dead } = m.health;
   return [
-    { name: 'Unused files', detail: 'files nothing imports', value: String(dead.files) },
-    {
-      name: 'Unused exports',
-      detail: 'exports nothing imports',
-      value: String(dead.exports),
-    },
+    shareRow('Unused files', 'files nothing imports', dead.files, dead.totalFiles),
+    shareRow(
+      'Unused exports',
+      'exports nothing imports',
+      dead.exports,
+      dead.totalExports,
+    ),
     {
       name: 'Unused types',
       detail: 'types nothing references',
@@ -662,7 +682,7 @@ export function overviewOf(m: Measurement, history: History): Overview {
     states: statesOf(m),
     trend: trendSeries(history),
     health: healthOf(m, history),
-    dead: deadOf(m),
+    dead: { rows: deadRows(m), boundariesConfigured: m.health.dead.boundaries === true },
     styling: stylingOf(m),
     hotspots: hotspotsOf(m),
     codeCoverage: codeCoverageOf(m),

@@ -213,6 +213,7 @@ function fallowReports(coverage) {
       '--report-only',
     ]),
     dead: fallow(['dead-code']),
+    boundaries: fallow(['list', '--boundaries']),
     dupesMild: fallow(['dupes', '--mode', 'mild']),
     dupesSemantic: fallow(['dupes', '--mode', 'semantic']),
     groups: {

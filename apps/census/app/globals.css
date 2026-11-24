@@ -529,6 +529,30 @@
   color: var(--color-text-muted);
 }
 
+/* The tile's columns: 260px of name, the meter, 120px of figure, 24px apart.
+   Dead code is no chart's dimension, so its meter takes the text's hue. */
+.census-count:has(> .census-count__meter) {
+  display: grid;
+  grid-template-columns:
+    calc(var(--space-16) * 4 + var(--space-1))
+    minmax(0, 1fr)
+    calc(var(--space-10) * 3);
+  gap: var(--space-6);
+}
+
+.census-count__meter.ds-meter {
+  --meter-fill: var(--color-text-muted);
+  --meter-track: var(--color-bg-muted);
+}
+
+.census-boundaries {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
+  font-family: var(--font-mono);
+}
+
 .census-count__value {
   margin-inline-start: auto;
   font-family: var(--font-mono);
@@ -1067,6 +1091,17 @@
   /* The phone tile draws the Gaps heading at 20px. */
   .census-gaps__title {
     font-size: var(--text-xl);
+  }
+
+  /* A phone's meter takes a row of its own, 8px under the name and figure. */
+  .census-count:has(> .census-count__meter) {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: var(--space-2);
+    align-items: start;
+  }
+
+  .census-count__meter.ds-meter {
+    grid-area: 2 / 1 / 3 / -1;
   }
 
   .census-score__value {

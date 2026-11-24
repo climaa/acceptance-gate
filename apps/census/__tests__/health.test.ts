@@ -18,6 +18,7 @@ const REPORTS: FallowReports = {
     },
     vital_signs: {
       duplication_pct: 1.6,
+      counts: { total_files: 991, total_exports: 2289 },
       unit_size_profile: {
         low_risk: 83.7,
         medium_risk: 9.1,
@@ -77,6 +78,7 @@ const REPORTS: FallowReports = {
     unused_files: [{ path: 'scripts/old.mjs' }, { path: '.sandcastle/old.mts' }],
     unused_exports: [{ path: 'scripts/board.mjs' }, { path: 'packages/ui/src/index.ts' }],
   },
+  boundaries: { boundaries: { configured: false } },
   dupesMild: {
     stats: { duplication_percentage: 1.5931, duplicated_lines: 958, clone_groups: 18 },
   },
@@ -110,6 +112,9 @@ describe('repositoryHealth', () => {
       types: 1,
       unlistedDeps: 1,
       cycles: 0,
+      totalFiles: 991,
+      totalExports: 2289,
+      boundaries: false,
     });
   });
 
