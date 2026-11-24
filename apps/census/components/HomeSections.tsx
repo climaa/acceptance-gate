@@ -4,7 +4,6 @@ import {
   CoverageList,
   GapPills,
   Hotspots,
-  Icicle,
   Meter,
   PenaltyBars,
   ProfileBar,
@@ -19,6 +18,11 @@ import { WINDOW, type NamedCount, type Overview } from '@/lib/overview.ts';
 import { CopyButton } from './CopyButton';
 import { RefactorTargets } from './RefactorTargets';
 import { SectionCard } from './SectionCard';
+import { TallIcicle } from './TallIcicle';
+
+/** How tall the home's phone tile draws each figure, in CSS px. */
+const COMPLEXITY_HEIGHT = 820;
+const CODE_COVERAGE_HEIGHT = 720;
 
 type Of<K extends keyof Overview> = { data: Overview[K] };
 
@@ -289,7 +293,12 @@ export function HotspotsCard({ data }: Of<'hotspots'>) {
         label="Hotspots"
       />
       <h3 className="census-subtitle-caps">Complexity by folder</h3>
-      <Icicle root={data.complexity} label="Complexity by folder" />
+      <TallIcicle
+        className="census-icicle--complexity"
+        root={data.complexity}
+        label="Complexity by folder"
+        height={COMPLEXITY_HEIGHT}
+      />
       <RefactorTargets targets={data.targets} count={data.targetCount} />
     </SectionCard>
   );
@@ -312,7 +321,11 @@ export function CodeCoverageCard({ data }: Of<'codeCoverage'>) {
           <Badge tone="danger">unmeasured</Badge>
         </li>
       </ul>
-      <Icicle root={data} label="Code coverage by workspace" />
+      <TallIcicle
+        root={data}
+        label="Code coverage by workspace"
+        height={CODE_COVERAGE_HEIGHT}
+      />
     </SectionCard>
   );
 }

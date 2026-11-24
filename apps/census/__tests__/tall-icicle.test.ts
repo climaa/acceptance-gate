@@ -24,7 +24,8 @@ const tree = (...lines: number[]) => ({
   ],
 });
 
-const cellOf = (lines: number) => tallColumns(tree(lines))[2]!.at(-1)!;
+const cellOf = (lines: number, height?: number) =>
+  tallColumns(tree(lines), height)[2]!.at(-1)!;
 
 describe('tallColumns', () => {
   it('gives the tree one column per depth', () => {
@@ -79,10 +80,30 @@ describe('tallColumns', () => {
     ]);
   });
 
+  it('fits the lines to the height the figure stands at', () => {
+    const cell = cellOf(50, 720);
+
+    expect([cell.label, cell.detail]).toEqual(['f50', undefined]);
+  });
+
+  it('parts a cell from the next by the whole seam where the seam is half of it', () => {
+    const cell = cellOf(4);
+
+    expect(cell.seam).toBe(2);
+  });
+
+  it('keeps the seam within half of a cell shorter than that', () => {
+    const cell = cellOf(1);
+
+    expect(cell.seam).toBe(0.5);
+  });
+
   it('names a file fallow has no figure for', () => {
     const [, files] = tallColumns({ label: 'r', children: [{ label: 'a', weight: 1 }] });
 
-    expect(files).toEqual([{ start: '0%', size: '100%', tone: 'neutral', label: 'a' }]);
+    expect(files).toEqual([
+      { start: '0%', size: '100%', seam: 2, tone: 'neutral', label: 'a' },
+    ]);
   });
 
   it('draws the root alone when no file has a line', () => {

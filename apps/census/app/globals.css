@@ -907,7 +907,7 @@
   text-decoration: none;
 }
 
-/* The files' Icicle lies down on desktop and stands up on a phone. */
+/* An Icicle lies down on desktop and stands up on a phone. */
 .census-icicle__columns {
   display: none;
 }
@@ -1027,21 +1027,25 @@
     padding-inline: var(--space-4);
   }
 
-  /* The phone tile's Icicle: a 900px figure, its root 56px wide, its groups 86px
-     and its files the rest, with the molecule's 2px seams between the cells. */
+  /* The phone tiles' Icicle: its root 56px wide, its groups 86px (110px where they
+     are complexity's workspaces) and its leaves the rest, with the molecule's 2px
+     seams between the cells. A cell's height and its seam come from its share. */
   .census-icicle .ds-icicle__rows {
     display: none;
   }
 
   .census-icicle__columns {
     display: flex;
-    block-size: calc(var(--space-16) * 14 + var(--space-1));
   }
 
   .census-icicle__column {
     position: relative;
     flex: none;
     inline-size: calc(var(--space-16) + var(--space-6));
+  }
+
+  .census-icicle--complexity .census-icicle__column:nth-child(2) {
+    inline-size: calc(var(--space-16) + var(--space-12));
   }
 
   .census-icicle__column:first-child {
@@ -1058,7 +1062,6 @@
   .census-icicle__cell.ds-icicle__cell {
     inset: auto 0;
     border-inline-end: 0;
-    border-block-end: 2px solid transparent;
   }
 
   .census-icicle__column:nth-child(2):not(:last-child) > .census-icicle__cell {
