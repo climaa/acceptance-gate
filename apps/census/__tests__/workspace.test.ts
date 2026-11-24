@@ -425,24 +425,28 @@ describe('the refactor targets', () => {
       {
         path: 'scripts/pen/place-tiles.js',
         href: `${BLOB}/scripts/pen/place-tiles.js`,
+        action: '',
         effort: 'medium',
         priority: 35,
       },
       {
         path: 'scripts/gate/manifest.mjs',
         href: `${BLOB}/scripts/gate/manifest.mjs`,
+        action: '',
         effort: 'medium',
         priority: 24.1,
       },
       {
         path: 'scripts/pen/board-scale-integrity.mjs',
         href: `${BLOB}/scripts/pen/board-scale-integrity.mjs`,
+        action: '',
         effort: 'medium',
         priority: 22.8,
       },
       {
         path: 'scripts/policy.test.mjs',
         href: `${BLOB}/scripts/policy.test.mjs`,
+        action: '',
         effort: 'medium',
         priority: 21.3,
       },

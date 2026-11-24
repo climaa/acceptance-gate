@@ -560,6 +560,28 @@
   font-weight: var(--weight-bold);
 }
 
+/* The tile's columns: 330px of path, the action, the effort, 40px of score. The
+   path yields on a window too narrow for all four. */
+.census-target {
+  display: grid;
+  grid-template-columns:
+    min(var(--space-16) * 5 + var(--space-2), 40%)
+    minmax(0, 1fr)
+    auto
+    var(--space-10);
+}
+
+.census-target__action {
+  font-size: var(--text-sm);
+}
+
+.census-target__priority {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+  text-align: end;
+}
+
 .census-target a {
   font-family: var(--font-mono);
   font-size: var(--text-xs);
@@ -882,9 +904,26 @@
     padding: var(--space-4);
   }
 
-  /* Dead code's lines wrap the same at the tile's 20px. */
-  .census-card:has(> .census-counts):not(:has(.census-score)) {
+  /* Dead code's and Hotspots' lines wrap the same at the tile's 20px. */
+  .census-card:has(> .census-counts):not(:has(.census-score)),
+  .census-card:has(> .census-targets) {
     padding: var(--space-5);
+  }
+
+  /* The phone tile draws the path over the action and its effort, and no score. */
+  .census-target {
+    grid-template-columns: minmax(0, max-content) minmax(min-content, 1fr);
+    gap: var(--space-1) var(--space-2);
+    justify-items: start;
+  }
+
+  .census-target a {
+    grid-column: 1 / -1;
+  }
+
+  .census-target__action:empty,
+  .census-target__priority {
+    display: none;
   }
 
   /* TestPyramid's figure is a fixed 2:1 box beside its counts; the tile keeps

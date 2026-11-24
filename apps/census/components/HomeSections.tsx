@@ -17,6 +17,7 @@ import { PyramidFigure } from '@/app/_components/PyramidScene';
 import type { HomeFilter } from '@/lib/filter.ts';
 import { WINDOW, type NamedCount, type Overview } from '@/lib/overview.ts';
 import { CopyButton } from './CopyButton';
+import { RefactorTargets } from './RefactorTargets';
 import { SectionCard } from './SectionCard';
 
 type Of<K extends keyof Overview> = { data: Overview[K] };
@@ -276,19 +277,7 @@ export function HotspotsCard({ data }: Of<'hotspots'>) {
       />
       <h3 className="census-subtitle-caps">Complexity by folder</h3>
       <Icicle root={data.complexity} label="Complexity by folder" />
-      <div className="census-targets__head">
-        <h3 className="census-subtitle-caps">Refactor targets · {data.targetCount}</h3>
-        <span className="census-caption">priority</span>
-      </div>
-      <ul className="census-targets">
-        {data.targets.map((t) => (
-          <li key={t.path} className="census-target">
-            <a href={t.href}>{t.path}</a>
-            <Badge tone="dashed">{t.effort}</Badge>
-            <span className="census-count__value">{t.priority}</span>
-          </li>
-        ))}
-      </ul>
+      <RefactorTargets targets={data.targets} count={data.targetCount} />
     </SectionCard>
   );
 }

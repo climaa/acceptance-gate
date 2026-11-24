@@ -44,7 +44,7 @@ export interface FallowReports {
       total_cognitive: number;
     })[];
     hotspots: (Path & { score: number; commits: number })[];
-    targets: (Path & { priority: number; effort: string })[];
+    targets: (Path & { priority: number; effort: string; recommendation: string })[];
     coverage_gaps: { files: Path[] };
     styling_health?: {
       score: number;
@@ -150,6 +150,7 @@ export function repositoryHealth(reports: FallowReports): RepositoryHealth {
       path: t.path,
       priority: t.priority,
       effort: t.effort,
+      recommendation: t.recommendation,
     })),
     profiles: {
       unitSize: profile(health.vital_signs.unit_size_profile),

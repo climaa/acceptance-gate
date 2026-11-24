@@ -202,7 +202,13 @@ const repositoryHealth = z.object({
     z.object({ path: relativePath, churn: count, complexity: z.number().nonnegative() }),
   ),
   refactorTargets: z.array(
-    z.object({ path: relativePath, priority: z.number(), effort: z.string().min(1) }),
+    z.object({
+      path: relativePath,
+      priority: z.number(),
+      effort: z.string().min(1),
+      // Optional: measurements written before this was recorded have none.
+      recommendation: z.string().min(1).optional(),
+    }),
   ),
   profiles: z.object({
     unitSize: z.array(percent).length(4),
