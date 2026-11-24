@@ -1,6 +1,8 @@
 /* The board parts the cells with 2px seams of page ground, off the spacing
-   scale. They are drawn as transparent rules rather than gaps, so the rows
-   keep the board's 58px pitch and the figure its 172px height. */
+   scale. They are drawn inside the figure rather than as gaps, so the rows keep
+   the board's 58px pitch and the figure its 172px height. A cell's own seam is
+   padding outside its ground, since padding can shrink with the cell and a
+   border cannot: no seam takes more than half of its cell. */
 .ds-icicle__rows {
   display: flex;
   flex-direction: column;
@@ -22,11 +24,9 @@
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  padding-block-start: var(--space-1);
-  padding-inline: var(--space-2);
-  border-inline-end: 2px solid transparent;
+  padding-inline-end: min(2px, var(--ds-icicle-half, 0px));
   border-radius: var(--radius-sm);
-  background-clip: padding-box;
+  background-clip: content-box;
   overflow: hidden;
 }
 
@@ -42,7 +42,16 @@
   font-weight: var(--weight-normal);
   line-height: var(--leading-normal);
   white-space: nowrap;
+  padding-inline: var(--space-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
   color: var(--color-text);
+}
+
+/* The inset belongs to the lines, so a cell without them can be as narrow as
+   its share. */
+.ds-icicle__cell > :first-child {
+  padding-block-start: var(--space-1);
 }
 
 .ds-icicle__detail {

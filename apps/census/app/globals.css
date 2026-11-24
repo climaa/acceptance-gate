@@ -1065,16 +1065,6 @@
     border-inline-end: 2px solid transparent;
   }
 
-  /* The thinnest file is 2px tall, less than a cell's own padding. */
-  .census-icicle__cell.ds-icicle__cell:empty {
-    padding: 0;
-  }
-
-  .census-icicle__cell > * {
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
   .census-main {
     gap: var(--space-4);
     padding: var(--space-6) var(--space-4) var(--space-10);
