@@ -96,7 +96,10 @@ const config = defineConfig({
       // is behind a `main()` guard now and the module imports inert, so the file
       // is measured like any other. `local-data-dir.mjs` stays out: it is a dev
       // convenience `pnpm dev` runs before Next starts, with no consumer to break.
-      exclude: ['**/*.test.{ts,tsx}'],
+      // Screen stories, their samples and frames stay out too: Storybook renders
+      // them and the visual differ judges them, so no unit test is meant to
+      // reach one.
+      exclude: ['**/*.test.{ts,tsx}', 'app/_screens/**'],
       // Explicit, so a run writes no `coverage/` directory: `text` is what names
       // the files when the floor breaks, and the default reporter set would add
       // html/clover/json artifacts nothing here reads.
