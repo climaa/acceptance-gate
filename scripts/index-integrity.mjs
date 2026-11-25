@@ -35,7 +35,7 @@
 // version of the file it had not read. Run from `health:check`, alongside
 // complexity-gate.mjs's --scope pass, there is no cache to mislead.
 import { execFileSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { readFileSync, realpathSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -45,14 +45,14 @@ const INDEX = 'PROJECT_INDEX.md';
 const read = (rel) => readFileSync(join(ROOT, rel), 'utf8');
 
 /** The stamp reads `Version 1.4.0 · generated 2026-09-14`. */
-function statedVersion(index) {
+export function statedVersion(index) {
   const m = index.match(/^Version (\d+\.\d+\.\d+) · generated (\d{4}-\d{2}-\d{2})/m);
 
   return m ? { version: m[1], line: index.slice(0, m.index).split('\n').length } : null;
 }
 
 /** `160 committed baselines`, stated twice — the structure tree and the Tests section. */
-function statedBaselines(index) {
+export function statedBaselines(index) {
   return [...index.matchAll(/(\d+) committed baselines/g)].map((m) => ({
     count: Number(m[1]),
     line: index.slice(0, m.index).split('\n').length,
@@ -84,51 +84,75 @@ function trackedBaselines() {
   return out.split('\n').filter((f) => f.endsWith('.png')).length;
 }
 
-const index = read(INDEX);
-const problems = [];
+/**
+ * Every way the index disagrees with the repository, as the lines printed under
+ * the failure. Empty when they agree.
+ *
+ * @param {string} index PROJECT_INDEX.md's text
+ * @param {string | undefined} manifest the root package.json's `version`
+ * @param {number} baselines the PNGs git tracks under __baselines__
+ * @returns {string[]}
+ */
+export function indexProblems(index, manifest, baselines) {
+  return [...stampProblems(index, manifest), ...baselineProblems(index, baselines)];
+}
 
-const stamp = statedVersion(index);
-const manifest = JSON.parse(read('package.json')).version;
+function stampProblems(index, manifest) {
+  const stamp = statedVersion(index);
 
-if (!manifest) {
-  problems.push('package.json has no `version`, so the stamp has nothing to agree with');
-} else if (!stamp) {
-  problems.push(`${INDEX} — no \`Version X.Y.Z · generated YYYY-MM-DD\` stamp found`);
-} else if (stamp.version !== manifest) {
+  if (!manifest) {
+    return ['package.json has no `version`, so the stamp has nothing to agree with'];
+  }
+  if (!stamp) {
+    return [`${INDEX} — no \`Version X.Y.Z · generated YYYY-MM-DD\` stamp found`];
+  }
+  if (stamp.version === manifest) return [];
+
   // The remedy names files and a document, not a slash command: this text is read
   // in a CI log by whoever is holding the failure, and telling them to run
   // something only an agent has is telling them nothing.
-  problems.push(
+  return [
     `${INDEX}:${stamp.line} — stamped ${stamp.version}, package.json says ${manifest}.\n` +
       `      Re-measure the index against the tree and correct every number that moved,\n` +
       `      then stamp it ${manifest}. Editing the stamp alone defeats the point: its\n` +
       `      measured before/after is the release body's index-corrections section.\n` +
       `      RELEASING.md step 4 lists the commands.`,
-  );
+  ];
 }
 
-const baselines = trackedBaselines();
-const stated = statedBaselines(index);
+function baselineProblems(index, baselines) {
+  const stated = statedBaselines(index);
 
-if (stated.length === 0) {
-  problems.push(`${INDEX} — no \`N committed baselines\` claim found`);
-}
+  if (stated.length === 0) return [`${INDEX} — no \`N committed baselines\` claim found`];
 
-for (const claim of stated) {
-  if (claim.count !== baselines) {
-    problems.push(
-      `${INDEX}:${claim.line} — claims ${claim.count} committed baselines, git tracks ${baselines}`,
+  return stated
+    .filter((claim) => claim.count !== baselines)
+    .map(
+      (claim) =>
+        `${INDEX}:${claim.line} — claims ${claim.count} committed baselines, git tracks ${baselines}`,
     );
+}
+
+/** Reads the tree, prints the verdict, and answers the exit code. */
+export function main() {
+  const manifest = JSON.parse(read('package.json')).version;
+  const baselines = trackedBaselines();
+  const problems = indexProblems(read(INDEX), manifest, baselines);
+
+  if (problems.length > 0) {
+    console.error(`✗ ${INDEX} disagrees with the repository:\n`);
+    for (const p of problems) console.error(`  ${p}`);
+    console.error('');
+    return 1;
   }
+
+  console.log(
+    `✓ ${INDEX} integrity OK — stamped ${manifest}, ${baselines} committed baselines.`,
+  );
+  return 0;
 }
 
-if (problems.length > 0) {
-  console.error(`✗ ${INDEX} disagrees with the repository:\n`);
-  for (const p of problems) console.error(`  ${p}`);
-  console.error('');
-  process.exit(1);
+const invoked = process.argv[1] && realpathSync(process.argv[1]);
+if (invoked === fileURLToPath(import.meta.url)) {
+  process.exitCode = main();
 }
-
-console.log(
-  `✓ ${INDEX} integrity OK — stamped ${manifest}, ${baselines} committed baselines.`,
-);
