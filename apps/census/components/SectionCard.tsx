@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 
 import { Text } from '@gate/ui';
+import type { Dimension } from '@/lib/measurement.ts';
 
 export interface SectionCardProps {
   title: string;
@@ -8,6 +9,8 @@ export interface SectionCardProps {
   /** Beside the heading, on its right: a range control. */
   aside?: ReactNode;
   className?: string;
+  /** The dimension a `?dimension=` filter lights; the card's CSS dims the rest. */
+  lit?: Dimension | null;
   children: ReactNode;
 }
 
@@ -17,10 +20,14 @@ export function SectionCard({
   description,
   aside,
   className,
+  lit,
   children,
 }: SectionCardProps) {
   return (
-    <section className={['census-card', className].filter(Boolean).join(' ')}>
+    <section
+      className={['census-card', className].filter(Boolean).join(' ')}
+      data-lit={lit ?? undefined}
+    >
       <div className="census-card__head">
         <header className="census-card__heading">
           <Text as="h2" variant="label" className="census-card__title">

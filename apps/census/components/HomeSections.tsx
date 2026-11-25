@@ -87,10 +87,12 @@ export function MetricsCard({ data }: Of<'metrics'>) {
   );
 }
 
-export function PyramidCard({ data }: Of<'pyramid'>) {
+/** A dimension filter dims the other dimensions' bands, as the coverage rows. */
+export function PyramidCard({ data, filter }: Of<'pyramid'> & { filter: HomeFilter }) {
   return (
     <SectionCard
       className="census-pyramid"
+      lit={filter.dimension}
       title="Testing pyramid"
       description="Tests per level, one unit each: cases, screenshots, scenarios."
     >
@@ -100,10 +102,12 @@ export function PyramidCard({ data }: Of<'pyramid'>) {
   );
 }
 
-export function GapPillsCard({ data }: Of<'gapPills'>) {
+/** A dimension filter dims the other dimensions' pills, as the coverage rows. */
+export function GapPillsCard({ data, filter }: Of<'gapPills'> & { filter: HomeFilter }) {
   return (
     <SectionCard
       className="census-gap-pills"
+      lit={filter.dimension}
       title="Gaps by dimension"
       description={data.caption}
     >
