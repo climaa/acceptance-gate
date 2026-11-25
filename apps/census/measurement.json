@@ -1,8 +1,8 @@
 {
   "schema": 1,
   "repo": "climaa/acceptance-gate",
-  "commit": "f2e2bc7bbdefe8e2a14304b0c2d260b362de4e64",
-  "measuredAt": "2026-11-25T10:07:10.503Z",
+  "commit": "9f18c9563cb5219765b35c2fea4d4c5872c0d247",
+  "measuredAt": "2026-11-25T18:01:34.876Z",
   "tools": {
     "vitest": "5.0.5",
     "fallow": "3.36.0",
@@ -10,7 +10,7 @@
     "node": "22.23.4"
   },
   "pyramid": {
-    "unit": 5472,
+    "unit": 5528,
     "visual": 374,
     "acceptance": 89
   },
@@ -42,25 +42,25 @@
     "dead": {
       "files": 49,
       "exports": 53,
-      "types": 2,
+      "types": 1,
       "unlistedDeps": 2,
       "cycles": 0,
-      "totalFiles": 1002,
-      "totalExports": 2298,
+      "totalFiles": 1009,
+      "totalExports": 2308,
       "boundaries": false
     },
     "duplication": {
       "semanticPct": 8.7,
       "mildPct": 1.9,
-      "lines": 1372,
-      "groups": 27
+      "lines": 1396,
+      "groups": 28
     },
     "styling": {
       "score": 96.9,
       "grade": "A",
       "tokenDrift": 1,
       "duplicateBlocks": 11,
-      "complexSelectors": 101,
+      "complexSelectors": 104,
       "important": 2,
       "penalties": [
         {
@@ -127,6 +127,11 @@
         "complexity": 109
       },
       {
+        "path": "apps/census/lib/overview.ts",
+        "churn": 7,
+        "complexity": 60
+      },
+      {
         "path": "apps/visual-diff-ui/__tests__/shot-tools.test.tsx",
         "churn": 14,
         "complexity": 2
@@ -142,19 +147,24 @@
         "complexity": 58
       },
       {
+        "path": "apps/census/scripts/measure.mjs",
+        "churn": 7,
+        "complexity": 42
+      },
+      {
         "path": "packages/visual-diff/src/ledger.mjs",
         "churn": 7,
         "complexity": 110
       },
       {
+        "path": "apps/census/lib/collect/visual.ts",
+        "churn": 4,
+        "complexity": 46
+      },
+      {
         "path": "apps/visual-diff-ui/components/SpacingReadings.tsx",
         "churn": 8,
         "complexity": 54
-      },
-      {
-        "path": "apps/census/lib/overview.ts",
-        "churn": 6,
-        "complexity": 60
       },
       {
         "path": "apps/visual-diff-ui/__tests__/run-panel.test.tsx",
@@ -175,16 +185,6 @@
         "path": "packages/visual-diff/src/capture.mjs",
         "churn": 11,
         "complexity": 65
-      },
-      {
-        "path": "apps/visual-diff-ui/__tests__/jobs.test.ts",
-        "churn": 17,
-        "complexity": 23
-      },
-      {
-        "path": ".sandcastle/__tests__/sandcastle.turbo-env.test.ts",
-        "churn": 11,
-        "complexity": 1
       }
     ],
     "refactorTargets": [
@@ -202,7 +202,7 @@
       },
       {
         "path": "apps/census/components/HomeScreen.tsx",
-        "priority": 32.8,
+        "priority": 33,
         "effort": "medium",
         "recommendation": "Remove 2 unused exports to reduce surface area (67% dead)"
       },
@@ -258,7 +258,7 @@
         "path": "apps/census/components/HomeSections.tsx",
         "priority": 22,
         "effort": "medium",
-        "recommendation": "Changes with measurement.ts in 6 commits (71% coupling) without an import, make the dependency explicit or move the shared logic into one module"
+        "recommendation": "Changes with measurement.ts in 6 commits (67% coupling) without an import, make the dependency explicit or move the shared logic into one module"
       },
       {
         "path": "apps/visual-diff-ui/components/DashboardTemplate.tsx",
@@ -340,9 +340,9 @@
       },
       {
         "path": "apps/census/lib/measurement.ts",
-        "priority": 16.2,
+        "priority": 16.3,
         "effort": "high",
-        "recommendation": "Changes with HomeSections.tsx in 6 commits (71% coupling) without an import, make the dependency explicit or move the shared logic into one module"
+        "recommendation": "Changes with HomeSections.tsx in 6 commits (67% coupling) without an import, make the dependency explicit or move the shared logic into one module"
       },
       {
         "path": "apps/visual-diff-ui/__tests__/shot-tools.test.tsx",
@@ -371,14 +371,14 @@
     ],
     "profiles": {
       "unitSize": [
-        83.7,
-        9.2,
-        4.5,
+        83.6,
+        9.3,
+        4.4,
         2.6
       ],
       "interfacing": [
         97.7,
-        2.1,
+        2.2,
         0.1,
         0
       ]
@@ -934,9 +934,9 @@
           "state": "measured",
           "components": {
             "total": 13,
-            "storied": 6,
+            "storied": 10,
             "tiled": 0,
-            "baselined": 6
+            "baselined": 10
           },
           "screens": {
             "stories": 8,
@@ -1072,8 +1072,8 @@
           "dimension": "code",
           "state": "measured",
           "lines": {
-            "covered": 875,
-            "total": 875,
+            "covered": 940,
+            "total": 940,
             "pct": 100
           },
           "floor": 98,
@@ -1124,6 +1124,17 @@
               "crap": 5
             },
             {
+              "path": "lib/collect/process.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 29,
+                "total": 29,
+                "pct": 100
+              },
+              "maintainability": 90.7,
+              "crap": 7
+            },
+            {
               "path": "lib/collect/routes.ts",
               "group": "lib",
               "lines": {
@@ -1138,12 +1149,12 @@
               "path": "lib/collect/visual.ts",
               "group": "lib",
               "lines": {
-                "covered": 80,
-                "total": 80,
+                "covered": 114,
+                "total": 114,
                 "pct": 100
               },
-              "maintainability": 87.2,
-              "crap": 6
+              "maintainability": 86.9,
+              "crap": 7
             },
             {
               "path": "lib/committed.ts",
@@ -1369,11 +1380,11 @@
               "path": "lib/validate.ts",
               "group": "lib",
               "lines": {
-                "covered": 49,
-                "total": 49,
+                "covered": 51,
+                "total": 51,
                 "pct": 100
               },
-              "maintainability": 88.4,
+              "maintainability": 88.1,
               "crap": 3
             },
             {
@@ -1405,9 +1416,9 @@
           "state": "measured",
           "components": {
             "total": 32,
-            "storied": 2,
-            "tiled": 2,
-            "baselined": 2
+            "storied": 28,
+            "tiled": 28,
+            "baselined": 28
           },
           "screens": {
             "stories": 6,
@@ -1494,7 +1505,7 @@
         "health": {
           "dimension": "health",
           "state": "measured",
-          "score": 90.6,
+          "score": 89.5,
           "grade": "A",
           "overCeiling": 0,
           "deadFiles": 0,
@@ -1503,7 +1514,7 @@
           "penalties": [
             {
               "name": "unit size",
-              "points": 7.6
+              "points": 8.7
             },
             {
               "name": "coupling",
@@ -1564,7 +1575,8 @@
                 "pct": 0
               },
               "maintainability": 92.7,
-              "crap": 42
+              "crap": 42,
+              "testedAsProcess": true
             },
             {
               "path": "scripts/suite-integrity.mjs",
@@ -1913,9 +1925,9 @@
           "state": "measured",
           "components": {
             "total": 5,
-            "storied": 3,
+            "storied": 4,
             "tiled": 0,
-            "baselined": 3
+            "baselined": 4
           },
           "screens": {
             "stories": 3,
@@ -2160,9 +2172,9 @@
           "dimension": "code",
           "state": "measured",
           "lines": {
-            "covered": 2661,
+            "covered": 2668,
             "total": 2796,
-            "pct": 95.2
+            "pct": 95.4
           },
           "floor": 94,
           "staticReachPct": 93.7,
@@ -2560,7 +2572,7 @@
                 "total": 12,
                 "pct": 100
               },
-              "maintainability": 96.7,
+              "maintainability": 97,
               "crap": 2
             },
             {
@@ -2776,12 +2788,12 @@
               "path": "components/ReportContents.tsx",
               "group": "components",
               "lines": {
-                "covered": 0,
+                "covered": 6,
                 "total": 6,
-                "pct": 0
+                "pct": 100
               },
               "maintainability": 91,
-              "crap": 12
+              "crap": 3
             },
             {
               "path": "components/ReportResults.tsx",
@@ -3637,12 +3649,12 @@
               "path": "lib/stories.ts",
               "group": "lib",
               "lines": {
-                "covered": 22,
+                "covered": 23,
                 "total": 23,
-                "pct": 95.7
+                "pct": 100
               },
               "maintainability": 89.4,
-              "crap": 12
+              "crap": 9
             },
             {
               "path": "lib/summary.ts",
@@ -3727,9 +3739,9 @@
           "state": "measured",
           "components": {
             "total": 52,
-            "storied": 5,
-            "tiled": 3,
-            "baselined": 5
+            "storied": 48,
+            "tiled": 31,
+            "baselined": 48
           },
           "screens": {
             "stories": 7,
@@ -3830,7 +3842,7 @@
         "health": {
           "dimension": "health",
           "state": "measured",
-          "score": 87.6,
+          "score": 87.2,
           "grade": "A",
           "overCeiling": 0,
           "deadFiles": 0,
@@ -3843,7 +3855,7 @@
             },
             {
               "name": "coupling",
-              "points": 2.1
+              "points": 2.5
             },
             {
               "name": "dead exports",
@@ -4469,7 +4481,7 @@
                 "total": 68,
                 "pct": 100
               },
-              "maintainability": 88.2,
+              "maintainability": 88.5,
               "crap": 5
             },
             {
@@ -5235,9 +5247,9 @@
           "dimension": "code",
           "state": "measured",
           "lines": {
-            "covered": 418,
-            "total": 1446,
-            "pct": 28.9
+            "covered": 439,
+            "total": 1449,
+            "pct": 30.3
           },
           "floor": 26,
           "staticReachPct": 91.7,
@@ -5292,7 +5304,8 @@
                 "pct": 0
               },
               "maintainability": 89.2,
-              "crap": 72
+              "crap": 72,
+              "testedAsProcess": true
             },
             {
               "path": "gate/manifest.mjs",
@@ -5325,7 +5338,8 @@
                 "pct": 0
               },
               "maintainability": 69.4,
-              "crap": 30
+              "crap": 30,
+              "testedAsProcess": true
             },
             {
               "path": "gate/receipt.mjs",
@@ -5336,7 +5350,8 @@
                 "pct": 0
               },
               "maintainability": 92.4,
-              "crap": 56
+              "crap": 56,
+              "testedAsProcess": true
             },
             {
               "path": "gate/run.mjs",
@@ -5347,7 +5362,8 @@
                 "pct": 0
               },
               "maintainability": 88.1,
-              "crap": 210
+              "crap": 210,
+              "testedAsProcess": true
             },
             {
               "path": "gate/sandbox.mjs",
@@ -5369,17 +5385,18 @@
                 "pct": 0
               },
               "maintainability": 86,
-              "crap": 6
+              "crap": 6,
+              "testedAsProcess": true
             },
             {
               "path": "index-integrity.mjs",
               "lines": {
-                "covered": 0,
-                "total": 33,
-                "pct": 0
+                "covered": 21,
+                "total": 36,
+                "pct": 58.3
               },
-              "maintainability": 96.1,
-              "crap": 6
+              "maintainability": 95.8,
+              "crap": 12
             },
             {
               "path": "pen/finish-export.mjs",
@@ -5513,7 +5530,7 @@
         "health": {
           "dimension": "health",
           "state": "measured",
-          "score": 72.5,
+          "score": 73,
           "grade": "B",
           "overCeiling": 3,
           "deadFiles": 5,
@@ -5522,7 +5539,7 @@
           "penalties": [
             {
               "name": "maintainability",
-              "points": 11.3
+              "points": 11
             },
             {
               "name": "unit size",
@@ -5530,11 +5547,11 @@
             },
             {
               "name": "dead exports",
-              "points": 3.7
+              "points": 3.6
             },
             {
               "name": "dead files",
-              "points": 2.5
+              "points": 2.4
             }
           ]
         }
@@ -5549,12 +5566,12 @@
           "dimension": "code",
           "state": "measured",
           "lines": {
-            "covered": 724,
-            "total": 1203,
-            "pct": 60.2
+            "covered": 739,
+            "total": 1210,
+            "pct": 61.1
           },
           "floor": 26,
-          "staticReachPct": 97.1,
+          "staticReachPct": 100,
           "files": [
             {
               "path": "main.mts",
@@ -5847,12 +5864,12 @@
             {
               "path": "sandcastle-tick-criteria.mts",
               "lines": {
-                "covered": 0,
-                "total": 12,
-                "pct": 0
+                "covered": 15,
+                "total": 19,
+                "pct": 78.9
               },
-              "maintainability": 94.1,
-              "crap": 2
+              "maintainability": 93,
+              "crap": 4
             },
             {
               "path": "sandcastle-turbo-cache.mts",
@@ -6074,38 +6091,6 @@
       "title": "@gate/blog: SiteAnalytics has no story"
     },
     {
-      "id": "story-missing:apps/blog:BlogFrame",
-      "workspace": "@gate/blog",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "BlogFrame",
-      "title": "@gate/blog: BlogFrame has no story"
-    },
-    {
-      "id": "story-missing:apps/blog:ChangelogSyncButton",
-      "workspace": "@gate/blog",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "ChangelogSyncButton",
-      "title": "@gate/blog: ChangelogSyncButton has no story"
-    },
-    {
-      "id": "story-missing:apps/blog:ChangelogSyncStill",
-      "workspace": "@gate/blog",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "ChangelogSyncStill",
-      "title": "@gate/blog: ChangelogSyncStill has no story"
-    },
-    {
-      "id": "story-missing:apps/blog:LottieBlock",
-      "workspace": "@gate/blog",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "LottieBlock",
-      "title": "@gate/blog: LottieBlock has no story"
-    },
-    {
       "id": "story-missing:apps/blog:MermaidDiagram",
       "workspace": "@gate/blog",
       "dimension": "visual",
@@ -6154,52 +6139,12 @@
       "title": "@gate/census: Scene has no story"
     },
     {
-      "id": "story-missing:apps/census:PyramidFigure",
-      "workspace": "@gate/census",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "PyramidFigure",
-      "title": "@gate/census: PyramidFigure has no story"
-    },
-    {
       "id": "story-missing:apps/census:SiteAnalytics",
       "workspace": "@gate/census",
       "dimension": "visual",
       "kind": "story-missing",
       "subject": "SiteAnalytics",
       "title": "@gate/census: SiteAnalytics has no story"
-    },
-    {
-      "id": "story-missing:apps/census:CensusFrame",
-      "workspace": "@gate/census",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "CensusFrame",
-      "title": "@gate/census: CensusFrame has no story"
-    },
-    {
-      "id": "story-missing:apps/census:CensusShell",
-      "workspace": "@gate/census",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "CensusShell",
-      "title": "@gate/census: CensusShell has no story"
-    },
-    {
-      "id": "story-missing:apps/census:CopyButton",
-      "workspace": "@gate/census",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "CopyButton",
-      "title": "@gate/census: CopyButton has no story"
-    },
-    {
-      "id": "story-missing:apps/census:FileViews",
-      "workspace": "@gate/census",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "FileViews",
-      "title": "@gate/census: FileViews has no story"
     },
     {
       "id": "story-missing:apps/census:FilteredFrame",
@@ -6216,174 +6161,6 @@
       "kind": "story-missing",
       "subject": "FilteredHome",
       "title": "@gate/census: FilteredHome has no story"
-    },
-    {
-      "id": "story-missing:apps/census:GapList",
-      "workspace": "@gate/census",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "GapList",
-      "title": "@gate/census: GapList has no story"
-    },
-    {
-      "id": "story-missing:apps/census:SummaryCard",
-      "workspace": "@gate/census",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "SummaryCard",
-      "title": "@gate/census: SummaryCard has no story"
-    },
-    {
-      "id": "story-missing:apps/census:CoverageCard",
-      "workspace": "@gate/census",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "CoverageCard",
-      "title": "@gate/census: CoverageCard has no story"
-    },
-    {
-      "id": "story-missing:apps/census:MetricsCard",
-      "workspace": "@gate/census",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "MetricsCard",
-      "title": "@gate/census: MetricsCard has no story"
-    },
-    {
-      "id": "story-missing:apps/census:PyramidCard",
-      "workspace": "@gate/census",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "PyramidCard",
-      "title": "@gate/census: PyramidCard has no story"
-    },
-    {
-      "id": "story-missing:apps/census:GapPillsCard",
-      "workspace": "@gate/census",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "GapPillsCard",
-      "title": "@gate/census: GapPillsCard has no story"
-    },
-    {
-      "id": "story-missing:apps/census:StoriesCard",
-      "workspace": "@gate/census",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "StoriesCard",
-      "title": "@gate/census: StoriesCard has no story"
-    },
-    {
-      "id": "story-missing:apps/census:StatesCard",
-      "workspace": "@gate/census",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "StatesCard",
-      "title": "@gate/census: StatesCard has no story"
-    },
-    {
-      "id": "story-missing:apps/census:PenalisedScore",
-      "workspace": "@gate/census",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "PenalisedScore",
-      "title": "@gate/census: PenalisedScore has no story"
-    },
-    {
-      "id": "story-missing:apps/census:HealthCard",
-      "workspace": "@gate/census",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "HealthCard",
-      "title": "@gate/census: HealthCard has no story"
-    },
-    {
-      "id": "story-missing:apps/census:DeadCodeCard",
-      "workspace": "@gate/census",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "DeadCodeCard",
-      "title": "@gate/census: DeadCodeCard has no story"
-    },
-    {
-      "id": "story-missing:apps/census:StylingCard",
-      "workspace": "@gate/census",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "StylingCard",
-      "title": "@gate/census: StylingCard has no story"
-    },
-    {
-      "id": "story-missing:apps/census:HotspotsCard",
-      "workspace": "@gate/census",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "HotspotsCard",
-      "title": "@gate/census: HotspotsCard has no story"
-    },
-    {
-      "id": "story-missing:apps/census:CodeCoverageCard",
-      "workspace": "@gate/census",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "CodeCoverageCard",
-      "title": "@gate/census: CodeCoverageCard has no story"
-    },
-    {
-      "id": "story-missing:apps/census:NotesCard",
-      "workspace": "@gate/census",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "NotesCard",
-      "title": "@gate/census: NotesCard has no story"
-    },
-    {
-      "id": "story-missing:apps/census:Legend",
-      "workspace": "@gate/census",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "Legend",
-      "title": "@gate/census: Legend has no story"
-    },
-    {
-      "id": "story-missing:apps/census:MeasurementBar",
-      "workspace": "@gate/census",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "MeasurementBar",
-      "title": "@gate/census: MeasurementBar has no story"
-    },
-    {
-      "id": "story-missing:apps/census:RefactorTargets",
-      "workspace": "@gate/census",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "RefactorTargets",
-      "title": "@gate/census: RefactorTargets has no story"
-    },
-    {
-      "id": "story-missing:apps/census:SectionCard",
-      "workspace": "@gate/census",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "SectionCard",
-      "title": "@gate/census: SectionCard has no story"
-    },
-    {
-      "id": "story-missing:apps/census:TallIcicle",
-      "workspace": "@gate/census",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "TallIcicle",
-      "title": "@gate/census: TallIcicle has no story"
-    },
-    {
-      "id": "story-missing:apps/census:TrendCard",
-      "workspace": "@gate/census",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "TrendCard",
-      "title": "@gate/census: TrendCard has no story"
     },
     {
       "id": "route-state-missing:apps/census:/:loading",
@@ -6432,14 +6209,6 @@
       "kind": "uncovered-file",
       "subject": "scripts/local-integrity.mjs",
       "title": "@gate/e2e: scripts/local-integrity.mjs has no test"
-    },
-    {
-      "id": "uncovered-file:apps/e2e:scripts/seed-visual-diff.mjs",
-      "workspace": "@gate/e2e",
-      "dimension": "code",
-      "kind": "uncovered-file",
-      "subject": "scripts/seed-visual-diff.mjs",
-      "title": "@gate/e2e: scripts/seed-visual-diff.mjs has no test"
     },
     {
       "id": "uncovered-file:apps/e2e:scripts/suite-integrity.mjs",
@@ -6512,14 +6281,6 @@
       "kind": "story-missing",
       "subject": "SiteAnalytics",
       "title": "@gate/manual: SiteAnalytics has no story"
-    },
-    {
-      "id": "story-missing:apps/manual:ManualFrame",
-      "workspace": "@gate/manual",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "ManualFrame",
-      "title": "@gate/manual: ManualFrame has no story"
     },
     {
       "id": "route-state-missing:apps/manual:/:loading",
@@ -6666,14 +6427,6 @@
       "title": "@gate/visual-diff-ui: app/set/[label]/shot/[key]/page.tsx has no test"
     },
     {
-      "id": "uncovered-file:apps/visual-diff-ui:components/ReportContents.tsx",
-      "workspace": "@gate/visual-diff-ui",
-      "dimension": "code",
-      "kind": "uncovered-file",
-      "subject": "components/ReportContents.tsx",
-      "title": "@gate/visual-diff-ui: components/ReportContents.tsx has no test"
-    },
-    {
       "id": "component-incomplete:apps/visual-diff-ui:screens-visual-diff-ui-shot--expanded",
       "workspace": "@gate/visual-diff-ui",
       "dimension": "visual",
@@ -6690,228 +6443,12 @@
       "title": "@gate/visual-diff-ui: SiteAnalytics has no story"
     },
     {
-      "id": "story-missing:apps/visual-diff-ui:BoardPane",
-      "workspace": "@gate/visual-diff-ui",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "BoardPane",
-      "title": "@gate/visual-diff-ui: BoardPane has no story"
-    },
-    {
-      "id": "story-missing:apps/visual-diff-ui:BucketChipRow",
-      "workspace": "@gate/visual-diff-ui",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "BucketChipRow",
-      "title": "@gate/visual-diff-ui: BucketChipRow has no story"
-    },
-    {
-      "id": "story-missing:apps/visual-diff-ui:CanonicalSet",
-      "workspace": "@gate/visual-diff-ui",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "CanonicalSet",
-      "title": "@gate/visual-diff-ui: CanonicalSet has no story"
-    },
-    {
-      "id": "story-missing:apps/visual-diff-ui:ComparePickers",
-      "workspace": "@gate/visual-diff-ui",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "ComparePickers",
-      "title": "@gate/visual-diff-ui: ComparePickers has no story"
-    },
-    {
-      "id": "story-missing:apps/visual-diff-ui:CompareStartProvider",
-      "workspace": "@gate/visual-diff-ui",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "CompareStartProvider",
-      "title": "@gate/visual-diff-ui: CompareStartProvider has no story"
-    },
-    {
       "id": "story-missing:apps/visual-diff-ui:ComparisonContents",
       "workspace": "@gate/visual-diff-ui",
       "dimension": "visual",
       "kind": "story-missing",
       "subject": "ComparisonContents",
       "title": "@gate/visual-diff-ui: ComparisonContents has no story"
-    },
-    {
-      "id": "story-missing:apps/visual-diff-ui:ComparisonModal",
-      "workspace": "@gate/visual-diff-ui",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "ComparisonModal",
-      "title": "@gate/visual-diff-ui: ComparisonModal has no story"
-    },
-    {
-      "id": "story-missing:apps/visual-diff-ui:DeleteReportButton",
-      "workspace": "@gate/visual-diff-ui",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "DeleteReportButton",
-      "title": "@gate/visual-diff-ui: DeleteReportButton has no story"
-    },
-    {
-      "id": "story-missing:apps/visual-diff-ui:DeleteReportFromPage",
-      "workspace": "@gate/visual-diff-ui",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "DeleteReportFromPage",
-      "title": "@gate/visual-diff-ui: DeleteReportFromPage has no story"
-    },
-    {
-      "id": "story-missing:apps/visual-diff-ui:DeleteSetButton",
-      "workspace": "@gate/visual-diff-ui",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "DeleteSetButton",
-      "title": "@gate/visual-diff-ui: DeleteSetButton has no story"
-    },
-    {
-      "id": "story-missing:apps/visual-diff-ui:PruneButton",
-      "workspace": "@gate/visual-diff-ui",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "PruneButton",
-      "title": "@gate/visual-diff-ui: PruneButton has no story"
-    },
-    {
-      "id": "story-missing:apps/visual-diff-ui:Brand",
-      "workspace": "@gate/visual-diff-ui",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "Brand",
-      "title": "@gate/visual-diff-ui: Brand has no story"
-    },
-    {
-      "id": "story-missing:apps/visual-diff-ui:SampleBanner",
-      "workspace": "@gate/visual-diff-ui",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "SampleBanner",
-      "title": "@gate/visual-diff-ui: SampleBanner has no story"
-    },
-    {
-      "id": "story-missing:apps/visual-diff-ui:ConsoleFrame",
-      "workspace": "@gate/visual-diff-ui",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "ConsoleFrame",
-      "title": "@gate/visual-diff-ui: ConsoleFrame has no story"
-    },
-    {
-      "id": "story-missing:apps/visual-diff-ui:CopyLink",
-      "workspace": "@gate/visual-diff-ui",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "CopyLink",
-      "title": "@gate/visual-diff-ui: CopyLink has no story"
-    },
-    {
-      "id": "story-missing:apps/visual-diff-ui:CurrentJobProvider",
-      "workspace": "@gate/visual-diff-ui",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "CurrentJobProvider",
-      "title": "@gate/visual-diff-ui: CurrentJobProvider has no story"
-    },
-    {
-      "id": "story-missing:apps/visual-diff-ui:CurrentJob",
-      "workspace": "@gate/visual-diff-ui",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "CurrentJob",
-      "title": "@gate/visual-diff-ui: CurrentJob has no story"
-    },
-    {
-      "id": "story-missing:apps/visual-diff-ui:DesignStage",
-      "workspace": "@gate/visual-diff-ui",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "DesignStage",
-      "title": "@gate/visual-diff-ui: DesignStage has no story"
-    },
-    {
-      "id": "story-missing:apps/visual-diff-ui:DevStorybookLink",
-      "workspace": "@gate/visual-diff-ui",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "DevStorybookLink",
-      "title": "@gate/visual-diff-ui: DevStorybookLink has no story"
-    },
-    {
-      "id": "story-missing:apps/visual-diff-ui:Field",
-      "workspace": "@gate/visual-diff-ui",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "Field",
-      "title": "@gate/visual-diff-ui: Field has no story"
-    },
-    {
-      "id": "story-missing:apps/visual-diff-ui:FilterPicker",
-      "workspace": "@gate/visual-diff-ui",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "FilterPicker",
-      "title": "@gate/visual-diff-ui: FilterPicker has no story"
-    },
-    {
-      "id": "story-missing:apps/visual-diff-ui:HistoryTable",
-      "workspace": "@gate/visual-diff-ui",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "HistoryTable",
-      "title": "@gate/visual-diff-ui: HistoryTable has no story"
-    },
-    {
-      "id": "story-missing:apps/visual-diff-ui:LogTail",
-      "workspace": "@gate/visual-diff-ui",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "LogTail",
-      "title": "@gate/visual-diff-ui: LogTail has no story"
-    },
-    {
-      "id": "story-missing:apps/visual-diff-ui:ModeTabs",
-      "workspace": "@gate/visual-diff-ui",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "ModeTabs",
-      "title": "@gate/visual-diff-ui: ModeTabs has no story"
-    },
-    {
-      "id": "story-missing:apps/visual-diff-ui:Note",
-      "workspace": "@gate/visual-diff-ui",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "Note",
-      "title": "@gate/visual-diff-ui: Note has no story"
-    },
-    {
-      "id": "story-missing:apps/visual-diff-ui:OutcomeWord",
-      "workspace": "@gate/visual-diff-ui",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "OutcomeWord",
-      "title": "@gate/visual-diff-ui: OutcomeWord has no story"
-    },
-    {
-      "id": "story-missing:apps/visual-diff-ui:OverlayStage",
-      "workspace": "@gate/visual-diff-ui",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "OverlayStage",
-      "title": "@gate/visual-diff-ui: OverlayStage has no story"
-    },
-    {
-      "id": "story-missing:apps/visual-diff-ui:ReportBuckets",
-      "workspace": "@gate/visual-diff-ui",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "ReportBuckets",
-      "title": "@gate/visual-diff-ui: ReportBuckets has no story"
     },
     {
       "id": "story-missing:apps/visual-diff-ui:ReportContents",
@@ -6922,140 +6459,12 @@
       "title": "@gate/visual-diff-ui: ReportContents has no story"
     },
     {
-      "id": "story-missing:apps/visual-diff-ui:ReportResults",
-      "workspace": "@gate/visual-diff-ui",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "ReportResults",
-      "title": "@gate/visual-diff-ui: ReportResults has no story"
-    },
-    {
-      "id": "story-missing:apps/visual-diff-ui:ReportsTable",
-      "workspace": "@gate/visual-diff-ui",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "ReportsTable",
-      "title": "@gate/visual-diff-ui: ReportsTable has no story"
-    },
-    {
-      "id": "story-missing:apps/visual-diff-ui:RetentionControl",
-      "workspace": "@gate/visual-diff-ui",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "RetentionControl",
-      "title": "@gate/visual-diff-ui: RetentionControl has no story"
-    },
-    {
-      "id": "story-missing:apps/visual-diff-ui:ReviewBar",
-      "workspace": "@gate/visual-diff-ui",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "ReviewBar",
-      "title": "@gate/visual-diff-ui: ReviewBar has no story"
-    },
-    {
-      "id": "story-missing:apps/visual-diff-ui:RunPanel",
-      "workspace": "@gate/visual-diff-ui",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "RunPanel",
-      "title": "@gate/visual-diff-ui: RunPanel has no story"
-    },
-    {
-      "id": "story-missing:apps/visual-diff-ui:Filtered",
-      "workspace": "@gate/visual-diff-ui",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "Filtered",
-      "title": "@gate/visual-diff-ui: Filtered has no story"
-    },
-    {
-      "id": "story-missing:apps/visual-diff-ui:SetFilterBar",
-      "workspace": "@gate/visual-diff-ui",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "SetFilterBar",
-      "title": "@gate/visual-diff-ui: SetFilterBar has no story"
-    },
-    {
-      "id": "story-missing:apps/visual-diff-ui:SetFilterUrl",
-      "workspace": "@gate/visual-diff-ui",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "SetFilterUrl",
-      "title": "@gate/visual-diff-ui: SetFilterUrl has no story"
-    },
-    {
-      "id": "story-missing:apps/visual-diff-ui:SetsTable",
-      "workspace": "@gate/visual-diff-ui",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "SetsTable",
-      "title": "@gate/visual-diff-ui: SetsTable has no story"
-    },
-    {
       "id": "story-missing:apps/visual-diff-ui:ShotContents",
       "workspace": "@gate/visual-diff-ui",
       "dimension": "visual",
       "kind": "story-missing",
       "subject": "ShotContents",
       "title": "@gate/visual-diff-ui: ShotContents has no story"
-    },
-    {
-      "id": "story-missing:apps/visual-diff-ui:SpacingReadings",
-      "workspace": "@gate/visual-diff-ui",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "SpacingReadings",
-      "title": "@gate/visual-diff-ui: SpacingReadings has no story"
-    },
-    {
-      "id": "story-missing:apps/visual-diff-ui:StoryCard",
-      "workspace": "@gate/visual-diff-ui",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "StoryCard",
-      "title": "@gate/visual-diff-ui: StoryCard has no story"
-    },
-    {
-      "id": "story-missing:apps/visual-diff-ui:StoryScreenshots",
-      "workspace": "@gate/visual-diff-ui",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "StoryScreenshots",
-      "title": "@gate/visual-diff-ui: StoryScreenshots has no story"
-    },
-    {
-      "id": "story-missing:apps/visual-diff-ui:ThreeUp",
-      "workspace": "@gate/visual-diff-ui",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "ThreeUp",
-      "title": "@gate/visual-diff-ui: ThreeUp has no story"
-    },
-    {
-      "id": "story-missing:apps/visual-diff-ui:TierSection",
-      "workspace": "@gate/visual-diff-ui",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "TierSection",
-      "title": "@gate/visual-diff-ui: TierSection has no story"
-    },
-    {
-      "id": "story-missing:apps/visual-diff-ui:VariantRow",
-      "workspace": "@gate/visual-diff-ui",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "VariantRow",
-      "title": "@gate/visual-diff-ui: VariantRow has no story"
-    },
-    {
-      "id": "story-missing:apps/visual-diff-ui:ViewControls",
-      "workspace": "@gate/visual-diff-ui",
-      "dimension": "visual",
-      "kind": "story-missing",
-      "subject": "ViewControls",
-      "title": "@gate/visual-diff-ui: ViewControls has no story"
     },
     {
       "id": "route-state-missing:apps/visual-diff-ui:/:loading",
@@ -7112,54 +6521,6 @@
       "kind": "uncovered-file",
       "subject": "complexity-gate.mjs",
       "title": "scripts/: complexity-gate.mjs has no test"
-    },
-    {
-      "id": "uncovered-file:scripts:gate/lock.mjs",
-      "workspace": "scripts/",
-      "dimension": "code",
-      "kind": "uncovered-file",
-      "subject": "gate/lock.mjs",
-      "title": "scripts/: gate/lock.mjs has no test"
-    },
-    {
-      "id": "uncovered-file:scripts:gate/pre-push.mjs",
-      "workspace": "scripts/",
-      "dimension": "code",
-      "kind": "uncovered-file",
-      "subject": "gate/pre-push.mjs",
-      "title": "scripts/: gate/pre-push.mjs has no test"
-    },
-    {
-      "id": "uncovered-file:scripts:gate/receipt.mjs",
-      "workspace": "scripts/",
-      "dimension": "code",
-      "kind": "uncovered-file",
-      "subject": "gate/receipt.mjs",
-      "title": "scripts/: gate/receipt.mjs has no test"
-    },
-    {
-      "id": "uncovered-file:scripts:gate/run.mjs",
-      "workspace": "scripts/",
-      "dimension": "code",
-      "kind": "uncovered-file",
-      "subject": "gate/run.mjs",
-      "title": "scripts/: gate/run.mjs has no test"
-    },
-    {
-      "id": "uncovered-file:scripts:gate/worktree.mjs",
-      "workspace": "scripts/",
-      "dimension": "code",
-      "kind": "uncovered-file",
-      "subject": "gate/worktree.mjs",
-      "title": "scripts/: gate/worktree.mjs has no test"
-    },
-    {
-      "id": "uncovered-file:scripts:index-integrity.mjs",
-      "workspace": "scripts/",
-      "dimension": "code",
-      "kind": "uncovered-file",
-      "subject": "index-integrity.mjs",
-      "title": "scripts/: index-integrity.mjs has no test"
     },
     {
       "id": "uncovered-file:scripts:pen/finish-export.mjs",
@@ -7224,14 +6585,6 @@
       "kind": "uncovered-file",
       "subject": "sandcastle-run-issue.mts",
       "title": ".sandcastle/: sandcastle-run-issue.mts has no test"
-    },
-    {
-      "id": "uncovered-file:.sandcastle:sandcastle-tick-criteria.mts",
-      "workspace": ".sandcastle/",
-      "dimension": "code",
-      "kind": "uncovered-file",
-      "subject": "sandcastle-tick-criteria.mts",
-      "title": ".sandcastle/: sandcastle-tick-criteria.mts has no test"
     },
     {
       "id": "uncovered-file:.sandcastle:sandcastle-worktree-sandbox.mts",
