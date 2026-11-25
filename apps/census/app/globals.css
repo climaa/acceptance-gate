@@ -389,6 +389,54 @@
   background: none;
 }
 
+/* The same filter dims the other dimensions on the pyramid and the gap pills.
+   Each mark carries its dimension's hue: code chart, visual chart-2,
+   acceptance chart-3, health chart-4. Health has no band, so lighting it dims
+   all three. The pyramid's counts are drawn top down (acceptance, visual,
+   code) and name no hue; a pill's count is the sibling after its pill. Only
+   the marks fade; a dimmed count turns muted, so it still reads at AA. */
+.census-pyramid[data-lit='code']
+  .ds-test-pyramid__band:not(.ds-test-pyramid__band--chart),
+.census-pyramid[data-lit='visual']
+  .ds-test-pyramid__band:not(.ds-test-pyramid__band--chart-2),
+.census-pyramid[data-lit='acceptance']
+  .ds-test-pyramid__band:not(.ds-test-pyramid__band--chart-3),
+.census-pyramid[data-lit='health'] .ds-test-pyramid__band,
+.census-gap-pills[data-lit='code'] .ds-gap-pills__pill:not(.ds-gap-pills__pill--chart),
+.census-gap-pills[data-lit='visual']
+  .ds-gap-pills__pill:not(.ds-gap-pills__pill--chart-2),
+.census-gap-pills[data-lit='acceptance']
+  .ds-gap-pills__pill:not(.ds-gap-pills__pill--chart-3),
+.census-gap-pills[data-lit='health']
+  .ds-gap-pills__pill:not(.ds-gap-pills__pill--chart-4) {
+  opacity: 0.4;
+}
+
+.census-pyramid[data-lit='code']
+  .ds-test-pyramid__count:not(:nth-child(3))
+  .ds-test-pyramid__value,
+.census-pyramid[data-lit='visual']
+  .ds-test-pyramid__count:not(:nth-child(2))
+  .ds-test-pyramid__value,
+.census-pyramid[data-lit='acceptance']
+  .ds-test-pyramid__count:not(:nth-child(1))
+  .ds-test-pyramid__value,
+.census-pyramid[data-lit='health'] .ds-test-pyramid__value,
+.census-gap-pills[data-lit='code']
+  .ds-gap-pills__pill:not(.ds-gap-pills__pill--chart)
+  ~ .ds-gap-pills__count,
+.census-gap-pills[data-lit='visual']
+  .ds-gap-pills__pill:not(.ds-gap-pills__pill--chart-2)
+  ~ .ds-gap-pills__count,
+.census-gap-pills[data-lit='acceptance']
+  .ds-gap-pills__pill:not(.ds-gap-pills__pill--chart-3)
+  ~ .ds-gap-pills__count,
+.census-gap-pills[data-lit='health']
+  .ds-gap-pills__pill:not(.ds-gap-pills__pill--chart-4)
+  ~ .ds-gap-pills__count {
+  color: var(--color-text-muted);
+}
+
 .census-metrics {
   font-family: var(--font-mono);
   font-size: var(--text-xs);

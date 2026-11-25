@@ -81,8 +81,8 @@ export function HomeScreen({ view, filter = NO_FILTER }: HomeScreenProps) {
       <CoverageCard data={o.coverage} filter={filter} />
       <MetricsCard data={o.metrics} />
       <div className="census-bento">
-        <PyramidCard data={o.pyramid} />
-        <GapPillsCard data={o.gapPills} />
+        <PyramidCard data={o.pyramid} filter={filter} />
+        <GapPillsCard data={o.gapPills} filter={filter} />
       </div>
       <StoriesCard data={o.stories} />
       <StatesCard data={o.states} />
