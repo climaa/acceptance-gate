@@ -3,16 +3,15 @@
 // The gate, as data.
 //
 // `.husky/pre-push` runs it before anything reaches the remote. This is the
-// repository's gate since 19 Oct 2026: GitHub Actions minutes ran out, the
-// per-PR workflows (`pr.yml` among them) are disabled on GitHub rather than
-// deleted, and `main`'s ruleset no longer requires a status check. The list is
-// portafolio's, which has run its gate this way from the start; the checks are
-// the ones `pr.yml` ran, so nothing that was gated before goes ungated.
+// repository's gate since 19 Oct 2026. The workflows on GitHub were disabled
+// from 20 to 26 Oct and are on again: the hook stops a push, and `main`'s
+// ruleset requires `pr.yml`'s `gate` job before a merge.
 //
-// `checksMatrix` below still builds a CI matrix from this list, for the day the
-// workflows are switched back on: one list, so a hook and a workflow cannot
-// become two grammars that drift. A slow check added here is paid on every push
-// by every person and by every Sandcastle branch.
+// `pr.yml` is written out by hand and runs the checks below. `checksMatrix`
+// builds its `checks` matrix from this list for the day the workflow reads it,
+// so a hook and a workflow cannot become two grammars that drift. A slow check
+// added here is paid on every push by every person and by every Sandcastle
+// branch.
 //
 // ONE GATE PER MACHINE, across checkouts. `run.mjs` takes a lock outside every
 // checkout (`~/.cache/acceptance-gate/gate.lock`, one name for this repository
