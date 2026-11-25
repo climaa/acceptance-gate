@@ -59,7 +59,6 @@
 
 /* Only the selected filter is bold, as the tile draws it. */
 .census-bar .ds-segmented__segment[aria-pressed='true'] {
-  font-family: var(--font-sans);
   font-weight: var(--weight-bold);
 }
 
