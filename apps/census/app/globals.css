@@ -167,8 +167,9 @@
   padding: var(--space-3) var(--space-4);
 }
 
-/* The stale notice under the intro: the warning surface, since the figures
-   below describe a commit the repository has moved on from. */
+/* The stale notice closes the intro, a step under the tools line as its tile
+   draws it: the warning surface, since the figures below describe a commit the
+   repository has moved on from. */
 .census-stale {
   margin: 0;
   padding: var(--space-3) var(--space-4);
