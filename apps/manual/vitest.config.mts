@@ -57,6 +57,9 @@ const config = defineConfig({
       // routes, layouts and metadata files; `components/` the screens they
       // compose; `lib/` the parser, allowlist and helpers.
       include: ['app/**/*.{ts,tsx}', 'components/**/*.tsx', 'lib/**/*.{ts,tsx}'],
+      // Screen stories, their samples and frames: Storybook renders them and the
+      // visual differ judges them, so no unit test is meant to reach one.
+      exclude: ['app/_screens/**'],
       // Explicit, so a run writes no `coverage/` directory.
       reporter: ['text', 'text-summary'],
       // Measured at 83.13 / 82.5 / 82.25 / 83.43. Raise them when the real number

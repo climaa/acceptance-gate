@@ -60,7 +60,9 @@ const config = defineConfig({
         // Shared logic the routes import: content loading, OG cards, feeds.
         'lib/**/*.{ts,tsx}',
       ],
-      exclude: ['**/*.test.{ts,tsx}'],
+      // Screen stories, their samples and frames: Storybook renders them and the
+      // visual differ judges them, so no unit test is meant to reach one.
+      exclude: ['**/*.test.{ts,tsx}', 'app/_screens/**'],
       // `text` writes to stdout only, so a run leaves no `coverage/` directory.
       reporter: ['text', 'text-summary'],
       // A FLOOR, measured rather than aspired to: 67.0 / 65.9 / 65.7 / 67.3 when
