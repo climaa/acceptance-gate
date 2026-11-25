@@ -86,7 +86,7 @@ export function HomeScreen({ view, filter = NO_FILTER }: HomeScreenProps) {
       </div>
       <StoriesCard data={o.stories} />
       <StatesCard data={o.states} />
-      <TrendCard series={o.trend} />
+      <TrendCard series={o.trend} filter={filter} />
       <HealthCard data={o.health} />
       <DeadCodeCard data={o.dead} />
       <StylingCard data={o.styling} />
