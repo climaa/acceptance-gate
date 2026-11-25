@@ -57,6 +57,26 @@ describe('readStories', () => {
     ]);
   });
 
+  // Code-unit order, never a locale's: "Zebra" sorts before "apple" here, and
+  // `localeCompare` would put it after. Listed out of order on purpose.
+  it("orders a tier's components by code unit", () => {
+    const at = (name: string) =>
+      story({
+        id: `atoms-${name.toLowerCase()}--default`,
+        title: `Atoms/${name}`,
+        importPath: `../../packages/ui/src/atoms/${name}/${name}.stories.tsx`,
+      });
+    const tiers = readStories(
+      checkoutWith({ a: at('apple'), b: at('Zebra'), c: at('Button') }),
+    );
+
+    expect(tiers[0]?.components.map((component) => component.name)).toEqual([
+      'Button',
+      'Zebra',
+      'apple',
+    ]);
+  });
+
   // The order the report draws its sections in, from policy rather than from
   // whatever order the build happened to list entries in.
   it('groups by tier, in the order policy names them', () => {
