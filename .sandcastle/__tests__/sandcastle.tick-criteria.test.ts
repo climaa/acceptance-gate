@@ -18,9 +18,8 @@ function fakeGh(prBody: string): { run: GhRunner; recorded: Recorded } {
     recorded.calls.push({ args, input });
     if (args[0] === 'issue' && args[1] === 'view')
       return JSON.stringify({ body: ISSUE_BODY });
-    if (args[0] === 'pr' && args[1] === 'view') {
+    if (args[0] === 'pr' && args[1] === 'view')
       return JSON.stringify({ body: prBody, url: PR_URL });
-    }
     return '';
   };
   return { run, recorded };

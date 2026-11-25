@@ -134,7 +134,7 @@ function baselineProblems(index, baselines) {
 }
 
 /** Reads the tree, prints the verdict, and answers the exit code. */
-export function main() {
+function main() {
   const manifest = JSON.parse(read('package.json')).version;
   const baselines = trackedBaselines();
   const problems = indexProblems(read(INDEX), manifest, baselines);
