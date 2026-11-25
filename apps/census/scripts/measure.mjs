@@ -13,7 +13,14 @@
 // that commit) unless `--allow-dirty` is passed, and it writes nothing when either
 // file fails validation: it prints every failing path and exits 1.
 import { execFileSync, spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -29,6 +36,7 @@ import {
 import { acceptanceValues, countScenarios } from '../lib/collect/acceptance.ts';
 import { codeValue, hasCoverageBlock, linesFloor } from '../lib/collect/code.ts';
 import { fileFacts, repositoryHealth, workspaceHealth } from '../lib/collect/health.ts';
+import { inWorkspace, testedAsProcess } from '../lib/collect/process.ts';
 import { routeStates, routeSummary } from '../lib/collect/routes.ts';
 import {
   appComponents,
@@ -46,6 +54,11 @@ import { validateHistory, validateMeasurement } from '../lib/validate.ts';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 const OUT = join(ROOT, '.census');
+/**
+ * Where every suite's child processes write their NODE_V8_COVERAGE files: the
+ * evidence a script its tests spawn was run, which vitest's coverage cannot see.
+ */
+const CHILDREN = join(OUT, 'child-coverage');
 const CENSUS = join(ROOT, 'apps', 'census');
 const FALLOW = ['-y', 'fallow@3.36.0'];
 const SHARED_CONFIG = 'vitest.sandcastle.config.mts';
@@ -81,8 +94,13 @@ function fail(message) {
 }
 
 /** Run a command; its stdout, or exit with what it printed. */
-function run(command, args, cwd = ROOT, { allowExit = false } = {}) {
-  const result = spawnSync(command, args, { cwd, encoding: 'utf8', maxBuffer: BIG });
+function run(command, args, cwd = ROOT, { allowExit = false, env = {} } = {}) {
+  const result = spawnSync(command, args, {
+    cwd,
+    encoding: 'utf8',
+    maxBuffer: BIG,
+    env: { ...process.env, ...env },
+  });
   if (result.status !== 0 && !allowExit) {
     fail(
       `${command} ${args.join(' ')} exited ${result.status}\n${(result.stderr || result.stdout).slice(-4000)}`,
@@ -136,6 +154,7 @@ function runSuite(config, dir) {
       `--outputFile=${join(out, 'tests.json')}`,
     ],
     shared ? ROOT : join(ROOT, dirname(config)),
+    { env: { NODE_V8_COVERAGE: CHILDREN } },
   );
   return {
     measured,
@@ -153,6 +172,22 @@ function runSuites(list) {
       runs.set(config, runSuite(config, config.replaceAll('/', '_')));
   }
   return runs;
+}
+
+/**
+ * The repo-relative code files some suite's child process loaded. Read once every
+ * suite is done; a file a killed process left half-written is skipped by the lib.
+ */
+function processRuns() {
+  const texts = existsSync(CHILDREN)
+    ? readdirSync(CHILDREN)
+        .filter((name) => name.endsWith('.json'))
+        .map((name) => readFileSync(join(CHILDREN, name), 'utf8'))
+    : [];
+  return testedAsProcess(
+    texts,
+    tracked('.').filter((f) => CODE_FILE.test(f)),
+  );
 }
 
 /** Every measured suite's coverage map in one file: fallow takes a single `--coverage`. */
@@ -293,7 +328,7 @@ function featureCounts() {
   return { counts, suite: acceptance.reduce((sum, name) => sum + counts[name], 0) };
 }
 
-function codeDimension(ws, runs, reports) {
+function codeDimension(ws, runs, reports, asProcess) {
   const sources = tracked(ws.path).filter(
     (f) => CODE_FILE.test(f) && !CONFIG_FILE.test(f),
   );
@@ -320,6 +355,7 @@ function codeDimension(ws, runs, reports) {
   return codeValue(readJson(summary), join(ROOT, ws.path), {
     ...(floor === undefined ? {} : { floor }),
     ...fileFacts(reports, ws.path),
+    asProcess: inWorkspace(asProcess, ws.path),
   });
 }
 
@@ -408,7 +444,7 @@ function measureWorkspaces(list, inputs) {
       path: ws.path,
       category: ws.category,
       dimensions: {
-        code: codeDimension(ws, inputs.runs, inputs.reports),
+        code: codeDimension(ws, inputs.runs, inputs.reports, inputs.asProcess),
         visual: visual.value,
         acceptance: acceptanceDimension(ws, inputs.acceptance),
         health: workspaceHealth(inputs.reports, ws),
@@ -478,11 +514,13 @@ export function main() {
   const list = workspaces();
   const features = featureCounts();
   const runs = runSuites(list);
+  const asProcess = processRuns();
   const reports = fallowReports(mergeCoverage(runs));
   const stories = storybookStories();
   const sources = visualSources();
   const measured = measureWorkspaces(list, {
     runs,
+    asProcess,
     reports,
     stories,
     sources,

@@ -152,6 +152,47 @@ describe('codeValue', () => {
     });
   });
 
+  it('marks a file with no covered lines that a test ran as a process', () => {
+    const summary = {
+      [`${ROOT}/scripts/run.mjs`]: { lines: { total: 12, covered: 0 } },
+      [`${ROOT}/scripts/lock.mjs`]: { lines: { total: 8, covered: 0 } },
+    };
+    const asProcess = new Set(['scripts/run.mjs']);
+
+    const value = codeValue(summary, ROOT, {
+      untested: new Set(),
+      scores: new Map(),
+      asProcess,
+    });
+
+    expect(value.files).toEqual([
+      {
+        path: 'scripts/lock.mjs',
+        group: 'scripts',
+        lines: { covered: 0, total: 8, pct: 0 },
+      },
+      {
+        path: 'scripts/run.mjs',
+        group: 'scripts',
+        lines: { covered: 0, total: 12, pct: 0 },
+        testedAsProcess: true,
+      },
+    ]);
+    expect(value.lines).toEqual({ covered: 0, total: 20, pct: 0 });
+  });
+
+  it('never marks a file vitest already covers, even when a child ran it too', () => {
+    const asProcess = new Set(['src/molecules/Card/Card.tsx']);
+
+    const value = codeValue(SUMMARY, ROOT, {
+      untested: new Set(),
+      scores: new Map(),
+      asProcess,
+    });
+
+    expect(value.files[1]).not.toHaveProperty('testedAsProcess');
+  });
+
   it('counts static reach as the share of files fallow finds a test reaching', () => {
     const untested = new Set(['src/molecules/Card/Card.tsx']);
 

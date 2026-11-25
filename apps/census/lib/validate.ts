@@ -42,6 +42,17 @@ function lineProblems(where: string, lines: Lines): string[] {
   return problems;
 }
 
+/** `testedAsProcess` explains zero covered lines, so it is refused on a file with any. */
+function processProblems(
+  where: string,
+  file: { lines: Lines; testedAsProcess?: true },
+): string[] {
+  if (!file.testedAsProcess || file.lines.covered === 0) return [];
+  return [
+    `${where}.testedAsProcess: ${file.lines.covered} lines are covered, so it is not tested only as a process`,
+  ];
+}
+
 function codeProblems(measurement: Measurement): string[] {
   return measurement.workspaces.flatMap((ws, w) => {
     const code = ws.dimensions.code;
@@ -49,9 +60,10 @@ function codeProblems(measurement: Measurement): string[] {
     const where = `workspaces.${w}.dimensions.code`;
     return [
       ...lineProblems(`${where}.lines`, code.lines),
-      ...code.files.flatMap((file, f) =>
-        lineProblems(`${where}.files.${f}.lines`, file.lines),
-      ),
+      ...code.files.flatMap((file, f) => [
+        ...lineProblems(`${where}.files.${f}.lines`, file.lines),
+        ...processProblems(`${where}.files.${f}`, file),
+      ]),
     ];
   });
 }

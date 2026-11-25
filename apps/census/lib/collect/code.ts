@@ -81,6 +81,8 @@ interface CodeInputs {
   untested: ReadonlySet<string>;
   /** Workspace-relative fallow file scores. */
   scores: ReadonlyMap<string, { maintainability?: number; crap?: number }>;
+  /** Workspace-relative files a test ran as a child process (`process.ts`). */
+  asProcess?: ReadonlySet<string>;
 }
 
 /** A measured workspace's Code value from its coverage summary. */
@@ -108,6 +110,9 @@ export function codeValue(
           ? {}
           : { maintainability: score.maintainability }),
         ...(score?.crap === undefined ? {} : { crap: score.crap }),
+        ...(lines.covered === 0 && inputs.asProcess?.has(path)
+          ? { testedAsProcess: true as const }
+          : {}),
       };
     })
     .sort((a, b) => (a.path < b.path ? -1 : 1));

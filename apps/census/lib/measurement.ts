@@ -58,6 +58,12 @@ const fileValue = z.object({
   lines: lineCount,
   maintainability: z.number().optional(),
   crap: z.number().nonnegative().optional(),
+  /**
+   * A child process its tests ran loaded it, so the zero covered lines vitest
+   * measured are not a missing test. Only ever written on a file with none
+   * covered; optional, so a measurement written before it existed still parses.
+   */
+  testedAsProcess: z.literal(true).optional(),
 });
 
 const reasoned = <D extends Dimension>(dimension: D) => [

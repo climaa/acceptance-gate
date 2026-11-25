@@ -7,7 +7,9 @@
  * decision, not a code change.
  *
  * Deliberately never a gap: a `not-applicable` dimension, any Health value (shown,
- * never filed), a file under its floor but above zero (the floor already gates it).
+ * never filed), a file under its floor but above zero (the floor already gates it),
+ * and a file with no covered lines that its tests run as a child process
+ * (`testedAsProcess`): it has a test, which vitest's own process cannot measure.
  */
 import { APP_WORKSPACES } from './features.ts';
 import type { Gap, GapKind, Workspace } from './measurement.ts';
@@ -56,7 +58,9 @@ function codeGaps(ws: Workspace): Draft[] {
   }
   if (code.state !== 'measured') return [];
   return code.files
-    .filter((file) => file.lines.total > 0 && file.lines.covered === 0)
+    .filter(
+      (file) => file.lines.total > 0 && file.lines.covered === 0 && !file.testedAsProcess,
+    )
     .map((file) => ({
       dimension: 'code',
       kind: 'uncovered-file',
