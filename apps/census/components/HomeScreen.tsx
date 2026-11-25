@@ -70,13 +70,13 @@ export function HomeScreen({ view, filter = NO_FILTER }: HomeScreenProps) {
         <h1 className="census-title">Census</h1>
         <p className="census-subtitle">{SUBTITLE}</p>
         <p className="census-tools">{meta.tools.join(' · ')}</p>
+        {meta.staleDays !== null && (
+          <p className="census-stale" role="status">
+            Measured {meta.staleDays} days ago; the limit is {STALE_AFTER_DAYS}. Run{' '}
+            {MEASURE_COMMAND} and commit the file.
+          </p>
+        )}
       </div>
-      {meta.staleDays !== null && (
-        <p className="census-stale" role="status">
-          Measured {meta.staleDays} days ago; the limit is {STALE_AFTER_DAYS}. Run{' '}
-          {MEASURE_COMMAND} and commit the file.
-        </p>
-      )}
       <SummaryCard data={o.summary} />
       <CoverageCard data={o.coverage} filter={filter} />
       <MetricsCard data={o.metrics} />
