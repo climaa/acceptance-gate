@@ -1451,6 +1451,14 @@
     font-size: var(--text-3xl);
   }
 
+  /* A phone tile's header is 141px, too narrow for "Acceptance" and its
+     "measured" badge on one row. A row that cannot break sets a floor under the
+     tile's width and runs it under its neighbour, so the badge wraps under the
+     label. Here rather than in StatTile, whose stories have room for the row. */
+  .census-tiles .ds-stat-tile__header {
+    flex-wrap: wrap;
+  }
+
   .census-gap--own {
     grid-template-columns: 1fr;
   }
