@@ -7,6 +7,60 @@ transcribed from the GitHub Releases that existed when this file was created (20
 
 ## Unreleased
 
+## v1.10.2 — census counts every workspace
+
+_Released 2026-11-25._
+
+Twelve PRs since [v1.10.1](https://github.com/climaa/acceptance-gate/releases/tag/v1.10.1) (#822 → #835), telling one story: **census counts every workspace.** The measurement v1.10.1 shipped still named ten workspaces it could not measure. This one names none, and the pages that show it close five of the gaps v1.10.1 listed.
+
+### What earns the patch
+
+| Layer                                                                                                                                                                                                     | PRs                                      |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
+| The measurement: screen stories leave vitest's coverage, and a fresh `apps/census/measurement.json` taken at f2e2bc7                                                                                      | #829, #831                               |
+| census's pages, against their tiles: the filtered home dims the pyramid, the gap pills and the trend chart; the stale notice, the phone's rerun lines, the band's filters and the phone's Acceptance tile | #822, #823, #824, #825, #826, #827, #834 |
+| The visual differ: screen stories pin the footer's version, so a release no longer drifts them, and the baselines the strict nightly disagreed with are refreshed                                         | #828                                     |
+| The console: a compare press reaches the run panel's current handler                                                                                                                                      | #833                                     |
+| The gate: the docs say GitHub Actions is on, and `main`'s ruleset requires `pr.yml`'s `gate` job again                                                                                                    | #835                                     |
+
+Gaps go from 107 to 156 and Code from 95.5 to 76.4. Neither is lost coverage: ten workspaces and script groups that were unmeasured are counted now, and census, built after the first measurement, is counted too, with 30 stories and 4 route states of its own missing. Visual moves from 88 to 91, Acceptance from 40 to 60 and Health from 84.8 to 85.6.
+
+### Twelve manifests
+
+All twelve move from 1.10.1 to 1.10.2 together. Every internal dependency is `workspace:*`, and `pnpm install --frozen-lockfile` resolves with `pnpm-lock.yaml` untouched.
+
+### The corpus
+
+No baseline joined or left: 374, with 74 re-accepted. The corpus is 29,371,263 bytes against a budget of 32 MB.
+
+### The index, measured rather than adjusted
+
+Every count was measured again with the turbo cache forced off. Five had moved:
+
+| Claim                           | Corrected to  |
+| ------------------------------- | ------------- |
+| `packages/ui` 58 / 998          | 58 / **999**  |
+| `apps/blog` 28 / 626            | **29 / 628**  |
+| `apps/visual-diff-ui` 83 / 1428 | **84 / 1429** |
+| `apps/manual` 10 / 118          | **11 / 120**  |
+| `apps/census` 28 / 372          | **31 / 380**  |
+
+Unchanged and checked: the orchestrator's 67 / 989, every other workspace suite, 89 scenarios (166 tests), 2 local scenarios and 374 baselines.
+
+### Known gaps
+
+**The measurement names 156 gaps and none is an issue yet.** 86 stories missing, 41 uncovered files, 15 route states, 12 incomplete components and 2 apps no scenario visits.
+
+**The measurement was taken before #833 and #834.** Measured again at 597f2b5, the gaps and the four headlines were the same; small figures such as the unit test count (5,472, then 5,476) had moved.
+
+**census still differs from its tiles in places.** The score's size, table row heights, the phone's inventory rows and a few smaller ones are accepted deviations.
+
+**The compare press's rare CI failure was not reproduced locally.** #833 fixes the window the code shows; the link to that failure is inferred.
+
+**Unit tests that pass alone can time out under the gate's parallel load** (#716), and a push whose gate waited on the lock can fail after a green gate (#721).
+
+**Full changelog:** https://github.com/climaa/acceptance-gate/compare/v1.10.1...v1.10.2
+
 ## v1.10.1 — census's pages match their drawings
 
 _Released 2026-11-24._
