@@ -35,6 +35,24 @@
         "overCeiling": 3,
         "deadFiles": 49
       }
+    },
+    {
+      "commit": "9f18c9563cb5219765b35c2fea4d4c5872c0d247",
+      "measuredAt": "2026-11-25T18:01:34.876Z",
+      "dimensions": {
+        "code": 76.9,
+        "visual": 91,
+        "acceptance": 60,
+        "health": 85.6
+      },
+      "fallow": {
+        "score": 85.6,
+        "grade": "A",
+        "dupPct": 1.9,
+        "crapOver": 67,
+        "overCeiling": 3,
+        "deadFiles": 49
+      }
     }
   ]
 }
