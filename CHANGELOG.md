@@ -7,6 +7,56 @@ transcribed from the GitHub Releases that existed when this file was created (20
 
 ## Unreleased
 
+## v1.10.3 — census counts what a story renders
+
+_Released 2026-11-25._
+
+Six PRs since [v1.10.2](https://github.com/climaa/acceptance-gate/releases/tag/v1.10.2) (#839 → #847), telling one story: **census counts what a story renders.** The measurement v1.10.2 shipped named 156 gaps, and most were the rule's, not the code's: a component drawn by a whole-page story still counted as having none. Two rules now match what the repository does, and 73 gaps are left.
+
+### What earns the patch
+
+| Layer                                                                                                                                                                          | PRs        |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------- |
+| The counting rules: a component counts as storied when a story reaches it through its imports and renders it, and a script its tests run as a process is not an uncovered file | #844, #845 |
+| The page and its numbers: the home's notes state both rules, and a fresh `apps/census/measurement.json` is taken at 9f18c95                                                    | #846, #847 |
+| Tests for three files that had none, and coverage of the console's `stories.ts` that no longer depends on a Storybook build                                                    | #839, #840 |
+
+Gaps go from 156 to 73: 83 closed and none opened. Eighty of those close because the rule changed (74 stories, 6 scripts) and three because tests were written. Code moves from 76.4 to 76.9; Visual, Acceptance and Health stay at 91, 60 and 85.6.
+
+### Twelve manifests
+
+All twelve move from 1.10.2 to 1.10.3 together. Every internal dependency is `workspace:*`, and `pnpm install --frozen-lockfile` resolves with `pnpm-lock.yaml` untouched.
+
+### The corpus
+
+No baseline joined or left: 374, with 12 re-accepted, all of census's home. The corpus is 29,436,698 bytes against a budget of 32 MB.
+
+### The index, measured rather than adjusted
+
+Every count was measured again with the turbo cache forced off. Three had moved:
+
+| Claim                           | Corrected to  |
+| ------------------------------- | ------------- |
+| The orchestrator's 67 / 989     | **69 / 1007** |
+| `apps/visual-diff-ui` 84 / 1429 | **85 / 1435** |
+| `apps/census` 31 / 380          | **32 / 408**  |
+
+Unchanged and checked: every other workspace suite, 89 scenarios (166 tests), 2 local scenarios and 374 baselines.
+
+### Known gaps
+
+**The measurement names 73 gaps and none has an open issue.** 32 uncovered files, 15 route states, 12 stories missing, 12 incomplete components and 2 apps no scenario visits.
+
+**A reached component is read from source, not from a render.** The rule follows static imports inside one app and looks for the component written as JSX, so a component a story reaches but never shows in any of its states still counts.
+
+**A script counted as run by its tests still reports zero covered lines.** Vitest's coverage cannot see a child process, so those lines stay in Code's total.
+
+**census's home tiles still draw two sample notes the page does not print**, and are shorter than their screenshots.
+
+**Unit tests that pass alone can time out under the gate's parallel load** (#716), and a push whose gate waited on the lock can fail after a green gate (#721).
+
+**Full changelog:** https://github.com/climaa/acceptance-gate/compare/v1.10.2...v1.10.3
+
 ## v1.10.2 — census counts every workspace
 
 _Released 2026-11-25._
