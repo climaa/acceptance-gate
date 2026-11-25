@@ -5,7 +5,7 @@ import {
   type ReactNode,
   type RefObject,
   useContext,
-  useEffect,
+  useLayoutEffect,
   useRef,
 } from 'react';
 
@@ -59,11 +59,16 @@ export function useCompareStart(): StartCompare {
 }
 
 /** The run panel's half: how a press is started. Re-registered every render, so
- *  the press always reaches the panel's current closure rather than its first. */
+ *  the press always reaches the panel's current closure rather than its first.
+ *
+ *  In a layout effect, not a passive one: the handler must change in the same
+ *  commit as what the panel draws. A passive effect runs after that commit has
+ *  painted, so a press landing between the two — D1's running alert on screen —
+ *  reached the previous closure, where nothing was running yet. */
 export function useHandleCompareStart(start: StartCompare): void {
   const handlerRef = useContext(CompareStartContext);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (handlerRef === null) return;
     handlerRef.current = start;
 
