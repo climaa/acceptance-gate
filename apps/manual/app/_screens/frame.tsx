@@ -5,6 +5,10 @@ import { ManualFrame } from '@/components/ManualFrame';
 // module once, so it is not applied twice.
 import '../globals.css';
 
+/** The version a screen is photographed with. Fixed, so a release does not move
+ *  every screen's footer by a few pixels the gate's allowance then hides. */
+const SCREEN_VERSION = '1.8.0';
+
 /**
  * A screen's story, drawn as a visitor sees the page: inside the frame the root
  * layout draws (`ManualFrame`), at `pathname`, edge to edge.
@@ -13,7 +17,7 @@ export function inManual(pathname: string) {
   return {
     decorators: [
       (Story: ComponentType) => (
-        <ManualFrame>
+        <ManualFrame version={SCREEN_VERSION}>
           <Story />
         </ManualFrame>
       ),

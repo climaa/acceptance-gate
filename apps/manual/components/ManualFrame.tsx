@@ -14,7 +14,14 @@ import { SITE_VERSION } from '@/lib/version';
  * the root layout, and by each screen story, so a screen is photographed in the
  * frame a visitor sees rather than bare.
  */
-export function ManualFrame({ children }: { children: ReactNode }) {
+export function ManualFrame({
+  children,
+  version = SITE_VERSION,
+}: {
+  children: ReactNode;
+  /** What the footer prints: the manifest's version, unless a screen story pins it. */
+  version?: string;
+}) {
   return (
     <>
       {/* No `nav`: three pages are listed as cards on the index, which is the
@@ -37,7 +44,7 @@ export function ManualFrame({ children }: { children: ReactNode }) {
         className="ds-container"
         copyright={SITE_COPYRIGHT}
         year={SITE_COPYRIGHT_YEAR}
-        version={SITE_VERSION}
+        version={version}
         links={FOOTER_LINKS}
       />
     </>
