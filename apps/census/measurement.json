@@ -1,8 +1,8 @@
 {
   "schema": 1,
   "repo": "climaa/acceptance-gate",
-  "commit": "6d4ee88c6c1fdb535bc5ec9be7e7650c57814c51",
-  "measuredAt": "2026-11-22T09:26:51.955Z",
+  "commit": "f2e2bc7bbdefe8e2a14304b0c2d260b362de4e64",
+  "measuredAt": "2026-11-25T10:07:10.503Z",
   "tools": {
     "vitest": "5.0.5",
     "fallow": "3.36.0",
@@ -10,13 +10,13 @@
     "node": "22.23.4"
   },
   "pyramid": {
-    "unit": 4831,
-    "visual": 286,
-    "acceptance": 88
+    "unit": 5472,
+    "visual": 374,
+    "acceptance": 89
   },
   "health": {
-    "score": 84.8,
-    "grade": "B",
+    "score": 85.6,
+    "grade": "A",
     "penalties": [
       {
         "name": "unit size",
@@ -27,54 +27,79 @@
         "points": 1.7
       },
       {
-        "name": "maintainability",
-        "points": 1.4
+        "name": "dead files",
+        "points": 1
       },
       {
-        "name": "dead files",
-        "points": 1.2
+        "name": "maintainability",
+        "points": 1
       },
       {
         "name": "dead exports",
-        "points": 0.9
+        "points": 0.7
       }
     ],
     "dead": {
       "files": 49,
-      "exports": 47,
-      "types": 3,
+      "exports": 53,
+      "types": 2,
       "unlistedDeps": 2,
-      "cycles": 0
+      "cycles": 0,
+      "totalFiles": 1002,
+      "totalExports": 2298,
+      "boundaries": false
     },
     "duplication": {
-      "semanticPct": 6.7,
-      "mildPct": 1.6,
-      "lines": 958,
-      "groups": 18
+      "semanticPct": 8.7,
+      "mildPct": 1.9,
+      "lines": 1372,
+      "groups": 27
     },
     "styling": {
-      "score": 98.7,
+      "score": 96.9,
       "grade": "A",
       "tokenDrift": 1,
-      "duplicateBlocks": 4,
-      "complexSelectors": 71,
-      "important": 2
+      "duplicateBlocks": 11,
+      "complexSelectors": 101,
+      "important": 2,
+      "penalties": [
+        {
+          "name": "duplication",
+          "points": 2.1
+        },
+        {
+          "name": "dead surface",
+          "points": 1
+        },
+        {
+          "name": "broken references",
+          "points": 0
+        },
+        {
+          "name": "token erosion",
+          "points": 0
+        },
+        {
+          "name": "structural",
+          "points": 0
+        }
+      ]
     },
     "hotspots": [
       {
         "path": "scripts/board-scale-integrity.mjs",
-        "churn": 13,
-        "complexity": 121
-      },
-      {
-        "path": "packages/visual-diff/src/__tests__/policy.test.mjs",
-        "churn": 11,
-        "complexity": 11
+        "churn": 14,
+        "complexity": 124
       },
       {
         "path": "apps/visual-diff-ui/lib/comparison.ts",
-        "churn": 13,
-        "complexity": 13
+        "churn": 15,
+        "complexity": 15
+      },
+      {
+        "path": "packages/visual-diff/src/__tests__/policy.test.mjs",
+        "churn": 12,
+        "complexity": 11
       },
       {
         "path": "apps/visual-diff-ui/components/RunPanel.tsx",
@@ -87,14 +112,19 @@
         "complexity": 13
       },
       {
+        "path": "packages/visual-diff/src/policy.mjs",
+        "churn": 21,
+        "complexity": 25
+      },
+      {
+        "path": "apps/visual-diff-ui/components/BoardPane.tsx",
+        "churn": 12,
+        "complexity": 26
+      },
+      {
         "path": ".sandcastle/main.mts",
         "churn": 23,
         "complexity": 109
-      },
-      {
-        "path": "packages/visual-diff/src/policy.mjs",
-        "churn": 20,
-        "complexity": 25
       },
       {
         "path": "apps/visual-diff-ui/__tests__/shot-tools.test.tsx",
@@ -122,9 +152,9 @@
         "complexity": 54
       },
       {
-        "path": "apps/visual-diff-ui/lib/jobs.ts",
-        "churn": 15,
-        "complexity": 45
+        "path": "apps/census/lib/overview.ts",
+        "churn": 6,
+        "complexity": 60
       },
       {
         "path": "apps/visual-diff-ui/__tests__/run-panel.test.tsx",
@@ -137,14 +167,14 @@
         "complexity": 10
       },
       {
+        "path": "apps/visual-diff-ui/lib/jobs.ts",
+        "churn": 15,
+        "complexity": 45
+      },
+      {
         "path": "packages/visual-diff/src/capture.mjs",
         "churn": 11,
         "complexity": 65
-      },
-      {
-        "path": "apps/visual-diff-ui/components/BoardPane.tsx",
-        "churn": 10,
-        "complexity": 26
       },
       {
         "path": "apps/visual-diff-ui/__tests__/jobs.test.ts",
@@ -152,163 +182,208 @@
         "complexity": 23
       },
       {
-        "path": "apps/visual-diff-ui/components/ShotView.tsx",
-        "churn": 17,
-        "complexity": 25
-      },
-      {
-        "path": "apps/visual-diff-ui/hooks/useShotTools.ts",
-        "churn": 7,
-        "complexity": 23
+        "path": ".sandcastle/__tests__/sandcastle.turbo-env.test.ts",
+        "churn": 11,
+        "complexity": 1
       }
     ],
     "refactorTargets": [
       {
         "path": "scripts/pen/place-tiles.js",
         "priority": 35,
-        "effort": "medium"
+        "effort": "medium",
+        "recommendation": "3 complex functions lack test coverage path, add tests before modifying"
+      },
+      {
+        "path": "apps/e2e/steps/acceptance/fixtures.ts",
+        "priority": 52,
+        "effort": "high",
+        "recommendation": "Changes with suite-integrity.mjs in 8 commits (52% coupling) without an import, make the dependency explicit or move the shared logic into one module"
+      },
+      {
+        "path": "apps/census/components/HomeScreen.tsx",
+        "priority": 32.8,
+        "effort": "medium",
+        "recommendation": "Remove 2 unused exports to reduce surface area (67% dead)"
       },
       {
         "path": "apps/e2e/pages/link-preview.ts",
         "priority": 32.5,
-        "effort": "medium"
+        "effort": "medium",
+        "recommendation": "Remove 5 unused exports to reduce surface area (100% dead)"
       },
       {
         "path": "apps/e2e/pages/console.ts",
-        "priority": 32.4,
-        "effort": "medium"
+        "priority": 32.3,
+        "effort": "medium",
+        "recommendation": "Changes with DashboardTemplate.tsx in 6 commits (50% coupling) without an import, make the dependency explicit or move the shared logic into one module"
       },
       {
         "path": "apps/e2e/steps/local/fixtures.ts",
-        "priority": 29.4,
-        "effort": "medium"
+        "priority": 29.3,
+        "effort": "medium",
+        "recommendation": "Remove 3 unused exports to reduce surface area (100% dead)"
       },
       {
         "path": ".sandcastle/sandcastle-pr-queue-gh.mts",
-        "priority": 27.5,
-        "effort": "medium"
+        "priority": 27.4,
+        "effort": "medium",
+        "recommendation": "Remove 2 unused exports to reduce surface area (67% dead)"
       },
       {
         "path": "apps/e2e/pages/about.ts",
         "priority": 25.3,
-        "effort": "medium"
+        "effort": "medium",
+        "recommendation": "Remove 3 unused exports to reduce surface area (100% dead)"
       },
       {
         "path": "apps/e2e/pages/visual-diff-hosts.ts",
         "priority": 23.9,
-        "effort": "medium"
+        "effort": "medium",
+        "recommendation": "Remove 2 unused exports to reduce surface area (50% dead)"
       },
       {
         "path": "apps/visual-diff-ui/components/DesignStage.tsx",
-        "priority": 23.1,
-        "effort": "medium"
+        "priority": 23,
+        "effort": "medium",
+        "recommendation": "Changes with modal.css in 6 commits (55% coupling) without an import, make the dependency explicit or move the shared logic into one module"
       },
       {
         "path": "apps/visual-diff-ui/components/SetsTable.tsx",
-        "priority": 22.6,
-        "effort": "medium"
+        "priority": 22.5,
+        "effort": "medium",
+        "recommendation": "Changes with console.test.tsx in 8 commits (52% coupling) without an import, make the dependency explicit or move the shared logic into one module"
       },
       {
-        "path": "scripts/pen/tiles-from-dom/svg.mjs",
+        "path": "apps/census/components/HomeSections.tsx",
         "priority": 22,
-        "effort": "medium"
+        "effort": "medium",
+        "recommendation": "Changes with measurement.ts in 6 commits (71% coupling) without an import, make the dependency explicit or move the shared logic into one module"
       },
       {
         "path": "apps/visual-diff-ui/components/DashboardTemplate.tsx",
-        "priority": 20.8,
-        "effort": "medium"
+        "priority": 20.7,
+        "effort": "medium",
+        "recommendation": "Changes with console.ts in 6 commits (50% coupling) without an import, make the dependency explicit or move the shared logic into one module"
       },
       {
         "path": "apps/e2e/scripts/lib/suite-integrity-core.mjs",
         "priority": 20.4,
-        "effort": "medium"
+        "effort": "medium",
+        "recommendation": "Remove 2 unused exports to reduce surface area (50% dead)"
       },
       {
         "path": "apps/visual-diff-ui/components/CurrentJob.tsx",
-        "priority": 29.5,
-        "effort": "high"
+        "priority": 29.3,
+        "effort": "high",
+        "recommendation": "Changes with route.ts in 5 commits (59% coupling) without an import, make the dependency explicit or move the shared logic into one module"
       },
       {
         "path": "apps/manual/__tests__/pages.test.ts",
-        "priority": 16.5,
-        "effort": "medium"
+        "priority": 16.4,
+        "effort": "medium",
+        "recommendation": "Changes with globals.css in 5 commits (83% coupling) without an import, make the dependency explicit or move the shared logic into one module"
       },
       {
         "path": ".sandcastle/sandcastle-stranded-branches.mts",
-        "priority": 16.3,
-        "effort": "medium"
+        "priority": 16.2,
+        "effort": "medium",
+        "recommendation": "Changes with sandcastle-run-issue.mts in 5 commits (71% coupling) without an import, make the dependency explicit or move the shared logic into one module"
       },
       {
         "path": "apps/visual-diff-ui/components/StoryCard.tsx",
         "priority": 15.8,
-        "effort": "medium"
-      },
-      {
-        "path": "apps/visual-diff-ui/components/OverlayStage.tsx",
-        "priority": 15.4,
-        "effort": "medium"
+        "effort": "medium",
+        "recommendation": "Changes with globals.css in 5 commits (50% coupling) without an import, make the dependency explicit or move the shared logic into one module"
       },
       {
         "path": "scripts/board-scale-integrity.mjs",
-        "priority": 22.3,
-        "effort": "high"
+        "priority": 22.9,
+        "effort": "high",
+        "recommendation": "Extract joinProblems (cognitive: 32) in 850-LOC file into smaller functions"
+      },
+      {
+        "path": "apps/visual-diff-ui/components/OverlayStage.tsx",
+        "priority": 15.2,
+        "effort": "medium",
+        "recommendation": "Changes with shot-tools.test.tsx in 7 commits (64% coupling) without an import, make the dependency explicit or move the shared logic into one module"
       },
       {
         "path": "apps/visual-diff-ui/components/VariantRow.tsx",
-        "priority": 14.7,
-        "effort": "medium"
+        "priority": 14.6,
+        "effort": "medium",
+        "recommendation": "Changes with story-card.test.tsx in 5 commits (91% coupling) without an import, make the dependency explicit or move the shared logic into one module"
       },
       {
         "path": "apps/visual-diff-ui/app/api/jobs/current/route.ts",
-        "priority": 14.2,
-        "effort": "medium"
+        "priority": 14.1,
+        "effort": "medium",
+        "recommendation": "Changes with CurrentJob.tsx in 5 commits (59% coupling) without an import, make the dependency explicit or move the shared logic into one module"
       },
       {
         "path": "apps/visual-diff-ui/components/ReportsTable.tsx",
-        "priority": 13,
-        "effort": "medium"
+        "priority": 12.9,
+        "effort": "medium",
+        "recommendation": "Changes with console.test.tsx in 7 commits (50% coupling) without an import, make the dependency explicit or move the shared logic into one module"
       },
       {
         "path": "apps/visual-diff-ui/__tests__/console.test.tsx",
-        "priority": 18,
-        "effort": "high"
+        "priority": 17.7,
+        "effort": "high",
+        "recommendation": "Changes with SetsTable.tsx in 8 commits (52% coupling) without an import, make the dependency explicit or move the shared logic into one module"
       },
       {
         "path": ".sandcastle/sandcastle-run-issue.mts",
-        "priority": 11.7,
-        "effort": "medium"
+        "priority": 11.6,
+        "effort": "medium",
+        "recommendation": "Changes with sandcastle-stranded-branches.mts in 5 commits (71% coupling) without an import, make the dependency explicit or move the shared logic into one module"
+      },
+      {
+        "path": "apps/census/lib/measurement.ts",
+        "priority": 16.2,
+        "effort": "high",
+        "recommendation": "Changes with HomeSections.tsx in 6 commits (71% coupling) without an import, make the dependency explicit or move the shared logic into one module"
       },
       {
         "path": "apps/visual-diff-ui/__tests__/shot-tools.test.tsx",
-        "priority": 14.6,
-        "effort": "high"
+        "priority": 14.4,
+        "effort": "high",
+        "recommendation": "Changes with OverlayStage.tsx in 7 commits (64% coupling) without an import, make the dependency explicit or move the shared logic into one module"
       },
       {
         "path": "scripts/pen/tiles-from-dom/extract-page.mjs",
         "priority": 12.4,
-        "effort": "high"
+        "effort": "high",
+        "recommendation": "Extract svgShape (cognitive: 55) in 566-LOC file into smaller functions"
       },
       {
         "path": "apps/visual-diff-ui/__tests__/story-card.test.tsx",
         "priority": 8.2,
-        "effort": "medium"
+        "effort": "medium",
+        "recommendation": "Changes with VariantRow.tsx in 5 commits (91% coupling) without an import, make the dependency explicit or move the shared logic into one module"
+      },
+      {
+        "path": "apps/e2e/scripts/suite-integrity.mjs",
+        "priority": 4.9,
+        "effort": "medium",
+        "recommendation": "Changes with fixtures.ts in 8 commits (52% coupling) without an import, make the dependency explicit or move the shared logic into one module"
       }
     ],
     "profiles": {
       "unitSize": [
         83.7,
-        9.1,
+        9.2,
         4.5,
-        2.7
+        2.6
       ],
       "interfacing": [
-        97.6,
-        2.3,
+        97.7,
+        2.1,
         0.1,
         0
       ]
     },
-    "crapOver30": 68,
+    "crapOver30": 67,
     "crapSource": "measured"
   },
   "workspaces": [
@@ -319,8 +394,540 @@
       "dimensions": {
         "code": {
           "dimension": "code",
-          "state": "unmeasured",
-          "reason": "No coverage block in apps/blog/vitest.config.mts"
+          "state": "measured",
+          "lines": {
+            "covered": 441,
+            "total": 564,
+            "pct": 78.2
+          },
+          "floor": 65,
+          "staticReachPct": 97.9,
+          "files": [
+            {
+              "path": "app/about/page.tsx",
+              "group": "app",
+              "lines": {
+                "covered": 2,
+                "total": 2,
+                "pct": 100
+              },
+              "maintainability": 95,
+              "crap": 1
+            },
+            {
+              "path": "app/blog/[slug]/loading.tsx",
+              "group": "app",
+              "lines": {
+                "covered": 1,
+                "total": 1,
+                "pct": 100
+              },
+              "maintainability": 96.6,
+              "crap": 1
+            },
+            {
+              "path": "app/blog/[slug]/page.tsx",
+              "group": "app",
+              "lines": {
+                "covered": 8,
+                "total": 12,
+                "pct": 66.7
+              },
+              "maintainability": 90.6,
+              "crap": 2
+            },
+            {
+              "path": "app/blog/loading.tsx",
+              "group": "app",
+              "lines": {
+                "covered": 1,
+                "total": 1,
+                "pct": 100
+              },
+              "maintainability": 96.6,
+              "crap": 1
+            },
+            {
+              "path": "app/blog/page.tsx",
+              "group": "app",
+              "lines": {
+                "covered": 2,
+                "total": 2,
+                "pct": 100
+              },
+              "maintainability": 92.9,
+              "crap": 1
+            },
+            {
+              "path": "app/blog/page/[n]/page.tsx",
+              "group": "app",
+              "lines": {
+                "covered": 6,
+                "total": 12,
+                "pct": 50
+              },
+              "maintainability": 89.4,
+              "crap": 6
+            },
+            {
+              "path": "app/changelog/page.tsx",
+              "group": "app",
+              "lines": {
+                "covered": 3,
+                "total": 7,
+                "pct": 42.9
+              },
+              "maintainability": 90.5,
+              "crap": 2
+            },
+            {
+              "path": "app/error.tsx",
+              "group": "app",
+              "lines": {
+                "covered": 4,
+                "total": 4,
+                "pct": 100
+              },
+              "maintainability": 93.3,
+              "crap": 1
+            },
+            {
+              "path": "app/global-error.tsx",
+              "group": "app",
+              "lines": {
+                "covered": 5,
+                "total": 5,
+                "pct": 100
+              },
+              "maintainability": 91.9,
+              "crap": 1
+            },
+            {
+              "path": "app/layout.tsx",
+              "group": "app",
+              "lines": {
+                "covered": 5,
+                "total": 5,
+                "pct": 100
+              },
+              "maintainability": 91.3,
+              "crap": 3
+            },
+            {
+              "path": "app/not-found.tsx",
+              "group": "app",
+              "lines": {
+                "covered": 0,
+                "total": 2,
+                "pct": 0
+              },
+              "maintainability": 95.1,
+              "crap": 2
+            },
+            {
+              "path": "app/og/blog/[card]/route.tsx",
+              "group": "app",
+              "lines": {
+                "covered": 4,
+                "total": 4,
+                "pct": 100
+              },
+              "maintainability": 93.2,
+              "crap": 2
+            },
+            {
+              "path": "app/og/site.png/route.tsx",
+              "group": "app",
+              "lines": {
+                "covered": 1,
+                "total": 1,
+                "pct": 100
+              },
+              "maintainability": 96.6,
+              "crap": 1
+            },
+            {
+              "path": "app/page.tsx",
+              "group": "app",
+              "lines": {
+                "covered": 2,
+                "total": 2,
+                "pct": 100
+              },
+              "maintainability": 93,
+              "crap": 1
+            },
+            {
+              "path": "app/robots.ts",
+              "group": "app",
+              "lines": {
+                "covered": 1,
+                "total": 1,
+                "pct": 100
+              },
+              "maintainability": 96.7,
+              "crap": 1
+            },
+            {
+              "path": "app/rss.xml/route.ts",
+              "group": "app",
+              "lines": {
+                "covered": 11,
+                "total": 11,
+                "pct": 100
+              },
+              "maintainability": 93.5,
+              "crap": 1
+            },
+            {
+              "path": "app/site-analytics.tsx",
+              "group": "app",
+              "lines": {
+                "covered": 2,
+                "total": 2,
+                "pct": 100
+              },
+              "maintainability": 96.6,
+              "crap": 1
+            },
+            {
+              "path": "app/sitemap.ts",
+              "group": "app",
+              "lines": {
+                "covered": 7,
+                "total": 7,
+                "pct": 100
+              },
+              "maintainability": 91.4,
+              "crap": 1
+            },
+            {
+              "path": "app/tags/[tag]/loading.tsx",
+              "group": "app",
+              "lines": {
+                "covered": 1,
+                "total": 1,
+                "pct": 100
+              },
+              "maintainability": 96.6,
+              "crap": 1
+            },
+            {
+              "path": "app/tags/[tag]/page.tsx",
+              "group": "app",
+              "lines": {
+                "covered": 9,
+                "total": 9,
+                "pct": 100
+              },
+              "maintainability": 90.8,
+              "crap": 2
+            },
+            {
+              "path": "components/AboutScreen.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 1,
+                "total": 1,
+                "pct": 100
+              },
+              "maintainability": 95,
+              "crap": 1
+            },
+            {
+              "path": "components/BlogFrame.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 2,
+                "total": 2,
+                "pct": 100
+              },
+              "maintainability": 93.9,
+              "crap": 1
+            },
+            {
+              "path": "components/BlogIndexScreen.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 3,
+                "total": 3,
+                "pct": 100
+              },
+              "maintainability": 91.2,
+              "crap": 3
+            },
+            {
+              "path": "components/ChangelogScreen.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 7,
+                "total": 7,
+                "pct": 100
+              },
+              "maintainability": 90.1,
+              "crap": 5
+            },
+            {
+              "path": "components/ChangelogSyncButton.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 25,
+                "total": 76,
+                "pct": 32.9
+              },
+              "maintainability": 87.8,
+              "crap": 30
+            },
+            {
+              "path": "components/ChangelogSyncStill.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 1,
+                "total": 1,
+                "pct": 100
+              },
+              "maintainability": 100,
+              "crap": 1
+            },
+            {
+              "path": "components/HomeScreen.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 2,
+                "total": 2,
+                "pct": 100
+              },
+              "maintainability": 91.8,
+              "crap": 2
+            },
+            {
+              "path": "components/LottieBlock.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 18,
+                "total": 42,
+                "pct": 42.9
+              },
+              "maintainability": 96.4,
+              "crap": 30
+            },
+            {
+              "path": "components/MermaidDiagram.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 5,
+                "total": 30,
+                "pct": 16.7
+              },
+              "maintainability": 97.9,
+              "crap": 6
+            },
+            {
+              "path": "components/PostScreen.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 1,
+                "total": 1,
+                "pct": 100
+              },
+              "maintainability": 93.9,
+              "crap": 1
+            },
+            {
+              "path": "components/TagScreen.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 4,
+                "total": 4,
+                "pct": 100
+              },
+              "maintainability": 91.4,
+              "crap": 2
+            },
+            {
+              "path": "lib/changelog-sync-asset.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 20,
+                "total": 20,
+                "pct": 100
+              },
+              "maintainability": 97.5,
+              "crap": 2
+            },
+            {
+              "path": "lib/giscus.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 20,
+                "total": 21,
+                "pct": 95.2
+              },
+              "maintainability": 94,
+              "crap": 8
+            },
+            {
+              "path": "lib/github.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 4,
+                "total": 4,
+                "pct": 100
+              }
+            },
+            {
+              "path": "lib/listing.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 1,
+                "total": 1,
+                "pct": 100
+              },
+              "maintainability": 93.8,
+              "crap": 1
+            },
+            {
+              "path": "lib/loading-skeletons.tsx",
+              "group": "lib",
+              "lines": {
+                "covered": 2,
+                "total": 2,
+                "pct": 100
+              },
+              "maintainability": 96.1,
+              "crap": 1
+            },
+            {
+              "path": "lib/mdx.tsx",
+              "group": "lib",
+              "lines": {
+                "covered": 23,
+                "total": 25,
+                "pct": 92
+              },
+              "maintainability": 92.1,
+              "crap": 4
+            },
+            {
+              "path": "lib/og.tsx",
+              "group": "lib",
+              "lines": {
+                "covered": 23,
+                "total": 23,
+                "pct": 100
+              },
+              "maintainability": 93.8,
+              "crap": 3
+            },
+            {
+              "path": "lib/paging.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 9,
+                "total": 9,
+                "pct": 100
+              },
+              "maintainability": 94,
+              "crap": 4
+            },
+            {
+              "path": "lib/post-paths.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 3,
+                "total": 3,
+                "pct": 100
+              },
+              "maintainability": 98.2,
+              "crap": 1
+            },
+            {
+              "path": "lib/posts.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 38,
+                "total": 38,
+                "pct": 100
+              },
+              "maintainability": 90.9,
+              "crap": 4
+            },
+            {
+              "path": "lib/releases.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 22,
+                "total": 23,
+                "pct": 95.7
+              },
+              "maintainability": 91.2,
+              "crap": 6
+            },
+            {
+              "path": "lib/remark-release-body.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 27,
+                "total": 27,
+                "pct": 100
+              },
+              "maintainability": 91.5,
+              "crap": 7
+            },
+            {
+              "path": "lib/share.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 16,
+                "total": 16,
+                "pct": 100
+              },
+              "maintainability": 90.6,
+              "crap": 5
+            },
+            {
+              "path": "lib/shiki-contrast.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 47,
+                "total": 47,
+                "pct": 100
+              },
+              "maintainability": 95.5,
+              "crap": 8
+            },
+            {
+              "path": "lib/site.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 33,
+                "total": 36,
+                "pct": 91.7
+              },
+              "maintainability": 95.4,
+              "crap": 2
+            },
+            {
+              "path": "lib/theme.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 9,
+                "total": 9,
+                "pct": 100
+              },
+              "maintainability": 94.8,
+              "crap": 5
+            },
+            {
+              "path": "lib/version.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 0,
+                "total": 0,
+                "pct": 100
+              }
+            }
+          ]
         },
         "visual": {
           "dimension": "visual",
@@ -353,7 +960,65 @@
               "inherited": 6,
               "none": 0
             }
-          }
+          },
+          "inventory": [
+            {
+              "name": "screens-blog-about--default",
+              "tier": "screens",
+              "story": "screens-blog-about--default",
+              "tiled": false,
+              "baselined": true
+            },
+            {
+              "name": "screens-blog-changelog--releases",
+              "tier": "screens",
+              "story": "screens-blog-changelog--releases",
+              "tiled": false,
+              "baselined": true
+            },
+            {
+              "name": "screens-blog-home--latest",
+              "tier": "screens",
+              "story": "screens-blog-home--latest",
+              "tiled": false,
+              "baselined": true
+            },
+            {
+              "name": "screens-blog-index--first-page",
+              "tier": "screens",
+              "story": "screens-blog-index--first-page",
+              "tiled": false,
+              "baselined": true
+            },
+            {
+              "name": "screens-blog-index--later-page",
+              "tier": "screens",
+              "story": "screens-blog-index--later-page",
+              "tiled": false,
+              "baselined": true
+            },
+            {
+              "name": "screens-blog-notfound--default",
+              "tier": "screens",
+              "story": "screens-blog-notfound--default",
+              "tiled": false,
+              "baselined": true
+            },
+            {
+              "name": "screens-blog-post--article",
+              "tier": "screens",
+              "story": "screens-blog-post--article",
+              "tiled": false,
+              "baselined": true
+            },
+            {
+              "name": "screens-blog-tag--tagged",
+              "tier": "screens",
+              "story": "screens-blog-tag--tagged",
+              "tiled": false,
+              "baselined": true
+            }
+          ]
         },
         "acceptance": {
           "dimension": "acceptance",
@@ -371,12 +1036,30 @@
         "health": {
           "dimension": "health",
           "state": "measured",
-          "score": 85.8,
+          "score": 85.7,
           "grade": "A",
           "overCeiling": 0,
           "deadFiles": 14,
           "deadExports": 8,
-          "refactorTargets": 0
+          "refactorTargets": 0,
+          "penalties": [
+            {
+              "name": "unit size",
+              "points": 10
+            },
+            {
+              "name": "dead files",
+              "points": 2.4
+            },
+            {
+              "name": "coupling",
+              "points": 1.2
+            },
+            {
+              "name": "dead exports",
+              "points": 0.7
+            }
+          ]
         }
       }
     },
@@ -389,8 +1072,8 @@
           "dimension": "code",
           "state": "measured",
           "lines": {
-            "covered": 336,
-            "total": 336,
+            "covered": 875,
+            "total": 875,
             "pct": 100
           },
           "floor": 98,
@@ -433,11 +1116,11 @@
               "path": "lib/collect/health.ts",
               "group": "lib",
               "lines": {
-                "covered": 39,
-                "total": 39,
+                "covered": 43,
+                "total": 43,
                 "pct": 100
               },
-              "maintainability": 91.5,
+              "maintainability": 91.8,
               "crap": 5
             },
             {
@@ -455,12 +1138,34 @@
               "path": "lib/collect/visual.ts",
               "group": "lib",
               "lines": {
-                "covered": 71,
-                "total": 71,
+                "covered": 80,
+                "total": 80,
                 "pct": 100
               },
-              "maintainability": 86.9,
-              "crap": 5
+              "maintainability": 87.2,
+              "crap": 6
+            },
+            {
+              "path": "lib/committed.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 22,
+                "total": 22,
+                "pct": 100
+              },
+              "maintainability": 89.9,
+              "crap": 6
+            },
+            {
+              "path": "lib/dates.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 3,
+                "total": 3,
+                "pct": 100
+              },
+              "maintainability": 99.4,
+              "crap": 1
             },
             {
               "path": "lib/features.ts",
@@ -474,6 +1179,39 @@
               "crap": 3
             },
             {
+              "path": "lib/figures.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 42,
+                "total": 42,
+                "pct": 100
+              },
+              "maintainability": 84.2,
+              "crap": 2
+            },
+            {
+              "path": "lib/filter.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 19,
+                "total": 19,
+                "pct": 100
+              },
+              "maintainability": 89.9,
+              "crap": 4
+            },
+            {
+              "path": "lib/frame.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 12,
+                "total": 12,
+                "pct": 100
+              },
+              "maintainability": 88.8,
+              "crap": 4
+            },
+            {
               "path": "lib/gaps.ts",
               "group": "lib",
               "lines": {
@@ -485,15 +1223,147 @@
               "crap": 4
             },
             {
+              "path": "lib/home.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 23,
+                "total": 23,
+                "pct": 100
+              },
+              "maintainability": 88.4,
+              "crap": 3
+            },
+            {
+              "path": "lib/links.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 3,
+                "total": 3,
+                "pct": 100
+              },
+              "maintainability": 98.8,
+              "crap": 1
+            },
+            {
               "path": "lib/measurement.ts",
               "group": "lib",
               "lines": {
-                "covered": 25,
-                "total": 25,
+                "covered": 27,
+                "total": 27,
                 "pct": 100
               },
-              "maintainability": 91.4,
+              "maintainability": 99.4,
               "crap": 3
+            },
+            {
+              "path": "lib/overview.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 148,
+                "total": 148,
+                "pct": 100
+              },
+              "maintainability": 85.5,
+              "crap": 8
+            },
+            {
+              "path": "lib/rendition.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 16,
+                "total": 16,
+                "pct": 100
+              },
+              "maintainability": 93.7,
+              "crap": 7
+            },
+            {
+              "path": "lib/search.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 24,
+                "total": 24,
+                "pct": 100
+              },
+              "maintainability": 85.3,
+              "crap": 3
+            },
+            {
+              "path": "lib/share.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 3,
+                "total": 3,
+                "pct": 100
+              },
+              "maintainability": 95,
+              "crap": 1
+            },
+            {
+              "path": "lib/site.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 5,
+                "total": 5,
+                "pct": 100
+              },
+              "maintainability": 99.4,
+              "crap": 1
+            },
+            {
+              "path": "lib/stale.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 4,
+                "total": 4,
+                "pct": 100
+              },
+              "maintainability": 98.7,
+              "crap": 1
+            },
+            {
+              "path": "lib/summary.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 27,
+                "total": 27,
+                "pct": 100
+              },
+              "maintainability": 85.2,
+              "crap": 5
+            },
+            {
+              "path": "lib/tall-icicle.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 9,
+                "total": 9,
+                "pct": 100
+              },
+              "maintainability": 90.7,
+              "crap": 7
+            },
+            {
+              "path": "lib/targets.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 8,
+                "total": 8,
+                "pct": 100
+              },
+              "maintainability": 91.9,
+              "crap": 3
+            },
+            {
+              "path": "lib/trend.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 20,
+                "total": 20,
+                "pct": 100
+              },
+              "maintainability": 91.2,
+              "crap": 5
             },
             {
               "path": "lib/validate.ts",
@@ -505,29 +1375,145 @@
               },
               "maintainability": 88.4,
               "crap": 3
+            },
+            {
+              "path": "lib/workspace-address.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 10,
+                "total": 10,
+                "pct": 100
+              },
+              "maintainability": 93.6,
+              "crap": 3
+            },
+            {
+              "path": "lib/workspace.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 126,
+                "total": 126,
+                "pct": 100
+              },
+              "maintainability": 84.3,
+              "crap": 9
             }
           ]
         },
         "visual": {
           "dimension": "visual",
-          "state": "not-applicable",
-          "reason": "No components"
+          "state": "measured",
+          "components": {
+            "total": 32,
+            "storied": 2,
+            "tiled": 2,
+            "baselined": 2
+          },
+          "screens": {
+            "stories": 6,
+            "tiled": 6,
+            "baselined": 6
+          },
+          "routes": {
+            "total": 2,
+            "loading": {
+              "own": 0,
+              "inherited": 0,
+              "none": 2
+            },
+            "error": {
+              "own": 1,
+              "inherited": 1,
+              "none": 0
+            },
+            "notFound": {
+              "own": 0,
+              "inherited": 0,
+              "none": 2
+            }
+          },
+          "inventory": [
+            {
+              "name": "screens-census-home--empty",
+              "tier": "screens",
+              "story": "screens-census-home--empty",
+              "tiled": true,
+              "board": "05-screens-census-3",
+              "baselined": true
+            },
+            {
+              "name": "screens-census-home--sample",
+              "tier": "screens",
+              "story": "screens-census-home--sample",
+              "tiled": true,
+              "board": "05-screens-census-1",
+              "baselined": true
+            },
+            {
+              "name": "screens-census-home--filtered",
+              "tier": "screens",
+              "story": "screens-census-home--filtered",
+              "tiled": true,
+              "board": "05-screens-census-2",
+              "baselined": true
+            },
+            {
+              "name": "screens-census-home--stale",
+              "tier": "screens",
+              "story": "screens-census-home--stale",
+              "tiled": true,
+              "board": "05-screens-census-3",
+              "baselined": true
+            },
+            {
+              "name": "screens-census-workspace--sample",
+              "tier": "screens",
+              "story": "screens-census-workspace--sample",
+              "tiled": true,
+              "board": "05-screens-census-4",
+              "baselined": true
+            },
+            {
+              "name": "screens-census-workspace--unmeasured",
+              "tier": "screens",
+              "story": "screens-census-workspace--unmeasured",
+              "tiled": true,
+              "board": "05-screens-census-4",
+              "baselined": true
+            }
+          ]
         },
         "acceptance": {
           "dimension": "acceptance",
           "state": "measured",
-          "scenarios": 0,
-          "features": []
+          "scenarios": 1,
+          "features": [
+            "census"
+          ]
         },
         "health": {
           "dimension": "health",
           "state": "measured",
-          "score": 93.3,
+          "score": 90.6,
           "grade": "A",
           "overCeiling": 0,
           "deadFiles": 0,
-          "deadExports": 2,
-          "refactorTargets": 0
+          "deadExports": 3,
+          "refactorTargets": 3,
+          "penalties": [
+            {
+              "name": "unit size",
+              "points": 7.6
+            },
+            {
+              "name": "coupling",
+              "points": 1.6
+            },
+            {
+              "name": "dead exports",
+              "points": 0.2
+            }
+          ]
         }
       }
     },
@@ -538,8 +1524,71 @@
       "dimensions": {
         "code": {
           "dimension": "code",
-          "state": "unmeasured",
-          "reason": "No coverage block in apps/e2e/vitest.config.ts"
+          "state": "measured",
+          "lines": {
+            "covered": 12,
+            "total": 295,
+            "pct": 4.1
+          },
+          "floor": 2,
+          "staticReachPct": 80,
+          "files": [
+            {
+              "path": "scripts/lib/suite-integrity-core.mjs",
+              "group": "scripts",
+              "lines": {
+                "covered": 0,
+                "total": 108,
+                "pct": 0
+              },
+              "maintainability": 83.4,
+              "crap": 42
+            },
+            {
+              "path": "scripts/local-integrity.mjs",
+              "group": "scripts",
+              "lines": {
+                "covered": 0,
+                "total": 21,
+                "pct": 0
+              },
+              "maintainability": 95.1,
+              "crap": 20
+            },
+            {
+              "path": "scripts/seed-visual-diff.mjs",
+              "group": "scripts",
+              "lines": {
+                "covered": 0,
+                "total": 142,
+                "pct": 0
+              },
+              "maintainability": 92.7,
+              "crap": 42
+            },
+            {
+              "path": "scripts/suite-integrity.mjs",
+              "group": "scripts",
+              "lines": {
+                "covered": 0,
+                "total": 12,
+                "pct": 0
+              },
+              "maintainability": 96,
+              "crap": 6
+            },
+            {
+              "path": "support/analytics-guard.ts",
+              "group": "support",
+              "lines": {
+                "covered": 12,
+                "total": 12,
+                "pct": 100
+              },
+              "maintainability": 93.6,
+              "crap": 3
+            }
+          ]
         },
         "visual": {
           "dimension": "visual",
@@ -554,12 +1603,30 @@
         "health": {
           "dimension": "health",
           "state": "measured",
-          "score": 59.5,
+          "score": 60.9,
           "grade": "C",
           "overCeiling": 0,
-          "deadFiles": 29,
+          "deadFiles": 30,
           "deadExports": 4,
-          "refactorTargets": 6
+          "refactorTargets": 8,
+          "penalties": [
+            {
+              "name": "dead files",
+              "points": 14
+            },
+            {
+              "name": "dead exports",
+              "points": 12.9
+            },
+            {
+              "name": "maintainability",
+              "points": 11
+            },
+            {
+              "name": "coupling",
+              "points": 1.2
+            }
+          ]
         }
       }
     },
@@ -570,8 +1637,276 @@
       "dimensions": {
         "code": {
           "dimension": "code",
-          "state": "unmeasured",
-          "reason": "No coverage block in apps/manual/vitest.config.mts"
+          "state": "measured",
+          "lines": {
+            "covered": 131,
+            "total": 147,
+            "pct": 89.1
+          },
+          "floor": 81,
+          "staticReachPct": 83.3,
+          "files": [
+            {
+              "path": "app/[slug]/page.tsx",
+              "group": "app",
+              "lines": {
+                "covered": 7,
+                "total": 8,
+                "pct": 87.5
+              },
+              "maintainability": 90,
+              "crap": 2
+            },
+            {
+              "path": "app/error.tsx",
+              "group": "app",
+              "lines": {
+                "covered": 0,
+                "total": 4,
+                "pct": 0
+              },
+              "maintainability": 93.3,
+              "crap": 2
+            },
+            {
+              "path": "app/global-error.tsx",
+              "group": "app",
+              "lines": {
+                "covered": 0,
+                "total": 5,
+                "pct": 0
+              },
+              "maintainability": 91.9,
+              "crap": 2
+            },
+            {
+              "path": "app/layout.tsx",
+              "group": "app",
+              "lines": {
+                "covered": 5,
+                "total": 5,
+                "pct": 100
+              },
+              "maintainability": 91.3,
+              "crap": 3
+            },
+            {
+              "path": "app/not-found.tsx",
+              "group": "app",
+              "lines": {
+                "covered": 0,
+                "total": 2,
+                "pct": 0
+              },
+              "maintainability": 94.9,
+              "crap": 2
+            },
+            {
+              "path": "app/og/site.png/route.tsx",
+              "group": "app",
+              "lines": {
+                "covered": 1,
+                "total": 1,
+                "pct": 100
+              },
+              "maintainability": 96.7,
+              "crap": 1
+            },
+            {
+              "path": "app/page.tsx",
+              "group": "app",
+              "lines": {
+                "covered": 2,
+                "total": 2,
+                "pct": 100
+              },
+              "maintainability": 93.8,
+              "crap": 1
+            },
+            {
+              "path": "app/robots.ts",
+              "group": "app",
+              "lines": {
+                "covered": 0,
+                "total": 1,
+                "pct": 0
+              },
+              "maintainability": 96.6,
+              "crap": 2
+            },
+            {
+              "path": "app/site-analytics.tsx",
+              "group": "app",
+              "lines": {
+                "covered": 2,
+                "total": 2,
+                "pct": 100
+              },
+              "maintainability": 96.6,
+              "crap": 1
+            },
+            {
+              "path": "app/sitemap.ts",
+              "group": "app",
+              "lines": {
+                "covered": 2,
+                "total": 2,
+                "pct": 100
+              },
+              "maintainability": 94.5,
+              "crap": 1
+            },
+            {
+              "path": "app/start/page.tsx",
+              "group": "app",
+              "lines": {
+                "covered": 2,
+                "total": 2,
+                "pct": 100
+              },
+              "maintainability": 93,
+              "crap": 1
+            },
+            {
+              "path": "components/IndexScreen.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 5,
+                "total": 5,
+                "pct": 100
+              },
+              "maintainability": 91.3,
+              "crap": 1
+            },
+            {
+              "path": "components/ManualFrame.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 1,
+                "total": 1,
+                "pct": 100
+              },
+              "maintainability": 93.9,
+              "crap": 1
+            },
+            {
+              "path": "components/ManualPageScreen.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 9,
+                "total": 9,
+                "pct": 100
+              },
+              "maintainability": 90.7,
+              "crap": 3
+            },
+            {
+              "path": "components/StartScreen.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 4,
+                "total": 4,
+                "pct": 100
+              },
+              "maintainability": 93.6,
+              "crap": 1
+            },
+            {
+              "path": "lib/allowlist.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 5,
+                "total": 5,
+                "pct": 100
+              },
+              "maintainability": 99.1,
+              "crap": 1
+            },
+            {
+              "path": "lib/features.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 30,
+                "total": 31,
+                "pct": 96.8
+              },
+              "maintainability": 92,
+              "crap": 6
+            },
+            {
+              "path": "lib/og.tsx",
+              "group": "lib",
+              "lines": {
+                "covered": 15,
+                "total": 15,
+                "pct": 100
+              },
+              "maintainability": 96.3,
+              "crap": 2
+            },
+            {
+              "path": "lib/share.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 5,
+                "total": 5,
+                "pct": 100
+              },
+              "maintainability": 94.4,
+              "crap": 2
+            },
+            {
+              "path": "lib/site.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 19,
+                "total": 19,
+                "pct": 100
+              },
+              "maintainability": 96.9,
+              "crap": 1
+            },
+            {
+              "path": "lib/sources.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 1,
+                "total": 1,
+                "pct": 100
+              }
+            },
+            {
+              "path": "lib/theme.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 5,
+                "total": 6,
+                "pct": 83.3
+              },
+              "maintainability": 95.1,
+              "crap": 3
+            },
+            {
+              "path": "lib/tour.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 11,
+                "total": 12,
+                "pct": 91.7
+              },
+              "maintainability": 91.2,
+              "crap": 3
+            },
+            {
+              "path": "lib/version.ts",
+              "group": "lib",
+              "lines": {
+                "covered": 0,
+                "total": 0,
+                "pct": 100
+              }
+            }
+          ]
         },
         "visual": {
           "dimension": "visual",
@@ -604,7 +1939,30 @@
               "inherited": 2,
               "none": 0
             }
-          }
+          },
+          "inventory": [
+            {
+              "name": "screens-manual-index--default",
+              "tier": "screens",
+              "story": "screens-manual-index--default",
+              "tiled": false,
+              "baselined": true
+            },
+            {
+              "name": "screens-manual-page--console",
+              "tier": "screens",
+              "story": "screens-manual-page--console",
+              "tiled": false,
+              "baselined": true
+            },
+            {
+              "name": "screens-manual-start--default",
+              "tier": "screens",
+              "story": "screens-manual-start--default",
+              "tiled": false,
+              "baselined": true
+            }
+          ]
         },
         "acceptance": {
           "dimension": "acceptance",
@@ -615,12 +1973,26 @@
         "health": {
           "dimension": "health",
           "state": "measured",
-          "score": 84.5,
+          "score": 83.8,
           "grade": "B",
           "overCeiling": 0,
           "deadFiles": 0,
           "deadExports": 0,
-          "refactorTargets": 1
+          "refactorTargets": 1,
+          "penalties": [
+            {
+              "name": "unit size",
+              "points": 10
+            },
+            {
+              "name": "duplication",
+              "points": 4.8
+            },
+            {
+              "name": "coupling",
+              "points": 1.4
+            }
+          ]
         }
       }
     },
@@ -631,8 +2003,124 @@
       "dimensions": {
         "code": {
           "dimension": "code",
-          "state": "unmeasured",
-          "reason": "No coverage block in apps/storybook/vitest.config.ts"
+          "state": "measured",
+          "lines": {
+            "covered": 105,
+            "total": 140,
+            "pct": 75
+          },
+          "floor": 73,
+          "staticReachPct": 100,
+          "files": [
+            {
+              "path": ".storybook/ThemedDocsContainer.tsx",
+              "group": ".storybook",
+              "lines": {
+                "covered": 0,
+                "total": 18,
+                "pct": 0
+              },
+              "maintainability": 90.8,
+              "crap": 30
+            },
+            {
+              "path": ".storybook/analytics-head.ts",
+              "group": ".storybook",
+              "lines": {
+                "covered": 37,
+                "total": 37,
+                "pct": 100
+              },
+              "maintainability": 94.2,
+              "crap": 5
+            },
+            {
+              "path": ".storybook/census-pyramid.tsx",
+              "group": ".storybook",
+              "lines": {
+                "covered": 0,
+                "total": 1,
+                "pct": 0
+              },
+              "maintainability": 96.7,
+              "crap": 2
+            },
+            {
+              "path": ".storybook/color-scheme.ts",
+              "group": ".storybook",
+              "lines": {
+                "covered": 4,
+                "total": 4,
+                "pct": 100
+              },
+              "maintainability": 98.8,
+              "crap": 2
+            },
+            {
+              "path": ".storybook/design-urls.ts",
+              "group": ".storybook",
+              "lines": {
+                "covered": 0,
+                "total": 3,
+                "pct": 0
+              },
+              "maintainability": 98.2,
+              "crap": 2
+            },
+            {
+              "path": ".storybook/link-preview-head.ts",
+              "group": ".storybook",
+              "lines": {
+                "covered": 21,
+                "total": 21,
+                "pct": 100
+              },
+              "maintainability": 93.6,
+              "crap": 4
+            },
+            {
+              "path": ".storybook/locale.ts",
+              "group": ".storybook",
+              "lines": {
+                "covered": 5,
+                "total": 5,
+                "pct": 100
+              },
+              "maintainability": 97,
+              "crap": 3
+            },
+            {
+              "path": ".storybook/main.ts",
+              "group": ".storybook",
+              "lines": {
+                "covered": 23,
+                "total": 35,
+                "pct": 65.7
+              },
+              "maintainability": 91.8,
+              "crap": 56
+            },
+            {
+              "path": ".storybook/manual-sources.ts",
+              "group": ".storybook",
+              "lines": {
+                "covered": 0,
+                "total": 1,
+                "pct": 0
+              }
+            },
+            {
+              "path": ".storybook/preview.tsx",
+              "group": ".storybook",
+              "lines": {
+                "covered": 15,
+                "total": 15,
+                "pct": 100
+              },
+              "maintainability": 91.9,
+              "crap": 2
+            }
+          ]
         },
         "visual": {
           "dimension": "visual",
@@ -653,7 +2141,13 @@
           "overCeiling": 0,
           "deadFiles": 0,
           "deadExports": 0,
-          "refactorTargets": 0
+          "refactorTargets": 0,
+          "penalties": [
+            {
+              "name": "unit size",
+              "points": 3.3
+            }
+          ]
         }
       }
     },
@@ -666,121 +2160,13 @@
           "dimension": "code",
           "state": "measured",
           "lines": {
-            "covered": 2710,
-            "total": 2865,
-            "pct": 94.6
+            "covered": 2661,
+            "total": 2796,
+            "pct": 95.2
           },
           "floor": 94,
-          "staticReachPct": 94.1,
+          "staticReachPct": 93.7,
           "files": [
-            {
-              "path": "app/_screens/ComparisonScreen.stories.tsx",
-              "group": "app",
-              "lines": {
-                "covered": 0,
-                "total": 3,
-                "pct": 0
-              },
-              "maintainability": 91.1,
-              "crap": 2
-            },
-            {
-              "path": "app/_screens/DashboardScreen.stories.tsx",
-              "group": "app",
-              "lines": {
-                "covered": 0,
-                "total": 3,
-                "pct": 0
-              },
-              "maintainability": 93,
-              "crap": 2
-            },
-            {
-              "path": "app/_screens/ReportScreen.stories.tsx",
-              "group": "app",
-              "lines": {
-                "covered": 0,
-                "total": 6,
-                "pct": 0
-              },
-              "maintainability": 92.2,
-              "crap": 2
-            },
-            {
-              "path": "app/_screens/SetScreen.stories.tsx",
-              "group": "app",
-              "lines": {
-                "covered": 0,
-                "total": 4,
-                "pct": 0
-              },
-              "maintainability": 90.4,
-              "crap": 2
-            },
-            {
-              "path": "app/_screens/ShotScreen.stories.tsx",
-              "group": "app",
-              "lines": {
-                "covered": 0,
-                "total": 5,
-                "pct": 0
-              },
-              "maintainability": 90.2,
-              "crap": 6
-            },
-            {
-              "path": "app/_screens/board-sample.ts",
-              "group": "app",
-              "lines": {
-                "covered": 5,
-                "total": 5,
-                "pct": 100
-              },
-              "maintainability": 94.9,
-              "crap": 0
-            },
-            {
-              "path": "app/_screens/console.tsx",
-              "group": "app",
-              "lines": {
-                "covered": 18,
-                "total": 18,
-                "pct": 100
-              },
-              "maintainability": 90.9,
-              "crap": 4
-            },
-            {
-              "path": "app/_screens/dashboard-sample.ts",
-              "group": "app",
-              "lines": {
-                "covered": 5,
-                "total": 5,
-                "pct": 100
-              },
-              "maintainability": 94.4,
-              "crap": 1
-            },
-            {
-              "path": "app/_screens/report-sample.ts",
-              "group": "app",
-              "lines": {
-                "covered": 7,
-                "total": 7,
-                "pct": 100
-              }
-            },
-            {
-              "path": "app/_screens/set-sample.ts",
-              "group": "app",
-              "lines": {
-                "covered": 15,
-                "total": 15,
-                "pct": 100
-              },
-              "maintainability": 90.7,
-              "crap": 2
-            },
             {
               "path": "app/api/designs/route.ts",
               "group": "app",
@@ -1835,8 +3221,8 @@
               "path": "lib/comparison.ts",
               "group": "lib",
               "lines": {
-                "covered": 52,
-                "total": 52,
+                "covered": 54,
+                "total": 54,
                 "pct": 100
               },
               "maintainability": 88.8,
@@ -2251,12 +3637,12 @@
               "path": "lib/stories.ts",
               "group": "lib",
               "lines": {
-                "covered": 23,
+                "covered": 22,
                 "total": 23,
-                "pct": 100
+                "pct": 95.7
               },
               "maintainability": 89.4,
-              "crap": 9
+              "crap": 12
             },
             {
               "path": "lib/summary.ts",
@@ -2367,7 +3753,64 @@
               "inherited": 4,
               "none": 0
             }
-          }
+          },
+          "inventory": [
+            {
+              "name": "screens-visual-diff-ui-comparison--sample",
+              "tier": "screens",
+              "story": "screens-visual-diff-ui-comparison--sample",
+              "tiled": true,
+              "board": "05-screens-visual-diff-ui-1",
+              "baselined": true
+            },
+            {
+              "name": "screens-visual-diff-ui-dashboard--sample",
+              "tier": "screens",
+              "story": "screens-visual-diff-ui-dashboard--sample",
+              "tiled": true,
+              "board": "05-screens-visual-diff-ui-1",
+              "baselined": true
+            },
+            {
+              "name": "screens-visual-diff-ui-report--changed",
+              "tier": "screens",
+              "story": "screens-visual-diff-ui-report--changed",
+              "tiled": true,
+              "board": "05-screens-visual-diff-ui-3",
+              "baselined": true
+            },
+            {
+              "name": "screens-visual-diff-ui-report--removed",
+              "tier": "screens",
+              "story": "screens-visual-diff-ui-report--removed",
+              "tiled": true,
+              "board": "05-screens-visual-diff-ui-4",
+              "baselined": true
+            },
+            {
+              "name": "screens-visual-diff-ui-set--sample",
+              "tier": "screens",
+              "story": "screens-visual-diff-ui-set--sample",
+              "tiled": true,
+              "board": "05-screens-visual-diff-ui-2",
+              "baselined": true
+            },
+            {
+              "name": "screens-visual-diff-ui-shot--sample",
+              "tier": "screens",
+              "story": "screens-visual-diff-ui-shot--sample",
+              "tiled": true,
+              "board": "05-screens-visual-diff-ui-1",
+              "baselined": true
+            },
+            {
+              "name": "screens-visual-diff-ui-shot--expanded",
+              "tier": "screens",
+              "story": "screens-visual-diff-ui-shot--expanded",
+              "tiled": false,
+              "baselined": true
+            }
+          ]
         },
         "acceptance": {
           "dimension": "acceptance",
@@ -2392,7 +3835,21 @@
           "overCeiling": 0,
           "deadFiles": 0,
           "deadExports": 9,
-          "refactorTargets": 12
+          "refactorTargets": 12,
+          "penalties": [
+            {
+              "name": "unit size",
+              "points": 10
+            },
+            {
+              "name": "coupling",
+              "points": 2.1
+            },
+            {
+              "name": "dead exports",
+              "points": 0.3
+            }
+          ]
         }
       }
     },
@@ -2403,8 +3860,27 @@
       "dimensions": {
         "code": {
           "dimension": "code",
-          "state": "unmeasured",
-          "reason": "No coverage block in packages/links/vitest.config.ts"
+          "state": "measured",
+          "lines": {
+            "covered": 15,
+            "total": 15,
+            "pct": 100
+          },
+          "floor": 98,
+          "staticReachPct": 100,
+          "files": [
+            {
+              "path": "src/index.ts",
+              "group": "src",
+              "lines": {
+                "covered": 15,
+                "total": 15,
+                "pct": 100
+              },
+              "maintainability": 97.3,
+              "crap": 8
+            }
+          ]
         },
         "visual": {
           "dimension": "visual",
@@ -2424,7 +3900,13 @@
           "overCeiling": 0,
           "deadFiles": 0,
           "deadExports": 0,
-          "refactorTargets": 0
+          "refactorTargets": 0,
+          "penalties": [
+            {
+              "name": "unit size",
+              "points": 10
+            }
+          ]
         }
       }
     },
@@ -2435,8 +3917,49 @@
       "dimensions": {
         "code": {
           "dimension": "code",
-          "state": "unmeasured",
-          "reason": "No coverage block in packages/logger/vitest.config.ts"
+          "state": "measured",
+          "lines": {
+            "covered": 53,
+            "total": 54,
+            "pct": 98.1
+          },
+          "floor": 96,
+          "staticReachPct": 100,
+          "files": [
+            {
+              "path": "src/analytics.ts",
+              "group": "src",
+              "lines": {
+                "covered": 13,
+                "total": 13,
+                "pct": 100
+              },
+              "maintainability": 96.7,
+              "crap": 7
+            },
+            {
+              "path": "src/bugsink.ts",
+              "group": "src",
+              "lines": {
+                "covered": 28,
+                "total": 29,
+                "pct": 96.6
+              },
+              "maintainability": 93.6,
+              "crap": 4.1
+            },
+            {
+              "path": "src/index.ts",
+              "group": "src",
+              "lines": {
+                "covered": 12,
+                "total": 12,
+                "pct": 100
+              },
+              "maintainability": 93.5,
+              "crap": 2
+            }
+          ]
         },
         "visual": {
           "dimension": "visual",
@@ -2456,7 +3979,13 @@
           "overCeiling": 0,
           "deadFiles": 0,
           "deadExports": 0,
-          "refactorTargets": 0
+          "refactorTargets": 0,
+          "penalties": [
+            {
+              "name": "unit size",
+              "points": 5.8
+            }
+          ]
         }
       }
     },
@@ -2496,9 +4025,9 @@
           "dimension": "code",
           "state": "measured",
           "lines": {
-            "covered": 349,
-            "total": 353,
-            "pct": 98.9
+            "covered": 815,
+            "total": 820,
+            "pct": 99.4
           },
           "floor": 70,
           "staticReachPct": 100,
@@ -2568,6 +4097,17 @@
               },
               "maintainability": 98.8,
               "crap": 2
+            },
+            {
+              "path": "src/atoms/Meter/Meter.tsx",
+              "group": "atoms",
+              "lines": {
+                "covered": 8,
+                "total": 8,
+                "pct": 100
+              },
+              "maintainability": 94.6,
+              "crap": 7
             },
             {
               "path": "src/atoms/Prose/Prose.tsx",
@@ -2665,7 +4205,7 @@
                 "total": 10,
                 "pct": 100
               },
-              "maintainability": 95.1,
+              "maintainability": 95.4,
               "crap": 2
             },
             {
@@ -2702,6 +4242,17 @@
               "crap": 2
             },
             {
+              "path": "src/molecules/Breadcrumb/Breadcrumb.tsx",
+              "group": "molecules",
+              "lines": {
+                "covered": 4,
+                "total": 4,
+                "pct": 100
+              },
+              "maintainability": 95.8,
+              "crap": 5
+            },
+            {
               "path": "src/molecules/Card/Card.tsx",
               "group": "molecules",
               "lines": {
@@ -2724,6 +4275,61 @@
               "crap": 3
             },
             {
+              "path": "src/molecules/CoverageList/CoverageList.tsx",
+              "group": "molecules",
+              "lines": {
+                "covered": 8,
+                "total": 8,
+                "pct": 100
+              },
+              "maintainability": 91.8,
+              "crap": 3
+            },
+            {
+              "path": "src/molecules/GapPills/GapPills.tsx",
+              "group": "molecules",
+              "lines": {
+                "covered": 24,
+                "total": 24,
+                "pct": 100
+              },
+              "maintainability": 91.7,
+              "crap": 2
+            },
+            {
+              "path": "src/molecules/Hotspots/Hotspots.tsx",
+              "group": "molecules",
+              "lines": {
+                "covered": 41,
+                "total": 41,
+                "pct": 100
+              },
+              "maintainability": 94.9,
+              "crap": 4
+            },
+            {
+              "path": "src/molecules/Icicle/Icicle.tsx",
+              "group": "molecules",
+              "lines": {
+                "covered": 32,
+                "total": 32,
+                "pct": 100
+              },
+              "maintainability": 91.8,
+              "crap": 6
+            },
+            {
+              "path": "src/molecules/Icicle/geometry.ts",
+              "group": "molecules",
+              "lines": {
+                "covered": 30,
+                "total": 30,
+                "pct": 100
+              },
+              "maintainability": 92.8,
+              "crap": 4
+            },
+            {
               "path": "src/molecules/Pagination/Pagination.tsx",
               "group": "molecules",
               "lines": {
@@ -2733,6 +4339,17 @@
               },
               "maintainability": 91.5,
               "crap": 4
+            },
+            {
+              "path": "src/molecules/PenaltyBars/PenaltyBars.tsx",
+              "group": "molecules",
+              "lines": {
+                "covered": 17,
+                "total": 17,
+                "pct": 100
+              },
+              "maintainability": 92.8,
+              "crap": 3
             },
             {
               "path": "src/molecules/PostCard/PostCard.tsx",
@@ -2757,6 +4374,50 @@
               "crap": 1
             },
             {
+              "path": "src/molecules/ProfileBar/ProfileBar.tsx",
+              "group": "molecules",
+              "lines": {
+                "covered": 13,
+                "total": 13,
+                "pct": 100
+              },
+              "maintainability": 94.3,
+              "crap": 3
+            },
+            {
+              "path": "src/molecules/SparkStat/SparkStat.tsx",
+              "group": "molecules",
+              "lines": {
+                "covered": 20,
+                "total": 20,
+                "pct": 100
+              },
+              "maintainability": 92.7,
+              "crap": 5
+            },
+            {
+              "path": "src/molecules/StatTile/StatTile.tsx",
+              "group": "molecules",
+              "lines": {
+                "covered": 4,
+                "total": 4,
+                "pct": 100
+              },
+              "maintainability": 93.2,
+              "crap": 4
+            },
+            {
+              "path": "src/molecules/StatePies/StatePies.tsx",
+              "group": "molecules",
+              "lines": {
+                "covered": 23,
+                "total": 23,
+                "pct": 100
+              },
+              "maintainability": 94.3,
+              "crap": 3
+            },
+            {
               "path": "src/molecules/StepList/StepList.tsx",
               "group": "molecules",
               "lines": {
@@ -2768,6 +4429,17 @@
               "crap": 3
             },
             {
+              "path": "src/molecules/StoriesList/StoriesList.tsx",
+              "group": "molecules",
+              "lines": {
+                "covered": 10,
+                "total": 10,
+                "pct": 100
+              },
+              "maintainability": 93.6,
+              "crap": 2
+            },
+            {
               "path": "src/molecules/TagList/TagList.tsx",
               "group": "molecules",
               "lines": {
@@ -2777,6 +4449,28 @@
               },
               "maintainability": 93.2,
               "crap": 2
+            },
+            {
+              "path": "src/molecules/TestPyramid/TestPyramid.tsx",
+              "group": "molecules",
+              "lines": {
+                "covered": 27,
+                "total": 27,
+                "pct": 100
+              },
+              "maintainability": 92.4,
+              "crap": 4
+            },
+            {
+              "path": "src/molecules/TrendChart/TrendChart.tsx",
+              "group": "molecules",
+              "lines": {
+                "covered": 68,
+                "total": 68,
+                "pct": 100
+              },
+              "maintainability": 88.2,
+              "crap": 5
             },
             {
               "path": "src/organisms/Dialog/Dialog.tsx",
@@ -2823,6 +4517,50 @@
               "crap": 6
             },
             {
+              "path": "src/organisms/SearchPalette/SearchPalette.tsx",
+              "group": "organisms",
+              "lines": {
+                "covered": 76,
+                "total": 77,
+                "pct": 98.7
+              },
+              "maintainability": 93.3,
+              "crap": 5.1
+            },
+            {
+              "path": "src/organisms/SearchPalette/search.ts",
+              "group": "organisms",
+              "lines": {
+                "covered": 12,
+                "total": 12,
+                "pct": 100
+              },
+              "maintainability": 88.3,
+              "crap": 3
+            },
+            {
+              "path": "src/organisms/Sidebar/Sidebar.tsx",
+              "group": "organisms",
+              "lines": {
+                "covered": 41,
+                "total": 41,
+                "pct": 100
+              },
+              "maintainability": 92.6,
+              "crap": 9
+            },
+            {
+              "path": "src/organisms/Sidebar/groups.ts",
+              "group": "organisms",
+              "lines": {
+                "covered": 4,
+                "total": 4,
+                "pct": 100
+              },
+              "maintainability": 94.8,
+              "crap": 1
+            },
+            {
               "path": "src/organisms/SiteFooter/SiteFooter.tsx",
               "group": "organisms",
               "lines": {
@@ -2856,6 +4594,17 @@
               "crap": 6
             },
             {
+              "path": "src/organisms/TopBar/TopBar.tsx",
+              "group": "organisms",
+              "lines": {
+                "covered": 4,
+                "total": 4,
+                "pct": 100
+              },
+              "maintainability": 94.7,
+              "crap": 3
+            },
+            {
               "path": "src/templates/BlogIndexTemplate/BlogIndexTemplate.tsx",
               "group": "templates",
               "lines": {
@@ -2883,11 +4632,397 @@
           "dimension": "visual",
           "state": "measured",
           "components": {
-            "total": 31,
-            "storied": 31,
-            "tiled": 31,
-            "baselined": 31
-          }
+            "total": 48,
+            "storied": 48,
+            "tiled": 48,
+            "baselined": 48
+          },
+          "inventory": [
+            {
+              "name": "Badge",
+              "tier": "atoms",
+              "story": "atoms-badge--neutral",
+              "tiled": true,
+              "board": "01-atoms",
+              "baselined": true
+            },
+            {
+              "name": "BucketChip",
+              "tier": "atoms",
+              "story": "atoms-bucketchip--tones",
+              "tiled": true,
+              "board": "01-atoms",
+              "baselined": true
+            },
+            {
+              "name": "Button",
+              "tier": "atoms",
+              "story": "atoms-button--primary",
+              "tiled": true,
+              "board": "01-atoms",
+              "baselined": true
+            },
+            {
+              "name": "EmptyState",
+              "tier": "atoms",
+              "story": "atoms-emptystate--message-only",
+              "tiled": true,
+              "board": "01-atoms",
+              "baselined": true
+            },
+            {
+              "name": "IconButton",
+              "tier": "atoms",
+              "story": "atoms-iconbutton--secondary",
+              "tiled": true,
+              "board": "01-atoms",
+              "baselined": true
+            },
+            {
+              "name": "Link",
+              "tier": "atoms",
+              "story": "atoms-link--default",
+              "tiled": true,
+              "board": "01-atoms",
+              "baselined": true
+            },
+            {
+              "name": "Meter",
+              "tier": "atoms",
+              "story": "atoms-meter--partial",
+              "tiled": true,
+              "board": "01-atoms",
+              "baselined": true
+            },
+            {
+              "name": "Prose",
+              "tier": "atoms",
+              "story": "atoms-prose--default",
+              "tiled": true,
+              "board": "01-atoms",
+              "baselined": true
+            },
+            {
+              "name": "SegmentedControl",
+              "tier": "atoms",
+              "story": "atoms-segmentedcontrol--default",
+              "tiled": true,
+              "board": "01-atoms",
+              "baselined": true
+            },
+            {
+              "name": "Skeleton",
+              "tier": "atoms",
+              "story": "atoms-skeleton--line",
+              "tiled": true,
+              "board": "01-atoms",
+              "baselined": true
+            },
+            {
+              "name": "SkipLink",
+              "tier": "atoms",
+              "story": "atoms-skiplink--default",
+              "tiled": true,
+              "board": "01-atoms",
+              "baselined": true
+            },
+            {
+              "name": "Spinner",
+              "tier": "atoms",
+              "story": "atoms-spinner--default",
+              "tiled": true,
+              "board": "01-atoms",
+              "baselined": true
+            },
+            {
+              "name": "Stack",
+              "tier": "atoms",
+              "story": "atoms-bucketchip--tones",
+              "tiled": true,
+              "board": "01-atoms",
+              "baselined": true
+            },
+            {
+              "name": "Tag",
+              "tier": "atoms",
+              "story": "atoms-tag--default",
+              "tiled": true,
+              "board": "01-atoms",
+              "baselined": true
+            },
+            {
+              "name": "Text",
+              "tier": "atoms",
+              "story": "atoms-text--roles",
+              "tiled": true,
+              "board": "01-atoms",
+              "baselined": true
+            },
+            {
+              "name": "ThemeToggle",
+              "tier": "atoms",
+              "story": "atoms-themetoggle--default",
+              "tiled": true,
+              "board": "01-atoms",
+              "baselined": true
+            },
+            {
+              "name": "Thumbnail",
+              "tier": "atoms",
+              "story": "atoms-thumbnail--loaded-and-fallback",
+              "tiled": true,
+              "board": "01-atoms",
+              "baselined": true
+            },
+            {
+              "name": "TriStateCheckbox",
+              "tier": "atoms",
+              "story": "atoms-tristatecheckbox--states",
+              "tiled": true,
+              "board": "01-atoms",
+              "baselined": true
+            },
+            {
+              "name": "Breadcrumb",
+              "tier": "molecules",
+              "story": "molecules-breadcrumb--path",
+              "tiled": true,
+              "board": "02-molecules",
+              "baselined": true
+            },
+            {
+              "name": "Card",
+              "tier": "molecules",
+              "story": "molecules-card--default",
+              "tiled": true,
+              "board": "02-molecules",
+              "baselined": true
+            },
+            {
+              "name": "CodeBlock",
+              "tier": "molecules",
+              "story": "molecules-codeblock--with-language",
+              "tiled": true,
+              "board": "02-molecules",
+              "baselined": true
+            },
+            {
+              "name": "CoverageList",
+              "tier": "molecules",
+              "story": "molecules-coveragelist--default",
+              "tiled": true,
+              "board": "02-molecules",
+              "baselined": true
+            },
+            {
+              "name": "GapPills",
+              "tier": "molecules",
+              "story": "molecules-gappills--default",
+              "tiled": true,
+              "board": "02-molecules",
+              "baselined": true
+            },
+            {
+              "name": "Hotspots",
+              "tier": "molecules",
+              "story": "molecules-hotspots--default",
+              "tiled": true,
+              "board": "02-molecules",
+              "baselined": true
+            },
+            {
+              "name": "Icicle",
+              "tier": "molecules",
+              "story": "molecules-icicle--repository",
+              "tiled": true,
+              "board": "02-molecules",
+              "baselined": true
+            },
+            {
+              "name": "Pagination",
+              "tier": "molecules",
+              "story": "molecules-pagination--first-page",
+              "tiled": true,
+              "board": "02-molecules",
+              "baselined": true
+            },
+            {
+              "name": "PenaltyBars",
+              "tier": "molecules",
+              "story": "molecules-penaltybars--default",
+              "tiled": true,
+              "board": "02-molecules",
+              "baselined": true
+            },
+            {
+              "name": "PostCard",
+              "tier": "molecules",
+              "story": "molecules-postcard--default",
+              "tiled": true,
+              "board": "02-molecules",
+              "baselined": true
+            },
+            {
+              "name": "PostMeta",
+              "tier": "molecules",
+              "story": "molecules-postmeta--default",
+              "tiled": true,
+              "board": "02-molecules",
+              "baselined": true
+            },
+            {
+              "name": "ProfileBar",
+              "tier": "molecules",
+              "story": "molecules-profilebar--default",
+              "tiled": true,
+              "board": "02-molecules",
+              "baselined": true
+            },
+            {
+              "name": "SparkStat",
+              "tier": "molecules",
+              "story": "molecules-sparkstat--default",
+              "tiled": true,
+              "board": "02-molecules",
+              "baselined": true
+            },
+            {
+              "name": "StatTile",
+              "tier": "molecules",
+              "story": "molecules-stattile--measured",
+              "tiled": true,
+              "board": "02-molecules",
+              "baselined": true
+            },
+            {
+              "name": "StatePies",
+              "tier": "molecules",
+              "story": "molecules-statepies--default",
+              "tiled": true,
+              "board": "02-molecules",
+              "baselined": true
+            },
+            {
+              "name": "StepList",
+              "tier": "molecules",
+              "story": "molecules-steplist--scenario",
+              "tiled": true,
+              "board": "02-molecules",
+              "baselined": true
+            },
+            {
+              "name": "StoriesList",
+              "tier": "molecules",
+              "story": "molecules-storieslist--default",
+              "tiled": true,
+              "board": "02-molecules",
+              "baselined": true
+            },
+            {
+              "name": "TagList",
+              "tier": "molecules",
+              "story": "molecules-taglist--three-tags",
+              "tiled": true,
+              "board": "02-molecules",
+              "baselined": true
+            },
+            {
+              "name": "TestPyramid",
+              "tier": "molecules",
+              "story": "molecules-testpyramid--default",
+              "tiled": true,
+              "board": "02-molecules",
+              "baselined": true
+            },
+            {
+              "name": "TrendChart",
+              "tier": "molecules",
+              "story": "molecules-trendchart--default",
+              "tiled": true,
+              "board": "02-molecules",
+              "baselined": true
+            },
+            {
+              "name": "Dialog",
+              "tier": "organisms",
+              "story": "organisms-dialog--open",
+              "tiled": true,
+              "board": "03-organisms",
+              "baselined": true
+            },
+            {
+              "name": "PanZoom",
+              "tier": "organisms",
+              "story": "organisms-panzoom--fitted",
+              "tiled": true,
+              "board": "03-organisms",
+              "baselined": true
+            },
+            {
+              "name": "SearchPalette",
+              "tier": "organisms",
+              "story": "organisms-searchpalette--results",
+              "tiled": true,
+              "board": "03-organisms",
+              "baselined": true
+            },
+            {
+              "name": "Sidebar",
+              "tier": "organisms",
+              "story": "organisms-sidebar--expanded",
+              "tiled": true,
+              "board": "03-organisms",
+              "baselined": true
+            },
+            {
+              "name": "SiteFooter",
+              "tier": "organisms",
+              "story": "organisms-sitefooter--default",
+              "tiled": true,
+              "board": "03-organisms",
+              "baselined": true
+            },
+            {
+              "name": "SiteHeader",
+              "tier": "organisms",
+              "story": "organisms-siteheader--default",
+              "tiled": true,
+              "board": "03-organisms",
+              "baselined": true
+            },
+            {
+              "name": "Table",
+              "tier": "organisms",
+              "story": "organisms-table--default",
+              "tiled": true,
+              "board": "03-organisms",
+              "baselined": true
+            },
+            {
+              "name": "TopBar",
+              "tier": "organisms",
+              "story": "organisms-topbar--default",
+              "tiled": true,
+              "board": "03-organisms",
+              "baselined": true
+            },
+            {
+              "name": "BlogIndexTemplate",
+              "tier": "templates",
+              "story": "templates-blogindextemplate--three-posts",
+              "tiled": true,
+              "board": "04-templates",
+              "baselined": true
+            },
+            {
+              "name": "PostTemplate",
+              "tier": "templates",
+              "story": "templates-posttemplate--default",
+              "tiled": true,
+              "board": "04-templates",
+              "baselined": true
+            }
+          ]
         },
         "acceptance": {
           "dimension": "acceptance",
@@ -2897,12 +5032,26 @@
         "health": {
           "dimension": "health",
           "state": "measured",
-          "score": 89.3,
+          "score": 89.5,
           "grade": "A",
           "overCeiling": 0,
           "deadFiles": 0,
-          "deadExports": 2,
-          "refactorTargets": 0
+          "deadExports": 3,
+          "refactorTargets": 0,
+          "penalties": [
+            {
+              "name": "unit size",
+              "points": 10
+            },
+            {
+              "name": "coupling",
+              "points": 0.4
+            },
+            {
+              "name": "dead exports",
+              "points": 0.1
+            }
+          ]
         }
       }
     },
@@ -2913,8 +5062,137 @@
       "dimensions": {
         "code": {
           "dimension": "code",
-          "state": "unmeasured",
-          "reason": "No coverage block in packages/visual-diff/vitest.config.mjs"
+          "state": "measured",
+          "lines": {
+            "covered": 820,
+            "total": 874,
+            "pct": 93.8
+          },
+          "floor": 91,
+          "staticReachPct": 100,
+          "files": [
+            {
+              "path": "src/artifacts.mjs",
+              "group": "src",
+              "lines": {
+                "covered": 42,
+                "total": 42,
+                "pct": 100
+              },
+              "maintainability": 91.4,
+              "crap": 4
+            },
+            {
+              "path": "src/capture.mjs",
+              "group": "src",
+              "lines": {
+                "covered": 148,
+                "total": 193,
+                "pct": 76.7
+              },
+              "maintainability": 88.5,
+              "crap": 20
+            },
+            {
+              "path": "src/cli.mjs",
+              "group": "src",
+              "lines": {
+                "covered": 37,
+                "total": 40,
+                "pct": 92.5
+              },
+              "maintainability": 91.1,
+              "crap": 8
+            },
+            {
+              "path": "src/commands.mjs",
+              "group": "src",
+              "lines": {
+                "covered": 145,
+                "total": 148,
+                "pct": 98
+              },
+              "maintainability": 87.7,
+              "crap": 5
+            },
+            {
+              "path": "src/comment-links.mjs",
+              "group": "src",
+              "lines": {
+                "covered": 8,
+                "total": 8,
+                "pct": 100
+              },
+              "maintainability": 95.8,
+              "crap": 5
+            },
+            {
+              "path": "src/compare.mjs",
+              "group": "src",
+              "lines": {
+                "covered": 59,
+                "total": 59,
+                "pct": 100
+              },
+              "maintainability": 91.2,
+              "crap": 10
+            },
+            {
+              "path": "src/determinism.mjs",
+              "group": "src",
+              "lines": {
+                "covered": 12,
+                "total": 12,
+                "pct": 100
+              },
+              "maintainability": 95.4,
+              "crap": 5
+            },
+            {
+              "path": "src/ledger.mjs",
+              "group": "src",
+              "lines": {
+                "covered": 178,
+                "total": 179,
+                "pct": 99.4
+              },
+              "maintainability": 90.6,
+              "crap": 12
+            },
+            {
+              "path": "src/policy.mjs",
+              "group": "src",
+              "lines": {
+                "covered": 87,
+                "total": 87,
+                "pct": 100
+              },
+              "maintainability": 97,
+              "crap": 5
+            },
+            {
+              "path": "src/static-server.mjs",
+              "group": "src",
+              "lines": {
+                "covered": 40,
+                "total": 42,
+                "pct": 95.2
+              },
+              "maintainability": 94.3,
+              "crap": 6
+            },
+            {
+              "path": "src/storybook-index.mjs",
+              "group": "src",
+              "lines": {
+                "covered": 64,
+                "total": 64,
+                "pct": 100
+              },
+              "maintainability": 90.3,
+              "crap": 9
+            }
+          ]
         },
         "visual": {
           "dimension": "visual",
@@ -2934,7 +5212,17 @@
           "overCeiling": 0,
           "deadFiles": 0,
           "deadExports": 0,
-          "refactorTargets": 0
+          "refactorTargets": 0,
+          "penalties": [
+            {
+              "name": "unit size",
+              "points": 10
+            },
+            {
+              "name": "coupling",
+              "points": 2.3
+            }
+          ]
         }
       }
     },
@@ -2945,8 +5233,272 @@
       "dimensions": {
         "code": {
           "dimension": "code",
-          "state": "unmeasured",
-          "reason": "No coverage block in vitest.sandcastle.config.mts"
+          "state": "measured",
+          "lines": {
+            "covered": 418,
+            "total": 1446,
+            "pct": 28.9
+          },
+          "floor": 26,
+          "staticReachPct": 91.7,
+          "files": [
+            {
+              "path": "apply-ruleset.mjs",
+              "lines": {
+                "covered": 0,
+                "total": 69,
+                "pct": 0
+              },
+              "maintainability": 94.6,
+              "crap": 156
+            },
+            {
+              "path": "board-scale-integrity.mjs",
+              "lines": {
+                "covered": 190,
+                "total": 270,
+                "pct": 70.4
+              },
+              "maintainability": 88.7,
+              "crap": 90
+            },
+            {
+              "path": "complexity-gate.mjs",
+              "lines": {
+                "covered": 0,
+                "total": 38,
+                "pct": 0
+              },
+              "maintainability": 93.7,
+              "crap": 12
+            },
+            {
+              "path": "gate/git-env.mjs",
+              "group": "gate",
+              "lines": {
+                "covered": 4,
+                "total": 4,
+                "pct": 100
+              },
+              "maintainability": 89.1,
+              "crap": 2
+            },
+            {
+              "path": "gate/lock.mjs",
+              "group": "gate",
+              "lines": {
+                "covered": 0,
+                "total": 68,
+                "pct": 0
+              },
+              "maintainability": 89.2,
+              "crap": 72
+            },
+            {
+              "path": "gate/manifest.mjs",
+              "group": "gate",
+              "lines": {
+                "covered": 1,
+                "total": 3,
+                "pct": 33.3
+              },
+              "maintainability": 92.2,
+              "crap": 6
+            },
+            {
+              "path": "gate/node-version.mjs",
+              "group": "gate",
+              "lines": {
+                "covered": 19,
+                "total": 20,
+                "pct": 95
+              },
+              "maintainability": 94.2,
+              "crap": 6
+            },
+            {
+              "path": "gate/pre-push.mjs",
+              "group": "gate",
+              "lines": {
+                "covered": 0,
+                "total": 39,
+                "pct": 0
+              },
+              "maintainability": 69.4,
+              "crap": 30
+            },
+            {
+              "path": "gate/receipt.mjs",
+              "group": "gate",
+              "lines": {
+                "covered": 0,
+                "total": 38,
+                "pct": 0
+              },
+              "maintainability": 92.4,
+              "crap": 56
+            },
+            {
+              "path": "gate/run.mjs",
+              "group": "gate",
+              "lines": {
+                "covered": 0,
+                "total": 83,
+                "pct": 0
+              },
+              "maintainability": 88.1,
+              "crap": 210
+            },
+            {
+              "path": "gate/sandbox.mjs",
+              "group": "gate",
+              "lines": {
+                "covered": 7,
+                "total": 7,
+                "pct": 100
+              },
+              "maintainability": 86.7,
+              "crap": 2
+            },
+            {
+              "path": "gate/worktree.mjs",
+              "group": "gate",
+              "lines": {
+                "covered": 0,
+                "total": 14,
+                "pct": 0
+              },
+              "maintainability": 86,
+              "crap": 6
+            },
+            {
+              "path": "index-integrity.mjs",
+              "lines": {
+                "covered": 0,
+                "total": 33,
+                "pct": 0
+              },
+              "maintainability": 96.1,
+              "crap": 6
+            },
+            {
+              "path": "pen/finish-export.mjs",
+              "group": "pen",
+              "lines": {
+                "covered": 0,
+                "total": 43,
+                "pct": 0
+              },
+              "maintainability": 94.9,
+              "crap": 12
+            },
+            {
+              "path": "pen/paste-tiles.mjs",
+              "group": "pen",
+              "lines": {
+                "covered": 0,
+                "total": 12,
+                "pct": 0
+              },
+              "maintainability": 77.7,
+              "crap": 0
+            },
+            {
+              "path": "pen/tile-diff.mjs",
+              "group": "pen",
+              "lines": {
+                "covered": 9,
+                "total": 26,
+                "pct": 34.6
+              },
+              "maintainability": 95.5,
+              "crap": 42
+            },
+            {
+              "path": "pen/tiles-from-dom.mjs",
+              "group": "pen",
+              "lines": {
+                "covered": 0,
+                "total": 103,
+                "pct": 0
+              },
+              "maintainability": 85.7,
+              "crap": 56
+            },
+            {
+              "path": "pen/tiles-from-dom/extract-page.mjs",
+              "group": "pen",
+              "lines": {
+                "covered": 0,
+                "total": 311,
+                "pct": 0
+              },
+              "maintainability": 89.5,
+              "crap": 1892
+            },
+            {
+              "path": "pen/tiles-from-dom/svg.mjs",
+              "group": "pen",
+              "lines": {
+                "covered": 67,
+                "total": 72,
+                "pct": 93.1
+              },
+              "maintainability": 81.8,
+              "crap": 25.2
+            },
+            {
+              "path": "pen/where-drawn.mjs",
+              "group": "pen",
+              "lines": {
+                "covered": 16,
+                "total": 30,
+                "pct": 53.3
+              },
+              "maintainability": 87.9,
+              "crap": 20
+            },
+            {
+              "path": "release-age.mjs",
+              "lines": {
+                "covered": 18,
+                "total": 28,
+                "pct": 64.3
+              },
+              "maintainability": 95.8,
+              "crap": 5
+            },
+            {
+              "path": "visual-diff-container.mjs",
+              "lines": {
+                "covered": 17,
+                "total": 19,
+                "pct": 89.5
+              },
+              "maintainability": 93.9,
+              "crap": 7
+            },
+            {
+              "path": "vitest-control-scan.mjs",
+              "lines": {
+                "covered": 40,
+                "total": 64,
+                "pct": 62.5
+              },
+              "maintainability": 94.3,
+              "crap": 12
+            },
+            {
+              "path": "vitest-timeout-scan.mjs",
+              "lines": {
+                "covered": 30,
+                "total": 52,
+                "pct": 57.7
+              },
+              "maintainability": 91.5,
+              "crap": 20
+            }
+          ]
         },
         "visual": {
           "dimension": "visual",
@@ -2966,7 +5518,25 @@
           "overCeiling": 3,
           "deadFiles": 5,
           "deadExports": 14,
-          "refactorTargets": 4
+          "refactorTargets": 3,
+          "penalties": [
+            {
+              "name": "maintainability",
+              "points": 11.3
+            },
+            {
+              "name": "unit size",
+              "points": 10
+            },
+            {
+              "name": "dead exports",
+              "points": 3.7
+            },
+            {
+              "name": "dead files",
+              "points": 2.5
+            }
+          ]
         }
       }
     },
@@ -2977,8 +5547,352 @@
       "dimensions": {
         "code": {
           "dimension": "code",
-          "state": "unmeasured",
-          "reason": "No coverage block in vitest.sandcastle.config.mts"
+          "state": "measured",
+          "lines": {
+            "covered": 724,
+            "total": 1203,
+            "pct": 60.2
+          },
+          "floor": 26,
+          "staticReachPct": 97.1,
+          "files": [
+            {
+              "path": "main.mts",
+              "lines": {
+                "covered": 0,
+                "total": 164,
+                "pct": 0
+              },
+              "maintainability": 84.7,
+              "crap": 30
+            },
+            {
+              "path": "sandcastle-additive-merge.mts",
+              "lines": {
+                "covered": 105,
+                "total": 116,
+                "pct": 90.5
+              },
+              "maintainability": 85.9,
+              "crap": 10
+            },
+            {
+              "path": "sandcastle-agent-profiles.mts",
+              "lines": {
+                "covered": 6,
+                "total": 15,
+                "pct": 40
+              },
+              "maintainability": 94.8,
+              "crap": 6
+            },
+            {
+              "path": "sandcastle-build-verify.mts",
+              "lines": {
+                "covered": 18,
+                "total": 32,
+                "pct": 56.3
+              },
+              "maintainability": 92,
+              "crap": 12
+            },
+            {
+              "path": "sandcastle-config.mts",
+              "lines": {
+                "covered": 9,
+                "total": 13,
+                "pct": 69.2
+              },
+              "maintainability": 94.8,
+              "crap": 6
+            },
+            {
+              "path": "sandcastle-docker-preflight.mts",
+              "lines": {
+                "covered": 12,
+                "total": 13,
+                "pct": 92.3
+              },
+              "maintainability": 96.4,
+              "crap": 3
+            },
+            {
+              "path": "sandcastle-git-parse.mts",
+              "lines": {
+                "covered": 35,
+                "total": 35,
+                "pct": 100
+              },
+              "maintainability": 93.7,
+              "crap": 7
+            },
+            {
+              "path": "sandcastle-git-probe.mts",
+              "lines": {
+                "covered": 3,
+                "total": 3,
+                "pct": 100
+              },
+              "maintainability": 97.6,
+              "crap": 2
+            },
+            {
+              "path": "sandcastle-git.mts",
+              "lines": {
+                "covered": 22,
+                "total": 77,
+                "pct": 28.6
+              },
+              "maintainability": 87.2,
+              "crap": 20
+            },
+            {
+              "path": "sandcastle-guard-phase.mts",
+              "lines": {
+                "covered": 3,
+                "total": 3,
+                "pct": 100
+              },
+              "maintainability": 98.8,
+              "crap": 2
+            },
+            {
+              "path": "sandcastle-image-freshness.mts",
+              "lines": {
+                "covered": 41,
+                "total": 57,
+                "pct": 71.9
+              },
+              "maintainability": 93.6,
+              "crap": 12
+            },
+            {
+              "path": "sandcastle-issue-criteria.mts",
+              "lines": {
+                "covered": 32,
+                "total": 32,
+                "pct": 100
+              },
+              "maintainability": 93.4,
+              "crap": 7
+            },
+            {
+              "path": "sandcastle-issue-pipeline.mts",
+              "lines": {
+                "covered": 6,
+                "total": 6,
+                "pct": 100
+              },
+              "maintainability": 96.7,
+              "crap": 3
+            },
+            {
+              "path": "sandcastle-issue-ref.mts",
+              "lines": {
+                "covered": 0,
+                "total": 0,
+                "pct": 100
+              }
+            },
+            {
+              "path": "sandcastle-lifecycle.mts",
+              "lines": {
+                "covered": 15,
+                "total": 37,
+                "pct": 40.5
+              },
+              "maintainability": 96.7,
+              "crap": 30
+            },
+            {
+              "path": "sandcastle-main-receipt.mts",
+              "lines": {
+                "covered": 21,
+                "total": 31,
+                "pct": 67.7
+              },
+              "maintainability": 81.7,
+              "crap": 12
+            },
+            {
+              "path": "sandcastle-merge-branch-line.mts",
+              "lines": {
+                "covered": 4,
+                "total": 4,
+                "pct": 100
+              },
+              "maintainability": 92.6,
+              "crap": 3
+            },
+            {
+              "path": "sandcastle-merge.mts",
+              "lines": {
+                "covered": 0,
+                "total": 6,
+                "pct": 0
+              },
+              "maintainability": 90.7,
+              "crap": 6
+            },
+            {
+              "path": "sandcastle-model-overrides.mts",
+              "lines": {
+                "covered": 65,
+                "total": 66,
+                "pct": 98.5
+              },
+              "maintainability": 95.2,
+              "crap": 11
+            },
+            {
+              "path": "sandcastle-noop-issues.mts",
+              "lines": {
+                "covered": 26,
+                "total": 26,
+                "pct": 100
+              },
+              "maintainability": 98.2,
+              "crap": 7
+            },
+            {
+              "path": "sandcastle-orchestrator.mts",
+              "lines": {
+                "covered": 23,
+                "total": 23,
+                "pct": 100
+              },
+              "maintainability": 91.5,
+              "crap": 6
+            },
+            {
+              "path": "sandcastle-plan-eligibility.mts",
+              "lines": {
+                "covered": 8,
+                "total": 8,
+                "pct": 100
+              },
+              "maintainability": 92.9,
+              "crap": 6
+            },
+            {
+              "path": "sandcastle-plan-parse.mts",
+              "lines": {
+                "covered": 37,
+                "total": 38,
+                "pct": 97.4
+              },
+              "maintainability": 89.9,
+              "crap": 13
+            },
+            {
+              "path": "sandcastle-pr-queue-gh.mts",
+              "lines": {
+                "covered": 0,
+                "total": 46,
+                "pct": 0
+              },
+              "maintainability": 75.1,
+              "crap": 20
+            },
+            {
+              "path": "sandcastle-pr-queue.mts",
+              "lines": {
+                "covered": 112,
+                "total": 113,
+                "pct": 99.1
+              },
+              "maintainability": 90.8,
+              "crap": 11
+            },
+            {
+              "path": "sandcastle-push-hold.mts",
+              "lines": {
+                "covered": 41,
+                "total": 41,
+                "pct": 100
+              },
+              "maintainability": 92.4,
+              "crap": 6
+            },
+            {
+              "path": "sandcastle-run-issue.mts",
+              "lines": {
+                "covered": 0,
+                "total": 40,
+                "pct": 0
+              },
+              "maintainability": 90.4,
+              "crap": 56
+            },
+            {
+              "path": "sandcastle-sandbox-hooks.mts",
+              "lines": {
+                "covered": 14,
+                "total": 14,
+                "pct": 100
+              },
+              "maintainability": 99.4,
+              "crap": 3
+            },
+            {
+              "path": "sandcastle-stranded-branches.mts",
+              "lines": {
+                "covered": 22,
+                "total": 77,
+                "pct": 28.6
+              },
+              "maintainability": 89.2,
+              "crap": 30
+            },
+            {
+              "path": "sandcastle-tick-criteria.mts",
+              "lines": {
+                "covered": 0,
+                "total": 12,
+                "pct": 0
+              },
+              "maintainability": 94.1,
+              "crap": 2
+            },
+            {
+              "path": "sandcastle-turbo-cache.mts",
+              "lines": {
+                "covered": 24,
+                "total": 24,
+                "pct": 100
+              },
+              "maintainability": 94.6,
+              "crap": 8
+            },
+            {
+              "path": "sandcastle-variables.mts",
+              "lines": {
+                "covered": 3,
+                "total": 3,
+                "pct": 100
+              }
+            },
+            {
+              "path": "sandcastle-worktree-safety.mts",
+              "lines": {
+                "covered": 17,
+                "total": 17,
+                "pct": 100
+              },
+              "maintainability": 97,
+              "crap": 9
+            },
+            {
+              "path": "sandcastle-worktree-sandbox.mts",
+              "lines": {
+                "covered": 0,
+                "total": 11,
+                "pct": 0
+              },
+              "maintainability": 87.4,
+              "crap": 30
+            }
+          ]
         },
         "visual": {
           "dimension": "visual",
@@ -2998,7 +5912,21 @@
           "overCeiling": 0,
           "deadFiles": 0,
           "deadExports": 8,
-          "refactorTargets": 3
+          "refactorTargets": 3,
+          "penalties": [
+            {
+              "name": "unit size",
+              "points": 10
+            },
+            {
+              "name": "coupling",
+              "points": 1.2
+            },
+            {
+              "name": "dead exports",
+              "points": 0.9
+            }
+          ]
         }
       }
     },
@@ -3009,8 +5937,27 @@
       "dimensions": {
         "code": {
           "dimension": "code",
-          "state": "unmeasured",
-          "reason": "No vitest config"
+          "state": "measured",
+          "lines": {
+            "covered": 107,
+            "total": 169,
+            "pct": 63.3
+          },
+          "floor": 26,
+          "staticReachPct": 100,
+          "files": [
+            {
+              "path": "scripts/tile-rows.mjs",
+              "group": "scripts",
+              "lines": {
+                "covered": 107,
+                "total": 169,
+                "pct": 63.3
+              },
+              "maintainability": 88.2,
+              "crap": 72
+            }
+          ]
         },
         "visual": {
           "dimension": "visual",
@@ -3025,24 +5972,34 @@
         "health": {
           "dimension": "health",
           "state": "measured",
-          "score": 85,
+          "score": 86.9,
           "grade": "A",
           "overCeiling": 0,
-          "deadFiles": 1,
-          "deadExports": 0,
-          "refactorTargets": 0
+          "deadFiles": 0,
+          "deadExports": 4,
+          "refactorTargets": 0,
+          "penalties": [
+            {
+              "name": "unit size",
+              "points": 7.4
+            },
+            {
+              "name": "dead exports",
+              "points": 5.7
+            }
+          ]
         }
       }
     }
   ],
   "gaps": [
     {
-      "id": "unmeasured-workspace:apps/blog",
+      "id": "uncovered-file:apps/blog:app/not-found.tsx",
       "workspace": "@gate/blog",
       "dimension": "code",
-      "kind": "unmeasured-workspace",
-      "subject": "apps/blog",
-      "title": "@gate/blog: measure coverage"
+      "kind": "uncovered-file",
+      "subject": "app/not-found.tsx",
+      "title": "@gate/blog: app/not-found.tsx has no test"
     },
     {
       "id": "component-incomplete:apps/blog:screens-blog-about--default",
@@ -3189,28 +6146,340 @@
       "title": "@gate/blog: /changelog has no loading state"
     },
     {
-      "id": "app-unvisited:apps/census",
+      "id": "story-missing:apps/census:Scene",
       "workspace": "@gate/census",
-      "dimension": "acceptance",
-      "kind": "app-unvisited",
-      "subject": "apps/census",
-      "title": "@gate/census: no acceptance scenario"
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "Scene",
+      "title": "@gate/census: Scene has no story"
     },
     {
-      "id": "unmeasured-workspace:apps/e2e",
+      "id": "story-missing:apps/census:PyramidFigure",
+      "workspace": "@gate/census",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "PyramidFigure",
+      "title": "@gate/census: PyramidFigure has no story"
+    },
+    {
+      "id": "story-missing:apps/census:SiteAnalytics",
+      "workspace": "@gate/census",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "SiteAnalytics",
+      "title": "@gate/census: SiteAnalytics has no story"
+    },
+    {
+      "id": "story-missing:apps/census:CensusFrame",
+      "workspace": "@gate/census",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "CensusFrame",
+      "title": "@gate/census: CensusFrame has no story"
+    },
+    {
+      "id": "story-missing:apps/census:CensusShell",
+      "workspace": "@gate/census",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "CensusShell",
+      "title": "@gate/census: CensusShell has no story"
+    },
+    {
+      "id": "story-missing:apps/census:CopyButton",
+      "workspace": "@gate/census",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "CopyButton",
+      "title": "@gate/census: CopyButton has no story"
+    },
+    {
+      "id": "story-missing:apps/census:FileViews",
+      "workspace": "@gate/census",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "FileViews",
+      "title": "@gate/census: FileViews has no story"
+    },
+    {
+      "id": "story-missing:apps/census:FilteredFrame",
+      "workspace": "@gate/census",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "FilteredFrame",
+      "title": "@gate/census: FilteredFrame has no story"
+    },
+    {
+      "id": "story-missing:apps/census:FilteredHome",
+      "workspace": "@gate/census",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "FilteredHome",
+      "title": "@gate/census: FilteredHome has no story"
+    },
+    {
+      "id": "story-missing:apps/census:GapList",
+      "workspace": "@gate/census",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "GapList",
+      "title": "@gate/census: GapList has no story"
+    },
+    {
+      "id": "story-missing:apps/census:SummaryCard",
+      "workspace": "@gate/census",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "SummaryCard",
+      "title": "@gate/census: SummaryCard has no story"
+    },
+    {
+      "id": "story-missing:apps/census:CoverageCard",
+      "workspace": "@gate/census",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "CoverageCard",
+      "title": "@gate/census: CoverageCard has no story"
+    },
+    {
+      "id": "story-missing:apps/census:MetricsCard",
+      "workspace": "@gate/census",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "MetricsCard",
+      "title": "@gate/census: MetricsCard has no story"
+    },
+    {
+      "id": "story-missing:apps/census:PyramidCard",
+      "workspace": "@gate/census",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "PyramidCard",
+      "title": "@gate/census: PyramidCard has no story"
+    },
+    {
+      "id": "story-missing:apps/census:GapPillsCard",
+      "workspace": "@gate/census",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "GapPillsCard",
+      "title": "@gate/census: GapPillsCard has no story"
+    },
+    {
+      "id": "story-missing:apps/census:StoriesCard",
+      "workspace": "@gate/census",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "StoriesCard",
+      "title": "@gate/census: StoriesCard has no story"
+    },
+    {
+      "id": "story-missing:apps/census:StatesCard",
+      "workspace": "@gate/census",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "StatesCard",
+      "title": "@gate/census: StatesCard has no story"
+    },
+    {
+      "id": "story-missing:apps/census:PenalisedScore",
+      "workspace": "@gate/census",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "PenalisedScore",
+      "title": "@gate/census: PenalisedScore has no story"
+    },
+    {
+      "id": "story-missing:apps/census:HealthCard",
+      "workspace": "@gate/census",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "HealthCard",
+      "title": "@gate/census: HealthCard has no story"
+    },
+    {
+      "id": "story-missing:apps/census:DeadCodeCard",
+      "workspace": "@gate/census",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "DeadCodeCard",
+      "title": "@gate/census: DeadCodeCard has no story"
+    },
+    {
+      "id": "story-missing:apps/census:StylingCard",
+      "workspace": "@gate/census",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "StylingCard",
+      "title": "@gate/census: StylingCard has no story"
+    },
+    {
+      "id": "story-missing:apps/census:HotspotsCard",
+      "workspace": "@gate/census",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "HotspotsCard",
+      "title": "@gate/census: HotspotsCard has no story"
+    },
+    {
+      "id": "story-missing:apps/census:CodeCoverageCard",
+      "workspace": "@gate/census",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "CodeCoverageCard",
+      "title": "@gate/census: CodeCoverageCard has no story"
+    },
+    {
+      "id": "story-missing:apps/census:NotesCard",
+      "workspace": "@gate/census",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "NotesCard",
+      "title": "@gate/census: NotesCard has no story"
+    },
+    {
+      "id": "story-missing:apps/census:Legend",
+      "workspace": "@gate/census",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "Legend",
+      "title": "@gate/census: Legend has no story"
+    },
+    {
+      "id": "story-missing:apps/census:MeasurementBar",
+      "workspace": "@gate/census",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "MeasurementBar",
+      "title": "@gate/census: MeasurementBar has no story"
+    },
+    {
+      "id": "story-missing:apps/census:RefactorTargets",
+      "workspace": "@gate/census",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "RefactorTargets",
+      "title": "@gate/census: RefactorTargets has no story"
+    },
+    {
+      "id": "story-missing:apps/census:SectionCard",
+      "workspace": "@gate/census",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "SectionCard",
+      "title": "@gate/census: SectionCard has no story"
+    },
+    {
+      "id": "story-missing:apps/census:TallIcicle",
+      "workspace": "@gate/census",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "TallIcicle",
+      "title": "@gate/census: TallIcicle has no story"
+    },
+    {
+      "id": "story-missing:apps/census:TrendCard",
+      "workspace": "@gate/census",
+      "dimension": "visual",
+      "kind": "story-missing",
+      "subject": "TrendCard",
+      "title": "@gate/census: TrendCard has no story"
+    },
+    {
+      "id": "route-state-missing:apps/census:/:loading",
+      "workspace": "@gate/census",
+      "dimension": "visual",
+      "kind": "route-state-missing",
+      "subject": "/:loading",
+      "title": "@gate/census: / has no loading state"
+    },
+    {
+      "id": "route-state-missing:apps/census:/:not-found",
+      "workspace": "@gate/census",
+      "dimension": "visual",
+      "kind": "route-state-missing",
+      "subject": "/:not-found",
+      "title": "@gate/census: / has no not-found state"
+    },
+    {
+      "id": "route-state-missing:apps/census:/[workspace]:loading",
+      "workspace": "@gate/census",
+      "dimension": "visual",
+      "kind": "route-state-missing",
+      "subject": "/[workspace]:loading",
+      "title": "@gate/census: /[workspace] has no loading state"
+    },
+    {
+      "id": "route-state-missing:apps/census:/[workspace]:not-found",
+      "workspace": "@gate/census",
+      "dimension": "visual",
+      "kind": "route-state-missing",
+      "subject": "/[workspace]:not-found",
+      "title": "@gate/census: /[workspace] has no not-found state"
+    },
+    {
+      "id": "uncovered-file:apps/e2e:scripts/lib/suite-integrity-core.mjs",
       "workspace": "@gate/e2e",
       "dimension": "code",
-      "kind": "unmeasured-workspace",
-      "subject": "apps/e2e",
-      "title": "@gate/e2e: measure coverage"
+      "kind": "uncovered-file",
+      "subject": "scripts/lib/suite-integrity-core.mjs",
+      "title": "@gate/e2e: scripts/lib/suite-integrity-core.mjs has no test"
     },
     {
-      "id": "unmeasured-workspace:apps/manual",
+      "id": "uncovered-file:apps/e2e:scripts/local-integrity.mjs",
+      "workspace": "@gate/e2e",
+      "dimension": "code",
+      "kind": "uncovered-file",
+      "subject": "scripts/local-integrity.mjs",
+      "title": "@gate/e2e: scripts/local-integrity.mjs has no test"
+    },
+    {
+      "id": "uncovered-file:apps/e2e:scripts/seed-visual-diff.mjs",
+      "workspace": "@gate/e2e",
+      "dimension": "code",
+      "kind": "uncovered-file",
+      "subject": "scripts/seed-visual-diff.mjs",
+      "title": "@gate/e2e: scripts/seed-visual-diff.mjs has no test"
+    },
+    {
+      "id": "uncovered-file:apps/e2e:scripts/suite-integrity.mjs",
+      "workspace": "@gate/e2e",
+      "dimension": "code",
+      "kind": "uncovered-file",
+      "subject": "scripts/suite-integrity.mjs",
+      "title": "@gate/e2e: scripts/suite-integrity.mjs has no test"
+    },
+    {
+      "id": "uncovered-file:apps/manual:app/error.tsx",
       "workspace": "@gate/manual",
       "dimension": "code",
-      "kind": "unmeasured-workspace",
-      "subject": "apps/manual",
-      "title": "@gate/manual: measure coverage"
+      "kind": "uncovered-file",
+      "subject": "app/error.tsx",
+      "title": "@gate/manual: app/error.tsx has no test"
+    },
+    {
+      "id": "uncovered-file:apps/manual:app/global-error.tsx",
+      "workspace": "@gate/manual",
+      "dimension": "code",
+      "kind": "uncovered-file",
+      "subject": "app/global-error.tsx",
+      "title": "@gate/manual: app/global-error.tsx has no test"
+    },
+    {
+      "id": "uncovered-file:apps/manual:app/not-found.tsx",
+      "workspace": "@gate/manual",
+      "dimension": "code",
+      "kind": "uncovered-file",
+      "subject": "app/not-found.tsx",
+      "title": "@gate/manual: app/not-found.tsx has no test"
+    },
+    {
+      "id": "uncovered-file:apps/manual:app/robots.ts",
+      "workspace": "@gate/manual",
+      "dimension": "code",
+      "kind": "uncovered-file",
+      "subject": "app/robots.ts",
+      "title": "@gate/manual: app/robots.ts has no test"
     },
     {
       "id": "component-incomplete:apps/manual:screens-manual-index--default",
@@ -3285,12 +6554,36 @@
       "title": "@gate/manual: no acceptance scenario"
     },
     {
-      "id": "unmeasured-workspace:apps/storybook",
+      "id": "uncovered-file:apps/storybook:.storybook/ThemedDocsContainer.tsx",
       "workspace": "@gate/storybook",
       "dimension": "code",
-      "kind": "unmeasured-workspace",
-      "subject": "apps/storybook",
-      "title": "@gate/storybook: measure coverage"
+      "kind": "uncovered-file",
+      "subject": ".storybook/ThemedDocsContainer.tsx",
+      "title": "@gate/storybook: .storybook/ThemedDocsContainer.tsx has no test"
+    },
+    {
+      "id": "uncovered-file:apps/storybook:.storybook/census-pyramid.tsx",
+      "workspace": "@gate/storybook",
+      "dimension": "code",
+      "kind": "uncovered-file",
+      "subject": ".storybook/census-pyramid.tsx",
+      "title": "@gate/storybook: .storybook/census-pyramid.tsx has no test"
+    },
+    {
+      "id": "uncovered-file:apps/storybook:.storybook/design-urls.ts",
+      "workspace": "@gate/storybook",
+      "dimension": "code",
+      "kind": "uncovered-file",
+      "subject": ".storybook/design-urls.ts",
+      "title": "@gate/storybook: .storybook/design-urls.ts has no test"
+    },
+    {
+      "id": "uncovered-file:apps/storybook:.storybook/manual-sources.ts",
+      "workspace": "@gate/storybook",
+      "dimension": "code",
+      "kind": "uncovered-file",
+      "subject": ".storybook/manual-sources.ts",
+      "title": "@gate/storybook: .storybook/manual-sources.ts has no test"
     },
     {
       "id": "app-unvisited:apps/storybook",
@@ -3299,46 +6592,6 @@
       "kind": "app-unvisited",
       "subject": "apps/storybook",
       "title": "@gate/storybook: no acceptance scenario"
-    },
-    {
-      "id": "uncovered-file:apps/visual-diff-ui:app/_screens/ComparisonScreen.stories.tsx",
-      "workspace": "@gate/visual-diff-ui",
-      "dimension": "code",
-      "kind": "uncovered-file",
-      "subject": "app/_screens/ComparisonScreen.stories.tsx",
-      "title": "@gate/visual-diff-ui: app/_screens/ComparisonScreen.stories.tsx has no test"
-    },
-    {
-      "id": "uncovered-file:apps/visual-diff-ui:app/_screens/DashboardScreen.stories.tsx",
-      "workspace": "@gate/visual-diff-ui",
-      "dimension": "code",
-      "kind": "uncovered-file",
-      "subject": "app/_screens/DashboardScreen.stories.tsx",
-      "title": "@gate/visual-diff-ui: app/_screens/DashboardScreen.stories.tsx has no test"
-    },
-    {
-      "id": "uncovered-file:apps/visual-diff-ui:app/_screens/ReportScreen.stories.tsx",
-      "workspace": "@gate/visual-diff-ui",
-      "dimension": "code",
-      "kind": "uncovered-file",
-      "subject": "app/_screens/ReportScreen.stories.tsx",
-      "title": "@gate/visual-diff-ui: app/_screens/ReportScreen.stories.tsx has no test"
-    },
-    {
-      "id": "uncovered-file:apps/visual-diff-ui:app/_screens/SetScreen.stories.tsx",
-      "workspace": "@gate/visual-diff-ui",
-      "dimension": "code",
-      "kind": "uncovered-file",
-      "subject": "app/_screens/SetScreen.stories.tsx",
-      "title": "@gate/visual-diff-ui: app/_screens/SetScreen.stories.tsx has no test"
-    },
-    {
-      "id": "uncovered-file:apps/visual-diff-ui:app/_screens/ShotScreen.stories.tsx",
-      "workspace": "@gate/visual-diff-ui",
-      "dimension": "code",
-      "kind": "uncovered-file",
-      "subject": "app/_screens/ShotScreen.stories.tsx",
-      "title": "@gate/visual-diff-ui: app/_screens/ShotScreen.stories.tsx has no test"
     },
     {
       "id": "uncovered-file:apps/visual-diff-ui:app/not-found.tsx",
@@ -3845,52 +7098,148 @@
       "title": "@gate/visual-diff-ui: /set/[label]/shot/[key] has no loading state"
     },
     {
-      "id": "unmeasured-workspace:packages/links",
-      "workspace": "@gate/links",
-      "dimension": "code",
-      "kind": "unmeasured-workspace",
-      "subject": "packages/links",
-      "title": "@gate/links: measure coverage"
-    },
-    {
-      "id": "unmeasured-workspace:packages/logger",
-      "workspace": "@gate/logger",
-      "dimension": "code",
-      "kind": "unmeasured-workspace",
-      "subject": "packages/logger",
-      "title": "@gate/logger: measure coverage"
-    },
-    {
-      "id": "unmeasured-workspace:packages/visual-diff",
-      "workspace": "@gate/visual-diff",
-      "dimension": "code",
-      "kind": "unmeasured-workspace",
-      "subject": "packages/visual-diff",
-      "title": "@gate/visual-diff: measure coverage"
-    },
-    {
-      "id": "unmeasured-workspace:scripts",
+      "id": "uncovered-file:scripts:apply-ruleset.mjs",
       "workspace": "scripts/",
       "dimension": "code",
-      "kind": "unmeasured-workspace",
-      "subject": "scripts",
-      "title": "scripts/: measure coverage"
+      "kind": "uncovered-file",
+      "subject": "apply-ruleset.mjs",
+      "title": "scripts/: apply-ruleset.mjs has no test"
     },
     {
-      "id": "unmeasured-workspace:.sandcastle",
+      "id": "uncovered-file:scripts:complexity-gate.mjs",
+      "workspace": "scripts/",
+      "dimension": "code",
+      "kind": "uncovered-file",
+      "subject": "complexity-gate.mjs",
+      "title": "scripts/: complexity-gate.mjs has no test"
+    },
+    {
+      "id": "uncovered-file:scripts:gate/lock.mjs",
+      "workspace": "scripts/",
+      "dimension": "code",
+      "kind": "uncovered-file",
+      "subject": "gate/lock.mjs",
+      "title": "scripts/: gate/lock.mjs has no test"
+    },
+    {
+      "id": "uncovered-file:scripts:gate/pre-push.mjs",
+      "workspace": "scripts/",
+      "dimension": "code",
+      "kind": "uncovered-file",
+      "subject": "gate/pre-push.mjs",
+      "title": "scripts/: gate/pre-push.mjs has no test"
+    },
+    {
+      "id": "uncovered-file:scripts:gate/receipt.mjs",
+      "workspace": "scripts/",
+      "dimension": "code",
+      "kind": "uncovered-file",
+      "subject": "gate/receipt.mjs",
+      "title": "scripts/: gate/receipt.mjs has no test"
+    },
+    {
+      "id": "uncovered-file:scripts:gate/run.mjs",
+      "workspace": "scripts/",
+      "dimension": "code",
+      "kind": "uncovered-file",
+      "subject": "gate/run.mjs",
+      "title": "scripts/: gate/run.mjs has no test"
+    },
+    {
+      "id": "uncovered-file:scripts:gate/worktree.mjs",
+      "workspace": "scripts/",
+      "dimension": "code",
+      "kind": "uncovered-file",
+      "subject": "gate/worktree.mjs",
+      "title": "scripts/: gate/worktree.mjs has no test"
+    },
+    {
+      "id": "uncovered-file:scripts:index-integrity.mjs",
+      "workspace": "scripts/",
+      "dimension": "code",
+      "kind": "uncovered-file",
+      "subject": "index-integrity.mjs",
+      "title": "scripts/: index-integrity.mjs has no test"
+    },
+    {
+      "id": "uncovered-file:scripts:pen/finish-export.mjs",
+      "workspace": "scripts/",
+      "dimension": "code",
+      "kind": "uncovered-file",
+      "subject": "pen/finish-export.mjs",
+      "title": "scripts/: pen/finish-export.mjs has no test"
+    },
+    {
+      "id": "uncovered-file:scripts:pen/paste-tiles.mjs",
+      "workspace": "scripts/",
+      "dimension": "code",
+      "kind": "uncovered-file",
+      "subject": "pen/paste-tiles.mjs",
+      "title": "scripts/: pen/paste-tiles.mjs has no test"
+    },
+    {
+      "id": "uncovered-file:scripts:pen/tiles-from-dom.mjs",
+      "workspace": "scripts/",
+      "dimension": "code",
+      "kind": "uncovered-file",
+      "subject": "pen/tiles-from-dom.mjs",
+      "title": "scripts/: pen/tiles-from-dom.mjs has no test"
+    },
+    {
+      "id": "uncovered-file:scripts:pen/tiles-from-dom/extract-page.mjs",
+      "workspace": "scripts/",
+      "dimension": "code",
+      "kind": "uncovered-file",
+      "subject": "pen/tiles-from-dom/extract-page.mjs",
+      "title": "scripts/: pen/tiles-from-dom/extract-page.mjs has no test"
+    },
+    {
+      "id": "uncovered-file:.sandcastle:main.mts",
       "workspace": ".sandcastle/",
       "dimension": "code",
-      "kind": "unmeasured-workspace",
-      "subject": ".sandcastle",
-      "title": ".sandcastle/: measure coverage"
+      "kind": "uncovered-file",
+      "subject": "main.mts",
+      "title": ".sandcastle/: main.mts has no test"
     },
     {
-      "id": "unmeasured-workspace:.claude/skills/pixel-perfect-session",
-      "workspace": ".claude/skills/pixel-perfect-session/",
+      "id": "uncovered-file:.sandcastle:sandcastle-merge.mts",
+      "workspace": ".sandcastle/",
       "dimension": "code",
-      "kind": "unmeasured-workspace",
-      "subject": ".claude/skills/pixel-perfect-session",
-      "title": ".claude/skills/pixel-perfect-session/: measure coverage"
+      "kind": "uncovered-file",
+      "subject": "sandcastle-merge.mts",
+      "title": ".sandcastle/: sandcastle-merge.mts has no test"
+    },
+    {
+      "id": "uncovered-file:.sandcastle:sandcastle-pr-queue-gh.mts",
+      "workspace": ".sandcastle/",
+      "dimension": "code",
+      "kind": "uncovered-file",
+      "subject": "sandcastle-pr-queue-gh.mts",
+      "title": ".sandcastle/: sandcastle-pr-queue-gh.mts has no test"
+    },
+    {
+      "id": "uncovered-file:.sandcastle:sandcastle-run-issue.mts",
+      "workspace": ".sandcastle/",
+      "dimension": "code",
+      "kind": "uncovered-file",
+      "subject": "sandcastle-run-issue.mts",
+      "title": ".sandcastle/: sandcastle-run-issue.mts has no test"
+    },
+    {
+      "id": "uncovered-file:.sandcastle:sandcastle-tick-criteria.mts",
+      "workspace": ".sandcastle/",
+      "dimension": "code",
+      "kind": "uncovered-file",
+      "subject": "sandcastle-tick-criteria.mts",
+      "title": ".sandcastle/: sandcastle-tick-criteria.mts has no test"
+    },
+    {
+      "id": "uncovered-file:.sandcastle:sandcastle-worktree-sandbox.mts",
+      "workspace": ".sandcastle/",
+      "dimension": "code",
+      "kind": "uncovered-file",
+      "subject": "sandcastle-worktree-sandbox.mts",
+      "title": ".sandcastle/: sandcastle-worktree-sandbox.mts has no test"
     }
   ]
 }
