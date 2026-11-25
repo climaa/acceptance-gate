@@ -32,6 +32,7 @@ import { fileFacts, repositoryHealth, workspaceHealth } from '../lib/collect/hea
 import { routeStates, routeSummary } from '../lib/collect/routes.ts';
 import {
   appComponents,
+  appModules,
   appVisual,
   indexStories,
   storyIdsOf,
@@ -322,6 +323,9 @@ function codeDimension(ws, runs, reports) {
   });
 }
 
+/** A source file the walk from a screen story can reach. */
+const MODULE_FILE = /\.(tsx|ts|mts|jsx|js|mjs)$/;
+
 const NO_SUBJECTS = { incomplete: [], unstoried: [], routes: [] };
 
 function visualDimension(ws, stories, sources) {
@@ -362,12 +366,17 @@ function visualDimension(ws, stories, sources) {
     };
   }
   const routes = routeStates(appFiles);
-  const components = appComponents(
-    files.map((path) => ({ path, source: readFileSync(join(ROOT, path), 'utf8') })),
+  const read = (path) => ({ path, source: readFileSync(join(ROOT, path), 'utf8') });
+  const components = appComponents(files.map(read));
+  const modules = appModules(
+    tracked(ws.path)
+      .filter((f) => MODULE_FILE.test(f))
+      .map(read),
   );
   const app = appVisual(ws.path, {
     components,
     imports: sources.imports,
+    modules,
     stories,
     tiled: sources.tiled,
     boards: sources.boards,

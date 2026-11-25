@@ -22,7 +22,7 @@ export type BoundarySource = 'own' | 'inherited' | 'none';
 export interface VisualSubjects {
   /** Each component or screen story, with the parts it lacks (empty when complete). */
   incomplete: readonly { storyId: string; missing: readonly StoryPart[] }[];
-  /** Components no story imports, by name. */
+  /** Components no story renders, directly or through other components, by name. */
   unstoried: readonly string[];
   /** Each App Router route and where its three boundaries come from. */
   routes: readonly {

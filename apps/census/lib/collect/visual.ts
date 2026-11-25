@@ -10,8 +10,11 @@
  * baseline. A story drawn ahead of its code has a tile and no index entry: it is
  * not a subject until it exists.
  *
- * An app component counts as storied when a story file imports its module
- * directly; one only rendered inside another component is not.
+ * An app component counts as storied when a screen story renders it: a story
+ * file imports its module directly, or reaches that module through static
+ * imports and re-exports inside the same app and some module it reached writes
+ * the component as JSX. A type-only import, a dynamic `import()`, another
+ * workspace's module and a test lead nowhere.
  */
 import { posix } from 'node:path';
 
@@ -220,24 +223,113 @@ export function appComponents(
 const moduleId = (path: string) =>
   path.replace(/\.(tsx|ts|mts|jsx|js|mjs)$/, '').replace(/\/index$/, '');
 
+/** A relative or `@/` specifier as a repo module id; any other (a package) as undefined. */
+function resolveSpecifier(file: string, spec: string): string | undefined {
+  if (spec.startsWith('.')) return moduleId(posix.join(posix.dirname(file), spec));
+  if (spec.startsWith('@/'))
+    return moduleId(posix.join(file.split('/').slice(0, 2).join('/'), spec.slice(2)));
+  return undefined;
+}
+
 /** The repo modules a story file imports, by relative or `@/` specifier (packages left out). */
 export function storyImports(storyFile: string, source: string): Set<string> {
-  const appRoot = storyFile.split('/').slice(0, 2).join('/');
   const targets = new Set<string>();
   for (const match of source.matchAll(/\bfrom\s+['"]([^'"]+)['"]/g)) {
-    const spec = String(match[1]);
-    if (spec.startsWith('.'))
-      targets.add(moduleId(posix.join(posix.dirname(storyFile), spec)));
-    else if (spec.startsWith('@/'))
-      targets.add(moduleId(posix.join(appRoot, spec.slice(2))));
+    const target = resolveSpecifier(storyFile, String(match[1]));
+    if (target !== undefined) targets.add(target);
   }
   return targets;
+}
+
+/** What one app module contributes to the walk from a story file. */
+export interface AppModule {
+  /** The repo modules it imports or re-exports as values, by relative or `@/` specifier. */
+  imports: ReadonlySet<string>;
+  /** The PascalCase names it writes as JSX (`<Name`). */
+  renders: ReadonlySet<string>;
+}
+
+/**
+ * Value imports and re-exports, the clause limited to names, braces and `*` so
+ * no statement's body is read as one. Type-only ones are told apart by `type`.
+ */
+const STATIC_IMPORT =
+  /\b(?:import|export)\s+(type\s+)?([\w\s{},*$]*?)\s*\bfrom\s+['"]([^'"]+)['"]/g;
+/** A JSX opening tag: not a generic argument, which follows a name. */
+const JSX_TAG = /(?<![\w$.])<([A-Z][\w$]*)(?=[\s/>])/g;
+
+/** `import { type A, type B }`: every named specifier is a type. */
+const allTypes = (clause: string) => {
+  const named = /^\{([^}]*)\}$/.exec(clause.trim())?.[1];
+  if (named === undefined) return false;
+  const specifiers = named
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+  return specifiers.length > 0 && specifiers.every((s) => /^type\s/.test(s));
+};
+
+function moduleImports(file: string, source: string): Set<string> {
+  const targets = new Set<string>();
+  for (const match of source.matchAll(STATIC_IMPORT)) {
+    if (match[1] !== undefined || allTypes(String(match[2]))) continue;
+    const target = resolveSpecifier(file, String(match[3]));
+    if (target !== undefined) targets.add(target);
+  }
+  return targets;
+}
+
+/** Module id → what it imports and renders, for each of an app's source files. */
+export function appModules(
+  files: readonly { path: string; source: string }[],
+): Map<string, AppModule> {
+  return new Map(
+    files.map((file) => [
+      moduleId(file.path),
+      {
+        imports: moduleImports(file.path, file.source),
+        renders: new Set([...file.source.matchAll(JSX_TAG)].map((m) => String(m[1]))),
+      },
+    ]),
+  );
+}
+
+/** The modules inside the app a story file reaches, itself included; a cycle ends the walk. */
+function reached(
+  appPath: string,
+  storyFile: string,
+  modules: ReadonlyMap<string, AppModule>,
+): string[] {
+  const seen = new Set([moduleId(storyFile)]);
+  const queue = [...seen];
+  for (let id = queue.shift(); id !== undefined; id = queue.shift()) {
+    for (const next of modules.get(id)?.imports ?? []) {
+      if (seen.has(next) || !next.startsWith(`${appPath}/`)) continue;
+      seen.add(next);
+      queue.push(next);
+    }
+  }
+  return [...seen];
+}
+
+/** Whether a story file's walk reaches a component's module and some reached module renders it. */
+function renders(
+  walk: readonly string[],
+  component: AppComponent,
+  modules: ReadonlyMap<string, AppModule>,
+) {
+  return (
+    walk.includes(moduleId(component.file)) &&
+    walk.some((id) => modules.get(id)?.renders.has(component.name))
+  );
 }
 
 interface AppInputs {
   components: readonly AppComponent[];
   /** Story file → the modules it imports. */
   imports: ReadonlyMap<string, ReadonlySet<string>>;
+  /** The app's modules, for the walk from its story files (see `appModules`). */
+  modules?: ReadonlyMap<string, AppModule>;
   stories: readonly Story[];
   tiled: ReadonlySet<string>;
   baselined: ReadonlySet<string>;
@@ -247,14 +339,23 @@ interface AppInputs {
   >;
 }
 
-/** An app: its components by the stories importing them, its screen stories, its routes. */
+/** An app: its components by the stories rendering them, its screen stories, its routes. */
 export function appVisual(appPath: string, inputs: AppInputs) {
   const { stories, tiled, baselined } = inputs;
+  const modules = inputs.modules ?? new Map<string, AppModule>();
+  const walks = new Map(
+    [...new Set(stories.map((s) => s.file))]
+      .filter((file) => file.startsWith(`${appPath}/`))
+      .map((file) => [file, reached(appPath, file, modules)]),
+  );
   const judged = inputs.components.map((component) => {
     const id = moduleId(component.file);
-    const files = new Set(
-      [...inputs.imports].filter(([, t]) => t.has(id)).map(([file]) => file),
-    );
+    const files = new Set([
+      ...[...inputs.imports].filter(([, t]) => t.has(id)).map(([file]) => file),
+      ...[...walks]
+        .filter(([, walk]) => renders(walk, component, modules))
+        .map(([file]) => file),
+    ]);
     return {
       name: component.name,
       ...judge(
