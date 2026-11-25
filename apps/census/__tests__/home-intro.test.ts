@@ -15,7 +15,7 @@ const home = (now: number) =>
     }),
   );
 
-/** The markup of the home's intro block, up to the first element after it. */
+/** The markup inside the home's intro block, which nests no `<div>` of its own. */
 const intro = (html: string) => {
   const start = html.indexOf('<div class="census-intro">');
   return html.slice(start, html.indexOf('</div>', start));
