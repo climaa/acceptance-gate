@@ -105,6 +105,31 @@ describe('validateMeasurement', () => {
     expect(problems).toEqual([]);
   });
 
+  it('accepts a file with no covered lines marked as tested as a process', () => {
+    const measurement = fixture('measurement');
+    measurement.workspaces[0].dimensions.code.files[0].lines = {
+      covered: 0,
+      total: 42,
+      pct: 0,
+    };
+    measurement.workspaces[0].dimensions.code.files[0].testedAsProcess = true;
+
+    const problems = validateMeasurement(measurement);
+
+    expect(problems).toEqual([]);
+  });
+
+  it('refuses testedAsProcess on a file vitest covered', () => {
+    const measurement = fixture('measurement');
+    measurement.workspaces[0].dimensions.code.files[0].testedAsProcess = true;
+
+    const problems = validateMeasurement(measurement);
+
+    expect(problems).toEqual([
+      'workspaces.0.dimensions.code.files.0.testedAsProcess: 41 lines are covered, so it is not tested only as a process',
+    ]);
+  });
+
   it('refuses a percentage with more than one decimal', () => {
     const measurement = fixture('measurement');
     measurement.workspaces[0].dimensions.health.score = 79.31;

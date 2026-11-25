@@ -28,7 +28,9 @@ function workspace(
   };
 }
 
-const measuredCode = (files: { path: string; covered: number; total: number }[]) =>
+const measuredCode = (
+  files: { path: string; covered: number; total: number; testedAsProcess?: true }[],
+) =>
   ({
     dimension: 'code',
     state: 'measured',
@@ -37,6 +39,7 @@ const measuredCode = (files: { path: string; covered: number; total: number }[])
     files: files.map((f) => ({
       path: f.path,
       lines: { covered: f.covered, total: f.total, pct: 0 },
+      ...(f.testedAsProcess ? { testedAsProcess: f.testedAsProcess } : {}),
     })),
   }) as const;
 
@@ -108,6 +111,33 @@ describe('deriveGaps', () => {
           subject: 'lib/sources.ts',
           title: '@gate/manual: lib/sources.ts has no test',
         },
+      ]);
+    });
+
+    it('is no gap for a file its tests run as a process', () => {
+      const scripts = workspace('scripts', 'scripts', {
+        code: measuredCode([
+          { path: 'gate/run.mjs', covered: 0, total: 40, testedAsProcess: true },
+        ]),
+      });
+
+      const gaps = deriveGaps([scripts], {});
+
+      expect(gaps).toEqual([]);
+    });
+
+    it('is still a gap for an uncovered file beside one tested as a process', () => {
+      const scripts = workspace('scripts', 'scripts', {
+        code: measuredCode([
+          { path: 'gate/run.mjs', covered: 0, total: 40, testedAsProcess: true },
+          { path: 'gate/other.mjs', covered: 0, total: 9 },
+        ]),
+      });
+
+      const gaps = deriveGaps([scripts], {});
+
+      expect(gaps.map((gap) => gap.id)).toEqual([
+        'uncovered-file:scripts:gate/other.mjs',
       ]);
     });
 
