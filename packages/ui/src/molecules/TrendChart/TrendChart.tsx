@@ -222,7 +222,11 @@ export function TrendChart({
       </header>
       <ul className="ds-trend-chart__legend">
         {lines.map(({ series: s, latest }) => (
-          <li key={s.dimension} className="ds-trend-chart__legend-item">
+          <li
+            key={s.dimension}
+            className="ds-trend-chart__legend-item"
+            data-dimension={s.dimension}
+          >
             <span
               aria-hidden="true"
               className={`ds-trend-chart__swatch ds-trend-chart__hue--${dimensionHue(s.dimension)}`}
@@ -271,6 +275,7 @@ export function TrendChart({
                 <polyline
                   key={s.dimension}
                   className={`ds-trend-chart__line ds-trend-chart__hue--${dimensionHue(s.dimension)}`}
+                  data-dimension={s.dimension}
                   vectorEffect="non-scaling-stroke"
                   points={points.map(([x, y]) => `${x * 1000},${y * 1000}`).join(' ')}
                 />
@@ -284,6 +289,7 @@ export function TrendChart({
                 key={s.dimension}
                 aria-hidden="true"
                 className={`ds-trend-chart__dot ds-trend-chart__hue--${dimensionHue(s.dimension)}`}
+                data-dimension={s.dimension}
                 style={at(x, y)}
               />
             );
@@ -294,6 +300,7 @@ export function TrendChart({
             <li
               key={s.dimension}
               className="ds-trend-chart__end"
+              data-dimension={s.dimension}
               style={at(undefined, labelYs[i])}
             >
               {`${s.name} ${formatCoverage(latest!)}`}

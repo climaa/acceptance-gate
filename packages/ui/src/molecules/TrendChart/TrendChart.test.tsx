@@ -225,4 +225,32 @@ describe('TrendChart', () => {
     expect(screen.getByText('Code 31%')).toBeTruthy();
     expect(screen.getByText('Health 91%')).toBeTruthy();
   });
+
+  it('names each series’ key, line, dot and end label by its dimension', () => {
+    // Arrange
+    const { container } = render(
+      <TrendChart
+        title="Coverage over time"
+        series={SERIES}
+        range="All"
+        onRangeChange={() => {}}
+      />,
+    );
+
+    // Act
+    const named = (dimension: string) =>
+      [...container.querySelectorAll(`[data-dimension="${dimension}"]`)].map(
+        (el) => el.getAttribute('class')?.split(' ')[0],
+      );
+
+    // Assert
+    const marks = [
+      'ds-trend-chart__legend-item',
+      'ds-trend-chart__line',
+      'ds-trend-chart__dot',
+      'ds-trend-chart__end',
+    ];
+    expect(named('code')).toEqual(marks);
+    expect(named('health')).toEqual(marks);
+  });
 });

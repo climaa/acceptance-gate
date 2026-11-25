@@ -458,6 +458,86 @@
   color: var(--color-text-muted);
 }
 
+/* And on the trend chart: TrendChart names each series' key, line, end dot
+   and end label by its dimension. The marks fade; the legend's text, its delta
+   badge and the end label turn muted instead, as on the coverage rows. */
+.census-trend--lit-code
+  :is(.ds-trend-chart__line, .ds-trend-chart__dot)[data-dimension]:not(
+    [data-dimension='code']
+  ),
+.census-trend--lit-visual
+  :is(.ds-trend-chart__line, .ds-trend-chart__dot)[data-dimension]:not(
+    [data-dimension='visual']
+  ),
+.census-trend--lit-acceptance
+  :is(.ds-trend-chart__line, .ds-trend-chart__dot)[data-dimension]:not(
+    [data-dimension='acceptance']
+  ),
+.census-trend--lit-health
+  :is(.ds-trend-chart__line, .ds-trend-chart__dot)[data-dimension]:not(
+    [data-dimension='health']
+  ),
+.census-trend--lit-code
+  .ds-trend-chart__legend-item:not([data-dimension='code'])
+  .ds-trend-chart__swatch,
+.census-trend--lit-visual
+  .ds-trend-chart__legend-item:not([data-dimension='visual'])
+  .ds-trend-chart__swatch,
+.census-trend--lit-acceptance
+  .ds-trend-chart__legend-item:not([data-dimension='acceptance'])
+  .ds-trend-chart__swatch,
+.census-trend--lit-health
+  .ds-trend-chart__legend-item:not([data-dimension='health'])
+  .ds-trend-chart__swatch {
+  opacity: 0.4;
+}
+
+.census-trend--lit-code
+  :is(.ds-trend-chart__legend-item, .ds-trend-chart__end)[data-dimension]:not(
+    [data-dimension='code']
+  ),
+.census-trend--lit-visual
+  :is(.ds-trend-chart__legend-item, .ds-trend-chart__end)[data-dimension]:not(
+    [data-dimension='visual']
+  ),
+.census-trend--lit-acceptance
+  :is(.ds-trend-chart__legend-item, .ds-trend-chart__end)[data-dimension]:not(
+    [data-dimension='acceptance']
+  ),
+.census-trend--lit-health
+  :is(.ds-trend-chart__legend-item, .ds-trend-chart__end)[data-dimension]:not(
+    [data-dimension='health']
+  ),
+.census-trend--lit-code
+  .ds-trend-chart__legend-item:not([data-dimension='code'])
+  .ds-trend-chart__delta,
+.census-trend--lit-visual
+  .ds-trend-chart__legend-item:not([data-dimension='visual'])
+  .ds-trend-chart__delta,
+.census-trend--lit-acceptance
+  .ds-trend-chart__legend-item:not([data-dimension='acceptance'])
+  .ds-trend-chart__delta,
+.census-trend--lit-health
+  .ds-trend-chart__legend-item:not([data-dimension='health'])
+  .ds-trend-chart__delta {
+  color: var(--color-text-muted);
+}
+
+.census-trend--lit-code
+  .ds-trend-chart__legend-item:not([data-dimension='code'])
+  .ds-trend-chart__delta,
+.census-trend--lit-visual
+  .ds-trend-chart__legend-item:not([data-dimension='visual'])
+  .ds-trend-chart__delta,
+.census-trend--lit-acceptance
+  .ds-trend-chart__legend-item:not([data-dimension='acceptance'])
+  .ds-trend-chart__delta,
+.census-trend--lit-health
+  .ds-trend-chart__legend-item:not([data-dimension='health'])
+  .ds-trend-chart__delta {
+  background: none;
+}
+
 .census-metrics {
   font-family: var(--font-mono);
   font-size: var(--text-xs);
