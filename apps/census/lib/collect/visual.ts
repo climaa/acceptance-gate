@@ -223,16 +223,20 @@ export function appComponents(
 const moduleId = (path: string) =>
   path.replace(/\.(tsx|ts|mts|jsx|js|mjs)$/, '').replace(/\/index$/, '');
 
+/** A relative or `@/` specifier as a repo module id; any other (a package) as undefined. */
+function resolveSpecifier(file: string, spec: string): string | undefined {
+  if (spec.startsWith('.')) return moduleId(posix.join(posix.dirname(file), spec));
+  if (spec.startsWith('@/'))
+    return moduleId(posix.join(file.split('/').slice(0, 2).join('/'), spec.slice(2)));
+  return undefined;
+}
+
 /** The repo modules a story file imports, by relative or `@/` specifier (packages left out). */
 export function storyImports(storyFile: string, source: string): Set<string> {
-  const appRoot = storyFile.split('/').slice(0, 2).join('/');
   const targets = new Set<string>();
   for (const match of source.matchAll(/\bfrom\s+['"]([^'"]+)['"]/g)) {
-    const spec = String(match[1]);
-    if (spec.startsWith('.'))
-      targets.add(moduleId(posix.join(posix.dirname(storyFile), spec)));
-    else if (spec.startsWith('@/'))
-      targets.add(moduleId(posix.join(appRoot, spec.slice(2))));
+    const target = resolveSpecifier(storyFile, String(match[1]));
+    if (target !== undefined) targets.add(target);
   }
   return targets;
 }
@@ -264,14 +268,6 @@ const allTypes = (clause: string) => {
     .filter(Boolean);
   return specifiers.length > 0 && specifiers.every((s) => /^type\s/.test(s));
 };
-
-/** A relative or `@/` specifier as a repo module id; any other (a package) as undefined. */
-function resolveSpecifier(file: string, spec: string): string | undefined {
-  if (spec.startsWith('.')) return moduleId(posix.join(posix.dirname(file), spec));
-  if (spec.startsWith('@/'))
-    return moduleId(posix.join(file.split('/').slice(0, 2).join('/'), spec.slice(2)));
-  return undefined;
-}
 
 function moduleImports(file: string, source: string): Set<string> {
   const targets = new Set<string>();
