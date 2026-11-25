@@ -5,6 +5,10 @@ import { BlogFrame } from '@/components/BlogFrame';
 // module once, so it is not applied twice.
 import '../globals.css';
 
+/** The version a screen is photographed with. Fixed, so a release does not move
+ *  every screen's footer by a few pixels the gate's allowance then hides. */
+const SCREEN_VERSION = '1.8.0';
+
 /**
  * A screen's story, drawn as a visitor sees the page: inside the frame the root
  * layout draws (`BlogFrame`), at `pathname`, edge to edge.
@@ -17,7 +21,7 @@ export function inBlog(pathname: string) {
   return {
     decorators: [
       (Story: ComponentType) => (
-        <BlogFrame>
+        <BlogFrame version={SCREEN_VERSION}>
           <Story />
         </BlogFrame>
       ),

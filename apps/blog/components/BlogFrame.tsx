@@ -20,7 +20,14 @@ const NAV = [
  * the root layout, and by each screen story, so a screen is photographed in the
  * frame a visitor sees rather than bare.
  */
-export function BlogFrame({ children }: { children: ReactNode }) {
+export function BlogFrame({
+  children,
+  version = SITE_VERSION,
+}: {
+  children: ReactNode;
+  /** What the footer prints: the manifest's version, unless a screen story pins it. */
+  version?: string;
+}) {
   return (
     <>
       {/* `as={NextLink}` once, forwarded to the brand and to every nav item:
@@ -41,7 +48,7 @@ export function BlogFrame({ children }: { children: ReactNode }) {
         className="ds-container"
         copyright={SITE_COPYRIGHT}
         year={SITE_COPYRIGHT_YEAR}
-        version={SITE_VERSION}
+        version={version}
         versionHref="/changelog"
         links={FOOTER_LINKS}
       />
