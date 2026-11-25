@@ -1139,6 +1139,14 @@
     padding: var(--space-6);
   }
 
+  /* The phone tile wraps the rerun inputs inside the card; CodeBlock scrolls
+     sideways by design, so only this block wraps, and only here. pre-wrap keeps
+     the text's own line breaks and adds none to what is copied. */
+  .census-rerun .ds-code__pre {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
   /* The phone tile pads every card 20px, but at 20px Table's columns and
      TestPyramid's counts wrap a line more than the tile's do and every card
      below drops further from its tile; 16px stays. */

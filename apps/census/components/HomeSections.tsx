@@ -350,7 +350,7 @@ export function NotesCard({
         ))}
       </ul>
       <h3 className="census-subtitle-caps">Rerun inputs</h3>
-      <CodeBlock>{rerun}</CodeBlock>
+      <CodeBlock className="census-rerun">{rerun}</CodeBlock>
       <div className="census-exports">
         <a className="ds-btn ds-btn--primary ds-btn--sm" href={exports.jsonHref}>
           Download JSON

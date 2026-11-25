@@ -2,7 +2,7 @@ import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 
-import { GapPillsCard, PyramidCard } from '@/components/HomeSections';
+import { GapPillsCard, NotesCard, PyramidCard } from '@/components/HomeSections';
 import type { HomeFilter } from '@/lib/filter.ts';
 import { NO_FILTER } from '@/lib/filter.ts';
 
@@ -72,5 +72,26 @@ describe('the home cards a dimension filter dims', () => {
 
     // Assert
     expect(html).not.toContain('data-lit');
+  });
+});
+
+describe('the notes card', () => {
+  it('marks its rerun block for the phone wrap and keeps the text as given', () => {
+    // Arrange
+    const rerun = 'workflow: pnpm measure\ntools: vitest 3 · playwright 1';
+
+    // Act
+    const html = renderToStaticMarkup(
+      createElement(NotesCard, {
+        notes: [],
+        rerun,
+        exports: { jsonHref: '/measurement.json', markdown: '' },
+      }),
+    );
+
+    // Assert
+    expect(html).toContain(
+      `<div class="ds-code census-rerun"><pre class="ds-code__pre" tabindex="0"><code>${rerun}</code></pre></div>`,
+    );
   });
 });
