@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   appComponents,
+  appModules,
   appVisual,
   indexStories,
   storyIdsOf,
@@ -359,6 +360,278 @@ describe('appVisual without screens or routes', () => {
       state: 'measured',
       components: { total: 0, storied: 0, tiled: 0, baselined: 0 },
       inventory: [],
+    });
+  });
+});
+
+describe('appModules', () => {
+  it('lists the value imports and re-exports a module makes, and the components it renders', () => {
+    const source = [
+      "import { Feed } from '@/components/Feed';",
+      "import {\n  Card,\n  type CardProps,\n} from '../../components/Card.tsx';",
+      "import type { Post } from '@/lib/post';",
+      "import { type Tag } from '@/lib/tag';",
+      "export { Shell } from './Shell';",
+      "export type { Theme } from './theme';",
+      "import { Badge } from '@gate/ui';",
+      "const Scene = dynamic(() => import('./Scene'));",
+      'export const Home = (p: Array<Post>) => <Feed posts={useState<Post>()}><Card /></Feed>;',
+    ].join('\n');
+
+    const modules = appModules([{ path: 'apps/blog/app/_screens/home.tsx', source }]);
+
+    const home = modules.get('apps/blog/app/_screens/home');
+    expect([...(home?.imports ?? [])].sort()).toEqual([
+      'apps/blog/app/_screens/Shell',
+      'apps/blog/components/Card',
+      'apps/blog/components/Feed',
+    ]);
+    expect([...(home?.renders ?? [])].sort()).toEqual(['Card', 'Feed']);
+  });
+
+  it('names a folder index module by its folder', () => {
+    const modules = appModules([
+      { path: 'apps/blog/components/Feed/index.ts', source: "export * from './Feed';" },
+    ]);
+
+    expect([...(modules.get('apps/blog/components/Feed')?.imports ?? [])]).toEqual([
+      'apps/blog/components/Feed/Feed',
+    ]);
+  });
+});
+
+describe('appVisual through a screen story', () => {
+  const STORY = 'apps/blog/app/_screens/home.stories.tsx';
+  const screen: Story = { id: 'screens-blog-home--latest', file: STORY, skipped: false };
+  const other: Story = {
+    id: 'screens-blog-post--latest',
+    file: 'apps/blog/app/_screens/post.stories.tsx',
+    skipped: false,
+  };
+  const component = (name: string, file = `apps/blog/components/${name}.tsx`) => ({
+    name,
+    file,
+  });
+  const storied = (
+    components: { name: string; file: string }[],
+    files: { path: string; source: string }[],
+    stories: Story[] = [screen],
+    tiled: ReadonlySet<string> = new Set(),
+  ) => {
+    const imports = new Map(
+      files
+        .filter((f) => f.path.endsWith('.stories.tsx'))
+        .map((f) => [f.path, storyImports(f.path, f.source)]),
+    );
+    return appVisual('apps/blog', {
+      components,
+      imports,
+      modules: appModules(files),
+      stories,
+      tiled,
+      baselined: new Set(),
+    });
+  };
+
+  it('counts a component the story imports directly, as before', () => {
+    const visual = storied(
+      [component('Feed')],
+      [{ path: STORY, source: "import { Feed } from '@/components/Feed';" }],
+    );
+
+    expect(visual.unstoried).toEqual([]);
+  });
+
+  it('counts a component rendered by one the story renders', () => {
+    const visual = storied(
+      [component('Feed'), component('PostCard')],
+      [
+        { path: STORY, source: "import { Feed } from '@/components/Feed';\n<Feed />" },
+        {
+          path: 'apps/blog/components/Feed.tsx',
+          source:
+            "import { PostCard } from './PostCard';\nexport const Feed = () => <PostCard />;",
+        },
+        {
+          path: 'apps/blog/components/PostCard.tsx',
+          source: 'export const PostCard = () => null;',
+        },
+      ],
+    );
+
+    expect(visual.unstoried).toEqual([]);
+  });
+
+  it('counts a component two components deep, through relative and @/ specifiers', () => {
+    const visual = storied(
+      [
+        component('Feed'),
+        component('PostCard'),
+        component('Tag', 'apps/blog/lib/ui/Tag.tsx'),
+      ],
+      [
+        {
+          path: STORY,
+          source: "import { Feed } from '../../components/Feed';\n<Feed />",
+        },
+        {
+          path: 'apps/blog/components/Feed.tsx',
+          source: "import { PostCard } from '@/components/PostCard';\n<PostCard />",
+        },
+        {
+          path: 'apps/blog/components/PostCard.tsx',
+          source: "import { Tag } from '../lib/ui/Tag.tsx';\n<Tag label='x' />",
+        },
+        { path: 'apps/blog/lib/ui/Tag.tsx', source: 'export const Tag = () => null;' },
+      ],
+    );
+
+    expect(visual.unstoried).toEqual([]);
+  });
+
+  it('follows a re-export', () => {
+    const visual = storied(
+      [component('PostCard', 'apps/blog/components/cards/PostCard.tsx')],
+      [
+        {
+          path: STORY,
+          source: "import { PostCard } from '@/components/cards';\n<PostCard />",
+        },
+        {
+          path: 'apps/blog/components/cards/index.ts',
+          source: "export { PostCard } from './PostCard';",
+        },
+        {
+          path: 'apps/blog/components/cards/PostCard.tsx',
+          source: 'export const PostCard = () => null;',
+        },
+      ],
+    );
+
+    expect(visual.unstoried).toEqual([]);
+  });
+
+  it('ends on an import cycle', () => {
+    const visual = storied(
+      [component('A'), component('Bee'), component('Cee')],
+      [
+        { path: STORY, source: "import { A } from '@/components/A';\n<A />" },
+        {
+          path: 'apps/blog/components/A.tsx',
+          source: "import { Bee } from './Bee';\n<Bee />",
+        },
+        {
+          path: 'apps/blog/components/Bee.tsx',
+          source: "import { A } from './A';\n<A />",
+        },
+      ],
+    );
+
+    expect(visual.unstoried).toEqual(['Cee']);
+  });
+
+  it('does not count a component reached only through a type-only import', () => {
+    const visual = storied(
+      [component('Feed'), component('PostCard')],
+      [
+        { path: STORY, source: "import { Feed } from '@/components/Feed';\n<Feed />" },
+        {
+          path: 'apps/blog/components/Feed.tsx',
+          source: "import type { PostCard } from './PostCard';\n<PostCard />",
+        },
+      ],
+    );
+
+    expect(visual.unstoried).toEqual(['PostCard']);
+  });
+
+  it('does not count a component behind a dynamic import', () => {
+    const visual = storied(
+      [component('Pyramid'), component('Scene')],
+      [
+        {
+          path: STORY,
+          source: "import { Pyramid } from '@/components/Pyramid';\n<Pyramid />",
+        },
+        {
+          path: 'apps/blog/components/Pyramid.tsx',
+          source: "const Scene = dynamic(() => import('./Scene'));\n<Scene />",
+        },
+      ],
+    );
+
+    expect(visual.unstoried).toEqual(['Scene']);
+  });
+
+  it('does not count a reached component no reached module renders', () => {
+    const visual = storied(
+      [component('Feed'), component('Unused')],
+      [
+        { path: STORY, source: "import { Feed } from '@/components/Feed';\n<Feed />" },
+        {
+          path: 'apps/blog/components/Feed.tsx',
+          source: "import { Unused } from './Unused';\nexport const Feed = () => null;",
+        },
+      ],
+    );
+
+    expect(visual.unstoried).toEqual(['Unused']);
+  });
+
+  it("does not walk another workspace's modules", () => {
+    const visual = storied(
+      [component('PostCard')],
+      [
+        {
+          path: STORY,
+          source: "import { Thing } from '../../../manual/components/Thing';\n<Thing />",
+        },
+        {
+          path: 'apps/manual/components/Thing.tsx',
+          source:
+            "import { PostCard } from '../../blog/components/PostCard';\n<PostCard />",
+        },
+      ],
+    );
+
+    expect(visual.unstoried).toEqual(['PostCard']);
+  });
+
+  it('does not walk from a test', () => {
+    const visual = storied(
+      [component('Feed')],
+      [
+        {
+          path: 'apps/blog/__tests__/feed.test.tsx',
+          source: "import { Feed } from '@/components/Feed';\n<Feed />",
+        },
+      ],
+    );
+
+    expect(visual.unstoried).toEqual(['Feed']);
+  });
+
+  it('judges a component reached through several stories by all of them', () => {
+    const files = [
+      { path: STORY, source: "import { Feed } from '@/components/Feed';\n<Feed />" },
+      { path: other.file, source: "import { Feed } from '@/components/Feed';\n<Feed />" },
+      {
+        path: 'apps/blog/components/Feed.tsx',
+        source: "import { PostCard } from './PostCard';\n<PostCard />",
+      },
+    ];
+    const visual = storied(
+      [component('PostCard')],
+      files,
+      [screen, other],
+      new Set([screen.id]),
+    );
+
+    expect(visual.value.state === 'measured' && visual.value.components).toEqual({
+      total: 1,
+      storied: 1,
+      tiled: 0,
+      baselined: 0,
     });
   });
 });
