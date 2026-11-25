@@ -51,7 +51,27 @@
    so both strips and the meta share one row at desktop width. */
 .census-bar .ds-segmented__segment {
   padding-inline: var(--space-2);
+  font-family: var(--font-sans);
   font-size: var(--text-xs);
+  font-weight: var(--weight-normal);
+  line-height: var(--leading-tight);
+}
+
+/* Only the selected filter is bold, as the tile draws it. */
+.census-bar .ds-segmented__segment[aria-pressed='true'] {
+  font-weight: var(--weight-bold);
+}
+
+/* The tile draws each strip 31px tall at desktop width: a 21px segment inside
+   the strip's 4px padding and 1px border, the label centred in it. The atom's
+   2rem would stand it 42px. In rem, as the atom's own min-height is. Below
+   768px the atom's 2.5rem thumb target stays: the phone tile draws its strips
+   about 47px tall, against 50px here. */
+@media (width >= 768px) {
+  .census-bar .ds-segmented__segment {
+    min-height: 1.3125rem;
+    padding-block: 0;
+  }
 }
 
 .census-bar__narrow.ds-segmented {
