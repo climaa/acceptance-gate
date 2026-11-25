@@ -370,6 +370,10 @@ describe('overviewOf the sample: coverage by workspace and the rest', () => {
   it('carries every gap, the notes, the rerun inputs and the exports', () => {
     expect(view.gaps).toHaveLength(57);
     expect(view.notes[0]).toMatch(/^CRAP is estimated/);
+    expect(view.notes.slice(1)).toEqual([
+      'A component counts as storied when a story reaches it through its imports and renders it.',
+      'A script its tests run as a process is not an uncovered file: vitest cannot measure its lines.',
+    ]);
     expect(view.rerun.split('\n')).toEqual([
       'workflow: pnpm census:measure',
       'commit: 0514dc9 · measured 20 Nov 2026',
@@ -449,7 +453,7 @@ describe('overviewOf a thin measurement', () => {
   it('leaves out what was not measured', () => {
     expect(thinView.pyramid.caption).toBeUndefined();
     expect(thinView.styling).toBeNull();
-    expect(thinView.notes).toHaveLength(1);
+    expect(thinView.notes).toHaveLength(2);
     expect(thinView.health.source).toBe('of 100');
     expect(thinView.stories.workspaces).toEqual([]);
     expect(thinView.states.caption).toBe('No Next.js route is measured.');

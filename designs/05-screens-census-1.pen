@@ -93,7 +93,7 @@
                   "reusable": true,
                   "clip": true,
                   "width": 1280,
-                  "height": 8327,
+                  "height": 8356,
                   "fill": "$bg",
                   "layout": "none",
                   "children": [
@@ -13372,7 +13372,38 @@
                                               "fill": "$text",
                                               "textGrowth": "fixed-width",
                                               "width": 951,
-                                              "content": "Stories are counted by import: a component counts as storied when a story imports it.",
+                                              "content": "A component counts as storied when a story reaches it through its imports and renders it.",
+                                              "lineHeight": 1.5,
+                                              "fontFamily": "$font-body",
+                                              "fontSize": 14,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "D4pPs4",
+                                          "name": "note process",
+                                          "width": "fill_container",
+                                          "gap": 8,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "PZjj5",
+                                              "fill": "$text",
+                                              "content": "·",
+                                              "lineHeight": 1.5,
+                                              "fontFamily": "$font-mono",
+                                              "fontSize": 12,
+                                              "fontWeight": "normal"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "xGT1M",
+                                              "fill": "$text",
+                                              "textGrowth": "fixed-width",
+                                              "width": 951,
+                                              "content": "A script its tests run as a process is not an uncovered file: vitest cannot measure its lines.",
                                               "lineHeight": 1.5,
                                               "fontFamily": "$font-body",
                                               "fontSize": 14,
@@ -13594,7 +13625,7 @@
                   "reusable": true,
                   "clip": true,
                   "width": 390,
-                  "height": 11946,
+                  "height": 11996,
                   "fill": "$bg",
                   "layout": "none",
                   "children": [
@@ -24875,7 +24906,38 @@
                                           "fill": "$text",
                                           "textGrowth": "fixed-width",
                                           "width": 302,
-                                          "content": "Stories are counted by import: a component counts as storied when a story imports it.",
+                                          "content": "A component counts as storied when a story reaches it through its imports and renders it.",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-body",
+                                          "fontSize": 14,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "vagXc",
+                                      "name": "note process",
+                                      "width": "fill_container",
+                                      "gap": 8,
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "hBUmn",
+                                          "fill": "$text",
+                                          "content": "·",
+                                          "lineHeight": 1.5,
+                                          "fontFamily": "$font-mono",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "aWYDg",
+                                          "fill": "$text",
+                                          "textGrowth": "fixed-width",
+                                          "width": 302,
+                                          "content": "A script its tests run as a process is not an uncovered file: vitest cannot measure its lines.",
                                           "lineHeight": 1.5,
                                           "fontFamily": "$font-body",
                                           "fontSize": 14,

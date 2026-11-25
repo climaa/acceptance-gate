@@ -644,7 +644,8 @@ function notesOf(m: Measurement): string[] {
     ...(m.health.crapSource === 'estimated'
       ? ['CRAP is estimated until the measure step passes coverage-final.json to fallow.']
       : []),
-    'Stories are counted by import: a component counts as storied when a story imports it.',
+    'A component counts as storied when a story reaches it through its imports and renders it.',
+    'A script its tests run as a process is not an uncovered file: vitest cannot measure its lines.',
   ];
 }
 

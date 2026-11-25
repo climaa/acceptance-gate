@@ -1,14 +1,14 @@
 {
   "board": "05-screens-census-3 — Screens",
-  "scale": 0.616542,
+  "scale": 0.614231,
   "tiles": {
-    "screens__desktop__dark__screens-census-home--empty": [858, 7632, 789, 493],
-    "screens__desktop__dark__screens-census-home--stale": [858, 170, 789, 5169],
-    "screens__desktop__light__screens-census-home--empty": [39, 7632, 789, 493],
-    "screens__desktop__light__screens-census-home--stale": [39, 170, 789, 5169],
-    "screens__mobile__dark__screens-census-home--empty": [1947, 7632, 240, 520],
-    "screens__mobile__dark__screens-census-home--stale": [1947, 170, 240, 7413],
-    "screens__mobile__light__screens-census-home--empty": [1677, 7632, 240, 520],
-    "screens__mobile__light__screens-census-home--stale": [1677, 170, 240, 7413]
+    "screens__desktop__dark__screens-census-home--empty": [855, 7634, 786, 491],
+    "screens__desktop__dark__screens-census-home--stale": [855, 170, 786, 5168],
+    "screens__desktop__light__screens-census-home--empty": [39, 7634, 786, 491],
+    "screens__desktop__light__screens-census-home--stale": [39, 170, 786, 5168],
+    "screens__mobile__dark__screens-census-home--empty": [1940, 7634, 240, 518],
+    "screens__mobile__dark__screens-census-home--stale": [1940, 170, 240, 7416],
+    "screens__mobile__light__screens-census-home--empty": [1671, 7634, 240, 518],
+    "screens__mobile__light__screens-census-home--stale": [1671, 170, 240, 7416]
   }
 }
