@@ -40,13 +40,31 @@ const config = defineConfig({
       // coverage is enabled. The reason apps/visual-diff-ui gives for its own.
       enabled: true,
       // Read from the filesystem, not from what the suite imports, so a module
-      // with no test counts as zero instead of being invisible.
-      include: ['lib/**/*.ts'],
+      // with no test counts as zero instead of being invisible. The shape of
+      // apps/visual-diff-ui/vitest.config.mts: every route, component and the
+      // measuring script, not just `lib/` — owner ruling QA-02 (pyramid track
+      // A, 26 Nov 2026). Under `lib/**/*.ts` alone 33 files sat outside the
+      // denominator and census reported itself near 100 %.
+      include: [
+        'app/**/*.{ts,tsx}',
+        'components/**/*.tsx',
+        'lib/**/*.{ts,tsx}',
+        'scripts/measure.mjs',
+      ],
+      // Screen stories, their samples and frames stay out: Storybook renders
+      // them and the visual differ judges them, so no unit test is meant to
+      // reach one. The reason apps/visual-diff-ui gives for its own.
+      exclude: ['**/*.test.{ts,tsx}', 'app/_screens/**'],
       // Explicit, so a run writes no `coverage/` directory.
       reporter: ['text', 'text-summary'],
-      // Measured at 100 / 98.1 / 100 / 100 when lib/ landed. Raise them when the
-      // real number moves up; never lower them to make a red run green.
-      thresholds: { statements: 98, branches: 96, functions: 98, lines: 98 },
+      // Measured at 75.68 / 76.49 / 79.05 / 75.03 when the include widened to
+      // app/, components/ and scripts/ (QA-02). Was 98 / 96 / 98 / 98 over
+      // `lib/**/*.ts` alone (measured there at 99.65 / 97.36 / 99.8 / 99.89).
+      // The fall is the denominator growing by the owner's ruling, not the
+      // suite covering less: every zero-measured file is an `uncovered-file`
+      // gap on census's own page, and each is its own issue. Raise them when
+      // the real number moves up; never lower them to make a red run green.
+      thresholds: { statements: 73, branches: 74, functions: 77, lines: 73 },
     },
   },
 });
