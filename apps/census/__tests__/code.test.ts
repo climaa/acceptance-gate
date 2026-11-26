@@ -83,6 +83,55 @@ describe('linesFloor', () => {
   });
 });
 
+// The shared hermetic config sets one floor per pseudo-workspace glob and no global
+// one. Reading up to the first `}` gave all three the first glob's 26.
+const SHARED_CONFIG = `thresholds: {
+        // scripts/ measured 28.14 / 27.96 / 41.12 / 28.66.
+        'scripts/**/*.mjs': { statements: 26, branches: 25, functions: 39, lines: 26 },
+        '.sandcastle/**/*.mts': {
+          statements: 59,
+          branches: 68,
+          functions: 56,
+          lines: 58,
+        },
+        '.claude/skills/pixel-perfect-session/scripts/**/*.mjs': {
+          statements: 61,
+          branches: 43,
+          functions: 54,
+          lines: 61,
+        },
+      },`;
+
+describe('linesFloor with a floor per glob', () => {
+  it.each([
+    ['scripts', 26],
+    ['.sandcastle', 58],
+    ['.claude/skills/pixel-perfect-session', 61],
+  ])('reads %s its own glob floor, %i', (workspace, floor) => {
+    // Arrange
+    const config = SHARED_CONFIG;
+
+    // Act
+    const read = linesFloor(config, workspace);
+
+    // Assert
+    expect(read).toBe(floor);
+  });
+
+  it('is undefined for a workspace no glob names and no global floor', () => {
+    expect(linesFloor(SHARED_CONFIG, 'apps/blog')).toBeUndefined();
+  });
+
+  it('does not take a glob floor for the global one', () => {
+    expect(linesFloor(SHARED_CONFIG)).toBeUndefined();
+  });
+
+  it('prefers the global floor beside globs no glob of which names the workspace', () => {
+    const config = `thresholds: { lines: 80, 'src/legacy/**': { lines: 10 } }`;
+    expect(linesFloor(config, 'apps/x')).toBe(80);
+  });
+});
+
 describe('fileGroup', () => {
   it('names a packages/ui file by its atomic tier', () => {
     expect(fileGroup('src/organisms/PanZoom/PanZoom.tsx')).toBe('organisms');
