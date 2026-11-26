@@ -154,6 +154,26 @@ describe('joinProblems', () => {
     expect(problems).toEqual([]);
   });
 
+  // A planned key that is not a variant key names no story and no board, so no
+  // tile can be asked of it.
+  it('asks no tile of a planned key that is not a variant key', () => {
+    const problems = check({ '01-atoms': [BADGE] }, [BADGE, 'not-a-variant-key']);
+
+    expect(problems).toEqual([]);
+  });
+
+  // One tile can fail several ways at once; each is named, in this order.
+  it('names every way one tile fails, in order', () => {
+    const problems = check({ '01-atoms': [BADGE], '02-molecules': [BADGE] }, []);
+
+    expect(problems).toEqual([
+      '01-atoms draws atoms-badge--accent (desktop, light), a variant Storybook does not plan: delete the tile with the story, or rename it with the story',
+      '02-molecules draws atoms-badge--accent (desktop, light), whose tier board is 01-atoms',
+      '02-molecules draws atoms-badge--accent (desktop, light), a variant Storybook does not plan: delete the tile with the story, or rename it with the story',
+      'atoms-badge--accent (desktop, light) is drawn twice, on 01-atoms and 02-molecules',
+    ]);
+  });
+
   // 00-, 05-, 06- and x- boards are reference: their frames are never joined.
   it('never joins a reference board', () => {
     const problems = check(
