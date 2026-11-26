@@ -21,7 +21,9 @@ import { read, stripComments } from './helpers';
 
 const stranded = read('sandcastle-stranded-branches.mts');
 const strandedCode = stripComments(stranded);
-const main = read('main.mts');
+const main = read('sandcastle-orchestrator-loop.mts');
+// The composition root: where the loop's probes are bound to the real git ones.
+const entry = read('main.mts');
 
 describe('rescue path — branches whose commits net to an empty diff', () => {
   it('checks the branch diff alongside the commit count, not instead of it', () => {
@@ -72,9 +74,9 @@ describe('rescue path — branches whose commits net to an empty diff', () => {
   });
 });
 
-describe('main.mts wiring', () => {
+describe('orchestrator loop wiring', () => {
   it('probes diff emptiness for every pipeline outcome it partitions', () => {
-    expect(main).toMatch(
+    expect(entry).toMatch(
       /import \{[^}]*probeBranchDiffEmpty[^}]*\} from ["']\.\/sandcastle-git\.mts["']/,
     );
     const partitionIdx = main.indexOf('partitionOutcomes(');

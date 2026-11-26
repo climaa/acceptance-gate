@@ -85,9 +85,9 @@ describe('sandcastle docker preflight', () => {
     expect(exitCode).toBe(1);
   });
 
-  it('main.mts runs the preflight before reaping containers or checking the image', () => {
+  it('the orchestrator loop runs the preflight before reaping containers or checking the image', () => {
     // Arrange
-    const main = read('main.mts')
+    const main = read('sandcastle-orchestrator-loop.mts')
       .split('\n')
       .filter((line) => !line.trimStart().startsWith('//'))
       .join('\n');

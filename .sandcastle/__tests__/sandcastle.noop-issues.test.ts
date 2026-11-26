@@ -416,11 +416,11 @@ describe('strandedDisposition', () => {
 });
 
 describe('orchestrator wiring (source-text — not observable from a unit test)', () => {
-  const main = read('main.mts');
+  const main = read('sandcastle-orchestrator-loop.mts');
   const git = read('sandcastle-git.mts');
   const planPrompt = read('agent-docs/plan-prompt.md');
 
-  it('main.mts partitions pipeline outcomes through the pure module', () => {
+  it('the orchestrator loop partitions pipeline outcomes through the pure module', () => {
     // `[^}]*` keeps the match inside a single import statement — `[\s\S]*?`
     // would happily span from an earlier import to this module's from-clause.
     expect(main).toMatch(
@@ -429,7 +429,7 @@ describe('orchestrator wiring (source-text — not observable from a unit test)'
     expect(main).toMatch(/partitionOutcomes\(/);
   });
 
-  it('main.mts keeps the no-op set across iterations, not per iteration', () => {
+  it('the orchestrator loop keeps the no-op set across iterations, not per iteration', () => {
     // Declared inside the loop it would reset every iteration and the issue
     // would be re-planned exactly as before.
     const setIdx = main.indexOf('const noOpIssueIds = new Set');
@@ -442,7 +442,7 @@ describe('orchestrator wiring (source-text — not observable from a unit test)'
   // (sandcastle-plan-eligibility.mts) where it is unit-tested. The ordering is
   // the part only source text can see, and it is the part that matters: run the
   // filter after runIssue() and the sandbox has already been spent.
-  it('main.mts drops marked issues from the plan before any sandbox is created', () => {
+  it('the orchestrator loop drops marked issues from the plan before any sandbox is created', () => {
     // The eligibility screen (screenPlan, sandcastle-orchestrator.mts) must run
     // before the execute loop, or a sandbox is spent on an ineligible issue.
     const filterIdx = main.indexOf('screenPlan(');
@@ -452,11 +452,11 @@ describe('orchestrator wiring (source-text — not observable from a unit test)'
     expect(filterIdx).toBeLessThan(runIssueIdx);
   });
 
-  it('main.mts marks no-op issues after execution', () => {
+  it('the orchestrator loop marks no-op issues after execution', () => {
     expect(main).toMatch(/markIssueNoOp\(/);
   });
 
-  it('main.mts records a non-zero exit when a pipeline failed, via the failed bucket', () => {
+  it('the orchestrator loop records a non-zero exit when a pipeline failed, via the failed bucket', () => {
     // `failed` is partitionOutcomes' bucket of thrown pipelines; a run with any
     // failure must not report success (exit 0). Guards B3 at the source level
     // until the loop is decomposed (EPIC C). No-ops/host-push warnings stay
@@ -464,7 +464,7 @@ describe('orchestrator wiring (source-text — not observable from a unit test)'
     expect(main).toMatch(/if \(failed\.length > 0\)\s*\{?\s*process\.exitCode = 1/);
   });
 
-  it('main.mts never closes an issue', () => {
+  it('the orchestrator loop never closes an issue', () => {
     expect(main).not.toMatch(/gh issue close/);
   });
 

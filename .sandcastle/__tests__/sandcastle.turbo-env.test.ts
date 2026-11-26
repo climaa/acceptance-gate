@@ -45,14 +45,14 @@ describe('sandcastle-config.mts — gh preflight', () => {
     expect(moduleScope).not.toMatch(/console\./);
   });
 
-  it('main.mts calls both, since importing no longer does it', () => {
-    const main = stripComments(read('main.mts'));
+  it('the orchestrator loop calls both, since importing no longer does it', () => {
+    const main = stripComments(read('sandcastle-orchestrator-loop.mts'));
     expect(main).toMatch(/assertGhAvailable\(\)/);
     expect(main).toMatch(/logTurboCacheStatus\(\)/);
   });
 
-  it('main.mts runs the gh preflight before any sandbox work starts', () => {
-    const main = stripComments(read('main.mts'));
+  it('the orchestrator loop runs the gh preflight before any sandbox work starts', () => {
+    const main = stripComments(read('sandcastle-orchestrator-loop.mts'));
     const preflight = main.indexOf('assertGhAvailable()');
     // Cheapest proxy for "before any container": the image-freshness guard is
     // the first thing that shells out to docker.

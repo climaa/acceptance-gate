@@ -286,9 +286,9 @@ describe('sandcastle image-freshness guard', () => {
   });
 
   describe('wiring — the guard runs at startup before any agent', () => {
-    const main = read('main.mts');
+    const main = read('sandcastle-orchestrator-loop.mts');
 
-    it('main.mts imports and calls the freshness guard', () => {
+    it('the orchestrator loop imports and calls the freshness guard', () => {
       expect(main).toMatch(/ensureImageFreshness/);
       expect(main).toMatch(/sandcastle-image-freshness/);
     });

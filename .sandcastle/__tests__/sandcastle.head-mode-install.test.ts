@@ -125,7 +125,7 @@ describe('call-site wiring — head-mode sites take headHooks, worktree sites ta
   // sandcastle.run() with a bind-mount provider and no branchStrategy defaults
   // to `{ type: "head" }` in the SDK, which mounts hostRepoDir directly.
   const headSites = [
-    ['main.mts', 'the planner'],
+    ['sandcastle-orchestrator-loop.mts', 'the planner'],
     ['sandcastle-merge.mts', 'the merger'],
   ] as const;
 

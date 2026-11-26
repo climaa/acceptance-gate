@@ -130,8 +130,8 @@ describe('isRetryableGitError', () => {
   });
 });
 
-describe('main.mts wiring (source-text — the loop is not unit-testable yet)', () => {
-  const main = read('main.mts');
+describe('orchestrator loop wiring (source-text)', () => {
+  const main = read('sandcastle-orchestrator-loop.mts');
 
   it('resolves override labels through probeIssue and throws on a gh error', () => {
     // The eligibility pass must fail loud on a transient gh error rather than

@@ -1,6 +1,6 @@
 import { read } from './helpers';
 
-const mainContent = read('main.mts');
+const mainContent = read('sandcastle-orchestrator-loop.mts');
 
 // The empty-plan rescue path handed rescued branches to the merger without the
 // host push the planned path makes, and nothing remembered a branch it had
@@ -9,7 +9,7 @@ const mainContent = read('main.mts');
 // it again — every iteration of a run (trucutru #614 collected 64 comments;
 // trucutru fixed it in #703, and this is the port).
 describe('sandcastle stranded rescue — publishes once, rescues once per run', () => {
-  const emptyPathStart = mainContent.indexOf('if (issues.length === 0) {');
+  const emptyPathStart = mainContent.indexOf('async function rescueStrandedOnly(');
   const emptyPathEnd = mainContent.indexOf(
     "console.log('\\nStranded branches merged.');",
   );
@@ -24,7 +24,7 @@ describe('sandcastle stranded rescue — publishes once, rescues once per run', 
 
   it('pushes rescued branches from the host before their merge', () => {
     // Arrange
-    const pushIdx = emptyPath.indexOf('pushFromHost(verified');
+    const pushIdx = emptyPath.indexOf('pushFromHost(run, verified');
     const mergeIdx = emptyPath.indexOf('runMerger(published');
 
     // Assert
