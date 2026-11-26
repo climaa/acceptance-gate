@@ -5,10 +5,11 @@ import { preset } from '../../vitest.shared.mjs';
 
 // The manual's three contracts: the Gherkin parser behaves against a fixture,
 // the published pages still match the live `.feature` sources, and the page-view
-// beacon reports for the production deployment and nothing else. All node tests
-// — a server render at most, never a DOM, because every component this app
-// renders comes from `@gate/ui` and is covered by that package's own suite and
-// stories.
+// beacon reports for the production deployment and nothing else. Node tests —
+// a server render at most, because every component this app renders comes from
+// `@gate/ui` and is covered by that package's own suite and stories. The one
+// exception is `__tests__/error.test.ts`, which declares `jsdom` per file: an
+// error boundary reports from an effect, and an effect needs a commit.
 // Run: pnpm --filter @gate/manual test  (or `turbo run test` from the root)
 //
 // `.mts`, not `.ts`. The extension is what makes this genuinely ESM, which is
