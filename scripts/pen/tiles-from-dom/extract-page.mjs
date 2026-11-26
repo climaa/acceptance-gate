@@ -335,57 +335,69 @@ export function extractPage({ fullPage, target }) {
     edge(R, x + r.width - R.w, y + T.w, R.w, r.height - T.w - B.w);
   };
 
-  const text = (node, el, cs) => {
+  // Whether a character's box has its centre outside the clip `c`.
+  const outsideClip = (q, c) => {
+    if (!c) return false;
+    const cx = q.left + sx + q.width / 2,
+      cy = q.top + sy + q.height / 2;
+    return cx < c[0] || cx > c[2] || cy < c[1] || cy > c[3];
+  };
+
+  // The first box of character `i` of a text node, or null when it paints nothing
+  // that counts: no box, a collapsed whitespace, or a centre outside the clip.
+  const charBox = (rg, node, i, c) => {
+    rg.setStart(node, i);
+    rg.setEnd(node, i + 1);
+    const rects = rg.getClientRects();
+    if (!rects.length) return null;
+    const q = rects[0];
+    if (q.width < 0.01 && /\s/.test(node.data[i])) return null;
+    return outsideClip(q, c) ? null : q;
+  };
+
+  // A text node's characters grouped into line boxes: a new line starts where the
+  // top moves or the pen jumps back, and never on whitespace.
+  const textLines = (node, c) => {
     const data = node.data;
-    if (!data.trim()) return;
-    const o = opac(el),
-      c = clipFor(el);
-    const col = withAlpha(parseColor(cs.color), o);
-    if (!col) return;
     const rg = document.createRange();
     const lines = [];
     let cur = null;
     for (let i = 0; i < data.length; i += 1) {
-      rg.setStart(node, i);
-      rg.setEnd(node, i + 1);
-      const rects = rg.getClientRects();
-      if (!rects.length) continue;
-      const q = rects[0];
-      if (q.width < 0.01 && /\s/.test(data[i])) continue;
-      if (
-        c &&
-        (q.left + sx + q.width / 2 < c[0] ||
-          q.left + sx + q.width / 2 > c[2] ||
-          q.top + sy + q.height / 2 < c[1] ||
-          q.top + sy + q.height / 2 > c[3])
-      )
-        continue;
+      const q = charBox(rg, node, i, c);
+      if (!q) continue;
+      const ws = /\s/.test(data[i]);
       const top = q.top + sy;
       if (!cur || Math.abs(top - cur.top) > 1 || q.left + sx < cur.right - 1) {
-        if (/\s/.test(data[i])) {
-          cur = null;
-          continue;
-        }
-        cur = { top, left: q.left + sx, right: q.right + sx, s: '' };
+        cur = ws ? null : { top, left: q.left + sx, right: q.right + sx, s: '' };
+        if (!cur) continue;
         lines.push(cur);
       }
-      cur.s += /\s/.test(data[i]) ? ' ' : data[i];
+      cur.s += ws ? ' ' : data[i];
       cur.right = q.right + sx;
     }
-    const tt = cs.textTransform;
-    for (const l of lines) {
-      let s = l.s.replace(/ +/g, ' ');
-      const lead = s.length - s.trimStart().length;
-      s = s.trim();
+    return lines;
+  };
+
+  const textCase = (s, tt) => {
+    if (tt === 'uppercase') return s.toUpperCase();
+    if (tt === 'lowercase') return s.toLowerCase();
+    return s;
+  };
+
+  const text = (node, el, cs) => {
+    if (!node.data.trim()) return;
+    const col = withAlpha(parseColor(cs.color), opac(el));
+    if (!col) return;
+    for (const l of textLines(node, clipFor(el))) {
+      const collapsed = l.s.replace(/ +/g, ' ');
+      const s = collapsed.trim();
       if (!s) continue;
-      if (tt === 'uppercase') s = s.toUpperCase();
-      else if (tt === 'lowercase') s = s.toLowerCase();
       ops.push({
         t: 't',
         x: l.left,
         y: l.top + ascent(cs),
-        s,
-        lead,
+        s: textCase(s, cs.textTransform),
+        lead: collapsed.length - collapsed.trimStart().length,
         ff: cs.fontFamily.split(',')[0].replace(/["']/g, '').trim(),
         fs: parseFloat(cs.fontSize),
         fw: cs.fontWeight,
