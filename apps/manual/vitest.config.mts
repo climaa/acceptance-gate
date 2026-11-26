@@ -55,16 +55,25 @@ const config = defineConfig({
       // Read from the filesystem, not from what the suite imports, so a module
       // with no test counts as zero instead of being invisible. `app/` holds the
       // routes, layouts and metadata files; `components/` the screens they
-      // compose; `lib/` the parser, allowlist and helpers.
-      include: ['app/**/*.{ts,tsx}', 'components/**/*.tsx', 'lib/**/*.{ts,tsx}'],
+      // compose; `lib/` the parser, allowlist and helpers; `content/` the tour,
+      // intro and screenshot data the pages render; `proxy.ts` the request
+      // proxy Next runs ahead of every route.
+      include: [
+        'app/**/*.{ts,tsx}',
+        'components/**/*.tsx',
+        'content/**/*.{ts,tsx}',
+        'lib/**/*.{ts,tsx}',
+        'proxy.ts',
+      ],
       // Screen stories, their samples and frames: Storybook renders them and the
       // visual differ judges them, so no unit test is meant to reach one.
       exclude: ['app/_screens/**'],
       // Explicit, so a run writes no `coverage/` directory.
       reporter: ['text', 'text-summary'],
-      // Measured at 83.13 / 82.5 / 82.25 / 83.43. Raise them when the real number
-      // moves up; never lower them to make a red run green.
-      thresholds: { statements: 81, branches: 80, functions: 80, lines: 81 },
+      // Measured at 90.05 / 89.36 / 85.24 / 90.24 once `content/` and `proxy.ts`
+      // joined the include. Raise them when the real number moves up; never
+      // lower them to make a red run green.
+      thresholds: { statements: 88, branches: 87, functions: 83, lines: 88 },
     },
   },
 });
