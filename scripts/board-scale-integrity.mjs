@@ -152,78 +152,119 @@ export function joinProblems(
   drawnAhead = [],
   undrawn = [],
 ) {
-  const sharedIds = new Set(shared);
   const aheadIds = new Set(drawnAhead);
   const undrawnIds = new Set(undrawn);
-  const problems = [];
   const plannedKeys = new Set(planned);
-  const drawnOn = new Map();
   const boards = new Set(Object.keys(tileNames).map(tierBoardOf).filter(Boolean));
+  const drawnOn = new Map();
 
+  const problems = [];
   for (const [stem, names] of Object.entries(tileNames)) {
     const board = tierBoardOf(stem);
     if (!board) continue;
-
     for (const name of names) {
       const variant = parseVariantKey(name);
-      if (!variant) {
-        problems.push(
-          `${stem} has a tile named "${name}", which is not a variant key: name it tier__viewport__theme__storyId, or move it off the tier board`,
-        );
-        continue;
-      }
-      if (homeOf(variant, boards) !== board) {
-        problems.push(
-          `${stem} draws ${named(variant)}, whose tier board is ${homeOf(variant, boards)}`,
-        );
-      }
-      if (!plannedKeys.has(name) && !aheadIds.has(variant.id)) {
-        problems.push(
-          `${stem} draws ${named(variant)}, a variant Storybook does not plan: delete the tile with the story, or rename it with the story`,
-        );
-      }
-      if (drawnOn.has(name)) {
-        problems.push(
-          `${named(variant)} is drawn twice, on ${drawnOn.get(name)} and ${stem}`,
-        );
-      }
-      drawnOn.set(name, stem);
+      problems.push(
+        ...tileProblems({
+          stem,
+          board,
+          name,
+          variant,
+          boards,
+          plannedKeys,
+          aheadIds,
+          drawnOn,
+        }),
+      );
+      if (variant) drawnOn.set(name, stem);
     }
   }
 
-  for (const key of planned) {
-    if (drawnOn.has(key)) continue;
-    const variant = parseVariantKey(key);
-    if (!variant || sharedIds.has(variant.id) || undrawnIds.has(variant.id)) continue;
-    problems.push(
-      `${named(variant)} has no tile on ${homeOf(variant, boards)}: a new story ships with its tile (designs/STANDARD.md)`,
-    );
-  }
-
+  const askedNoTile = new Set([...shared, ...undrawnIds]);
   const plannedIds = new Set(planned.map((key) => parseVariantKey(key)?.id));
   const drawnIds = new Set([...drawnOn.keys()].map((key) => parseVariantKey(key)?.id));
-  for (const id of aheadIds) {
-    if (plannedIds.has(id)) {
-      problems.push(
-        `${id} is written now: strike it off designs/drawn-ahead-stories.json`,
-      );
-    } else if (!drawnIds.has(id)) {
-      problems.push(
-        `designs/drawn-ahead-stories.json lists ${id}, which no tier board draws: strike it off`,
-      );
-    }
-  }
-  for (const id of undrawnIds) {
-    if (drawnIds.has(id)) {
-      problems.push(`${id} is drawn now: strike it off designs/undrawn-stories.json`);
-    } else if (!plannedIds.has(id)) {
-      problems.push(
-        `designs/undrawn-stories.json lists ${id}, which Storybook does not plan: strike it off`,
-      );
-    }
-  }
+  return [
+    ...problems,
+    ...missingTileProblems(planned, drawnOn, askedNoTile, boards),
+    ...drawnAheadProblems(aheadIds, plannedIds, drawnIds),
+    ...undrawnProblems(undrawnIds, plannedIds, drawnIds),
+  ];
+}
 
+/** Every way one tile on a tier board fails to join, given the tiles drawn before it. */
+function tileProblems({
+  stem,
+  board,
+  name,
+  variant,
+  boards,
+  plannedKeys,
+  aheadIds,
+  drawnOn,
+}) {
+  if (!variant) {
+    return [
+      `${stem} has a tile named "${name}", which is not a variant key: name it tier__viewport__theme__storyId, or move it off the tier board`,
+    ];
+  }
+  const problems = [];
+  const home = homeOf(variant, boards);
+  if (home !== board) {
+    problems.push(`${stem} draws ${named(variant)}, whose tier board is ${home}`);
+  }
+  if (!plannedKeys.has(name) && !aheadIds.has(variant.id)) {
+    problems.push(
+      `${stem} draws ${named(variant)}, a variant Storybook does not plan: delete the tile with the story, or rename it with the story`,
+    );
+  }
+  if (drawnOn.has(name)) {
+    problems.push(
+      `${named(variant)} is drawn twice, on ${drawnOn.get(name)} and ${stem}`,
+    );
+  }
   return problems;
+}
+
+/** Every planned variant no tier board draws, but for the stories asked no tile. */
+function missingTileProblems(planned, drawnOn, askedNoTile, boards) {
+  return planned
+    .filter((key) => !drawnOn.has(key))
+    .map(parseVariantKey)
+    .filter((variant) => variant && !askedNoTile.has(variant.id))
+    .map(
+      (variant) =>
+        `${named(variant)} has no tile on ${homeOf(variant, boards)}: a new story ships with its tile (designs/STANDARD.md)`,
+    );
+}
+
+/** Every drawn-ahead story that is written now, or that no tier board draws. */
+function drawnAheadProblems(aheadIds, plannedIds, drawnIds) {
+  return [...aheadIds].flatMap((id) => {
+    if (plannedIds.has(id)) {
+      return [`${id} is written now: strike it off designs/drawn-ahead-stories.json`];
+    }
+    if (!drawnIds.has(id)) {
+      return [
+        `designs/drawn-ahead-stories.json lists ${id}, which no tier board draws: strike it off`,
+      ];
+    }
+    return [];
+  });
+}
+
+/** Every undrawn story that a tier board draws now, or that Storybook does not plan. */
+function undrawnProblems(undrawnIds, plannedIds, drawnIds) {
+  return [...undrawnIds].flatMap((id) => {
+    if (drawnIds.has(id)) {
+      return [`${id} is drawn now: strike it off designs/undrawn-stories.json`];
+    }
+    if (!plannedIds.has(id)) {
+      return [
+        `designs/undrawn-stories.json lists ${id}, which Storybook does not plan: strike it off`,
+      ];
+    }
+    return [];
+  });
 }
 
 /** The board whose variables every other board's are held to. */
