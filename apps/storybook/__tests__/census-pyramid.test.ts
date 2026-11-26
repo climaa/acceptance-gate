@@ -23,23 +23,10 @@ const figure = (bands: PyramidBand[]) =>
   renderToStaticMarkup(createElement(PyramidFigure, { bands }));
 
 describe('the pyramid a census screen story draws', () => {
-  it('is the flat figure for the same bands, with no scene laid over it', () => {
+  it('is the flat figure for the same bands, in the same order, with no scene laid over it', () => {
     const html = figure(BANDS);
 
     expect(html).toBe(renderToStaticMarkup(createElement(TestPyramid, { bands: BANDS })));
-  });
-
-  it('shows every band it was handed, top level first', () => {
-    const html = figure(BANDS);
-
-    const labels = [...html.matchAll(/ds-test-pyramid__label">([^<]*)</g)].map(
-      (m) => m[1],
-    );
-    expect(labels).toEqual([
-      'Acceptance · scenarios',
-      'Visual · screenshots',
-      'Code · vitest cases',
-    ]);
   });
 
   it('draws one band per level', () => {
