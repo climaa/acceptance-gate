@@ -37,7 +37,9 @@ describe('app/report/[id]/layout.tsx', () => {
     const comparison = screen.getByRole('dialog');
     expect(report.textContent).toBe('report');
     expect(comparison.textContent).toBe('comparison');
-    expect(Array.from(container.children)).toEqual([report, comparison]);
+    expect(container.children).toHaveLength(2);
+    expect(container.children[0]).toBe(report);
+    expect(container.children[1]).toBe(comparison);
   });
 
   // Loaded cold, the slot falls back to `@modal/default.tsx`.
