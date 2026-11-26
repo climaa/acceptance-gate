@@ -40,8 +40,9 @@ describe('app/not-found', () => {
     const html = render();
 
     expect(html).toContain(NOT_FOUND_NOTE);
-    // The empty branch, not a short list: the template drew no post list.
-    expect(html).not.toContain('ds-blog-index__list');
+    // The empty branch, not a short list: every post card titles itself with a
+    // heading below the page's h1, so no such heading means no card was drawn.
+    expect(html).not.toMatch(/<h[2-6]\b/);
   });
 
   it('offers one way on: a link to the blog index', () => {
