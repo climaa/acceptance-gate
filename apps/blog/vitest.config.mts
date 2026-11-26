@@ -59,16 +59,24 @@ const config = defineConfig({
         'components/**/*.tsx',
         // Shared logic the routes import: content loading, OG cards, feeds.
         'lib/**/*.{ts,tsx}',
+        // Client hooks the components call: Giscus threads, the synced theme.
+        'hooks/**/*.ts',
+        // Request-time edge code Next loads by file name, not by import.
+        'proxy.ts',
+        'instrumentation*.ts',
+        // The build-time script that renders the Lottie still.
+        'scripts/still-from-lottie.mjs',
       ],
       // Screen stories, their samples and frames: Storybook renders them and the
       // visual differ judges them, so no unit test is meant to reach one.
       exclude: ['**/*.test.{ts,tsx}', 'app/_screens/**'],
       // `text` writes to stdout only, so a run leaves no `coverage/` directory.
       reporter: ['text', 'text-summary'],
-      // A FLOOR, measured rather than aspired to: 67.0 / 65.9 / 65.7 / 67.3 when
-      // it landed, less about two points of slack. Raise it when the real number
-      // moves up; never lower it to make a red run green.
-      thresholds: { statements: 64, branches: 63, functions: 63, lines: 65 },
+      // A FLOOR, measured rather than aspired to: 76.67 / 70.13 / 73.62 / 79.13
+      // once hooks/, proxy.ts, instrumentation and scripts/ joined the include,
+      // less about two points of slack. Raise it when the real number moves up;
+      // never lower it to make a red run green.
+      thresholds: { statements: 74, branches: 68, functions: 71, lines: 77 },
     },
   },
 });
