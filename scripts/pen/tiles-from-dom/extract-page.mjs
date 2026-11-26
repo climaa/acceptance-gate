@@ -335,57 +335,69 @@ export function extractPage({ fullPage, target }) {
     edge(R, x + r.width - R.w, y + T.w, R.w, r.height - T.w - B.w);
   };
 
-  const text = (node, el, cs) => {
+  // Whether a character's box has its centre outside the clip `c`.
+  const outsideClip = (q, c) => {
+    if (!c) return false;
+    const cx = q.left + sx + q.width / 2,
+      cy = q.top + sy + q.height / 2;
+    return cx < c[0] || cx > c[2] || cy < c[1] || cy > c[3];
+  };
+
+  // The first box of character `i` of a text node, or null when it paints nothing
+  // that counts: no box, a collapsed whitespace, or a centre outside the clip.
+  const charBox = (rg, node, i, c) => {
+    rg.setStart(node, i);
+    rg.setEnd(node, i + 1);
+    const rects = rg.getClientRects();
+    if (!rects.length) return null;
+    const q = rects[0];
+    if (q.width < 0.01 && /\s/.test(node.data[i])) return null;
+    return outsideClip(q, c) ? null : q;
+  };
+
+  // A text node's characters grouped into line boxes: a new line starts where the
+  // top moves or the pen jumps back, and never on whitespace.
+  const textLines = (node, c) => {
     const data = node.data;
-    if (!data.trim()) return;
-    const o = opac(el),
-      c = clipFor(el);
-    const col = withAlpha(parseColor(cs.color), o);
-    if (!col) return;
     const rg = document.createRange();
     const lines = [];
     let cur = null;
     for (let i = 0; i < data.length; i += 1) {
-      rg.setStart(node, i);
-      rg.setEnd(node, i + 1);
-      const rects = rg.getClientRects();
-      if (!rects.length) continue;
-      const q = rects[0];
-      if (q.width < 0.01 && /\s/.test(data[i])) continue;
-      if (
-        c &&
-        (q.left + sx + q.width / 2 < c[0] ||
-          q.left + sx + q.width / 2 > c[2] ||
-          q.top + sy + q.height / 2 < c[1] ||
-          q.top + sy + q.height / 2 > c[3])
-      )
-        continue;
+      const q = charBox(rg, node, i, c);
+      if (!q) continue;
+      const ws = /\s/.test(data[i]);
       const top = q.top + sy;
       if (!cur || Math.abs(top - cur.top) > 1 || q.left + sx < cur.right - 1) {
-        if (/\s/.test(data[i])) {
-          cur = null;
-          continue;
-        }
-        cur = { top, left: q.left + sx, right: q.right + sx, s: '' };
+        cur = ws ? null : { top, left: q.left + sx, right: q.right + sx, s: '' };
+        if (!cur) continue;
         lines.push(cur);
       }
-      cur.s += /\s/.test(data[i]) ? ' ' : data[i];
+      cur.s += ws ? ' ' : data[i];
       cur.right = q.right + sx;
     }
-    const tt = cs.textTransform;
-    for (const l of lines) {
-      let s = l.s.replace(/ +/g, ' ');
-      const lead = s.length - s.trimStart().length;
-      s = s.trim();
+    return lines;
+  };
+
+  const textCase = (s, tt) => {
+    if (tt === 'uppercase') return s.toUpperCase();
+    if (tt === 'lowercase') return s.toLowerCase();
+    return s;
+  };
+
+  const text = (node, el, cs) => {
+    if (!node.data.trim()) return;
+    const col = withAlpha(parseColor(cs.color), opac(el));
+    if (!col) return;
+    for (const l of textLines(node, clipFor(el))) {
+      const collapsed = l.s.replace(/ +/g, ' ');
+      const s = collapsed.trim();
       if (!s) continue;
-      if (tt === 'uppercase') s = s.toUpperCase();
-      else if (tt === 'lowercase') s = s.toLowerCase();
       ops.push({
         t: 't',
         x: l.left,
         y: l.top + ascent(cs),
-        s,
-        lead,
+        s: textCase(s, cs.textTransform),
+        lead: collapsed.length - collapsed.trimStart().length,
         ff: cs.fontFamily.split(',')[0].replace(/["']/g, '').trim(),
         fs: parseFloat(cs.fontSize),
         fw: cs.fontWeight,
@@ -396,11 +408,8 @@ export function extractPage({ fullPage, target }) {
     }
   };
 
-  const svgShape = (el) => {
-    const cs = getComputedStyle(el);
-    if (!visible(el, cs)) return;
-    const m = el.getScreenCTM();
-    if (!m) return;
+  // The paint an SVG shape is drawn with, and its screen matrix as a point mapper.
+  const svgPaint = (el, cs, m) => {
     const o = opac(el);
     const fill =
       cs.fill === 'none'
@@ -414,107 +423,126 @@ export function extractPage({ fullPage, target }) {
     const sw =
       (parseFloat(cs.strokeWidth) || 0) *
       (cs.vectorEffect === 'non-scaling-stroke' ? 1 : scale);
-    const tag = el.tagName.toLowerCase();
     const P = (x, y) => [m.a * x + m.c * y + m.e + sx, m.b * x + m.d * y + m.f + sy];
-    if (tag === 'text') {
-      if (!fill || !el.textContent.trim()) return;
-      const p = el.getStartPositionOfChar(0);
-      const y = P(p.x, p.y)[1];
-      const x = el.getBoundingClientRect().left + sx;
-      ops.push({
-        t: 't',
-        x,
-        y,
-        s: el.textContent.trim(),
-        lead: 0,
-        ff: cs.fontFamily.split(',')[0].replace(/["']/g, '').trim(),
-        fs: parseFloat(cs.fontSize) * scale,
-        fw: cs.fontWeight,
-        it: cs.fontStyle === 'italic',
-        ls: 0,
-        c: fill,
-        anchor: cs.textAnchor,
-      });
-      return;
+    return { m, fill, stroke, scale, sw, P };
+  };
+
+  const svgText = (el, cs, { fill, scale, P }) => {
+    if (!fill || !el.textContent.trim()) return;
+    const p = el.getStartPositionOfChar(0);
+    const y = P(p.x, p.y)[1];
+    const x = el.getBoundingClientRect().left + sx;
+    ops.push({
+      t: 't',
+      x,
+      y,
+      s: el.textContent.trim(),
+      lead: 0,
+      ff: cs.fontFamily.split(',')[0].replace(/["']/g, '').trim(),
+      fs: parseFloat(cs.fontSize) * scale,
+      fw: cs.fontWeight,
+      it: cs.fontStyle === 'italic',
+      ls: 0,
+      c: fill,
+      anchor: cs.textAnchor,
+    });
+  };
+
+  const svgRect = (el, { m, fill, stroke, scale, sw, P }) => {
+    const x = el.x.baseVal.value,
+      y = el.y.baseVal.value,
+      w = el.width.baseVal.value,
+      h = el.height.baseVal.value;
+    const [X, Y] = P(x, y);
+    const rr = (el.rx.baseVal.value || 0) * scale;
+    if (fill) ops.push({ t: 'r', x: X, y: Y, w: w * m.a, h: h * m.d, rad: rr, c: fill });
+    if (stroke && sw)
+      ops.push({ t: 's', x: X, y: Y, w: w * m.a, h: h * m.d, rad: rr, sw, c: stroke });
+  };
+
+  const svgEllipse = (el, tag, { m, fill, stroke, sw, P }) => {
+    const cx = el.cx.baseVal.value,
+      cy = el.cy.baseVal.value;
+    const rx = tag === 'circle' ? el.r.baseVal.value : el.rx.baseVal.value;
+    const ry = tag === 'circle' ? el.r.baseVal.value : el.ry.baseVal.value;
+    const [X, Y] = P(cx, cy);
+    if (fill) ops.push({ t: 'e', x: X, y: Y, rx: rx * m.a, ry: ry * m.d, c: fill });
+    if (stroke && sw)
+      ops.push({ t: 'es', x: X, y: Y, rx: rx * m.a, ry: ry * m.d, sw, c: stroke });
+  };
+
+  // A line, polyline or polygon as the path through its vertices.
+  const vertexPath = (el, tag, P) => {
+    const pts =
+      tag === 'line'
+        ? [
+            [el.x1.baseVal.value, el.y1.baseVal.value],
+            [el.x2.baseVal.value, el.y2.baseVal.value],
+          ]
+        : Array.from(el.points).map((p) => [p.x, p.y]);
+    return (
+      pts
+        .map(
+          (p, i) =>
+            (i ? 'L' : 'M') +
+            P(p[0], p[1])
+              .map((v) => v.toFixed(2))
+              .join(' '),
+        )
+        .join('') + (tag === 'polygon' ? 'Z' : '')
+    );
+  };
+
+  // Any other shape sampled along its length; a jump between samples starts a new
+  // subpath only when the source has more than one.
+  const sampledPath = (el, len, { scale, P }) => {
+    const raw = el.getAttribute('d') || '';
+    const subpaths = raw.split(/(?=[Mm])/).length;
+    const n = Math.min(4000, Math.max(16, Math.ceil(len / 1)));
+    const step = (len / n) * scale * 3 + 2;
+    const pts = [];
+    let prev = null;
+    for (let i = 0; i <= n; i += 1) {
+      const p = el.getPointAtLength((len * i) / n);
+      const q = P(p.x, p.y);
+      const lift =
+        i === 0 || (subpaths > 1 && Math.hypot(q[0] - prev[0], q[1] - prev[1]) > step);
+      pts.push((lift ? 'M' : 'L') + q[0].toFixed(2) + ' ' + q[1].toFixed(2));
+      prev = q;
     }
-    const axis = Math.abs(m.b) < 1e-6 && Math.abs(m.c) < 1e-6;
-    let d;
-    if (tag === 'rect' && axis) {
-      const x = el.x.baseVal.value,
-        y = el.y.baseVal.value,
-        w = el.width.baseVal.value,
-        h = el.height.baseVal.value;
-      const [X, Y] = P(x, y);
-      const rr = (el.rx.baseVal.value || 0) * scale;
-      if (fill)
-        ops.push({ t: 'r', x: X, y: Y, w: w * m.a, h: h * m.d, rad: rr, c: fill });
-      if (stroke && sw)
-        ops.push({ t: 's', x: X, y: Y, w: w * m.a, h: h * m.d, rad: rr, sw, c: stroke });
-      return;
-    }
-    if ((tag === 'circle' || tag === 'ellipse') && axis) {
-      const cx = el.cx.baseVal.value,
-        cy = el.cy.baseVal.value;
-      const rx = tag === 'circle' ? el.r.baseVal.value : el.rx.baseVal.value;
-      const ry = tag === 'circle' ? el.r.baseVal.value : el.ry.baseVal.value;
-      const [X, Y] = P(cx, cy);
-      if (fill) ops.push({ t: 'e', x: X, y: Y, rx: rx * m.a, ry: ry * m.d, c: fill });
-      if (stroke && sw)
-        ops.push({ t: 'es', x: X, y: Y, rx: rx * m.a, ry: ry * m.d, sw, c: stroke });
-      return;
-    }
+    return pts.join('') + (/[zZ]\s*$/.test(raw) && subpaths === 1 ? 'Z' : '');
+  };
+
+  const svgPath = (el, tag, cs, paint) => {
     if (typeof el.getTotalLength !== 'function') return;
     const len = el.getTotalLength();
     if (!(len > 0)) return;
-    if (tag === 'line' || tag === 'polyline' || tag === 'polygon') {
-      const pts =
-        tag === 'line'
-          ? [
-              [el.x1.baseVal.value, el.y1.baseVal.value],
-              [el.x2.baseVal.value, el.y2.baseVal.value],
-            ]
-          : Array.from(el.points).map((p) => [p.x, p.y]);
-      d =
-        pts
-          .map(
-            (p, i) =>
-              (i ? 'L' : 'M') +
-              P(p[0], p[1])
-                .map((v) => v.toFixed(2))
-                .join(' '),
-          )
-          .join('') + (tag === 'polygon' ? 'Z' : '');
-    } else {
-      const raw = el.getAttribute('d') || '';
-      const subpaths = raw.split(/(?=[Mm])/).length;
-      const n = Math.min(4000, Math.max(16, Math.ceil(len / 1)));
-      const pts = [];
-      let prev = null;
-      for (let i = 0; i <= n; i += 1) {
-        const p = el.getPointAtLength((len * i) / n);
-        const q = P(p.x, p.y);
-        const jump =
-          prev && Math.hypot(q[0] - prev[0], q[1] - prev[1]) > (len / n) * scale * 3 + 2;
-        pts.push(
-          (i === 0 || (jump && subpaths > 1) ? 'M' : 'L') +
-            q[0].toFixed(2) +
-            ' ' +
-            q[1].toFixed(2),
-        );
-        prev = q;
-      }
-      d = pts.join('') + (/[zZ]\s*$/.test(raw) && subpaths === 1 ? 'Z' : '');
-    }
-    if (fill) ops.push({ t: 'p', d, c: fill });
-    if (stroke && sw)
+    const vertices = tag === 'line' || tag === 'polyline' || tag === 'polygon';
+    const d = vertices ? vertexPath(el, tag, paint.P) : sampledPath(el, len, paint);
+    if (paint.fill) ops.push({ t: 'p', d, c: paint.fill });
+    if (paint.stroke && paint.sw)
       ops.push({
         t: 'ps',
         d,
-        sw,
+        sw: paint.sw,
         cap: cs.strokeLinecap,
         join: cs.strokeLinejoin,
-        c: stroke,
+        c: paint.stroke,
       });
+  };
+
+  const svgShape = (el) => {
+    const cs = getComputedStyle(el);
+    if (!visible(el, cs)) return;
+    const m = el.getScreenCTM();
+    if (!m) return;
+    const paint = svgPaint(el, cs, m);
+    const tag = el.tagName.toLowerCase();
+    const axis = Math.abs(m.b) < 1e-6 && Math.abs(m.c) < 1e-6;
+    if (tag === 'text') svgText(el, cs, paint);
+    else if (tag === 'rect' && axis) svgRect(el, paint);
+    else if ((tag === 'circle' || tag === 'ellipse') && axis) svgEllipse(el, tag, paint);
+    else svgPath(el, tag, cs, paint);
   };
 
   const walk = (el) => {
