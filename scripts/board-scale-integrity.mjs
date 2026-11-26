@@ -163,10 +163,20 @@ export function joinProblems(
     const board = tierBoardOf(stem);
     if (!board) continue;
     for (const name of names) {
+      const variant = parseVariantKey(name);
       problems.push(
-        ...tileProblems({ stem, board, name, boards, plannedKeys, aheadIds, drawnOn }),
+        ...tileProblems({
+          stem,
+          board,
+          name,
+          variant,
+          boards,
+          plannedKeys,
+          aheadIds,
+          drawnOn,
+        }),
       );
-      if (parseVariantKey(name)) drawnOn.set(name, stem);
+      if (variant) drawnOn.set(name, stem);
     }
   }
 
@@ -182,8 +192,16 @@ export function joinProblems(
 }
 
 /** Every way one tile on a tier board fails to join, given the tiles drawn before it. */
-function tileProblems({ stem, board, name, boards, plannedKeys, aheadIds, drawnOn }) {
-  const variant = parseVariantKey(name);
+function tileProblems({
+  stem,
+  board,
+  name,
+  variant,
+  boards,
+  plannedKeys,
+  aheadIds,
+  drawnOn,
+}) {
   if (!variant) {
     return [
       `${stem} has a tile named "${name}", which is not a variant key: name it tier__viewport__theme__storyId, or move it off the tier board`,
