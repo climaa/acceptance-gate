@@ -54,13 +54,40 @@ export function hasCoverageBlock(config: string): boolean {
   return /\bcoverage\s*:\s*\{/.test(code(config));
 }
 
-/** The config's `thresholds.lines`, the floor the page draws, if it sets one. */
-export function linesFloor(config: string): number | undefined {
-  const thresholds = /\bthresholds\s*:\s*\{([^}]*)\}/.exec(code(config))?.[1];
-  const lines = thresholds
-    ? /\blines\s*:\s*(\d+(?:\.\d+)?)/.exec(thresholds)?.[1]
-    : undefined;
+/** The body of the `{…}` that opens at `open`, braces balanced. */
+function braced(source: string, open: number): string {
+  let depth = 0;
+  for (let at = open; at < source.length; at += 1) {
+    if (source[at] === '{') depth += 1;
+    if (source[at] === '}') depth -= 1;
+    if (depth === 0) return source.slice(open + 1, at);
+  }
+  return source.slice(open + 1);
+}
+
+/** A `lines: n` value directly in `block`, if any. */
+function linesIn(block: string): number | undefined {
+  const lines = /\blines\s*:\s*(\d+(?:\.\d+)?)/.exec(block)?.[1];
   return lines === undefined ? undefined : Number(lines);
+}
+
+const GLOB_ENTRY = /(['"])([^'"]+)\1\s*:\s*\{([^}]*)\}/g;
+
+/**
+ * The floor the page draws: the `thresholds.lines` of the glob that names the
+ * workspace (`'<workspace>/…': { lines }`), else the global `thresholds.lines`.
+ * A config shared by several pseudo-workspaces sets one glob each and no global.
+ */
+export function linesFloor(config: string, workspace?: string): number | undefined {
+  const source = code(config);
+  const key = /\bthresholds\s*:\s*\{/.exec(source);
+  if (!key) return undefined;
+  const thresholds = braced(source, key.index + key[0].length - 1);
+  const own = [...thresholds.matchAll(GLOB_ENTRY)].find(
+    ([, , glob = '']) => workspace !== undefined && glob.startsWith(`${workspace}/`),
+  );
+  if (own) return linesIn(own[3] ?? '');
+  return linesIn(thresholds.replace(GLOB_ENTRY, ''));
 }
 
 /** A `packages/ui` file's atomic tier, any other file's top folder, none for a root file. */

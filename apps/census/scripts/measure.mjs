@@ -351,7 +351,7 @@ function codeDimension(ws, runs, reports, asProcess) {
       state: 'unmeasured',
       reason: 'The coverage run wrote no summary',
     };
-  const floor = linesFloor(readFileSync(join(ROOT, config), 'utf8'));
+  const floor = linesFloor(readFileSync(join(ROOT, config), 'utf8'), ws.path);
   return codeValue(readJson(summary), join(ROOT, ws.path), {
     ...(floor === undefined ? {} : { floor }),
     ...fileFacts(reports, ws.path),
