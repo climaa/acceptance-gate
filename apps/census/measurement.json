@@ -1,8 +1,8 @@
 {
   "schema": 1,
   "repo": "climaa/acceptance-gate",
-  "commit": "9f18c9563cb5219765b35c2fea4d4c5872c0d247",
-  "measuredAt": "2026-11-25T18:01:34.876Z",
+  "commit": "b31a358d53984c4e5874d215efecbe71745d6f0d",
+  "measuredAt": "2026-11-26T12:40:06.760Z",
   "tools": {
     "vitest": "5.0.5",
     "fallow": "3.36.0",
@@ -10,7 +10,7 @@
     "node": "22.23.4"
   },
   "pyramid": {
-    "unit": 5528,
+    "unit": 5552,
     "visual": 374,
     "acceptance": 89
   },
@@ -45,14 +45,14 @@
       "types": 1,
       "unlistedDeps": 2,
       "cycles": 0,
-      "totalFiles": 1009,
-      "totalExports": 2308,
+      "totalFiles": 1010,
+      "totalExports": 2309,
       "boundaries": false
     },
     "duplication": {
-      "semanticPct": 8.7,
+      "semanticPct": 8.8,
       "mildPct": 1.9,
-      "lines": 1396,
+      "lines": 1391,
       "groups": 28
     },
     "styling": {
@@ -88,8 +88,8 @@
     "hotspots": [
       {
         "path": "scripts/board-scale-integrity.mjs",
-        "churn": 14,
-        "complexity": 124
+        "churn": 15,
+        "complexity": 110
       },
       {
         "path": "apps/visual-diff-ui/lib/comparison.ts",
@@ -122,6 +122,11 @@
         "complexity": 26
       },
       {
+        "path": "apps/census/scripts/measure.mjs",
+        "churn": 8,
+        "complexity": 42
+      },
+      {
         "path": ".sandcastle/main.mts",
         "churn": 23,
         "complexity": 109
@@ -145,11 +150,6 @@
         "path": "apps/visual-diff-ui/components/CurrentJob.tsx",
         "churn": 15,
         "complexity": 58
-      },
-      {
-        "path": "apps/census/scripts/measure.mjs",
-        "churn": 7,
-        "complexity": 42
       },
       {
         "path": "packages/visual-diff/src/ledger.mjs",
@@ -297,12 +297,6 @@
         "recommendation": "Changes with globals.css in 5 commits (50% coupling) without an import, make the dependency explicit or move the shared logic into one module"
       },
       {
-        "path": "scripts/board-scale-integrity.mjs",
-        "priority": 22.9,
-        "effort": "high",
-        "recommendation": "Extract joinProblems (cognitive: 32) in 850-LOC file into smaller functions"
-      },
-      {
         "path": "apps/visual-diff-ui/components/OverlayStage.tsx",
         "priority": 15.2,
         "effort": "medium",
@@ -325,6 +319,12 @@
         "priority": 12.9,
         "effort": "medium",
         "recommendation": "Changes with console.test.tsx in 7 commits (50% coupling) without an import, make the dependency explicit or move the shared logic into one module"
+      },
+      {
+        "path": "scripts/pen/tiles-from-dom/extract-page.mjs",
+        "priority": 19.1,
+        "effort": "high",
+        "recommendation": "3 complex functions lack test coverage path, add tests before modifying"
       },
       {
         "path": "apps/visual-diff-ui/__tests__/console.test.tsx",
@@ -351,12 +351,6 @@
         "recommendation": "Changes with OverlayStage.tsx in 7 commits (64% coupling) without an import, make the dependency explicit or move the shared logic into one module"
       },
       {
-        "path": "scripts/pen/tiles-from-dom/extract-page.mjs",
-        "priority": 12.4,
-        "effort": "high",
-        "recommendation": "Extract svgShape (cognitive: 55) in 566-LOC file into smaller functions"
-      },
-      {
         "path": "apps/visual-diff-ui/__tests__/story-card.test.tsx",
         "priority": 8.2,
         "effort": "medium",
@@ -377,13 +371,13 @@
         2.6
       ],
       "interfacing": [
-        97.7,
-        2.2,
+        97.6,
+        2.3,
         0.1,
         0
       ]
     },
-    "crapOver30": 67,
+    "crapOver30": 59,
     "crapSource": "measured"
   },
   "workspaces": [
@@ -396,12 +390,12 @@
           "dimension": "code",
           "state": "measured",
           "lines": {
-            "covered": 441,
-            "total": 564,
-            "pct": 78.2
+            "covered": 641,
+            "total": 810,
+            "pct": 79.1
           },
-          "floor": 65,
-          "staticReachPct": 97.9,
+          "floor": 77,
+          "staticReachPct": 98.1,
           "files": [
             {
               "path": "app/about/page.tsx",
@@ -745,6 +739,48 @@
               "crap": 2
             },
             {
+              "path": "hooks/useGiscusThreads.ts",
+              "group": "hooks",
+              "lines": {
+                "covered": 26,
+                "total": 58,
+                "pct": 44.8
+              },
+              "maintainability": 92,
+              "crap": 56
+            },
+            {
+              "path": "hooks/useSyncedTheme.ts",
+              "group": "hooks",
+              "lines": {
+                "covered": 2,
+                "total": 6,
+                "pct": 33.3
+              },
+              "maintainability": 98.3,
+              "crap": 2
+            },
+            {
+              "path": "instrumentation-client.ts",
+              "lines": {
+                "covered": 3,
+                "total": 3,
+                "pct": 100
+              },
+              "maintainability": 95.5,
+              "crap": 1
+            },
+            {
+              "path": "instrumentation.ts",
+              "lines": {
+                "covered": 4,
+                "total": 4,
+                "pct": 100
+              },
+              "maintainability": 95.5,
+              "crap": 2
+            },
+            {
               "path": "lib/changelog-sync-asset.ts",
               "group": "lib",
               "lines": {
@@ -926,6 +962,27 @@
                 "total": 0,
                 "pct": 100
               }
+            },
+            {
+              "path": "proxy.ts",
+              "lines": {
+                "covered": 24,
+                "total": 24,
+                "pct": 100
+              },
+              "maintainability": 91.4,
+              "crap": 10
+            },
+            {
+              "path": "scripts/still-from-lottie.mjs",
+              "group": "scripts",
+              "lines": {
+                "covered": 141,
+                "total": 151,
+                "pct": 93.4
+              },
+              "maintainability": 87.5,
+              "crap": 13
             }
           ]
         },
@@ -1072,13 +1129,341 @@
           "dimension": "code",
           "state": "measured",
           "lines": {
-            "covered": 940,
-            "total": 940,
-            "pct": 100
+            "covered": 1070,
+            "total": 1426,
+            "pct": 75
           },
-          "floor": 98,
-          "staticReachPct": 100,
+          "floor": 73,
+          "staticReachPct": 95.2,
           "files": [
+            {
+              "path": "app/[workspace]/page.tsx",
+              "group": "app",
+              "lines": {
+                "covered": 5,
+                "total": 8,
+                "pct": 62.5
+              },
+              "maintainability": 90.5,
+              "crap": 6
+            },
+            {
+              "path": "app/_components/PyramidScene/Scene.tsx",
+              "group": "app",
+              "lines": {
+                "covered": 0,
+                "total": 57,
+                "pct": 0
+              },
+              "maintainability": 93,
+              "crap": 20
+            },
+            {
+              "path": "app/_components/PyramidScene/index.tsx",
+              "group": "app",
+              "lines": {
+                "covered": 8,
+                "total": 16,
+                "pct": 50
+              },
+              "maintainability": 89.1,
+              "crap": 6
+            },
+            {
+              "path": "app/_components/PyramidScene/probe.ts",
+              "group": "app",
+              "lines": {
+                "covered": 1,
+                "total": 19,
+                "pct": 5.3
+              },
+              "maintainability": 91.5,
+              "crap": 56
+            },
+            {
+              "path": "app/error.tsx",
+              "group": "app",
+              "lines": {
+                "covered": 0,
+                "total": 4,
+                "pct": 0
+              },
+              "maintainability": 94.4,
+              "crap": 2
+            },
+            {
+              "path": "app/gpu-benchmarks/[file]/route.ts",
+              "group": "app",
+              "lines": {
+                "covered": 0,
+                "total": 5,
+                "pct": 0
+              },
+              "maintainability": 87.9,
+              "crap": 6
+            },
+            {
+              "path": "app/home-view.ts",
+              "group": "app",
+              "lines": {
+                "covered": 0,
+                "total": 3,
+                "pct": 0
+              },
+              "maintainability": 95,
+              "crap": 2
+            },
+            {
+              "path": "app/layout.tsx",
+              "group": "app",
+              "lines": {
+                "covered": 3,
+                "total": 3,
+                "pct": 100
+              },
+              "maintainability": 90.3,
+              "crap": 2
+            },
+            {
+              "path": "app/og/site.png/route.tsx",
+              "group": "app",
+              "lines": {
+                "covered": 1,
+                "total": 1,
+                "pct": 100
+              },
+              "maintainability": 96.7,
+              "crap": 1
+            },
+            {
+              "path": "app/page.tsx",
+              "group": "app",
+              "lines": {
+                "covered": 1,
+                "total": 3,
+                "pct": 33.3
+              },
+              "maintainability": 92.2,
+              "crap": 2
+            },
+            {
+              "path": "app/robots.ts",
+              "group": "app",
+              "lines": {
+                "covered": 1,
+                "total": 1,
+                "pct": 100
+              },
+              "maintainability": 96.7,
+              "crap": 1
+            },
+            {
+              "path": "app/site-analytics.tsx",
+              "group": "app",
+              "lines": {
+                "covered": 2,
+                "total": 2,
+                "pct": 100
+              },
+              "maintainability": 96.6,
+              "crap": 1
+            },
+            {
+              "path": "app/sitemap.ts",
+              "group": "app",
+              "lines": {
+                "covered": 3,
+                "total": 3,
+                "pct": 100
+              },
+              "maintainability": 94.4,
+              "crap": 1
+            },
+            {
+              "path": "app/theme.ts",
+              "group": "app",
+              "lines": {
+                "covered": 2,
+                "total": 2,
+                "pct": 100
+              }
+            },
+            {
+              "path": "app/workspace-view.ts",
+              "group": "app",
+              "lines": {
+                "covered": 8,
+                "total": 8,
+                "pct": 100
+              },
+              "maintainability": 93.2,
+              "crap": 2
+            },
+            {
+              "path": "components/CensusFrame.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 0,
+                "total": 1,
+                "pct": 0
+              },
+              "maintainability": 93,
+              "crap": 2
+            },
+            {
+              "path": "components/CensusShell.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 6,
+                "total": 40,
+                "pct": 15
+              },
+              "maintainability": 86.2,
+              "crap": 20
+            },
+            {
+              "path": "components/CopyButton.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 2,
+                "total": 3,
+                "pct": 66.7
+              },
+              "maintainability": 98.2,
+              "crap": 2
+            },
+            {
+              "path": "components/FileViews.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 2,
+                "total": 9,
+                "pct": 22.2
+              },
+              "maintainability": 88.9,
+              "crap": 20
+            },
+            {
+              "path": "components/Filtered.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 1,
+                "total": 4,
+                "pct": 25
+              },
+              "maintainability": 92.3,
+              "crap": 2
+            },
+            {
+              "path": "components/GapList.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 8,
+                "total": 9,
+                "pct": 88.9
+              },
+              "maintainability": 89.2,
+              "crap": 2
+            },
+            {
+              "path": "components/HomeScreen.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 4,
+                "total": 6,
+                "pct": 66.7
+              },
+              "maintainability": 76.6,
+              "crap": 3.1
+            },
+            {
+              "path": "components/HomeSections.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 27,
+                "total": 28,
+                "pct": 96.4
+              },
+              "maintainability": 88.8,
+              "crap": 2.1
+            },
+            {
+              "path": "components/Legend.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 1,
+                "total": 3,
+                "pct": 33.3
+              },
+              "maintainability": 93.8,
+              "crap": 6
+            },
+            {
+              "path": "components/MeasurementBar.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 1,
+                "total": 8,
+                "pct": 12.5
+              },
+              "maintainability": 88.9,
+              "crap": 56
+            },
+            {
+              "path": "components/RefactorTargets.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 2,
+                "total": 2,
+                "pct": 100
+              },
+              "maintainability": 94.5,
+              "crap": 1
+            },
+            {
+              "path": "components/SectionCard.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 1,
+                "total": 1,
+                "pct": 100
+              },
+              "maintainability": 93.9,
+              "crap": 3
+            },
+            {
+              "path": "components/TallIcicle.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 3,
+                "total": 3,
+                "pct": 100
+              },
+              "maintainability": 92.9,
+              "crap": 3
+            },
+            {
+              "path": "components/TrendCard.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 3,
+                "total": 3,
+                "pct": 100
+              },
+              "maintainability": 93.3,
+              "crap": 2
+            },
+            {
+              "path": "components/WorkspaceScreen.tsx",
+              "group": "components",
+              "lines": {
+                "covered": 6,
+                "total": 29,
+                "pct": 20.7
+              },
+              "maintainability": 86.9,
+              "crap": 20
+            },
             {
               "path": "lib/assemble.ts",
               "group": "lib",
@@ -1105,9 +1490,9 @@
               "path": "lib/collect/code.ts",
               "group": "lib",
               "lines": {
-                "covered": 41,
-                "total": 41,
-                "pct": 100
+                "covered": 54,
+                "total": 55,
+                "pct": 98.2
               },
               "maintainability": 90.1,
               "crap": 11
@@ -1267,6 +1652,17 @@
               "crap": 3
             },
             {
+              "path": "lib/og.tsx",
+              "group": "lib",
+              "lines": {
+                "covered": 15,
+                "total": 15,
+                "pct": 100
+              },
+              "maintainability": 94.7,
+              "crap": 2
+            },
+            {
               "path": "lib/overview.ts",
               "group": "lib",
               "lines": {
@@ -1408,6 +1804,17 @@
               },
               "maintainability": 84.3,
               "crap": 9
+            },
+            {
+              "path": "scripts/measure.mjs",
+              "group": "scripts",
+              "lines": {
+                "covered": 0,
+                "total": 173,
+                "pct": 0
+              },
+              "maintainability": 85.3,
+              "crap": 42
             }
           ]
         },
@@ -1505,7 +1912,7 @@
         "health": {
           "dimension": "health",
           "state": "measured",
-          "score": 89.5,
+          "score": 89.6,
           "grade": "A",
           "overCeiling": 0,
           "deadFiles": 0,
@@ -1514,7 +1921,7 @@
           "penalties": [
             {
               "name": "unit size",
-              "points": 8.7
+              "points": 8.6
             },
             {
               "name": "coupling",
@@ -1651,12 +2058,12 @@
           "dimension": "code",
           "state": "measured",
           "lines": {
-            "covered": 131,
-            "total": 147,
-            "pct": 89.1
+            "covered": 148,
+            "total": 164,
+            "pct": 90.2
           },
-          "floor": 81,
-          "staticReachPct": 83.3,
+          "floor": 88,
+          "staticReachPct": 85.7,
           "files": [
             {
               "path": "app/[slug]/page.tsx",
@@ -1824,6 +2231,33 @@
               "crap": 1
             },
             {
+              "path": "content/intros.ts",
+              "group": "content",
+              "lines": {
+                "covered": 4,
+                "total": 4,
+                "pct": 100
+              }
+            },
+            {
+              "path": "content/screenshots.ts",
+              "group": "content",
+              "lines": {
+                "covered": 1,
+                "total": 1,
+                "pct": 100
+              }
+            },
+            {
+              "path": "content/tour.ts",
+              "group": "content",
+              "lines": {
+                "covered": 6,
+                "total": 6,
+                "pct": 100
+              }
+            },
+            {
               "path": "lib/allowlist.ts",
               "group": "lib",
               "lines": {
@@ -1917,6 +2351,16 @@
                 "total": 0,
                 "pct": 100
               }
+            },
+            {
+              "path": "proxy.ts",
+              "lines": {
+                "covered": 6,
+                "total": 6,
+                "pct": 100
+              },
+              "maintainability": 94.5,
+              "crap": 5
             }
           ]
         },
@@ -2017,8 +2461,8 @@
           "dimension": "code",
           "state": "measured",
           "lines": {
-            "covered": 105,
-            "total": 140,
+            "covered": 141,
+            "total": 188,
             "pct": 75
           },
           "floor": 73,
@@ -2131,6 +2575,28 @@
               },
               "maintainability": 91.9,
               "crap": 2
+            },
+            {
+              "path": "src/docs/Mermaid.tsx",
+              "group": "src",
+              "lines": {
+                "covered": 0,
+                "total": 11,
+                "pct": 0
+              },
+              "maintainability": 96.4,
+              "crap": 6
+            },
+            {
+              "path": "src/docs/tokens.ts",
+              "group": "src",
+              "lines": {
+                "covered": 36,
+                "total": 37,
+                "pct": 97.3
+              },
+              "maintainability": 93.4,
+              "crap": 5
             }
           ]
         },
@@ -2172,12 +2638,12 @@
           "dimension": "code",
           "state": "measured",
           "lines": {
-            "covered": 2668,
-            "total": 2796,
-            "pct": 95.4
+            "covered": 2711,
+            "total": 2848,
+            "pct": 95.2
           },
-          "floor": 94,
-          "staticReachPct": 93.7,
+          "floor": 93,
+          "staticReachPct": 93.8,
           "files": [
             {
               "path": "app/api/designs/route.ts",
@@ -3393,6 +3859,17 @@
               "crap": 3
             },
             {
+              "path": "lib/og.tsx",
+              "group": "lib",
+              "lines": {
+                "covered": 42,
+                "total": 42,
+                "pct": 100
+              },
+              "maintainability": 89.1,
+              "crap": 4
+            },
+            {
               "path": "lib/outcome.ts",
               "group": "lib",
               "lines": {
@@ -3731,6 +4208,28 @@
               },
               "maintainability": 91.4,
               "crap": 56
+            },
+            {
+              "path": "scripts/local-data-dir.mjs",
+              "group": "scripts",
+              "lines": {
+                "covered": 0,
+                "total": 9,
+                "pct": 0
+              },
+              "maintainability": 98.1,
+              "crap": 0
+            },
+            {
+              "path": "scripts/project-name.mjs",
+              "group": "scripts",
+              "lines": {
+                "covered": 1,
+                "total": 1,
+                "pct": 100
+              },
+              "maintainability": 99.4,
+              "crap": 1
             }
           ]
         },
@@ -5247,9 +5746,9 @@
           "dimension": "code",
           "state": "measured",
           "lines": {
-            "covered": 439,
-            "total": 1449,
-            "pct": 30.3
+            "covered": 661,
+            "total": 1467,
+            "pct": 45.1
           },
           "floor": 26,
           "staticReachPct": 91.7,
@@ -5267,11 +5766,11 @@
             {
               "path": "board-scale-integrity.mjs",
               "lines": {
-                "covered": 190,
-                "total": 270,
-                "pct": 70.4
+                "covered": 194,
+                "total": 274,
+                "pct": 70.8
               },
-              "maintainability": 88.7,
+              "maintainability": 89,
               "crap": 90
             },
             {
@@ -5446,12 +5945,12 @@
               "path": "pen/tiles-from-dom/extract-page.mjs",
               "group": "pen",
               "lines": {
-                "covered": 0,
-                "total": 311,
-                "pct": 0
+                "covered": 218,
+                "total": 325,
+                "pct": 67.1
               },
-              "maintainability": 89.5,
-              "crap": 1892
+              "maintainability": 89.2,
+              "crap": 90
             },
             {
               "path": "pen/tiles-from-dom/svg.mjs",
@@ -5532,10 +6031,10 @@
           "state": "measured",
           "score": 73,
           "grade": "B",
-          "overCeiling": 3,
+          "overCeiling": 0,
           "deadFiles": 5,
           "deadExports": 14,
-          "refactorTargets": 3,
+          "refactorTargets": 2,
           "penalties": [
             {
               "name": "maintainability",
@@ -5570,7 +6069,7 @@
             "total": 1210,
             "pct": 61.1
           },
-          "floor": 26,
+          "floor": 58,
           "staticReachPct": 100,
           "files": [
             {
@@ -5960,7 +6459,7 @@
             "total": 169,
             "pct": 63.3
           },
-          "floor": 26,
+          "floor": 61,
           "staticReachPct": 100,
           "files": [
             {
@@ -6129,6 +6628,54 @@
       "kind": "route-state-missing",
       "subject": "/changelog:loading",
       "title": "@gate/blog: /changelog has no loading state"
+    },
+    {
+      "id": "uncovered-file:apps/census:app/_components/PyramidScene/Scene.tsx",
+      "workspace": "@gate/census",
+      "dimension": "code",
+      "kind": "uncovered-file",
+      "subject": "app/_components/PyramidScene/Scene.tsx",
+      "title": "@gate/census: app/_components/PyramidScene/Scene.tsx has no test"
+    },
+    {
+      "id": "uncovered-file:apps/census:app/error.tsx",
+      "workspace": "@gate/census",
+      "dimension": "code",
+      "kind": "uncovered-file",
+      "subject": "app/error.tsx",
+      "title": "@gate/census: app/error.tsx has no test"
+    },
+    {
+      "id": "uncovered-file:apps/census:app/gpu-benchmarks/[file]/route.ts",
+      "workspace": "@gate/census",
+      "dimension": "code",
+      "kind": "uncovered-file",
+      "subject": "app/gpu-benchmarks/[file]/route.ts",
+      "title": "@gate/census: app/gpu-benchmarks/[file]/route.ts has no test"
+    },
+    {
+      "id": "uncovered-file:apps/census:app/home-view.ts",
+      "workspace": "@gate/census",
+      "dimension": "code",
+      "kind": "uncovered-file",
+      "subject": "app/home-view.ts",
+      "title": "@gate/census: app/home-view.ts has no test"
+    },
+    {
+      "id": "uncovered-file:apps/census:components/CensusFrame.tsx",
+      "workspace": "@gate/census",
+      "dimension": "code",
+      "kind": "uncovered-file",
+      "subject": "components/CensusFrame.tsx",
+      "title": "@gate/census: components/CensusFrame.tsx has no test"
+    },
+    {
+      "id": "uncovered-file:apps/census:scripts/measure.mjs",
+      "workspace": "@gate/census",
+      "dimension": "code",
+      "kind": "uncovered-file",
+      "subject": "scripts/measure.mjs",
+      "title": "@gate/census: scripts/measure.mjs has no test"
     },
     {
       "id": "story-missing:apps/census:Scene",
@@ -6347,6 +6894,14 @@
       "title": "@gate/storybook: .storybook/manual-sources.ts has no test"
     },
     {
+      "id": "uncovered-file:apps/storybook:src/docs/Mermaid.tsx",
+      "workspace": "@gate/storybook",
+      "dimension": "code",
+      "kind": "uncovered-file",
+      "subject": "src/docs/Mermaid.tsx",
+      "title": "@gate/storybook: src/docs/Mermaid.tsx has no test"
+    },
+    {
       "id": "app-unvisited:apps/storybook",
       "workspace": "@gate/storybook",
       "dimension": "acceptance",
@@ -6425,6 +6980,14 @@
       "kind": "uncovered-file",
       "subject": "app/set/[label]/shot/[key]/page.tsx",
       "title": "@gate/visual-diff-ui: app/set/[label]/shot/[key]/page.tsx has no test"
+    },
+    {
+      "id": "uncovered-file:apps/visual-diff-ui:scripts/local-data-dir.mjs",
+      "workspace": "@gate/visual-diff-ui",
+      "dimension": "code",
+      "kind": "uncovered-file",
+      "subject": "scripts/local-data-dir.mjs",
+      "title": "@gate/visual-diff-ui: scripts/local-data-dir.mjs has no test"
     },
     {
       "id": "component-incomplete:apps/visual-diff-ui:screens-visual-diff-ui-shot--expanded",
@@ -6545,14 +7108,6 @@
       "kind": "uncovered-file",
       "subject": "pen/tiles-from-dom.mjs",
       "title": "scripts/: pen/tiles-from-dom.mjs has no test"
-    },
-    {
-      "id": "uncovered-file:scripts:pen/tiles-from-dom/extract-page.mjs",
-      "workspace": "scripts/",
-      "dimension": "code",
-      "kind": "uncovered-file",
-      "subject": "pen/tiles-from-dom/extract-page.mjs",
-      "title": "scripts/: pen/tiles-from-dom/extract-page.mjs has no test"
     },
     {
       "id": "uncovered-file:.sandcastle:main.mts",
