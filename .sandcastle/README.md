@@ -84,7 +84,7 @@ sandcastle/issue-{id}-{slug}
 
 Example: `sandcastle/issue-475-sandcastle-readme`
 
-`main.mts` parses this format to map branches back to issue IDs when rescuing
+The orchestrator parses this format to map branches back to issue IDs when rescuing
 stranded branches.
 
 ---
@@ -108,7 +108,7 @@ instead — which means the branch may be stranded and the issue left open.
 
 ### Per-phase `idleTimeoutSeconds` budgets
 
-Each `sandcastle.run`/`sandbox.run` call in `main.mts` sets an explicit
+Each `sandcastle.run`/`sandbox.run` call in the orchestrator sets an explicit
 `idleTimeoutSeconds` to avoid mid-run crashes:
 
 | Phase       | `idleTimeoutSeconds` | Rationale                                                                   |
@@ -185,7 +185,7 @@ unmarked, so the next iteration's planner proposed it again — a fresh sandbox
 and a full agent cycle per iteration, up to `MAX_ITERATIONS`, on work that would
 never produce a commit.
 
-`main.mts` now classifies each pipeline result through
+The orchestrator loop (`sandcastle-orchestrator-loop.mts`) classifies each pipeline result through
 `sandcastle-noop-issues.mts` as **completed** (commits to land), **no-op** (ran
 clean, produced nothing) or **failed** (threw — retried next iteration). A no-op
 issue gets a comment and the `sandcastle:no-op` label, and is dropped from every
@@ -235,7 +235,7 @@ from no-ops. Fix the branch, push it from the host, then remove the label.
 ## Stranded branches
 
 If the merge phase crashes mid-run (network drop, sandbox OOM), a branch may
-be left ahead of `main` with no open PR. On the next run, `main.mts`
+be left ahead of `main` with no open PR. On the next run, the orchestrator
 detects these via `collectStrandedIssues()` (in `sandcastle-stranded-branches
 .mts`) and feeds them directly to the merger — no manual intervention needed
 for the common case.

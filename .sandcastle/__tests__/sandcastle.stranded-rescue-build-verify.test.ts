@@ -1,6 +1,6 @@
 import { read } from './helpers';
 
-const mainContent = read('main.mts');
+const mainContent = read('sandcastle-orchestrator-loop.mts');
 // BUILD_VERIFY_COMMAND and BUILD_VERIFY_TIMEOUT_MS live in the tunables module,
 // not beside the code that consumes them.
 const variablesContent = read('sandcastle-variables.mts');

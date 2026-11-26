@@ -1,14 +1,14 @@
 import { read } from './helpers';
 
 describe('sandcastle orchestrator log serial', () => {
-  const content = read('main.mts');
+  const content = read('sandcastle-orchestrator-loop.mts');
 
   // Locate the planner-summary console.log so assertions are scoped to it.
   const plannerLogMatch = content.match(
     /console\.log\(\s*`Planning complete\.[^`]*`[^)]*\)/s,
   );
 
-  it('planner-summary log exists in main.mts', () => {
+  it('planner-summary log exists in the orchestrator loop', () => {
     expect(plannerLogMatch).not.toBeNull();
   });
 

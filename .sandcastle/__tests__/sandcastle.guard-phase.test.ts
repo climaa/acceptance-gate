@@ -91,11 +91,11 @@ describe('guardPhase', () => {
   });
 });
 
-describe('main.mts wiring (source-text — the loop is not unit-testable yet)', () => {
-  // Behavioral coverage of the top-level loop waits on the EPIC C decomposition
-  // into sandcastle-orchestrator.mts; until then these guard the F7 contract at
-  // the source level: a thrown merger must not crash the run after the host push.
-  const main = read('main.mts');
+describe('orchestrator loop wiring (source-text)', () => {
+  // The loop's behaviour is unit-tested in sandcastle.orchestrator-loop.test.ts;
+  // these keep the F7 contract visible at the source level too: a thrown merger
+  // must not crash the run after the host push.
+  const main = read('sandcastle-orchestrator-loop.mts');
 
   it('guards the planner and merger awaits through guardPhase', () => {
     expect(main).toMatch(/import \{ guardPhase \}/);
@@ -107,9 +107,9 @@ describe('main.mts wiring (source-text — the loop is not unit-testable yet)', 
     expect(main).toMatch(/process\.exitCode = 1/);
   });
 
-  it('still breaks (exits 0) on a graceful shutdown, not exit 1', () => {
-    // The abort branch must break without setting exitCode — a SIGINT is not a
-    // failure.
-    expect(main).toMatch(/\.aborted\)\s*(\{\s*)?break/);
+  it('still stops (exits 0) on a graceful shutdown, not exit 1', () => {
+    // The abort branch must stop the loop without setting exitCode — a SIGINT is
+    // not a failure. A phase helper hands the stop back as 'stop'.
+    expect(main).toMatch(/\.aborted\)\s*(\{\s*)?(break|return 'stop')/);
   });
 });

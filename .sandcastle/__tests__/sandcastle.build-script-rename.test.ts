@@ -1,6 +1,6 @@
 import { read } from './helpers';
 
-const mainContent = read('main.mts');
+const mainContent = read('sandcastle-orchestrator-loop.mts');
 const buildVerifyContent = read('sandcastle-build-verify.mts');
 const variablesContent = read('sandcastle-variables.mts');
 const runIssueContent = read('sandcastle-run-issue.mts');

@@ -7,7 +7,7 @@ describe('sandcastle idle-timeout budgets', () => {
     // and the planner (still inline in main.mts's loop).
     const mergeContent = read('sandcastle-merge.mts');
     const runIssueContent = read('sandcastle-run-issue.mts');
-    const mainContent = read('main.mts');
+    const mainContent = read('sandcastle-orchestrator-loop.mts');
 
     // Slice to the end of the sandcastle.run({...}) call rather than a fixed
     // width — comments added inside the call (e.g. the sandbox env guard)
