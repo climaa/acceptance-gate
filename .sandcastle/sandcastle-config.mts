@@ -46,7 +46,9 @@ export function assertGhAvailable(): void {
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
-function readIfPresent(file: string): string | null {
+// Exported so a unit test can reach the catch: at import it runs only on a
+// machine missing one of the two files, which made coverage machine-dependent.
+export function readIfPresent(file: string): string | null {
   try {
     return readFileSync(file, 'utf8');
   } catch {
