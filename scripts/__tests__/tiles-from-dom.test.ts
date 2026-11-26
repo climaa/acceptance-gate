@@ -483,3 +483,187 @@ describe('extractPage on SVG shapes', () => {
     expect(ops).toEqual([]);
   });
 });
+
+/**
+ * A text node is measured one character at a time through a Range, so these stand
+ * a root element up with one text child and a Range whose rect for character i
+ * comes from `at(i)`. The root's box sits at (10, 20), so a viewport point (x, y)
+ * lands at (x - 10, y - 20); every font's ascent measures 8.
+ */
+type CharRect = { left: number; top: number; width: number; height: number };
+const TEXT_STYLE: Style = {
+  display: 'block',
+  visibility: 'visible',
+  opacity: '1',
+  overflowX: 'visible',
+  overflowY: 'visible',
+  clipPath: 'none',
+  backgroundColor: 'transparent',
+  backgroundImage: 'none',
+  borderTopStyle: 'none',
+  borderRightStyle: 'none',
+  borderBottomStyle: 'none',
+  borderLeftStyle: 'none',
+  color: FILL,
+  textTransform: 'none',
+  fontFamily: '"Inter", sans-serif',
+  fontSize: '10px',
+  fontWeight: '600',
+  fontStyle: 'normal',
+  letterSpacing: 'normal',
+};
+// Character i sits 5px wide on the first line, starting at the root's left edge.
+const inRow = (i: number, top = 20, from = 0): CharRect => ({
+  left: 10 + (i - from) * 5,
+  top,
+  width: 5,
+  height: 10,
+});
+const glyph = (s: string, x: number, y: number) => ({
+  t: 't',
+  x,
+  y,
+  s,
+  lead: 0,
+  ff: 'Inter',
+  fs: 10,
+  fw: '600',
+  it: false,
+  ls: 0,
+  c: [10, 20, 30, 1],
+});
+
+function extractText(
+  data: string,
+  at: (i: number) => CharRect | null = inRow,
+  style: Style = {},
+) {
+  const node = { nodeType: 3, data };
+  const root = {
+    tagName: 'DIV',
+    style: { ...TEXT_STYLE, ...style },
+    parentElement: null,
+    childNodes: [node],
+    querySelectorAll: () => [],
+    getBoundingClientRect: () => ({
+      left: 10,
+      top: 20,
+      width: 100,
+      height: 50,
+      right: 110,
+      bottom: 70,
+    }),
+  };
+  let index = 0;
+  vi.stubGlobal('SVGElement', FakeSvgElement);
+  vi.stubGlobal('window', { scrollX: 0, scrollY: 0 });
+  vi.stubGlobal('getComputedStyle', (el: { style: Style }) => el.style);
+  vi.stubGlobal('document', {
+    documentElement: {},
+    head: { append: () => {} },
+    querySelector: () => root,
+    createElement: () => ({
+      getContext: () => ({ measureText: () => ({ fontBoundingBoxAscent: 8 }) }),
+    }),
+    createRange: () => ({
+      setStart: (_: unknown, i: number) => {
+        index = i;
+      },
+      setEnd: () => {},
+      getClientRects: () => {
+        const r = at(index);
+        return r ? [{ ...r, right: r.left + r.width }] : [];
+      },
+    }),
+  });
+  return extractPage({ fullPage: false, target: 'div' }).ops;
+}
+
+describe('extractPage on text', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('writes a line of text as one operation, collapsing its runs of whitespace', () => {
+    // Arrange
+    const data = 'Ab \t cd ';
+
+    // Act
+    const ops = extractText(data, inRow, { opacity: '0.5' });
+
+    // Assert
+    expect(ops).toEqual([{ ...glyph('Ab cd', 0, 8), c: [10, 20, 30, 0.5] }]);
+  });
+
+  it('starts a new line where the top moves or the pen jumps back, never opening one on whitespace', () => {
+    // Arrange: "one" and its space on line 1; a space that wrapped to line 2, then
+    // "two" further right than line 1 ended; "six" back at line 2's left edge, as a
+    // second column would.
+    const data = 'one  twosix';
+    const at = (i: number) =>
+      i <= 3 ? inRow(i) : i <= 7 ? inRow(i, 32) : inRow(i, 32, 8);
+
+    // Act
+    const ops = extractText(data, at);
+
+    // Assert
+    expect(ops).toEqual([glyph('one', 0, 8), glyph('two', 25, 20), glyph('six', 0, 20)]);
+  });
+
+  it('skips a character with no box, a collapsed whitespace and one centred outside the clip', () => {
+    // Arrange: the root clips to its own box, (0, 0)–(100, 50) once scrolled in.
+    const data = 'a\nbLRTUc';
+    const outside: Record<string, CharRect> = {
+      L: { left: 4, top: 20, width: 10, height: 10 },
+      R: { left: 106, top: 20, width: 10, height: 10 },
+      T: { left: 20, top: 10, width: 5, height: 10 },
+      U: { left: 20, top: 66, width: 5, height: 10 },
+    };
+    const at = (i: number) => {
+      const ch = data.charAt(i);
+      if (ch === 'b') return null;
+      if (ch === '\n') return { ...inRow(i), width: 0 };
+      return outside[ch] ?? inRow(i);
+    };
+
+    // Act
+    const ops = extractText(data, at, { overflowX: 'hidden' });
+
+    // Assert
+    expect(ops).toEqual([glyph('ac', 0, 8)]);
+  });
+
+  it('applies the text transform and carries the font, its style and its letter spacing', () => {
+    // Arrange
+    const styles: Style[] = [
+      { textTransform: 'uppercase', fontStyle: 'italic', letterSpacing: '1.5px' },
+      { textTransform: 'lowercase', fontFamily: "'Mono', monospace", letterSpacing: 'x' },
+      { textTransform: 'capitalize' },
+    ];
+
+    // Act
+    const ops = styles.flatMap((style) => extractText('MiXed', inRow, style));
+
+    // Assert
+    expect(ops).toEqual([
+      { ...glyph('MIXED', 0, 8), it: true, ls: 1.5 },
+      { ...glyph('mixed', 0, 8), ff: 'Mono' },
+      glyph('MiXed', 0, 8),
+    ]);
+  });
+
+  it('writes nothing for blank text, a transparent colour or a hidden parent', () => {
+    // Arrange
+    const cases: [string, Style][] = [
+      [' \n\t ', {}],
+      ['Hi', { color: 'transparent' }],
+      ['Hi', { visibility: 'hidden' }],
+    ];
+
+    // Act
+    const ops = cases.flatMap(([data, style]) => extractText(data, inRow, style));
+
+    // Assert
+    expect(ops).toEqual([]);
+  });
+});
