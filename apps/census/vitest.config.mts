@@ -55,7 +55,8 @@ const config = defineConfig({
       // them and the visual differ judges them, so no unit test is meant to
       // reach one. The reason apps/visual-diff-ui gives for its own.
       exclude: ['**/*.test.{ts,tsx}', 'app/_screens/**'],
-      // Explicit, so a run writes no `coverage/` directory.
+      // Explicit stdout reporters; the preset adds `json`, the coverage map a
+      // run leaves in `coverage/` (vitest.shared.mjs).
       reporter: ['text', 'text-summary'],
       // Measured at 75.68 / 76.49 / 79.05 / 75.03 when the include widened to
       // app/, components/ and scripts/ (QA-02). Was 98 / 96 / 98 / 98 over

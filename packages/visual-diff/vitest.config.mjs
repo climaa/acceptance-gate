@@ -24,9 +24,10 @@ const config = defineConfig({
       include: ['src/**/*.mjs'],
       // The suites themselves are not code under measurement.
       exclude: ['src/__tests__/**'],
-      // Explicit, so a run writes no `coverage/` directory: `text` names the
-      // files when the floor breaks, and the default reporter set would add
-      // html/clover/json artifacts nothing here reads.
+      // Explicit: `text` names the files when the floor breaks, and the default
+      // reporter set would add html/clover artifacts nothing here reads. The
+      // preset adds `json`, the coverage map a run leaves in `coverage/`
+      // (vitest.shared.mjs).
       reporter: ['text', 'text-summary'],
       thresholds: { statements: 90, branches: 86, functions: 91, lines: 91 },
     },

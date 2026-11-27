@@ -24,6 +24,11 @@ const config = defineConfig({
       enabled: true,
       // Denominator read from the filesystem, not from what the suite imports.
       include: ['src/**/*.{ts,tsx}'],
+      // Explicit, as in every other suite: once the preset names `json`, vitest's
+      // default set (text among it) no longer applies, and `text` is what names
+      // the files when the floor breaks. The preset's `json` is the coverage map
+      // a run leaves in `coverage/` (vitest.shared.mjs).
+      reporter: ['text', 'text-summary'],
       thresholds: { lines: 70, functions: 70, branches: 70, statements: 70 },
       exclude: [
         'src/**/*.stories.tsx', // arrive in Wave 2; they are fixtures, not logic

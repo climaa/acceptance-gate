@@ -70,7 +70,8 @@ const config = defineConfig({
       // Screen stories, their samples and frames: Storybook renders them and the
       // visual differ judges them, so no unit test is meant to reach one.
       exclude: ['**/*.test.{ts,tsx}', 'app/_screens/**'],
-      // `text` writes to stdout only, so a run leaves no `coverage/` directory.
+      // `text` writes to stdout; the preset adds `json`, the coverage map a run
+      // leaves in `coverage/` (vitest.shared.mjs).
       reporter: ['text', 'text-summary'],
       // A FLOOR, measured rather than aspired to: 76.67 / 70.13 / 73.62 / 79.13
       // once hooks/, proxy.ts, instrumentation and scripts/ joined the include,

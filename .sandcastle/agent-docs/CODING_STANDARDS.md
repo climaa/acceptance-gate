@@ -18,6 +18,15 @@ findings, never from ambition.
   (`scripts/complexity-gate.mjs`, fallow under the hood). Cognitive, not
   cyclomatic, on purpose: a flat sequence of guard-returns is fine, nesting is
   what scores. A diff that trips it fails CI — extract a helper (see #63-#65).
+- **`node scripts/crap-gate.mjs`** (the gate's `crap` check) — **CRAP 30** per
+  function, CRAP = CC² × (1 − coverage)³ + CC, scored on the coverage maps the
+  `test` and `sandcastle` checks write. A function at 30 or more fails unless it is
+  on the frozen list (`scripts/gate/crap-frozen.json`) at or under its value. The
+  list **only shrinks**: it is written by `node scripts/crap-gate.mjs --freeze`,
+  never by hand, and `--freeze` refuses to add an entry or raise one. The remedy is
+  **tests first, then extraction**: cover the function, and only if it still scores
+  30 or more split it. Lowering a listed function means running `--freeze` in the
+  same PR, so the list keeps the lower value.
 - Everything public is **English** — code, comments, docs, commit messages
 
 ## Workspace conventions
