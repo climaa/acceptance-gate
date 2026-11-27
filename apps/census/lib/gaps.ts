@@ -11,7 +11,7 @@
  * and a file with no covered lines that its tests run as a child process
  * (`testedAsProcess`): it has a test, which vitest's own process cannot measure.
  */
-import { APP_WORKSPACES } from './features.ts';
+import { FEATURE_MAP, type FeatureMap } from './features.ts';
 import type { Gap, GapKind, Workspace } from './measurement.ts';
 
 /** What a component or screen story can lack. */
@@ -105,11 +105,9 @@ function visualGaps(ws: Workspace, subjects: VisualSubjects): Draft[] {
   return [...incomplete, ...unstoried, ...routes];
 }
 
-const DEPLOYED: ReadonlySet<string> = new Set(Object.values(APP_WORKSPACES));
-
-function acceptanceGaps(ws: Workspace): Draft[] {
+function acceptanceGaps(ws: Workspace, deployed: ReadonlySet<string>): Draft[] {
   const acceptance = ws.dimensions.acceptance;
-  if (!DEPLOYED.has(ws.path)) return [];
+  if (!deployed.has(ws.path)) return [];
   if (acceptance.state !== 'measured' || acceptance.scenarios > 0) return [];
   return [
     {
@@ -126,17 +124,20 @@ const NO_SUBJECTS: VisualSubjects = { incomplete: [], unstoried: [], routes: [] 
 /**
  * Every gap in the given workspaces, in workspace order and, within one, Code →
  * Visual → Acceptance. `subjects` is keyed by workspace path; a workspace missing
- * from it has no Visual subjects to judge.
+ * from it has no Visual subjects to judge. `map` says which workspaces are
+ * deployed apps: this repository's unless another's is given.
  */
 export function deriveGaps(
   workspaces: readonly Workspace[],
   subjects: Readonly<Record<string, VisualSubjects>>,
+  map: FeatureMap = FEATURE_MAP,
 ): Gap[] {
+  const deployed = new Set(Object.values(map.apps));
   return workspaces.flatMap((ws) =>
     [
       ...codeGaps(ws),
       ...visualGaps(ws, subjects[ws.path] ?? NO_SUBJECTS),
-      ...acceptanceGaps(ws),
+      ...acceptanceGaps(ws, deployed),
     ].map(({ idSubject, ...draft }) => ({
       id: gapId(draft.kind, ws.path, idSubject),
       workspace: ws.name,

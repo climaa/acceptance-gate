@@ -40,8 +40,11 @@ const ROUTE_FILE =
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 
-/** Every story in a built Storybook's `index.json`, docs pages left out. */
-export function indexStories(index: unknown): Story[] {
+/**
+ * Every story in a built Storybook's `index.json`, docs pages left out.
+ * `storybookDir` is the workspace that built it, repo-relative.
+ */
+export function indexStories(index: unknown, storybookDir = STORYBOOK_DIR): Story[] {
   const entries = isRecord(index) ? index.entries : undefined;
   if (!isRecord(entries)) throw new Error('Not a Storybook index: no `entries` object');
   return Object.values(entries)
@@ -49,7 +52,7 @@ export function indexStories(index: unknown): Story[] {
     .filter((entry) => entry.type === 'story')
     .map((entry) => ({
       id: String(entry.id),
-      file: posix.normalize(posix.join(STORYBOOK_DIR, String(entry.importPath))),
+      file: posix.normalize(posix.join(storybookDir, String(entry.importPath))),
       skipped: Array.isArray(entry.tags) && entry.tags.includes(SKIP_TAG),
     }));
 }

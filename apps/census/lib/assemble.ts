@@ -3,7 +3,7 @@
  * is in, what one history point says, how a new point joins the history, and the
  * gap tally the measure step prints.
  */
-import { APP_WORKSPACES } from './features.ts';
+import { FEATURE_MAP, type FeatureMap } from './features.ts';
 import {
   GAP_KINDS,
   type Category,
@@ -55,8 +55,8 @@ function codeHeadline(measurement: Measurement): number | null {
 }
 
 /** Acceptance's headline: the share of deployed apps at least one scenario visits. */
-function acceptanceHeadline(measurement: Measurement): number | null {
-  const apps = new Set<string>(Object.values(APP_WORKSPACES));
+function acceptanceHeadline(measurement: Measurement, map: FeatureMap): number | null {
+  const apps = new Set<string>(Object.values(map.apps));
   const values = measurement.workspaces
     .filter((ws) => apps.has(ws.path))
     .map((ws) => ws.dimensions.acceptance)
@@ -70,6 +70,7 @@ function acceptanceHeadline(measurement: Measurement): number | null {
 export function historyPoint(
   measurement: Measurement,
   extra: { visual: number | null; dupPct: number; overCeiling: number },
+  map: FeatureMap = FEATURE_MAP,
 ): HistoryPoint {
   return {
     commit: measurement.commit,
@@ -77,7 +78,7 @@ export function historyPoint(
     dimensions: {
       code: codeHeadline(measurement),
       visual: extra.visual,
-      acceptance: acceptanceHeadline(measurement),
+      acceptance: acceptanceHeadline(measurement, map),
       health: measurement.health.score,
     },
     fallow: {
