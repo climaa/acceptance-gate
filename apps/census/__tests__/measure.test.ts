@@ -639,6 +639,13 @@ describe('census:measure', () => {
       expect(writtenThere().tools.fallow).toBe('3.30.0');
     });
 
+    it('asks fallow for no snapshot: it refuses a path outside the checkout it analyses', async () => {
+      await measure();
+
+      for (const [, args] of fake.spawn.mock.calls)
+        expect(args).not.toContain('--save-snapshot');
+    });
+
     it('reads vitest’s version from the first workspace that has it', async () => {
       fake.files.delete(there('apps/census/node_modules/vitest/package.json'));
       fake.files.set(

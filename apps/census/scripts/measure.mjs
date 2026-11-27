@@ -28,7 +28,7 @@ import {
   rmSync,
   writeFileSync,
 } from 'node:fs';
-import { dirname, join, relative, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import {
@@ -303,8 +303,9 @@ function fallowReports(coverage) {
     '--css',
     '--report-only',
     ...cov,
-    '--save-snapshot',
-    relative(ROOT, join(OUT, 'snapshot.json')),
+    // fallow refuses a snapshot path outside the directory it analyses, and one
+    // inside another checkout would be a file git reports there. Nothing reads it.
+    ...(ELSEWHERE ? [] : ['--save-snapshot', join('.census', 'snapshot.json')]),
   ]);
   return {
     health,
