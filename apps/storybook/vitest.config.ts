@@ -22,8 +22,8 @@ const config = defineConfig({
       // are the app's own code: the Storybook config, preview and helpers, and
       // the docs pages' own components and data under src/docs.
       include: ['.storybook/**/*.{ts,tsx}', 'src/docs/**/*.{ts,tsx}'],
-      // Explicit, so a run writes no `coverage/` directory: `text` names the
-      // files when the floor breaks.
+      // Explicit: `text` names the files when the floor breaks. The preset adds
+      // `json`, the coverage map a run leaves in `coverage/` (vitest.shared.mjs).
       reporter: ['text', 'text-summary'],
       // A FLOOR, two points under the 72.0 / 60.0 / 66.1 / 75.0 measured when the
       // include last widened. Raise it when the real number moves up; never lower

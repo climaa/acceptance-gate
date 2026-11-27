@@ -29,9 +29,9 @@ const config = defineConfig({
         // The suite's own support code (the analytics guard).
         'support/**/*.ts',
       ],
-      // Explicit, so a run writes no `coverage/` directory: `text` names the
-      // files when the floor breaks, and the default set would add artifacts
-      // nothing here reads.
+      // Explicit: `text` names the files when the floor breaks, and the default
+      // set would add artifacts nothing here reads. The preset adds `json`, the
+      // coverage map a run leaves in `coverage/` (vitest.shared.mjs).
       reporter: ['text', 'text-summary'],
       thresholds: { statements: 2, branches: 3, functions: 4, lines: 2 },
     },

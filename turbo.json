@@ -36,7 +36,8 @@
         "$TURBO_ROOT$/.github/workflows/pr.yml",
         "$TURBO_ROOT$/.github/workflows/changelog-check.yml",
         "$TURBO_ROOT$/.github/workflows/changelog-deploy.yml"
-      ]
+      ],
+      "outputs": ["coverage/coverage-final.json"]
     },
     "e2e": {
       "dependsOn": [
@@ -116,7 +117,8 @@
         "$TURBO_ROOT$/.github/workflows/pr.yml",
         "$TURBO_ROOT$/apps/e2e/features/acceptance/*.feature",
         "$TURBO_ROOT$/apps/visual-diff-ui/fixtures/reports/*/summary.json"
-      ]
+      ],
+      "outputs": ["coverage/coverage-final.json"]
     },
     "@gate/visual-diff#test": {
       "dependsOn": ["^build"],
@@ -126,7 +128,8 @@
         "$TURBO_ROOT$/.github/workflows/pr.yml",
         "$TURBO_ROOT$/.github/workflows/changelog-check.yml",
         "$TURBO_ROOT$/packages/ui/src/**/*.css"
-      ]
+      ],
+      "outputs": ["coverage/coverage-final.json"]
     },
     "@gate/visual-diff-ui#test": {
       "dependsOn": ["^build"],
@@ -138,7 +141,8 @@
         "$TURBO_ROOT$/packages/ui/src/atoms/IconButton/IconButton.stories.tsx",
         "$TURBO_ROOT$/designs/exports/**",
         "$TURBO_ROOT$/package.json"
-      ]
+      ],
+      "outputs": ["coverage/coverage-final.json"]
     }
   }
 }

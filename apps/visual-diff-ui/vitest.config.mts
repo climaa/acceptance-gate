@@ -105,9 +105,10 @@ const config = defineConfig({
       // their samples and frames stay out: Storybook renders them and the
       // visual differ judges them, so no unit test is meant to reach one.
       exclude: ['**/*.test.{ts,tsx}', 'app/_screens/**'],
-      // Explicit, so a run writes no `coverage/` directory: `text` is what names
-      // the files when the floor breaks, and the default reporter set would add
-      // html/clover/json artifacts nothing here reads.
+      // Explicit: `text` is what names the files when the floor breaks, and the
+      // default reporter set would add html/clover artifacts nothing here reads.
+      // The preset adds `json`, the coverage map a run leaves in `coverage/`
+      // (vitest.shared.mjs).
       reporter: ['text', 'text-summary'],
       // Re-set when QA-03 (pyramid track A, owner ruling 26 Nov 2026) widened
       // `include` to `lib/og.tsx`, `scripts/local-data-dir.mjs` and
