@@ -16,6 +16,8 @@ import { join, resolve } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
+import { acquire, release } from '../gate/lock.mjs';
+
 /**
  * One gate per machine, across checkouts. The runner takes a lock outside every
  * checkout before its first check; a second gate waits, saying once whose turn
@@ -293,5 +295,109 @@ describe('the machine-wide gate lock', () => {
 
     // Assert
     expect(JSON.parse(readFileSync(lock, 'utf8')).pid).toBe(process.pid);
+  });
+});
+
+/**
+ * How the lock reads its holder, in process so coverage sees it: `readHolder`
+ * is private, so it is driven through `acquire` (a lock it cannot read is taken
+ * over as unreadable; one it can read is named in the refusal) and `release`
+ * (a missing lock is nobody's to remove).
+ */
+describe('reading the lock holder', () => {
+  let dir: string;
+  let lock: string;
+  let lines: string[];
+
+  const refuseOrTake = () =>
+    acquire({
+      path: lock,
+      checkout: '/this/checkout',
+      tier: 'fast',
+      wait: false,
+      write: (line) => lines.push(line),
+    });
+
+  beforeEach(() => {
+    dir = mkdtempSync(join(tmpdir(), 'gate-holder-'));
+    lock = join(dir, 'gate.lock');
+    lines = [];
+  });
+
+  afterEach(() => {
+    release(lock);
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  it('reads a well-formed holder and names it in the refusal', () => {
+    // Arrange
+    const startedAt = new Date(Date.now() - 65_000).toISOString();
+    writeFileSync(
+      lock,
+      JSON.stringify({
+        pid: process.ppid,
+        checkout: OTHER_CHECKOUT,
+        tier: 'full',
+        startedAt,
+      }),
+    );
+
+    // Act
+    const result = refuseOrTake();
+
+    // Assert
+    expect(result).toEqual({
+      ok: false,
+      sentence: expect.stringMatching(
+        `^gate: the full gate in ${OTHER_CHECKOUT} \\(pid ${process.ppid}\\) ` +
+          'has held this machine for 1m0',
+      ),
+    });
+    expect(lines).toEqual([]);
+  });
+
+  it.each([
+    ['text that is not JSON', '{not json'],
+    ['JSON null', 'null'],
+    [
+      'a holder without a pid',
+      JSON.stringify({ checkout: OTHER_CHECKOUT, tier: 'fast' }),
+    ],
+    ['a pid that is not an integer', JSON.stringify({ pid: '123', tier: 'fast' })],
+  ])('treats %s as unreadable and takes the lock over', (_case, content) => {
+    // Arrange
+    writeFileSync(lock, content);
+
+    // Act
+    const result = refuseOrTake();
+
+    // Assert
+    expect(result).toMatchObject({ ok: true });
+    expect(lines).toEqual([`gate: took over an unreadable lock at ${lock}\n`]);
+    expect(JSON.parse(readFileSync(lock, 'utf8')).pid).toBe(process.pid);
+  });
+
+  it('finds no holder when the lock file is gone, and releases nothing', () => {
+    // Arrange
+    const missing = join(dir, 'never-taken.lock');
+
+    // Act
+    release(missing);
+
+    // Assert
+    expect(existsSync(missing)).toBe(false);
+  });
+
+  it('releases a lock this process holds, read back from the file', () => {
+    // Arrange
+    refuseOrTake();
+    const takenBefore = existsSync(lock);
+
+    // Act
+    release(lock);
+
+    // Assert
+    expect(takenBefore).toBe(true);
+    expect(existsSync(lock)).toBe(false);
   });
 });
