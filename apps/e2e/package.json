@@ -23,11 +23,11 @@
     "@gate/tsconfig": "workspace:*",
     "@gate/visual-diff": "workspace:*",
     "@playwright/test": "1.62.1",
-    "@typescript-eslint/parser": "^8.72.0",
-    "@vitest/coverage-v8": "^5.0.5",
+    "@typescript-eslint/parser": "^8.74.0",
+    "@vitest/coverage-v8": "^5.1.1",
     "eslint": "^9.39.5",
     "playwright-bdd": "^9.2.1",
     "typescript": "^5.9.3",
-    "vitest": "^5.0.5"
+    "vitest": "^5.1.1"
   }
 }
