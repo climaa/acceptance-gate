@@ -40,7 +40,8 @@ const config = defineConfig({
         '.sandcastle/__tests__/**',
         '.claude/skills/pixel-perfect-session/scripts/__tests__/**',
       ],
-      // Explicit, so a plain run writes no `coverage/` directory.
+      // Explicit stdout reporters; the preset adds `json`, the coverage map a
+      // run leaves in `coverage/` (vitest.shared.mjs).
       reporter: ['text', 'text-summary'],
       // FLOORS, measured rather than aspired to: what the suite covers today less
       // about two points, rounded down. Raise one when its real number moves up;

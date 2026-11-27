@@ -16,7 +16,8 @@ const config = defineConfig({
       include: ['src/**/*.ts'],
       // The suite itself is not code under measure.
       exclude: ['src/**/*.test.ts'],
-      // `text` goes to stdout only: the plain run writes no coverage/ directory.
+      // `text` goes to stdout; the preset adds `json`, the coverage map a run
+      // leaves in `coverage/` (vitest.shared.mjs).
       reporter: ['text', 'text-summary'],
       thresholds: { lines: 98, functions: 98, branches: 98, statements: 98 },
     },
