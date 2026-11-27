@@ -7,7 +7,10 @@ packages:
 # package says it does not support should not go unremarked either. Here and not in
 # .npmrc, which pnpm 11 reads only for auth and registry. The root `engines` floor
 # (22.22.2) is what jsdom 30 and its parsers ask for; below it this key would fail an
-# install the root claims to support.
+# install the root claims to support. The root has no ceiling: Dependabot installs on
+# its own Node (24 since late October 2026), and with this key on, a `<23` ceiling
+# failed every npm update with `tool_version_not_supported`. `.nvmrc` and the gate's
+# refusal pin the major; `engines` only states the floor.
 engineStrict: true
 # pnpm 11 already holds back a release younger than 1440 minutes (one day); three
 # days is the supply-chain margin asked for here, and scripts/release-age.mjs in
