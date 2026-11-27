@@ -1,5 +1,6 @@
-# The gate, thin form. Wave 3 added an `e2e` job to `gate.needs` — no
-# branch-protection edit ever needed again: `gate` is the only required check.
+# The gate, thin form. Wave 3 added an `e2e` job to `gate.needs`, census v2 a
+# `crap` job — no branch-protection edit ever needed again: `gate` is the only
+# required check.
 #
 # `visual-diff` (below) is deliberately NOT in that list. Per
 # apps/blog/content/posts/visual-regression-with-agents.mdx: a numeric pixel
@@ -66,7 +67,7 @@ env:
 #
 # Repeated per job because GitHub Actions does not support YAML anchors. The
 # `checks` matrix below shares the seven per-command jobs' steps, but a matrix
-# cannot share this guard line, so all five jobs (checks, sandcastle, e2e,
+# cannot share this guard line, so all six jobs (checks, sandcastle, crap, e2e,
 # visual-diff, gate) still carry their own copy. A new job added in a later
 # wave needs this line too — and, unless it's meant to stay informational like
 # `visual-diff`, an entry in `gate.needs`.
@@ -161,6 +162,32 @@ jobs:
       # test failure.
       - run: pnpm typecheck:sandcastle
       - run: pnpm test:sandcastle
+
+  crap:
+    # CRAP 30 per function (scripts/crap-gate.mjs), against the frozen list in
+    # scripts/gate/crap-frozen.json. Its own job, not a `checks` leg: a leg runs
+    # alone on its runner, so it would find no coverage map and fail loud. This
+    # job writes the maps itself first, with the same two suites the local gate
+    # runs ahead of it. `turbo run test` hits the shared remote cache when the
+    # `test` leg already primed it, and a hit restores each workspace's map
+    # (turbo.json's `test.outputs`), so the cost here is mostly the hermetic
+    # suite. Locally there is no second run: the check follows `test` and
+    # `sandcastle` in the manifest.
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
+    runs-on: ubuntu-24.04-arm
+    # The `checks` ceiling: a cold cache pays for every suite before scoring.
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - run: corepack enable
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm turbo run test
+      - run: pnpm test:sandcastle
+      - run: node scripts/crap-gate.mjs
 
   e2e:
     # The acceptance suite (apps/e2e): Gherkin scenarios compiled by playwright-bdd,
@@ -411,7 +438,7 @@ jobs:
     # versus seven separate jobs: the failure echo below no longer names which
     # leg failed — the checks list still does, the log line just doesn't
     # repeat it.
-    needs: [checks, sandcastle, e2e]
+    needs: [checks, sandcastle, crap, e2e]
     if: always() && (github.event_name != 'pull_request' || github.event.pull_request.draft == false)
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 2
