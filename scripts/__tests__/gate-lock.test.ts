@@ -16,6 +16,7 @@ import { join, resolve } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
+// @ts-expect-error — plain .mjs with JSDoc types, no declaration file.
 import { acquire, release } from '../gate/lock.mjs';
 
 /**
@@ -315,7 +316,7 @@ describe('reading the lock holder', () => {
       checkout: '/this/checkout',
       tier: 'fast',
       wait: false,
-      write: (line) => lines.push(line),
+      write: (line: string) => lines.push(line),
     });
 
   beforeEach(() => {
