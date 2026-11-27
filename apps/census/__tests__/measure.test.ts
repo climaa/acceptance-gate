@@ -35,10 +35,18 @@ const { fake, libs } = vi.hoisted(() => {
     },
     libs: {
       testedAsProcess: vi.fn((_texts: string[], _code: string[]) => new Set<string>()),
-      unmappedFeatures: vi.fn((_names: string[]): string[] => []),
-      validateMeasurement: vi.fn((_m: unknown): string[] => []),
+      unmappedFeatures: vi.fn((_names: string[], _map?: unknown): string[] => []),
+      readConfig: vi.fn(
+        (
+          value: unknown,
+          _checkout: { has: (p: string) => boolean; featureNames: string[] },
+        ): { config?: unknown; problems?: string[] } => ({ config: value }),
+      ),
+      validateMeasurement: vi.fn((_m: unknown, _map?: unknown): string[] => []),
       validateHistory: vi.fn((_h: unknown): string[] => []),
-      historyPoint: vi.fn((_m: unknown, extra: unknown) => ({ point: extra })),
+      historyPoint: vi.fn((_m: unknown, extra: unknown, _map?: unknown) => ({
+        point: extra,
+      })),
       withPoint: vi.fn((history: { points: unknown[] } | undefined, point: unknown) => ({
         points: [...(history?.points ?? []), point],
       })),
@@ -81,8 +89,25 @@ vi.mock('node:child_process', () => ({
   spawnSync: (...call: unknown[]) => fake.spawn(...call),
 }));
 
+/** What this repository says about itself, cut down to what the wiring reads. */
+const HOME_CONFIG = {
+  repo: 'climaa/acceptance-gate',
+  storybook: 'apps/storybook',
+  sharedVitestConfig: 'vitest.sandcastle.config.mts',
+  pseudoWorkspaces: [{ name: 'scripts/', path: 'scripts' }],
+};
+
+vi.mock('../lib/config.ts', () => ({
+  CHECKOUT_CONFIG: 'census.config.json',
+  DEFAULT_CONFIG: {
+    repo: 'climaa/acceptance-gate',
+    storybook: 'apps/storybook',
+    sharedVitestConfig: 'vitest.sandcastle.config.mts',
+    pseudoWorkspaces: [{ name: 'scripts/', path: 'scripts' }],
+  },
+  readConfig: libs.readConfig,
+}));
 vi.mock('../lib/assemble.ts', () => ({
-  PSEUDO_WORKSPACES: [{ name: 'scripts/', path: 'scripts' }],
   categoryOf: (p: string) => (p.startsWith('apps/') ? 'apps' : 'other'),
   gapCounts: () => ({ 'uncovered-file': 1 }),
   gapDiff: () => ({ opened: ['opened-gap'], closed: ['closed-gap'] }),
@@ -128,7 +153,6 @@ vi.mock('../lib/collect/visual.ts', () => ({
   uiVisual: () => ({ value: { dimension: 'visual', state: 'ui' }, unstoried: [] }),
 }));
 vi.mock('../lib/features.ts', () => ({
-  APP_WORKSPACES: { storybook: 'apps/storybook' },
   featureName: (file: string) => path.basename(file, '.feature'),
   unmappedFeatures: libs.unmappedFeatures,
 }));
@@ -167,7 +191,8 @@ const FALLOW_REPORT = {
  * config), e2e (a config with no coverage block), an empty app, packages/ui
  * (whose coverage run writes no summary) and the shared-config `scripts/`.
  */
-function seedRepository() {
+function seedRepository(base = ROOT) {
+  const at = (p: string) => path.join(base, p);
   const json = (p: string, value: unknown) =>
     fake.files.set(at(p), JSON.stringify(value));
   for (const name of ['census', 'storybook', 'e2e', 'blank'])
@@ -236,7 +261,7 @@ function spawnTools(
   args: string[],
   opts: { cwd: string; env: Record<string, string> },
 ) {
-  if (command === 'npx')
+  if (command === 'npx' || args[1] === 'fallow')
     return { status: 1, stdout: JSON.stringify(FALLOW_REPORT), stderr: '' };
   if (args[0] !== 'exec') return { status: 0, stdout: '', stderr: '' };
   fake.files.set(flag(args, '--outputFile')!, JSON.stringify({ numTotalTests: 3 }));
@@ -246,7 +271,7 @@ function spawnTools(
       path.join(reports, 'coverage-final.json'),
       JSON.stringify({ [reports]: {} }),
     );
-    if (opts.cwd !== at('packages/ui'))
+    if (!opts.cwd.endsWith('packages/ui'))
       fake.files.set(path.join(reports, 'coverage-summary.json'), '{}');
   }
   // Where the script told the suite's child processes to leave their V8 coverage.
@@ -266,7 +291,7 @@ const dimension = (name: string) =>
   Object.fromEntries(written().workspaces.map((ws) => [ws.path, ws.dimensions[name]]));
 const vitestRuns = () =>
   fake.spawn.mock.calls.filter(
-    ([command, args]) => command === 'pnpm' && args[0] === 'exec',
+    ([command, args]) => command === 'pnpm' && args[1] === 'vitest',
   );
 
 describe('census:measure', () => {
@@ -532,6 +557,225 @@ describe('census:measure', () => {
         'features missing from apps/census/lib/features.ts: new-thing',
       );
       expect(exit).toHaveBeenCalledWith(1);
+    });
+  });
+
+  describe('measuring another checkout (--root, --out)', () => {
+    const OTHER = '/elsewhere/landing-lab';
+    const DATA = '/data/landing-lab';
+    const there = (p: string) => path.join(OTHER, p);
+    const CHILD_CONFIG = {
+      ...HOME_CONFIG,
+      repo: 'climaa/landing-lab',
+      apps: { web: 'apps/web' },
+    };
+    const elsewhere = (...extra: string[]) => {
+      process.argv = [
+        process.argv[0]!,
+        'vitest',
+        '--root',
+        OTHER,
+        '--out',
+        DATA,
+        ...extra,
+      ];
+    };
+    const writtenThere = () =>
+      JSON.parse(fake.files.get(path.join(DATA, 'measurement.json'))!) as Measurement & {
+        repo: string;
+      };
+
+    beforeEach(() => {
+      fake.files.clear();
+      seedRepository(OTHER);
+      fake.files.set(there('census.config.json'), JSON.stringify(CHILD_CONFIG));
+      fake.files.set(
+        there('node_modules/fallow/package.json'),
+        JSON.stringify({ version: '3.30.0' }),
+      );
+      elsewhere();
+    });
+
+    it('writes both files and the checkout’s config under --out, and nothing inside the checkout', async () => {
+      const before = [...fake.files.keys()].filter((k) => k.startsWith(`${OTHER}/`));
+
+      await measure();
+
+      expect(writtenThere().repo).toBe('climaa/landing-lab');
+      expect(fake.files.has(path.join(DATA, 'history.json'))).toBe(true);
+      expect(JSON.parse(fake.files.get(path.join(DATA, 'census.config.json'))!)).toEqual(
+        CHILD_CONFIG,
+      );
+      expect([...fake.files.keys()].filter((k) => k.startsWith(`${OTHER}/`))).toEqual(
+        before,
+      );
+      expect(fake.written.size).toBe(0);
+    });
+
+    it('runs every tool inside the checkout, its reports under --out', async () => {
+      await measure();
+
+      for (const [, , opts] of fake.spawn.mock.calls)
+        expect((opts as { cwd: string }).cwd.startsWith(OTHER)).toBe(true);
+      for (const [, args, opts] of vitestRuns()) {
+        expect(flag(args as string[], '--outputFile')).toContain(`${DATA}/.census/`);
+        expect((opts as { env: Record<string, string> }).env.NODE_V8_COVERAGE).toBe(
+          `${DATA}/.census/child-coverage`,
+        );
+      }
+    });
+
+    it('runs the fallow the checkout pins, and names its version', async () => {
+      await measure();
+
+      const fallowRuns = fake.spawn.mock.calls.filter(([, args]) =>
+        (args as string[]).includes('--format'),
+      );
+      expect(fallowRuns.length).toBeGreaterThan(0);
+      for (const [command, args] of fallowRuns) {
+        expect(command).toBe('pnpm');
+        expect((args as string[]).slice(0, 2)).toEqual(['exec', 'fallow']);
+      }
+      expect(writtenThere().tools.fallow).toBe('3.30.0');
+    });
+
+    it('reads vitest’s version from the first workspace that has it', async () => {
+      fake.files.delete(there('apps/census/node_modules/vitest/package.json'));
+      fake.files.set(
+        there('packages/ui/node_modules/vitest/package.json'),
+        JSON.stringify({ version: '5.9.9' }),
+      );
+
+      await measure();
+
+      expect(writtenThere().tools.vitest).toBe('5.9.9');
+    });
+
+    it('exits when a tool is installed nowhere it looked', async () => {
+      fake.files.delete(there('node_modules/fallow/package.json'));
+
+      await expect(measure()).rejects.toThrow('exit 1');
+
+      expect(logged()).toContain('fallow is installed in none of: .');
+    });
+
+    it('hands the checkout’s config to every rule that reads the feature map', async () => {
+      await measure();
+
+      expect(libs.unmappedFeatures.mock.calls[0]![1]).toEqual(CHILD_CONFIG);
+      expect(libs.validateMeasurement.mock.calls[0]![1]).toEqual(CHILD_CONFIG);
+      expect(libs.historyPoint.mock.calls[0]![2]).toEqual(CHILD_CONFIG);
+    });
+
+    it('tells the validator what the checkout holds', async () => {
+      await measure();
+
+      const [value, checkout] = libs.readConfig.mock.calls[0]!;
+      expect(value).toEqual(CHILD_CONFIG);
+      expect(checkout.featureNames).toEqual(['census', 'smoke']);
+      expect(checkout.has('apps/census')).toBe(true);
+      expect(checkout.has('apps/nowhere')).toBe(false);
+    });
+
+    it('compares against the measurement already under --out, and extends its history', async () => {
+      fake.files.set(path.join(DATA, 'measurement.json'), JSON.stringify({ gaps: [] }));
+      fake.files.set(
+        path.join(DATA, 'history.json'),
+        JSON.stringify({ points: ['earlier'] }),
+      );
+
+      await measure();
+
+      const history = JSON.parse(fake.files.get(path.join(DATA, 'history.json'))!) as {
+        points: unknown[];
+      };
+      expect(history.points).toHaveLength(2);
+      expect(history.points[0]).toBe('earlier');
+    });
+
+    it('names census.config.json when a feature is not mapped', async () => {
+      libs.unmappedFeatures.mockReturnValueOnce(['new-thing']);
+
+      await expect(measure()).rejects.toThrow('exit 1');
+
+      expect(logged()).toContain('features missing from census.config.json: new-thing');
+    });
+
+    it('refuses a checkout with no census.config.json, before any suite runs', async () => {
+      fake.files.delete(there('census.config.json'));
+
+      await expect(measure()).rejects.toThrow('exit 1');
+
+      expect(logged()).toContain(`${there('census.config.json')} is missing`);
+      expect(fake.spawn).not.toHaveBeenCalled();
+    });
+
+    it('refuses a config that is not JSON', async () => {
+      fake.files.set(there('census.config.json'), '{ nope');
+
+      await expect(measure()).rejects.toThrow('exit 1');
+
+      expect(logged()).toContain('is not JSON');
+      expect(fake.spawn).not.toHaveBeenCalled();
+    });
+
+    it('lists every problem the validator finds, before any suite runs', async () => {
+      libs.readConfig.mockReturnValueOnce({
+        problems: [
+          'apps.web: apps/web is not a workspace',
+          'features: x.feature is not mapped to an app',
+        ],
+      });
+
+      await expect(measure()).rejects.toThrow('exit 1');
+
+      expect(logged()).toContain('has 2 problem(s)');
+      expect(logged()).toContain('apps.web: apps/web is not a workspace');
+      expect(logged()).toContain('features: x.feature is not mapped to an app');
+      expect(fake.spawn).not.toHaveBeenCalled();
+    });
+
+    it('refuses --root without --out, and --out without --root', async () => {
+      process.argv = [process.argv[0]!, 'vitest', '--root', OTHER];
+      await expect(measure()).rejects.toThrow('exit 1');
+      process.argv = [process.argv[0]!, 'vitest', '--out', DATA];
+      await expect(measure()).rejects.toThrow('exit 1');
+
+      expect(logged().match(/go together/g)).toHaveLength(2);
+      expect(fake.spawn).not.toHaveBeenCalled();
+    });
+
+    it('refuses a flag with no directory after it', async () => {
+      process.argv = [process.argv[0]!, 'vitest', '--root', '--out', DATA];
+
+      await expect(measure()).rejects.toThrow('exit 1');
+
+      expect(logged()).toContain('--root needs a directory');
+    });
+
+    it('refuses a --root that does not exist', async () => {
+      process.argv = [process.argv[0]!, 'vitest', '--root', '/nowhere', '--out', DATA];
+
+      await expect(measure()).rejects.toThrow('exit 1');
+
+      expect(logged()).toContain('--root /nowhere does not exist');
+    });
+
+    it('measures a checkout with no shared vitest config: its pseudo-workspaces run no suite', async () => {
+      fake.files.set(
+        there('census.config.json'),
+        JSON.stringify({ ...CHILD_CONFIG, sharedVitestConfig: null }),
+      );
+
+      await measure();
+
+      const scripts = writtenThere().workspaces.find((ws) => ws.path === 'scripts')!;
+      expect(scripts.dimensions.code).toEqual({
+        dimension: 'code',
+        state: 'unmeasured',
+        reason: 'No vitest config',
+      });
+      for (const [, args] of vitestRuns()) expect(args).not.toContain('--config');
     });
   });
 });

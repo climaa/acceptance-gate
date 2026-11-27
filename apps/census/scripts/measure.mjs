@@ -12,6 +12,13 @@
 // It refuses a dirty tree (the measurement names a commit, and a dirty tree is not
 // that commit) unless `--allow-dirty` is passed, and it writes nothing when either
 // file fails validation: it prints every failing path and exits 1.
+//
+// `--root <checkout> --out <dir>` measures ANOTHER checkout with this code: a
+// repository seeded from this one, which carries a `census.config.json` at its
+// root (lib/config.ts) and none of census. Both files, a copy of the config and
+// the scratch directory then go under `<dir>`, and nothing is written inside the
+// checkout that git would report. Its suites run under whatever Node is first on
+// PATH, so the caller puts the checkout's own there.
 import { execFileSync, spawnSync } from 'node:child_process';
 import {
   existsSync,
@@ -21,11 +28,10 @@ import {
   rmSync,
   writeFileSync,
 } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
+import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import {
-  PSEUDO_WORKSPACES,
   categoryOf,
   gapCounts,
   gapDiff,
@@ -48,26 +54,32 @@ import {
   storyParts,
   uiVisual,
 } from '../lib/collect/visual.ts';
-import { APP_WORKSPACES, featureName, unmappedFeatures } from '../lib/features.ts';
+import { CHECKOUT_CONFIG, DEFAULT_CONFIG, readConfig } from '../lib/config.ts';
+import { featureName, unmappedFeatures } from '../lib/features.ts';
 import { deriveGaps } from '../lib/gaps.ts';
 import { validateHistory, validateMeasurement } from '../lib/validate.ts';
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
-const OUT = join(ROOT, '.census');
+const HERE = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
+const FALLOW_VERSION = '3.36.0';
+/**
+ * What one run measures and where it writes. This repository until `main()` reads
+ * `--root` and `--out`; `target()` is the only place that sets them.
+ */
+/** The checkout being measured. */
+let ROOT = HERE;
+/** Scratch: every suite's reports and fallow's snapshot. Emptied at the start of a run. */
+let OUT = join(ROOT, '.census');
 /**
  * Where every suite's child processes write their NODE_V8_COVERAGE files: the
  * evidence a script its tests spawn was run, which vitest's coverage cannot see.
  */
-const CHILDREN = join(OUT, 'child-coverage');
-const CENSUS = join(ROOT, 'apps', 'census');
-const FALLOW = ['-y', 'fallow@3.36.0'];
-const SHARED_CONFIG = 'vitest.sandcastle.config.mts';
-/** The pseudo-workspaces the shared hermetic config measures: none has a config of its own. */
-const SHARED_CONFIG_PATHS = new Set([
-  'scripts',
-  '.sandcastle',
-  '.claude/skills/pixel-perfect-session',
-]);
+let CHILDREN = join(OUT, 'child-coverage');
+/** Where measurement.json and history.json are read from and written to. */
+let DATA = join(ROOT, 'apps', 'census');
+/** What the measured repository says about itself (lib/config.ts). */
+let CONFIG = DEFAULT_CONFIG;
+/** Another checkout is being measured: its own fallow, its config beside the output. */
+let ELSEWHERE = false;
 const CONFIG_NAMES = [
   'vitest.config.mts',
   'vitest.config.ts',
@@ -93,6 +105,55 @@ function fail(message) {
   process.exit(1);
 }
 
+/** The value after a flag, as an absolute path; `undefined` when the flag is absent. */
+function pathFlag(name) {
+  const at = process.argv.indexOf(name);
+  if (at === -1) return undefined;
+  const value = process.argv[at + 1];
+  if (!value || value.startsWith('--')) fail(`${name} needs a directory`);
+  return resolve(value);
+}
+
+/** The checkout's own `census.config.json`, or exit naming every problem with it. */
+function checkoutConfig() {
+  const file = join(ROOT, CHECKOUT_CONFIG);
+  if (!existsSync(file))
+    fail(`${file} is missing: a checkout measured with --root says what it is there`);
+  let value;
+  try {
+    value = readJson(file);
+  } catch (error) {
+    fail(`${file} is not JSON: ${error.message}`);
+  }
+  const read = readConfig(value, {
+    has: (path) => existsSync(join(ROOT, path)),
+    featureNames: tracked('apps/e2e/features/**/*.feature').map(featureName),
+  });
+  if (read.problems)
+    fail(
+      `${file} has ${read.problems.length} problem(s):\n  ${read.problems.join('\n  ')}`,
+    );
+  return read.config;
+}
+
+/** Point the run at another checkout when `--root` and `--out` say so. */
+function target() {
+  const root = pathFlag('--root');
+  const out = pathFlag('--out');
+  if (root === undefined && out === undefined) return;
+  if (root === undefined || out === undefined)
+    fail(
+      '--root <checkout> and --out <dir> go together: one names what is measured, the other where it is written',
+    );
+  if (!existsSync(root)) fail(`--root ${root} does not exist`);
+  ROOT = root;
+  DATA = out;
+  OUT = join(out, '.census');
+  CHILDREN = join(OUT, 'child-coverage');
+  ELSEWHERE = true;
+  CONFIG = checkoutConfig();
+}
+
 /** Run a command; its stdout, or exit with what it printed. */
 function run(command, args, cwd = ROOT, { allowExit = false, env = {} } = {}) {
   const result = spawnSync(command, args, {
@@ -116,7 +177,7 @@ function workspaces() {
       path: dirname(file),
     }),
   );
-  return [...packages, ...PSEUDO_WORKSPACES].map((ws) => ({
+  return [...packages, ...CONFIG.pseudoWorkspaces].map((ws) => ({
     ...ws,
     category: categoryOf(ws.path),
   }));
@@ -124,7 +185,9 @@ function workspaces() {
 
 /** The vitest config a workspace runs under, repo-relative, if any. */
 function configOf(ws) {
-  if (SHARED_CONFIG_PATHS.has(ws.path)) return SHARED_CONFIG;
+  // The pseudo-workspaces have no config of their own: the shared hermetic one measures them.
+  if (CONFIG.pseudoWorkspaces.some((pseudo) => pseudo.path === ws.path))
+    return CONFIG.sharedVitestConfig ?? undefined;
   const name = CONFIG_NAMES.find((n) => existsSync(join(ROOT, ws.path, n)));
   return name ? `${ws.path}/${name}` : undefined;
 }
@@ -133,7 +196,7 @@ function configOf(ws) {
 function runSuite(config, dir) {
   const measured = hasCoverageBlock(readFileSync(join(ROOT, config), 'utf8'));
   const out = join(OUT, dir);
-  const shared = config === SHARED_CONFIG;
+  const shared = config === CONFIG.sharedVitestConfig;
   const coverage = measured
     ? [
         '--coverage.reporter=json-summary',
@@ -203,8 +266,12 @@ function mergeCoverage(runs) {
 }
 
 function fallow(args) {
+  // Another checkout runs the fallow it pins; this one, the version named above.
+  const [command, prefix] = ELSEWHERE
+    ? ['pnpm', ['exec', 'fallow']]
+    : ['npx', ['-y', `fallow@${FALLOW_VERSION}`]];
   const parsed = JSON.parse(
-    run('npx', [...FALLOW, ...args, '--format', 'json'], ROOT, { allowExit: true }),
+    run(command, [...prefix, ...args, '--format', 'json'], ROOT, { allowExit: true }),
   );
   if (parsed.error) fail(`fallow ${args.join(' ')}: ${parsed.message}`);
   return parsed;
@@ -237,7 +304,7 @@ function fallowReports(coverage) {
     '--report-only',
     ...cov,
     '--save-snapshot',
-    join('.census', 'snapshot.json'),
+    relative(ROOT, join(OUT, 'snapshot.json')),
   ]);
   return {
     health,
@@ -273,11 +340,12 @@ function storybookStories() {
     'turbo',
     'run',
     'build',
-    '--filter=@gate/storybook',
+    `--filter=${readJson(join(ROOT, CONFIG.storybook, 'package.json')).name}`,
     '--output-logs=errors-only',
   ]);
   return indexStories(
-    readJson(join(ROOT, 'apps', 'storybook', 'storybook-static', 'index.json')),
+    readJson(join(ROOT, CONFIG.storybook, 'storybook-static', 'index.json')),
+    CONFIG.storybook,
   );
 }
 
@@ -313,9 +381,11 @@ function visualSources() {
 
 function featureCounts() {
   const files = tracked('apps/e2e/features/**/*.feature');
-  const unmapped = unmappedFeatures(files.map(featureName));
+  const unmapped = unmappedFeatures(files.map(featureName), CONFIG);
   if (unmapped.length > 0)
-    fail(`features missing from apps/census/lib/features.ts: ${unmapped.join(', ')}`);
+    fail(
+      `features missing from ${ELSEWHERE ? CHECKOUT_CONFIG : 'apps/census/lib/features.ts'}: ${unmapped.join(', ')}`,
+    );
   const counts = Object.fromEntries(
     files.map((f) => [
       featureName(f),
@@ -381,7 +451,7 @@ function visualDimension(ws, stories, sources) {
       subjects: { ...NO_SUBJECTS, incomplete: parts, unstoried: ui.unstoried },
     };
   }
-  if (ws.path === APP_WORKSPACES.storybook) {
+  if (ws.path === CONFIG.storybook) {
     return {
       value: {
         dimension: 'visual',
@@ -454,8 +524,13 @@ function measureWorkspaces(list, inputs) {
   return { workspaces: measured, subjects, parts };
 }
 
-function versionOf(pkg, from) {
-  return readJson(join(ROOT, from, 'node_modules', pkg, 'package.json')).version;
+/** The installed version of a package, read from the first of `froms` that depends on it. */
+function versionOf(pkg, froms) {
+  const manifest = froms
+    .map((from) => join(ROOT, from, 'node_modules', pkg, 'package.json'))
+    .find((file) => existsSync(file));
+  if (!manifest) fail(`${pkg} is installed in none of: ${froms.join(', ')}`);
+  return readJson(manifest).version;
 }
 
 function refuseDirtyTree() {
@@ -475,7 +550,7 @@ function refuseDirtyTree() {
 }
 
 function readCommitted(name) {
-  const path = join(CENSUS, name);
+  const path = join(DATA, name);
   return existsSync(path) ? readJson(path) : undefined;
 }
 
@@ -493,7 +568,7 @@ function report(measurement, before) {
 
 function write(measurement, history) {
   const problems = [
-    ...validateMeasurement(measurement).map((p) => `measurement.json ${p}`),
+    ...validateMeasurement(measurement, CONFIG).map((p) => `measurement.json ${p}`),
     ...validateHistory(history).map((p) => `history.json ${p}`),
   ];
   if (problems.length > 0)
@@ -501,13 +576,29 @@ function write(measurement, history) {
       `nothing was written; ${problems.length} problem(s):\n  ${problems.join('\n  ')}`,
     );
   writeFileSync(
-    join(CENSUS, 'measurement.json'),
+    join(DATA, 'measurement.json'),
     `${JSON.stringify(measurement, null, 2)}\n`,
   );
-  writeFileSync(join(CENSUS, 'history.json'), `${JSON.stringify(history, null, 2)}\n`);
+  writeFileSync(join(DATA, 'history.json'), `${JSON.stringify(history, null, 2)}\n`);
+  // Beside another checkout's numbers, what it said about itself: whoever reads
+  // the two files needs its feature map to read them.
+  if (ELSEWHERE)
+    writeFileSync(join(DATA, CHECKOUT_CONFIG), `${JSON.stringify(CONFIG, null, 2)}\n`);
+}
+
+/** The tools' versions: this repository names its fallow, another checkout has its own installed. */
+function toolVersions(list) {
+  const anywhere = list.map((ws) => ws.path);
+  return {
+    vitest: versionOf('vitest', ['apps/census', ...anywhere]),
+    fallow: ELSEWHERE ? versionOf('fallow', ['.']) : FALLOW_VERSION,
+    storybook: versionOf('storybook', [CONFIG.storybook]),
+    node: process.versions.node,
+  };
 }
 
 export function main() {
+  target();
   refuseDirtyTree();
   rmSync(OUT, { recursive: true, force: true });
   mkdirSync(OUT, { recursive: true });
@@ -524,19 +615,14 @@ export function main() {
     reports,
     stories,
     sources,
-    acceptance: acceptanceValues(features.counts),
+    acceptance: acceptanceValues(features.counts, CONFIG),
   });
   const measurement = {
     schema: 1,
-    repo: 'climaa/acceptance-gate',
+    repo: CONFIG.repo,
     commit: git('rev-parse', 'HEAD'),
     measuredAt: new Date().toISOString(),
-    tools: {
-      vitest: versionOf('vitest', 'apps/census'),
-      fallow: '3.36.0',
-      storybook: versionOf('storybook', 'apps/storybook'),
-      node: process.versions.node,
-    },
+    tools: toolVersions(list),
     pyramid: {
       unit: [...runs.values()].reduce((sum, r) => sum + r.tests, 0),
       visual: sources.baselines.length,
@@ -544,14 +630,18 @@ export function main() {
     },
     health: repositoryHealth(reports),
     workspaces: measured.workspaces,
-    gaps: deriveGaps(measured.workspaces, measured.subjects),
+    gaps: deriveGaps(measured.workspaces, measured.subjects, CONFIG),
   };
   const overCeiling = reports.complexity.findings.filter((f) => f.cognitive > 20).length;
-  const point = historyPoint(measurement, {
-    visual: visualHeadline(measured.parts),
-    dupPct: reports.health.vital_signs.duplication_pct,
-    overCeiling,
-  });
+  const point = historyPoint(
+    measurement,
+    {
+      visual: visualHeadline(measured.parts),
+      dupPct: reports.health.vital_signs.duplication_pct,
+      overCeiling,
+    },
+    CONFIG,
+  );
   const before = readCommitted('measurement.json');
   write(measurement, withPoint(readCommitted('history.json'), point));
   report(measurement, before);
