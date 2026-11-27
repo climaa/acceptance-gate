@@ -110,21 +110,6 @@
     "crap": 90
   },
   {
-    "path": "scripts/gate/run.mjs",
-    "name": "parse",
-    "crap": 72
-  },
-  {
-    "path": "scripts/gate/run.mjs",
-    "name": "run",
-    "crap": 210
-  },
-  {
-    "path": "scripts/gate/run.mjs",
-    "name": "runCheck",
-    "crap": 42
-  },
-  {
     "path": "scripts/pen/check-colours.js",
     "name": "<arrow>",
     "crap": 90
