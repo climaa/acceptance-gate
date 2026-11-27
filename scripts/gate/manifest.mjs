@@ -116,6 +116,19 @@ export const CHECKS = [
     why: 'The orchestrator is not a turbo workspace, so turbo never sees it.',
   },
   {
+    // After `test` and `sandcastle`, and it has to stay there: it scores the
+    // coverage maps those two checks just wrote, so the local gate pays for one
+    // merge and one fallow run, never a second test run. No `setup` for that
+    // reason, since `run.mjs` runs a setup locally too. In CI the `crap` job is
+    // alone on its runner, so it runs both suites as steps of its own first
+    // (pr.yml). No map, or a map fallow cannot read, fails the check loud.
+    name: 'crap',
+    job: 'own',
+    command: 'node scripts/crap-gate.mjs',
+    tier: 'fast',
+    why: 'CRAP 30 per function: a function new to it, or above its frozen value, needs tests first and extraction second.',
+  },
+  {
     // Bare `turbo`, with no `dotenv -e .env -o --` in front of it. The root's
     // `dev`/`build`/`test` scripts all load `.env`, and `.env` is gitignored —
     // so a gate that read it would pass or fail on a file no reviewer sees, and
