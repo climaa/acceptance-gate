@@ -115,11 +115,6 @@
     "crap": 30
   },
   {
-    "path": "scripts/gate/receipt.mjs",
-    "name": "findReceipt",
-    "crap": 56
-  },
-  {
     "path": "scripts/gate/run.mjs",
     "name": "parse",
     "crap": 72
