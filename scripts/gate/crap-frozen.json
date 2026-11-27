@@ -110,11 +110,6 @@
     "crap": 90
   },
   {
-    "path": "scripts/gate/pre-push.mjs",
-    "name": "verify",
-    "crap": 30
-  },
-  {
     "path": "scripts/gate/run.mjs",
     "name": "parse",
     "crap": 72
