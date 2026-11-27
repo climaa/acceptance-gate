@@ -94,4 +94,33 @@ describe('the notes card', () => {
       `<div class="ds-code census-rerun"><pre class="ds-code__pre" tabindex="0"><code>${rerun}</code></pre></div>`,
     );
   });
+
+  it('offers the JSON download when the measurement has a URL', () => {
+    // Arrange
+    const exports = { jsonHref: '/measurement.json', markdown: '' };
+
+    // Act
+    const html = renderToStaticMarkup(
+      createElement(NotesCard, { notes: [], rerun: '', exports }),
+    );
+
+    // Assert
+    expect(html).toContain('href="/measurement.json"');
+  });
+
+  it('omits the JSON download for a local measurement, keeping the Markdown copy', () => {
+    // Arrange
+    const exports = { jsonHref: null, markdown: '' };
+
+    // Act
+    const html = renderToStaticMarkup(
+      createElement(NotesCard, { notes: [], rerun: '', exports }),
+    );
+
+    // Assert
+    expect([html.includes('Download JSON'), html.includes('Copy Markdown')]).toEqual([
+      false,
+      true,
+    ]);
+  });
 });
