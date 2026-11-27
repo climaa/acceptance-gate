@@ -1,4 +1,11 @@
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 
@@ -16,6 +23,8 @@ import {
   coverageOf,
   coverageProblem,
   failureLines,
+  freezeLines,
+  freezeList,
   judge,
   main,
   mapsProblem,
@@ -23,6 +32,7 @@ import {
   offenders,
   readFrozen,
   rebase,
+  roundUp,
   suites,
   // @ts-expect-error — plain .mjs with JSDoc types, no declaration file.
 } from '../crap-gate.mjs';
@@ -443,6 +453,156 @@ describe('failureLines', () => {
   });
 });
 
+describe('roundUp', () => {
+  it.each([
+    [210, 210],
+    [71.3, 71.3],
+    [116.3, 116.3],
+    [30.01, 30.1],
+    [53.249, 53.3],
+  ])('rounds %d up to one decimal as %d', (crap, rounded) => {
+    // Arrange: the CRAP is the table row.
+
+    // Act
+    const value = roundUp(crap);
+
+    // Assert
+    expect(value).toBe(rounded);
+  });
+});
+
+describe('freezeList', () => {
+  const found = (path: string, name: string, crap: number): Finding => ({
+    path,
+    name,
+    line: 1,
+    cyclomatic: 9,
+    crap,
+  });
+
+  it('writes the first list from every offender, sorted by path then name, values rounded up', () => {
+    // Arrange
+    const offenders = [
+      found('scripts/gate/run.mjs', 'run', 210),
+      found('apps/e2e/pages/link-preview.ts', 'parsePreview', 90.01),
+      found('scripts/gate/run.mjs', 'parse', 42),
+    ];
+
+    // Act
+    const result = freezeList(offenders, null);
+
+    // Assert
+    expect(result).toEqual({
+      list: [
+        { path: 'apps/e2e/pages/link-preview.ts', name: 'parsePreview', crap: 90.1 },
+        { path: 'scripts/gate/run.mjs', name: 'parse', crap: 42 },
+        { path: 'scripts/gate/run.mjs', name: 'run', crap: 210 },
+      ],
+      refused: [],
+    });
+  });
+
+  it('keeps the worst score when two functions share a path and a name', () => {
+    // Arrange
+    const offenders = [
+      found('scripts/a.mjs', '<arrow>', 40),
+      found('scripts/a.mjs', '<arrow>', 240),
+    ];
+
+    // Act
+    const { list } = freezeList(offenders, null);
+
+    // Assert
+    expect(list).toEqual([{ path: 'scripts/a.mjs', name: '<arrow>', crap: 240 }]);
+  });
+
+  it('lowers a value and drops an entry whose function fell under 30', () => {
+    // Arrange
+    const frozen = [
+      { path: 'scripts/a.mjs', name: 'f', crap: 90 },
+      { path: 'scripts/a.mjs', name: 'g', crap: 60 },
+    ];
+
+    // Act
+    const result = freezeList([found('scripts/a.mjs', 'f', 45)], frozen);
+
+    // Assert
+    expect(result).toEqual({
+      list: [{ path: 'scripts/a.mjs', name: 'f', crap: 45 }],
+      refused: [],
+    });
+  });
+
+  it('keeps a value that did not move', () => {
+    // Arrange
+    const frozen = [{ path: 'scripts/a.mjs', name: 'f', crap: 71.3 }];
+
+    // Act
+    const result = freezeList([found('scripts/a.mjs', 'f', 71.3)], frozen);
+
+    // Assert
+    expect(result).toEqual({ list: frozen, refused: [] });
+  });
+
+  it('refuses to add a function the list does not hold', () => {
+    // Arrange
+    const frozen = [{ path: 'scripts/a.mjs', name: 'f', crap: 90 }];
+    const offenders = [found('scripts/a.mjs', 'f', 90), found('scripts/b.mjs', 'h', 31)];
+
+    // Act
+    const { refused } = freezeList(offenders, frozen);
+
+    // Assert
+    expect(refused).toEqual([
+      { entry: { path: 'scripts/b.mjs', name: 'h', crap: 31 }, frozen: null },
+    ]);
+  });
+
+  it('refuses to raise a listed value, even by its rounding', () => {
+    // Arrange
+    const frozen = [{ path: 'scripts/a.mjs', name: 'f', crap: 90 }];
+
+    // Act
+    const { refused } = freezeList([found('scripts/a.mjs', 'f', 90.01)], frozen);
+
+    // Assert
+    expect(refused).toEqual([
+      { entry: { path: 'scripts/a.mjs', name: 'f', crap: 90.1 }, frozen: 90 },
+    ]);
+  });
+
+  it('refuses a list that was emptied, since nothing may be added to it', () => {
+    // Arrange: a committed list with no entry left.
+
+    // Act
+    const { refused } = freezeList([found('scripts/a.mjs', 'f', 30)], []);
+
+    // Assert
+    expect(refused).toHaveLength(1);
+  });
+});
+
+describe('freezeLines', () => {
+  it('names each refused function and says what --freeze may do', () => {
+    // Arrange
+    const refused = [
+      { entry: { path: 'scripts/b.mjs', name: 'h', crap: 31 }, frozen: null },
+      { entry: { path: 'scripts/a.mjs', name: 'f', crap: 90.1 }, frozen: 90 },
+    ];
+
+    // Act
+    const lines = freezeLines(refused);
+
+    // Assert
+    expect(lines).toEqual([
+      '✗ crap --freeze refused: the frozen list only shrinks, and 2 function(s) would grow it',
+      '    add  h  (scripts/b.mjs) at CRAP 31, not on the list',
+      '    raise  f  (scripts/a.mjs) from 90 to 90.1',
+      `  scripts/gate/crap-frozen.json is unchanged. --freeze may lower a value or drop an entry, never add or raise one; cover these functions with tests instead.`,
+    ]);
+  });
+});
+
 describe('readFrozen', () => {
   it('reads the committed list', () => {
     // Arrange
@@ -574,5 +734,101 @@ describe('main', () => {
     // Assert
     expect(code).toBe(1);
     expect(stderr()).toMatch(/^✗ crap: fallow matched no file of the coverage map/);
+  });
+  describe('--freeze', () => {
+    const listFile = () => join(root, 'scripts/gate/crap-frozen.json');
+    const readList = () => JSON.parse(readFileSync(listFile(), 'utf8'));
+
+    it('writes the first list from every offender, and says how many', () => {
+      // Arrange
+      const report = fixture('measured');
+
+      // Act
+      const code = main({ root, fallow: () => JSON.stringify(report), freeze: true });
+
+      // Assert
+      expect(code).toBe(0);
+      expect(readList()).toHaveLength(39);
+      expect(readList()).toContainEqual({
+        path: 'scripts/gate/run.mjs',
+        name: 'run',
+        crap: 210,
+      });
+      expect(readFileSync(listFile(), 'utf8').endsWith(']\n')).toBe(true);
+      expect(stdout()).toBe(
+        '✓ crap --freeze wrote scripts/gate/crap-frozen.json: 39 function(s), was none.',
+      );
+    });
+
+    it('rewrites the list lower when a listed function went down', () => {
+      // Arrange
+      const report = fixture('measured');
+      freezeAll(report);
+      report.findings.find((f: Finding) => f.name === 'run').crap = 14;
+
+      // Act
+      const code = main({ root, fallow: () => JSON.stringify(report), freeze: true });
+
+      // Assert
+      expect(code).toBe(0);
+      expect(readList()).toHaveLength(38);
+      expect(readList().map((e: { name: string }) => e.name)).not.toContain('run');
+      expect(stdout()).toBe(
+        '✓ crap --freeze wrote scripts/gate/crap-frozen.json: 38 function(s), was 39.',
+      );
+    });
+
+    it('refuses a run that would add an entry, and leaves the list as it was', () => {
+      // Arrange
+      const report = fixture('measured');
+      freezeAll(report);
+      const before = readFileSync(listFile(), 'utf8');
+      report.findings.push({
+        path: 'scripts/gate/run.mjs',
+        name: 'brandNew',
+        line: 9,
+        cyclomatic: 9,
+        crap: 90,
+        coverage_source: 'istanbul',
+      });
+
+      // Act
+      const code = main({ root, fallow: () => JSON.stringify(report), freeze: true });
+
+      // Assert
+      expect(code).toBe(1);
+      expect(readFileSync(listFile(), 'utf8')).toBe(before);
+      expect(stderr()).toContain(
+        '    add  brandNew  (scripts/gate/run.mjs) at CRAP 90, not on the list',
+      );
+    });
+
+    it('refuses a run that would raise a value', () => {
+      // Arrange
+      const report = fixture('measured');
+      freezeAll(report);
+      report.findings.find((f: Finding) => f.name === 'run').crap = 211;
+
+      // Act
+      const code = main({ root, fallow: () => JSON.stringify(report), freeze: true });
+
+      // Assert
+      expect(code).toBe(1);
+      expect(stderr()).toContain(
+        '    raise  run  (scripts/gate/run.mjs) from 210 to 211',
+      );
+    });
+
+    it('writes nothing when the coverage is not real', () => {
+      // Arrange
+      const report = fixture('no-map');
+
+      // Act
+      const code = main({ root, fallow: () => JSON.stringify(report), freeze: true });
+
+      // Assert
+      expect(code).toBe(1);
+      expect(existsSync(listFile())).toBe(false);
+    });
   });
 });

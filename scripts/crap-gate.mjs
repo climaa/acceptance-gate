@@ -22,10 +22,16 @@
 // checkout of this repository, whose paths fallow would not match. So every key
 // is moved onto this checkout's root before fallow sees it.
 //
-//   node scripts/crap-gate.mjs
+// `--freeze` writes the frozen list from the same score, each value rounded up
+// to one decimal. Once the list exists it only shrinks: a run may lower a value
+// or drop an entry whose function fell under 30, and is refused, writing
+// nothing, when it would add an entry or raise a value. The list is written by
+// this command only, never by hand, so the gate cannot be loosened by an edit.
 //
-// Exit 0: every function under 30, or on the list at or under its value.
-// 1: a new or risen function, or no real coverage.
+//   node scripts/crap-gate.mjs [--freeze]
+//
+// Exit 0: every function under 30, or on the list at or under its value; with
+// --freeze, the list written. 1: a new or risen function, or no real coverage.
 import { execFileSync } from 'node:child_process';
 import {
   existsSync,
@@ -248,6 +254,100 @@ export function failureLines(failures) {
 }
 
 /**
+ * `crap` rounded up to one decimal, so a frozen value never sits under the
+ * score it was frozen from. The epsilon keeps 116.3, stored as 116.30000000000001
+ * once multiplied, from rounding up to 116.4.
+ *
+ * @param {number} crap
+ * @returns {number}
+ */
+export function roundUp(crap) {
+  return Math.ceil(Math.round(crap * 1e6) / 1e5) / 10;
+}
+
+/** @param {FrozenEntry} a @param {FrozenEntry} b */
+const byKey = (a, b) =>
+  a.path < b.path
+    ? -1
+    : a.path > b.path
+      ? 1
+      : a.name < b.name
+        ? -1
+        : a.name > b.name
+          ? 1
+          : 0;
+
+/**
+ * The list `found` freezes to, and each entry the existing list `frozen` would
+ * have to add or raise to hold it. `frozen` is null when no list exists yet, so
+ * the first list takes every offender. Two functions with one path and name
+ * share an entry at the worse score, the one the gate compares both against.
+ *
+ * @param {Finding[]} found
+ * @param {FrozenEntry[] | null} frozen
+ * @returns {{ list: FrozenEntry[], refused: { entry: FrozenEntry, frozen: number | null }[] }}
+ */
+export function freezeList(found, frozen) {
+  /** @type {Map<string, FrozenEntry>} */
+  const entries = new Map();
+  for (const f of found) {
+    const entry = { path: f.path, name: f.name, crap: roundUp(f.crap ?? 0) };
+    const seen = entries.get(keyOf(entry));
+    if (!seen || entry.crap > seen.crap) entries.set(keyOf(entry), entry);
+  }
+  const list = [...entries.values()].sort(byKey);
+  if (frozen === null) return { list, refused: [] };
+  const limits = new Map(frozen.map((entry) => [keyOf(entry), entry.crap]));
+  const refused = list
+    .map((entry) => ({ entry, frozen: limits.get(keyOf(entry)) ?? null }))
+    .filter(({ entry, frozen }) => frozen === null || entry.crap > frozen);
+  return { list, refused };
+}
+
+/**
+ * The lines a refused `--freeze` prints: one per function, then what it may do.
+ *
+ * @param {{ entry: FrozenEntry, frozen: number | null }[]} refused
+ * @returns {string[]}
+ */
+export function freezeLines(refused) {
+  const lines = refused.map(({ entry: e, frozen }) =>
+    frozen === null
+      ? `    add  ${e.name}  (${e.path}) at CRAP ${e.crap}, not on the list`
+      : `    raise  ${e.name}  (${e.path}) from ${frozen} to ${e.crap}`,
+  );
+  return [
+    `✗ crap --freeze refused: the frozen list only shrinks, and ${refused.length} function(s) would grow it`,
+    ...lines,
+    `  ${FROZEN_FILE} is unchanged. --freeze may lower a value or drop an entry, never add or raise one; cover these functions with tests instead.`,
+  ];
+}
+
+/**
+ * Writes the list `found` freezes to over the one at `root`, unless it would
+ * grow it. Prints the verdict and returns the exit code.
+ *
+ * @param {string} root
+ * @param {Finding[]} found
+ * @returns {0 | 1}
+ */
+function freeze(root, found) {
+  const file = join(root, FROZEN_FILE);
+  const frozen = existsSync(file) ? readFrozen(root) : null;
+  const { list, refused } = freezeList(found, frozen);
+  if (refused.length > 0) {
+    for (const line of freezeLines(refused)) console.error(line);
+    return 1;
+  }
+  writeFileSync(file, `${JSON.stringify(list, null, 2)}\n`);
+  const was = frozen === null ? 'none' : String(frozen.length);
+  console.log(
+    `✓ crap --freeze wrote ${FROZEN_FILE}: ${list.length} function(s), was ${was}.`,
+  );
+  return 0;
+}
+
+/**
  * The frozen list at `root`; empty when the file does not exist.
  *
  * @param {string} root
@@ -319,12 +419,13 @@ export function mapsProblem(all) {
 }
 
 /**
- * The gate. Prints its verdict and returns the exit code.
+ * The gate, or with `freeze` the list's writer. Prints its verdict and returns
+ * the exit code.
  *
- * @param {{ root?: string, fallow?: (root: string, coverage: string) => string }} [options]
+ * @param {{ root?: string, fallow?: (root: string, coverage: string) => string, freeze?: boolean }} [options]
  * @returns {0 | 1}
  */
-export function main({ root = ROOT, fallow = runFallow } = {}) {
+export function main({ root = ROOT, fallow = runFallow, freeze: freezing = false } = {}) {
   const all = suites(root);
   const missing = mapsProblem(all);
   if (missing !== null) {
@@ -342,6 +443,7 @@ export function main({ root = ROOT, fallow = runFallow } = {}) {
     return 1;
   }
   const found = offenders(report);
+  if (freezing) return freeze(root, found);
   const failures = judge(found, readFrozen(root));
   if (failures.length > 0) {
     for (const line of failureLines(failures)) console.error(line);
@@ -353,4 +455,5 @@ export function main({ root = ROOT, fallow = runFallow } = {}) {
   return 0;
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) process.exit(main());
+if (process.argv[1] === fileURLToPath(import.meta.url))
+  process.exit(main({ freeze: process.argv.includes('--freeze') }));
