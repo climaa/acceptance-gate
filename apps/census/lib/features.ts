@@ -52,6 +52,26 @@ export const LOCAL_FEATURES: ReadonlySet<string> = new Set([
   'visual-diff-flow',
 ]);
 
+/**
+ * What one repository says about its deployed apps and its features. This
+ * repository's is the three constants above; another checkout's comes from its
+ * `census.config.json` (`config.ts`), which is why everything below takes one.
+ */
+export interface FeatureMap {
+  /** Deployed app → the workspace it is built from. */
+  readonly apps: Readonly<Record<string, string>>;
+  /** Feature name → the app it visits. */
+  readonly features: Readonly<Record<string, string>>;
+  /** The features that run on a machine with a data directory, never in the suite. */
+  readonly localFeatures: readonly string[];
+}
+
+export const FEATURE_MAP: FeatureMap = {
+  apps: APP_WORKSPACES,
+  features: FEATURE_APPS,
+  localFeatures: [...LOCAL_FEATURES],
+};
+
 /** `acceptance/visual-diff-shot.feature` → `visual-diff-shot`. */
 export function featureName(file: string): string {
   const base = String(file.split('/').at(-1));
@@ -59,12 +79,18 @@ export function featureName(file: string): string {
 }
 
 /** The names the map does not know, in the order given. */
-export function unmappedFeatures(names: readonly string[]): string[] {
-  return names.filter((name) => !Object.hasOwn(FEATURE_APPS, name));
+export function unmappedFeatures(
+  names: readonly string[],
+  map: FeatureMap = FEATURE_MAP,
+): string[] {
+  return names.filter((name) => !Object.hasOwn(map.features, name));
 }
 
 /** The workspace path a feature's app is built from, or `undefined` if unmapped. */
-export function featureWorkspace(name: string): string | undefined {
-  const app = Object.hasOwn(FEATURE_APPS, name) ? FEATURE_APPS[name] : undefined;
-  return app ? APP_WORKSPACES[app] : undefined;
+export function featureWorkspace(
+  name: string,
+  map: FeatureMap = FEATURE_MAP,
+): string | undefined {
+  const app = Object.hasOwn(map.features, name) ? map.features[name] : undefined;
+  return app !== undefined && Object.hasOwn(map.apps, app) ? map.apps[app] : undefined;
 }

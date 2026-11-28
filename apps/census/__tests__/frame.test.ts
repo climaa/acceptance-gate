@@ -6,7 +6,7 @@ import { homeView } from '@/lib/home.ts';
 import { sample, SAMPLE_DAY } from './sample';
 
 const GITHUB = 'https://github.com/climaa/acceptance-gate';
-const view = homeView({ state: 'measured', ...sample() }, SAMPLE_DAY);
+const view = homeView(sample(), SAMPLE_DAY);
 
 describe('frameAt on the home', () => {
   it('crumbs to the overview and lights it, with the filter band', () => {
@@ -74,5 +74,22 @@ describe('frameAt anywhere else', () => {
 
     expect(frame.band).toBe('filters');
     expect(frame.workspaces).toEqual([]);
+  });
+});
+
+describe('frameAt for another repository', () => {
+  it('crumbs to the repository the measurement measures', () => {
+    const local = {
+      ...view,
+      repoName: 'landing-lab',
+      githubHref: 'https://github.com/climaa/landing-lab',
+    };
+
+    const frame = frameAt(local, NO_FILTER, '/');
+
+    expect(frame.breadcrumb[0]).toEqual({
+      label: 'landing-lab',
+      href: 'https://github.com/climaa/landing-lab',
+    });
   });
 });

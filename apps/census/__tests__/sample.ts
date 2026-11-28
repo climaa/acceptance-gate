@@ -6,19 +6,18 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 
-import { parseCommitted } from '@/lib/committed.ts';
-import type { History, Measurement } from '@/lib/measurement.ts';
+import { parseCommitted, type Committed } from '@/lib/committed.ts';
 
 const SAMPLE = path.resolve(import.meta.dirname, '..', 'fixtures', 'sample');
 const text = (name: string) => readFileSync(path.join(SAMPLE, `${name}.json`), 'utf8');
 
-export function sample(): { measurement: Measurement; history: History } {
+export function sample(): Extract<Committed, { state: 'measured' }> {
   const committed = parseCommitted({
     measurement: text('measurement'),
     history: text('history'),
   });
   if (committed.state !== 'measured') throw new Error('the sample is measured');
-  return { measurement: committed.measurement, history: committed.history };
+  return committed;
 }
 
 /** The sample is measured on 20 Nov 2026 at 17:42 UTC. */

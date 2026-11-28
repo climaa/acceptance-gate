@@ -55,11 +55,6 @@
     "crap": 56
   },
   {
-    "path": "apps/e2e/pages/link-preview.ts",
-    "name": "parsePreview",
-    "crap": 90
-  },
-  {
     "path": "apps/e2e/scripts/seed-visual-diff.mjs",
     "name": "parseArgs",
     "crap": 42
@@ -115,64 +110,14 @@
     "crap": 90
   },
   {
-    "path": "scripts/gate/lock.mjs",
-    "name": "acquire",
-    "crap": 72
-  },
-  {
-    "path": "scripts/gate/lock.mjs",
-    "name": "readHolder",
-    "crap": 30
-  },
-  {
-    "path": "scripts/gate/pre-push.mjs",
-    "name": "verify",
-    "crap": 30
-  },
-  {
-    "path": "scripts/gate/receipt.mjs",
-    "name": "findReceipt",
-    "crap": 56
-  },
-  {
-    "path": "scripts/gate/run.mjs",
-    "name": "parse",
-    "crap": 72
-  },
-  {
-    "path": "scripts/gate/run.mjs",
-    "name": "run",
-    "crap": 210
-  },
-  {
-    "path": "scripts/gate/run.mjs",
-    "name": "runCheck",
-    "crap": 42
-  },
-  {
     "path": "scripts/pen/check-colours.js",
     "name": "<arrow>",
     "crap": 90
   },
   {
-    "path": "scripts/pen/export-boards.js",
-    "name": "<arrow>",
-    "crap": 42
-  },
-  {
     "path": "scripts/pen/place-tiles.js",
     "name": "<arrow>",
-    "crap": 240
-  },
-  {
-    "path": "scripts/pen/place-tiles.js",
-    "name": "fresh",
-    "crap": 30
-  },
-  {
-    "path": "scripts/pen/place-tiles.js",
-    "name": "name",
-    "crap": 30
+    "crap": 63.6
   },
   {
     "path": "scripts/pen/tile-diff.mjs",

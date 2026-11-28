@@ -544,3 +544,18 @@ describe('the small formatters', () => {
     expect(md).not.toContain('## Health');
   });
 });
+
+describe("overviewOf with another repository's feature map", () => {
+  it('counts only the apps that map deploys', () => {
+    // Arrange
+    const map = { apps: { web: 'apps/blog' }, features: {}, localFeatures: [] };
+
+    // Act
+    const row = overviewOf(measurement, history, { map }).metrics.find(
+      (r) => r.metric === 'apps visited',
+    );
+
+    // Assert
+    expect(row?.value).toBe('1 / 1');
+  });
+});

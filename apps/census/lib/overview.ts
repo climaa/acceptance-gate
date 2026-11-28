@@ -7,10 +7,11 @@
 import type { IcicleNode, IcicleTone } from '@gate/ui';
 
 import { utcDate } from './dates.ts';
+import { FEATURE_MAP, type FeatureMap } from './features.ts';
 import { gapRows, type GapRow } from './filter.ts';
 import {
-  APP_OF,
   appShare,
+  appsByPath,
   componentsOf,
   routeStates,
   scopeShare,
@@ -138,7 +139,8 @@ export interface Overview {
   gaps: GapRow[];
   notes: string[];
   rerun: string;
-  exports: { jsonHref: string; markdown: string };
+  /** `jsonHref` is `null` for a local measurement: no URL serves that file. */
+  exports: { jsonHref: string | null; markdown: string };
 }
 
 const sum = (ns: readonly number[]) => ns.reduce((a, b) => a + b, 0);
@@ -160,10 +162,14 @@ const latest = (history: History) => history.points.at(-1);
 const dimensionDelta = (history: History, d: Dimension) =>
   deltaOf(history.points, (p) => p.dimensions[d]);
 
-function coverageRows(m: Measurement, history: History): CoverageRowView[] {
+function coverageRows(
+  m: Measurement,
+  history: History,
+  map: FeatureMap,
+): CoverageRowView[] {
   const reach = staticReach(m);
   const stories = storyShare(m);
-  const apps = appShare(m);
+  const apps = appShare(m, map);
   const scopes = scopeShare(m);
   const detail: Record<Dimension, string> = {
     code:
@@ -189,8 +195,8 @@ function coverageRows(m: Measurement, history: History): CoverageRowView[] {
 const change = (delta: number | undefined, unit = '') =>
   delta === undefined ? '—' : `${signed(delta)}${unit}`;
 
-function metricRows(m: Measurement, history: History): MetricRow[] {
-  const routes = routeStates(m);
+function metricRows(m: Measurement, history: History, map: FeatureMap): MetricRow[] {
+  const routes = routeStates(m, map);
   const code = latest(history)?.dimensions.code;
   const row = (
     key: string,
@@ -245,7 +251,7 @@ function metricRows(m: Measurement, history: History): MetricRow[] {
       'acceptance',
       'Acceptance',
       'apps visited',
-      shareText(appShare(m)),
+      shareText(appShare(m, map)),
       'apps',
       dimensionDelta(history, 'acceptance'),
     ),
@@ -338,9 +344,10 @@ const listed = (names: readonly string[]) =>
     ? names.join('')
     : `${names.slice(0, -1).join(', ')} and ${names.at(-1)}`;
 
-function statesOf(m: Measurement): Overview['states'] {
-  const s = routeStates(m);
-  const appOf = new Map(m.workspaces.map((ws) => [ws.name, APP_OF[ws.path] ?? ws.name]));
+function statesOf(m: Measurement, map: FeatureMap): Overview['states'] {
+  const s = routeStates(m, map);
+  const apps = appsByPath(map);
+  const appOf = new Map(m.workspaces.map((ws) => [ws.name, apps[ws.path] ?? ws.name]));
   const byApp = new Map<string, string[]>();
   for (const gap of m.gaps) {
     if (gap.kind !== 'route-state-missing' || !gap.subject.endsWith(':loading')) continue;
@@ -677,15 +684,23 @@ export function gapsMarkdown(m: Measurement): string {
   return [head, ...sections].join('\n\n') + '\n';
 }
 
-export function overviewOf(m: Measurement, history: History): Overview {
+/**
+ * `map` is the measured repository's feature map; `local` says the measurement
+ * came from `CENSUS_DATA_DIR`, not from this repository's committed file.
+ */
+export function overviewOf(
+  m: Measurement,
+  history: History,
+  { map = FEATURE_MAP, local = false }: { map?: FeatureMap; local?: boolean } = {},
+): Overview {
   return {
-    summary: summaryOf(m, history),
-    coverage: coverageRows(m, history),
-    metrics: metricRows(m, history),
+    summary: summaryOf(m, history, map),
+    coverage: coverageRows(m, history, map),
+    metrics: metricRows(m, history, map),
     pyramid: pyramidOf(m),
     gapPills: gapPillsOf(m),
     stories: storiesOf(m),
-    states: statesOf(m),
+    states: statesOf(m, map),
     trend: trendSeries(history),
     health: healthOf(m, history),
     dead: { rows: deadRows(m), boundariesConfigured: m.health.dead.boundaries === true },
@@ -696,7 +711,9 @@ export function overviewOf(m: Measurement, history: History): Overview {
     notes: notesOf(m),
     rerun: rerunOf(m),
     exports: {
-      jsonHref: `https://github.com/${m.repo}/raw/${m.commit}/apps/census/measurement.json`,
+      jsonHref: local
+        ? null
+        : `https://github.com/${m.repo}/raw/${m.commit}/apps/census/measurement.json`,
       markdown: gapsMarkdown(m),
     },
   };
