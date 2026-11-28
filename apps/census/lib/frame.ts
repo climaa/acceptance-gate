@@ -26,7 +26,7 @@ const trimmed = (pathname: string) =>
 
 export function frameAt(view: HomeView, filter: HomeFilter, pathname: string): FrameView {
   const root: Crumb[] = [
-    { label: 'acceptance-gate', href: view.githubHref },
+    { label: view.repoName, href: view.githubHref },
     { label: 'census', href: '/' },
   ];
   const here = view.workspaces.find((ws) => ws.href === trimmed(pathname));

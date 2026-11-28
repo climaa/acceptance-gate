@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { FEATURE_MAP } from '@/lib/features.ts';
 import { searchIndex } from '@/lib/search.ts';
 import { sample } from './sample';
 
@@ -63,5 +64,20 @@ describe('searchIndex', () => {
 
     expect(new Set(ids).size).toBe(ids.length);
     expect(ids.every((id) => index.hrefs[id] !== undefined)).toBe(true);
+  });
+});
+
+describe("searchIndex with another repository's feature map", () => {
+  it('files a feature the map calls local under features/local', () => {
+    // Arrange
+    const map = { ...FEATURE_MAP, localFeatures: ['visual-diff-console'] };
+
+    // Act
+    const index = searchIndex(sample().measurement, map);
+
+    // Assert
+    expect(index.hrefs['scenario:visual-diff-console']).toBe(
+      `${BLOB}/apps/e2e/features/local/visual-diff-console.feature`,
+    );
   });
 });

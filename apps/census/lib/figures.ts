@@ -3,7 +3,7 @@
  * headline percentages themselves are the history's latest point, which the
  * measure step wrote; these are the "N of M" a reader checks them against.
  */
-import { APP_WORKSPACES } from './features.ts';
+import { FEATURE_MAP, type FeatureMap } from './features.ts';
 import type { Measurement, Workspace } from './measurement.ts';
 
 export interface Share {
@@ -15,9 +15,10 @@ const oneDecimal = (n: number) => Math.round(n * 10) / 10;
 const sum = (ns: readonly number[]) => ns.reduce((a, b) => a + b, 0);
 
 /** The app each deployed workspace is published as, by workspace path. */
-export const APP_OF: Readonly<Record<string, string>> = Object.fromEntries(
-  Object.entries(APP_WORKSPACES).map(([app, path]) => [path, app]),
-);
+export const appsByPath = (
+  map: FeatureMap = FEATURE_MAP,
+): Readonly<Record<string, string>> =>
+  Object.fromEntries(Object.entries(map.apps).map(([app, path]) => [path, app]));
 
 const measuredCode = (m: Measurement) =>
   m.workspaces.flatMap((ws) =>
@@ -83,10 +84,10 @@ export function componentsOf(m: Measurement) {
 }
 
 /** Deployed apps a scenario visits, of the deployed apps measured. */
-export function appShare(m: Measurement): Share {
+export function appShare(m: Measurement, map: FeatureMap = FEATURE_MAP): Share {
+  const appOf = appsByPath(map);
   const apps = m.workspaces.filter(
-    (ws) =>
-      APP_OF[ws.path] !== undefined && ws.dimensions.acceptance.state === 'measured',
+    (ws) => appOf[ws.path] !== undefined && ws.dimensions.acceptance.state === 'measured',
   );
   const visited = apps.filter(
     (ws) =>
@@ -105,7 +106,8 @@ export function scopeShare(m: Measurement): Share {
 }
 
 /** Each route state across the measured apps: own, inherited and none, summed. */
-export function routeStates(m: Measurement) {
+export function routeStates(m: Measurement, map: FeatureMap = FEATURE_MAP) {
+  const appOf = appsByPath(map);
   const routes = visualOf(m).flatMap(({ ws, visual }) =>
     visual.routes === undefined ? [] : [{ ws, routes: visual.routes }],
   );
@@ -116,7 +118,7 @@ export function routeStates(m: Measurement) {
   });
   return {
     total: sum(routes.map((r) => r.routes.total)),
-    apps: routes.map((r) => APP_OF[r.ws.path] ?? r.ws.name),
+    apps: routes.map((r) => appOf[r.ws.path] ?? r.ws.name),
     loading: total('loading'),
     error: total('error'),
     notFound: total('notFound'),

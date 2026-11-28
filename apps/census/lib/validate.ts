@@ -9,7 +9,12 @@
  */
 import type { z } from 'zod';
 
-import { featureName, featureWorkspace } from './features.ts';
+import {
+  FEATURE_MAP,
+  featureName,
+  featureWorkspace,
+  type FeatureMap,
+} from './features.ts';
 import {
   historySchema,
   measurementSchema,
@@ -68,13 +73,13 @@ function codeProblems(measurement: Measurement): string[] {
   });
 }
 
-function featureProblems(measurement: Measurement): string[] {
+function featureProblems(measurement: Measurement, map: FeatureMap): string[] {
   return measurement.workspaces.flatMap((ws, w) => {
     const acceptance = ws.dimensions.acceptance;
     if (acceptance.state !== 'measured') return [];
     return acceptance.features.flatMap((feature, f) => {
       const where = `workspaces.${w}.dimensions.acceptance.features.${f}`;
-      const visits = featureWorkspace(featureName(feature));
+      const visits = featureWorkspace(featureName(feature), map);
       if (visits === undefined) return [`${where}: ${feature} is not in the feature map`];
       if (visits !== ws.path)
         return [`${where}: ${feature} visits ${visits}, not ${ws.path}`];
@@ -113,13 +118,19 @@ function gapProblems(measurement: Measurement): string[] {
   return [...duplicates(measurement.gaps, (gap) => gap.id, 'gaps.#.id'), ...unknown];
 }
 
-/** Every problem with a would-be `measurement.json`; empty when it is valid. */
-export function validateMeasurement(value: unknown): string[] {
+/**
+ * Every problem with a would-be `measurement.json`; empty when it is valid. `map`
+ * is the feature map of the repository it measures: this one's unless given.
+ */
+export function validateMeasurement(
+  value: unknown,
+  map: FeatureMap = FEATURE_MAP,
+): string[] {
   const parsed = measurementSchema.safeParse(value);
   if (!parsed.success) return shapeProblems(parsed.error);
   return [
     ...codeProblems(parsed.data),
-    ...featureProblems(parsed.data),
+    ...featureProblems(parsed.data, map),
     ...gapProblems(parsed.data),
   ];
 }

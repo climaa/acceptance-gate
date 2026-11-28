@@ -4,6 +4,8 @@ node_modules/
 
 # builds
 .next/
+# apps/census: a second `next dev`, serving another checkout (next.config.mjs)
+.next-*/
 out/
 dist/
 storybook-static/

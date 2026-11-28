@@ -9,7 +9,7 @@
  */
 import { AstBuilder, GherkinClassicTokenMatcher, Parser } from '@cucumber/gherkin';
 
-import { APP_WORKSPACES, FEATURE_APPS, LOCAL_FEATURES } from '../features.ts';
+import { FEATURE_MAP, type FeatureMap } from '../features.ts';
 import type { Workspace } from '../measurement.ts';
 
 type GherkinDocument = ReturnType<InstanceType<typeof Parser>['parse']>;
@@ -43,15 +43,16 @@ type AcceptanceValue = Workspace['dimensions']['acceptance'];
  * Every deployed app's Acceptance value, keyed by workspace path, from the
  * scenario count of each feature (keyed by feature name). Local features run on a
  * machine with a data directory, never in the suite, so they never make an app
- * visited.
+ * visited. `map` is the measured repository's: this one's unless another is given.
  */
 export function acceptanceValues(
   counts: Readonly<Record<string, number>>,
+  map: FeatureMap = FEATURE_MAP,
 ): Record<string, AcceptanceValue> {
   const values: Record<string, AcceptanceValue> = {};
-  for (const [app, path] of Object.entries(APP_WORKSPACES)) {
+  for (const [app, path] of Object.entries(map.apps)) {
     const visiting = Object.entries(counts)
-      .filter(([name]) => FEATURE_APPS[name] === app && !LOCAL_FEATURES.has(name))
+      .filter(([name]) => map.features[name] === app && !map.localFeatures.includes(name))
       .sort(([a], [b]) => (a < b ? -1 : 1));
     values[path] = {
       dimension: 'acceptance',

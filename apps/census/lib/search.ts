@@ -5,7 +5,7 @@
  */
 import type { SearchEntry } from '@gate/ui';
 
-import { LOCAL_FEATURES } from './features.ts';
+import { FEATURE_MAP, type FeatureMap } from './features.ts';
 import { gapAnchor } from './filter.ts';
 import { blobHref } from './links.ts';
 import type { Measurement, Workspace } from './measurement.ts';
@@ -77,10 +77,10 @@ function gapEntries(m: Measurement): Indexed[] {
   }));
 }
 
-const featureFile = (name: string) =>
-  `apps/e2e/features/${LOCAL_FEATURES.has(name) ? 'local' : 'acceptance'}/${name}.feature`;
+const featureFile = (name: string, map: FeatureMap) =>
+  `apps/e2e/features/${map.localFeatures.includes(name) ? 'local' : 'acceptance'}/${name}.feature`;
 
-function scenarioEntries(m: Measurement): Indexed[] {
+function scenarioEntries(m: Measurement, map: FeatureMap): Indexed[] {
   return m.workspaces.flatMap((ws) => {
     const acceptance = ws.dimensions.acceptance;
     if (acceptance.state !== 'measured') return [];
@@ -89,19 +89,19 @@ function scenarioEntries(m: Measurement): Indexed[] {
       kind: 'scenario' as const,
       title: name,
       meta: ws.name,
-      href: blobHref(m, featureFile(name)),
+      href: blobHref(m, featureFile(name, map)),
     }));
   });
 }
 
 /** Every entry the palette can find, and where each one leads. */
-export function searchIndex(m: Measurement): SearchIndex {
+export function searchIndex(m: Measurement, map: FeatureMap = FEATURE_MAP): SearchIndex {
   const indexed = [
     ...workspaceEntries(m),
     ...componentEntries(m),
     ...fileEntries(m),
     ...gapEntries(m),
-    ...scenarioEntries(m),
+    ...scenarioEntries(m, map),
   ];
   return {
     entries: indexed.map(({ href: _href, ...entry }) => entry),
