@@ -27,7 +27,7 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
-    "@cucumber/gherkin": "^42.0.1",
+    "@cucumber/gherkin": "^43.0.0",
     "@gate/tsconfig": "workspace:*",
     "@types/node": "^22.20.5",
     "@types/react": "^19.3.0",
