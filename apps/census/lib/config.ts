@@ -109,17 +109,27 @@ export function readConfig(
   value: unknown,
   checkout: Checkout,
 ): { config: CensusConfig } | { problems: string[] } {
-  const parsed = configSchema.safeParse(value);
-  if (!parsed.success) {
-    return {
-      problems: parsed.error.issues.map(
-        (issue) => `${issue.path.join('.') || CHECKOUT_CONFIG}: ${issue.message}`,
-      ),
-    };
-  }
+  const parsed = parseConfig(value);
+  if ('problems' in parsed) return parsed;
   const problems = [
-    ...pathProblems(parsed.data, checkout),
-    ...featureProblems(parsed.data, checkout),
+    ...pathProblems(parsed.config, checkout),
+    ...featureProblems(parsed.config, checkout),
   ];
-  return problems.length > 0 ? { problems } : { config: parsed.data };
+  return problems.length > 0 ? { problems } : parsed;
+}
+
+/**
+ * The shape check alone, for a reader with no checkout to compare against: the
+ * app, reading the copy `census:measure --root` leaves beside a measurement.
+ */
+export function parseConfig(
+  value: unknown,
+): { config: CensusConfig } | { problems: string[] } {
+  const parsed = configSchema.safeParse(value);
+  if (parsed.success) return { config: parsed.data };
+  return {
+    problems: parsed.error.issues.map(
+      (issue) => `${issue.path.join('.') || CHECKOUT_CONFIG}: ${issue.message}`,
+    ),
+  };
 }

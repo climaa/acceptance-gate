@@ -352,9 +352,11 @@ export function NotesCard({
       <h3 className="census-subtitle-caps">Rerun inputs</h3>
       <CodeBlock className="census-rerun">{rerun}</CodeBlock>
       <div className="census-exports">
-        <a className="ds-btn ds-btn--primary ds-btn--sm" href={exports.jsonHref}>
-          Download JSON
-        </a>
+        {exports.jsonHref === null ? null : (
+          <a className="ds-btn ds-btn--primary ds-btn--sm" href={exports.jsonHref}>
+            Download JSON
+          </a>
+        )}
         <CopyButton
           className="ds-btn ds-btn--secondary ds-btn--sm"
           text={exports.markdown}

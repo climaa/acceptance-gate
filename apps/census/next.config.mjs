@@ -1,5 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // A second `next dev` beside the first needs its own directory: Next 16 keeps
+  // the dev server's lock at `<distDir>/dev/lock` and refuses a second server on
+  // the same one. `CENSUS_DIST_DIR=.next-landing-lab` beside
+  // `CENSUS_DATA_DIR=<dir>` serves another checkout's measurement on another
+  // port (`lib/committed.ts`). Unset, as on every build, it is Next's default.
+  distDir: process.env.CENSUS_DIST_DIR || '.next',
   // Every route prerenders, and this flag makes that a build-time check rather
   // than an assumption: the pages are built from `measurement.json` and
   // `history.json`, read on the builder through `lib/committed.ts`, and a route

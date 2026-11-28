@@ -17,7 +17,7 @@ vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: () => {} }),
 }));
 
-const measured = homeView({ state: 'measured', ...sample() }, SAMPLE_DAY);
+const measured = homeView(sample(), SAMPLE_DAY);
 const PAGE = createElement('main', { id: 'page' });
 
 /** The label of every pressed segment in the band, in DOM order. */
@@ -54,6 +54,17 @@ describe('the frame around a page', () => {
 
     // Assert
     expect(html).toContain(`>${measured.meta.commit.short}</a>`);
+  });
+
+  it('names the measured repository in the sidebar brand', () => {
+    // Arrange
+    const local = { ...measured, repoName: 'landing-lab' };
+
+    // Act
+    const html = frame(local);
+
+    // Assert
+    expect(html).toContain('<span class="ds-sidebar__repository">landing-lab</span>');
   });
 
   it('filters nothing when no filter is passed', () => {

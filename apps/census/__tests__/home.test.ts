@@ -184,4 +184,46 @@ describe('homeView with a measurement committed', () => {
 
     expect(view.githubHref).toBe('https://github.com/climaa/acceptance-gate');
   });
+
+  it('names the measured repository', () => {
+    const view = homeView(measured(), FIXTURE_DAY);
+
+    expect(view.repoName).toBe('acceptance-gate');
+  });
+
+  it('links the committed measurement.json', () => {
+    const view = homeView(measured(), FIXTURE_DAY);
+
+    expect(view.state === 'measured' && view.overview.exports.jsonHref).toMatch(
+      /^https:\/\/github\.com\/climaa\/acceptance-gate\/raw\/[0-9a-f]{40}\/apps\/census\/measurement\.json$/,
+    );
+  });
+});
+
+describe('homeView with a local measurement', () => {
+  const local = () => {
+    const measurement = {
+      ...JSON.parse(text('measurement')),
+      repo: 'climaa/landing-lab',
+    };
+    return parseCommitted(
+      { measurement: JSON.stringify(measurement), history: text('history') },
+      'local',
+    );
+  };
+
+  it('names and links the repository the measurement measures', () => {
+    const view = homeView(local(), FIXTURE_DAY);
+
+    expect([view.repoName, view.githubHref]).toEqual([
+      'landing-lab',
+      'https://github.com/climaa/landing-lab',
+    ]);
+  });
+
+  it('links no measurement.json, since no URL serves the file', () => {
+    const view = homeView(local(), FIXTURE_DAY);
+
+    expect(view.state === 'measured' && view.overview.exports.jsonHref).toBeNull();
+  });
 });

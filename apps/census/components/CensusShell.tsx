@@ -48,7 +48,7 @@ function follow(href: string | undefined) {
  * drawer shut below 768px (`[data-ready]`), and after it the media query picks.
  */
 export function CensusShell({ view, filter, children }: CensusShellProps) {
-  const { githubHref } = view;
+  const { githubHref, repoName } = view;
   const search = view.state === 'measured' ? view.search : NO_SEARCH;
   const frame = frameAt(view, filter, usePathname());
   // `false` on the server and through hydration, `true` after: the first
@@ -85,7 +85,7 @@ export function CensusShell({ view, filter, children }: CensusShellProps) {
     <div className="census-shell" data-ready={ready || undefined}>
       <Sidebar
         id={SIDEBAR_ID}
-        repository="acceptance-gate"
+        repository={repoName}
         title="census"
         dimensionsLabel="Dimensions"
         dimensions={frame.dimensions}

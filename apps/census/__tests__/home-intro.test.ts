@@ -11,7 +11,7 @@ const DAY = 86_400_000;
 const home = (now: number) =>
   renderToStaticMarkup(
     createElement(HomeScreen, {
-      view: homeView({ state: 'measured', ...sample() }, now),
+      view: homeView(sample(), now),
     }),
   );
 

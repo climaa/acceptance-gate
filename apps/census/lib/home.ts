@@ -68,6 +68,8 @@ interface ViewBase {
   dimensions: ShellDimension[];
   workspaces: ShellWorkspace[];
   githubHref: string;
+  /** The measured repository's name, `acceptance-gate` before any measurement. */
+  repoName: string;
 }
 
 export type HomeView =
@@ -86,6 +88,8 @@ export type HomeView =
     });
 
 const githubOf = (repo: string) => `https://github.com/${repo}`;
+/** `climaa/acceptance-gate` → `acceptance-gate`. */
+const nameOf = (repo: string) => String(repo.split('/').at(-1));
 
 function gapCounts(measurement: Measurement) {
   const counts = Object.fromEntries(DIMENSIONS.map((d) => [d, 0])) as Record<
@@ -164,17 +168,19 @@ export function homeView(committed: Committed, now: number): HomeView {
       dimensions: shellDimensions(null),
       workspaces: [],
       githubHref: githubOf(REPOSITORY),
+      repoName: nameOf(REPOSITORY),
     };
   }
-  const { measurement, history } = committed;
+  const { measurement, history, map, source } = committed;
   return {
     state: 'measured',
     dimensions: shellDimensions(measurement),
     workspaces: shellWorkspaces(measurement),
     githubHref: githubOf(measurement.repo),
+    repoName: nameOf(measurement.repo),
     filters: filtersOf(measurement),
     meta: metaOf(measurement, now),
-    overview: overviewOf(measurement, history),
-    search: searchIndex(measurement),
+    overview: overviewOf(measurement, history, { map, local: source === 'local' }),
+    search: searchIndex(measurement, map),
   };
 }
