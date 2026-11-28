@@ -6,6 +6,15 @@ const nextConfig = {
   // `CENSUS_DATA_DIR=<dir>` serves another checkout's measurement on another
   // port (`lib/committed.ts`). Unset, as on every build, it is Next's default.
   distDir: process.env.CENSUS_DIST_DIR || '.next',
+  // Next 16 blocks dev resources (chunks, HMR) requested from any host but
+  // localhost, so a console opened from another machine on the network renders
+  // its HTML and never hydrates. `CENSUS_DEV_ORIGINS` is a comma-separated list
+  // of hosts to let through; unset, the default stands. It only touches
+  // `next dev`: a build ignores it.
+  allowedDevOrigins: (process.env.CENSUS_DEV_ORIGINS ?? '')
+    .split(',')
+    .map((host) => host.trim())
+    .filter(Boolean),
   // Every route prerenders, and this flag makes that a build-time check rather
   // than an assumption: the pages are built from `measurement.json` and
   // `history.json`, read on the builder through `lib/committed.ts`, and a route
